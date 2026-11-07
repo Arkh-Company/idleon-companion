@@ -324,9 +324,30 @@ readings to any app over the local named pipe.
     `node_modules\electron\dist\electron.exe out\main\keeper.js "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
     --headless=new --no-first-run --user-data-dir=<tmp> file:///<repo>/src/keeper/mock-game/app.html` → `keeper.log`
     shows `attached` and readings; a second run exits at once.
+  - From the read-only reader review (07/11, during the implementation): `pausedMs` reaches the keeper log (change
+    `startReader` so the keeper gets it, e.g. through the `attached` status or a callback); the keeper calls the reader's
+    `stop()` before it publishes `{ game: "closed" }`; and a `stop()` that arrives while `acquireEngine` finishes still
+    releases the session (detach), with a fake-`Cdp` test in `src/keeper/reader.test.ts`.
+- [ ] T046 Warn about readings that keep failing (added on 07/11 during the implementation, with the user's yes)
+  - Files: `src/keeper/reader.ts`, `src/keeper/reader.test.ts`, `src/keeper/index.ts` (log)
+  - Behavior: after 10 consecutive failed readings (an exception in `read.js`, a reading of the wrong shape), the reader
+    sends `{ game: "running", reader: "attached", message: "Reading failed: <reason>" }`, without pausing the game and
+    without taking the engine again; the next good reading sends `{ reader: "attached" }` without the message. The keeper
+    logs it. Tests (fake `Cdp`, on the CI): 10 failures → one status with the message and still one `attach`; a good
+    reading after it clears the message.
+- [ ] T047 The Edge integration test becomes opt-in (added on 07/11, with the user's yes: "Tests use no real network",
+  and headless Edge cannot guarantee zero traffic of its own)
+  - Files: `src/keeper/reader.integration.test.ts`
+  - Change: the Edge `describe` is skipped unless `IDLEON_EDGE_TESTS=1` (and Edge exists), so `just check` and the CI
+    never start Edge. The tests outside that `describe` (exe path args, `toReading`) keep running everywhere.
+- [ ] T048 [sessão] Recipe `test-edge` in `justfile` (the session, at the end of this phase)
+  - Files: `justfile`
+  - Change: `test-edge` sets `IDLEON_EDGE_TESTS=1` inside the recipe and runs `pnpm exec vitest run --dir src
+    src/keeper/reader.integration.test.ts`; it stays outside `check`.
 
-**Verify**: `just test-one src/keeper/update-watch.test.ts`, `just test-one src/shared/link.test.ts` and
-`just test-one src/link.test.ts` pass; `just build` writes `out/main/keeper.js`; `just check` passes.
+**Verify**: `just test-one src/keeper/update-watch.test.ts`, `just test-one src/shared/link.test.ts`,
+`just test-one src/link.test.ts` and `just test-one src/keeper/reader.test.ts` pass; `just check` passes and starts no
+Edge; `just test-edge` passes on Windows; `just build` writes `out/main/keeper.js`.
 
 ---
 
