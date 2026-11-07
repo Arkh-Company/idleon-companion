@@ -2,7 +2,10 @@
 
 IdleOn Companion reads a few fields of Legends of Idleon every second, read-only, and shows them in a window next to
 the game. This file describes the code as it is; the design and its reasons are in
-[specs/001-screen-map/](specs/001-screen-map/spec.md).
+[specs/001-screen-map/](specs/001-screen-map/spec.md). The decisions that are hard to reverse are in
+[docs/adr/](docs/adr/) ([0001](docs/adr/0001-debugging-pipe-in-the-keeper.md): the debugging pipe in a keeper process;
+[0002](docs/adr/0002-fail-closed-update-watch.md): the update watch fails closed), and the terms in
+[GLOSSARY.md](GLOSSARY.md).
 
 ## Two processes
 
@@ -20,12 +23,16 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   keeper closes the game (the known limit in [docs/steam-setup.md](docs/steam-setup.md)). It takes an engine reference
   once per game load (a breakpoint in `getGameAttribute:function(`, one pause), then runs `read.js` on it every second
   and publishes a reading only when it changed; every good reading republishes the last status with `lastReadingAt`
-  (the window's "last reading N s ago"). A failed reading is skipped; only a lost reference (a reload) takes the engine again.
+  (the window's "last reading N s ago"). A failed reading is skipped; only a lost reference (a reload) takes the engine
+  again. Only a pause at the reader's own breakpoint is read. A game script without the anchor (a game update) ends the
+  reader for that game load, with "Game updated: the reader needs an update", instead of trying again.
 - **App** (`src/main/`, `src/preload/`, `src/renderer/`, built to `out/main/index.js`, `out/preload/index.cjs` and
   `out/renderer/`). A link client: it turns readings into a `GameContext` with the catalog (`names.json`) and sends it
   to the window. It never launches the game and never touches its pipe, so it can close, crash or be killed with the
-  game open; reopening it reconnects and gets the last status and reading. One instance (a second one focuses the
-  first window); the window's X hides it in the tray, and only the tray's "Quit", the game exiting with "Close
+  game open; reopening it reconnects and gets the last status and reading. One instance: a second manual launch brings
+  the first window forward, and a second launch from Steam (`--from-steam`) follows "Show window when the game starts"
+  (`launchEvent`). When the keeper ends after the game, the window keeps "Game closed · last reading N s ago"
+  (`statusOnLinkDrop`). The window's X hides it in the tray, and only the tray's "Quit", the game exiting with "Close
   companion when the game closes", or the system ending the session end the app.
 
 ## Code folders
@@ -89,14 +96,19 @@ The preload keeps the last `context:update` and `status:update` and replays them
 - **Fail closed in the keeper** (`src/keeper/keeper.ts`). The game opens without `--remote-debugging-pipe`, and so
   without reading, when the game code is suspicious (changed, with debugger-detection markers: "The game code changed
   and contains: <markers>. Reading is off for this session."; "Connect next time" records its hash for the next
-  session), when it cannot be checked (`app.asar` present, its `N.js` unreadable: "Could not check the game code: the
-  reader needs an update."), or when the keeper fails before launching (the link server fails with anything but
-  "already running", or the data folder cannot be created; logged when the log is writable). The game never depends on
-  the app: in every one of these cases it still opens.
+  session), when it cannot be checked ("Could not check the game code: the reader needs an update."; the `N.js` comes
+  from `resources\app.asar` or, without it, the unpacked `resources\app\`, and is unreadable, or `LegendsOfIdleon.exe`
+  has neither; any other exe with neither, as Edge in the tests, is read without the check), or when the keeper fails
+  before launching (the link server fails with anything but "already running", logged; or the data folder, made first,
+  cannot be created: "Could not create the data folder: reading is off for this session."). The check itself only
+  reads: the keeper records the hash of clean code afterwards, and a hash that cannot be saved is logged
+  (`game-hash-not-saved`) without closing the pipe. The game never depends on the app: in every one of these cases it
+  still opens. See [ADR 0002](docs/adr/0002-fail-closed-update-watch.md).
 - **Navigation lockdown** (`src/main/window-options.ts`, `src/main/index.ts`): `sandbox`, `contextIsolation`, no
   `nodeIntegration`; `setWindowOpenHandler` denies every new window, and `will-navigate` is prevented for any URL but the
   window's own page (`isAllowedNavigation`). The page has the CSP `default-src 'self'`, so the UI has no inline styles.
-- **IPC sender check**: every `ipcMain.handle` refuses a call whose sender frame is not the window's own page.
+- **IPC sender check** (`guardIpc` in `src/main/window-options.ts`): every `ipcMain.handle` refuses a call whose sender
+  frame is not the window's own page, or that has none.
 - **Shape checks on every message** (`src/main/payloads.ts`, `src/shared/link.ts`, `src/shared/reading.ts`): the line
   decoder skips junk lines and checks the message type; the main process checks a link `reading` (`toReading`) and
   `status` before use, and each IPC payload (`catalog:name`: a known table, a catalog key, a non-blank name;
@@ -108,12 +120,12 @@ The preload keeps the last `context:update` and `status:update` and replays them
 
 `%APPDATA%\IdleOn Companion\`, never in the repository:
 
-| File             | Written by | Content                                                                                                                   |
-| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `names.json`     | app        | the user's catalog; `names.json.bak` before each save, `names.json.bad` for an invalid file (the default catalog is used) |
-| `settings.json`  | app        | `Settings`; invalid or missing → defaults                                                                                 |
-| `game-hash.json` | keeper     | the hash of the last game code read without a warning, or confirmed                                                       |
-| `keeper.log`     | keeper     | one JSON line per entry (`t`, `label`, `id` = the game pid), the pause time included                                      |
-| `game.log`       | keeper     | the game's own output                                                                                                     |
+| File             | Written by | Content                                                                                                                                                               |
+| ---------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `names.json`     | app        | the user's catalog, indented, written through `names.json.tmp`; `names.json.bak` before each save, `names.json.bad` for an invalid file (the default catalog is used) |
+| `settings.json`  | app        | `Settings`; invalid or missing → defaults                                                                                                                             |
+| `game-hash.json` | keeper     | the hash of the last game code checked clean (recorded after the check), or confirmed                                                                                 |
+| `keeper.log`     | keeper     | one JSON line per entry (`t`, `label`, `id` = the game pid, null before the launch), the pause time included                                                          |
+| `game.log`       | keeper     | the game's own output                                                                                                                                                 |
 
 The default catalog ships in `src/main/catalog/default-names.json`.

@@ -10,11 +10,13 @@ Requisitos: Git, [mise](https://mise.jdx.dev), que instala as versões fixadas e
 mise trust      # confia no mise.toml deste projeto (só na primeira vez)
 mise install    # ferramentas nas versões fixadas
 just setup      # dependências travadas e .env a partir do .env.example
-just dev        # sobe a aplicação
+just dev        # abre só o app em modo de desenvolvimento, sem o jogo e sem o guardião (a janela diz que não há leitura)
 just check      # formatação, lint, tipos, segredos e testes: o mesmo critério da CI
 ```
 
 `just --list` mostra todas as receitas.
+
+Para jogar com o companion, configure a Steam como em [docs/steam-setup.md](docs/steam-setup.md); como as peças se encaixam está em [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Depois de mudar o `mise.toml`, rode `cd '<pasta do projeto>' && mise lock`: o `mise.lock` guarda as versões e as somas de verificação de cada ferramenta, para o Windows e para o Linux da CI.
 
