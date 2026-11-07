@@ -31,12 +31,14 @@ export function addPart(
   return { next: inserted + current, inserted };
 }
 
-/** The option without the text the companion inserted, once; unchanged when that text is no longer there. */
+/** The option without the text the companion inserted, once. When that text is gone, its version without the trailing
+ * space is tried (the user deleted their own text after `%command% `); otherwise the option is unchanged. */
 export function removePart(current: string, inserted: string): string {
-  const at = inserted === "" ? -1 : current.indexOf(inserted);
-  return at < 0
-    ? current
-    : current.slice(0, at) + current.slice(at + inserted.length);
+  for (const text of [inserted, inserted.trimEnd()]) {
+    const at = text === "" ? -1 : current.indexOf(text);
+    if (at >= 0) return current.slice(0, at) + current.slice(at + text.length);
+  }
+  return current;
 }
 
 export function optionState(

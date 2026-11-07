@@ -48,6 +48,13 @@ test("removing keeps what the user changed after the setup", () => {
   expect(removePart(edited, inserted)).toBe("BAZ %command% -bar -extra");
 });
 
+test("removing after the user deleted their own text still takes out the companion's part", () => {
+  const { next, inserted } = addPart("-windowed", PART);
+  expect(inserted).toBe(`${PART}%command% `);
+  expect(removePart(next.replace(" -windowed", ""), inserted)).toBe("");
+  expect(removePart(`${PART}%command%`, `${PART}%command% `)).toBe("");
+});
+
 test("removing when the inserted text is gone changes nothing", () => {
   const { inserted } = addPart("-windowed", PART);
   expect(removePart("-windowed -fullscreen", inserted)).toBe(
