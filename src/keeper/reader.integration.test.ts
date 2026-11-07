@@ -1,0 +1,215 @@
+// The keeper's reader against the mock game in a headless Edge (Windows only), and the launch arguments (everywhere).
+import { spawnSync } from "node:child_process";
+import type { SpawnOptions, spawn } from "node:child_process";
+import { EventEmitter } from "node:events";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { PassThrough } from "node:stream";
+import { pathToFileURL } from "node:url";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import type { Reading, Status } from "../shared/index.ts";
+import { launchGame } from "./launch.ts";
+import { loadReadSource } from "./read-source.ts";
+import { startReader, toReading } from "./reader.ts";
+
+const EDGE =
+  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const readSrc = loadReadSource(join(import.meta.dirname, "read.js"));
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const dirs: string[] = [];
+function tempDir(): string {
+  const d = mkdtempSync(join(tmpdir(), "idleon-reader-"));
+  dirs.push(d);
+  return d;
+}
+afterEach(() => {
+  for (const d of dirs.splice(0)) {
+    try {
+      rmSync(d, { recursive: true, force: true, maxRetries: 5 });
+    } catch {
+      // Edge may still hold a file for a moment; the temp folder is the OS's to clean.
+    }
+  }
+});
+
+test("exe path with spaces and parentheses keeps every arg", () => {
+  const fakeSpawn = vi.fn<
+    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
+  >(() =>
+    Object.assign(new EventEmitter(), {
+      stdio: [null, null, null, new PassThrough(), new PassThrough()],
+    }),
+  );
+  const exe =
+    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Legends of Idleon\\LegendsOfIdleon.exe";
+  launchGame(
+    exe,
+    ["-novsync", "--foo=bar baz"],
+    join(tempDir(), "game.log"),
+    fakeSpawn as unknown as typeof spawn,
+  );
+  expect(fakeSpawn).toHaveBeenCalledWith(
+    exe,
+    ["-novsync", "--foo=bar baz", "--remote-debugging-pipe"],
+    expect.objectContaining({
+      stdio: ["ignore", expect.anything(), expect.anything(), "pipe", "pipe"],
+    }),
+  );
+  expect(fakeSpawn.mock.calls[0]?.[2].env?.ELECTRON_ENABLE_LOGGING).toBe("1");
+});
+
+const base = {
+  map: 264,
+  menu: 3,
+  menu2: 0,
+  menu2tab: 0,
+  skillTab: 18,
+  char: "Darkhe",
+  afk: "w6d3",
+  codexTab: 0,
+  codexSel: "Scripticus",
+};
+
+test("toReading keeps a well-formed value and stamps the time", () => {
+  expect(toReading(base, 7)).toEqual({ t: 7, ...base });
+});
+
+test("toReading accepts the nullable fields as null", () => {
+  const empty = { ...base, char: null, afk: null, codexTab: null };
+  expect(toReading({ ...empty, codexSel: null }, 7)).toEqual({
+    t: 7,
+    ...empty,
+    codexSel: null,
+  });
+  expect(toReading({ ...base, codexSel: 4 }, 7)?.codexSel).toBe(4);
+});
+
+test.each([
+  ["a missing number", { ...base, map: undefined }],
+  ["a number field with text", { ...base, menu2tab: "0" }],
+  ["a character that is not text", { ...base, char: 1 }],
+  ["an AFK target that is not text", { ...base, afk: {} }],
+  ["a Codex tab that is not a number", { ...base, codexTab: "2" }],
+  ["a Codex selection that is an object", { ...base, codexSel: {} }],
+  ["no object at all", null],
+])("toReading refuses %s", (_name, value) => {
+  expect(toReading(value, 7)).toBeNull();
+});
+
+/** Kills the Edge process the test started and every process under it (only those). */
+function killTree(pid: number | undefined): void {
+  if (pid !== undefined)
+    spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+      stdio: "ignore",
+    });
+}
+
+describe.skipIf(!existsSync(EDGE))(
+  "reader against the mock game in Edge",
+  () => {
+    const mock = pathToFileURL(
+      join(import.meta.dirname, "mock-game", "app.html"),
+    ).href;
+
+    function edge(url: string) {
+      const dir = tempDir();
+      return launchGame(
+        EDGE,
+        [
+          "--headless=new",
+          "--no-first-run",
+          "--no-default-browser-check",
+          "--disable-gpu",
+          "--disable-background-networking",
+          "--disable-component-update",
+          "--disable-sync",
+          `--user-data-dir=${join(dir, "profile")}`,
+          url,
+        ],
+        join(dir, "game.log"),
+      );
+    }
+
+    test("reads changes, pauses once, survives a reload", async () => {
+      const readings: Reading[] = [];
+      const statuses: Status[] = [];
+      const g = edge(`${mock}?reload=1`);
+      const r = startReader(
+        g.cdp,
+        () => readSrc,
+        (x) => readings.push(x),
+        (s) => statuses.push(s),
+      );
+      try {
+        await sleep(12000);
+      } finally {
+        r.stop();
+        killTree(g.child.pid);
+        await g.exited;
+      }
+      // changes keep arriving after the reload
+      expect(new Set(readings.map((x) => x.map)).size).toBeGreaterThan(3);
+      // the engine was taken again after the reload
+      expect(
+        statuses.filter((s) => s.reader === "attached").length,
+      ).toBeGreaterThanOrEqual(2);
+      expect(readings[0]).toMatchObject({
+        menu: 3,
+        char: "Tester",
+        codexTab: 2,
+      });
+    }, 30000);
+
+    test("the game closing rejects in-flight requests with no unhandled rejection", async () => {
+      const unhandled: unknown[] = [];
+      const onUnhandled = (e: unknown) => unhandled.push(e);
+      process.on("unhandledRejection", onUnhandled);
+      try {
+        const g = edge(mock);
+        const pending = g.cdp.send("Target.getTargets");
+        // Killed in the same tick, before Edge can answer (taskkill is too slow for that); Edge's own child
+        // processes exit with it.
+        g.child.kill();
+        await expect(pending).rejects.toThrow("the game closed");
+        await g.exited;
+        await sleep(100);
+        expect(unhandled).toEqual([]);
+      } finally {
+        process.off("unhandledRejection", onUnhandled);
+      }
+    }, 30000);
+
+    test("a missing anchor reports the game-updated message and no reading", async () => {
+      const readings: Reading[] = [];
+      const statuses: Status[] = [];
+      const g = edge(mock);
+      const r = startReader(
+        g.cdp,
+        () => readSrc,
+        (x) => readings.push(x),
+        (s) => statuses.push(s),
+        { anchor: "noSuchAnchor:function(", retryMs: 60000 },
+      );
+      try {
+        for (
+          let i = 0;
+          i < 40 && !statuses.some((s) => s.reader === "error");
+          i++
+        )
+          await sleep(250);
+      } finally {
+        r.stop();
+        killTree(g.child.pid);
+        await g.exited;
+      }
+      expect(statuses).toContainEqual({
+        game: "running",
+        reader: "error",
+        message: "Game updated: the reader needs an update",
+      });
+      expect(readings).toEqual([]);
+    }, 30000);
+  },
+);

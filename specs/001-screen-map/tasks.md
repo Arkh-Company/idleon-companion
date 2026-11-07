@@ -212,7 +212,7 @@ test reads the mock game through a reload.
     `result` of the matching answer, also when the answer arrives split across chunks; an answer with `error` rejects
     with its message; an event without `id` reaches `waitFor`; no answer within the timeout rejects with
     `/no answer/`; `close()` rejects every pending request.
-- [ ] T032 Launch and reader tests in `src/keeper/reader.integration.test.ts`
+- [X] T032 Launch and reader tests in `src/keeper/reader.integration.test.ts`
   - Files: `src/keeper/reader.integration.test.ts`
   - Cases (the original plan's Task 6 code, with `describe.skipIf(!existsSync(EDGE))` and
     `EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"`): reads changes, pauses once, survives a
@@ -236,12 +236,12 @@ test reads the mock game through a reload.
     params?: object, sessionId?: string): Promise<unknown>; waitFor(pred: (m: CdpMessage) => boolean, ms: number):
     Promise<CdpMessage>; close(): void }`; `type Cdp = ReturnType<typeof createCdp>`. Timeout message:
     `no answer from the game for <method>`. Stream errors never throw out of the module.
-- [ ] T035 Mock game fixture with a reload mode
+- [X] T035 Mock game fixture with a reload mode
   - Files: `src/keeper/mock-game/app.html`, `src/keeper/mock-game/static/game/index.html`,
     `src/keeper/mock-game/static/game/N.js` (copied from `C:\Users\Vinicius\idleon-companion\mock-game\`)
   - Change: `CurrentMap` changes every second (so readings keep changing); with `?reload=1` on `app.html`, the game
     frame reloads itself exactly once, 3 s after its first load. Keep the text `getGameAttribute:function(` intact.
-- [ ] T036 Launch, engine reference and reader loop
+- [X] T036 Launch, engine reference and reader loop
   - Files: `src/keeper/launch.ts`, `src/keeper/engine-ref.ts`, `src/keeper/reader.ts` (ported from the prototype
     `launcher.cjs`)
   - Signatures: `launchGame(exe: string, args: string[], logFile: string, spawnImpl = spawn): { child: ChildProcess;
