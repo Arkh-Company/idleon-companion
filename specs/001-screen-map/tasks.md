@@ -199,7 +199,7 @@ test reads the mock game through a reload.
 
 ### Tests for Phase 3
 
-- [ ] T030 Read-only proof in `src/keeper/read-only.test.ts`
+- [X] T030 Read-only proof in `src/keeper/read-only.test.ts`
   - Files: `src/keeper/read-only.test.ts`
   - Cases (spec §7.2): a fake engine where every function is `new Proxy(function () {}, { apply() { throw new
     Error("game function called"); } })`, including `getGameAttribute` and a function inside `gameAttributes.h`;
@@ -223,7 +223,7 @@ test reads the mock game through a reload.
 
 ### Implementation for Phase 3
 
-- [ ] T033 read.js and its loader
+- [X] T033 read.js and its loader
   - Files: `src/keeper/read.js`, `src/keeper/read-source.ts`
   - `read.js`: ported from the prototype `C:\Users\Vinicius\idleon-companion\read.js` with `codexTab`/`codexSel`
     and without the probe section; written as a parenthesized function expression, `(function () { ... })`, so ESLint
