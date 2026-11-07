@@ -86,6 +86,13 @@ coverage/
 test-results/
 playwright-report/
 
+# --- Jogo e dados do usuário: nunca no repositório ------------------------------
+/names.json
+*.pak
+N.js
+!src/keeper/mock-game/static/game/N.js
+N.game.js
+
 # --- Logs, temporários e caches ------------------------------------------------
 *.log
 logs/
