@@ -384,6 +384,18 @@ fails before launching still opens the game (spec §3: zero ban risk; the game n
   - Signatures: `launchGame(exe, args, logFile, opts?: { debugPipe?: boolean }, spawnImpl?)` (default `true`; with
     `false` it returns no `cdp`); `readInstalledGameCode` tells "no app.asar" apart from "app.asar present, N.js
     unreadable". The keeper always keeps the link server (when it started), opens the app and exits only after the game.
+- [ ] T049b Status when the data folder fails (decided on 07/11 after the Phase 4b review; done in the feature
+  correction round)
+  - Files: `src/keeper/keeper.ts`, `src/keeper/keeper.test.ts`
+  - Behavior: when the data folder cannot be created and the link server is up, the keeper publishes `{ game:
+    "running", reader: "error", message: "Could not create the data folder: reading is off for this session." }`.
+    Test with fakes.
+- [ ] T049c Unpacked game folder (decided on 07/11 after the Phase 4b review; done in the feature correction round)
+  - Files: `src/keeper/update-watch.ts`, `src/keeper/update-watch.test.ts`, `src/keeper/keeper.ts`
+  - Behavior: without `app.asar`, the watch reads `resources\app\distBuild\static\game\N.js` when that folder exists;
+    when the exe is `LegendsOfIdleon.exe` and neither holds an N.js, the game opens without the pipe with "Could not
+    check the game code: the reader needs an update."; any other exe without either (Edge in the tests) is read as
+    today. Tests with fakes or temp folders.
 
 **Verify**: `just test-one src/keeper/keeper.test.ts` passes; `just check` passes and starts no Edge;
 `just test-edge` passes on Windows.
