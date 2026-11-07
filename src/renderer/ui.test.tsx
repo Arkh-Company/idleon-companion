@@ -1,36 +1,19 @@
 // @vitest-environment jsdom
 // The window (spec §5.6): the Screen map panel, "Name it", the status bar and the settings view.
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import type {
-  CatalogTable,
-  CompanionApi,
-  GameContext,
-  Status,
-} from "../shared/index.ts";
+import type { CatalogTable, GameContext, Status } from "../shared/index.ts";
+import { stubCompanion } from "./companion-stub.ts";
+import type { CompanionStub } from "./companion-stub.ts";
 import { ScreenMapPanel } from "./ScreenMapPanel.tsx";
 import { SettingsView } from "./SettingsView.tsx";
 import { StatusBar } from "./StatusBar.tsx";
 
-let companion: {
-  [K in keyof CompanionApi]: ReturnType<typeof vi.fn<CompanionApi[K]>>;
-};
+let companion: CompanionStub;
 
 beforeEach(() => {
-  companion = {
-    onContext: vi.fn<CompanionApi["onContext"]>(() => () => undefined),
-    onStatus: vi.fn<CompanionApi["onStatus"]>(() => () => undefined),
-    name: vi.fn<CompanionApi["name"]>(() => Promise.resolve()),
-    getSettings: vi.fn<CompanionApi["getSettings"]>(() =>
-      Promise.resolve({ ...DEFAULT_SETTINGS }),
-    ),
-    setSettings: vi.fn<CompanionApi["setSettings"]>(() => Promise.resolve()),
-    confirmAttach: vi.fn<CompanionApi["confirmAttach"]>(() =>
-      Promise.resolve(),
-    ),
-  };
-  window.companion = companion;
+  companion = stubCompanion();
 });
 afterEach(cleanup);
 

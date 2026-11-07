@@ -2,10 +2,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../shared/index.ts";
+import { afterEach, beforeEach, expect, test } from "vitest";
 import type { GameContext, Status } from "../shared/index.ts";
 import { App } from "./App.tsx";
+import { stubCompanion } from "./companion-stub.ts";
 
 const ctx: GameContext = {
   screen: {
@@ -26,21 +26,16 @@ const ctx: GameContext = {
 const status: Status = { game: "running", reader: "attached" };
 
 beforeEach(() => {
+  const companion = stubCompanion();
   // The preload replays the last value to a late subscriber at once.
-  window.companion = {
-    onContext: vi.fn((cb: (c: GameContext) => void) => {
-      cb(ctx);
-      return () => undefined;
-    }),
-    onStatus: vi.fn((cb: (s: Status) => void) => {
-      cb(status);
-      return () => undefined;
-    }),
-    name: vi.fn(() => Promise.resolve()),
-    getSettings: vi.fn(() => Promise.resolve({ ...DEFAULT_SETTINGS })),
-    setSettings: vi.fn(() => Promise.resolve()),
-    confirmAttach: vi.fn(() => Promise.resolve()),
-  };
+  companion.onContext.mockImplementation((cb) => {
+    cb(ctx);
+    return () => undefined;
+  });
+  companion.onStatus.mockImplementation((cb) => {
+    cb(status);
+    return () => undefined;
+  });
 });
 afterEach(cleanup);
 
