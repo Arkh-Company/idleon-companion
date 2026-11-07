@@ -7,3 +7,16 @@ phases:
   plan: {status: done, date: 2026-11-07}
   tasks: {status: done, date: 2026-11-07}
 spec_pr: 8
+execution:
+  branch: feat/002-install-and-setup
+  phases:
+    - {name: "Done gate", status: pending}
+    - {name: "Setup + Foundational", status: pending}
+    - {name: "US1 (T030-T038)", status: pending}
+    - {name: "US1 (T040-T046)", status: pending}
+    - {name: US2, status: pending}
+    - {name: US3, status: pending}
+    - {name: US4, status: pending}
+    - {name: Polish, status: pending}
+  feature_review: pending
+  code_pr: null
