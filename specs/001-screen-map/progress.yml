@@ -1,0 +1,9 @@
+feature: 001-screen-map
+spec_pr: 2
+phases:
+  brainstorm: {status: done, date: 2026-11-06}
+  specify: {status: done, date: 2026-11-07}
+  clarify: {status: done, date: 2026-11-07, rounds: 1, open: 0, to_plan: 0}
+  prototype: {status: skipped, date: 2026-11-07}
+  plan: {status: done, date: 2026-11-07}
+  tasks: {status: done, date: 2026-11-07}
