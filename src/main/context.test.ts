@@ -43,6 +43,15 @@ test("the catalog names the map, the window and the AFK target", () => {
   });
 });
 
+test("a Quik Ref shortcut is named by its own fractional key", () => {
+  expect(toContext({ ...base, menu: 0.1 }, DEFAULT_CATALOG).names.menu).toEqual(
+    {
+      name: "Quik Ref shortcut (Anvil)",
+      status: "deduced",
+    },
+  );
+});
+
 test("the Codex tab is named only while the Codex is open", () => {
   expect(
     toContext({ ...base, menu: 3, codexTab: 5 }, DEFAULT_CATALOG).names.codexTab

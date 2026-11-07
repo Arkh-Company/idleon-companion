@@ -115,6 +115,15 @@ test("numbers missing from the catalog are reported as unnamed", () => {
   );
 });
 
+test("a menu missing from the catalog is unnamed, fractional keys included", () => {
+  expect(unnamedIn(def, { ...base, menu: 7 })).toEqual([
+    { table: "menu", key: "7" },
+  ]);
+  expect(unnamedIn(def, { ...base, menu: 0.5 })).toEqual([
+    { table: "menu", key: "0.5" },
+  ]);
+});
+
 test("no window and a closed Codex add nothing to unnamed", () => {
   expect(unnamedIn(def, { ...base, menu: 0, menu2: 0, codexTab: 9 })).toEqual(
     [],
