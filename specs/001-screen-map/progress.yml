@@ -19,4 +19,4 @@ execution:
     - {name: "Settings and app main process (T050-T054)", status: done, commits: 3b21d88..8c14260}
     - {name: "Window UI, Steam launch script and architecture (T060-T064)", status: done, commits: 373cf87..079ca25}
   feature_review: done
-  code_pr: null
+  code_pr: 6
