@@ -206,7 +206,7 @@ test reads the mock game through a reload.
     `fn.call(engine)` returns `{ map: 264, menu: 3, codexTab: 0, codexSel: "Scripticus", char: "Darkhe" }` (subset);
     Friends tab (`OptionsList[12] = 5`, `NonCloudsave[0][2] = "Bob"`) → `codexSel === "Bob"`; outside a character
     (`UserInfo` missing) → `char === null`; the result has no `probe` key.
-- [ ] T031 [P] CDP tests in `src/keeper/cdp.test.ts`
+- [X] T031 [P] CDP tests in `src/keeper/cdp.test.ts`
   - Files: `src/keeper/cdp.test.ts`
   - Cases, with two `PassThrough` streams: `send` writes `{"id":1,"method":...,"params":{}}\0` and resolves with the
     `result` of the matching answer, also when the answer arrives split across chunks; an answer with `error` rejects
@@ -230,7 +230,7 @@ test reads the mock game through a reload.
     and Prettier can parse it; property reads only.
   - Signature: `loadReadSource(file: string): string` (drops whole-line `//` comments and trims; the result works
     as `functionDeclaration` of `Runtime.callFunctionOn` and in `new Function(\`return ${src}\`)()`).
-- [ ] T034 CDP client in `src/keeper/cdp.ts`
+- [X] T034 CDP client in `src/keeper/cdp.ts`
   - Files: `src/keeper/cdp.ts`
   - Signatures: `createCdp(toBrowser: Writable, fromBrowser: Readable, timeoutMs = 20000): { send(method: string,
     params?: object, sessionId?: string): Promise<unknown>; waitFor(pred: (m: CdpMessage) => boolean, ms: number):
