@@ -15,8 +15,8 @@ function engine(attrs: Record<string, unknown>) {
   const g = {
     CurrentMap: 264,
     MenuType: 3,
-    MenuType2: 0,
-    MenuType2TabSelected: 0,
+    MenuType2: 44,
+    MenuType2TabSelected: 2,
     SkillTabSelected: 18,
     UserInfo: ["Darkhe"],
     AFKtarget: "w6d3",
@@ -35,13 +35,21 @@ function read(attrs: Record<string, unknown> = {}): Record<string, unknown> {
 }
 
 test("read.js calls no game function", () => {
-  expect(read()).toMatchObject({
+  expect(read()).toEqual({
     map: 264,
     menu: 3,
+    menu2: 44,
+    menu2tab: 2,
+    skillTab: 18,
+    char: "Darkhe",
+    afk: "w6d3",
     codexTab: 0,
     codexSel: "Scripticus",
-    char: "Darkhe",
   });
+});
+
+test("no AFK target reads as null", () => {
+  expect(read({ AFKtarget: undefined }).afk).toBeNull();
 });
 
 test("the Friends tab selects the friend's name", () => {
