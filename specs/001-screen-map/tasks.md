@@ -415,11 +415,11 @@ with the not-launched status when no keeper runs.
 
 ### Tests for Phase 5
 
-- [ ] T050 [P] Settings tests in `src/main/settings.test.ts`
+- [X] T050 [P] Settings tests in `src/main/settings.test.ts`
   - Files: `src/main/settings.test.ts`
   - Cases: missing file → `DEFAULT_SETTINGS`; `{"alwaysOnTop":true,"x":1}` → defaults with `alwaysOnTop: true` and no
     `x`; a wrong type (`{"closeWithGame":"no"}`) → that key's default; invalid JSON → defaults; save then load round-trips.
-- [ ] T051 [P] Lifecycle and modules tests in `src/main/lifecycle.test.ts` and `src/shared/modules.test.ts`
+- [X] T051 [P] Lifecycle and modules tests in `src/main/lifecycle.test.ts` and `src/shared/modules.test.ts`
   - Files: `src/main/lifecycle.test.ts`, `src/shared/modules.test.ts`
   - Cases: the eight `decide` expectations of the original plan's Task 10 (start-from-steam with and without
     `showWindowOnGameStart`, start-manual, second-instance → `focus-window` (Review Focus 5), game-exited with and
@@ -428,16 +428,16 @@ with the not-launched status when no keeper runs.
 
 ### Implementation for Phase 5
 
-- [ ] T052 Settings in `src/main/settings.ts`
+- [X] T052 Settings in `src/main/settings.ts`
   - Files: `src/main/settings.ts`
   - Signatures: `loadSettings(file: string): Settings` (missing/invalid → defaults, unknown keys dropped, wrong types
     → default); `saveSettings(file: string, s: Settings): void` (creates the folder).
-- [ ] T053 Pure lifecycle and module registry
+- [X] T053 Pure lifecycle and module registry
   - Files: `src/main/lifecycle.ts`, `src/shared/modules.ts`
   - Signatures: `decide(event: "start-from-steam" | "start-manual" | "second-instance" | "game-exited" | "tray-click",
     s: Settings, windowVisible: boolean): Array<"show-window" | "hide-window" | "focus-window" | "quit">`;
     `modulesFor(ctx: GameContext, all: CompanionModule[]): CompanionModule[]`. No `electron` import in either.
-- [ ] T054 Wire the main process and the preload
+- [X] T054 Wire the main process and the preload
   - Files: `src/main/index.ts`, `src/preload/index.ts`
   - `index.ts`: `app.requestSingleInstanceLock()` (lost → quit; the first copy handles `second-instance`);
     `start-from-steam` when `process.argv` has `--from-steam`, else `start-manual`; user data in
