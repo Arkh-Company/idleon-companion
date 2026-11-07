@@ -10,12 +10,13 @@ const opts = {
 const WITH_ANCHOR =
   "var E={getGameAttribute:function(e){return this.gameAttributes.h[e]}};";
 
+const scriptParsed: CdpMessage = {
+  sessionId: "S",
+  method: "Debugger.scriptParsed",
+  params: { url: "file:///x/static/game/N.js", scriptId: "1" },
+};
 const events: CdpMessage[] = [
-  {
-    sessionId: "S",
-    method: "Debugger.scriptParsed",
-    params: { url: "file:///x/static/game/N.js", scriptId: "1" },
-  },
+  scriptParsed,
   {
     sessionId: "S",
     method: "Debugger.paused",
@@ -83,7 +84,7 @@ test("a pause that is not at our breakpoint is resumed and never read", async ()
     method: "Debugger.paused",
     params: { callFrames: [{ callFrameId: "X" }], hitBreakpoints: ["other"] },
   };
-  const { cdp, sent } = fakeCdp(base, [events[0] as CdpMessage, foreign]);
+  const { cdp, sent } = fakeCdp(base, [scriptParsed, foreign]);
   await expect(acquireEngine(cdp, opts)).rejects.toThrow(
     "the game paused outside the reader's breakpoint",
   );
