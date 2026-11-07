@@ -51,22 +51,37 @@ export function recordGameHash(hash: string, statePath: string): void {
   writeFileSync(statePath, JSON.stringify({ hash }));
 }
 
+const N_JS = "distBuild/static/game/N.js";
+/** The Steam game's exe: without game code next to it, it is never launched with the pipe. */
+const GAME_EXE = "legendsofidleon.exe";
+const isMissing = (e: unknown) =>
+  (e as NodeJS.ErrnoException).code === "ENOENT";
+
 /**
- * The game's N.js inside its app.asar (Electron's fs reads inside .asar, also under ELECTRON_RUN_AS_NODE).
- * Undefined when there is no app.asar (not the Steam game, e.g. Edge in the tests); throws when app.asar is there but
- * its N.js cannot be read.
+ * The installed game's N.js, next to the exe: inside `resources\app.asar` (Electron's fs reads inside .asar, also under
+ * ELECTRON_RUN_AS_NODE) or, without it, in the unpacked `resources\app\`. Undefined when neither is there and the exe
+ * is not the game's (e.g. Edge in the tests); throws when the game's exe has neither, or when one is there but cannot
+ * be read.
  */
-export function readInstalledGameCode(asarPath: string): string | undefined {
+export function readInstalledGameCode(exe: string): string | undefined {
+  const resources = join(dirname(exe), "resources");
   // ponytail: not existsSync — under Electron's asar-aware fs it says false for an app.asar that is there but cannot be
   // opened (corrupt, locked), which would skip the check and launch with the pipe. The resources folder is not an asar
   // path, so its native listing answers whether the file exists; any other listing error fails closed.
-  let names: string[];
+  let names: string[] = [];
   try {
-    names = readdirSync(dirname(asarPath));
+    names = readdirSync(resources);
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw e;
+    if (!isMissing(e)) throw e;
   }
-  if (!names.includes(basename(asarPath))) return undefined;
-  return readFileSync(join(asarPath, "distBuild/static/game/N.js"), "utf8");
+  if (names.includes("app.asar"))
+    return readFileSync(join(resources, "app.asar", N_JS), "utf8");
+  try {
+    return readFileSync(join(resources, "app", N_JS), "utf8");
+  } catch (e) {
+    if (!isMissing(e)) throw e;
+  }
+  if (basename(exe).toLowerCase() === GAME_EXE)
+    throw new Error(`no game code to check next to ${exe}`);
+  return undefined;
 }

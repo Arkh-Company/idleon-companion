@@ -3,7 +3,7 @@
 import { spawn } from "node:child_process";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { LINK_PIPE } from "../shared/index.ts";
 import { keepAlive, runKeeper } from "./keeper.ts";
 import type { KeeperLog } from "./keeper.ts";
@@ -57,8 +57,7 @@ async function main(): Promise<number> {
     makeDataDir: () => {
       mkdirSync(dataDir, { recursive: true });
     },
-    gameCode: () =>
-      readInstalledGameCode(join(dirname(exe), "resources", "app.asar")),
+    gameCode: () => readInstalledGameCode(exe),
     launch: (debugPipe) => {
       const g = launchGame(exe, args, join(dataDir, "game.log"), {
         debugPipe,

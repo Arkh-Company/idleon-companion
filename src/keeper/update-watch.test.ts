@@ -79,40 +79,77 @@ test("code with markers warns on every check until its hash is recorded", () => 
   });
 });
 
-test("no app.asar means there is no installed game code to check", () => {
-  const dir = mkdtempSync(join(tmpdir(), "idleon-asar-"));
-  expect(readInstalledGameCode(join(dir, "app.asar"))).toBeUndefined();
+/** A temp game folder: `exe(name)` is an exe path in it, `resources` the folder next to the exe (not created). */
+function gameFolder() {
+  const dir = mkdtempSync(join(tmpdir(), "idleon-game-"));
+  return {
+    exe: (name = "msedge.exe") => join(dir, name),
+    resources: join(dir, "resources"),
+  };
+}
+const N_JS = ["distBuild", "static", "game", "N.js"];
+
+test("no app.asar and no unpacked game means there is no installed game code to check", () => {
+  const g = gameFolder();
+  mkdirSync(g.resources);
+  expect(readInstalledGameCode(g.exe())).toBeUndefined();
 });
 
 test("a missing resources folder means there is no installed game code to check", () => {
-  const dir = mkdtempSync(join(tmpdir(), "idleon-asar-"));
-  expect(
-    readInstalledGameCode(join(dir, "missing", "app.asar")),
-  ).toBeUndefined();
+  expect(readInstalledGameCode(gameFolder().exe())).toBeUndefined();
 });
 
 test("a resources path that cannot be listed throws", () => {
-  const file = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "resources");
-  writeFileSync(file, "");
-  expect(() => readInstalledGameCode(join(file, "app.asar"))).toThrow();
+  const g = gameFolder();
+  writeFileSync(g.resources, "");
+  expect(() => readInstalledGameCode(g.exe())).toThrow();
 });
 
 test("an app.asar without a readable N.js throws", () => {
-  const asar = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "app.asar");
-  mkdirSync(asar);
-  expect(() => readInstalledGameCode(asar)).toThrow();
+  const g = gameFolder();
+  mkdirSync(join(g.resources, "app.asar"), { recursive: true });
+  expect(() => readInstalledGameCode(g.exe())).toThrow();
 });
 
 test("an app.asar that cannot be opened as an archive throws", () => {
-  const asar = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "app.asar");
-  writeFileSync(asar, "not an asar archive");
-  expect(() => readInstalledGameCode(asar)).toThrow();
+  const g = gameFolder();
+  mkdirSync(g.resources);
+  writeFileSync(join(g.resources, "app.asar"), "not an asar archive");
+  expect(() => readInstalledGameCode(g.exe())).toThrow();
 });
 
 test("the N.js inside app.asar is read as text", () => {
-  const asar = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "app.asar");
-  const game = join(asar, "distBuild", "static", "game");
+  const g = gameFolder();
+  const game = join(g.resources, "app.asar", ...N_JS.slice(0, -1));
   mkdirSync(game, { recursive: true });
   writeFileSync(join(game, "N.js"), "var a=1;");
-  expect(readInstalledGameCode(asar)).toBe("var a=1;");
+  expect(readInstalledGameCode(g.exe())).toBe("var a=1;");
+});
+
+test("without app.asar, the N.js of an unpacked game is read as text", () => {
+  const g = gameFolder();
+  const game = join(g.resources, "app", ...N_JS.slice(0, -1));
+  mkdirSync(game, { recursive: true });
+  writeFileSync(join(game, "N.js"), "var b=2;");
+  expect(readInstalledGameCode(g.exe())).toBe("var b=2;");
+});
+
+test("an unpacked N.js that cannot be read throws", () => {
+  const g = gameFolder();
+  mkdirSync(join(g.resources, "app", ...N_JS), { recursive: true });
+  expect(() => readInstalledGameCode(g.exe())).toThrow();
+});
+
+test("the game's exe with neither app.asar nor an unpacked N.js throws", () => {
+  const g = gameFolder();
+  mkdirSync(g.resources);
+  expect(() => readInstalledGameCode(g.exe("LegendsOfIdleon.exe"))).toThrow(
+    "no game code to check",
+  );
+});
+
+test("the game's exe without a resources folder throws", () => {
+  expect(() =>
+    readInstalledGameCode(gameFolder().exe("LegendsOfIdleon.exe")),
+  ).toThrow("no game code to check");
 });

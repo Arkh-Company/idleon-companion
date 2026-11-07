@@ -14,7 +14,10 @@ export interface KeeperDeps {
   hashPath: string;
   /** Creates the data folder (logs, game-hash.json); throws when it cannot. */
   makeDataDir(): void;
-  /** The installed game's N.js; undefined without an app.asar (as with Edge), throws when app.asar has no readable N.js. */
+  /**
+   * The installed game's N.js, from app.asar or the unpacked resources folder; undefined when neither is there and the
+   * exe is not the game's (as with Edge); throws when the code cannot be read, or the game's exe has neither.
+   */
   gameCode(): string | undefined;
   /** Launches the game, with the debugging pipe only when `debugPipe`; without it there is no Cdp. */
   launch(debugPipe: boolean): {
@@ -96,7 +99,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
         } else if (changed) saveHash(hash); // clean code was checked: a failed save keeps the pipe
       }
     } catch (e) {
-      // app.asar is there but its N.js cannot be read (or checked): fail closed, with nothing to remember.
+      // The game code is missing or unreadable (or cannot be checked): fail closed, with nothing to remember.
       log("game-update-failed", { error: errorText(e) });
       safe = false;
       warning = "Could not check the game code: the reader needs an update.";
