@@ -1,7 +1,13 @@
 // The app's lifecycle decisions (plan Task 10; Review Focus 5 for second-instance).
 import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import { decide } from "./lifecycle.ts";
+import {
+  NOT_CONNECTED,
+  decide,
+  launchEvent,
+  shouldReload,
+  statusOnLinkDrop,
+} from "./lifecycle.ts";
 
 test("a start from Steam shows the window when the setting says so", () => {
   expect(decide("start-from-steam", { ...DEFAULT_SETTINGS }, false)).toEqual([
@@ -59,4 +65,57 @@ test("closing the window with X hides it in the tray", () => {
 
 test("closing the window while the app quits lets it close", () => {
   expect(decide("window-close", DEFAULT_SETTINGS, true, true)).toEqual([]);
+});
+
+test("a link that drops after the game closed keeps the closed status and its last reading", () => {
+  const closed = { game: "closed", reader: "error", lastReadingAt: 5 } as const;
+  expect(statusOnLinkDrop(closed)).toBe(closed);
+});
+
+test("a link that drops while the game runs means not connected", () => {
+  expect(statusOnLinkDrop({ game: "running", reader: "attached" })).toBe(
+    NOT_CONNECTED,
+  );
+});
+
+test("a launch from Steam is a Steam start, also in a second instance", () => {
+  expect(launchEvent(["electron", ".", "--from-steam"], false)).toBe(
+    "start-from-steam",
+  );
+  expect(launchEvent(["electron", ".", "--from-steam"], true)).toBe(
+    "start-from-steam",
+  );
+});
+
+test("a manual launch starts the app, or brings the first window forward", () => {
+  expect(launchEvent(["electron", "."], true)).toBe("start-manual");
+  expect(launchEvent(["electron", "."], false)).toBe("second-instance");
+});
+
+const MINUTE = 60_000;
+
+test("a crashed window reloads", () => {
+  expect(shouldReload("crashed", true, [], 10 * MINUTE)).toBe(true);
+});
+
+test("a window that exited cleanly does not reload", () => {
+  expect(shouldReload("clean-exit", true, [], 10 * MINUTE)).toBe(false);
+});
+
+test("a window already destroyed does not reload", () => {
+  expect(shouldReload("crashed", false, [], 10 * MINUTE)).toBe(false);
+});
+
+test("a window reloads at most 3 times a minute", () => {
+  const now = 10 * MINUTE;
+  const three = [now - 3000, now - 2000, now - 1000];
+  expect(shouldReload("crashed", true, three, now)).toBe(false);
+  expect(
+    shouldReload(
+      "crashed",
+      true,
+      three.map((t) => t - MINUTE),
+      now,
+    ),
+  ).toBe(true);
 });

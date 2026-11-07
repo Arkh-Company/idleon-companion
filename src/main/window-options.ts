@@ -18,6 +18,22 @@ export function windowOptions(
   };
 }
 
+/**
+ * An IPC handler that runs `f` only for a call from the window's own page; any other sender, or none, is refused.
+ * The event is typed by what is read, so tests pass plain objects (an IpcMainInvokeEvent fits).
+ */
+export function guardIpc(
+  ownUrl: string,
+  f: (payload: unknown) => unknown,
+): (e: { senderFrame: { url: string } | null }, payload: unknown) => unknown {
+  return (e, payload) => {
+    const from = e.senderFrame?.url ?? "";
+    if (!isAllowedNavigation(from, ownUrl))
+      throw new Error(`IPC refused from ${from}`);
+    return f(payload);
+  };
+}
+
 /** The window never leaves its own page (Electron security checklist); only the hash may change. */
 export function isAllowedNavigation(url: string, ownUrl: string): boolean {
   const withoutHash = (s: string) => {

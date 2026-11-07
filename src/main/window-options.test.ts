@@ -1,5 +1,9 @@
 import { expect, test } from "vitest";
-import { isAllowedNavigation, windowOptions } from "./window-options.ts";
+import {
+  guardIpc,
+  isAllowedNavigation,
+  windowOptions,
+} from "./window-options.ts";
 
 const own = "file:///C:/repo/out/renderer/index.html";
 
@@ -24,6 +28,21 @@ test("the dev server page is the own page in dev", () => {
   expect(
     isAllowedNavigation("http://localhost:5174/", "http://localhost:5173/"),
   ).toBe(false);
+});
+
+test("an IPC call from the window's own page reaches the handler", () => {
+  const handler = guardIpc(own, (payload) => payload);
+
+  expect(handler({ senderFrame: { url: `${own}#settings` } }, 7)).toBe(7);
+});
+
+test.each([
+  ["another page", { senderFrame: { url: "https://example.com/" } }],
+  ["no sender frame", { senderFrame: null }],
+])("an IPC call from %s is refused", (_name, event) => {
+  const handler = guardIpc(own, () => "ran");
+
+  expect(() => handler(event, 7)).toThrow("IPC refused");
 });
 
 test("the window is titled and isolated from Node", () => {
