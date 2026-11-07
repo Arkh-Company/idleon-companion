@@ -13,5 +13,8 @@ export type {
   GameContext,
   Reading,
   Settings,
+  SetupProgress,
   Status,
+  SteamState,
+  UpdateState,
 } from "./types.ts";

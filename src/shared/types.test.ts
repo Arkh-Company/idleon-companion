@@ -9,6 +9,14 @@ test("IPC holds the fixed channel names", () => {
     settingsGet: "settings:get",
     settingsSet: "settings:set",
     confirmAttach: "reader:confirm-attach",
+    steamState: "steam:state",
+    steamSetup: "steam:setup",
+    steamRemove: "steam:remove",
+    steamProgress: "steam:progress",
+    readerRelease: "reader:release",
+    readerReconnect: "reader:reconnect",
+    updateState: "update:state",
+    updateInstall: "update:install",
   });
 });
 

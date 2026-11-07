@@ -20,6 +20,33 @@ export function stubCompanion(): CompanionStub {
     confirmAttach: vi.fn<CompanionApi["confirmAttach"]>(() =>
       Promise.resolve(),
     ),
+    // ponytail: Steam set up by default, so the 001 window's tests see the 001 window; setup tests override it.
+    steamState: vi.fn<CompanionApi["steamState"]>(() =>
+      Promise.resolve({
+        steam: "found",
+        account: { id: "1", name: "Player" },
+        game: "installed",
+        option: null,
+        configured: true,
+        gameOpen: false,
+        details: null,
+      }),
+    ),
+    setupSteam: vi.fn<CompanionApi["setupSteam"]>(() =>
+      Promise.resolve("done"),
+    ),
+    removeFromSteam: vi.fn<CompanionApi["removeFromSteam"]>(() =>
+      Promise.resolve("done"),
+    ),
+    onSetupProgress: vi.fn<CompanionApi["onSetupProgress"]>(
+      () => () => undefined,
+    ),
+    releaseGame: vi.fn<CompanionApi["releaseGame"]>(() => Promise.resolve()),
+    reconnect: vi.fn<CompanionApi["reconnect"]>(() => Promise.resolve()),
+    onUpdate: vi.fn<CompanionApi["onUpdate"]>(() => () => undefined),
+    installUpdate: vi.fn<CompanionApi["installUpdate"]>(() =>
+      Promise.resolve(),
+    ),
   };
   window.companion = companion;
   return companion;

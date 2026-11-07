@@ -90,9 +90,17 @@ test("a link status without the optional fields passes", () => {
   });
 });
 
+test("a link status with the reader released passes", () => {
+  expect(linkStatus({ game: "running", reader: "released" })).toStrictEqual({
+    game: "running",
+    reader: "released",
+  });
+});
+
 test.each([
   ["a game outside its values", { ...status, game: "paused" }],
   ["a reader outside its values", { ...status, reader: "lost" }],
+  ["a paused reader", { ...status, reader: "paused" }],
   ["a message that is not text", { ...status, message: 5 }],
   [
     "a last reading time that is not a number",

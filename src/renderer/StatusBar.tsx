@@ -13,6 +13,7 @@ const READER: Record<Status["reader"], string> = {
   attached: "Reader attached",
   connecting: "Reader connecting",
   error: "Reader off",
+  released: "Reader off",
 };
 
 export function StatusBar({ status }: { status: Status }) {

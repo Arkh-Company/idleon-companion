@@ -136,19 +136,19 @@ app without it; Steam launches it directly (research R1, R2; ADR 0003).
 
 ### Tests for Phase 2
 
-- [ ] T020 [P] Shared types and IPC names in `src/shared/types.test.ts`
+- [X] T020 [P] Shared types and IPC names in `src/shared/types.test.ts`
   - Files: `src/shared/types.test.ts`
   - Cases: `IPC` gains exactly `steamState: "steam:state"`, `steamSetup: "steam:setup"`, `steamRemove: "steam:remove"`,
     `steamProgress: "steam:progress"`, `readerRelease: "reader:release"`, `readerReconnect: "reader:reconnect"`,
     `updateState: "update:state"`, `updateInstall: "update:install"` (the six of 001 unchanged).
-- [ ] T021 [P] Link messages in `src/shared/link.test.ts`
+- [X] T021 [P] Link messages in `src/shared/link.test.ts`
   - Files: `src/shared/link.test.ts`
   - Cases: `{"type":"release"}` and `{"type":"reconnect"}` decode to those messages; with extra fields they decode to
     the bare message; `{"type":"release-all"}` and junk lines are skipped; `encodeLine` round-trips both.
 
 ### Implementation for Phase 2
 
-- [ ] T022 Shared types
+- [X] T022 Shared types
   - Files: `src/shared/types.ts`, `src/shared/index.ts`
   - `Status.reader`: `"attached" | "connecting" | "error" | "released"`. New types, quoted from data-model.md:
     `SteamState`, `SetupProgress` (`"closing-steam" | "setting-up" | "opening-steam" | "done"` or
@@ -158,10 +158,10 @@ app without it; Steam launches it directly (research R1, R2; ADR 0003).
     `setupSteam(): Promise<SetupProgress>`, `removeFromSteam(): Promise<SetupProgress>`,
     `onSetupProgress(cb): () => void`, `releaseGame(): Promise<void>`, `reconnect(): Promise<void>`,
     `onUpdate(cb: (u: UpdateState) => void): () => void`, `installUpdate(): Promise<void>`.
-- [ ] T023 Link messages
+- [X] T023 Link messages
   - Files: `src/shared/link.ts`
   - `LinkMessage` gains `{ type: "release" }` and `{ type: "reconnect" }`; `toMessage` returns them bare.
-- [ ] T024 Status shape check accepts `"released"`
+- [X] T024 Status shape check accepts `"released"`
   - Files: `src/main/payloads.ts`, `src/main/payloads.test.ts` (test first: a link status with `reader: "released"` is
     accepted; `reader: "paused"` is refused)
   - `linkStatus` adds `"released"` to the allowed readers.

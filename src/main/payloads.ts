@@ -52,6 +52,7 @@ const READERS = {
   attached: true,
   connecting: true,
   error: true,
+  released: true,
 } satisfies Record<Status["reader"], true>;
 const oneOf = (set: object, v: unknown) =>
   typeof v === "string" && Object.hasOwn(set, v);

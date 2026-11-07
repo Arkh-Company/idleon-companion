@@ -6,7 +6,9 @@ export const LINK_PIPE = "\\\\.\\pipe\\idleon-companion";
 export type LinkMessage =
   | { type: "reading"; reading: Reading }
   | { type: "status"; status: Status }
-  | { type: "confirm-attach" };
+  | { type: "confirm-attach" }
+  | { type: "release" }
+  | { type: "reconnect" };
 
 export function encodeLine(m: LinkMessage): string {
   return `${JSON.stringify(m)}\n`;
@@ -26,7 +28,13 @@ function toMessage(line: string): LinkMessage | null {
     return null;
   }
   if (!isObject(v)) return null;
-  if (v.type === "confirm-attach") return { type: "confirm-attach" };
+  // Bodiless messages come back bare: extra fields are dropped.
+  if (
+    v.type === "confirm-attach" ||
+    v.type === "release" ||
+    v.type === "reconnect"
+  )
+    return { type: v.type };
   if (v.type === "reading" && isObject(v.reading)) return v as LinkMessage;
   if (v.type === "status" && isObject(v.status)) return v as LinkMessage;
   return null;
