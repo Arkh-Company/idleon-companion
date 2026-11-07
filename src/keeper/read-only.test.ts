@@ -64,6 +64,14 @@ test("outside a character the character is null", () => {
   expect(read({ UserInfo: undefined }).char).toBeNull();
 });
 
+test("an empty UserInfo reads the character as null", () => {
+  expect(read({ UserInfo: [] }).char).toBeNull();
+});
+
+test("a short OptionsList reads the Codex tab as null", () => {
+  expect(read({ MenuType: 0, OptionsList: [] }).codexTab).toBeNull();
+});
+
 test("the reading has no probe section", () => {
   expect(read()).not.toHaveProperty("probe");
 });

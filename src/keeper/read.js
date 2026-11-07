@@ -18,9 +18,10 @@
     menu2: g.MenuType2,
     menu2tab: g.MenuType2TabSelected,
     skillTab: g.SkillTabSelected,
-    char: u ? u[0] : null,
+    // A missing value would be dropped by returnByValue and fail the whole reading's shape check.
+    char: u && typeof u[0] === "string" ? u[0] : null,
     afk: g.AFKtarget === undefined ? null : g.AFKtarget,
-    codexTab: ol ? ol[12] : null,
+    codexTab: ol && typeof ol[12] === "number" ? ol[12] : null,
     codexSel: typeof sel === "string" || typeof sel === "number" ? sel : null,
   };
 });
