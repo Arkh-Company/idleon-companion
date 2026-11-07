@@ -1,5 +1,5 @@
 // The update watch (spec §7.2): a changed game code is scanned for debugger-detection markers before the reader attaches.
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
@@ -51,12 +51,19 @@ test("the first check, the same clean code and a different code", () => {
   const first = checkGameUpdate("var a=1;", state);
   expect(first).toMatchObject({ changed: true, markers: [] });
   expect(first.hash).toMatch(/^[0-9a-f]{64}$/);
+  recordGameHash(first.hash, state); // the keeper records clean code (checkGameUpdate writes nothing)
   expect(checkGameUpdate("var a=1;", state)).toEqual({
     changed: false,
     hash: first.hash,
     markers: [],
   });
   expect(checkGameUpdate("var b=2;", state).changed).toBe(true);
+});
+
+test("checking clean code writes nothing", () => {
+  const state = statePath();
+  checkGameUpdate("var a=1;", state);
+  expect(() => readFileSync(state)).toThrow();
 });
 
 test("code with markers warns on every check until its hash is recorded", () => {

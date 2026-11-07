@@ -66,6 +66,14 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     safe = false;
   }
 
+  /** A hash that cannot be saved is only logged: the next session checks (and warns) again. */
+  const saveHash = (hash: string) => {
+    try {
+      recordGameHash(hash, d.hashPath);
+    } catch (e) {
+      log("game-hash-not-saved", { error: errorText(e) });
+    }
+  };
   let warning: string | undefined;
   if (safe) {
     try {
@@ -80,13 +88,9 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
           safe = false;
           warning = `The game code changed and contains: ${markers.join(", ")}. Reading is off for this session.`;
           confirmed = () => {
-            try {
-              recordGameHash(hash, d.hashPath);
-            } catch (e) {
-              log("game-hash-not-saved", { error: errorText(e) }); // the next session warns again
-            }
+            saveHash(hash);
           };
-        }
+        } else if (changed) saveHash(hash); // clean code was checked: a failed save keeps the pipe
       }
     } catch (e) {
       // app.asar is there but its N.js cannot be read (or checked): fail closed, with nothing to remember.

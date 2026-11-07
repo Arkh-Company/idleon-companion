@@ -32,8 +32,8 @@ function lastHash(statePath: string): string | undefined {
 }
 
 /**
- * Compares the code with the hash recorded last, and scans it when it changed. Clean code is recorded at once; code
- * with markers only through recordGameHash, after the user confirms (spec §7.2), so the warning holds until then.
+ * Compares the code with the hash recorded last, and scans it when it changed. Writes nothing: the keeper records
+ * clean code at once, and code with markers only after the user confirms (spec §7.2), so the warning holds until then.
  */
 export function checkGameUpdate(
   code: string,
@@ -42,9 +42,7 @@ export function checkGameUpdate(
   const hash = createHash("sha256").update(code).digest("hex");
   if (lastHash(statePath) === hash)
     return { changed: false, hash, markers: [] };
-  const markers = scanGameCode(code);
-  if (markers.length === 0) recordGameHash(hash, statePath);
-  return { changed: true, hash, markers };
+  return { changed: true, hash, markers: scanGameCode(code) };
 }
 
 /** Records the game code the user accepted: the next sessions with the same code read without a warning. */

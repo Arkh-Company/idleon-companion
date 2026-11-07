@@ -1,7 +1,7 @@
 // The keeper's flow with fake game, reader and app, over a real local pipe (runs on the CI): it never launches the
 // game twice, opens it without the debugging pipe when the game code is suspicious or cannot be checked, or when the
 // keeper itself cannot start, and never ends before the game.
-import { existsSync, mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -12,6 +12,7 @@ import type { Cdp } from "./cdp.ts";
 import { keepAlive, runKeeper } from "./keeper.ts";
 import type { KeeperDeps } from "./keeper.ts";
 import { startLinkServer } from "./link-server.ts";
+import { checkGameUpdate } from "./update-watch.ts";
 
 let n = 0;
 function pipePath(): string {
@@ -273,6 +274,29 @@ test("without an app.asar (not the Steam game) the watch is skipped and the game
   await until(() => h.order.includes("app"));
   expect(h.order).toEqual(["launch", "read", "app"]);
   expect(h.logs).toContainEqual({ label: "game-update-skipped", id: null });
+});
+
+test("clean code is recorded by the keeper, so the next session sees it unchanged", async () => {
+  const h = harness(() => "var a=1;");
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  expect(checkGameUpdate("var a=1;", h.deps.hashPath).changed).toBe(false);
+});
+
+test("clean code whose hash cannot be saved is still read", async () => {
+  const h = harness(() => "var a=1;");
+  const file = join(mkdtempSync(join(tmpdir(), "idleon-keeper-")), "a-file");
+  writeFileSync(file, "");
+  h.deps.hashPath = join(file, "game-hash.json");
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch", "read", "app"]);
+  expect(h.logs).toContainEqual(
+    expect.objectContaining({ label: "game-hash-not-saved", id: null }),
+  );
+  expect(h.logs.map((l) => l.label)).not.toContain("game-update-failed");
 });
 
 test("a link server that fails for another reason still opens the game, without the pipe", async () => {
