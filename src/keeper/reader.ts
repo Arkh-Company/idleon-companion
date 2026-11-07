@@ -69,55 +69,93 @@ export function startReader(
       };
     });
 
+  /** A callback that throws is the caller's problem: it never stops the loop or takes the engine again. */
+  const safely = (f: () => void) => {
+    try {
+      f();
+    } catch {
+      // ignored on purpose
+    }
+  };
+  const failed = (e: unknown) => {
+    safely(() => {
+      onStatus({
+        game: "running",
+        reader: "error",
+        message:
+          e instanceof AnchorNotFound
+            ? GAME_UPDATED
+            : e instanceof Error
+              ? e.message
+              : String(e),
+      });
+    });
+  };
+
+  // Spec §3 and §7.1: the engine is taken once per game load. A failed reading (an exception inside read.js, a value
+  // of the wrong shape) is skipped and the next cycle reads again with the same reference; only a lost reference
+  // (Runtime.callFunctionOn rejects: dead object or session) or a failed acquireEngine leads to a new one.
   async function loop(): Promise<void> {
     let ref: EngineRef | null = null;
     let prev = "";
     while (!isStopped()) {
-      try {
-        if (!ref) {
+      if (!ref) {
+        safely(() => {
           onStatus({ game: "running", reader: "connecting" });
+        });
+        try {
           ref = await acquireEngine(cdp, { scriptSuffix, anchor });
+        } catch (e) {
           if (isStopped()) return;
-          onStatus({ game: "running", reader: "attached" });
+          failed(e);
+          await sleep(retryMs);
+          continue;
         }
-        const { result, exceptionDetails } = (await cdp.send(
+        if (isStopped()) return;
+        prev = "";
+        safely(() => {
+          onStatus({ game: "running", reader: "attached" });
+        });
+      }
+      let source: string;
+      try {
+        source = readSource();
+      } catch {
+        await sleep(pollMs);
+        continue;
+      }
+      let answer: {
+        result: { value?: unknown };
+        exceptionDetails?: unknown;
+      };
+      try {
+        answer = (await cdp.send(
           "Runtime.callFunctionOn",
           {
             objectId: ref.objectId,
-            functionDeclaration: readSource(),
+            functionDeclaration: source,
             returnByValue: true,
           },
           ref.sessionId,
-        )) as {
-          result: { value?: unknown };
-          exceptionDetails?: { text?: string };
-        };
-        if (exceptionDetails)
-          throw new Error(exceptionDetails.text ?? "read.js failed");
-        const reading = toReading(result.value, Date.now());
-        const key = JSON.stringify({ ...reading, t: 0 });
-        // A value with the wrong shape is skipped, not re-acquired: taking the engine again pauses the game.
-        if (reading && key !== prev && !isStopped()) {
-          prev = key;
-          onReading(reading);
-        }
+        )) as typeof answer;
       } catch (e) {
         if (isStopped()) return;
-        onStatus({
-          game: "running",
-          reader: "error",
-          message:
-            e instanceof AnchorNotFound
-              ? GAME_UPDATED
-              : e instanceof Error
-                ? e.message
-                : String(e),
-        });
-        if (ref) await release(ref);
+        failed(e);
+        await release(ref);
         ref = null;
-        prev = "";
         await sleep(retryMs);
         continue;
+      }
+      const reading =
+        answer.exceptionDetails === undefined
+          ? toReading(answer.result.value, Date.now())
+          : null;
+      const key = JSON.stringify({ ...reading, t: 0 });
+      if (reading && key !== prev && !isStopped()) {
+        prev = key;
+        safely(() => {
+          onReading(reading);
+        });
       }
       await sleep(pollMs);
     }
@@ -137,8 +175,7 @@ export function startReader(
       .catch(() => undefined);
   }
 
-  // A throwing callback must not leave an unhandled rejection in the keeper.
-  loop().catch(() => undefined);
+  void loop();
   return {
     stop() {
       stopped = true;

@@ -132,34 +132,69 @@ describe.skipIf(!existsSync(EDGE))(
       );
     }
 
-    test("reads changes, pauses once, survives a reload", async () => {
-      const readings: Reading[] = [];
-      const statuses: Status[] = [];
-      const g = edge(`${mock}?reload=1`);
+    /** Runs the reader for `ms` and returns its statuses and readings in the order they came. */
+    async function run(
+      url: string,
+      ms: number,
+      readSource: () => string,
+      opts?: Parameters<typeof startReader>[4],
+    ) {
+      const events: (
+        | { kind: "status"; status: Status }
+        | { kind: "reading"; reading: Reading }
+      )[] = [];
+      const g = edge(url);
       const r = startReader(
         g.cdp,
-        () => readSrc,
-        (x) => readings.push(x),
-        (s) => statuses.push(s),
+        readSource,
+        (reading) => events.push({ kind: "reading", reading }),
+        (status) => events.push({ kind: "status", status }),
+        opts,
       );
       try {
-        await sleep(12000);
+        await sleep(ms);
       } finally {
         r.stop();
         killTree(g.child.pid);
         await g.exited;
       }
-      // changes keep arriving after the reload
+      const attachedAt = events.flatMap((e, i) =>
+        e.kind === "status" && e.status.reader === "attached" ? [i] : [],
+      );
+      const readings = events.flatMap((e) =>
+        e.kind === "reading" ? [e.reading] : [],
+      );
+      return { events, attachedAt, readings };
+    }
+
+    test("reads changes, pauses once, survives a reload", async () => {
+      const { events, attachedAt, readings } = await run(
+        `${mock}?reload=1`,
+        12000,
+        () => readSrc,
+      );
+      // one pause for the first load and one for the reload, never more
+      expect(attachedAt).toHaveLength(2);
+      // readings go on after the engine is taken again
+      const second = attachedAt[1] ?? events.length;
+      expect(events.slice(second).some((e) => e.kind === "reading")).toBe(true);
       expect(new Set(readings.map((x) => x.map)).size).toBeGreaterThan(3);
-      // the engine was taken again after the reload
-      expect(
-        statuses.filter((s) => s.reader === "attached").length,
-      ).toBeGreaterThanOrEqual(2);
       expect(readings[0]).toMatchObject({
         menu: 3,
         char: "Tester",
         codexTab: 2,
       });
+    }, 30000);
+
+    test("an exception inside read.js never takes the engine again", async () => {
+      const { attachedAt, readings } = await run(
+        mock,
+        4000,
+        () => "(function () { throw new Error('x'); })",
+        { retryMs: 500 },
+      );
+      expect(attachedAt).toHaveLength(1);
+      expect(readings).toEqual([]);
     }, 30000);
 
     test("the game closing rejects in-flight requests with no unhandled rejection", async () => {
