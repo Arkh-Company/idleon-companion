@@ -13,7 +13,7 @@ Depth: Standard · Audience: Reviewer (PR)
 
 ## Atualização automática
 
-- [ ] CHK001 Is the threat the update hash check protects against (corruption vs. a malicious release from whoever controls the releases repository) stated, with the accepted risk or the countermeasure documented? [Gap, Spec §FR-021]
+- [x] CHK001 Is the threat the update hash check protects against (corruption vs. a malicious release from whoever controls the releases repository) stated, with the accepted risk or the countermeasure documented? [Gap, Spec §FR-021]
 - [x] CHK002 Is the rule for a download whose hash differs from the published one specified (discard, never install)? [Completeness, Spec §FR-021]
 - [x] CHK003 Is the update source limited to one named public releases repository over HTTPS? [Clarity, Spec §FR-020]
 - [x] CHK004 Are requirements defined against installing an older version (downgrade)? [Coverage, Spec §FR-032]
@@ -55,4 +55,4 @@ Depth: Standard · Audience: Reviewer (PR)
 - Leave items unchecked when they still require clarification, correction, or reviewer evaluation
 - `/speckit-implement` reads checklist checkbox state as a gate and must not modify markers
 - `checklists/requirements.md` has a separate built-in lifecycle maintained by `/speckit-specify` and `/speckit-clarify`
-- CHK001 tem uma linha `open` em Open Questions.
+- CHK001: risco aceito pelo Vinicius em 07/11 (Open Questions).

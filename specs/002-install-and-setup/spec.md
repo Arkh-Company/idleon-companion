@@ -44,6 +44,8 @@ instalador.
 - Q: Quando a conta já tem uma opção de inicialização, o companion troca o texto? → A: Não. Lê o que está lá, avisa que
   vai acrescentar a parte dele e nunca apaga o que o usuário já tinha; desfazer tira só a parte do companion.
 - Q: Quem publica uma versão nova no repositório público de releases? → A: Fica para o plano (receita local ou CI).
+- Q: O hash no mesmo repositório só pega download corrompido; aceita o risco de uma release maliciosa ou assina as
+  versões? → A: Aceita o risco, documentado, com 2FA na conta do GitHub que publica.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -276,6 +278,8 @@ a atualização espera o jogo fechar.
 - **FR-020**: O app (nunca o guardião, nunca o jogo) MUST procurar versões novas num repositório GitHub público só de
   releases, por HTTPS, e baixá-las em segundo plano.
 - **FR-021**: O app MUST conferir o hash publicado de cada download e MUST descartar um download com hash diferente.
+  Esse hash protege contra download corrompido, não contra uma release maliciosa: quem controlar o repositório de
+  releases pode mandar código aos amigos. Esse risco é aceito (Assumptions), sem assinatura própria das versões.
 - **FR-022**: Com uma versão baixada, o app MUST mostrar "Update ready"; com o jogo fechado, "Restart to update"
   instala e reabre; sair do app com o jogo fechado também instala.
 - **FR-023**: O app MUST NOT instalar uma atualização com o jogo aberto (guardião rodando); "Update ready" e "Restart
@@ -331,6 +335,8 @@ a atualização espera o jogo fechar.
 - A arquitetura da 001 continua: guardião + elo por named pipe + app; esta feature muda como o guardião é lançado e
   acrescenta soltar/reanexar.
 - O código segue num repositório privado; o repositório público só recebe releases (instalador e metadados).
+- Risco aceito (Vinicius, 07/11): quem controlar o repositório de releases pode publicar uma versão que instala sozinha
+  nos amigos, o mesmo risco de mandar um `.exe` por mensagem. Condição: a conta do GitHub que publica tem 2FA.
 
 ### Dependências
 
@@ -401,7 +407,7 @@ a atualização espera o jogo fechar.
 | Onde aparece "Update ready" e o que acontece com o jogo aberto? | resolved | Padrão do agente: na barra de status, com "Restart to update"; com o jogo aberto, o botão fica desativado com "Update installs after the game closes" (FR-023). |
 | O app pode voltar para uma versão mais velha? | resolved | Padrão do agente: não, só instala versões mais novas (FR-032). |
 | Os botões novos funcionam pelo teclado? | resolved | Padrão do agente: sim, todos alcançáveis e acionáveis por Tab e Enter (FR-034). |
-| O hash publicado no mesmo repositório só protege contra download corrompido: quem controla o repositório de releases (ou a conta do Vinicius no GitHub) pode mandar código a todos os amigos. Aceita-se esse risco ou as versões são assinadas com uma chave própria embutida no app? (security CHK001) | open | |
+| O hash publicado no mesmo repositório só protege contra download corrompido: quem controla o repositório de releases (ou a conta do Vinicius no GitHub) pode mandar código a todos os amigos. Aceita-se esse risco ou as versões são assinadas com uma chave própria embutida no app? (security CHK001) | resolved | Vinicius, 07/11: aceita o risco, documentado, com 2FA na conta do GitHub que publica; sem assinatura própria das versões (FR-021, Assumptions). |
 | O que o companion diz quando o texto do usuário já tem um lançador de console? | resolved | Padrão do agente: acrescenta a parte dele sem apagar nada e avisa "This launch option also runs a console script; the gem store may not open." (Edge Cases). |
 | Metas de sucesso | resolved | Padrão do agente: instalar e jogar em menos de 5 minutos; compra abre em 3 de 3 tentativas; X fecha em até 2 s; painel volta em até 2 s depois de "Reconnect" (SC-001 a SC-004). |
 
