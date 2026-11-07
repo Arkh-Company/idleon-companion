@@ -1,0 +1,9 @@
+name: desbloqueia
+
+on: workflow_dispatch
+
+jobs:
+  oi:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo oi
