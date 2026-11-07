@@ -5,7 +5,7 @@
 ### Product scope
 
 - Mission: Mostrar ao jogador de Legends of Idleon, ao vivo e ao lado do jogo, onde ele está e como os sistemas calculam seus números, sem nenhum risco de banimento.
-- Non-goals: Nunca chamar função do jogo nem gravar no save; nunca acessar a rede (Firebase, HTTP); nunca automatizar cliques no jogo; nunca distribuir arquivos do jogo.
+- Non-goals: Nunca chamar função do jogo nem gravar no save; nunca acessar a rede (Firebase, HTTP), com uma única exceção: o app (nunca o guardião, o leitor ou o jogo) pode procurar e baixar versões do próprio companion no repositório público de releases, por HTTPS e com o hash publicado conferido; nunca automatizar cliques no jogo; nunca distribuir arquivos do jogo.
 - A feature outside the mission, or inside a non-goal, needs an amendment to this constitution first.
 
 ### Done gate
@@ -59,4 +59,4 @@
 - Full lists live in `docs/agents/`; this file keeps only short principles that can be verified.
 - Amend it with `/speckit-constitution`, on a branch, through a PR.
 
-**Version**: 1.0.0 | **Ratified**: 2026 | **Last Amended**: 2026
+**Version**: 1.1.0 | **Ratified**: 2026 | **Last Amended**: 2026-11-07
