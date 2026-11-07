@@ -1,0 +1,13 @@
+# Configuração do gitleaks para o `just secrets` (e o `just check`), que varre a pasta com o `gitleaks dir`.
+# Estende o .gitleaks.toml: as regras e as allowlists dele continuam valendo, e esta allowlist se soma a elas.
+# Os .env de verdade ficam só aqui: o `gitleaks dir` não respeita o .gitignore e acharia o segredo do .env local, mas o
+# hook do commit e a CI, que leem o .gitleaks.toml, varrem um .env que entre por git add -f.
+# O caminho do `[extend]` é relativo à pasta onde o gitleaks roda (a raiz do projeto, no just), e não a este arquivo.
+
+allowlists = [{ description = "os .env locais, que o .gitignore ignora e o gitleaks dir não sabe ignorar", paths = [
+    '(^|/)\.env$',
+    '(^|/)\.env\.(?:keys|local|[^/.]+\.local)$',
+] }]
+
+[extend]
+path = ".gitleaks.toml"

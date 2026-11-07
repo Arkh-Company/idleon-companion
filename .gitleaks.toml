@@ -1,0 +1,61 @@
+# Configuração do gitleaks: as regras padrão mais a regra do kit para segredo pelo nome (key, token, senha...).
+# Quem lê: o lefthook (antes de cada commit), o `just e2e` (no bundle) e a CI; o `just secrets` (e o `just check`) lê o
+# .gitleaks-dir.toml, que estende este arquivo e soma os .env locais à allowlist.
+#
+# As listas de tabelas estão escritas como `chave = [{ ... }]`, e não com colchetes duplos no cabeçalho: o teste do kit
+# que procura delimitador do Copier sobrando em projeto gerado recusa esse texto. É o mesmo TOML, e vem antes do
+# `[extend]` porque uma chave solta depois de um cabeçalho de tabela pertenceria a ele.
+
+# O `gitleaks dir` não respeita o .gitignore: esta lista repete as pastas e os arquivos locais que o .gitignore ignora.
+# O dist/ e o build/ ficam de fora de propósito: é no bundle que o `just e2e` procura segredo.
+# Os .env de verdade não estão aqui: o hook do commit e a CI varrem um .env que entre por git add -f. Só o
+# `just secrets` os ignora, pelo .gitleaks-dir.toml. Custo: dois arquivos para manter em sincronia.
+allowlists = [{ description = "o que o .gitignore ignora e o gitleaks dir não sabe ignorar", paths = [
+    '(^|/)\.git/',
+    '(^|/)node_modules/',
+    '(^|/)\.pnpm-store/',
+    '(^|/)\.venv/',
+    '(^|/)venv/',
+    '(^|/)__pycache__/',
+    '(^|/)\.(?:pytest|ruff|mypy)_cache/',
+    '(^|/)\.hypothesis/',
+    '(^|/)coverage/',
+    '(^|/)htmlcov/',
+    '(^|/)test-results/',
+    '(^|/)playwright-report/',
+    '(^|/)\.codegraph/',
+    '(^|/)\.superpowers/',
+    '(^|/)\.claude/worktrees/',
+    '(^|/)\.claude/skills/impeccable/scripts/bin/',
+    '(^|/)\.archify/',
+    '(^|/)specs/[^/]+/diagramas/local/',
+    '(^|/)\.claude/settings\.local\.json$',
+    '(^|/)CLAUDE\.local\.md$',
+    '(^|/)mise\.local\.toml$',
+] }]
+
+# A regra do nome: um nome com key, secret, token, password, senha, chave ou segredo, em qualquer caixa, seguido de =, :,
+# :=, => ou ??= e de um texto entre aspas de 8 caracteres ou mais, sem espaço, aspas nem $.
+# A primeira allowlist da regra deixa passar URL e nome de variável em maiúsculas; a segunda, exemplos e testes (as
+# regras padrão continuam olhando o valor do segredo neles).
+rules = [{ id = "segredo-pelo-nome", description = "valor fixo atribuído a um nome que parece segredo", secretGroup = 1, keywords = ["key", "secret", "token", "password", "senha", "chave", "segredo"], regex = '''(?i)[\w.-]*(?:key|secret|token|password|senha|chave|segredo)[\w.-]*["']?\s*(?::=|=>|\?\?=|=|:)\s*["']([^"'\s$]{8,})["']''', allowlists = [
+    { regexTarget = "secret", regexes = [
+        '^[a-z][a-z0-9+.-]*://',
+        '^[A-Z][A-Z0-9_]*$',
+    ] },
+    { paths = [
+        '(^|/)\.env\.example$',
+        '(^|/)tests?/',
+        '(^|/)e2e/',
+        '(^|/)test_[^/]*\.py$',
+        '_test\.py$',
+        '(^|/)conftest\.py$',
+        '\.(?:test|spec)\.[cm]?[jt]sx?$',
+        '(^|/)\.claude/skills/',
+        '(^|/)\.specify/',
+        '\.md$',
+    ] },
+] }]
+
+[extend]
+useDefault = true

@@ -1,0 +1,18 @@
+# Gerado pelo Copier: não edite à mão. O /kit-base atualizar usa este arquivo.
+_commit: v0.6.1
+_src_path: gh:Arkh-Company/kit-base
+author: Arkh-BR
+copyright_year: 2026
+description: 'Desktop companion for Legends of Idleon (Steam): shows live, read-only,
+    where you are and what is open in the game.'
+license: privado
+mission: Mostrar ao jogador de Legends of Idleon, ao vivo e ao lado do jogo, onde
+    ele está e como os sistemas calculam seus números, sem nenhum risco de banimento.
+non_goals: Nunca chamar função do jogo nem gravar no save; nunca acessar a rede (Firebase,
+    HTTP); nunca automatizar cliques no jogo; nunca distribuir arquivos do jogo.
+package_name: idleon_companion
+project_name: idleon-companion
+project_type: app
+publish_releases: true
+stack: js-ts
+work_mode: solo

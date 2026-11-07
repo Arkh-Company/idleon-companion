@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    // TS 7 já é strict por padrão; explícito = igual no TS 5.x/6.x e documenta a intenção
+    "strict": true,
+    "noUncheckedIndexedAccess": true, // arr[i] e obj[k] viram T | undefined
+    "exactOptionalPropertyTypes": true, // `a?: string` não aceita `undefined` explícito
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true, // NTFS não diferencia caixa; o CI Linux diferencia
+    "verbatimModuleSyntax": true, // `import type` explícito
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true, // só sintaxe que o Node remove sozinho (node src/main.ts)
+    "rewriteRelativeImportExtensions": true, // imports com .ts; o build troca por .js
+    // Node: "nodenext". Com bundler (Vite): "module": "esnext" + "moduleResolution": "bundler".
+    // TS 7: baseUrl e moduleResolution node10 viraram erro; use `paths` relativos.
+    "module": "nodenext",
+    "types": ["node"], // TS 7: o padrão é []; liste os @types usados
+    "noEmit": true, // tsc só checa; quem emite é o bundler
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

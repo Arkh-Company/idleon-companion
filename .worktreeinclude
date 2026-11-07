@@ -1,0 +1,18 @@
+# .worktreeinclude — raiz do repositório, VERSIONADO. Sintaxe .gitignore.
+# Só é copiado o que casar aqui E estiver ignorado pelo git (rastreados nunca são duplicados).
+# Vale para: claude --worktree, EnterWorktree, subagentes com isolation: worktree e o app desktop.
+# NÃO é processado se existir hook WorktreeCreate.
+
+# 1) Variáveis de ambiente locais (segredos)
+.env
+.env.local
+.env.*.local
+
+# 2) Instruções pessoais do Claude para este projeto (gitignored)
+CLAUDE.local.md
+
+# 3) Aprovações pessoais de permissão. No Windows elas ficam por worktree,
+#    então copiá-las evita re-aprovar em cada worktree nova.
+.claude/settings.local.json
+
+# NÃO liste node_modules/, .venv/, target/, dist/: reinstale por worktree.

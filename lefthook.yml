@@ -1,0 +1,10 @@
+# Hooks do git (instalados pelo `just setup`): segredo antes do commit e mensagem em Conventional Commits.
+pre-commit:
+  jobs:
+    - name: gitleaks
+      run: gitleaks git --pre-commit --staged --config .gitleaks.toml --no-banner --redact -v
+
+commit-msg:
+  jobs:
+    - name: conventional-commits
+      run: node .claude/scripts/convencional.mjs {1}

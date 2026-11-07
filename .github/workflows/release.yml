@@ -1,0 +1,63 @@
+# Versões: a cada push na main, a release-please abre ou atualiza o PR de versão (a versão nova e o CHANGELOG.md,
+# pelos títulos dos commits) e, quando esse PR entra na main, cria a tag vX.Y.Z e a Release no GitHub. Não publica
+# pacote no npm nem no PyPI e não usa segredo: só o token do workflow, com as permissões de cada job. O GitHub deixa a
+# CI do PR de versão à espera de aprovação (o PR é do token do workflow); o script do kit a aprova, só a desse PR. São
+# dois jobs para a ação de terceiros (a release-please) não receber o `actions: write`: só o job `aprovar-ci`, que roda
+# o script do kit, o tem. No time, o PR de versão também precisa da aprovação de um dono, como qualquer outro.
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  CI: "true"
+  NO_COLOR: "1"
+
+jobs:
+  versao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    # sem PR criado ou atualizado, a saída `pr` da action vem vazia (e o fromJSON dela falharia): o número só quando há
+    outputs:
+      criado: ${{ steps.release.outputs.prs_created }}
+      pr: ${{ steps.release.outputs.prs_created == 'true' && fromJSON(steps.release.outputs.pr).number || '' }}
+    steps:
+      # sem with: o token é o do workflow, e a configuração vem do release-please-config.json e do
+      # .release-please-manifest.json
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+
+  aprovar-ci:
+    needs: versao
+    if: needs.versao.outputs.criado == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      pull-requests: read
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
+        with:
+          version: 2026.9.5
+          install_args: node
+      # o número do PR só pelo env, nunca interpolado no `run`
+      - env:
+          PR: ${{ needs.versao.outputs.pr }}
+          GH_TOKEN: ${{ github.token }}
+        run: node .claude/scripts/aprovar-ci.mjs "$PR"

@@ -1,0 +1,22 @@
+# O pnpm reescreve o lockfile a cada instalação; formatá-lo quebra o `just fmt-check`.
+pnpm-lock.yaml
+
+# Gravados pela release-please no PR de versão; o Prettier trocaria os `*` das listas do CHANGELOG por `-` e o
+# `just fmt-check` do PR reprovaria.
+CHANGELOG.md
+.release-please-manifest.json
+
+# Do kit e da comunidade (hooks, skills e agentes no .claude/): atualizados pelo /kit-base atualizar e pela
+# `just skills-update`, não pelo formatador do projeto.
+.copier-answers.yml
+.claude/
+
+# Planejamento: o Spec Kit, as specs e os protótipos ficam como as ferramentas os gravam.
+.specify/
+specs/
+
+# Da comunidade (tipo web): o estado do Impeccable fica como ele o grava; reformatá-lo deixaria diff a cada atualização.
+.impeccable/
+
+# Cache do Vitest.
+.vitest/

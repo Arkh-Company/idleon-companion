@@ -1,0 +1,87 @@
+# CI do projeto: em todo pull request, em todo push na main e quando disparado à mão (para rodar num branch; o disparo
+# manual não conta para o PR, e o workflow semanal aprova as execuções do pull_request do PR dele) roda quatro jobs, só
+# no Linux (as ferramentas vêm do mise.lock, que tem a plataforma Linux). `check` roda o `just check`, o mesmo critério
+# de pronto da sua máquina, e é o contexto que o ruleset "kit: main" exige para o merge. `gitleaks` confere os commits
+# do PR, `titulo` confere se o título do PR segue o Conventional Commits, e `semgrep` só avisa (o resumo do job lista os
+# achados).
+name: ci
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CI: "true"
+  NO_COLOR: "1"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
+        with:
+          version: 2026.9.5
+      - run: just setup
+      - run: just check
+
+  gitleaks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
+        with:
+          version: 2026.9.5
+          install_args: gitleaks
+      - run: |
+          gitleaks git --config .gitleaks.toml --no-banner --redact -v --log-opts="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+  titulo:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # o título vai por variável de ambiente, nunca direto no script (é texto de quem abriu o PR)
+      - env:
+          TITULO: ${{ github.event.pull_request.title }}
+        run: |
+          printf '%s\n' "$TITULO" | node .claude/scripts/convencional.mjs -
+
+  semgrep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
+        with:
+          version: 2026.9.5
+          # o pipx:semgrep depende do python quando ele está no mise.toml; sem ele (JS/TS), vai pelo uv
+          install_args: just node uv pipx:semgrep
+      # o shell explícito liga o pipefail: o `just security` sai com 1 se o semgrep falhar (sem rede, por exemplo),
+      # e o job fica vermelho sem bloquear o merge; achado de regra não reprova
+      - shell: bash
+        run: |
+          just security | tee -a "$GITHUB_STEP_SUMMARY"

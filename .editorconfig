@@ -1,0 +1,37 @@
+# .editorconfig — https://editorconfig.org (spec 0.17.2)
+# Coerente com .gitattributes: LF em tudo, CRLF só em scripts nativos do Windows.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Python (PEP 8) e linguagens com convenção de 4 espaços
+[*.{py,pyi,cs,java,kt,rs}]
+indent_size = 4
+
+# Markdown: dois espaços no fim da linha = quebra de linha
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+
+# Tabs são obrigatórios/convencionais aqui
+[{Makefile,*.mk,go.mod,*.go}]
+indent_style = tab
+
+# Scripts nativos do Windows (espelha o .gitattributes)
+[*.{bat,cmd}]
+end_of_line = crlf
+
+[*.{ps1,psm1,psd1}]
+end_of_line = crlf
+# Windows PowerShell 5.1 lê arquivo sem BOM como ANSI: use BOM se houver acentos.
+# Se o time usa só PowerShell 7 (pwsh), troque por charset = utf-8.
+charset = utf-8-bom
+
+[*.sln]
+end_of_line = crlf
+indent_style = tab

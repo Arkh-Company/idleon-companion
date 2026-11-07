@@ -1,0 +1,18 @@
+{
+  "name": "idleon-companion",
+  "version": "0.1.0",
+  "description": "Desktop companion for Legends of Idleon (Steam): shows live, read-only, where you are and what is open in the game.",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "Arkh-BR",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.11.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}

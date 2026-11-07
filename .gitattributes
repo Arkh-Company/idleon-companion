@@ -1,0 +1,65 @@
+# =============================================================================
+# .gitattributes — fim de linha, binários e lockfiles (agent-friendly, Windows-safe)
+# Política: repositório e working tree em LF em TODAS as plataformas; CRLF só
+# para scripts nativos do Windows. "eol" vence o core.autocrlf de cada dev.
+# Depois de criar/alterar este arquivo (commit dedicado):
+#   git add --renormalize . && git status && git commit -m "chore: normaliza fins de linha"
+# =============================================================================
+
+# Regra-base: o git detecta texto e faz checkout SEMPRE em LF (inclui *.sh, *.py, *.ts...)
+* text=auto eol=lf
+
+# --- Scripts nativos do Windows: CRLF obrigatório -------------------------------
+# cmd.exe perde labels de CALL/GOTO em .bat/.cmd com LF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+# PowerShell e Visual Studio: CRLF por convenção (troque por LF se os .ps1
+# rodarem também em pwsh no Linux/macOS)
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.psd1  text eol=crlf
+*.sln   text eol=crlf
+
+# --- Lockfiles: continuam TEXTO (diff e merge normais), colapsados no PR do GitHub ---
+# Não use binary/-diff: o diff do lockfile é onde se revisa supply chain.
+package-lock.json  linguist-generated=true
+pnpm-lock.yaml     linguist-generated=true
+yarn.lock          linguist-generated=true
+uv.lock            linguist-generated=true
+poetry.lock        linguist-generated=true
+mise.lock          linguist-generated=true
+
+# --- Binários: sem conversão de EOL, sem diff textual, sem merge ------------------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.7z    binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.exe   binary
+*.dll   binary
+*.so    binary
+*.dylib binary
+*.jar   binary
+*.sqlite binary
+*.db    binary
+*.docx  binary
+*.xlsx  binary
+*.pptx  binary
+
+# SVG é XML: fica como texto para diffs legíveis
+*.svg   text
+
+# --- Cópias das skills da comunidade: os bytes do upstream, sem conversão -------------
+# Vem por último para vencer as regras acima (o eol=crlf do *.cmd, o text=auto de tudo). A análise de segurança
+# confere arquivos vendorizados pelo SHA-256 dos bytes publicados (o Pele do archify, em revisao-de-ferramentas.md),
+# e nenhum checkout, com qualquer core.autocrlf, troca LF por CRLF nem o contrário.
+.claude/skills/** -text

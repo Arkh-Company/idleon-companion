@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(just --list)",
+      "Bash(just default)",
+      "Bash(just setup)",
+      "Bash(just index)",
+      "Bash(just diagramas)",
+      "Bash(just dev)",
+      "Bash(just test)",
+      "Bash(just test *)",
+      "Bash(just test-one *)",
+      "Bash(just lint)",
+      "Bash(just fmt)",
+      "Bash(just fmt-check)",
+      "Bash(just typecheck)",
+      "Bash(just secrets)",
+      "Bash(just check)",
+      "Bash(just security)",
+      "Bash(just build)",
+      "Bash(just clean)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(.specify/scripts/bash/*)",
+      "Bash(.specify/extensions/git/scripts/bash/*)",
+      "Bash(node .claude/skills/archify/bin/archify.mjs *)",
+      "Bash(node .claude/scripts/svg.mjs *)",
+      "Bash(node .claude/scripts/png.mjs *)",
+      "Bash(node .claude/scripts/pacote.mjs *)",
+      "Bash(node .claude/hooks/vigia-criterio.mjs confere *)",
+      "Bash(node .claude/scripts/guardiao.mjs)",
+      "Bash(node .claude/scripts/zelador.mjs)",
+      "Bash(node .claude/scripts/zelador.mjs --ref origin/main)",
+      "Bash(git rev-parse HEAD origin/main)",
+      "Bash(git fetch *)",
+      "Bash(git switch *)",
+      "Bash(git ls-remote *)",
+      "Bash(git cat-file -p *)",
+      "Bash(gh auth status)",
+      "PowerShell(just --list)",
+      "PowerShell(just default)",
+      "PowerShell(just setup)",
+      "PowerShell(just index)",
+      "PowerShell(just diagramas)",
+      "PowerShell(just dev)",
+      "PowerShell(just test)",
+      "PowerShell(just test *)",
+      "PowerShell(just test-one *)",
+      "PowerShell(just lint)",
+      "PowerShell(just fmt)",
+      "PowerShell(just fmt-check)",
+      "PowerShell(just typecheck)",
+      "PowerShell(just secrets)",
+      "PowerShell(just check)",
+      "PowerShell(just security)",
+      "PowerShell(just build)",
+      "PowerShell(just clean)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(gh pr create *)",
+      "PowerShell(gh pr view *)",
+      "PowerShell(node .claude/skills/archify/bin/archify.mjs *)",
+      "PowerShell(node .claude/scripts/svg.mjs *)",
+      "PowerShell(node .claude/scripts/png.mjs *)",
+      "PowerShell(node .claude/scripts/pacote.mjs *)",
+      "PowerShell(node .claude/hooks/vigia-criterio.mjs confere *)",
+      "PowerShell(node .claude/scripts/guardiao.mjs)",
+      "PowerShell(node .claude/scripts/zelador.mjs)",
+      "PowerShell(node .claude/scripts/zelador.mjs --ref origin/main)",
+      "PowerShell(git rev-parse HEAD origin/main)",
+      "PowerShell(git fetch *)",
+      "PowerShell(git switch *)",
+      "PowerShell(git ls-remote *)",
+      "PowerShell(git cat-file -p *)",
+      "PowerShell(gh auth status)"
+    ],
+    "ask": [
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(pkill *)",
+      "Bash(killall *)",
+      "Bash(kill *)",
+      "Bash(taskkill *)",
+      "Bash(just skills-update *)",
+      "Bash(just github *)",
+      "PowerShell(git reset --hard *)",
+      "PowerShell(git clean *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(taskkill *)",
+      "PowerShell(just skills-update *)",
+      "PowerShell(just github *)",
+      "Edit(**/AGENTS.md)",
+      "Edit(**/CLAUDE.md)",
+      "Edit(**/justfile)",
+      "Edit(**/Justfile)",
+      "Edit(**/JUSTFILE)",
+      "Edit(**/.justfile)",
+      "Edit(**/.Justfile)",
+      "Edit(**/.JUSTFILE)",
+      "Edit(**/lefthook.*)",
+      "Edit(**/.lefthook.*)",
+      "Edit(**/lefthook-local.*)",
+      "Edit(**/.lefthook-local.*)",
+      "Edit(**/mise.toml)",
+      "Edit(**/.mcp.json)",
+      "Edit(**/pyproject.toml)",
+      "Edit(**/ruff.toml)",
+      "Edit(**/.ruff.toml)",
+      "Edit(**/pyrightconfig.json)",
+      "Edit(**/tsconfig*.json)",
+      "Edit(**/eslint.config.*)",
+      "Edit(**/.eslintrc*)",
+      "Edit(**/.eslintignore)",
+      "Edit(**/prettier.config.*)",
+      "Edit(**/.prettierrc*)",
+      "Edit(**/.prettierignore)",
+      "Edit(**/vitest.config.*)",
+      "Edit(**/vite.config.*)",
+      "Edit(**/playwright.config.*)",
+      "Edit(**/smoke.spec.ts)",
+      "Edit(**/.gitleaks.toml)",
+      "Edit(**/.gitleaks-dir.toml)",
+      "Edit(**/.gitleaksignore)",
+      "Edit(**/.gitattributes)",
+      "Edit(**/.worktreeinclude)",
+      "Edit(**/.playwright/cli.config.json)",
+      "Edit(**/.impeccable/config.json)",
+      "Edit(**/.editorconfig)",
+      "Edit(**/.pnpmfile.cjs)",
+      "Edit(**/pnpm-workspace.yaml)",
+      "Edit(**/.npmrc)",
+      "Edit(**/uv.toml)",
+      "Edit(**/.uv.toml)",
+      "Edit(**/mise.lock)",
+      "Edit(**/.copier-answers.yml)",
+      "Edit(**/release-please-config.json)",
+      "Edit(**/.release-please-manifest.json)",
+      "Edit(**/.github/**)",
+      "Edit(**/.claude/**)",
+      "Edit(**/.specify/scripts/**)",
+      "Edit(**/.specify/extensions/*/scripts/**)",
+      "Edit(**/.specify/kit/**)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Read(**/secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/id_rsa*)",
+      "Read(**/id_ed25519*)",
+      "Read(**/id_ecdsa*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git push origin HEAD:main)",
+      "Bash(gh auth token)",
+      "Bash(gh auth token *)",
+      "PowerShell(git push --force *)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git push origin main)",
+      "PowerShell(git push origin main *)",
+      "PowerShell(git push origin HEAD:main)",
+      "PowerShell(gh auth token)",
+      "PowerShell(gh auth token *)"
+    ]
+  },
+  "env": {
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "SPECKIT_PYTHON_EXECUTABLE": ".specify/kit/python.sh",
+    "PONYTAIL_DEFAULT_MODE": "lite",
+    "ARCHIFY_UPDATE_CHECK_DISABLED": "1",
+    "SUPERPOWERS_DISABLE_TELEMETRY": "1",
+    "CODEGRAPH_TELEMETRY": "0"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "ponytail@ponytail": true,
+    "superpowers@claude-plugins-official": false,
+    "superpowers@superpowers-marketplace": false,
+    "mattpocock-skills@mattpocock": false,
+    "caveman@caveman": false
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": { "source": "github", "repo": "DietrichGebert/ponytail" }
+    }
+  },
+  "enabledMcpjsonServers": ["codegraph"],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-shell.mjs"],
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/vigia-criterio.mjs", "antes"],
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-files.mjs"],
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-web.mjs"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/format-file.mjs",
+              "pnpm exec prettier --write --ignore-unknown"
+            ],
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/vigia-criterio.mjs", "depois"],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/vigia-criterio.mjs", "depois"],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-check.mjs",
+              "just check"
+            ],
+            "timeout": 300,
+            "statusMessage": "Rodando just check"
+          }
+        ]
+      }
+    ]
+  }
+}

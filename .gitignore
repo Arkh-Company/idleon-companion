@@ -1,0 +1,110 @@
+# =============================================================================
+# .gitignore — template multi-stack (genérico + JS/TS + Python), agent-friendly
+# - Só entra aqui o que é GERADO, LOCAL/PESSOAL ou SEGREDO.
+# - Isto NÃO impede o agente de LER arquivos: para isso, permissions.deny
+#   em .claude/settings.json.
+# - Lockfiles (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, mise.lock)
+#   nunca entram aqui: são commitados.
+# - Comentário só em linha própria: "padrão  # texto" vira parte do padrão.
+# =============================================================================
+
+# --- Segredos e ambiente -----------------------------------------------------
+.env
+.env.*
+!.env.example
+# .env.tpl: só referências op:// do 1Password, sem valores (remova se não usar)
+!.env.tpl
+# dotenvx: chaves privadas (o .env criptografado pode ser commitado)
+.env.keys
+# Cloudflare Wrangler
+.dev.vars
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets/
+
+# --- Claude Code, pessoal/efêmero ---------------------------------------------
+**/.claude/settings.local.json
+CLAUDE.local.md
+.claude/worktrees/
+.claude/agent-memory-local/
+# painel visual do brainstorming (telas, porta e token) e pasta de trabalho do /implementar
+.superpowers/
+
+# --- Overrides locais de ferramentas -----------------------------------------
+lefthook-local.yml
+.lefthook-local.yml
+mise.local.toml
+mise.local.lock
+
+# --- Node / JS / TS ----------------------------------------------------------
+node_modules/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+dist/
+build/
+out/
+.next/
+.nuxt/
+.turbo/
+*.tsbuildinfo
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+# banco de exemplos do Hypothesis (o /prototipo roda os testes dele a partir da raiz)
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+*.egg-info/
+.eggs/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# --- Testes, cobertura e relatórios -------------------------------------------
+coverage/
+.vitest/
+test-results/
+playwright-report/
+
+# --- Logs, temporários e caches ------------------------------------------------
+*.log
+logs/
+tmp/
+.cache/
+
+# --- Editores e OS (ideal: gitignore GLOBAL; ficam aqui porque o time é misto) ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# --- CodeGraph: índice local, refeito por just index ---------------------------
+.codegraph/
+
+# --- Diagramas: HTML e recibos do archify, refeitos por just diagramas ---------
+specs/*/diagramas/local/
+# pasta padrão da skill archify quando nenhum caminho é dado
+.archify/

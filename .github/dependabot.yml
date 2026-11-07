@@ -1,0 +1,52 @@
+# Dependabot: toda semana, um PR com as atualizações minor e patch juntas (grupo minor-e-patch) e um PR para cada major.
+# O prefixo chore dá títulos como `chore(deps): bump …`, que passam no job `titulo` da CI.
+# O cooldown espera 7 dias (14 para major) depois da publicação de uma versão antes de propor o PR: um pacote
+# comprometido costuma ser retirado nesse prazo. Não vale para as correções de segurança, que saem na hora.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      minor-e-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+      include: scope
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      minor-e-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+      include: scope
+
+    # O @types/node segue o node do mise.toml: o major dele só sobe junto com o node, à mão.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  # As cópias da comunidade em .claude/ (o package.json do archify, por exemplo) só mudam pelo workflow semanal, depois
+  # da análise de segurança: nenhum PR do Dependabot nelas. O ignore sem update-types vale também para as correções de
+  # segurança automáticas (que não dependem desta lista); o alerta continua no GitHub, e o /guardiao o mostra.
+  # ponytail: só npm, o único manifesto que as cópias trazem hoje (o archify); um upstream com outro ecossistema pede
+  # outra entrada igual a esta.
+  - package-ecosystem: npm
+    directories: ["/.claude/**/*"]
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+    cooldown:
+      default-days: 7
