@@ -135,6 +135,38 @@ test.each<[CatalogTable, Partial<GameContext["screen"]>]>([
   expect(companion.name).toHaveBeenCalledWith(table, "9", "Test");
 });
 
+test("a new unnamed number in the same table starts with an empty Name it field", () => {
+  const unnamed = (key: string) =>
+    ctx({ window: Number(key) }, { unnamed: [{ table: "menu2", key }] });
+  const { rerender } = render(
+    <ScreenMapPanel ctx={unnamed("999")} send={send} />,
+  );
+  fireEvent.change(screen.getByLabelText("Name it"), {
+    target: { value: "Test" },
+  });
+
+  rerender(<ScreenMapPanel ctx={unnamed("998")} send={send} />);
+
+  expect(screen.getByLabelText<HTMLInputElement>("Name it").value).toBe("");
+});
+
+test("a name that cannot be saved stays in the field with a short message", async () => {
+  companion.name.mockRejectedValue(new Error("EPERM"));
+  render(
+    <ScreenMapPanel
+      ctx={ctx({ window: 999 }, { unnamed: [{ table: "menu2", key: "999" }] })}
+      send={send}
+    />,
+  );
+
+  const field = screen.getByLabelText<HTMLInputElement>("Name it");
+  fireEvent.change(field, { target: { value: "Test" } });
+  fireEvent.keyDown(field, { key: "Enter" });
+
+  expect(await screen.findByText("Could not save the name.")).toBeDefined();
+  expect(field.value).toBe("Test");
+});
+
 test("a map without a name shows only its number", () => {
   render(<ScreenMapPanel ctx={ctx({ map: 999 })} send={send} />);
 

@@ -39,7 +39,8 @@ function Named({
     return (
       <>
         <span>{`unnamed #${unnamed.key}`}</span>{" "}
-        <NameIt table={table} catalogKey={unnamed.key} />
+        {/* keyed: a new number starts with an empty field, never the text typed for the previous one */}
+        <NameIt key={unnamed.key} table={table} catalogKey={unnamed.key} />
       </>
     );
   return <span className="num">{value}</span>;
