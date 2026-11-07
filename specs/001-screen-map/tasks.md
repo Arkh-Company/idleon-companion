@@ -474,7 +474,7 @@ and the architecture document.
 
 ### Tests for Phase 6
 
-- [ ] T060 UI tests in `src/renderer/ui.test.tsx` (`// @vitest-environment jsdom`)
+- [X] T060 UI tests in `src/renderer/ui.test.tsx` (`// @vitest-environment jsdom`)
   - Files: `src/renderer/ui.test.tsx`
   - Cases (the original plan's Task 11, with `fireEvent` in place of user-event and `getByText`/`getByTitle` in place of
     jest-dom; `cleanup()` in `afterEach`; `window.companion` stubbed with `vi.fn()`): map row
@@ -489,7 +489,7 @@ and the architecture document.
 
 ### Implementation for Phase 6
 
-- [ ] T061 Panel, status bar, naming, settings and the screen-map module
+- [X] T061 Panel, status bar, naming, settings and the screen-map module
   - Files: `src/renderer/ScreenMapPanel.tsx`, `src/renderer/StatusBar.tsx`, `src/renderer/NameIt.tsx`,
     `src/renderer/SettingsView.tsx`, `src/renderer/modules/screen-map.ts`, `src/renderer/App.tsx`,
     `src/renderer/styles.css`, `src/renderer/companion.d.ts` (`window.companion: CompanionApi`)
@@ -498,24 +498,24 @@ and the architecture document.
     changed" (decided on 07/11: with markers the game opens without the pipe, see Phase 4b); settings "Show window when the game starts", "Close companion when the game closes", "Always on top".
     `screenMap: CompanionModule = { id: "screen-map", title: "Screen map", needs: ["live-screen"], matches: () => true,
     Panel: ScreenMapPanel }`; `App` shows `modulesFor(ctx, [screenMap])`. No inline `style` attributes (CSP).
-- [ ] T062 [P] Steam launch script in `scripts/steam-launch.cmd`
+- [X] T062 [P] Steam launch script in `scripts/steam-launch.cmd`
   - Files: `scripts/steam-launch.cmd`
   - Content (runs the keeper in the foreground so Steam tracks it; passes the Steam command line through):
     `@echo off`, `set ELECTRON_RUN_AS_NODE=1`,
     `"%~dp0..\node_modules\electron\dist\electron.exe" "%~dp0..\out\main\keeper.js" %*`.
-- [ ] T063 [P] Steam setup doc in `docs/steam-setup.md`
+- [X] T063 [P] Steam setup doc in `docs/steam-setup.md`
   - Files: `docs/steam-setup.md`
   - Content: run `just setup` and `just build` once (Electron downloads its binary on first use); the launch option
     `"<repo>\scripts\steam-launch.cmd" %command%`; how to undo it; the known limit: killing the keeper (`electron.exe`
     running `keeper.js`) kills the game, so close the app window instead.
-- [ ] T064 [P] Architecture document in `ARCHITECTURE.md`
+- [X] T064 [P] Architecture document in `ARCHITECTURE.md`
   - Files: `ARCHITECTURE.md`
   - Content: the two processes and the four code folders (keeper, main, preload, renderer, plus shared), the link and
     IPC contracts (spec §5.4), the seven dependency-cruiser rules and why each exists (including the test-file exception of
     `renderer-without-node-core`, accepted by the user on 07/11), and where user data lives. Also the keeper's
     fail-closed rule (no debugging pipe when the game code is suspicious, cannot be checked, or the keeper fails before
     launching), the navigation lockdown, the IPC sender check and the shape checks on every IPC and link message.
-- [ ] T065 The window's X hides it in the tray (decided on 07/11 after the app main review, with the user's yes)
+- [X] T065 The window's X hides it in the tray (decided on 07/11 after the app main review, with the user's yes)
   - Files: `src/main/lifecycle.ts`, `src/main/lifecycle.test.ts`, `src/main/index.ts`
   - Behavior: closing the window with X hides it instead of quitting (the app stays alive and the tray icon shows it
     again); the tray icon gets a menu with "Show/Hide" and "Quit", and only "Quit", `decide("game-exited")` with
