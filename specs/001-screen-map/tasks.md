@@ -138,7 +138,7 @@ the three outputs above; `just check` passes.
 
 ### Tests for Phase 2
 
-- [ ] T020 Catalog tests in `src/main/catalog/catalog.test.ts`
+- [X] T020 Catalog tests in `src/main/catalog/catalog.test.ts`
   - Files: `src/main/catalog/catalog.test.ts`
   - Cases: `catalogKey(0.1) === "0.1"`, `catalogKey(0.78) === "0.78"`, `catalogKey(44) === "44"` (Review Focus 3);
     invalid user file (`"{"`) → `loadCatalog` returns the default and the file is renamed to `names.json.bad`;
@@ -155,7 +155,7 @@ the three outputs above; `just check` passes.
 
 ### Implementation for Phase 2
 
-- [ ] T022 Convert the prototype catalog
+- [X] T022 Convert the prototype catalog
   - Files: `scripts/convert-prototype-names.ts`, `src/main/catalog/default-names.json`
   - Run: `node scripts/convert-prototype-names.ts <prototype names.json> src/main/catalog/default-names.json`, where the
     prototype file is `C:\Users\Vinicius\idleon-companion\names.json`.
@@ -169,7 +169,7 @@ the three outputs above; `just check` passes.
     Correio → Mail, Alquimia → Alchemy, Amigos → Friends, Guilda → Guild, Servidor → Server, Personagens → Characters,
     Ofertas (loja) → Offers (shop)). The script fails, naming the string, when a name with Portuguese characters is left
     untranslated.
-- [ ] T023 Catalog in `src/main/catalog/catalog.ts`
+- [X] T023 Catalog in `src/main/catalog/catalog.ts`
   - Files: `src/main/catalog/catalog.ts`
   - Signatures: `catalogKey(n: number): string`; `loadCatalog(userPath: string, defaultCatalog: Catalog): Catalog`;
     `nameEntry(cat: Catalog, table: CatalogTable, key: string, name: string): Catalog`;
@@ -179,7 +179,7 @@ the three outputs above; `just check` passes.
   - Files: `src/main/context.ts`
   - Signature: `toContext(r: Reading, cat: Catalog): GameContext` (`world = Math.floor(map / 50) + 1`; `screen.window`
     is `menu2`, `screen.tab` is `menu2tab`; `names.codexTab` only when `menu === 3`).
-- [ ] T025 [P] Declare `@testing-library/dom` (added on 07/11 during the implementation, with the user's yes)
+- [X] T025 [P] Declare `@testing-library/dom` (added on 07/11 during the implementation, with the user's yes)
   - Files: `package.json`, `pnpm-lock.yaml` (through pnpm)
   - Command: `pnpm add -D @testing-library/dom@<the version the lockfile already resolves>`: today it only comes in
     through pnpm's auto-install of peers, and Testing Library asks for it explicitly.
