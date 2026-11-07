@@ -2,13 +2,20 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import {
   checkGameUpdate,
   readInstalledGameCode,
   recordGameHash,
   scanGameCode,
 } from "./update-watch.ts";
+
+// Electron's asar-aware fs (the keeper runs under it) says false from existsSync for an app.asar it cannot open; the
+// same here for every path, so the app.asar tests fail if readInstalledGameCode trusts existsSync again.
+vi.mock("node:fs", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:fs")>()),
+  existsSync: () => false,
+}));
 
 test("plain code has no markers", () => {
   expect(scanGameCode("var a=1;")).toEqual([]);
@@ -68,6 +75,19 @@ test("code with markers warns on every check until its hash is recorded", () => 
 test("no app.asar means there is no installed game code to check", () => {
   const dir = mkdtempSync(join(tmpdir(), "idleon-asar-"));
   expect(readInstalledGameCode(join(dir, "app.asar"))).toBeUndefined();
+});
+
+test("a missing resources folder means there is no installed game code to check", () => {
+  const dir = mkdtempSync(join(tmpdir(), "idleon-asar-"));
+  expect(
+    readInstalledGameCode(join(dir, "missing", "app.asar")),
+  ).toBeUndefined();
+});
+
+test("a resources path that cannot be listed throws", () => {
+  const file = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "resources");
+  writeFileSync(file, "");
+  expect(() => readInstalledGameCode(join(file, "app.asar"))).toThrow();
 });
 
 test("an app.asar without a readable N.js throws", () => {
