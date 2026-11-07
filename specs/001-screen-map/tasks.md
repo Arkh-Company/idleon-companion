@@ -250,8 +250,12 @@ test reads the mock game through a reload.
     Promise<{ sessionId: string; objectId: string; pausedMs: number }>` (throws `AnchorNotFound`);
     `startReader(cdp: Cdp, readSource: () => string, onReading: (r: Reading) => void, onStatus: (s: Status) => void,
     opts?: { pollMs?: number; retryMs?: number; anchor?: string; scriptSuffix?: string }): { stop(): void }` (defaults
-    1000 / 5000 / `getGameAttribute:function(` / `/static/game/N.js`; emits only on change; any error → re-acquire after
-    `retryMs`).
+    1000 / 5000 / `getGameAttribute:function(` / `/static/game/N.js`; emits only on change). Errors, as spec §7.1 says
+    (corrected on 07/11 during the implementation; the earlier "any error → re-acquire" contradicted spec §3, one pause
+    per session): a failed reading (an exception inside `read.js`, a reading of the wrong shape, an exception in
+    `onReading`) is ignored and the next cycle reads again with the same engine reference; only a lost reference (the
+    `Runtime.callFunctionOn` request rejects: dead object or session) or a failed `acquireEngine` re-acquires after
+    `retryMs`.
 
 **Verify**: `just test-one src/keeper/read-only.test.ts` and `just test-one src/keeper/cdp.test.ts` pass;
 `just test-one src/keeper/reader.integration.test.ts` passes on Windows with Edge (4 tests); `just check` passes.
