@@ -17,3 +17,17 @@ export function windowOptions(
     },
   };
 }
+
+/** The window never leaves its own page (Electron security checklist); only the hash may change. */
+export function isAllowedNavigation(url: string, ownUrl: string): boolean {
+  const withoutHash = (s: string) => {
+    const u = new URL(s);
+    u.hash = "";
+    return u.href;
+  };
+  try {
+    return withoutHash(url) === withoutHash(ownUrl);
+  } catch {
+    return false;
+  }
+}
