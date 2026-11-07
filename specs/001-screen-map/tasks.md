@@ -30,31 +30,30 @@ Done gate. Task numbers of the original plan are noted in each phase title.
 
 **Independent Test**: `just check` passes with the code of `main` as it is, and `just arch` reports no violation.
 
-- [ ] T001 [sessão] JSX and the extra roots in `tsconfig.json`
+- [X] T001 [sessão] JSX and the extra roots in `tsconfig.json`
   - Files: `tsconfig.json`
   - Change: add `"jsx": "react-jsx"` to `compilerOptions`; `"include": ["src", "scripts", "electron.vite.config.ts"]`
     (ESLint's project service only parses files the tsconfig includes).
-- [ ] T002 [sessão] Ignore the build output and the mock game in `eslint.config.mjs`
+- [X] T002 [sessão] Ignore the build output and the mock game in `eslint.config.mjs`
   - Files: `eslint.config.mjs`
   - Change: `ignores` gains `"out/**"` (electron-vite output; ESLint 10 does not read `.gitignore`) and
     `"src/keeper/mock-game/**"` (browser fixture code that imitates the game).
-- [ ] T003 [sessão] Keep Prettier off the mock game in `.prettierignore`
+- [X] T003 [sessão] Keep Prettier off the mock game in `.prettierignore`
   - Files: `.prettierignore`
   - Change: add `src/keeper/mock-game/`, with a comment: Prettier would rewrite `getGameAttribute:function(`, the anchor
     the reader looks for.
-- [ ] T004 [sessão] Boundaries in dependency-cruiser, inside `just check`
-  - Files: `package.json` and `pnpm-lock.yaml` (through `pnpm add -D dependency-cruiser@18.7.2`), `.dependency-cruiser.cjs` (new), `justfile`
-  - Change: the six rules of plan Kit decision 3 (`keeper-and-shared-without-electron` matching `node_modules/electron/`,
-    `keeper-alone`, `main-not-keeper-or-renderer`, `preload-alone`, `renderer-without-node` plus
-    `renderer-without-node-core` with `dependencyTypes: ["core"]`, `shared-alone`), `tsPreCompilationDeps: true`,
-    `tsConfig: { fileName: "tsconfig.json" }`; recipe `arch: pnpm exec depcruise src --config .dependency-cruiser.cjs`;
-    `check: fmt-check lint typecheck arch secrets test`.
-- [ ] T005 [sessão] `dev`, `build` and `clean` through electron-vite
+- [X] T004 [sessão] The dependency-cruiser tool and its `arch` recipe (the config goes to T016, the `check` entry to T017)
+  - Files: `package.json` and `pnpm-lock.yaml` (through `pnpm add -D dependency-cruiser@18.7.2`), `justfile`
+  - Change: recipe `arch: pnpm exec depcruise src --config .dependency-cruiser.cjs`, still outside `check`.
+  - During the implementation (07/11): the `protect-files` hook does not count `.dependency-cruiser.cjs` as a done-gate
+    file, so the session cannot create it. With the user's choice, the Executor creates it in Phase 1 (T016), and the
+    session puts `arch` into `check` at the end of Phase 1 (T017).
+- [X] T005 [sessão] `dev`, `build` and `clean` through electron-vite
   - Files: `justfile`, `tsconfig.build.json` (removed)
   - Change: `dev: pnpm exec electron-vite dev`; `build: pnpm exec electron-vite build`; `clean` also removes `out`;
     remove `tsconfig.build.json`, which only the old `build` used.
 
-**Verify**: `just check` — every step passes and `arch` prints `no dependency violations found`.
+**Verify**: `just check` — every step passes.
 
 ---
 
@@ -109,9 +108,25 @@ the window-options, CSP, App and shared-types tests pass.
     reader: "attached" | "connecting" | "error"; message?: string; lastReadingAt?: number }`, `Settings`,
     `DEFAULT_SETTINGS`, `CompanionModule` (`Panel` typed with `import type { ComponentType } from "react"`), `IPC`
     (`as const`), `moduleChannel(id: string, name: string): string`, and `CompanionApi` (the preload API of T054).
+- [ ] T016 Boundary rules in `.dependency-cruiser.cjs`
+  - Files: `.dependency-cruiser.cjs` (new, CommonJS: the package is `"type": "module"`)
+  - Rules, all `severity: "error"`: `keeper-and-shared-without-electron` (from `^src/(keeper|shared)/` to path
+    `node_modules/electron/`; a fancier regex is refused as unsafe), `keeper-alone` (from `^src/keeper/` to
+    `^src/(main|preload|renderer)/`), `main-not-keeper-or-renderer` (from `^src/main/` to `^src/(keeper|renderer)/`),
+    `preload-alone` (from `^src/preload/` to `^src/(main|keeper|renderer)/`), `renderer-without-node` (from
+    `^src/renderer/` to `^src/(main|keeper|preload)/`), `renderer-without-node-core` (from `^src/renderer/` to
+    `dependencyTypes: ["core"]`), `shared-alone` (from `^src/shared/` to `^src/(main|keeper|preload|renderer)/`); each
+    with a one-line `comment` saying why. Options: `doNotFollow: { path: "node_modules" }`, `tsPreCompilationDeps: true`,
+    `tsConfig: { fileName: "tsconfig.json" }`.
+  - Check: `just arch` prints `no dependency violations found`; a throwaway `import { app } from "electron"` in
+    `src/keeper/` and `import "node:fs"` in `src/renderer/` are reported (remove them before committing).
+- [ ] T017 [sessão] `arch` joins `just check`, after T016 (the session, at the end of this phase)
+  - Files: `justfile`
+  - Change: `check: fmt-check lint typecheck arch secrets test`.
 
 **Verify**: `just test-one src/main/window-options.test.ts`, `just test-one src/renderer/App.test.tsx` and
-`just test-one src/shared/types.test.ts` pass; `just build` lists the three outputs above; `just check` passes.
+`just test-one src/shared/types.test.ts` pass; `just arch` prints `no dependency violations found`; `just build` lists
+the three outputs above; `just check` passes.
 
 ---
 

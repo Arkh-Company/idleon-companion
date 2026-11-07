@@ -17,7 +17,9 @@
     "module": "nodenext",
     "types": ["node"], // TS 7: o padrão é []; liste os @types usados
     "noEmit": true, // tsc só checa; quem emite é o bundler
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react-jsx" // a janela (src/renderer) é React
   },
-  "include": ["src"]
+  // scripts/ e o config do electron-vite entram para o project service do ESLint achar os dois
+  "include": ["src", "scripts", "electron.vite.config.ts"]
 }

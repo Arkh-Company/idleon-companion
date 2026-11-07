@@ -36,7 +36,7 @@ github owner *opcao:
 
 # App local: longo/interativo, nunca serve como verificação
 dev:
-    node --watch src/main.ts
+    pnpm exec electron-vite dev
 
 # Os *args do test e do test-one vão crus ao `pwsh -Command`, e o settings.json do projeto libera `just test *` e `just test-one *` sem pedir:
 # por isso o just aceita, palavra por palavra, só o `-t <nome>` do vitest (o nome de letras, números, `_ . -`, sem
@@ -70,6 +70,10 @@ typecheck:
 secrets:
     gitleaks dir . --config .gitleaks-dir.toml --no-banner --redact -v
 
+# Fronteiras entre os processos (ARCHITECTURE.md): as regras do .dependency-cruiser.cjs
+arch:
+    pnpm exec depcruise src --config .dependency-cruiser.cjs
+
 # Critério de pronto (Stop hook e CI), do mais rápido ao mais lento
 check: fmt-check lint typecheck secrets test
 
@@ -77,8 +81,9 @@ check: fmt-check lint typecheck secrets test
 security:
     semgrep scan --config p/owasp-top-ten --metrics=off --quiet --json --exclude .claude --exclude .specify --exclude specs | node .claude/scripts/semgrep-tabela.mjs
 
+# Main, guardião, preload e janela pelo electron-vite, em out/
 build:
-    pnpm exec tsc -p tsconfig.build.json
+    pnpm exec electron-vite build
 
 clean:
-    node -e "for (const p of ['dist', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"
+    node -e "for (const p of ['dist', 'out', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"
