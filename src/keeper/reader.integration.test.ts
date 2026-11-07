@@ -50,6 +50,7 @@ test("exe path with spaces and parentheses keeps every arg", () => {
     exe,
     ["-novsync", "--foo=bar baz"],
     join(tempDir(), "game.log"),
+    {},
     fakeSpawn as unknown as typeof spawn,
   );
   expect(fakeSpawn).toHaveBeenCalledWith(
@@ -76,6 +77,7 @@ test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
       "game.exe",
       [],
       join(tempDir(), "game.log"),
+      {},
       fakeSpawn as unknown as typeof spawn,
     );
   } finally {
@@ -85,6 +87,57 @@ test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
   expect(fakeSpawn.mock.calls[0]?.[2].env).not.toHaveProperty(
     "ELECTRON_RUN_AS_NODE",
   );
+});
+
+/** A spawn that records its call and returns a child with no real process behind it. */
+function noPipeSpawn() {
+  return vi.fn<
+    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
+  >(() => Object.assign(new EventEmitter(), { stdio: [null, null, null] }));
+}
+
+test("without the debugging pipe the Steam args pass unchanged, with no pipes and no ELECTRON_RUN_AS_NODE", () => {
+  const fakeSpawn = noPipeSpawn();
+  vi.stubEnv("ELECTRON_RUN_AS_NODE", "1");
+  let launched: ReturnType<typeof launchGame>;
+  try {
+    launched = launchGame(
+      "game.exe",
+      ["-novsync", "--foo=bar baz"],
+      join(tempDir(), "game.log"),
+      { debugPipe: false },
+      fakeSpawn as unknown as typeof spawn,
+    );
+  } finally {
+    vi.unstubAllEnvs();
+  }
+  expect(fakeSpawn).toHaveBeenCalledWith(
+    "game.exe",
+    ["-novsync", "--foo=bar baz"],
+    expect.objectContaining({
+      stdio: ["ignore", expect.anything(), expect.anything()],
+    }),
+  );
+  expect(fakeSpawn.mock.calls[0]?.[2].env).not.toHaveProperty(
+    "ELECTRON_RUN_AS_NODE",
+  );
+  expect(launched.cdp).toBeUndefined();
+});
+
+test("a game log that cannot be opened still launches the game", () => {
+  const fakeSpawn = noPipeSpawn();
+  launchGame(
+    "game.exe",
+    [],
+    join(tempDir(), "missing-folder", "game.log"),
+    { debugPipe: false },
+    fakeSpawn as unknown as typeof spawn,
+  );
+  expect(fakeSpawn.mock.calls[0]?.[2].stdio).toEqual([
+    "ignore",
+    "ignore",
+    "ignore",
+  ]);
 });
 
 const base = {
@@ -142,7 +195,7 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
 
     function edge(url: string) {
       const dir = tempDir();
-      return launchGame(
+      const g = launchGame(
         EDGE,
         [
           "--headless=new",
@@ -157,6 +210,8 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
         ],
         join(dir, "game.log"),
       );
+      if (!g.cdp) throw new Error("launched without the debugging pipe");
+      return { ...g, cdp: g.cdp };
     }
 
     /** Runs the reader for `ms` and returns its statuses and readings in the order they came. */

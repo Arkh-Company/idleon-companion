@@ -363,7 +363,7 @@ fails before launching still opens the game (spec §3: zero ban risk; the game n
 
 ### Tests for Phase 4b
 
-- [ ] T049 Keeper launch decisions in `src/keeper/keeper.test.ts` and `src/keeper/launch.test.ts` (or the file that
+- [X] T049 Keeper launch decisions in `src/keeper/keeper.test.ts` and `src/keeper/launch.test.ts` (or the file that
   already tests `launchGame`)
   - Cases: (a) markers found and not confirmed → the game is launched **without** `--remote-debugging-pipe` and without
     the debug stdio pipes, no reader starts, status `{ game: "running", reader: "error", message: "The game code changed
@@ -379,7 +379,7 @@ fails before launching still opens the game (spec §3: zero ban risk; the game n
 
 ### Implementation for Phase 4b
 
-- [ ] T049a Launch without the pipe and the three keeper paths
+- [X] T049a Launch without the pipe and the three keeper paths
   - Files: `src/keeper/launch.ts`, `src/keeper/keeper.ts`, `src/keeper/index.ts`, `src/keeper/update-watch.ts`
   - Signatures: `launchGame(exe, args, logFile, opts?: { debugPipe?: boolean }, spawnImpl?)` (default `true`; with
     `false` it returns no `cdp`); `readInstalledGameCode` tells "no app.asar" apart from "app.asar present, N.js

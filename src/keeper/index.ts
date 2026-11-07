@@ -45,7 +45,6 @@ function startApp(): void {
 }
 
 async function main(): Promise<number> {
-  mkdirSync(dataDir, { recursive: true });
   keepAlive(log);
   const [exe, ...args] = process.argv.slice(2);
   if (exe === undefined) {
@@ -55,10 +54,15 @@ async function main(): Promise<number> {
   await runKeeper({
     pipePath: LINK_PIPE,
     hashPath: join(dataDir, "game-hash.json"),
+    makeDataDir: () => {
+      mkdirSync(dataDir, { recursive: true });
+    },
     gameCode: () =>
       readInstalledGameCode(join(dirname(exe), "resources", "app.asar")),
-    launch: () => {
-      const g = launchGame(exe, args, join(dataDir, "game.log"));
+    launch: (debugPipe) => {
+      const g = launchGame(exe, args, join(dataDir, "game.log"), {
+        debugPipe,
+      });
       return { pid: g.child.pid, cdp: g.cdp, exited: g.exited };
     },
     // read.js is loaded on every cycle, so a change to it takes effect without reopening the game (spec §5.2).

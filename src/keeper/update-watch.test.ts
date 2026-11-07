@@ -1,10 +1,11 @@
 // The update watch (spec §7.2): a changed game code is scanned for debugger-detection markers before the reader attaches.
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
   checkGameUpdate,
+  readInstalledGameCode,
   recordGameHash,
   scanGameCode,
 } from "./update-watch.ts";
@@ -62,4 +63,23 @@ test("code with markers warns on every check until its hash is recorded", () => 
     hash: first.hash,
     markers: [],
   });
+});
+
+test("no app.asar means there is no installed game code to check", () => {
+  const dir = mkdtempSync(join(tmpdir(), "idleon-asar-"));
+  expect(readInstalledGameCode(join(dir, "app.asar"))).toBeUndefined();
+});
+
+test("an app.asar without a readable N.js throws", () => {
+  const asar = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "app.asar");
+  mkdirSync(asar);
+  expect(() => readInstalledGameCode(asar)).toThrow();
+});
+
+test("the N.js inside app.asar is read as text", () => {
+  const asar = join(mkdtempSync(join(tmpdir(), "idleon-asar-")), "app.asar");
+  const game = join(asar, "distBuild", "static", "game");
+  mkdirSync(game, { recursive: true });
+  writeFileSync(join(game, "N.js"), "var a=1;");
+  expect(readInstalledGameCode(asar)).toBe("var a=1;");
 });

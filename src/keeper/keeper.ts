@@ -1,5 +1,6 @@
-// The keeper's flow (spec §4): holds the link pipe, checks the game code, launches the game with its debugging pipe,
-// reads it and publishes to the app, and ends only after the game. index.ts gives it the real game, reader and app.
+// The keeper's flow (spec §4): holds the link pipe, checks the game code, launches the game (with its debugging pipe
+// only when the code was checked and is clean), reads it and publishes to the app, and ends only after the game.
+// index.ts gives it the real game, reader and app.
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AlreadyRunning, startLinkServer } from "./link-server.ts";
@@ -11,9 +12,16 @@ export interface KeeperDeps {
   pipePath: string;
   /** game-hash.json, the update watch's memory between sessions */
   hashPath: string;
-  /** The installed game's N.js; throws when it cannot be read (as with Edge). */
-  gameCode(): string;
-  launch(): { pid: number | undefined; cdp: Cdp; exited: Promise<unknown> };
+  /** Creates the data folder (logs, game-hash.json); throws when it cannot. */
+  makeDataDir(): void;
+  /** The installed game's N.js; undefined without an app.asar (as with Edge), throws when app.asar has no readable N.js. */
+  gameCode(): string | undefined;
+  /** Launches the game, with the debugging pipe only when `debugPipe`; without it there is no Cdp. */
+  launch(debugPipe: boolean): {
+    pid: number | undefined;
+    cdp: Cdp | undefined;
+    exited: Promise<unknown>;
+  };
   read(
     cdp: Cdp,
     onReading: (r: Reading) => void,
@@ -33,43 +41,74 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     d.log(label, { id: pid, ...data });
   };
   let confirmed: (() => void) | undefined;
-  let server: Awaited<ReturnType<typeof startLinkServer>>;
+  let server: Awaited<ReturnType<typeof startLinkServer>> | undefined;
+  // Spec §3: zero ban risk. Anything that keeps the keeper from checking the game opens it without the debugging pipe.
+  let safe = true;
   try {
     server = await startLinkServer(d.pipePath, () => {
-      const start = confirmed;
-      confirmed = undefined; // a second click starts nothing
-      start?.();
+      const run = confirmed;
+      confirmed = undefined; // a second click does nothing
+      run?.();
     });
   } catch (e) {
-    if (!(e instanceof AlreadyRunning)) throw e;
-    log("already-running");
-    return;
+    if (e instanceof AlreadyRunning) {
+      log("already-running");
+      return;
+    }
+    log("link-failed", { error: errorText(e) }); // the game never depends on the app: it still opens
+    safe = false;
   }
-
-  let markers: string[] = [];
-  let hash = "";
   try {
-    const update = checkGameUpdate(d.gameCode(), d.hashPath);
-    ({ markers, hash } = update);
-    log("game-update", update);
+    d.makeDataDir();
   } catch (e) {
-    log("game-update-skipped", { error: errorText(e) });
+    log("data-dir-failed", { error: errorText(e) });
+    safe = false;
   }
 
-  const game = d.launch();
+  let warning: string | undefined;
+  if (safe) {
+    try {
+      const code = d.gameCode();
+      if (code === undefined) log("game-update-skipped");
+      else {
+        const { markers, hash, changed } = checkGameUpdate(code, d.hashPath);
+        log("game-update", { changed, hash, markers });
+        // Spec §7.2: a changed game code with detection markers is not read this session. "Connect next time"
+        // records it, so the next session reads it without a warning; until then every session warns again.
+        if (markers.length > 0) {
+          safe = false;
+          warning = `The game code changed and contains: ${markers.join(", ")}. Reading is off for this session.`;
+          confirmed = () => {
+            try {
+              recordGameHash(hash, d.hashPath);
+            } catch (e) {
+              log("game-hash-not-saved", { error: errorText(e) }); // the next session warns again
+            }
+          };
+        }
+      }
+    } catch (e) {
+      // app.asar is there but its N.js cannot be read (or checked): fail closed, with nothing to remember.
+      log("game-update-failed", { error: errorText(e) });
+      safe = false;
+      warning = "Could not check the game code: the reader needs an update.";
+    }
+  }
+
+  const game = d.launch(safe);
   pid = game.pid ?? null;
-  log("game-started");
+  log("game-started", { debugPipe: safe });
   const publishStatus = (status: Status) => {
     log("status", { ...status });
-    server.publish({ type: "status", status });
+    server?.publish({ type: "status", status });
   };
   let reader: { stop(): void } | undefined;
-  const startReading = () => {
+  const startReading = (cdp: Cdp) => {
     reader = d.read(
-      game.cdp,
+      cdp,
       (reading) => {
         log("reading", { reading });
-        server.publish({ type: "reading", reading });
+        server?.publish({ type: "reading", reading });
       },
       publishStatus,
       (pausedMs) => {
@@ -77,23 +116,10 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       },
     );
   };
-  // Spec §7.2: a changed game code with detection markers is not read until the user says so.
-  if (markers.length > 0) {
-    // The accepted code is recorded only now: a session closed without "Connect anyway" warns again next time.
-    confirmed = () => {
-      try {
-        recordGameHash(hash, d.hashPath);
-      } catch (e) {
-        log("game-hash-not-saved", { error: errorText(e) }); // the next session warns again; reading goes on
-      }
-      startReading();
-    };
-    publishStatus({
-      game: "running",
-      reader: "error",
-      message: `The game code changed and contains: ${markers.join(", ")}. Connect anyway?`,
-    });
-  } else startReading();
+  // Only a game launched with the pipe has a Cdp, so nothing can read a game opened without it.
+  if (game.cdp) startReading(game.cdp);
+  else if (warning)
+    publishStatus({ game: "running", reader: "error", message: warning });
 
   try {
     d.startApp();
@@ -105,7 +131,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   confirmed = undefined;
   reader?.stop();
   publishStatus({ game: "closed", reader: "error" });
-  await server.close();
+  await server?.close();
   log("keeper-exit");
 }
 

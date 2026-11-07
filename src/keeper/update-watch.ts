@@ -1,7 +1,7 @@
 // The update watch (spec §7.2): before the reader attaches, the installed game code is hashed; when it changed since
 // the last session, it is scanned for the text a debugger detection would need.
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 export const DETECTION_MARKERS = [
@@ -53,7 +53,12 @@ export function recordGameHash(hash: string, statePath: string): void {
   writeFileSync(statePath, JSON.stringify({ hash }));
 }
 
-/** The game's N.js inside its app.asar (Electron's fs reads inside .asar, also under ELECTRON_RUN_AS_NODE). */
-export function readInstalledGameCode(asarPath: string): string {
+/**
+ * The game's N.js inside its app.asar (Electron's fs reads inside .asar, also under ELECTRON_RUN_AS_NODE).
+ * Undefined when there is no app.asar (not the Steam game, e.g. Edge in the tests); throws when app.asar is there but
+ * its N.js cannot be read.
+ */
+export function readInstalledGameCode(asarPath: string): string | undefined {
+  if (!existsSync(asarPath)) return undefined;
   return readFileSync(join(asarPath, "distBuild/static/game/N.js"), "utf8");
 }

@@ -1,6 +1,7 @@
 // The keeper's flow with fake game, reader and app, over a real local pipe (runs on the CI): it never launches the
-// game twice, never reads before the user confirms a suspicious update, and never ends before the game.
-import { mkdtempSync } from "node:fs";
+// game twice, opens it without the debugging pipe when the game code is suspicious or cannot be checked, or when the
+// keeper itself cannot start, and never ends before the game.
+import { existsSync, mkdtempSync } from "node:fs";
 import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -37,7 +38,7 @@ interface FakeReader {
 }
 
 /** A keeper whose game, reader and app are fakes; `order` records what it did, `exit()` closes the game. */
-function harness(gameCode: () => string) {
+function harness(gameCode: () => string | undefined) {
   let exit: () => void = () => undefined;
   const exited = new Promise<void>((r) => (exit = r));
   const order: string[] = [];
@@ -49,10 +50,12 @@ function harness(gameCode: () => string) {
       mkdtempSync(join(tmpdir(), "idleon-keeper-")),
       "game-hash.json",
     ),
+    makeDataDir: () => undefined,
     gameCode,
-    launch: () => {
-      order.push("launch");
-      return { pid: 42, cdp: {} as Cdp, exited };
+    // "launch" opens the game with the debugging pipe, "launch-no-pipe" without it (and then there is no Cdp).
+    launch: (debugPipe) => {
+      order.push(debugPipe ? "launch" : "launch-no-pipe");
+      return { pid: 42, cdp: debugPipe ? ({} as Cdp) : undefined, exited };
     },
     read: (_cdp, onReading, onStatus, onAttached) => {
       order.push("read");
@@ -144,11 +147,12 @@ test("a second keeper launches nothing", async () => {
   expect(h.logs).toContainEqual({ label: "already-running", id: null });
 });
 
-test("a changed game with markers is read only after the app confirms, once", async () => {
+test("a changed game with markers opens without the pipe and is not read this session", async () => {
   const h = harness(() => "x;debugger;y");
   const run = runKeeper(h.deps);
   cleanups.push(() => (h.exit(), run));
   await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
   const a = app(h.deps.pipePath);
   await until(() => a.got.length >= 1);
   expect(a.got).toEqual([
@@ -158,30 +162,102 @@ test("a changed game with markers is read only after the app confirms, once", as
         game: "running",
         reader: "error",
         message:
-          "The game code changed and contains: debugger. Connect anyway?",
+          "The game code changed and contains: debugger. Reading is off for this session.",
       },
     },
   ]);
-  expect(h.order).not.toContain("read");
-  a.send({ type: "confirm-attach" });
-  a.send({ type: "confirm-attach" });
-  await until(() => h.order.includes("read"));
-  await sleep(50);
-  expect(h.order.filter((x) => x === "read")).toHaveLength(1);
 });
 
-test("an unreadable N.js is logged and the game is read anyway", async () => {
+test("confirming a suspicious update records it and starts nothing this session", async () => {
+  const h = harness(() => "x;debugger;y");
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  const a = app(h.deps.pipePath);
+  await until(() => a.got.length >= 1);
+  a.send({ type: "confirm-attach" });
+  await until(() => existsSync(h.deps.hashPath));
+  await sleep(50);
+  expect(existsSync(h.deps.hashPath)).toBe(true);
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
+});
+
+test("an app.asar whose N.js cannot be read opens the game without the pipe", async () => {
   const h = harness(() => {
     throw new Error("ENOENT");
   });
   const run = runKeeper(h.deps);
   cleanups.push(() => (h.exit(), run));
   await until(() => h.order.includes("app"));
-  expect(h.order).toContain("read");
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
   expect(h.logs).toContainEqual({
-    label: "game-update-skipped",
+    label: "game-update-failed",
     id: null,
     error: "Error: ENOENT",
+  });
+  const a = app(h.deps.pipePath);
+  await until(() => a.got.length >= 1);
+  expect(a.got).toEqual([
+    {
+      type: "status",
+      status: {
+        game: "running",
+        reader: "error",
+        message: "Could not check the game code: the reader needs an update.",
+      },
+    },
+  ]);
+  // There is no hash to remember: a confirmation records nothing.
+  a.send({ type: "confirm-attach" });
+  await sleep(100);
+  expect(existsSync(h.deps.hashPath)).toBe(false);
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
+});
+
+test("without an app.asar (not the Steam game) the watch is skipped and the game is read", async () => {
+  const h = harness(() => undefined);
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch", "read", "app"]);
+  expect(h.logs).toContainEqual({ label: "game-update-skipped", id: null });
+});
+
+test("a link server that fails for another reason still opens the game, without the pipe", async () => {
+  const h = harness(() => "var a=1;");
+  // Not a pipe path in a folder that exists: EACCES on Windows, ENOENT elsewhere; never EADDRINUSE.
+  h.deps.pipePath = join(
+    tmpdir(),
+    `idleon-no-such-dir-${String(n++)}`,
+    "x.sock",
+  );
+  let ended = false;
+  const run = runKeeper(h.deps).then(() => (ended = true));
+  await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
+  expect(h.logs).toContainEqual(
+    expect.objectContaining({ label: "link-failed" }),
+  );
+  await sleep(50);
+  expect(ended).toBe(false);
+  h.exit();
+  await run;
+  expect(ended).toBe(true);
+});
+
+test("a data folder that cannot be created still opens the game, without the pipe", async () => {
+  const h = harness(() => "var a=1;");
+  h.deps.makeDataDir = () => {
+    throw new Error("EPERM");
+  };
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch-no-pipe", "app"]);
+  expect(h.logs).toContainEqual({
+    label: "data-dir-failed",
+    id: null,
+    error: "Error: EPERM",
   });
 });
 
@@ -228,7 +304,7 @@ test("keepAlive logs uncaught errors instead of ending the keeper", () => {
   ]);
 });
 
-/** One game session of a keeper on code with markers; `confirm` clicks "Connect anyway" before the game closes. */
+/** One game session of a keeper on code with markers; `confirm` clicks "Connect next time" before the game closes. */
 async function sessionWithMarkers(
   hashPath: string | undefined,
   confirm: boolean,
@@ -241,7 +317,7 @@ async function sessionWithMarkers(
   await until(() => a.got.length >= 1);
   if (confirm) {
     a.send({ type: "confirm-attach" });
-    await until(() => h.order.includes("read"));
+    await until(() => existsSync(h.deps.hashPath));
   }
   h.exit();
   await run;
