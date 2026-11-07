@@ -1,4 +1,5 @@
 feature: 001-screen-map
+spec_pr: 2
 phases:
   brainstorm: {status: done, date: 2026-11-06}
   specify: {status: done, date: 2026-11-07}
