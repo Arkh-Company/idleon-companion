@@ -11,7 +11,7 @@ execution:
   branch: feat/001-screen-map
   phases:
     - {name: "Done gate", status: done, commits: 2113b9f..4c1867f}
-    - {name: "Setup — scaffold and shared types (T010-T015)", status: pending}
+    - {name: "Setup — scaffold and shared types (T010-T015)", status: done, commits: 43dd236..72e01ba}
     - {name: "Catalog and context (T020-T024)", status: pending}
     - {name: "Read-only reader (T030-T036)", status: pending}
     - {name: "Update watch, keeper and link (T040-T045)", status: pending}
