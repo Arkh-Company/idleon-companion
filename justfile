@@ -53,6 +53,11 @@ test *args:
 test-one target *args:
     pnpm exec vitest run --dir src '{{ if target =~ '^[-@]' { error(ALVO_ERRO) } else { replace_regex(target, "['\u{2018}-\u{201B}]", "$0$0") } }}' {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
 
+# O leitor contra o jogo falso no Edge headless (só no Windows com o Edge): fora do check, porque o Edge não garante
+# zero tráfego próprio ao subir. O parâmetro com $ vira variável de ambiente da receita e liga o describe do Edge.
+test-edge $IDLEON_EDGE_TESTS="1":
+    pnpm exec vitest run --dir src src/keeper/reader.integration.test.ts
+
 lint:
     pnpm exec eslint .
 

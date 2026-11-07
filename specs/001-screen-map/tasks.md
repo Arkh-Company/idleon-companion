@@ -343,7 +343,7 @@ readings to any app over the local named pipe.
   - Files: `src/keeper/reader.integration.test.ts`
   - Change: the Edge `describe` is skipped unless `IDLEON_EDGE_TESTS=1` (and Edge exists), so `just check` and the CI
     never start Edge. The tests outside that `describe` (exe path args, `toReading`) keep running everywhere.
-- [ ] T048 [sessão] Recipe `test-edge` in `justfile` (the session, at the end of this phase)
+- [X] T048 [sessão] Recipe `test-edge` in `justfile` (the session, at the end of this phase)
   - Files: `justfile`
   - Change: `test-edge` sets `IDLEON_EDGE_TESTS=1` inside the recipe and runs `pnpm exec vitest run --dir src
     src/keeper/reader.integration.test.ts`; it stays outside `check`.
