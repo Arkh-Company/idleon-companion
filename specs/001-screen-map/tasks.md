@@ -147,7 +147,7 @@ the three outputs above; `just check` passes.
     not mutated; saving twice leaves `names.json.bak` with the first content (`"version":1`); `unnamedIn(def,
     { ...base, menu: 3, menu2: 999, codexTab: 9 })` equals `[{ table: "menu2", key: "999" }, { table: "codex", key: "9" }]`;
     `menu2: 0` and a closed Codex (`menu !== 3`) add nothing. Temp dirs from `mkdtempSync(join(tmpdir(), ...))`.
-- [ ] T021 [P] Context tests in `src/main/context.test.ts`
+- [X] T021 [P] Context tests in `src/main/context.test.ts`
   - Files: `src/main/context.test.ts`
   - Cases: world from map (264 → 6, 41 → 1, 326 → 7); names (`map: 264, menu2: 44, afk: "w6d3"` →
     `names.map === "Emperor's Castle Doorstep"`, `names.window?.name === "Sailing"`, `names.afk === "Samurai Guardian"`);
@@ -175,7 +175,7 @@ the three outputs above; `just check` passes.
     `nameEntry(cat: Catalog, table: CatalogTable, key: string, name: string): Catalog`;
     `saveCatalog(userPath: string, cat: Catalog): void` (creates the folder; copies the previous file to
     `names.json.bak` before writing); `unnamedIn(cat: Catalog, r: Reading): Array<{ table: CatalogTable; key: string }>`.
-- [ ] T024 Context in `src/main/context.ts`
+- [X] T024 Context in `src/main/context.ts`
   - Files: `src/main/context.ts`
   - Signature: `toContext(r: Reading, cat: Catalog): GameContext` (`world = Math.floor(map / 50) + 1`; `screen.window`
     is `menu2`, `screen.tab` is `menu2tab`; `names.codexTab` only when `menu === 3`).
