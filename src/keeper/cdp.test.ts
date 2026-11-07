@@ -43,6 +43,18 @@ test("an answer split across chunks still resolves", async () => {
   await expect(p).resolves.toEqual({ ok: true });
 });
 
+test("a multibyte character split across chunks stays whole", async () => {
+  const { cdp, fromBrowser } = pair();
+  const p = cdp.send("A");
+  const raw = Buffer.from(
+    `${JSON.stringify({ id: 1, result: { name: "Ação" } })}\0`,
+  );
+  const cut = raw.indexOf(0xc3) + 1; // inside the two bytes of "ç"
+  fromBrowser.write(raw.subarray(0, cut));
+  fromBrowser.write(raw.subarray(cut));
+  await expect(p).resolves.toEqual({ name: "Ação" });
+});
+
 test("an answer with error rejects with its message", async () => {
   const { cdp, answer } = pair();
   const p = cdp.send("A");

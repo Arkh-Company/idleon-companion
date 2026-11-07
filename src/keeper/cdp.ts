@@ -28,8 +28,10 @@ export function createCdp(
   const listeners = new Set<(m: CdpMessage) => void>();
   const waiters = new Set<(e: Error) => void>();
 
-  fromBrowser.on("data", (d: Buffer | string) => {
-    buf += d.toString();
+  // Decoded as a stream: a multibyte character split across two chunks stays whole.
+  fromBrowser.setEncoding("utf8");
+  fromBrowser.on("data", (d: string) => {
+    buf += d;
     for (let i = buf.indexOf("\0"); i >= 0; i = buf.indexOf("\0")) {
       const raw = buf.slice(0, i);
       buf = buf.slice(i + 1);
@@ -48,12 +50,9 @@ export function createCdp(
     }
   });
   // The game closing ends the pipe: every request in flight fails, and nothing throws out of this module.
-  const end = () => {
-    close();
-  };
-  fromBrowser.on("error", end);
-  fromBrowser.on("close", end);
-  toBrowser.on("error", end);
+  fromBrowser.on("error", close);
+  fromBrowser.on("close", close);
+  toBrowser.on("error", close);
 
   function close(): void {
     closed = true;
