@@ -77,7 +77,8 @@ export function startReader(
 
   // Spec §3 and §7.1: the engine is taken once per game load. A failed reading (an exception inside read.js, a value
   // of the wrong shape) is skipped and the next cycle reads again with the same reference; only a lost reference
-  // (Runtime.callFunctionOn rejects: dead object or session) or a failed acquireEngine leads to a new one.
+  // (Runtime.callFunctionOn rejects: dead object or session) or a failed acquireEngine leads to a new one, except a
+  // missing anchor (a game update), which ends the reader for this game load.
   let ref: EngineRef | null = null;
   async function loop(): Promise<void> {
     let prev = "";
@@ -92,6 +93,9 @@ export function startReader(
         } catch (e) {
           if (isStopped()) return;
           failed(e);
+          // A game update moved the anchor: every new try would attach and download N.js again for nothing, and the
+          // game code does not change before the game is reopened. The "Game updated" status stays.
+          if (e instanceof AnchorNotFound) return;
           await sleep(retryMs);
           continue;
         }

@@ -262,6 +262,66 @@ test("onAttached gets how long the game was paused", async () => {
   expect(paused[0]).toBeGreaterThanOrEqual(0);
 });
 
+test("a lost engine reference (a reload) is released, and the engine is taken again", async () => {
+  const readings: Reading[] = [];
+  const statuses: Status[] = [];
+  let calls = 0;
+  const { cdp, sent } = fakeCdp(() => {
+    calls++;
+    if (calls === 1) throw new Error("Could not find object with given id");
+    return { result: { value: value(calls) } };
+  });
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    (x) => readings.push(x),
+    (s) => statuses.push(s),
+    { pollMs: 5, retryMs: 5 },
+  );
+  try {
+    for (let i = 0; i < 100 && readings.length === 0; i++) await sleep(10);
+  } finally {
+    r.stop();
+  }
+  const attaches = sent.flatMap((m, i) =>
+    m === "Target.attachToTarget" ? [i] : [],
+  );
+  expect(attaches).toHaveLength(2);
+  const between = sent.slice(attaches[0], attaches[1]);
+  expect(between).toContain("Runtime.releaseObjectGroup");
+  expect(between).toContain("Target.detachFromTarget");
+  expect(attached(statuses)).toBe(2);
+  expect(readings).toHaveLength(1);
+  expect(sent.lastIndexOf("Runtime.callFunctionOn")).toBeGreaterThan(
+    attaches[1] ?? Infinity,
+  );
+});
+
+test("a game without the anchor (an update) is not taken again for this game load", async () => {
+  const statuses: Status[] = [];
+  const { cdp, sent } = fakeCdp();
+  const send = cdp.send.bind(cdp);
+  cdp.send = (method, ...rest) =>
+    method === "Debugger.getScriptSource"
+      ? Promise.resolve({ scriptSource: "var E={};" })
+      : send(method, ...rest);
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    () => undefined,
+    (s) => statuses.push(s),
+    { pollMs: 5, retryMs: 5 },
+  );
+  await sleep(100);
+  r.stop();
+  expect(sent.filter((m) => m === "Target.attachToTarget")).toHaveLength(1);
+  expect(statuses.at(-1)).toEqual({
+    game: "running",
+    reader: "error",
+    message: "Game updated: the reader needs an update",
+  });
+});
+
 test("a stop while the engine is being taken still lets the game go", async () => {
   const { cdp, sent } = fakeCdp();
   const send = cdp.send.bind(cdp);
