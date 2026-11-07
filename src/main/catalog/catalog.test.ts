@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -75,6 +81,22 @@ test("valid JSON with the wrong shape falls back to the default and is kept as .
   expect(existsSync(`${file}.bad`)).toBe(true);
 });
 
+test("an entry that is not a name and a status falls back to the default and is kept as .bad", () => {
+  const file = tempFile();
+  writeFileSync(file, JSON.stringify({ ...def, menu2: { "2": "Anvil" } }));
+
+  expect(loadCatalog(file, def)).toBe(def);
+  expect(existsSync(`${file}.bad`)).toBe(true);
+});
+
+test("an invalid user file that cannot be renamed still gives the default", () => {
+  const file = tempFile();
+  writeFileSync(file, "{");
+  mkdirSync(join(`${file}.bad`, "taken"), { recursive: true }); // a rename onto a full folder fails
+
+  expect(loadCatalog(file, def)).toBe(def);
+});
+
 test("a valid user file is loaded", () => {
   const file = tempFile();
   const user = nameEntry(def, "menu2", "999", "Test");
@@ -101,9 +123,29 @@ test("saving keeps the previous file as .bak", () => {
   saveCatalog(file, def);
   saveCatalog(file, second);
 
-  expect(readFileSync(`${file}.bak`, "utf8")).toContain('"version":1');
-  expect(JSON.parse(readFileSync(`${file}.bak`, "utf8"))).toEqual(def);
+  const bak: unknown = JSON.parse(readFileSync(`${file}.bak`, "utf8"));
+  expect(bak).toMatchObject({ version: 1 });
+  expect(bak).toEqual(def);
   expect(JSON.parse(readFileSync(file, "utf8"))).toEqual(second);
+});
+
+test("names.json is written indented, for a person to read", () => {
+  const file = tempFile();
+
+  saveCatalog(file, def);
+
+  expect(readFileSync(file, "utf8")).toBe(`${JSON.stringify(def, null, 2)}\n`);
+});
+
+test("a save that fails midway leaves the previous names.json whole", () => {
+  const file = tempFile();
+  saveCatalog(file, def);
+  mkdirSync(`${file}.tmp`); // the temporary file cannot be written
+
+  expect(() => {
+    saveCatalog(file, nameEntry(def, "menu2", "999", "Test"));
+  }).toThrow();
+  expect(JSON.parse(readFileSync(file, "utf8"))).toEqual(def);
 });
 
 test("numbers missing from the catalog are reported as unnamed", () => {

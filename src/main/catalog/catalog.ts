@@ -71,7 +71,11 @@ export function loadCatalog(
     parsed = undefined;
   }
   if (isCatalog(parsed)) return parsed;
-  renameSync(userPath, `${userPath}.bad`);
+  try {
+    renameSync(userPath, `${userPath}.bad`);
+  } catch {
+    // a locked file stays where it is: the app still starts, with the default
+  }
   return defaultCatalog;
 }
 
@@ -88,11 +92,16 @@ export function nameEntry(
   };
 }
 
-/** Writes the user's catalog, copying the previous file to `.bak` first. */
+/**
+ * Writes the user's catalog, indented, copying the previous file to `.bak` first. The new content goes to `.tmp` and
+ * is renamed over names.json, so a failed write never leaves half a file.
+ */
 export function saveCatalog(userPath: string, cat: Catalog): void {
   mkdirSync(dirname(userPath), { recursive: true });
   if (existsSync(userPath)) copyFileSync(userPath, `${userPath}.bak`);
-  writeFileSync(userPath, JSON.stringify(cat));
+  const tmp = `${userPath}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify(cat, null, 2)}\n`);
+  renameSync(tmp, userPath);
 }
 
 /** The numbers of this reading the catalog has no name for. The Codex tab counts only while the Codex is open. */
