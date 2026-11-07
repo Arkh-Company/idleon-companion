@@ -1,0 +1,21 @@
+// Made-up test file in the shape of Steam's config\libraryfolders.vdf: no real data.
+"libraryfolders"
+{
+	"0"
+	{
+		"path"		"C:\\Program Files (x86)\\Steam"
+		"label"		""
+		"apps"
+		{
+			"228980"		"1000"
+		}
+	}
+	"1"
+	{
+		"path"		"D:\\Games\\SteamLibrary"
+		"apps"
+		{
+			"1476970"		"2000"
+		}
+	}
+}
