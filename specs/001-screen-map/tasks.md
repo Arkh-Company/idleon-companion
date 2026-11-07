@@ -179,6 +179,10 @@ the three outputs above; `just check` passes.
   - Files: `src/main/context.ts`
   - Signature: `toContext(r: Reading, cat: Catalog): GameContext` (`world = Math.floor(map / 50) + 1`; `screen.window`
     is `menu2`, `screen.tab` is `menu2tab`; `names.codexTab` only when `menu === 3`).
+- [ ] T025 [P] Declare `@testing-library/dom` (added on 07/11 during the implementation, with the user's yes)
+  - Files: `package.json`, `pnpm-lock.yaml` (through pnpm)
+  - Command: `pnpm add -D @testing-library/dom@<the version the lockfile already resolves>`: today it only comes in
+    through pnpm's auto-install of peers, and Testing Library asks for it explicitly.
 
 **Verify**: `just test-one src/main/catalog/catalog.test.ts` and `just test-one src/main/context.test.ts` pass;
 `just check` passes.
@@ -324,6 +328,10 @@ readings to any app over the local named pipe.
 
 ## Phase 5: Settings and app main process (plan Tasks 9–10)
 
+> Before this phase's Executor, the session runs `just build` and opens the app once (`pnpm exec electron .`), to see
+> the empty window come up with the ESM main, the sandboxed CommonJS preload and the CSP (added on 07/11, with the
+> user's yes; the first run downloads the Electron binary).
+
 **Goal**: the app is a link client with a tray, single instance, settings and the fixed IPC channels.
 
 **Independent Test**: the settings, lifecycle and module tests pass; `just build` and a manual start show the window
@@ -364,6 +372,10 @@ with the not-launched status when no keeper runs.
     context of the last reading); `settings:get`/`settings:set` (apply `alwaysOnTop` at once);
     `reader:confirm-attach` → link `{ type: "confirm-attach" }`. Validate each IPC payload's shape before use
     (`catalog:name`: a known table, string key, non-empty string name).
+  - Navigation lockdown (added on 07/11 during the implementation, with the user's yes; Electron security checklist):
+    `webContents.setWindowOpenHandler(() => ({ action: "deny" }))` and `will-navigate` prevented for any URL other
+    than the window's own page. Put the decision in a pure function next to `windowOptions` (e.g.
+    `isAllowedNavigation(url, ownUrl): boolean`) and test it in `src/main/window-options.test.ts`.
   - Preload: `contextBridge.exposeInMainWorld("companion", api)` with `CompanionApi = { onContext(cb), onStatus(cb),
     name(table, key, name): Promise<void>, getSettings(): Promise<Settings>, setSettings(s): Promise<void>,
     confirmAttach(): Promise<void> }`, through `ipcRenderer` and the `IPC` channel names only.
@@ -417,7 +429,8 @@ and the architecture document.
 - [ ] T064 [P] Architecture document in `ARCHITECTURE.md`
   - Files: `ARCHITECTURE.md`
   - Content: the two processes and the four code folders (keeper, main, preload, renderer, plus shared), the link and
-    IPC contracts (spec §5.4), the six dependency-cruiser rules and why each exists, and where user data lives.
+    IPC contracts (spec §5.4), the seven dependency-cruiser rules and why each exists (including the test-file exception of
+    `renderer-without-node-core`, accepted by the user on 07/11), and where user data lives.
 
 **Verify**: `just test-one src/renderer/ui.test.tsx` passes; `just build` passes; `just check` passes.
 
