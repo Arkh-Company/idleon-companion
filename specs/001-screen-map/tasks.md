@@ -108,7 +108,7 @@ the window-options, CSP, App and shared-types tests pass.
     reader: "attached" | "connecting" | "error"; message?: string; lastReadingAt?: number }`, `Settings`,
     `DEFAULT_SETTINGS`, `CompanionModule` (`Panel` typed with `import type { ComponentType } from "react"`), `IPC`
     (`as const`), `moduleChannel(id: string, name: string): string`, and `CompanionApi` (the preload API of T054).
-- [ ] T016 Boundary rules in `.dependency-cruiser.cjs`
+- [X] T016 Boundary rules in `.dependency-cruiser.cjs`
   - Files: `.dependency-cruiser.cjs` (new, CommonJS: the package is `"type": "module"`)
   - Rules, all `severity: "error"`: `keeper-and-shared-without-electron` (from `^src/(keeper|shared)/` to path
     `node_modules/electron/`; a fancier regex is refused as unsafe), `keeper-alone` (from `^src/keeper/` to
