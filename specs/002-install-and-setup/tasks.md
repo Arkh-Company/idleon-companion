@@ -260,7 +260,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
 
 ### Tests for Phase 4
 
-- [ ] T040 [P] [US1] Setup flow in `src/main/steam/setup.test.ts`
+- [X] T040 [P] [US1] Setup flow in `src/main/steam/setup.test.ts`
   - Files: `src/main/steam/setup.test.ts`
   - Signatures tested: `steamState(sys: SteamSystem, store: SetupStoreLike, part: string): Promise<SteamState>`;
     `runSetup(sys, store, part, onProgress: (p: SetupProgress) => void): Promise<SetupProgress>`, where
@@ -295,7 +295,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
 
 ### Implementation for Phase 4
 
-- [ ] T044 [US1] `src/main/steam/setup.ts` as tested in T040; the real `SteamSystem` in `src/main/steam/system.ts`
+- [X] T044 [US1] `src/main/steam/setup.ts` as tested in T040; the real `SteamSystem` in `src/main/steam/system.ts`
   (`tasklist /FI "IMAGENAME eq <image>" /NH` through `execFile`; `steam.exe -shutdown`; `steam.exe` detached;
   `writeFileAtomic` = write `.tmp` + rename; poll every 500 ms up to 30 s)
 - [ ] T045 [US1] IPC and preload

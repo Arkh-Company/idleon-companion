@@ -7,5 +7,8 @@ export {
   removePart,
 } from "./launch-option.ts";
 export { IDLEON_APP_ID, readSteam } from "./locate.ts";
+export { runSetup, steamState } from "./setup.ts";
+export type { SetupStoreLike, SteamSystem } from "./setup.ts";
+export { steamSystem } from "./system.ts";
 export type { FsLike, Runner, SteamFiles } from "./locate.ts";
 export { VdfShapeError, getLaunchOptions, setLaunchOptions } from "./vdf.ts";
