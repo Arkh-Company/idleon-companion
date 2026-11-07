@@ -14,11 +14,14 @@ export function launchGame(
 ): { child: ChildProcess; cdp: Cdp; exited: Promise<number | null> } {
   const log = openSync(logFile, "w");
   let child: ChildProcess;
+  // The keeper runs with ELECTRON_RUN_AS_NODE; the game, an Electron app, would start as plain Node with it.
+  const env = { ...process.env, ELECTRON_ENABLE_LOGGING: "1" };
+  delete env.ELECTRON_RUN_AS_NODE;
   try {
     // No shell: the exe path and every arg reach the game as they are, spaces and parentheses included.
     child = spawnImpl(exe, [...args, "--remote-debugging-pipe"], {
       stdio: ["ignore", log, log, "pipe", "pipe"],
-      env: { ...process.env, ELECTRON_ENABLE_LOGGING: "1" },
+      env,
     });
   } finally {
     closeSync(log); // the game keeps its own copy of the handle

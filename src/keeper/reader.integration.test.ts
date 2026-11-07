@@ -1,4 +1,6 @@
-// The keeper's reader against the mock game in a headless Edge (Windows only), and the launch arguments (everywhere).
+// The keeper's reader against the mock game in a headless Edge (opt-in: IDLEON_EDGE_TESTS=1, Windows only), and the
+// launch arguments (everywhere). `just check` and the CI never start Edge: tests use no real network, and Edge cannot
+// promise none of its own.
 import { spawnSync } from "node:child_process";
 import type { SpawnOptions, spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
@@ -60,6 +62,31 @@ test("exe path with spaces and parentheses keeps every arg", () => {
   expect(fakeSpawn.mock.calls[0]?.[2].env?.ELECTRON_ENABLE_LOGGING).toBe("1");
 });
 
+test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
+  const fakeSpawn = vi.fn<
+    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
+  >(() =>
+    Object.assign(new EventEmitter(), {
+      stdio: [null, null, null, new PassThrough(), new PassThrough()],
+    }),
+  );
+  vi.stubEnv("ELECTRON_RUN_AS_NODE", "1");
+  try {
+    launchGame(
+      "game.exe",
+      [],
+      join(tempDir(), "game.log"),
+      fakeSpawn as unknown as typeof spawn,
+    );
+  } finally {
+    vi.unstubAllEnvs();
+  }
+  // The game is an Electron app too: with this variable it would start as plain Node, with no window.
+  expect(fakeSpawn.mock.calls[0]?.[2].env).not.toHaveProperty(
+    "ELECTRON_RUN_AS_NODE",
+  );
+});
+
 const base = {
   map: 264,
   menu: 3,
@@ -106,7 +133,7 @@ function killTree(pid: number | undefined): void {
     });
 }
 
-describe.skipIf(!existsSync(EDGE))(
+describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
   "reader against the mock game in Edge",
   () => {
     const mock = pathToFileURL(
