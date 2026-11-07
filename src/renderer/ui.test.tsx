@@ -3,7 +3,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import type { CompanionApi, GameContext, Status } from "../shared/index.ts";
+import type {
+  CatalogTable,
+  CompanionApi,
+  GameContext,
+  Status,
+} from "../shared/index.ts";
 import { ScreenMapPanel } from "./ScreenMapPanel.tsx";
 import { SettingsView } from "./SettingsView.tsx";
 import { StatusBar } from "./StatusBar.tsx";
@@ -126,6 +131,50 @@ test("an unnamed window is named with Enter in the Name it field", () => {
   fireEvent.keyDown(field, { key: "Enter" });
 
   expect(companion.name).toHaveBeenCalledWith("menu2", "999", "Test");
+});
+
+test.each<[CatalogTable, Partial<GameContext["screen"]>]>([
+  ["menu", { menu: 7 }],
+  ["menu2", { window: 999 }],
+  ["codex", { menu: 3, codexTab: 9 }],
+])("Name it names the %s table", (table, screenPart) => {
+  render(
+    <ScreenMapPanel
+      ctx={ctx(screenPart, { unnamed: [{ table, key: "9" }] })}
+      send={send}
+    />,
+  );
+
+  const field = screen.getByLabelText("Name it");
+  fireEvent.change(field, { target: { value: "Test" } });
+  fireEvent.keyDown(field, { key: "Enter" });
+
+  expect(companion.name).toHaveBeenCalledWith(table, "9", "Test");
+});
+
+test("a map without a name shows only its number", () => {
+  render(<ScreenMapPanel ctx={ctx({ map: 999 })} send={send} />);
+
+  expect(screen.getByText("999")).toBeDefined();
+});
+
+test("a window with neither a name nor Name it shows its bare number", () => {
+  render(<ScreenMapPanel ctx={ctx({ window: 77 })} send={send} />);
+
+  expect(screen.getByText("77")).toBeDefined();
+  expect(screen.queryByLabelText("Name it")).toBe(null);
+});
+
+test("an AFK target without a catalog name shows its id", () => {
+  render(<ScreenMapPanel ctx={ctx({}, { afk: "w9x" })} send={send} />);
+
+  expect(screen.getByText("w9x")).toBeDefined();
+});
+
+test("no AFK target shows None", () => {
+  render(<ScreenMapPanel ctx={ctx({}, { afk: null })} send={send} />);
+
+  expect(screen.getByText("None")).toBeDefined();
 });
 
 test("a blank name is not sent", () => {
