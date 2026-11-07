@@ -394,13 +394,16 @@ test("an app that cannot start never ends the keeper before the game", async () 
   expect(ended).toBe(true);
 });
 
-test("keepAlive logs uncaught errors instead of ending the keeper", () => {
+test("keepAlive logs uncaught errors, with the game pid, instead of ending the keeper", () => {
   const before = {
     exception: process.listeners("uncaughtException"),
     rejection: process.listeners("unhandledRejection"),
   };
   const logs: Record<string, unknown>[] = [];
-  keepAlive((label, data) => logs.push({ label, ...data }));
+  keepAlive(
+    (label, data) => logs.push({ label, ...data }),
+    () => 42,
+  );
   const onException = process
     .listeners("uncaughtException")
     .find((l) => !before.exception.includes(l));
@@ -412,8 +415,8 @@ test("keepAlive logs uncaught errors instead of ending the keeper", () => {
   onException?.(new Error("boom"), "uncaughtException");
   onRejection?.("nope", Promise.resolve());
   expect(logs).toEqual([
-    { label: "uncaught-exception", error: "Error: boom" },
-    { label: "unhandled-rejection", error: "nope" },
+    { label: "uncaught-exception", id: 42, error: "Error: boom" },
+    { label: "unhandled-rejection", id: 42, error: "nope" },
   ]);
 });
 

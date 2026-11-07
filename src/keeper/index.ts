@@ -18,6 +18,9 @@ const logFile = join(dataDir, "keeper.log");
 const repoRoot = resolve(import.meta.dirname, "../..");
 const readJs = join(repoRoot, "src/keeper/read.js");
 
+/** The game's pid once it is launched: every keeper.log line carries it as `id` (null before the launch). */
+let gamePid: number | null = null;
+
 // ponytail: keeper.log only grows (one line per changed reading); rotate it if it ever gets large.
 const log: KeeperLog = (label, data) => {
   try {
@@ -39,16 +42,19 @@ function startApp(): void {
     env,
   })
     .on("error", (e) => {
-      log("app-failed", { error: String(e) });
+      log("app-failed", { id: gamePid, error: String(e) });
     })
     .unref();
 }
 
 async function main(): Promise<number> {
-  keepAlive(log);
+  keepAlive(log, () => gamePid);
   const [exe, ...args] = process.argv.slice(2);
   if (exe === undefined) {
-    log("no-game", { error: "usage: keeper.js <game exe> [game args...]" });
+    log("no-game", {
+      id: null,
+      error: "usage: keeper.js <game exe> [game args...]",
+    });
     return 1;
   }
   await runKeeper({
@@ -62,6 +68,7 @@ async function main(): Promise<number> {
       const g = launchGame(exe, args, join(dataDir, "game.log"), {
         debugPipe,
       });
+      gamePid = g.child.pid ?? null;
       return { pid: g.child.pid, cdp: g.cdp, exited: g.exited };
     },
     // read.js is loaded on every cycle, so a change to it takes effect without reopening the game (spec §5.2).
@@ -79,7 +86,7 @@ async function main(): Promise<number> {
 main().then(
   (code) => process.exit(code),
   (e: unknown) => {
-    log("keeper-failed", { error: String(e) });
+    log("keeper-failed", { id: gamePid, error: String(e) });
     process.exit(1);
   },
 );

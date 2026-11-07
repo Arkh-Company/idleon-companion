@@ -114,6 +114,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   let lastReadingAt: number | undefined;
   const sendStatus = () => {
     if (!lastStatus) return;
+    // ponytail: not `{ ...lastStatus, lastReadingAt }`: exactOptionalPropertyTypes refuses an undefined lastReadingAt.
     const status =
       lastReadingAt === undefined
         ? lastStatus
@@ -164,11 +165,11 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
 }
 
 /** While the game runs, an error nobody caught is logged: ending the keeper would close the game's pipe and the game. */
-export function keepAlive(log: KeeperLog): void {
+export function keepAlive(log: KeeperLog, id: () => number | null): void {
   process.on("uncaughtException", (e) => {
-    log("uncaught-exception", { error: errorText(e) });
+    log("uncaught-exception", { id: id(), error: errorText(e) });
   });
   process.on("unhandledRejection", (e) => {
-    log("unhandled-rejection", { error: errorText(e) });
+    log("unhandled-rejection", { id: id(), error: errorText(e) });
   });
 }
