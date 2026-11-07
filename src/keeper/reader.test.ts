@@ -14,7 +14,7 @@ const events: CdpMessage[] = [
   {
     sessionId: "S",
     method: "Debugger.paused",
-    params: { callFrames: [{ callFrameId: "F" }] },
+    params: { callFrames: [{ callFrameId: "F" }], hitBreakpoints: ["B"] },
   },
 ];
 

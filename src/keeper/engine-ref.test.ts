@@ -19,11 +19,14 @@ const events: CdpMessage[] = [
   {
     sessionId: "S",
     method: "Debugger.paused",
-    params: { callFrames: [{ callFrameId: "F" }] },
+    params: { callFrames: [{ callFrameId: "F" }], hitBreakpoints: ["B"] },
   },
 ];
 
-function fakeCdp(answers: Record<string, () => unknown>) {
+function fakeCdp(
+  answers: Record<string, () => unknown>,
+  seen: CdpMessage[] = events,
+) {
   const sent: string[] = [];
   const cdp: Cdp = {
     send(method) {
@@ -32,7 +35,7 @@ function fakeCdp(answers: Record<string, () => unknown>) {
       return Promise.resolve().then(() => answers[method]?.() ?? {});
     },
     waitFor(pred) {
-      const m = events.find(pred);
+      const m = seen.find(pred);
       return m ? Promise.resolve(m) : new Promise<CdpMessage>(() => undefined);
     },
     close() {
@@ -72,4 +75,20 @@ test("a script without the anchor throws AnchorNotFound and detaches", async () 
   await expect(acquireEngine(cdp, opts)).rejects.toBeInstanceOf(AnchorNotFound);
   expect(sent).toContain("Target.detachFromTarget");
   expect(sent).not.toContain("Debugger.setBreakpoint");
+});
+
+test("a pause that is not at our breakpoint is resumed and never read", async () => {
+  const foreign: CdpMessage = {
+    sessionId: "S",
+    method: "Debugger.paused",
+    params: { callFrames: [{ callFrameId: "X" }], hitBreakpoints: ["other"] },
+  };
+  const { cdp, sent } = fakeCdp(base, [events[0] as CdpMessage, foreign]);
+  await expect(acquireEngine(cdp, opts)).rejects.toThrow(
+    "the game paused outside the reader's breakpoint",
+  );
+  expect(sent).not.toContain("Debugger.evaluateOnCallFrame");
+  expect(sent).toContain("Debugger.removeBreakpoint");
+  expect(sent).toContain("Debugger.resume");
+  expect(sent).toContain("Target.detachFromTarget");
 });

@@ -78,6 +78,12 @@ export async function acquireEngine(
     try {
       const p = await paused;
       const t0 = Date.now();
+      // Only our breakpoint's pause has the engine as `this`; any other pause is resumed below and never read.
+      // ponytail: checked after the wait, not inside the waitFor predicate: the pause can arrive in the same chunk as
+      // the setBreakpoint answer, before breakpointId is known here.
+      const hits = p.params?.hitBreakpoints;
+      if (!Array.isArray(hits) || !hits.includes(breakpointId))
+        throw new Error("the game paused outside the reader's breakpoint");
       const frames = p.params?.callFrames as { callFrameId: string }[];
       const { result } = (await cdp.send(
         "Debugger.evaluateOnCallFrame",
