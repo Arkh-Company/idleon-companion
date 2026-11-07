@@ -13,7 +13,7 @@ execution:
     - {name: "Done gate", status: done, commits: 2113b9f..4c1867f}
     - {name: "Setup — scaffold and shared types (T010-T015)", status: done, commits: 43dd236..72e01ba}
     - {name: "Catalog and context (T020-T024)", status: done, commits: dfd473a..71a2f49}
-    - {name: "Read-only reader (T030-T036)", status: pending}
+    - {name: "Read-only reader (T030-T036)", status: done, commits: cd6d371..635cfe1}
     - {name: "Update watch, keeper and link (T040-T045)", status: pending}
     - {name: "Settings and app main process (T050-T054)", status: pending}
     - {name: "Window UI, Steam launch script and architecture (T060-T064)", status: pending}
