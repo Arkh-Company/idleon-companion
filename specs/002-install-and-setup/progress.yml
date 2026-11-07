@@ -6,3 +6,4 @@ phases:
   prototype: {status: skipped, date: 2026-11-07}
   plan: {status: done, date: 2026-11-07}
   tasks: {status: done, date: 2026-11-07}
+spec_pr: 8
