@@ -8,6 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname } from "node:path";
+import { isObject } from "../../shared/index.ts";
 import type {
   Catalog,
   CatalogTable,
@@ -16,16 +17,12 @@ import type {
 } from "../../shared/index.ts";
 import defaultNames from "./default-names.json" with { type: "json" };
 
-function isRecord(x: unknown): x is Record<string, unknown> {
-  return typeof x === "object" && x !== null && !Array.isArray(x);
-}
-
 function isEntries(x: unknown): x is Record<string, Entry> {
   return (
-    isRecord(x) &&
+    isObject(x) &&
     Object.values(x).every(
       (e) =>
-        isRecord(e) &&
+        isObject(e) &&
         typeof e.name === "string" &&
         (e.status === "deduced" || e.status === "confirmed"),
     )
@@ -34,7 +31,7 @@ function isEntries(x: unknown): x is Record<string, Entry> {
 
 function isCatalog(x: unknown): x is Catalog {
   return (
-    isRecord(x) &&
+    isObject(x) &&
     x.version === 1 &&
     isEntries(x.menu) &&
     isEntries(x.menu2) &&
@@ -42,7 +39,7 @@ function isCatalog(x: unknown): x is Catalog {
     isEntries(x.quickref) &&
     Array.isArray(x.maps) &&
     x.maps.every((m) => typeof m === "string") &&
-    isRecord(x.afk) &&
+    isObject(x.afk) &&
     Object.values(x.afk).every((n) => typeof n === "string")
   );
 }

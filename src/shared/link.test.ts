@@ -1,6 +1,6 @@
 // The keeper ↔ app line codec (spec §5.4): one JSON message per line, junk skipped.
 import { expect, test } from "vitest";
-import { createLineDecoder, encodeLine } from "./link.ts";
+import { createLineDecoder, encodeLine, isObject } from "./link.ts";
 import type { LinkMessage } from "./link.ts";
 
 test("a line ends in a newline", () => {
@@ -46,4 +46,11 @@ test.each([
   const got: LinkMessage[] = [];
   createLineDecoder((m) => got.push(m))(`${line}\n`);
   expect(got).toEqual([]);
+});
+
+test("an object is a plain object: not null, not an array", () => {
+  expect(isObject({ a: 1 })).toBe(true);
+  expect(isObject(null)).toBe(false);
+  expect(isObject([])).toBe(false);
+  expect(isObject("x")).toBe(false);
 });

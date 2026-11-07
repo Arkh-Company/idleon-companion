@@ -12,8 +12,10 @@ export function encodeLine(m: LinkMessage): string {
   return `${JSON.stringify(m)}\n`;
 }
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
+/** A plain object: not null and not an array. Shared by every shape check (link, payloads, catalog). */
+export function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
 /** The message a line carries, or null for junk. The bodies are checked by whoever uses them. */
 function toMessage(line: string): LinkMessage | null {

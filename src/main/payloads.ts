@@ -1,6 +1,6 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
-import { toReading } from "../shared/index.ts";
+import { isObject, toReading } from "../shared/index.ts";
 import type {
   CatalogTable,
   Reading,
@@ -8,9 +8,6 @@ import type {
   Status,
 } from "../shared/index.ts";
 import { catalogKey } from "./catalog/catalog.ts";
-
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
 
 const TABLES: readonly unknown[] = ["menu", "menu2", "codex"];
 
