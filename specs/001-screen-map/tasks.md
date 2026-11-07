@@ -272,16 +272,16 @@ readings to any app over the local named pipe.
 
 ### Tests for Phase 4
 
-- [ ] T040 [P] Update watch tests in `src/keeper/update-watch.test.ts`
+- [X] T040 [P] Update watch tests in `src/keeper/update-watch.test.ts`
   - Files: `src/keeper/update-watch.test.ts`
   - Cases: `scanGameCode("var a=1;")` → `[]`; `scanGameCode("x;debugger;y")` → `["debugger"]`;
     `scanGameCode('"debuggerName"')` → `[]`; first `checkGameUpdate` → `changed: true`; second with the same code →
     `changed: false`; different code → `changed: true` (state in a temp file).
-- [ ] T041 [P] Line codec tests in `src/shared/link.test.ts`
+- [X] T041 [P] Line codec tests in `src/shared/link.test.ts`
   - Files: `src/shared/link.test.ts`
   - Cases: `encodeLine` ends in `"\n"`; the decoder joins split chunks and skips junk
     (`'{"type":"confirm-at'` + `'tach"}\nnot json\n{"type":"confirm-attach"}\n'` → two `confirm-attach`).
-- [ ] T042 Link tests in `src/link.test.ts`
+- [X] T042 Link tests in `src/link.test.ts`
   - Files: `src/link.test.ts` (outside the boundary folders: it uses the keeper's server and the app's client)
   - Cases, each with its own pipe name (`idleon-companion-test-${process.pid}-${n}`, path per the phase rules): a late
     client gets the last status, then the last reading; a second server on the same pipe rejects with `AlreadyRunning`
@@ -290,14 +290,14 @@ readings to any app over the local named pipe.
 
 ### Implementation for Phase 4
 
-- [ ] T043 Update watch in `src/keeper/update-watch.ts`
+- [X] T043 Update watch in `src/keeper/update-watch.ts`
   - Files: `src/keeper/update-watch.ts`
   - Signatures: `DETECTION_MARKERS = ["debugger", "devtools", "remote-debugging", "isDevToolsOpened", "outerWidth",
     "Function.prototype.toString"]`; `scanGameCode(code: string): string[]` (case-sensitive, whole word for `debugger`);
     `checkGameUpdate(code: string, statePath: string): { changed: boolean; hash: string; markers: string[] }` (sha256);
     `readInstalledGameCode(asarPath: string): string` (`readFileSync(join(asarPath, "distBuild/static/game/N.js"),
     "utf8")`; Electron's `fs` reads inside `.asar` also under `ELECTRON_RUN_AS_NODE`).
-- [ ] T044 Link codec, server and client
+- [X] T044 Link codec, server and client
   - Files: `src/shared/link.ts`, `src/keeper/link-server.ts`, `src/main/link-client.ts`
   - Signatures: `LINK_PIPE = "\\\\.\\pipe\\idleon-companion"`; `type LinkMessage = { type: "reading"; reading: Reading }
     | { type: "status"; status: Status } | { type: "confirm-attach" }`; `encodeLine(m: LinkMessage): string`;
@@ -306,7 +306,7 @@ readings to any app over the local named pipe.
     Promise<void> }>` (`EADDRINUSE` → `AlreadyRunning`); `connectLink(pipePath: string, onMessage: (m: LinkMessage) =>
     void, onConnected: (up: boolean) => void, retryMs = 5000): { send(m: LinkMessage): void; close(): void }`. Node `net`
     only, never TCP.
-- [ ] T045 Keeper entry and its build entry
+- [X] T045 Keeper entry and its build entry
   - Files: `src/keeper/index.ts`, `electron.vite.config.ts` (main `build.rolldownOptions.input = { index:
     "src/main/index.ts", keeper: "src/keeper/index.ts" }` → `out/main/keeper.js`)
   - Flow (argv = game exe + game args): `startLinkServer` first (`AlreadyRunning` → exit 0 without launching anything);
@@ -328,14 +328,14 @@ readings to any app over the local named pipe.
     `startReader` so the keeper gets it, e.g. through the `attached` status or a callback); the keeper calls the reader's
     `stop()` before it publishes `{ game: "closed" }`; and a `stop()` that arrives while `acquireEngine` finishes still
     releases the session (detach), with a fake-`Cdp` test in `src/keeper/reader.test.ts`.
-- [ ] T046 Warn about readings that keep failing (added on 07/11 during the implementation, with the user's yes)
+- [X] T046 Warn about readings that keep failing (added on 07/11 during the implementation, with the user's yes)
   - Files: `src/keeper/reader.ts`, `src/keeper/reader.test.ts`, `src/keeper/index.ts` (log)
   - Behavior: after 10 consecutive failed readings (an exception in `read.js`, a reading of the wrong shape), the reader
     sends `{ game: "running", reader: "attached", message: "Reading failed: <reason>" }`, without pausing the game and
     without taking the engine again; the next good reading sends `{ reader: "attached" }` without the message. The keeper
     logs it. Tests (fake `Cdp`, on the CI): 10 failures → one status with the message and still one `attach`; a good
     reading after it clears the message.
-- [ ] T047 The Edge integration test becomes opt-in (added on 07/11, with the user's yes: "Tests use no real network",
+- [X] T047 The Edge integration test becomes opt-in (added on 07/11, with the user's yes: "Tests use no real network",
   and headless Edge cannot guarantee zero traffic of its own)
   - Files: `src/keeper/reader.integration.test.ts`
   - Change: the Edge `describe` is skipped unless `IDLEON_EDGE_TESTS=1` (and Edge exists), so `just check` and the CI
