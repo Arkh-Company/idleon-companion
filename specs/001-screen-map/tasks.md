@@ -120,7 +120,7 @@ the window-options, CSP, App and shared-types tests pass.
     `tsConfig: { fileName: "tsconfig.json" }`.
   - Check: `just arch` prints `no dependency violations found`; a throwaway `import { app } from "electron"` in
     `src/keeper/` and `import "node:fs"` in `src/renderer/` are reported (remove them before committing).
-- [ ] T017 [sessão] `arch` joins `just check`, after T016 (the session, at the end of this phase)
+- [X] T017 [sessão] `arch` joins `just check`, after T016 (the session, at the end of this phase)
   - Files: `justfile`
   - Change: `check: fmt-check lint typecheck arch secrets test`.
 

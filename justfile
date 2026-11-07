@@ -75,7 +75,7 @@ arch:
     pnpm exec depcruise src --config .dependency-cruiser.cjs
 
 # Critério de pronto (Stop hook e CI), do mais rápido ao mais lento
-check: fmt-check lint typecheck secrets test
+check: fmt-check lint typecheck arch secrets test
 
 # Análise estática com as regras OWASP do semgrep: só aviso, fora do check; busca as regras na rede
 security:
