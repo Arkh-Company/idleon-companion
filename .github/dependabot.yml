@@ -10,7 +10,6 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
-      semver-major-days: 14
     groups:
       minor-e-patch:
         update-types: [minor, patch]
