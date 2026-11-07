@@ -512,9 +512,18 @@ and the architecture document.
   - Files: `ARCHITECTURE.md`
   - Content: the two processes and the four code folders (keeper, main, preload, renderer, plus shared), the link and
     IPC contracts (spec §5.4), the seven dependency-cruiser rules and why each exists (including the test-file exception of
-    `renderer-without-node-core`, accepted by the user on 07/11), and where user data lives.
+    `renderer-without-node-core`, accepted by the user on 07/11), and where user data lives. Also the keeper's
+    fail-closed rule (no debugging pipe when the game code is suspicious, cannot be checked, or the keeper fails before
+    launching), the navigation lockdown, the IPC sender check and the shape checks on every IPC and link message.
+- [ ] T065 The window's X hides it in the tray (decided on 07/11 after the app main review, with the user's yes)
+  - Files: `src/main/lifecycle.ts`, `src/main/lifecycle.test.ts`, `src/main/index.ts`
+  - Behavior: closing the window with X hides it instead of quitting (the app stays alive and the tray icon shows it
+    again); the tray icon gets a menu with "Show/Hide" and "Quit", and only "Quit", `decide("game-exited")` with
+    `closeWithGame`, or the system shutting down end the app. Keep the decision pure (e.g. a `decide("window-close",
+    ...)` event returning `["hide-window"]` unless quitting was asked) and test it.
 
-**Verify**: `just test-one src/renderer/ui.test.tsx` passes; `just build` passes; `just check` passes.
+**Verify**: `just test-one src/renderer/ui.test.tsx` and `just test-one src/main/lifecycle.test.ts` pass; `just build`
+passes; `just check` passes.
 
 ---
 
