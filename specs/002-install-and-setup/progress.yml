@@ -10,7 +10,7 @@ spec_pr: 8
 execution:
   branch: feat/002-install-and-setup
   phases:
-    - {name: "Done gate", status: pending}
+    - {name: "Done gate", status: done, commits: 175df05..31402a0}
     - {name: "Setup + Foundational", status: pending}
     - {name: "US1 (T030-T038)", status: pending}
     - {name: "US1 (T040-T046)", status: pending}
