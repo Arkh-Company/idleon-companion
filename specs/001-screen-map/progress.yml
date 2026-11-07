@@ -15,7 +15,7 @@ execution:
     - {name: "Catalog and context (T020-T024)", status: done, commits: dfd473a..71a2f49}
     - {name: "Read-only reader (T030-T036)", status: done, commits: cd6d371..635cfe1}
     - {name: "Update watch, keeper and link (T040-T045)", status: done, commits: ca48fd6..d59d3d4}
-    - {name: "Keeper safety follow-ups (T049-T049a)", status: pending}
+    - {name: "Keeper safety follow-ups (T049-T049a)", status: done, commits: 19f5215..92e605e}
     - {name: "Settings and app main process (T050-T054)", status: pending}
     - {name: "Window UI, Steam launch script and architecture (T060-T064)", status: pending}
   feature_review: pending
