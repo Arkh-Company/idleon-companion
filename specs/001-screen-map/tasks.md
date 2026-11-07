@@ -66,16 +66,16 @@ the window-options, CSP, App and shared-types tests pass.
 
 ### Tests for Phase 1
 
-- [ ] T010 [P] Window options test in `src/main/window-options.test.ts`
+- [X] T010 [P] Window options test in `src/main/window-options.test.ts`
   - Files: `src/main/window-options.test.ts`
   - Cases: `windowOptions("x/preload.cjs")` has `title: "IdleOn Companion"`, `webPreferences.contextIsolation === true`,
     `nodeIntegration === false`, `sandbox` not `false`, `preload === "x/preload.cjs"`.
-- [ ] T011 [P] CSP and App tests in `src/renderer/App.test.tsx` (`// @vitest-environment jsdom`)
+- [X] T011 [P] CSP and App tests in `src/renderer/App.test.tsx` (`// @vitest-environment jsdom`)
   - Files: `src/renderer/App.test.tsx`
   - Cases: `src/renderer/index.html` has `<meta http-equiv="Content-Security-Policy" content="default-src 'self'">`
     and `<title>IdleOn Companion</title>`; `<App />` renders the heading "IdleOn Companion". Call `cleanup()` in
     `afterEach` (vitest runs without globals, so Testing Library does not clean up by itself).
-- [ ] T012 [P] Shared constants test in `src/shared/types.test.ts`
+- [X] T012 [P] Shared constants test in `src/shared/types.test.ts`
   - Files: `src/shared/types.test.ts`
   - Cases: `IPC` equals `{ contextUpdate: "context:update", statusUpdate: "status:update", catalogName: "catalog:name",
     settingsGet: "settings:get", settingsSet: "settings:set", confirmAttach: "reader:confirm-attach" }`;
@@ -84,7 +84,7 @@ the window-options, CSP, App and shared-types tests pass.
 
 ### Implementation for Phase 1
 
-- [ ] T013 Dependencies and package entry
+- [X] T013 Dependencies and package entry
   - Files: `package.json`, `pnpm-lock.yaml` (through pnpm), `.gitignore`
   - Commands: `pnpm add react@19.3.1 react-dom@19.3.1`; `pnpm add -D electron@45.2.3 electron-vite@6.0.0 vite@8.3.6
     jsdom@31.0.0 @testing-library/react@16.3.3 @types/react@19.3.0 @types/react-dom@19.3.0` (no `@vitejs/plugin-react`:
@@ -92,7 +92,7 @@ the window-options, CSP, App and shared-types tests pass.
   - `package.json`: `"main": "out/main/index.js"` (Electron and the keeper start the app from the repo root).
   - `.gitignore`: `/names.json`, `*.pak`, `N.js` with `!src/keeper/mock-game/static/game/N.js`, `N.game.js` (game files
     and user data never enter the repo; `out/` and `*.log` are already there).
-- [ ] T014 electron-vite config and the main/preload/renderer skeleton
+- [X] T014 electron-vite config and the main/preload/renderer skeleton
   - Files: `electron.vite.config.ts`, `src/main/window-options.ts`, `src/main/index.ts`, `src/preload/index.ts`,
     `src/renderer/index.html`, `src/renderer/main.tsx`, `src/renderer/App.tsx`, `src/renderer/styles.css`
   - Signatures: `windowOptions(preloadPath: string): BrowserWindowConstructorOptions` (`import type` from `electron`
@@ -101,7 +101,7 @@ the window-options, CSP, App and shared-types tests pass.
     `renderer: { server: { hmr: false } }` (plan Kit decisions 5 and 6).
   - `src/main/index.ts`: one `BrowserWindow(windowOptions(join(import.meta.dirname, "../preload/index.cjs")))`;
     `ELECTRON_RENDERER_URL` in dev, else `../renderer/index.html`. Preload exposes nothing yet.
-- [ ] T015 Shared types in `src/shared/types.ts` and `src/shared/index.ts`
+- [X] T015 Shared types in `src/shared/types.ts` and `src/shared/index.ts`
   - Files: `src/shared/types.ts`, `src/shared/index.ts` (re-exports the public API)
   - Signatures (spec §5.1, §5.3, §5.4, §6.2, §6.3): `Reading`, `Entry`, `Catalog`,
     `CatalogTable = "menu" | "menu2" | "codex"`, `GameContext`, `Status = { game: "running" | "closed" | "not-launched";
