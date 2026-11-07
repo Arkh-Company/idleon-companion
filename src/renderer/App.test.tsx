@@ -2,9 +2,46 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { DEFAULT_SETTINGS } from "../shared/index.ts";
+import type { GameContext, Status } from "../shared/index.ts";
 import { App } from "./App.tsx";
 
+const ctx: GameContext = {
+  screen: {
+    world: 6,
+    map: 264,
+    menu: 0,
+    window: 0,
+    tab: 0,
+    codexTab: null,
+    codexSel: null,
+  },
+  character: null,
+  afk: null,
+  names: { map: "Emperor's Castle Doorstep" },
+  unnamed: [],
+  updatedAt: 1,
+};
+const status: Status = { game: "running", reader: "attached" };
+
+beforeEach(() => {
+  // The preload replays the last value to a late subscriber at once.
+  window.companion = {
+    onContext: vi.fn((cb: (c: GameContext) => void) => {
+      cb(ctx);
+      return () => undefined;
+    }),
+    onStatus: vi.fn((cb: (s: Status) => void) => {
+      cb(status);
+      return () => undefined;
+    }),
+    name: vi.fn(() => Promise.resolve()),
+    getSettings: vi.fn(() => Promise.resolve({ ...DEFAULT_SETTINGS })),
+    setSettings: vi.fn(() => Promise.resolve()),
+    confirmAttach: vi.fn(() => Promise.resolve()),
+  };
+});
 afterEach(cleanup);
 
 test("index.html allows only the app's own resources", () => {
@@ -22,4 +59,13 @@ test("App shows the companion heading", () => {
   expect(
     screen.getByRole("heading", { name: "IdleOn Companion" }),
   ).toBeDefined();
+});
+
+test("App shows the status and the Screen map panel of the last context", async () => {
+  render(<App />);
+
+  expect(screen.getByText("Reader attached")).toBeDefined();
+  expect(screen.getByRole("heading", { name: "Screen map" })).toBeDefined();
+  expect(screen.getByText("264 Emperor's Castle Doorstep")).toBeDefined();
+  expect(await screen.findByLabelText("Always on top")).toBeDefined();
 });
