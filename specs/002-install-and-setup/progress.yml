@@ -2,3 +2,4 @@ feature: 002-install-and-setup
 phases:
   brainstorm: {status: done, date: 2026-11-07}
   specify: {status: done, date: 2026-11-07}
+  clarify: {status: in_progress, date: 2026-11-07, rounds: 1, open: 1, to_plan: 1}
