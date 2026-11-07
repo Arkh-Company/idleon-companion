@@ -1,4 +1,5 @@
 // The reader loop: takes the engine once, runs read.js on it every second and emits each new reading.
+import { toReading } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AnchorNotFound, OBJECT_GROUP, acquireEngine } from "./engine-ref.ts";
@@ -8,20 +9,6 @@ const GAME_UPDATED = "Game updated: the reader needs an update";
 /** Failed readings in a row before the status says so (spec, Open Questions, 07/11). */
 const FAILS_BEFORE_WARNING = 10;
 
-const isNumber = (v: unknown) => typeof v === "number";
-const isTextOrNull = (v: unknown) => v === null || typeof v === "string";
-const FIELDS: Record<keyof Omit<Reading, "t">, (v: unknown) => boolean> = {
-  map: isNumber,
-  menu: isNumber,
-  menu2: isNumber,
-  menu2tab: isNumber,
-  skillTab: isNumber,
-  char: isTextOrNull,
-  afk: isTextOrNull,
-  codexTab: (v) => v === null || isNumber(v),
-  codexSel: (v) => isTextOrNull(v) || isNumber(v),
-};
-
 /** Why a reading failed: the exception read.js threw, or a value that is not a Reading. */
 function failure(exceptionDetails: unknown): string {
   if (exceptionDetails === undefined) return "the reading has the wrong shape";
@@ -30,26 +17,6 @@ function failure(exceptionDetails: unknown): string {
     exception?: { description?: string };
   };
   return d.exception?.description ?? d.text ?? "unknown error";
-}
-
-/** What read.js returned, as a Reading stamped at `t`; null when its shape is not a Reading's. */
-export function toReading(value: unknown, t: number): Reading | null {
-  if (typeof value !== "object" || value === null) return null;
-  const v = value as Record<string, unknown>;
-  for (const [k, ok] of Object.entries(FIELDS)) if (!ok(v[k])) return null;
-  const r = v as Omit<Reading, "t">;
-  return {
-    t,
-    map: r.map,
-    menu: r.menu,
-    menu2: r.menu2,
-    menu2tab: r.menu2tab,
-    skillTab: r.skillTab,
-    char: r.char,
-    afk: r.afk,
-    codexTab: r.codexTab,
-    codexSel: r.codexSel,
-  };
 }
 
 export function startReader(

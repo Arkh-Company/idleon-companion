@@ -2,6 +2,7 @@
 export { createLineDecoder, encodeLine, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export { modulesFor } from "./modules.ts";
+export { toReading } from "./reading.ts";
 export { DEFAULT_SETTINGS, IPC, moduleChannel } from "./types.ts";
 export type {
   Catalog,
