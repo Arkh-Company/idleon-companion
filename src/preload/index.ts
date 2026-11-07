@@ -7,30 +7,21 @@ import type {
   SetupProgress,
   SteamState,
 } from "../shared/index.ts";
+import { channel } from "./channel.ts";
 
-/** Listens on one channel from the start and keeps the last value: a subscriber that comes after the main process
- * sent (React effects run after the page loads) still gets it at once. The returned function unsubscribes. */
-function channel(name: string): (cb: (value: never) => void) => () => void {
-  let last: { value: unknown } | undefined;
-  const subscribers = new Set<(value: unknown) => void>();
-  ipcRenderer.on(name, (_e, value: unknown) => {
-    last = { value };
-    for (const cb of subscribers) cb(value);
-  });
-  return (cb) => {
-    // The main process sends this channel's type only (IPC.contextUpdate: GameContext, IPC.statusUpdate: Status).
-    const f = cb as (value: unknown) => void;
-    subscribers.add(f);
-    if (last) f(last.value);
-    return () => {
-      subscribers.delete(f);
-    };
-  };
-}
+/** A main → window channel; `replay` repeats the last value to a late subscriber (contracts/ipc.md). */
+const listen = (name: string, replay: boolean) =>
+  channel(
+    (n, l) => {
+      ipcRenderer.on(n, l);
+    },
+    name,
+    replay,
+  );
 
 const api: CompanionApi = {
-  onContext: channel(IPC.contextUpdate),
-  onStatus: channel(IPC.statusUpdate),
+  onContext: listen(IPC.contextUpdate, true),
+  onStatus: listen(IPC.statusUpdate, true),
   name: async (table, key, name) => {
     await ipcRenderer.invoke(IPC.catalogName, { table, key, name });
   },
@@ -42,22 +33,23 @@ const api: CompanionApi = {
   confirmAttach: async () => {
     await ipcRenderer.invoke(IPC.confirmAttach);
   },
-  // The channels of 002 (contracts/ipc.md). ponytail: the main process answers them as each story lands (tasks.md
-  // Phases 4–7); until then nothing in the window calls them.
+  // The channels of 002 (contracts/ipc.md). ponytail: the main process answers steam:state and steam:setup now, the
+  // others as their story lands (tasks.md Phases 5–7); until then nothing in the window calls them.
   steamState: async () =>
     (await ipcRenderer.invoke(IPC.steamState)) as SteamState,
   setupSteam: async () =>
     (await ipcRenderer.invoke(IPC.steamSetup)) as SetupProgress,
   removeFromSteam: async () =>
     (await ipcRenderer.invoke(IPC.steamRemove)) as SetupProgress,
-  onSetupProgress: channel(IPC.steamProgress),
+  // Each step of setting up goes only to whoever listens at that moment: a late screen must not see an old "done".
+  onSetupProgress: listen(IPC.steamProgress, false),
   releaseGame: async () => {
     await ipcRenderer.invoke(IPC.readerRelease);
   },
   reconnect: async () => {
     await ipcRenderer.invoke(IPC.readerReconnect);
   },
-  onUpdate: channel(IPC.updateState),
+  onUpdate: listen(IPC.updateState, true),
   installUpdate: async () => {
     await ipcRenderer.invoke(IPC.updateInstall);
   },

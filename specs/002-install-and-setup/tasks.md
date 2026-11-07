@@ -298,7 +298,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
 - [X] T044 [US1] `src/main/steam/setup.ts` as tested in T040; the real `SteamSystem` in `src/main/steam/system.ts`
   (`tasklist /FI "IMAGENAME eq <image>" /NH` through `execFile`; `steam.exe -shutdown`; `steam.exe` detached;
   `writeFileAtomic` = write `.tmp` + rename; poll every 500 ms up to 30 s)
-- [ ] T045 [US1] IPC and preload
+- [X] T045 [US1] IPC and preload
   - Files: `src/main/index.ts`, `src/main/payloads.ts`, `src/preload/index.ts`
   - `steam:state`, `steam:setup`, `steam:remove` (wired in Phase 6), `steam:progress`, through `guardIpc` and the
     payload checks of T043; the part from `companionPart({ execPath: process.execPath, defaultApp:

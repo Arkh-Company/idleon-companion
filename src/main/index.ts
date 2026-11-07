@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
-import type { Reading, Status } from "../shared/index.ts";
+import type { Reading, SetupProgress, Status } from "../shared/index.ts";
 import {
   DEFAULT_CATALOG,
   loadCatalog,
@@ -22,12 +22,21 @@ import {
 import type { LifecycleAction, LifecycleEvent } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
 import {
+  emptyPayload,
   linkReading,
   linkStatus,
   namePayload,
   settingsPayload,
 } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
+import { loadSetup, saveSetup } from "./setup-store.ts";
+import {
+  companionPart,
+  runSetup,
+  steamState,
+  steamSystem,
+} from "./steam/index.ts";
+import type { SetupStoreLike } from "./steam/index.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -176,6 +185,38 @@ function start(): void {
   });
   handle(IPC.confirmAttach, () => {
     link.send({ type: "confirm-attach" });
+  });
+
+  // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).
+  const part = companionPart({
+    execPath: process.execPath,
+    defaultApp: process.defaultApp, // undefined when packaged, though typed boolean
+    appPath: app.getAppPath(),
+  });
+  const setupFile = join(dataDir, "steam-setup.json");
+  const setupStore: SetupStoreLike = {
+    load: () => loadSetup(setupFile),
+    save: (s) => {
+      saveSetup(setupFile, s);
+    },
+    backupPath: (id) => join(dataDir, "steam-backup", `${id}-localconfig.vdf`),
+  };
+  // One setup at a time: a second click while one runs gets the same result.
+  let setup: Promise<SetupProgress> | null = null;
+  handle(IPC.steamState, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("steam:state: no body expected");
+    return steamState(steamSystem, setupStore, part);
+  });
+  handle(IPC.steamSetup, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("steam:setup: no body expected");
+    setup ??= runSetup(steamSystem, setupStore, part, (p) => {
+      send(IPC.steamProgress, p);
+    }).finally(() => {
+      setup = null;
+    });
+    return setup;
   });
 
   app.on("second-instance", (_e, argv) => {
