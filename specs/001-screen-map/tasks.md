@@ -275,8 +275,11 @@ readings to any app over the local named pipe.
 - [X] T040 [P] Update watch tests in `src/keeper/update-watch.test.ts`
   - Files: `src/keeper/update-watch.test.ts`
   - Cases: `scanGameCode("var a=1;")` → `[]`; `scanGameCode("x;debugger;y")` → `["debugger"]`;
-    `scanGameCode('"debuggerName"')` → `[]`; first `checkGameUpdate` → `changed: true`; second with the same code →
-    `changed: false`; different code → `changed: true` (state in a temp file).
+    `scanGameCode('"debuggerName"')` → `[]`; first `checkGameUpdate` of clean code → `changed: true`; second with the
+    same clean code → `changed: false`; different code → `changed: true` (state in a temp file). Corrected on 07/11
+    during the implementation (spec §7.2: with markers, nothing connects until the user confirms): code with markers
+    keeps `changed: true` and its markers on every check until `recordGameHash(hash, statePath)` records it, which the
+    keeper calls only after `confirm-attach`.
 - [X] T041 [P] Line codec tests in `src/shared/link.test.ts`
   - Files: `src/shared/link.test.ts`
   - Cases: `encodeLine` ends in `"\n"`; the decoder joins split chunks and skips junk
