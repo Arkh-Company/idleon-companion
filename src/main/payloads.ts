@@ -42,12 +42,23 @@ export function linkReading(v: unknown): Reading | null {
   return isObject(v) && typeof v.t === "number" ? toReading(v, v.t) : null;
 }
 
-const GAMES: readonly unknown[] = ["running", "closed", "not-launched"];
-const READERS: readonly unknown[] = ["attached", "connecting", "error"];
+// Tied to Status: a new game or reader state fails to compile until it is listed here.
+const GAMES = {
+  running: true,
+  closed: true,
+  "not-launched": true,
+} satisfies Record<Status["game"], true>;
+const READERS = {
+  attached: true,
+  connecting: true,
+  error: true,
+} satisfies Record<Status["reader"], true>;
+const oneOf = (set: object, v: unknown) =>
+  typeof v === "string" && Object.hasOwn(set, v);
 
 /** The body of a `status` link message with only the Status fields; null when one is out of shape. */
 export function linkStatus(v: unknown): Status | null {
-  if (!isObject(v) || !GAMES.includes(v.game) || !READERS.includes(v.reader))
+  if (!isObject(v) || !oneOf(GAMES, v.game) || !oneOf(READERS, v.reader))
     return null;
   const { message, lastReadingAt } = v;
   if (message !== undefined && typeof message !== "string") return null;
