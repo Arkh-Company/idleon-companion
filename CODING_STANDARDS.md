@@ -29,3 +29,15 @@ Shape of a rule:
 Good: <example>
 Bad: <example>
 -->
+
+### One assertion per branch of a mapping
+
+Every table or field a mapping function fills has at least one test assertion that fails when that branch is removed.
+Good: `expect(toContext({ ...base, menu: 0.1 }, cat).names.menu).toEqual({ name: "Quik Ref shortcut (Anvil)", status: "deduced" })` next to the map, window and AFK assertions.
+Bad: a test that checks `names.map`, `names.window` and `names.afk` while `names.menu` is filled by code no test reaches.
+
+### Protective paths are tested on the CI
+
+Every cleanup, fallback or swallowed error that keeps the game safe has a test that runs on the CI (a fake `Cdp`, not only the Edge integration test) and fails when that path is removed.
+Good: `engine-ref.test.ts` drives `acquireEngine` with a fake `Cdp` whose `Debugger.evaluateOnCallFrame` rejects and asserts `Debugger.removeBreakpoint` and `Debugger.resume` are sent after it.
+Bad: a `try { onReading(r) } catch {}` whose only test sits inside `describe.skipIf(!existsSync(EDGE))`, so the CI stays green when the `catch` is removed.

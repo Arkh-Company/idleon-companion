@@ -20,3 +20,6 @@ specs/
 
 # Cache do Vitest.
 .vitest/
+
+# Jogo falso dos testes: o Prettier reescreveria `getGameAttribute:function(`, o texto que o leitor procura.
+src/keeper/mock-game/

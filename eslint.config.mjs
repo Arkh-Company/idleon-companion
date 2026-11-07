@@ -5,10 +5,13 @@ import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-  // Fora do ESLint: hooks e skills do Claude (Node puro, testados à parte), o Spec Kit e as specs com os protótipos
+  // Fora do ESLint: hooks e skills do Claude (Node puro, testados à parte), o Spec Kit e as specs com os protótipos,
+  // a saída do electron-vite (o ESLint 10 não lê o .gitignore) e o jogo falso dos testes (código de navegador que imita o jogo)
   {
     ignores: [
       "dist/**",
+      "out/**",
+      "src/keeper/mock-game/**",
       "coverage/**",
       "**/*.generated.*",
       ".claude/**",

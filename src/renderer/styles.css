@@ -1,0 +1,62 @@
+/* All window styles live here: the CSP default-src 'self' blocks inline style attributes. */
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.status-bar p {
+  margin: 0 0 0.25rem;
+}
+
+.status-bar .message {
+  font-weight: 600;
+}
+
+.screen-map {
+  border-collapse: collapse;
+}
+
+.screen-map th {
+  padding: 0.125rem 1rem 0.125rem 0;
+  text-align: left;
+  font-weight: normal;
+  opacity: 0.7;
+}
+
+.screen-map .num {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+/* "from game code": a deduced name, kept discreet (spec §5.6) */
+.screen-map .deduced {
+  cursor: help;
+  opacity: 0.6;
+}
+
+.name-it {
+  width: 10rem;
+}
+
+.settings {
+  margin-top: 1rem;
+}
+
+.settings label {
+  display: block;
+}

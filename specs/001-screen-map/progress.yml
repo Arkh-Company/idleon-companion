@@ -7,3 +7,16 @@ phases:
   prototype: {status: skipped, date: 2026-11-07}
   plan: {status: done, date: 2026-11-07}
   tasks: {status: done, date: 2026-11-07}
+execution:
+  branch: feat/001-screen-map
+  phases:
+    - {name: "Done gate", status: done, commits: 2113b9f..4c1867f}
+    - {name: "Setup — scaffold and shared types (T010-T015)", status: done, commits: 43dd236..72e01ba}
+    - {name: "Catalog and context (T020-T024)", status: done, commits: dfd473a..71a2f49}
+    - {name: "Read-only reader (T030-T036)", status: done, commits: cd6d371..635cfe1}
+    - {name: "Update watch, keeper and link (T040-T045)", status: done, commits: ca48fd6..d59d3d4}
+    - {name: "Keeper safety follow-ups (T049-T049a)", status: done, commits: 19f5215..92e605e}
+    - {name: "Settings and app main process (T050-T054)", status: done, commits: 3b21d88..8c14260}
+    - {name: "Window UI, Steam launch script and architecture (T060-T064)", status: done, commits: 373cf87..079ca25}
+  feature_review: done
+  code_pr: 6

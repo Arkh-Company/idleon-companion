@@ -36,7 +36,7 @@ github owner *opcao:
 
 # App local: longo/interativo, nunca serve como verificação
 dev:
-    node --watch src/main.ts
+    pnpm exec electron-vite dev
 
 # Os *args do test e do test-one vão crus ao `pwsh -Command`, e o settings.json do projeto libera `just test *` e `just test-one *` sem pedir:
 # por isso o just aceita, palavra por palavra, só o `-t <nome>` do vitest (o nome de letras, números, `_ . -`, sem
@@ -52,6 +52,11 @@ test *args:
 # Um alvo dentro de src/: arquivo ou pasta. Ex.: just test-one src/main.test.ts -t "carrega"
 test-one target *args:
     pnpm exec vitest run --dir src '{{ if target =~ '^[-@]' { error(ALVO_ERRO) } else { replace_regex(target, "['\u{2018}-\u{201B}]", "$0$0") } }}' {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
+
+# O leitor contra o jogo falso no Edge headless (só no Windows com o Edge): fora do check, porque o Edge não garante
+# zero tráfego próprio ao subir. O parâmetro com $ vira variável de ambiente da receita e liga o describe do Edge.
+test-edge $IDLEON_EDGE_TESTS="1":
+    pnpm exec vitest run --dir src src/keeper/reader.integration.test.ts
 
 lint:
     pnpm exec eslint .
@@ -70,15 +75,20 @@ typecheck:
 secrets:
     gitleaks dir . --config .gitleaks-dir.toml --no-banner --redact -v
 
+# Fronteiras entre os processos (ARCHITECTURE.md): as regras do .dependency-cruiser.cjs
+arch:
+    pnpm exec depcruise src --config .dependency-cruiser.cjs
+
 # Critério de pronto (Stop hook e CI), do mais rápido ao mais lento
-check: fmt-check lint typecheck secrets test
+check: fmt-check lint typecheck arch secrets test
 
 # Análise estática com as regras OWASP do semgrep: só aviso, fora do check; busca as regras na rede
 security:
     semgrep scan --config p/owasp-top-ten --metrics=off --quiet --json --exclude .claude --exclude .specify --exclude specs | node .claude/scripts/semgrep-tabela.mjs
 
+# Main, guardião, preload e janela pelo electron-vite, em out/
 build:
-    pnpm exec tsc -p tsconfig.build.json
+    pnpm exec electron-vite build
 
 clean:
-    node -e "for (const p of ['dist', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"
+    node -e "for (const p of ['dist', 'out', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"

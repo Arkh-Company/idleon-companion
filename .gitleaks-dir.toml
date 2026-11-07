@@ -7,6 +7,8 @@
 allowlists = [{ description = "os .env locais, que o .gitignore ignora e o gitleaks dir não sabe ignorar", paths = [
     '(^|/)\.env$',
     '(^|/)\.env\.(?:keys|local|[^/.]+\.local)$',
+] }, { description = "a saída do electron-vite (out/), que o .gitignore ignora: o bundle do react-dom tem nomes como MozPrintableKey", paths = [
+    '(^|/)out/',
 ] }]
 
 [extend]
