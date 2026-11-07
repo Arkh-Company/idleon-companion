@@ -36,14 +36,26 @@ afterEach(() => {
   }
 });
 
-test("exe path with spaces and parentheses keeps every arg", () => {
-  const fakeSpawn = vi.fn<
+/** A spawn that records its call and returns a child with no real process behind it, without the debugging pipe. */
+function noPipeSpawn() {
+  return vi.fn<
+    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
+  >(() => Object.assign(new EventEmitter(), { stdio: [null, null, null] }));
+}
+
+/** The same, with the two pipes of fd 3 and 4. */
+function pipeSpawn() {
+  return vi.fn<
     (exe: string, args: string[], options: SpawnOptions) => EventEmitter
   >(() =>
     Object.assign(new EventEmitter(), {
       stdio: [null, null, null, new PassThrough(), new PassThrough()],
     }),
   );
+}
+
+test("exe path with spaces and parentheses keeps every arg", () => {
+  const fakeSpawn = pipeSpawn();
   const exe =
     "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Legends of Idleon\\LegendsOfIdleon.exe";
   launchGame(
@@ -64,13 +76,7 @@ test("exe path with spaces and parentheses keeps every arg", () => {
 });
 
 test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
-  const fakeSpawn = vi.fn<
-    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
-  >(() =>
-    Object.assign(new EventEmitter(), {
-      stdio: [null, null, null, new PassThrough(), new PassThrough()],
-    }),
-  );
+  const fakeSpawn = pipeSpawn();
   vi.stubEnv("ELECTRON_RUN_AS_NODE", "1");
   try {
     launchGame(
@@ -88,13 +94,6 @@ test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
     "ELECTRON_RUN_AS_NODE",
   );
 });
-
-/** A spawn that records its call and returns a child with no real process behind it. */
-function noPipeSpawn() {
-  return vi.fn<
-    (exe: string, args: string[], options: SpawnOptions) => EventEmitter
-  >(() => Object.assign(new EventEmitter(), { stdio: [null, null, null] }));
-}
 
 test("without the debugging pipe the Steam args pass unchanged, with no pipes and no ELECTRON_RUN_AS_NODE", () => {
   const fakeSpawn = noPipeSpawn();
