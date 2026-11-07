@@ -411,6 +411,7 @@ a atualização espera o jogo fechar.
 | O que o companion diz quando o texto do usuário já tem um lançador de console? | resolved | Padrão do agente: acrescenta a parte dele sem apagar nada e avisa "This launch option also runs a console script; the gem store may not open." (Edge Cases). |
 | Metas de sucesso | resolved | Padrão do agente: instalar e jogar em menos de 5 minutos; compra abre em 3 de 3 tentativas; X fecha em até 2 s; painel volta em até 2 s depois de "Reconnect" (SC-001 a SC-004). |
 | Se o usuário apaga o próprio texto depois da configuração (ex.: tira ` -windowed`), o desfazer ainda tira a parte do companion? | resolved | durante a implementação: sim (FR-009). Quando o texto inserido guardado não está mais na opção, o desfazer tenta o mesmo texto sem o espaço do fim, de modo que `"<exe>" --keeper %command%` sai inteiro e a Steam nunca fica apontando para um exe desinstalado. Achado da revisão da fase 3, 07/11. |
+| Se a opção tem a parte do companion mas não há registro dela (o `steam-setup.json` se perdeu, ou o texto foi colado à mão), "Remove from Steam" e o desinstalador tiram mesmo assim? | resolved | durante a implementação: sim (Vinicius, 07/11; FR-009, FR-013). Sem o texto inserido guardado, o desfazer tira a parte do companion (`"<exe>" --keeper `) quando a acha no texto atual da opção, para o jogo nunca ficar apontando para um exe desinstalado. |
 
 ## Origem do design
 
