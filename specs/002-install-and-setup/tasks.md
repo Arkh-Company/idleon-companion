@@ -42,13 +42,13 @@ files; setup flow and screen), then one phase per remaining story, then Polish. 
 **Independent Test**: `just check` passes with the code of `main` as it is; `just --list` shows `package` and
 `release`.
 
-- [ ] T001 [sessão] Recipes `package` and `release` in `justfile`
+- [X] T001 [sessão] Recipes `package` and `release` in `justfile`
   - Files: `justfile`
   - Change: `package: just build` then `pnpm exec electron-builder --win nsis --publish never` (writes `dist\`);
     `release: just build` then `pnpm exec electron-builder --win nsis --publish always`, with a comment: run only in
     the user's own terminal with `GH_TOKEN` set; the session never reads or asks for the token (research R8). Neither
     joins `check` (electron-builder arrives in Phase 1; the recipes are not run before it).
-- [ ] T002 [sessão] Keep the packaged output out of the secret scan in `.gitleaks-dir.toml`
+- [X] T002 [sessão] Keep the packaged output out of the secret scan in `.gitleaks-dir.toml`
   - Files: `.gitleaks-dir.toml`
   - Change: the allowlist that has `'(^|/)out/'` gains `'(^|/)dist/'`, with the reason in its description (electron-builder
     output, already in `.gitignore`; scanning the installer binary is slow and pointless).

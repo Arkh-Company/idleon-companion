@@ -90,5 +90,14 @@ security:
 build:
     pnpm exec electron-vite build
 
+# Instalador NSIS por usuário em dist\ (electron-builder), sem publicar
+package: build
+    pnpm exec electron-builder --win nsis --publish never
+
+# Só no terminal do próprio usuário, com o GH_TOKEN dele: a sessão nunca lê nem pede o token (002, research R8)
+# Publica o instalador na release pública Arkh-Company/idleon-companion-releases
+release: build
+    pnpm exec electron-builder --win nsis --publish always
+
 clean:
     node -e "for (const p of ['dist', 'out', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"
