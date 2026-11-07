@@ -227,3 +227,45 @@ test("keepAlive logs uncaught errors instead of ending the keeper", () => {
     { label: "unhandled-rejection", error: "nope" },
   ]);
 });
+
+/** One game session of a keeper on code with markers; `confirm` clicks "Connect anyway" before the game closes. */
+async function sessionWithMarkers(
+  hashPath: string | undefined,
+  confirm: boolean,
+) {
+  const h = harness(() => "x;debugger;y");
+  if (hashPath) h.deps.hashPath = hashPath;
+  const run = runKeeper(h.deps);
+  await until(() => h.order.includes("app"));
+  const a = app(h.deps.pipePath);
+  await until(() => a.got.length >= 1);
+  if (confirm) {
+    a.send({ type: "confirm-attach" });
+    await until(() => h.order.includes("read"));
+  }
+  h.exit();
+  await run;
+  return { h, a };
+}
+
+const isWarning = (m: LinkMessage) =>
+  m.type === "status" &&
+  m.status.message?.startsWith("The game code changed") === true;
+
+test("an update warning nobody confirmed comes back in the next session", async () => {
+  const first = await sessionWithMarkers(undefined, false);
+  const second = await sessionWithMarkers(first.h.deps.hashPath, false);
+  expect(second.a.got.some(isWarning)).toBe(true);
+  expect(second.h.order).not.toContain("read");
+});
+
+test("a confirmed update is read without a warning in the next session", async () => {
+  const first = await sessionWithMarkers(undefined, true);
+  const h = harness(() => "x;debugger;y");
+  h.deps.hashPath = first.h.deps.hashPath;
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  expect(h.order).toEqual(["launch", "read", "app"]);
+  expect(h.logs.filter((l) => l.label === "status")).toEqual([]);
+});

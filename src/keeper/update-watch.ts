@@ -31,18 +31,26 @@ function lastHash(statePath: string): string | undefined {
   }
 }
 
-/** Compares the code with the hash of the last session, records the new one, and scans the code when it changed. */
+/**
+ * Compares the code with the hash recorded last, and scans it when it changed. Clean code is recorded at once; code
+ * with markers only through recordGameHash, after the user confirms (spec §7.2), so the warning holds until then.
+ */
 export function checkGameUpdate(
   code: string,
   statePath: string,
 ): { changed: boolean; hash: string; markers: string[] } {
   const hash = createHash("sha256").update(code).digest("hex");
-  const changed = lastHash(statePath) !== hash;
-  if (changed) {
-    mkdirSync(dirname(statePath), { recursive: true });
-    writeFileSync(statePath, JSON.stringify({ hash }));
-  }
-  return { changed, hash, markers: changed ? scanGameCode(code) : [] };
+  if (lastHash(statePath) === hash)
+    return { changed: false, hash, markers: [] };
+  const markers = scanGameCode(code);
+  if (markers.length === 0) recordGameHash(hash, statePath);
+  return { changed: true, hash, markers };
+}
+
+/** Records the game code the user accepted: the next sessions with the same code read without a warning. */
+export function recordGameHash(hash: string, statePath: string): void {
+  mkdirSync(dirname(statePath), { recursive: true });
+  writeFileSync(statePath, JSON.stringify({ hash }));
 }
 
 /** The game's N.js inside its app.asar (Electron's fs reads inside .asar, also under ELECTRON_RUN_AS_NODE). */

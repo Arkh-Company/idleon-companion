@@ -3,7 +3,7 @@
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AlreadyRunning, startLinkServer } from "./link-server.ts";
-import { checkGameUpdate } from "./update-watch.ts";
+import { checkGameUpdate, recordGameHash } from "./update-watch.ts";
 
 export type KeeperLog = (label: string, data?: Record<string, unknown>) => void;
 
@@ -47,9 +47,10 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   }
 
   let markers: string[] = [];
+  let hash = "";
   try {
     const update = checkGameUpdate(d.gameCode(), d.hashPath);
-    markers = update.markers;
+    ({ markers, hash } = update);
     log("game-update", update);
   } catch (e) {
     log("game-update-skipped", { error: errorText(e) });
@@ -78,7 +79,15 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   };
   // Spec §7.2: a changed game code with detection markers is not read until the user says so.
   if (markers.length > 0) {
-    confirmed = startReading;
+    // The accepted code is recorded only now: a session closed without "Connect anyway" warns again next time.
+    confirmed = () => {
+      try {
+        recordGameHash(hash, d.hashPath);
+      } catch (e) {
+        log("game-hash-not-saved", { error: errorText(e) }); // the next session warns again; reading goes on
+      }
+      startReading();
+    };
     publishStatus({
       game: "running",
       reader: "error",
