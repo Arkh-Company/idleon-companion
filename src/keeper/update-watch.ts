@@ -1,8 +1,8 @@
 // The update watch (spec §7.2): before the reader attaches, the installed game code is hashed; when it changed since
 // the last session, it is scanned for the text a debugger detection would need.
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 
 export const DETECTION_MARKERS = [
   "debugger",
@@ -59,6 +59,16 @@ export function recordGameHash(hash: string, statePath: string): void {
  * its N.js cannot be read.
  */
 export function readInstalledGameCode(asarPath: string): string | undefined {
-  if (!existsSync(asarPath)) return undefined;
+  // ponytail: not existsSync — under Electron's asar-aware fs it says false for an app.asar that is there but cannot be
+  // opened (corrupt, locked), which would skip the check and launch with the pipe. The resources folder is not an asar
+  // path, so its native listing answers whether the file exists; any other listing error fails closed.
+  let names: string[];
+  try {
+    names = readdirSync(dirname(asarPath));
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    throw e;
+  }
+  if (!names.includes(basename(asarPath))) return undefined;
   return readFileSync(join(asarPath, "distBuild/static/game/N.js"), "utf8");
 }
