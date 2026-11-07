@@ -19,7 +19,8 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   the whole session and exits only after the game: the game's Chromium closes when that pipe closes, so killing the
   keeper closes the game (the known limit in [docs/steam-setup.md](docs/steam-setup.md)). It takes an engine reference
   once per game load (a breakpoint in `getGameAttribute:function(`, one pause), then runs `read.js` on it every second
-  and publishes only changes. A failed reading is skipped; only a lost reference (a reload) takes the engine again.
+  and publishes a reading only when it changed; every good reading republishes the last status with `lastReadingAt`
+  (the window's "last reading N s ago"). A failed reading is skipped; only a lost reference (a reload) takes the engine again.
 - **App** (`src/main/`, `src/preload/`, `src/renderer/`, built to `out/main/index.js`, `out/preload/index.cjs` and
   `out/renderer/`). A link client: it turns readings into a `GameContext` with the catalog (`names.json`) and sends it
   to the window. It never launches the game and never touches its pipe, so it can close, crash or be killed with the
