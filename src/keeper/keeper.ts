@@ -45,6 +45,16 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   let server: Awaited<ReturnType<typeof startLinkServer>> | undefined;
   // Spec §3: zero ban risk. Anything that keeps the keeper from checking the game opens it without the debugging pipe.
   let safe = true;
+  let warning: string | undefined;
+  // First, so every later line (link-failed included) has a folder to go to.
+  try {
+    d.makeDataDir();
+  } catch (e) {
+    log("data-dir-failed", { error: errorText(e) });
+    safe = false;
+    warning =
+      "Could not create the data folder: reading is off for this session.";
+  }
   try {
     server = await startLinkServer(d.pipePath, () => {
       const run = confirmed;
@@ -59,12 +69,6 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     log("link-failed", { error: errorText(e) }); // the game never depends on the app: it still opens
     safe = false;
   }
-  try {
-    d.makeDataDir();
-  } catch (e) {
-    log("data-dir-failed", { error: errorText(e) });
-    safe = false;
-  }
 
   /** A hash that cannot be saved is only logged: the next session checks (and warns) again. */
   const saveHash = (hash: string) => {
@@ -74,7 +78,6 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       log("game-hash-not-saved", { error: errorText(e) });
     }
   };
-  let warning: string | undefined;
   if (safe) {
     try {
       const code = d.gameCode();

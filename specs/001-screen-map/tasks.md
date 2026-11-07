@@ -384,7 +384,7 @@ fails before launching still opens the game (spec §3: zero ban risk; the game n
   - Signatures: `launchGame(exe, args, logFile, opts?: { debugPipe?: boolean }, spawnImpl?)` (default `true`; with
     `false` it returns no `cdp`); `readInstalledGameCode` tells "no app.asar" apart from "app.asar present, N.js
     unreadable". The keeper always keeps the link server (when it started), opens the app and exits only after the game.
-- [ ] T049b Status when the data folder fails (decided on 07/11 after the Phase 4b review; done in the feature
+- [X] T049b Status when the data folder fails (decided on 07/11 after the Phase 4b review; done in the feature
   correction round)
   - Files: `src/keeper/keeper.ts`, `src/keeper/keeper.test.ts`
   - Behavior: when the data folder cannot be created and the link server is up, the keeper publishes `{ game:

@@ -337,6 +337,43 @@ test("a data folder that cannot be created still opens the game, without the pip
   });
 });
 
+test("a data folder that cannot be created tells the app reading is off", async () => {
+  const h = harness(() => "var a=1;");
+  h.deps.makeDataDir = () => {
+    throw new Error("EPERM");
+  };
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  const a = app(h.deps.pipePath);
+  await until(() => a.got.length >= 1);
+  expect(a.got).toEqual([
+    {
+      type: "status",
+      status: {
+        game: "running",
+        reader: "error",
+        message:
+          "Could not create the data folder: reading is off for this session.",
+      },
+    },
+  ]);
+});
+
+test("the data folder is made before the link server, so link-failed reaches the log", async () => {
+  const h = harness(() => "var a=1;");
+  h.deps.pipePath = join(tmpdir(), `idleon-no-such-dir-${String(n++)}`, "x");
+  h.deps.makeDataDir = () => h.logs.push({ label: "data-dir-made" });
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  const labels = h.logs.map((l) => l.label);
+  expect(labels.indexOf("data-dir-made")).toBeGreaterThanOrEqual(0);
+  expect(labels.indexOf("data-dir-made")).toBeLessThan(
+    labels.indexOf("link-failed"),
+  );
+});
+
 test("an app that cannot start never ends the keeper before the game", async () => {
   const h = harness(() => "var a=1;");
   h.deps.startApp = () => {
