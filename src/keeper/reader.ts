@@ -31,6 +31,8 @@ export function startReader(
     scriptSuffix?: string;
     /** Called once per engine taken, with how long the game was paused (spec §7.2: the pause goes to the log). */
     onAttached?: (pausedMs: number) => void;
+    /** Called on every good reading, changed or not, with its time (the window's "last reading N s ago"). */
+    onRead?: (t: number) => void;
   } = {},
 ): { stop(): void } {
   const pollMs = opts.pollMs ?? 1000;
@@ -153,6 +155,9 @@ export function startReader(
             onStatus({ game: "running", reader: "attached" });
           });
         fails = 0;
+        safely(() => {
+          opts.onRead?.(reading.t);
+        });
       }
       const key = JSON.stringify({ ...reading, t: 0 });
       if (reading && key !== prev && !isStopped()) {

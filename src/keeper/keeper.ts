@@ -27,6 +27,7 @@ export interface KeeperDeps {
     onReading: (r: Reading) => void,
     onStatus: (s: Status) => void,
     onAttached: (pausedMs: number) => void,
+    onRead: (t: number) => void,
   ): { stop(): void };
   startApp(): void;
   log: KeeperLog;
@@ -98,9 +99,21 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   const game = d.launch(safe);
   pid = game.pid ?? null;
   log("game-started", { debugPipe: safe });
+  // Every status the app gets carries the time of the last good reading, once there is one (spec §5.6).
+  let lastStatus: Status | undefined;
+  let lastReadingAt: number | undefined;
+  const sendStatus = () => {
+    if (!lastStatus) return;
+    const status =
+      lastReadingAt === undefined
+        ? lastStatus
+        : { ...lastStatus, lastReadingAt };
+    server?.publish({ type: "status", status });
+  };
   const publishStatus = (status: Status) => {
     log("status", { ...status });
-    server?.publish({ type: "status", status });
+    lastStatus = status;
+    sendStatus();
   };
   let reader: { stop(): void } | undefined;
   const startReading = (cdp: Cdp) => {
@@ -113,6 +126,11 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       publishStatus,
       (pausedMs) => {
         log("attached", { pausedMs });
+      },
+      // Once a second: republished to the app, not logged.
+      (t) => {
+        lastReadingAt = t;
+        sendStatus();
       },
     );
   };

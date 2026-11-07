@@ -97,6 +97,27 @@ test("a throwing onReading neither stops the reader nor takes the engine again",
   expect(unhandled).toEqual([]);
 });
 
+test("onRead fires on every good reading, also when it did not change", async () => {
+  const readings: Reading[] = [];
+  const reads: number[] = [];
+  const { cdp } = fakeCdp(() => ({ result: { value: value(264) } }));
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    (x) => readings.push(x),
+    () => undefined,
+    { pollMs: 5, retryMs: 5, onRead: (t) => reads.push(t) },
+  );
+  try {
+    for (let i = 0; i < 100 && reads.length < 3; i++) await sleep(10);
+  } finally {
+    r.stop();
+  }
+  expect(readings).toHaveLength(1);
+  expect(reads.length).toBeGreaterThanOrEqual(3);
+  expect(reads[0]).toBe(readings[0]?.t);
+});
+
 test("an exception inside read.js keeps the engine reference", async () => {
   const readings: Reading[] = [];
   const statuses: Status[] = [];

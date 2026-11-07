@@ -66,9 +66,10 @@ async function main(): Promise<number> {
       return { pid: g.child.pid, cdp: g.cdp, exited: g.exited };
     },
     // read.js is loaded on every cycle, so a change to it takes effect without reopening the game (spec §5.2).
-    read: (cdp, onReading, onStatus, onAttached) =>
+    read: (cdp, onReading, onStatus, onAttached, onRead) =>
       startReader(cdp, () => loadReadSource(readJs), onReading, onStatus, {
         onAttached,
+        onRead,
       }),
     startApp,
     log,

@@ -35,6 +35,7 @@ interface FakeReader {
   onReading(r: Reading): void;
   onStatus(s: Status): void;
   onAttached(pausedMs: number): void;
+  onRead(t: number): void;
 }
 
 /** A keeper whose game, reader and app are fakes; `order` records what it did, `exit()` closes the game. */
@@ -57,9 +58,9 @@ function harness(gameCode: () => string | undefined) {
       order.push(debugPipe ? "launch" : "launch-no-pipe");
       return { pid: 42, cdp: debugPipe ? ({} as Cdp) : undefined, exited };
     },
-    read: (_cdp, onReading, onStatus, onAttached) => {
+    read: (_cdp, onReading, onStatus, onAttached, onRead) => {
       order.push("read");
-      readers.push({ onReading, onStatus, onAttached });
+      readers.push({ onReading, onStatus, onAttached, onRead });
       return { stop: () => order.push("stop") };
     },
     startApp: () => order.push("app"),
@@ -124,6 +125,57 @@ test("a clean game is launched and read, and what the reader sends reaches the a
   ]);
   expect(h.logs).toContainEqual({ label: "attached", id: 42, pausedMs: 268 });
   expect(h.logs).toContainEqual({ label: "reading", id: 42, reading });
+});
+
+test("every good reading republishes the last status with its time, without a log line", async () => {
+  const h = harness(() => "var a=1;");
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  const a = app(h.deps.pipePath);
+  await sleep(50);
+  h.readers[0]?.onStatus({ game: "running", reader: "attached" });
+  h.readers[0]?.onRead(5000);
+  h.readers[0]?.onRead(6000);
+  await until(() => a.got.length >= 3);
+  expect(a.got).toEqual([
+    { type: "status", status: { game: "running", reader: "attached" } },
+    {
+      type: "status",
+      status: { game: "running", reader: "attached", lastReadingAt: 5000 },
+    },
+    {
+      type: "status",
+      status: { game: "running", reader: "attached", lastReadingAt: 6000 },
+    },
+  ]);
+  expect(h.logs.filter((l) => l.label === "status")).toHaveLength(1);
+});
+
+test("a status from the reader keeps the time of the last good reading", async () => {
+  const h = harness(() => "var a=1;");
+  const run = runKeeper(h.deps);
+  cleanups.push(() => (h.exit(), run));
+  await until(() => h.order.includes("app"));
+  const a = app(h.deps.pipePath);
+  await sleep(50);
+  h.readers[0]?.onStatus({ game: "running", reader: "attached" });
+  h.readers[0]?.onRead(5000);
+  h.readers[0]?.onStatus({
+    game: "running",
+    reader: "attached",
+    message: "Reading failed: boom",
+  });
+  await until(() => a.got.length >= 3);
+  expect(a.got[2]).toEqual({
+    type: "status",
+    status: {
+      game: "running",
+      reader: "attached",
+      message: "Reading failed: boom",
+      lastReadingAt: 5000,
+    },
+  });
 });
 
 test("when the game exits the reader stops before the app hears it closed, and the keeper ends", async () => {
