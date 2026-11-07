@@ -1,10 +1,11 @@
-// Keeper entry: what Steam starts (scripts/steam-launch.cmd), as electron.exe with ELECTRON_RUN_AS_NODE=1, with the
-// game's exe and args. Plain Node: no Electron import. Built to out/main/keeper.js.
+// Keeper entry: Steam starts the companion's exe as `"<exe>" --keeper %command%`, and out/main/start.js loads this
+// bundle (out/main/keeper.js) in Electron's main process. Still plain Node code: no Electron import.
 import { spawn } from "node:child_process";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { LINK_PIPE } from "../shared/index.ts";
+import { appCommand, gameCommand, readJsPath } from "./command-line.ts";
 import { keepAlive, runKeeper } from "./keeper.ts";
 import type { KeeperLog } from "./keeper.ts";
 import { launchGame } from "./launch.ts";
@@ -14,9 +15,15 @@ import { readInstalledGameCode } from "./update-watch.ts";
 
 const dataDir = join(process.env.APPDATA ?? homedir(), "IdleOn Companion");
 const logFile = join(dataDir, "keeper.log");
-// out/main/keeper.js → the repository root, where package.json points Electron at the app.
+// out/main/keeper.js → the repository root (in development, the folder Electron was given) or app.asar (packaged).
 const repoRoot = resolve(import.meta.dirname, "../..");
-const readJs = join(repoRoot, "src/keeper/read.js");
+// ponytail: Electron types it as boolean, but it is undefined when packaged; only its truthiness is used.
+const defaultApp = process.defaultApp;
+const readJs = readJsPath({
+  defaultApp,
+  resourcesPath: process.resourcesPath,
+  repoRoot,
+});
 
 /** The game's pid once it is launched: every keeper.log line carries it as `id` (null before the launch). */
 let gamePid: number | null = null;
@@ -35,8 +42,13 @@ const log: KeeperLog = (label, data) => {
 
 function startApp(): void {
   const env = { ...process.env };
-  delete env.ELECTRON_RUN_AS_NODE; // the app is a real Electron app
-  spawn(process.execPath, [repoRoot, "--from-steam"], {
+  delete env.ELECTRON_RUN_AS_NODE; // the app is a real Electron app (harmless now: Steam never sets it)
+  const app = appCommand({
+    execPath: process.execPath,
+    defaultApp,
+    appPath: repoRoot,
+  });
+  spawn(app.file, app.args, {
     detached: true,
     stdio: "ignore",
     env,
@@ -49,14 +61,15 @@ function startApp(): void {
 
 async function main(): Promise<number> {
   keepAlive(log, () => gamePid);
-  const [exe, ...args] = process.argv.slice(2);
-  if (exe === undefined) {
+  const game = gameCommand(process.argv);
+  if (game === null) {
     log("no-game", {
       id: null,
-      error: "usage: keeper.js <game exe> [game args...]",
+      error: "usage: <exe> --keeper <game exe> [game args...]",
     });
     return 1;
   }
+  const { exe, args } = game;
   await runKeeper({
     pipePath: LINK_PIPE,
     hashPath: join(dataDir, "game-hash.json"),

@@ -1,0 +1,26 @@
+# The installer (research R2; ADR 0003): one per-user NSIS install at a fixed path
+# (%LOCALAPPDATA%\Programs\IdleOn Companion\), so the Steam launch option stays valid across versions.
+# No game file and no code signing (FR-002, spec Assumptions). `just package` builds it; `just release` publishes it.
+appId: com.arkh.idleon-companion
+productName: IdleOn Companion
+executableName: IdleOn Companion
+directories:
+  output: dist
+files:
+  - out/**
+  - package.json
+# The keeper loads read.js on every cycle, from resources\read.js next to app.asar.
+extraResources:
+  - from: src/keeper/read.js
+    to: read.js
+win:
+  target: nsis
+nsis:
+  oneClick: true
+  perMachine: false
+  createStartMenuShortcut: true
+  runAfterFinish: true
+publish:
+  provider: github
+  owner: Arkh-Company
+  repo: idleon-companion-releases

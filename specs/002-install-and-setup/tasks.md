@@ -68,14 +68,14 @@ app without it; Steam launches it directly (research R1, R2; ADR 0003).
 
 ### Tests for Phase 1
 
-- [ ] T010 [P] [US1] Dispatch test in `src/start/dispatch.test.ts`
+- [X] T010 [P] [US1] Dispatch test in `src/start/dispatch.test.ts`
   - Files: `src/start/dispatch.test.ts`
   - Signatures tested: `roleFor(argv: string[]): "keeper" | "remove-from-steam" | "app"` in `src/start/dispatch.ts`.
   - Cases: `["exe", "--keeper", "C:\\Game\\LegendsOfIdleon.exe"]` → `"keeper"`; dev shape
     `["electron.exe", "C:\\repo", "--keeper", "x.exe"]` → `"keeper"`; `["exe", "--remove-from-steam"]` →
     `"remove-from-steam"`; `["exe"]` and `["exe", "--from-steam"]` → `"app"`; a game arg that is literally
     `--remove-from-steam` after `--keeper` still → `"keeper"` (the first recognized flag wins).
-- [ ] T011 [P] [US1] Keeper command-line and paths test in `src/keeper/command-line.test.ts`
+- [X] T011 [P] [US1] Keeper command-line and paths test in `src/keeper/command-line.test.ts`
   - Files: `src/keeper/command-line.test.ts`
   - Signatures tested (in `src/keeper/command-line.ts`, no `electron` import):
     `gameCommand(argv: string[]): { exe: string; args: string[] } | null` (everything after `--keeper`, unchanged);
@@ -88,37 +88,37 @@ app without it; Steam launches it directly (research R1, R2; ADR 0003).
 
 ### Implementation for Phase 1
 
-- [ ] T012 [US1] Add electron-builder (approved by Vinicius on 07/11)
+- [X] T012 [US1] Add electron-builder (approved by Vinicius on 07/11)
   - Files: `package.json`, `pnpm-lock.yaml` (through pnpm)
   - Command: `pnpm add -D electron-builder@26.18.0`. `package.json`: `"main": "out/main/start.js"`, `"productName":
     "IdleOn Companion"` (the `version` stays as release-please keeps it).
-- [ ] T013 [US1] The dispatching entry `src/start/`
+- [X] T013 [US1] The dispatching entry `src/start/`
   - Files: `src/start/dispatch.ts`, `src/start/index.ts`, `electron.vite.config.ts`
   - `roleFor` as tested in T010. `index.ts`: `await import()` of `../keeper/index.ts` for `"keeper"`, of
     `../main/index.ts` for `"app"`; `"remove-from-steam"` imports `../main/remove-from-steam.ts`, which in this phase
     only exits with code 0 (filled in Phase 6). No other code in `src/start/`.
   - `electron.vite.config.ts`: the main build's inputs become `{ start: "src/start/index.ts", index:
     "src/main/index.ts", keeper: "src/keeper/index.ts" }`, so each role loads only its own bundle.
-- [ ] T014 [US1] The keeper runs in Electron's main process
+- [X] T014 [US1] The keeper runs in Electron's main process
   - Files: `src/keeper/command-line.ts`, `src/keeper/index.ts`
   - `index.ts` uses `gameCommand(process.argv)` (no `process.argv.slice(2)`), `appCommand({ execPath:
     process.execPath, defaultApp: process.defaultApp === true, appPath: repoRoot })` in `startApp` (still removing
     `ELECTRON_RUN_AS_NODE` from the env, harmless), and `readJsPath({ defaultApp, resourcesPath:
     process.resourcesPath, repoRoot })`. Still no `electron` import (`just arch`). The header comment says Steam starts
     it as `"<exe>" --keeper %command%`.
-- [ ] T015 [US1] Packaging config `electron-builder.yml`
+- [X] T015 [US1] Packaging config `electron-builder.yml`
   - Files: `electron-builder.yml` (new), `build/` (new folder, empty until Phase 6)
   - `appId: com.arkh.idleon-companion`, `productName: IdleOn Companion`, `executableName: IdleOn Companion`,
     `directories.output: dist`, `files: ["out/**", "package.json"]`, `extraResources: [{ from: "src/keeper/read.js",
     to: "read.js" }]`, `win.target: nsis`, `nsis: { oneClick: true, perMachine: false, createStartMenuShortcut: true,
     runAfterFinish: true }`, `publish: { provider: github, owner: Arkh-Company, repo: idleon-companion-releases }`. No
     game file and no code signing (FR-002, Assumptions).
-- [ ] T016 [US1] Boundary rule for the entry in `.dependency-cruiser.cjs`
+- [X] T016 [US1] Boundary rule for the entry in `.dependency-cruiser.cjs`
   - Files: `.dependency-cruiser.cjs`
   - Rule `start-only-dispatches` (error): from `^src/start/` to anything in `^src/` except `^src/start/`,
     `^src/keeper/index\.ts$`, `^src/main/index\.ts$`, `^src/main/remove-from-steam\.ts$`; comment: the entry only
     picks the role. `keeper-alone` and `main-not-keeper-or-renderer` stay as they are.
-- [ ] T017 [US1] The `.cmd` launcher leaves
+- [X] T017 [US1] The `.cmd` launcher leaves
   - Files: `scripts/steam-launch.cmd` (removed); `docs/steam-setup.md` (short note at the top: the option is now
     `"<exe>" --keeper %command%` and the installer's setup screen writes it; full rewrite in Polish)
 

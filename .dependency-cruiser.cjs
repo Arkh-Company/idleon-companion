@@ -11,6 +11,22 @@ module.exports = {
       to: { path: "node_modules/electron/" },
     },
     {
+      name: "start-only-dispatches",
+      comment:
+        "The entry only picks the role: it loads the keeper's, the app's or the uninstaller mode's entry, nothing else.",
+      severity: "error",
+      from: { path: "^src/start/" },
+      to: {
+        path: "^src/",
+        pathNot: [
+          "^src/start/",
+          "^src/keeper/index\\.ts$",
+          "^src/main/index\\.ts$",
+          "^src/main/remove-from-steam\\.ts$",
+        ],
+      },
+    },
+    {
       name: "keeper-alone",
       comment:
         "The keeper holds the game's pipe and must not depend on the app: it imports only src/shared.",

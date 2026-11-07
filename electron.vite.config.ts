@@ -4,9 +4,14 @@ import { defineConfig } from "electron-vite";
 export default defineConfig({
   main: {
     build: {
-      // The keeper is built next to the app's main: out/main/keeper.js (plain Node, run by scripts/steam-launch.cmd).
+      // One executable, three bundles: out/main/start.js picks the role and loads only the app's (index.js) or the
+      // keeper's (keeper.js), so each role loads only its own code (research R1).
       rolldownOptions: {
-        input: { index: "src/main/index.ts", keeper: "src/keeper/index.ts" },
+        input: {
+          start: "src/start/index.ts",
+          index: "src/main/index.ts",
+          keeper: "src/keeper/index.ts",
+        },
       },
     },
   },

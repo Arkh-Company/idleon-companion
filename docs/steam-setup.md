@@ -1,5 +1,10 @@
 # Steam setup
 
+> **Changing (feature 002):** `scripts\steam-launch.cmd` is gone. The launch option is now
+> `"<exe>" --keeper %command%`, where `<exe>` is the installed `IdleOn Companion.exe` (in development:
+> `"<repo>\node_modules\electron\dist\electron.exe" "<repo>" --keeper %command%`), and the installer's setup screen
+> writes it for you. The rest of this page describes the old setup and is rewritten when the feature is done.
+
 Steam starts the companion in place of the game: the launch option runs `scripts\steam-launch.cmd`, which starts the
 keeper (`electron.exe` running `out\main\keeper.js` as plain Node). The keeper opens Legends of Idleon with the
 command line Steam passed, reads it, opens the companion window, and ends only after the game closes. See
