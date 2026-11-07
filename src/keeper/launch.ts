@@ -15,7 +15,10 @@ export function launchGame(
   const log = openSync(logFile, "w");
   let child: ChildProcess;
   // The keeper runs with ELECTRON_RUN_AS_NODE; the game, an Electron app, would start as plain Node with it.
-  const env = { ...process.env, ELECTRON_ENABLE_LOGGING: "1" };
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    ELECTRON_ENABLE_LOGGING: "1",
+  };
   delete env.ELECTRON_RUN_AS_NODE;
   try {
     // No shell: the exe path and every arg reach the game as they are, spaces and parentheses included.

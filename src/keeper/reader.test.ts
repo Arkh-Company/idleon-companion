@@ -122,3 +122,141 @@ test("an exception inside read.js keeps the engine reference", async () => {
   expect(readings).toEqual([]);
   expect(sent.filter((m) => m === "Target.attachToTarget")).toHaveLength(1);
 });
+
+/** A read.js that fails `fails` times (an exception inside the game), then reads well. */
+function failingThenGood(fails: number) {
+  let reads = 0;
+  const read = () => {
+    reads++;
+    return reads <= fails
+      ? {
+          result: {},
+          exceptionDetails: {
+            text: "Uncaught",
+            exception: { description: "TypeError: x is undefined" },
+          },
+        }
+      : { result: { value: value(0) } };
+  };
+  return { read, reads: () => reads };
+}
+
+test("ten failed readings in a row warn once, without taking the engine again", async () => {
+  const statuses: Status[] = [];
+  const f = failingThenGood(Infinity);
+  let readsAtWarning = 0;
+  const { cdp, sent } = fakeCdp(f.read);
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    () => undefined,
+    (s) => {
+      statuses.push(s);
+      if (s.message) readsAtWarning = f.reads();
+    },
+    { pollMs: 2, retryMs: 2 },
+  );
+  try {
+    for (let i = 0; i < 100 && f.reads() < 25; i++) await sleep(10);
+  } finally {
+    r.stop();
+  }
+  expect(statuses.filter((s) => s.message)).toEqual([
+    {
+      game: "running",
+      reader: "attached",
+      message: "Reading failed: TypeError: x is undefined",
+    },
+  ]);
+  expect(readsAtWarning).toBe(10);
+  expect(sent.filter((m) => m === "Target.attachToTarget")).toHaveLength(1);
+});
+
+test("a reading of the wrong shape counts as a failed reading", async () => {
+  const statuses: Status[] = [];
+  const { cdp } = fakeCdp(() => ({ result: { value: { map: "x" } } }));
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    () => undefined,
+    (s) => statuses.push(s),
+    { pollMs: 2, retryMs: 2 },
+  );
+  try {
+    for (let i = 0; i < 100 && !statuses.some((s) => s.message); i++)
+      await sleep(10);
+  } finally {
+    r.stop();
+  }
+  expect(statuses.find((s) => s.message)?.message).toBe(
+    "Reading failed: the reading has the wrong shape",
+  );
+});
+
+test("a good reading after the warning clears the message once", async () => {
+  const statuses: Status[] = [];
+  const readings: Reading[] = [];
+  const f = failingThenGood(10);
+  const { cdp } = fakeCdp(f.read);
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    (x) => readings.push(x),
+    (s) => statuses.push(s),
+    { pollMs: 2, retryMs: 2 },
+  );
+  try {
+    for (let i = 0; i < 100 && f.reads() < 15; i++) await sleep(10);
+  } finally {
+    r.stop();
+  }
+  expect(readings).toHaveLength(1);
+  expect(statuses.slice(1)).toEqual([
+    { game: "running", reader: "attached" },
+    {
+      game: "running",
+      reader: "attached",
+      message: "Reading failed: TypeError: x is undefined",
+    },
+    { game: "running", reader: "attached" },
+  ]);
+});
+
+test("onAttached gets how long the game was paused", async () => {
+  const paused: number[] = [];
+  const { cdp } = fakeCdp();
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    () => undefined,
+    () => undefined,
+    { pollMs: 5, retryMs: 5, onAttached: (ms) => paused.push(ms) },
+  );
+  try {
+    for (let i = 0; i < 100 && paused.length === 0; i++) await sleep(10);
+  } finally {
+    r.stop();
+  }
+  expect(paused).toHaveLength(1);
+  expect(paused[0]).toBeGreaterThanOrEqual(0);
+});
+
+test("a stop while the engine is being taken still lets the game go", async () => {
+  const { cdp, sent } = fakeCdp();
+  const send = cdp.send.bind(cdp);
+  cdp.send = (method, ...rest) => {
+    if (method === "Debugger.resume") r.stop(); // the keeper stops while acquireEngine finishes
+    return send(method, ...rest);
+  };
+  const r = startReader(
+    cdp,
+    () => "(function () {})",
+    () => undefined,
+    () => undefined,
+    { pollMs: 5, retryMs: 5 },
+  );
+  await sleep(50);
+  const after = sent.slice(sent.indexOf("Debugger.resume") + 1);
+  expect(after).toContain("Target.detachFromTarget");
+  expect(after).not.toContain("Runtime.callFunctionOn");
+});
