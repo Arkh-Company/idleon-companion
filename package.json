@@ -1,6 +1,6 @@
 {
   "name": "idleon-companion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Desktop companion for Legends of Idleon (Steam): shows live, read-only, where you are and what is open in the game.",
   "private": true,
   "license": "UNLICENSED",
