@@ -16,7 +16,12 @@ import { toContext } from "./context.ts";
 import { decide } from "./lifecycle.ts";
 import type { LifecycleAction, LifecycleEvent } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
-import { linkReading, namePayload, settingsPayload } from "./payloads.ts";
+import {
+  linkReading,
+  linkStatus,
+  namePayload,
+  settingsPayload,
+} from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
 import { isAllowedNavigation, windowOptions } from "./window-options.ts";
 
@@ -124,8 +129,10 @@ function start(): void {
         lastReading = r;
         sendContext();
       } else if (m.type === "status") {
-        setStatus(m.status);
-        if (m.status.game === "closed") apply("game-exited");
+        const s = linkStatus(m.status);
+        if (!s) return;
+        setStatus(s);
+        if (s.game === "closed") apply("game-exited");
       }
     },
     (up) => {

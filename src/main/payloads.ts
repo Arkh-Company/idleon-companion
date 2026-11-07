@@ -1,7 +1,12 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
 import { toReading } from "../shared/index.ts";
-import type { CatalogTable, Reading, Settings } from "../shared/index.ts";
+import type {
+  CatalogTable,
+  Reading,
+  Settings,
+  Status,
+} from "../shared/index.ts";
 import { catalogKey } from "./catalog/catalog.ts";
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
@@ -38,4 +43,24 @@ export function settingsPayload(v: unknown): Settings | null {
 /** The body of a `reading` link message, with the keeper's time; null when its shape is not a Reading's. */
 export function linkReading(v: unknown): Reading | null {
   return isObject(v) && typeof v.t === "number" ? toReading(v, v.t) : null;
+}
+
+const GAMES: readonly unknown[] = ["running", "closed", "not-launched"];
+const READERS: readonly unknown[] = ["attached", "connecting", "error"];
+
+/** The body of a `status` link message with only the Status fields; null when one is out of shape. */
+export function linkStatus(v: unknown): Status | null {
+  if (!isObject(v) || !GAMES.includes(v.game) || !READERS.includes(v.reader))
+    return null;
+  const { message, lastReadingAt } = v;
+  if (message !== undefined && typeof message !== "string") return null;
+  if (lastReadingAt !== undefined && typeof lastReadingAt !== "number")
+    return null;
+  const s: Status = {
+    game: v.game as Status["game"],
+    reader: v.reader as Status["reader"],
+  };
+  if (message !== undefined) s.message = message;
+  if (lastReadingAt !== undefined) s.lastReadingAt = lastReadingAt;
+  return s;
 }

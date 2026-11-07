@@ -1,8 +1,13 @@
 // The shape checks of what reaches the main process from the window (IPC) and from the keeper (link).
 import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import type { Reading } from "../shared/index.ts";
-import { linkReading, namePayload, settingsPayload } from "./payloads.ts";
+import type { Reading, Status } from "../shared/index.ts";
+import {
+  linkReading,
+  linkStatus,
+  namePayload,
+  settingsPayload,
+} from "./payloads.ts";
 
 test("a name payload with a known table, a number key and a name passes, the name trimmed", () => {
   expect(
@@ -65,4 +70,35 @@ test.each([
   ["no object", "reading"],
 ])("a link reading with %s is refused", (_name, value) => {
   expect(linkReading(value)).toBeNull();
+});
+
+const status: Status = {
+  game: "running",
+  reader: "attached",
+  message: "Reading failed: x",
+  lastReadingAt: 9,
+};
+
+test("a link status of the right shape keeps only its fields", () => {
+  expect(linkStatus({ ...status, extra: 1 })).toEqual(status);
+});
+
+test("a link status without the optional fields passes", () => {
+  expect(linkStatus({ game: "closed", reader: "error" })).toStrictEqual({
+    game: "closed",
+    reader: "error",
+  });
+});
+
+test.each([
+  ["a game outside its values", { ...status, game: "paused" }],
+  ["a reader outside its values", { ...status, reader: "lost" }],
+  ["a message that is not text", { ...status, message: 5 }],
+  [
+    "a last reading time that is not a number",
+    { ...status, lastReadingAt: "9" },
+  ],
+  ["no object", "status"],
+])("a link status with %s is refused", (_name, value) => {
+  expect(linkStatus(value)).toBeNull();
 });
