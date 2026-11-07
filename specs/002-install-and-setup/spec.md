@@ -410,6 +410,7 @@ a atualização espera o jogo fechar.
 | O hash publicado no mesmo repositório só protege contra download corrompido: quem controla o repositório de releases (ou a conta do Vinicius no GitHub) pode mandar código a todos os amigos. Aceita-se esse risco ou as versões são assinadas com uma chave própria embutida no app? (security CHK001) | resolved | Vinicius, 07/11: aceita o risco, documentado, com 2FA na conta do GitHub que publica; sem assinatura própria das versões (FR-021, Assumptions). |
 | O que o companion diz quando o texto do usuário já tem um lançador de console? | resolved | Padrão do agente: acrescenta a parte dele sem apagar nada e avisa "This launch option also runs a console script; the gem store may not open." (Edge Cases). |
 | Metas de sucesso | resolved | Padrão do agente: instalar e jogar em menos de 5 minutos; compra abre em 3 de 3 tentativas; X fecha em até 2 s; painel volta em até 2 s depois de "Reconnect" (SC-001 a SC-004). |
+| Se o usuário apaga o próprio texto depois da configuração (ex.: tira ` -windowed`), o desfazer ainda tira a parte do companion? | resolved | durante a implementação: sim (FR-009). Quando o texto inserido guardado não está mais na opção, o desfazer tenta o mesmo texto sem o espaço do fim, de modo que `"<exe>" --keeper %command%` sai inteiro e a Steam nunca fica apontando para um exe desinstalado. Achado da revisão da fase 3, 07/11. |
 
 ## Origem do design
 
