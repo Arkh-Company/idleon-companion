@@ -354,6 +354,42 @@ Edge; `just test-edge` passes on Windows; `just build` writes `out/main/keeper.j
 
 ---
 
+## Phase 4b: Keeper safety follow-ups (added on 07/11 during the implementation, with the user's yes)
+
+**Goal**: after a suspicious or uncheckable game update the game opens without the debugging pipe, and a keeper that
+fails before launching still opens the game (spec §3: zero ban risk; the game never depends on the app).
+
+**Independent Test**: the keeper tests with fakes show which launch happens in each case, on the CI.
+
+### Tests for Phase 4b
+
+- [ ] T049 Keeper launch decisions in `src/keeper/keeper.test.ts` and `src/keeper/launch.test.ts` (or the file that
+  already tests `launchGame`)
+  - Cases: (a) markers found and not confirmed → the game is launched **without** `--remote-debugging-pipe` and without
+    the debug stdio pipes, no reader starts, status `{ game: "running", reader: "error", message: "The game code changed
+    and contains: <markers>. Reading is off for this session." }`; a `confirm-attach` in that session records the hash
+    (`recordGameHash`) and starts nothing, so the next session launches with the pipe and reads without a warning;
+    (b) `app.asar` exists but its N.js cannot be read → launched without the pipe, status message "Could not check the
+    game code: the reader needs an update.", `confirm-attach` records nothing (there is no hash); without `app.asar`
+    (Edge in the tests) the watch is skipped and reading starts as today; (c) the link server fails with an error other
+    than `AlreadyRunning`, or the data folder cannot be created → the game is still launched without the pipe, and the
+    error is logged when the log is writable; `AlreadyRunning` still exits without launching anything; (d)
+    `launchGame(..., { debugPipe: false })` passes the Steam args unchanged, with no extra flag, `stdio` without the
+    two pipes, and still drops `ELECTRON_RUN_AS_NODE`.
+
+### Implementation for Phase 4b
+
+- [ ] T049a Launch without the pipe and the three keeper paths
+  - Files: `src/keeper/launch.ts`, `src/keeper/keeper.ts`, `src/keeper/index.ts`, `src/keeper/update-watch.ts`
+  - Signatures: `launchGame(exe, args, logFile, opts?: { debugPipe?: boolean }, spawnImpl?)` (default `true`; with
+    `false` it returns no `cdp`); `readInstalledGameCode` tells "no app.asar" apart from "app.asar present, N.js
+    unreadable". The keeper always keeps the link server (when it started), opens the app and exits only after the game.
+
+**Verify**: `just test-one src/keeper/keeper.test.ts` passes; `just check` passes and starts no Edge;
+`just test-edge` passes on Windows.
+
+---
+
 ## Phase 5: Settings and app main process (plan Tasks 9–10)
 
 > Before this phase's Executor, the session runs `just build` and opens the app once (`pnpm exec electron .`), to see
@@ -400,6 +436,10 @@ with the not-launched status when no keeper runs.
     context of the last reading); `settings:get`/`settings:set` (apply `alwaysOnTop` at once);
     `reader:confirm-attach` → link `{ type: "confirm-attach" }`. Validate each IPC payload's shape before use
     (`catalog:name`: a known table, string key, non-empty string name).
+  - From the keeper review (07/11): the link decoder checks only the message type, so validate a `reading` message's
+    shape before `toContext` (move `toReading` from `src/keeper/reader.ts` to `src/shared/`, re-exported by
+    `src/shared/index.ts`, and use it on both sides); start as "not connected", because `connectLink` calls
+    `onConnected(false)` only when a live connection drops.
   - Navigation lockdown (added on 07/11 during the implementation, with the user's yes; Electron security checklist):
     `webContents.setWindowOpenHandler(() => ({ action: "deny" }))` and `will-navigate` prevented for any URL other
     than the window's own page. Put the decision in a pure function next to `windowOptions` (e.g.
@@ -429,8 +469,10 @@ and the architecture document.
     "264 Emperor's Castle Doorstep" and window "Sailing"; unnamed `menu2` 999 → typing "Test" in the field labelled
     "Name it" and pressing Enter calls `companion.name("menu2", "999", "Test")`; a deduced entry shows
     `title="from game code"`; not-launched status shows "Live reading needs the game to be launched through Steam with
-    the companion launch option."; the update warning shows a "Connect anyway" button that calls
-    `companion.confirmAttach()`, and no such button for other messages; the three settings checkboxes call
+    the companion launch option."; the update warning ("The game code changed and contains: debugger. Reading is off
+    for this session.") shows a "Connect next time" button that calls `companion.confirmAttach()` and then says
+    "Reading starts next time the game opens.", and no such button for other messages (including "Could not check the
+    game code: the reader needs an update."); the three settings checkboxes call
     `companion.setSettings` with the toggled value.
 
 ### Implementation for Phase 6
@@ -440,8 +482,8 @@ and the architecture document.
     `src/renderer/SettingsView.tsx`, `src/renderer/modules/screen-map.ts`, `src/renderer/App.tsx`,
     `src/renderer/styles.css`, `src/renderer/companion.d.ts` (`window.companion: CompanionApi`)
   - Rows: World, Map, Menu, Window, Codex tab (+ selected item), Character, AFK target; status "Game running / Reader
-    attached / last reading N s ago"; "Connect anyway" only when the status message starts with "The game code
-    changed"; settings "Show window when the game starts", "Close companion when the game closes", "Always on top".
+    attached / last reading N s ago"; "Connect next time" only when the status message starts with "The game code
+    changed" (decided on 07/11: with markers the game opens without the pipe, see Phase 4b); settings "Show window when the game starts", "Close companion when the game closes", "Always on top".
     `screenMap: CompanionModule = { id: "screen-map", title: "Screen map", needs: ["live-screen"], matches: () => true,
     Panel: ScreenMapPanel }`; `App` shows `modulesFor(ctx, [screenMap])`. No inline `style` attributes (CSP).
 - [ ] T062 [P] Steam launch script in `scripts/steam-launch.cmd`
