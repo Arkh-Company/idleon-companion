@@ -6,7 +6,8 @@ export type LifecycleEvent =
   | "start-manual"
   | "second-instance"
   | "game-exited"
-  | "tray-click";
+  | "tray-click"
+  | "window-close";
 export type LifecycleAction =
   "show-window" | "hide-window" | "focus-window" | "quit";
 
@@ -14,6 +15,8 @@ export function decide(
   event: LifecycleEvent,
   s: Settings,
   windowVisible: boolean,
+  /** Quit was asked (tray "Quit", the game exiting with closeWithGame, the system shutting down). */
+  quitting = false,
 ): LifecycleAction[] {
   switch (event) {
     case "start-from-steam":
@@ -26,5 +29,8 @@ export function decide(
       return s.closeWithGame ? ["quit"] : [];
     case "tray-click":
       return windowVisible ? ["hide-window"] : ["show-window"];
+    case "window-close":
+      // v1 has no shortcut to reopen the app, so X keeps it alive in the tray (decided on 07/11).
+      return quitting ? [] : ["hide-window"];
   }
 }

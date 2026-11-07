@@ -75,8 +75,11 @@ function start(): void {
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);
 
+  // Set by before-quit (tray "Quit", the game exiting with closeWithGame) and by the system ending the session.
+  let quitting = false;
   const apply = (event: LifecycleEvent) => {
-    for (const action of decide(event, settings, win.isVisible())) run(action);
+    for (const action of decide(event, settings, win.isVisible(), quitting))
+      run(action);
   };
   const run = (action: LifecycleAction) => {
     if (action === "quit") {
@@ -103,7 +106,7 @@ function start(): void {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: "Show or hide",
+        label: "Show/Hide",
         click: () => {
           apply("tray-click");
         },
@@ -171,7 +174,18 @@ function start(): void {
   app.on("second-instance", () => {
     apply("second-instance");
   });
+  // X hides the window in the tray; only quitting lets it close (T065).
+  win.on("close", (e) => {
+    const actions = decide("window-close", settings, win.isVisible(), quitting);
+    if (actions.includes("hide-window")) e.preventDefault();
+    for (const action of actions) run(action);
+  });
+  win.on("session-end", () => {
+    quitting = true;
+    app.quit();
+  });
   app.on("before-quit", () => {
+    quitting = true;
     link.close();
     tray.destroy();
   });

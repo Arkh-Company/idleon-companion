@@ -50,3 +50,13 @@ test("a tray click shows a hidden window", () => {
     "show-window",
   ]);
 });
+
+test("closing the window with X hides it in the tray", () => {
+  expect(decide("window-close", DEFAULT_SETTINGS, true)).toEqual([
+    "hide-window",
+  ]);
+});
+
+test("closing the window while the app quits lets it close", () => {
+  expect(decide("window-close", DEFAULT_SETTINGS, true, true)).toEqual([]);
+});
