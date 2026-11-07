@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
+  emptyPayload,
   linkReading,
   linkStatus,
   namePayload,
@@ -109,4 +110,23 @@ test.each([
   ["no object", "status"],
 ])("a link status with %s is refused", (_name, value) => {
   expect(linkStatus(value)).toBeNull();
+});
+
+// steam:state, steam:setup, steam:remove, reader:release, reader:reconnect and update:install carry no body.
+test.each([
+  ["a missing body", undefined],
+  ["an empty object", {}],
+])("a bodiless channel accepts %s", (_name, payload) => {
+  expect(emptyPayload(payload)).toBe(true);
+});
+
+test.each([
+  ["null", null],
+  ["an object with a field", { account: "102" }],
+  ["an array", []],
+  ["a text", ""],
+  ["a number", 0],
+  ["a boolean", false],
+])("a bodiless channel refuses %s", (_name, payload) => {
+  expect(emptyPayload(payload)).toBe(false);
 });

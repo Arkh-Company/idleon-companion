@@ -288,7 +288,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
   - Files: `src/renderer/App.test.tsx`
   - Cases: `steamState` with `configured: false` → only `SetupView` (no panel, no settings); `configured: true` → the
     001 window; after a `done` progress the window switches to the 001 window.
-- [ ] T043 [P] [US1] Payload checks for the new channels in `src/main/payloads.test.ts`
+- [X] T043 [P] [US1] Payload checks for the new channels in `src/main/payloads.test.ts`
   - Files: `src/main/payloads.test.ts`
   - Cases: `steam:setup`, `steam:remove`, `reader:release`, `reader:reconnect` and `update:install` accept only an
     empty or missing body and refuse anything else.
