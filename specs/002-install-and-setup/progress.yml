@@ -11,7 +11,7 @@ execution:
   branch: feat/002-install-and-setup
   phases:
     - {name: "Done gate", status: done, commits: 175df05..31402a0}
-    - {name: "Setup + Foundational", status: pending}
+    - {name: "Setup + Foundational", status: done, commits: e7158fb..0d75667}
     - {name: "US1 (T030-T038)", status: pending}
     - {name: "US1 (T040-T046)", status: pending}
     - {name: US2, status: pending}
