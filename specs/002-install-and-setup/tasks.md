@@ -180,7 +180,7 @@ modules writes a Steam file.
 
 ### Tests for Phase 3
 
-- [ ] T030 [P] [US1] VDF reader and splice in `src/main/steam/vdf.test.ts`
+- [X] T030 [P] [US1] VDF reader and splice in `src/main/steam/vdf.test.ts`
   - Files: `src/main/steam/vdf.test.ts`, `src/main/steam/fixtures/localconfig.vdf` (a small hand-made file with
     `UserLocalConfigStore > Software > Valve > Steam > apps > 1476970 { LastPlayed, LaunchOptions }`, another app, a
     `//` comment, escaped quotes and backslashes; no real account data)
@@ -193,7 +193,7 @@ modules writes a Steam file.
     one line inside the block with the block's indentation; with no app block it inserts the block inside `apps`;
     with no `apps` path it throws `VdfShapeError`; unbalanced braces or an unterminated string throw `VdfShapeError`;
     `\r\n` line endings are kept.
-- [ ] T031 [P] [US1] Adding and removing the companion's part in `src/main/steam/launch-option.test.ts`
+- [X] T031 [P] [US1] Adding and removing the companion's part in `src/main/steam/launch-option.test.ts`
   - Files: `src/main/steam/launch-option.test.ts`
   - Signatures tested: `companionPart(p: { execPath: string; defaultApp: boolean; appPath: string }): string`
     (`"<exe>" --keeper ` packaged; `"<electron.exe>" "<repo>" --keeper ` dev); `addPart(current: string, part:
@@ -206,7 +206,7 @@ modules writes a Steam file.
     original text; `removePart` when the user edited the rest keeps the edit; `removePart` when the inserted text is
     gone → unchanged; `hasConsoleScript('"C:\\x\\run.cmd" %command%')` true, `.BAT` true, `-windowed` false, a `.cmd`
     after `%command%` false.
-- [ ] T032 [P] [US1] Locating Steam, the account and the game in `src/main/steam/locate.test.ts`
+- [X] T032 [P] [US1] Locating Steam, the account and the game in `src/main/steam/locate.test.ts`
   - Files: `src/main/steam/locate.test.ts`, `src/main/steam/fixtures/loginusers.vdf`,
     `src/main/steam/fixtures/libraryfolders.vdf` (made up, no real data)
   - Signatures tested (pure, text in): `mostRecentAccount(loginusersText: string): { id: string; name: string } | null`
@@ -215,7 +215,7 @@ modules writes a Steam file.
     `reg query` output for `SteamPath`, forward slashes turned to backslashes).
   - Cases: two users, the one with `"MostRecent" "1"` wins; none marked → `null`; a SteamID64 near 2^63 is converted
     with `BigInt`, not floats; libraries with `\\` escapes; `reg` output without `SteamPath` → `null`.
-- [ ] T033 [P] [US1] Setup records in `src/main/setup-store.test.ts`
+- [X] T033 [P] [US1] Setup records in `src/main/setup-store.test.ts`
   - Files: `src/main/setup-store.test.ts`
   - Signatures tested: `loadSetup(file: string): SteamSetupFile`; `saveSetup(file: string, s: SteamSetupFile): void`;
     `recordSetup(s, accountId, rec): SteamSetupFile`; `forgetAccount(s, accountId): SteamSetupFile`.
@@ -226,24 +226,24 @@ modules writes a Steam file.
 
 ### Implementation for Phase 3
 
-- [ ] T034 [US1] `src/main/steam/vdf.ts` as tested in T030 (about 100 lines; no dependency, research R4)
+- [X] T034 [US1] `src/main/steam/vdf.ts` as tested in T030 (about 100 lines; no dependency, research R4)
   - Files: `src/main/steam/vdf.ts`
   - Signatures: `parseVdf`, `findPath`, `getLaunchOptions`, `setLaunchOptions`, `class VdfShapeError extends Error` (T030)
-- [ ] T035 [US1] `src/main/steam/launch-option.ts` as tested in T031 (pure; research R5)
+- [X] T035 [US1] `src/main/steam/launch-option.ts` as tested in T031 (pure; research R5)
   - Files: `src/main/steam/launch-option.ts`
   - Signatures: `companionPart`, `addPart`, `removePart`, `optionState`, `hasConsoleScript` (T031)
-- [ ] T036 [US1] `src/main/steam/locate.ts` as tested in T032, plus the system side in the same file behind an
+- [X] T036 [US1] `src/main/steam/locate.ts` as tested in T032, plus the system side in the same file behind an
   injected runner: `readSteam(run: Runner, fs: FsLike): Promise<SteamFiles>` — `reg query HKCU\Software\Valve\Steam /v
   SteamPath` through `execFile` (never a shell), `config\loginusers.vdf`, `config\libraryfolders.vdf`,
   `steamapps\appmanifest_1476970.acf` in any library, `userdata\<id>\config\localconfig.vdf`
   - Files: `src/main/steam/locate.ts`
   - Signatures: `mostRecentAccount`, `libraryPaths`, `steamPathFromReg` (T032); `readSteam(run, fs)` returns the Steam
     folder, the account, whether the game is installed and the account's `localconfig.vdf` text and path
-- [ ] T037 [US1] `src/main/setup-store.ts` as tested in T033 (`%APPDATA%\IdleOn Companion\steam-setup.json`,
+- [X] T037 [US1] `src/main/setup-store.ts` as tested in T033 (`%APPDATA%\IdleOn Companion\steam-setup.json`,
   data-model.md `SteamSetupRecord`: `inserted`, `before`, `backupFile`, `setAt`)
   - Files: `src/main/setup-store.ts`
   - Signatures: `loadSetup`, `saveSetup`, `recordSetup`, `forgetAccount` (T033)
-- [ ] T038 [US1] `src/main/steam/index.ts` re-exports the public API of the module (constitution: the entry file)
+- [X] T038 [US1] `src/main/steam/index.ts` re-exports the public API of the module (constitution: the entry file)
   - Files: `src/main/steam/index.ts`
   - Re-exports what `src/main/index.ts` and `remove-from-steam.ts` use; nothing imports deeper paths
 
