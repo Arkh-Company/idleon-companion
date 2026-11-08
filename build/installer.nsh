@@ -34,37 +34,17 @@ Var pid
   ${endif}
 !macroend
 
-; The only hook after the files go: customUnInstall runs before them, and the one-click section ends in Quit, so neither
-; customUnInstallSection nor un.onUninstSuccess runs. Defining this macro replaces the template's removal, so that block
-; is copied here as it is, update branch included. No /SD on the box, for the reason above.
-; ponytail: copy of templates/nsis/uninstaller.nsh of app-builder-lib 26.18.0; compare it when electron-builder changes.
-!macro customRemoveFiles
-  ${if} ${isUpdated}
-    CreateDirectory "$PLUGINSDIR\old-install"
-
-    Push ""
-    Call un.atomicRMDir
-    Pop $R0
-
-    ${if} $R0 != 0
-      DetailPrint "File is busy, aborting: $R0"
-
-      # Attempt to restore previous directory
-      Push ""
-      Call un.restoreFiles
-      Pop $R0
-
-      Abort `Can't rename "$INSTDIR" to "$PLUGINSDIR\old-install".`
-    ${endif}
-
-  ${endif}
-
-  # Move out of $INSTDIR so it can be removed
-  SetOutPath $TEMP
-  # Remove all files (or remaining shallow directories from the block above)
-  RMDir /r $INSTDIR
-
+; The closing box. customUnInstall runs before the files go, the one-click section ends in Quit (so neither
+; customUnInstallSection nor un.onUninstSuccess runs), and customRemoveFiles would replace the template's removal. This
+; name is not a documented hook: the uninstaller inserts it after the files and the shortcuts go and before the registry
+; keys do, and electron-builder generates it only when there are fileAssociations. With any fileAssociations this macro
+; is defined twice and the build must fail visibly: move the box then. No /SD on the box, for the reason above.
+!macro unregisterFileAssociations
   ${ifNot} ${isUpdated}
-    MessageBox MB_OK "IdleOn Companion was uninstalled."
+    ${if} ${FileExists} "$INSTDIR\*.*"
+      MessageBox MB_OK 'IdleOn Companion was uninstalled, but some files could not be removed:$\r$\n$\r$\n$INSTDIR'
+    ${else}
+      MessageBox MB_OK "IdleOn Companion was uninstalled."
+    ${endif}
   ${endif}
 !macroend

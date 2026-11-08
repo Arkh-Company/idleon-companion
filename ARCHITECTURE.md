@@ -130,9 +130,11 @@ moment, so a late screen never sees an old "done".
   when `LegendsOfIdleon.exe` runs (installing, uninstalling and updating end with "Close the game first.") and otherwise
   calls electron-builder's own check. `customUnInit`, except in an update (`--updated`), asks and runs
   `--remove-from-steam`: exit code 2 (the game opened meanwhile) aborts with the same message, and a refusal or any other
-  failure shows the text to remove by hand and goes on. `customRemoveFiles` is electron-builder's removal of the installed
-  files, copied, followed, except in an update, by the box "IdleOn Companion was uninstalled.": `customUnInstall` runs
-  before the files go, and the one-click uninstaller quits at the end of its section, before any later hook.
+  failure shows the text to remove by hand and goes on. `unregisterFileAssociations` shows the closing box, except in an
+  update: "IdleOn Companion was uninstalled.", or the folder that could not be removed. It is not a documented hook, but
+  the only one with the files and shortcuts already gone: `customUnInstall` runs before them, and the one-click
+  uninstaller quits at the end of its section, before any later hook. electron-builder generates a macro of that name
+  only with `fileAssociations`, so adding any makes the name collide and the build fail until the box moves.
 
 ## Updates
 
