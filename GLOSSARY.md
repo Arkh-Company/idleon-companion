@@ -50,7 +50,7 @@ _Avoid_: launch parameter, launch command, Steam argument
 
 **Companion part**:
 What the companion adds to the launch option, `"<exe>" --keeper ` right before `%command%`, and the only text it ever
-takes out of it.
+takes out of it, which happens only when the companion is uninstalled.
 _Avoid_: prefix, wrapper, launch script
 
 **Setup screen**:

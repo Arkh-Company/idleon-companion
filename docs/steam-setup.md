@@ -21,7 +21,7 @@ Until Steam is set up for the most recent account on this computer, the window s
 account, the game and the launch option it found. Closing the window postpones the setup.
 
 If the launch option already runs another copy of the companion, the screen only warns: remove that text in Steam, or
-undo it from the other copy.
+uninstall the other copy.
 
 **Close Steam and set up** closes Steam the normal way, keeps a copy of Steam's settings file, adds the companion's part
 to the launch option of Legends of Idleon, and reopens Steam. It ends with "All set. Press Play in Steam as usual."
@@ -58,13 +58,12 @@ Logs and user data live in `%APPDATA%\IdleOn Companion\` (`keeper.log`, `game.lo
 
 ## Undo
 
-**Remove from Steam**, in Settings, closes and reopens Steam and takes only the companion's part out of the launch
-option, in every account the companion set up. Anything else in the option stays, and Play starts the game alone, as
-before. With the game open, the button is off and the window says "Close the game first".
-
-**Uninstalling**, in Windows' Installed apps: close the game first, or the uninstaller stops with "Close the game
-first." and leaves everything as it was. It then asks whether Steam may close and does the same removal. If you say no,
-or the removal fails, it shows the exact text to remove from the launch option by hand, and uninstalls.
+The setup is undone by **uninstalling**, in Windows' Installed apps; Settings has no button for it. Close the game
+first, or the uninstaller stops with "Close the game first." and leaves everything as it was. It then asks whether Steam
+may close, closes and reopens Steam, and takes only the companion's part out of the launch option, in every account the
+companion set up. Anything else in the option stays, and Play starts the game alone, as before. If you say no, or the
+removal fails, it shows the exact text to remove from the launch option by hand, and uninstalls. It ends with the box
+"IdleOn Companion was uninstalled."
 
 The data folder `%APPDATA%\IdleOn Companion\` stays after uninstalling and can be deleted afterwards.
 

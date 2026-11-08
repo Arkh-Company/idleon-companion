@@ -98,8 +98,7 @@ launching anything. The app tries the pipe again every 5 s while it is missing.
 | `reader:reconnect`              | window → main | sent on to the keeper as `reconnect`                   |
 | `steam:state`                   | window ↔ main | `SteamState`, read now; nothing changes                |
 | `steam:setup`                   | window ↔ main | sets up the most recent account; final `SetupProgress` |
-| `steam:remove`                  | window ↔ main | removes the companion; final `SetupProgress`           |
-| `steam:progress`                | main → window | `SetupProgress`, each step of a setup or removal       |
+| `steam:progress`                | main → window | `SetupProgress`, each step of a setup                  |
 | `update:state`                  | main → window | `UpdateState`                                          |
 | `update:install`                | window → main | installs a ready update; refused with the game open    |
 | `module:<id>:*`                 | both          | reserved for modules (none in v1)                      |
@@ -121,17 +120,19 @@ moment, so a late screen never sees an old "done".
   was added, and reopens Steam, also after an error.
 - `system.ts` is the real `SteamSystem` and the only place of the main process that starts processes: Windows tools by
   full path through `execFile` (never a shell) and `steam.exe` detached. It has no way to kill a process.
-- `remove.ts` is the undo, used by "Remove from Steam" and by the uninstaller (`--remove-from-steam`). It covers every
-  account in `steam-setup.json`, and the most recent account when its option has the part. It takes out the recorded
+- `remove.ts` is the undo, run only by the uninstaller (`--remove-from-steam`); the window has no button for it. It
+  covers every account in `steam-setup.json`, and the most recent account when its option has the part. It takes out the recorded
   text; when that text is gone or there is no record (the undo without a record: a lost `steam-setup.json`, or a part
   pasted by hand), it takes out the companion's part, so the game never keeps pointing at an uninstalled exe. Without a
   record, the first write keeps a copy too.
-- `build/installer.nsh` defines two macros. electron-builder's check stops every process of the installed folder before
+- `build/installer.nsh` defines three macros. electron-builder's check stops every process of the installed folder before
   any custom macro runs, and so would stop the keeper and the game. `customCheckAppRunning` runs in its place: it stops
   when `LegendsOfIdleon.exe` runs (installing, uninstalling and updating end with "Close the game first.") and otherwise
   calls electron-builder's own check. `customUnInit`, except in an update (`--updated`), asks and runs
   `--remove-from-steam`: exit code 2 (the game opened meanwhile) aborts with the same message, and a refusal or any other
-  failure shows the text to remove by hand and goes on.
+  failure shows the text to remove by hand and goes on. `customRemoveFiles` is electron-builder's removal of the installed
+  files, copied, followed, except in an update, by the box "IdleOn Companion was uninstalled.": `customUnInstall` runs
+  before the files go, and the one-click uninstaller quits at the end of its section, before any later hook.
 
 ## Updates
 
