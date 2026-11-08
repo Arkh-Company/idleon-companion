@@ -10,7 +10,7 @@ phases:
 execution:
   branch: feat/003-screen-base
   phases:
-    - {name: "Foundational (T001-T005)", status: pending}
+    - {name: "Foundational (T001-T005)", status: done, commits: 54f8845..654bbc9}
     - {name: "US1 identificacao (T006-T009)", status: pending}
     - {name: "US1-US3 janelas 0-45 (T010-T013)", status: pending}
     - {name: "US1-US3 janelas 46-110 (T014-T017)", status: pending}
