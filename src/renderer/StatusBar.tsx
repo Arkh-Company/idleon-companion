@@ -9,6 +9,8 @@ const GAME: Record<Exclude<Status["game"], "not-launched">, string> = {
   running: "Game running",
   closed: "Game closed",
 };
+// A game update stops the reader until the game reopens: "Reconnect" would do nothing (spec, Open Questions, 08/11).
+const GAME_UPDATED = "Game updated: the reader needs an update";
 const READER: Record<Status["reader"], string> = {
   attached: "Reader attached",
   connecting: "Reader connecting",
@@ -38,7 +40,9 @@ export function StatusBar({ status }: { status: Status }) {
   const [afterRelease, setAfterRelease] = useState(false);
   if (released && !afterRelease) setAfterRelease(true);
   if (afterRelease && (attached || !running)) setAfterRelease(false);
-  const canReconnect = released || (afterRelease && status.reader === "error");
+  const canReconnect =
+    message !== GAME_UPDATED &&
+    (released || (afterRelease && status.reader === "error"));
   return (
     <div className="status-bar" role="status">
       {status.game === "not-launched" ? (

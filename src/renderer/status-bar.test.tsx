@@ -128,3 +128,16 @@ test.each([
   expect(b.type).toBe("button");
   expect(b.tabIndex).toBe(0);
 });
+
+test.each<Status["reader"]>(["error", "released"])(
+  "a game update (reader %s): the message stays and Reconnect is gone, it would do nothing",
+  (reader) => {
+    const message = "Game updated: the reader needs an update";
+    const { rerender } = render(<StatusBar status={RELEASED} />);
+
+    rerender(<StatusBar status={{ game: "running", reader, message }} />);
+
+    expect(screen.getByText(message)).toBeDefined();
+    expect(button("Reconnect")).toBe(null);
+  },
+);
