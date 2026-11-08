@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { DEFAULT_SETTINGS } from "../shared/index.ts";
+import { DEFAULT_SETTINGS, READ_NULLS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
   emptyPayload,
@@ -59,7 +59,7 @@ const reading: Reading = {
   char: "Darkhe",
   afk: null,
   codexTab: 2,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 test("a link reading of the right shape keeps its time", () => {

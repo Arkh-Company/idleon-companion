@@ -23,6 +23,28 @@ export interface Reading {
   codexTab: number | null;
   /** Quests: OptionsList[13][2]; Friends: NonCloudsave[0][2] */
   codexSel: string | number | null;
+  /** engine.scene.name */
+  scene: string | null;
+  /** AttackSelected */
+  attack: number | null;
+  /** InventorySelected */
+  bag: number | null;
+  /** OptionsList[1] */
+  ol1: number | null;
+  /** OptionsList[3] */
+  ol3: number | null;
+  /** OptionsList[18] */
+  ol18: number | null;
+  /** OptionsList[19] */
+  ol19: number | null;
+  /** OptionsListAccount[489] */
+  ola489: number | null;
+  /** NONdummies[37] */
+  nd37: number | null;
+  /** Holes[0][the character's place in GetPlayersUsernames]; -1 = outside a cave */
+  hole: number | null;
+  /** H<n>.<field>[<index>] or H<n>.<field>; a behavior not yet in the game has no key */
+  behaviors: Record<string, number | string | boolean | null>;
 }
 
 export interface Entry {

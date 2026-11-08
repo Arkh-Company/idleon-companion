@@ -42,12 +42,12 @@ behavior produces no key and no error.
 
 ### Tests for Phase 1
 
-- [ ] T001 [P] Shape tests of the new fields in src/shared/reading.test.ts
+- [X] T001 [P] Shape tests of the new fields in src/shared/reading.test.ts
   - Files: `src/shared/reading.test.ts`
   - Cases: a reading with every new field passes and keeps them; `scene`, `attack`, `bag`, `ol1`, `ol3`, `ol18`, `ol19`,
     `ola489`, `nd37`, `hole` accept `null`; a text in a number field is refused; `behaviors` as an array, as `null` or
     with an object as a value is refused; an empty `behaviors` passes (FR-008).
-- [ ] T002 [P] Read-only proof of the new fields in src/keeper/read-only.test.ts
+- [X] T002 [P] Read-only proof of the new fields in src/keeper/read-only.test.ts
   - Files: `src/keeper/read-only.test.ts`
   - Change the fake engine: add `scene: { name: "w1" }`, `AttackSelected`, `InventorySelected`, `OptionsListAccount`,
     `NONdummies`, `Holes`, `GetPlayersUsernames` and a `PixelHelperActor` with a few behaviors; every function stays a
@@ -60,18 +60,18 @@ behavior produces no key and no error.
 
 ### Implementation for Phase 1
 
-- [ ] T003 New fields in Reading and toReading in src/shared/types.ts and src/shared/reading.ts
+- [X] T003 New fields in Reading and toReading in src/shared/types.ts and src/shared/reading.ts
   - Files: `src/shared/types.ts`, `src/shared/reading.ts`
   - Signature: `Reading` gains `scene: string | null`; `attack`, `bag`, `ol1`, `ol3`, `ol18`, `ol19`, `ola489`, `nd37`,
     `hole: number | null`; `behaviors: Record<string, number | string | boolean | null>`. `toReading` checks each and
     copies them. Constraint from data-model.md: "um `behaviors` que não seja objeto plano de valores simples reprova a
     leitura".
-- [ ] T004 The new fields in src/keeper/read.js
+- [X] T004 The new fields in src/keeper/read.js
   - Files: `src/keeper/read.js`
   - Change: follow [contracts/read-fields.md](contracts/read-fields.md) exactly, with the table of behaviors as an array
     of `[n, actor, field, indexes]`. Property reads only; each behavior path inside its own `try`; every absent value
     becomes `null`, because `returnByValue` drops `undefined`. Existing fields, `codexSel` included, stay as they are.
-- [ ] T005 Add the new fields to every Reading literal of the tests
+- [X] T005 Add the new fields to every Reading literal of the tests
   - Files: the tests with a `Reading` literal, among `src/keeper/keeper.test.ts`, `src/keeper/reader.test.ts`,
     `src/main/context.test.ts`, `src/main/payloads.test.ts`, `src/main/catalog/catalog.test.ts`, `src/link.test.ts` and
     `src/shared/link.test.ts`. No assertion changes. Add the fields so that `keeper.test.ts` does not grow past its 463 lines

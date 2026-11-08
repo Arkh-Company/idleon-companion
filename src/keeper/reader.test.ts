@@ -1,6 +1,7 @@
 // startReader against a scripted fake CDP (runs on the CI): a failed reading or a throwing callback never takes the
 // engine again and never ends the keeper (spec §3, §7.1).
 import { expect, test } from "vitest";
+import { READ_NULLS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp, CdpMessage } from "./cdp.ts";
 import { startReader } from "./reader.ts";
@@ -27,7 +28,7 @@ const value = (map: number) => ({
   char: "Tester",
   afk: null,
   codexTab: 2,
-  codexSel: null,
+  ...READ_NULLS,
 });
 
 /** A game whose map changes on every read; `read` can replace the answer to Runtime.callFunctionOn. */

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { READ_NULLS } from "../shared/index.ts";
 import type { Reading } from "../shared/index.ts";
 import { DEFAULT_CATALOG, unnamedIn } from "./catalog/catalog.ts";
 import { toContext } from "./context.ts";
@@ -13,7 +14,7 @@ const base: Reading = {
   char: "Darkhe",
   afk: "w6d3",
   codexTab: null,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 test("the world comes from the map", () => {

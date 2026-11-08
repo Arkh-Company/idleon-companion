@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 import { AlreadyRunning, startLinkServer } from "./keeper/link-server.ts";
 import { connectLink } from "./main/link-client.ts";
+import { READ_NULLS } from "./shared/index.ts";
 import type { LinkMessage, Reading } from "./shared/index.ts";
 
 let n = 0;
@@ -34,7 +35,7 @@ const reading: Reading = {
   char: "Tester",
   afk: null,
   codexTab: 2,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 test("a late client gets the last status, then the last reading", async () => {

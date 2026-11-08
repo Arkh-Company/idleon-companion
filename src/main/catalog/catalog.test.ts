@@ -8,6 +8,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
+import { READ_NULLS } from "../../shared/index.ts";
 import type { Catalog, Reading } from "../../shared/index.ts";
 import {
   DEFAULT_CATALOG,
@@ -44,7 +45,7 @@ const base: Reading = {
   char: "Darkhe",
   afk: null,
   codexTab: null,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 function tempFile(): string {
