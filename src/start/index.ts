@@ -5,5 +5,5 @@ import { roleFor } from "./dispatch.ts";
 const role = roleFor(process.argv);
 if (role === "keeper") await import("../keeper/index.ts");
 else if (role === "remove-from-steam")
-  await (await import("../main/remove-from-steam.ts")).default();
+  await (await import("../main/remove-from-steam.ts")).removeFromSteam();
 else await import("../main/index.ts");

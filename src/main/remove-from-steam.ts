@@ -23,7 +23,7 @@ export const exitCodeFor = (p: SetupProgress): ExitCode =>
 export const exitCodeOf = (run: Promise<SetupProgress>): Promise<ExitCode> =>
   run.then(exitCodeFor, () => 4);
 
-export default async function removeFromSteam(): Promise<void> {
+export async function removeFromSteam(): Promise<void> {
   const { app } = await import("electron");
   const part = companionPart({
     execPath: process.execPath,
