@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.3.0...v0.3.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **release:** create the draft first so a version gets one release ([c1874f6](https://github.com/Arkh-Company/idleon-companion/commit/c1874f63b9a612ac445aadf65c3c1f162ce79864))
+* **release:** create the draft first so a version gets one release ([ac57cba](https://github.com/Arkh-Company/idleon-companion/commit/ac57cba1b4d96270d798b968c9e12a25fdca0bef))
+
 ## [0.3.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.2.0...v0.3.0) (2026-11-08)
 
 
