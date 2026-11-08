@@ -52,7 +52,7 @@ changes nothing.
 ### Rules wired in the Electron entry are tested
 
 Every decision in `src/main/index.ts` (a shared lock, a memory of the last state) lives in a function that a test reaches and that fails when the wiring is removed.
-Good: `steamJobs(sys, store, part, onProgress)` returns `{ setup, remove }` over one lock, and a test with `fake-system` asserts one `shutdown` when both are called.
+Good: `steamSetupJob(sys, store, part, onProgress)` runs one setup over one lock, and a test with `fake-system` asserts one `shutdown` when it is called twice at once.
 Bad: two `handle()` calls in `index.ts` sharing a `oneAtATime` that only has a test of its own, so giving each one a separate lock keeps the CI green.
 
 ### Shared literals live in one place
