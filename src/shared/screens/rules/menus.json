@@ -5,14 +5,14 @@
         "scene": "PlayerSelect"
       },
       "name": "Character select",
-      "proof": "foto:0001"
+      "proof": "foto:s3-0001"
     },
     {
       "when": {
         "ol18": 1
       },
       "name": "AFK Gains",
-      "proof": "foto:0010"
+      "proof": "foto:s3-0010"
     }
   ],
   "screens": [
