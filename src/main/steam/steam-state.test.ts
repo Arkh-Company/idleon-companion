@@ -14,6 +14,8 @@ import {
 import { steamState } from "./setup.ts";
 import { VdfShapeError } from "./vdf.ts";
 
+const MANUAL = '"C:\\Apps\\IdleOn Companion.exe" --keeper %command%';
+
 test("steamState gives the option, the account, the game, the files and never changes anything", async () => {
   const s = setup();
   expect(await steamState(s.sys, s.store, PART)).toEqual({
@@ -29,7 +31,23 @@ test("steamState gives the option, the account, the game, the files and never ch
     configured: false,
     gameOpen: false,
     details: { file: FILE, backup: BACKUP },
+    manualOption: MANUAL,
   });
+  expect(s.changes()).toEqual([]);
+});
+
+test("steamState with a localconfig.vdf that is not UTF-8: the error, no option, nothing changed", async () => {
+  // 0xff is not UTF-8: decoding and encoding again would change the file's bytes
+  const s = setup({
+    disk: new Map([
+      [FILE, Buffer.concat([Buffer.from("// \xff\n", "latin1"), LOCALCONFIG])],
+    ]),
+  });
+  const r = await steamState(s.sys, s.store, PART);
+  expect(r.option).toBeNull();
+  expect(r.configured).toBe(false);
+  expect(r.error).toContain("UTF-8");
+  expect(r.manualOption).toBe(MANUAL);
   expect(s.changes()).toEqual([]);
 });
 
@@ -78,6 +96,7 @@ test("steamState without Steam: not found, no option, no details, no error", asy
     option: null,
     configured: false,
     details: null,
+    manualOption: MANUAL,
   });
   expect(r.error).toBeUndefined();
 });
@@ -90,6 +109,7 @@ test("steamState with a broken loginusers.vdf: the error and no option", async (
     option: null,
     configured: false,
     details: null,
+    manualOption: MANUAL,
   });
   expect(r.error).toContain("unclosed block");
 });

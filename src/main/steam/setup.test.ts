@@ -144,6 +144,19 @@ test("a localconfig.vdf without the apps block: unreadable-config, Steam untouch
   expect(s.changes()).toEqual([]);
 });
 
+test("a localconfig.vdf that is not UTF-8: unreadable-config, Steam is not closed", async () => {
+  const s = setup({
+    disk: new Map([
+      [FILE, Buffer.concat([Buffer.from("// \xff\n", "latin1"), LOCALCONFIG])],
+    ]),
+  });
+  expect(await s.run()).toEqual({
+    step: "failed",
+    reason: "unreadable-config",
+  });
+  expect(s.changes()).toEqual([]);
+});
+
 test.each([
   ["no Steam", { ...steamFiles(), steamPath: null }],
   ["no account", { ...steamFiles(), account: null, localConfig: null }],

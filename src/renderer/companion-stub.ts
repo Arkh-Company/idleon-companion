@@ -30,6 +30,7 @@ export function stubCompanion(): CompanionStub {
         configured: true,
         gameOpen: false,
         details: null,
+        manualOption: '"C:\app.exe" --keeper %command%',
       }),
     ),
     setupSteam: vi.fn<CompanionApi["setupSteam"]>(() =>

@@ -150,6 +150,8 @@ export interface SteamState {
   /** An unreadable file or an unexpected shape (nothing is written). */
   error?: string;
   details: { file: string; backup: string } | null;
+  /** The companion's part followed by %command%, to paste by hand (Edge Cases, FR-011). */
+  manualOption: string;
 }
 
 /** One step of setting up or removing (data-model.md). Only "steam-did-not-open" comes after the write. */

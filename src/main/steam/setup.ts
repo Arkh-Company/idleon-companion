@@ -7,7 +7,7 @@ import type { SteamSetupFile } from "../setup-store.ts";
 import { addPart, hasConsoleScript, optionState } from "./launch-option.ts";
 import { IDLEON_APP_ID } from "./locate.ts";
 import type { SteamFiles } from "./locate.ts";
-import { getLaunchOptions, setLaunchOptions } from "./vdf.ts";
+import { getLaunchOptions, setLaunchOptions, VdfShapeError } from "./vdf.ts";
 
 export const STEAM_IMAGE = "steam.exe";
 export const GAME_IMAGE = "LegendsOfIdleon.exe";
@@ -41,6 +41,20 @@ export interface SetupStoreLike {
 type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
 const failed = (reason: Reason): SetupProgress => ({ step: "failed", reason });
 
+/** The file's text, undefined when it does not exist; throws VdfShapeError when it is not UTF-8 (writing it back would
+ * change its bytes). */
+async function configText(
+  sys: SteamSystem,
+  path: string,
+): Promise<string | undefined> {
+  const bytes = await sys.readFile(path);
+  if (!bytes) return undefined;
+  const text = bytes.toString("utf8");
+  if (!Buffer.from(text, "utf8").equals(bytes))
+    throw new VdfShapeError("localconfig.vdf is not UTF-8");
+  return text;
+}
+
 /** The account's current option; throws when the text is missing or the option could not be written safely. */
 function currentOption(text: string | undefined): string {
   if (text === undefined) throw new Error("localconfig.vdf not found");
@@ -58,6 +72,7 @@ export async function steamState(
   part: string,
 ): Promise<SteamState> {
   const gameOpen = await sys.isRunning(GAME_IMAGE);
+  const manualOption = addPart("", part).next;
   let files: SteamFiles;
   try {
     files = await sys.readSteam();
@@ -72,6 +87,7 @@ export async function steamState(
       gameOpen,
       error: unreadable(e),
       details: null,
+      manualOption,
     };
   }
   const { account, localConfig } = files;
@@ -86,10 +102,11 @@ export async function steamState(
       account && localConfig
         ? { file: localConfig.path, backup: store.backupPath(account.id) }
         : null,
+    manualOption,
   };
   if (!localConfig) return state;
   try {
-    const current = currentOption(localConfig.text);
+    const current = currentOption(await configText(sys, localConfig.path));
     const s = optionState(current, part);
     state.option = {
       current,
@@ -126,22 +143,20 @@ interface Target {
 }
 
 /** With Steam closed: reads the file again (Steam rewrites it when it exits), keeps the first copy, writes only the
- * option and records what was added. False, with nothing written, when the file is missing, is not UTF-8 (its bytes
- * would change) or has a shape that cannot be edited. */
+ * option and records what was added. False, with nothing written, when the file is missing, is not UTF-8 or has a shape
+ * that cannot be edited. */
 async function writeOption(
   sys: SteamSystem,
   store: SetupStoreLike,
   t: Target,
   part: string,
 ): Promise<boolean> {
-  const bytes = await sys.readFile(t.file);
-  if (!bytes) return false;
-  const text = bytes.toString("utf8");
-  if (!Buffer.from(text, "utf8").equals(bytes)) return false;
   let before: string;
   let out: string;
   let inserted: string;
   try {
+    const text = await configText(sys, t.file);
+    if (text === undefined) return false;
     before = currentOption(text);
     const added = addPart(before, part);
     inserted = added.inserted;
@@ -184,7 +199,7 @@ export async function runSetup(
     if (!steamPath || !account || !localConfig)
       throw new Error("Steam or its account not found");
     t = { steamPath, accountId: account.id, file: localConfig.path };
-    current = currentOption(localConfig.text);
+    current = currentOption(await configText(sys, localConfig.path));
   } catch {
     return finish(failed("unreadable-config"));
   }
