@@ -66,3 +66,9 @@ Bad: `StatusBar.tsx` declaring its own `const GAME_UPDATED = "Game updated: …"
 A Windows tool (`reg`, `tasklist`, `cmd`) runs by its `System32` path, in Node and in NSIS alike, never by name.
 Good: `execFile(systemTool("tasklist", process.env.SystemRoot), …)`; `"$SYSDIR\tasklist.exe"` in `installer.nsh`.
 Bad: `nsExec::Exec '"$CmdPath" /C tasklist …'`, which lets `cmd` search the working folder first.
+
+### Player names in tests are invented
+
+Every character or account name in a test, a fixture or an example is invented, never copied from a capture or a real session.
+Good: `char: "Tester"` in a `Reading` literal.
+Bad: the name of the character used in the game round, pasted into a `Reading` literal because the state was copied from a capture.
