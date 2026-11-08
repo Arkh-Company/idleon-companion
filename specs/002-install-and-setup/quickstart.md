@@ -48,9 +48,8 @@ Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de admi
 
 ## 4. Desfazer (US3)
 
-1. Settings → "Remove from Steam": a opção volta ao texto sem a parte do companion (SC-005).
-2. "Set up Steam" de novo, depois desinstalar pelo Windows: o desinstalador pergunta, fecha a Steam, tira a parte e
-   reabre; o jogo abre pela Steam sem o companion (FR-013).
+1. Com a configuração feita, desinstalar pelo Windows: o desinstalador pergunta, fecha a Steam, tira a parte e
+   reabre; o jogo abre pela Steam sem o companion (FR-013, SC-005); no fim, uma caixa diz que foi desinstalado.
 3. Repetir recusando fechar a Steam: o desinstalador mostra o texto a tirar e termina.
 4. Com o jogo aberto, desinstalar e rodar o instalador de novo: os dois param com "Close the game first." e o jogo
    continua aberto, com o guardião lendo.
