@@ -471,15 +471,15 @@ passes.
 
 **Independent Test**: `just check` passes; the quickstart runs end to end with Vinicius.
 
-- [ ] T080 [P] `ARCHITECTURE.md`: one executable and `src/start/` (with `start-only-dispatches`), the keeper in
+- [X] T080 [P] `ARCHITECTURE.md`: one executable and `src/start/` (with `start-only-dispatches`), the keeper in
   Electron's main process, `src/main/steam/`, the link's `release`/`reconnect`, the new IPC channels, the updater as the
   only network access, the new user-data files (`steam-setup.json`, `steam-backup\`), links to ADRs 0003–0005
   - Files: `ARCHITECTURE.md`
-- [ ] T081 [P] `GLOSSARY.md`: **Launch option**, **Setup screen**, **Companion part** (what the companion adds to the
+- [X] T081 [P] `GLOSSARY.md`: **Launch option**, **Setup screen**, **Companion part** (what the companion adds to the
   launch option), **Let the game close** / **Reconnect**, **Releases repository**; the keeper's entry updated (no
   `ELECTRON_RUN_AS_NODE`)
   - Files: `GLOSSARY.md`
-- [ ] T082 [P] `docs/steam-setup.md` rewritten: install from the release page (SmartScreen: "More info" → "Run
+- [X] T082 [P] `docs/steam-setup.md` rewritten: install from the release page (SmartScreen: "More info" → "Run
   anyway"), the setup screen, "Let the game close", "Remove from Steam" and uninstalling, the dev option without `.cmd`
   - Files: `docs/steam-setup.md`
 - [ ] T083 Quickstart with Vinicius (quickstart.md §1–§6), touching Steam only with Vinicius's explicit OK; the releases
