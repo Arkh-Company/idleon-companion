@@ -4,3 +4,4 @@ phases:
   specify: {status: done, date: 2026-11-08}
   clarify: {status: done, date: 2026-11-08, rounds: 1, open: 0, to_plan: 2}
   prototype: {status: done, date: 2026-11-08}
+  plan: {status: done, date: 2026-11-08}

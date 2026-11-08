@@ -20,7 +20,8 @@ e `pnpm exec vitest run --dir specs/003-screen-base/prototipo` (6 testes passam)
 | --- | --- | --- |
 | Números de `MenuType2` batem com o mapa de telas | 108 no código e 108 em uso no mapa. O mapa tem mais 3 linhas (22, 50 e 51), marcadas como "sem uso"; nenhum número do código falta no mapa | sim |
 | Mapas com contagem coerente | 327 nomes em `MapDispName`, mesmo tamanho de `MapName`; o jogo indexa essa lista por `CurrentMap` | sim |
-| Monstros com contagem coerente e todos com nome | 418 ids distintos, 0 sem nome; os 11 ids escritos em `AFKtarget` no código estão todos na tabela | sim |
+| Monstros com contagem coerente | 418 ids distintos; os 11 ids escritos em `AFKtarget` no código estão todos na tabela | sim |
+| Nomes iguais aos do catálogo da 001 | 327 de 327 mapas e 417 de 417 monstros, comparados por programa e sem imprimir nomes. O id `Nothing` tem nome vazio: não é monstro, é "sem alvo" | sim |
 | Formato novo nunca vira nome errado | Sem o trecho, com duas candidatas, com listas de tamanhos diferentes ou com um monstro fora do formato, o resultado é "não consegui ler" | sim |
 | Tempo abaixo de 1 s | 23 ms para as tabelas e 45 ms para os números, com o arquivo já na memória; ler do `app.asar` levou mais 27 ms | sim |
 
@@ -39,6 +40,5 @@ e `pnpm exec vitest run --dir specs/003-screen-base/prototipo` (6 testes passam)
 
 ## O que não ficou provado
 
-- O texto de cada nome não foi comparado com a tela do jogo: as contagens e o índice por `CurrentMap` são a prova aqui.
 - Só uma versão do jogo foi medida. Um patch que mude o formato cai no "não consegui ler".
 - Um número de tela novo que só apareça numa conta, sem escrita nem comparação literal, não seria apontado pelo guardião.
