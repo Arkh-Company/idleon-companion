@@ -59,6 +59,8 @@ function start(): void {
     devUrl ??
     pathToFileURL(join(import.meta.dirname, "../renderer/index.html")).href;
 
+  // No File/Edit/View/Window bar: on Windows, null also removes its shortcuts to the developer tools.
+  Menu.setApplicationMenu(null);
   const win = new BrowserWindow({
     ...windowOptions(join(import.meta.dirname, "../preload/index.cjs")),
     show: false, // the start event decides (setting "Show window when the game starts")
