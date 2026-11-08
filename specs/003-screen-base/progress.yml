@@ -1,0 +1,4 @@
+feature: 003-screen-base
+phases:
+  brainstorm: {status: done, date: 2026-11-08}
+  specify: {status: done, date: 2026-11-08}
