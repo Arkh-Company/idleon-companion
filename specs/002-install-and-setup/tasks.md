@@ -426,7 +426,7 @@ the game open (research R3; ADR 0005; constitution 1.1.0).
 
 ### Tests for Phase 7
 
-- [ ] T070 [P] [US4] Update decisions in `src/main/updates.test.ts`
+- [X] T070 [P] [US4] Update decisions in `src/main/updates.test.ts`
   - Files: `src/main/updates.test.ts`
   - Signatures tested (pure part of `src/main/updates.ts`): `canInstall(p: { status: Status | null; gameRunning:
     boolean }): boolean`; `updateStateFrom(event: "checking" | "available" | "progress" | "downloaded" | "error",
@@ -434,11 +434,11 @@ the game open (research R3; ADR 0005; constitution 1.1.0).
   - Cases: `status.game === "running"` → false; `LegendsOfIdleon.exe` running with the link down → false; game closed
     and no process → true; `downloaded` → `ready` with `canInstall`; `error` → `check-failed`; not packaged → never
     checks (research R9).
-- [ ] T071 [P] [US4] Status bar and settings lines in `src/renderer/ui.test.tsx` (or `src/renderer/update.test.tsx`)
+- [X] T071 [P] [US4] Status bar and settings lines in `src/renderer/ui.test.tsx` (or `src/renderer/update.test.tsx`)
   - Cases: `ready` + `canInstall` → "Update ready" and "Restart to update" (calls `installUpdate`); `ready` without
     `canInstall` → button disabled with "Update installs after the game closes"; `check-failed` → only Settings shows
     "Could not check for updates" (FR-025); `downloading` → nothing in the status bar.
-- [ ] T072 [P] [US4] No network outside the updater in `src/main/no-network.test.ts`
+- [X] T072 [P] [US4] No network outside the updater in `src/main/no-network.test.ts`
   - Files: `src/main/no-network.test.ts`
   - Cases: no file under `src/` except `src/main/updates.ts` imports `electron-updater`, `node:http`, `node:https`,
     `node:net` with a host, `fetch` or `net.request` (`src/keeper/link-server.ts` and `src/main/link-client.ts` use
@@ -446,16 +446,16 @@ the game open (research R3; ADR 0005; constitution 1.1.0).
 
 ### Implementation for Phase 7
 
-- [ ] T073 [US4] Add electron-updater (approved by Vinicius on 07/11): `pnpm add electron-updater@6.8.11`
+- [X] T073 [US4] Add electron-updater (approved by Vinicius on 07/11): `pnpm add electron-updater@6.8.11`
   (`package.json`, `pnpm-lock.yaml` through pnpm)
   - Files: `package.json`, `pnpm-lock.yaml`
-- [ ] T074 [US4] `src/main/updates.ts` as tested in T070: `autoUpdater` with `autoDownload = true`, `allowDowngrade =
+- [X] T074 [US4] `src/main/updates.ts` as tested in T070: `autoUpdater` with `autoDownload = true`, `allowDowngrade =
   false`, `autoInstallOnAppQuit = canInstall(...)` recomputed on every status; check at start and every 6 h when
   packaged; `update:state` sent and replayed; `update:install` → `quitAndInstall(true, true)` only when `canInstall`
   - Files: `src/main/updates.ts`, `src/main/index.ts`, `src/main/payloads.ts`
   - Signatures: `canInstall`, `updateStateFrom`, `shouldCheck` (T070); `startUpdates(send: (u: UpdateState) => void,
     canInstallNow: () => boolean): { install(): void; onStatus(): void }`
-- [ ] T075 [US4] Status bar and settings lines as tested in T071 (`src/renderer/StatusBar.tsx`,
+- [X] T075 [US4] Status bar and settings lines as tested in T071 (`src/renderer/StatusBar.tsx`,
   `src/renderer/SettingsView.tsx`, `src/preload/index.ts`)
   - Files: `src/renderer/StatusBar.tsx`, `src/renderer/SettingsView.tsx`, `src/preload/index.ts`
   - Cases: T071

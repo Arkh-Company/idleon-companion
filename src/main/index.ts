@@ -39,6 +39,7 @@ import {
   steamState,
   steamSystem,
 } from "./steam/index.ts";
+import { installCheck, startUpdates } from "./updates.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -75,6 +76,7 @@ function start(): void {
     status = s;
     send(IPC.statusUpdate, s);
     updateTray();
+    updates.onStatus();
   };
 
   // Navigation lockdown (Electron security checklist): no new windows, no page but the own one.
@@ -93,6 +95,7 @@ function start(): void {
   win.webContents.on("did-finish-load", () => {
     send(IPC.statusUpdate, status);
     sendContext();
+    updates.replay();
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);
@@ -156,6 +159,14 @@ function start(): void {
     apply("tray-click");
   });
 
+  const updates = startUpdates(
+    (u) => {
+      send(IPC.updateState, u);
+    },
+    installCheck(() => status, steamSystem),
+    { isPackaged: app.isPackaged },
+  );
+
   const link = connectLink(
     LINK_PIPE,
     (m) => {
@@ -211,6 +222,11 @@ function start(): void {
     if (!emptyPayload(payload))
       throw new Error("reader:reconnect: no body expected");
     link.send({ type: "reconnect" });
+  });
+  handle(IPC.updateInstall, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("update:install: no body expected");
+    return updates.install();
   });
 
   // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).

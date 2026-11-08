@@ -1,7 +1,8 @@
 // The status bar (spec §5.6): game, reader, last reading, and the keeper's message. Its buttons: "Connect next time" on
-// the update warning (spec §7.2, decided on 07/11), and "Let the game close" / "Reconnect" (002, US2).
+// the update warning (spec §7.2, decided on 07/11), "Let the game close" / "Reconnect" (002, US2) and "Restart to
+// update" (002, US4).
 import { useEffect, useState } from "react";
-import type { Status } from "../shared/index.ts";
+import type { Status, UpdateState } from "../shared/index.ts";
 
 const NOT_LAUNCHED =
   "Live reading needs the game to be launched through Steam with the companion launch option.";
@@ -30,6 +31,8 @@ export function StatusBar({ status }: { status: Status }) {
       clearInterval(timer);
     };
   }, []);
+  const [update, setUpdate] = useState<UpdateState | null>(null);
+  useEffect(() => window.companion.onUpdate(setUpdate), []);
 
   const { message, lastReadingAt } = status;
   const warning = message?.startsWith("The game code changed") === true;
@@ -105,6 +108,21 @@ export function StatusBar({ status }: { status: Status }) {
             Connect next time
           </button>
         ))}
+      {update?.state === "ready" && (
+        <>
+          <p>Update ready</p>
+          <button
+            type="button"
+            disabled={!update.canInstall}
+            onClick={() => {
+              void window.companion.installUpdate();
+            }}
+          >
+            Restart to update
+          </button>
+          {!update.canInstall && <p>Update installs after the game closes</p>}
+        </>
+      )}
     </div>
   );
 }

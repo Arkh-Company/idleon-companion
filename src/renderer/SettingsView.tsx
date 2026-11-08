@@ -2,7 +2,12 @@
 // "Remove from Steam" (FR-012, FR-014, FR-029). The removal itself runs in the main process (src/main/steam/remove.ts).
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { SetupProgress, Settings, SteamState } from "../shared/index.ts";
+import type {
+  SetupProgress,
+  Settings,
+  SteamState,
+  UpdateState,
+} from "../shared/index.ts";
 import { errorText } from "./SetupView.tsx";
 
 const LABELS: Record<keyof Settings, string> = {
@@ -144,6 +149,8 @@ export function SettingsView({ children }: { children?: ReactNode }) {
   useEffect(() => {
     void window.companion.getSettings().then(setSettings);
   }, []);
+  const [update, setUpdate] = useState<UpdateState | null>(null);
+  useEffect(() => window.companion.onUpdate(setUpdate), []);
   if (!settings) return null;
 
   return (
@@ -164,6 +171,7 @@ export function SettingsView({ children }: { children?: ReactNode }) {
         </label>
       ))}
       {children}
+      {update?.state === "check-failed" && <p>Could not check for updates</p>}
     </fieldset>
   );
 }
