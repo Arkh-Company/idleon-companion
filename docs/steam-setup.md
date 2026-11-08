@@ -20,6 +20,9 @@ the game open, the installer stops with "Close the game first."
 Until Steam is set up for the most recent account on this computer, the window shows only this screen, with Steam, the
 account, the game and the launch option it found. Closing the window postpones the setup.
 
+If the launch option already runs another copy of the companion, the screen only warns: remove that text in Steam, or
+undo it from the other copy.
+
 **Close Steam and set up** closes Steam the normal way, keeps a copy of Steam's settings file, adds the companion's part
 to the launch option of Legends of Idleon, and reopens Steam. It ends with "All set. Press Play in Steam as usual."
 

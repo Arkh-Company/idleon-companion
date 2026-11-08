@@ -54,3 +54,15 @@ changes nothing.
 Every decision in `src/main/index.ts` (a shared lock, a memory of the last state) lives in a function that a test reaches and that fails when the wiring is removed.
 Good: `steamJobs(sys, store, part, onProgress)` returns `{ setup, remove }` over one lock, and a test with `fake-system` asserts one `shutdown` when both are called.
 Bad: two `handle()` calls in `index.ts` sharing a `oneAtATime` that only has a test of its own, so giving each one a separate lock keeps the CI green.
+
+### Shared literals live in one place
+
+A string or type that two process folders compare or map (a link message text, a failure reason) is exported once from `src/shared/index.ts`; neither side keeps a copy.
+Good: `export const GAME_UPDATED = "Game updated: the reader needs an update"` in `src/shared/`, imported by `src/keeper/reader.ts` and `src/renderer/StatusBar.tsx`.
+Bad: `StatusBar.tsx` declaring its own `const GAME_UPDATED = "Game updated: …"` next to the same literal in `reader.ts`, so a reworded keeper message silently brings "Reconnect" back.
+
+### Windows tools by full path
+
+A Windows tool (`reg`, `tasklist`, `cmd`) runs by its `System32` path, in Node and in NSIS alike, never by name.
+Good: `execFile(systemTool("tasklist", process.env.SystemRoot), …)`; `"$SYSDIR\tasklist.exe"` in `installer.nsh`.
+Bad: `nsExec::Exec '"$CmdPath" /C tasklist …'`, which lets `cmd` search the working folder first.
