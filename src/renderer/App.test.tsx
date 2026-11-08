@@ -164,6 +164,14 @@ test("Steam not reopening also switches to the 001 window, with its line", async
   expect(screen.getByText("Setup is done. Open Steam yourself.")).toBeDefined();
 });
 
+/** The screen's focus listener comes from a passive effect that can still be pending, so the focus repeats until the
+ * second steamState call (the first is the window's load). */
+const focusReloads = () =>
+  waitFor(() => {
+    fireEvent(window, new Event("focus"));
+    expect(companion.steamState).toHaveBeenCalledTimes(2);
+  });
+
 test("the window gaining focus reloads: the game closed, the button is active", async () => {
   companion.steamState.mockResolvedValue({ ...notSetUp, gameOpen: true });
   render(<App />);
@@ -173,14 +181,13 @@ test("the window gaining focus reloads: the game closed, the button is active", 
   expect(before.disabled).toBe(true);
 
   companion.steamState.mockResolvedValue(notSetUp);
-  fireEvent(window, new Event("focus"));
+  await focusReloads();
 
   await waitFor(() => {
     expect(
       screen.getByRole<HTMLButtonElement>("button", { name: SET_UP }).disabled,
     ).toBe(false);
   });
-  expect(companion.steamState).toHaveBeenCalledTimes(2);
 });
 
 test("the option pasted by hand: the next focus switches to the 001 window", async () => {
@@ -189,7 +196,7 @@ test("the option pasted by hand: the next focus switches to the 001 window", asy
   await screen.findByRole("button", { name: SET_UP });
 
   companion.steamState.mockResolvedValue({ ...notSetUp, configured: true });
-  fireEvent(window, new Event("focus"));
+  await focusReloads();
 
   expect(await screen.findByText("Reader attached")).toBeDefined();
 });
@@ -206,7 +213,7 @@ test("steamState rejecting: the error shows and the next focus asks again", asyn
   expectOnlySetup();
 
   companion.steamState.mockResolvedValue(notSetUp);
-  fireEvent(window, new Event("focus"));
+  await focusReloads();
 
   expect(await screen.findByRole("button", { name: SET_UP })).toBeDefined();
   expect(screen.queryByRole("alert")).toBeNull();
@@ -281,7 +288,7 @@ test("after a removal the next focus shows the setup screen again", async () => 
   await screen.findByText("Removed from Steam.");
 
   companion.steamState.mockResolvedValue(notSetUp);
-  fireEvent(window, new Event("focus"));
+  await focusReloads();
 
   expect(await screen.findByRole("button", { name: SET_UP })).toBeDefined();
   expectOnlySetup();
