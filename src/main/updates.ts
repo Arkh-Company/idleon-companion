@@ -7,7 +7,7 @@ import { GAME_IMAGE } from "./steam/index.ts";
 import type { SteamSystem } from "./steam/index.ts";
 
 const CHECK_EVERY_MS = 6 * 60 * 60 * 1000;
-// Only while an update waits: the game can close with no status left to say so (the keeper ends with it).
+// Only while an update waits: with the game open without the keeper the link stays silent, so no status says it closed.
 const LOOK_FOR_GAME_EVERY_MS = 5000;
 
 export type UpdateEvent =

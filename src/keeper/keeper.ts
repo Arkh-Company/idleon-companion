@@ -154,20 +154,17 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   // Only a game launched with the pipe has a Cdp, so nothing can read a game opened without it.
   // The debugging pipe, kept for "Reconnect" until the game exits. It is never closed: that would close the game.
   let cdp = game.cdp;
-  let released = false;
   const release = async () => {
     if (!reader) return; // no reader (a game without the pipe), or already released
     const stopping = reader;
     reader = undefined;
     await stopping.stop();
     if (!cdp) return; // the game exited meanwhile: "closed" is already out
-    released = true;
     log("released");
     publishStatus({ game: "running", reader: "released" });
   };
   const reconnect = () => {
-    if (!released || !cdp) return;
-    released = false;
+    if (reader || !cdp) return;
     log("reconnect");
     startReading(cdp); // the same reader as 001: one new pause, property reads only
   };
