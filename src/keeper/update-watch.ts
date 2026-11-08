@@ -58,10 +58,10 @@ const isMissing = (e: unknown) =>
   (e as NodeJS.ErrnoException).code === "ENOENT";
 
 /**
- * The installed game's N.js, next to the exe: inside `resources\app.asar` (Electron's fs reads inside .asar, also under
- * ELECTRON_RUN_AS_NODE) or, without it, in the unpacked `resources\app\`. Undefined when neither is there and the exe
- * is not the game's (e.g. Edge in the tests); throws when the game's exe has neither, or when one is there but cannot
- * be read.
+ * The installed game's N.js, next to the exe: inside `resources\app.asar` (Electron's fs, which the keeper has in
+ * Electron's main process, reads inside .asar) or, without it, in the unpacked `resources\app\`. Undefined when neither
+ * is there and the exe is not the game's (e.g. Edge in the tests); throws when the game's exe has neither, or when one
+ * is there but cannot be read.
  */
 export function readInstalledGameCode(exe: string): string | undefined {
   const resources = join(dirname(exe), "resources");

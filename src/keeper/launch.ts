@@ -26,7 +26,7 @@ export function launchGame(
     // no game log (the data folder could not be made): the game still starts
   }
   let child: ChildProcess;
-  // The keeper runs with ELECTRON_RUN_AS_NODE; the game, an Electron app, would start as plain Node with it.
+  // The game never gets ELECTRON_RUN_AS_NODE from the environment: an Electron app would start as plain Node with it.
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     ELECTRON_ENABLE_LOGGING: "1",
