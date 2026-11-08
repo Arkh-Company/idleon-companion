@@ -1,0 +1,831 @@
+{
+  "screens": [
+    {
+      "when": {
+        "menu2": 1
+      },
+      "name": "Forge",
+      "tabs": true,
+      "proof": "foto:0226"
+    },
+    {
+      "when": {
+        "menu2": 1,
+        "menu2tab": 0
+      },
+      "name": "Forge › Furnace 1",
+      "proof": "foto:0226"
+    },
+    {
+      "when": {
+        "menu2": 1,
+        "menu2tab": 1
+      },
+      "name": "Forge › Furnace 2",
+      "proof": "foto:0227"
+    },
+    {
+      "when": {
+        "menu2": 1,
+        "menu2tab": 2
+      },
+      "name": "Forge › Furnace 3",
+      "proof": "foto:0228"
+    },
+    {
+      "when": {
+        "menu2": 1,
+        "menu2tab": 3
+      },
+      "name": "Forge › Furnace 4",
+      "proof": "foto:0229"
+    },
+    {
+      "when": {
+        "menu2": 1,
+        "menu2tab": 4
+      },
+      "name": "Forge › Upgrades",
+      "proof": "foto:0230"
+    },
+    {
+      "when": {
+        "menu2": 2
+      },
+      "name": "Anvil › Craft",
+      "tabs": true,
+      "proof": "foto:0140"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 0
+      },
+      "name": "Anvil › Craft › Beginner Tier",
+      "proof": "foto:0140"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 1
+      },
+      "name": "Anvil › Craft › Novice Tier",
+      "proof": "foto:0141"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 2
+      },
+      "name": "Anvil › Craft › Apprentice Tier",
+      "proof": "foto:0142"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 3
+      },
+      "name": "Anvil › Craft › Journeyman Tier",
+      "proof": "foto:0143"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 4
+      },
+      "name": "Anvil › Craft › Adept Tier",
+      "proof": "foto:0144"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 5
+      },
+      "name": "Anvil › Craft › Master Tier",
+      "proof": "foto:0145"
+    },
+    {
+      "when": {
+        "menu2": 2,
+        "H0._AnvilTabSelected": 6
+      },
+      "name": "Anvil › Craft › Virtuoso Tier",
+      "proof": "foto:0146"
+    },
+    {
+      "when": {
+        "menu2": 3
+      },
+      "name": "Statues",
+      "tabs": true,
+      "proof": "foto:0232"
+    },
+    {
+      "when": {
+        "menu2": 3,
+        "H6._GenINFO[117]": 0,
+        "H0._MenuType2TabPage": 0
+      },
+      "name": "Statues › Deposit",
+      "proof": "foto:0232"
+    },
+    {
+      "when": {
+        "menu2": 3,
+        "H6._GenINFO[117]": 1
+      },
+      "name": "Statues › Upgrade",
+      "proof": "foto:0234"
+    },
+    {
+      "when": {
+        "menu2": 4
+      },
+      "name": "Shop",
+      "proof": "foto:0236"
+    },
+    {
+      "when": {
+        "menu2": 5
+      },
+      "name": "Obols",
+      "tabs": true,
+      "proof": "foto:0182"
+    },
+    {
+      "when": {
+        "menu2": 5,
+        "menu2tab": 0
+      },
+      "name": "Obols › Personal",
+      "proof": "foto:0182"
+    },
+    {
+      "when": {
+        "menu2": 5,
+        "menu2tab": 1
+      },
+      "name": "Obols › Family",
+      "proof": "foto:0183"
+    },
+    {
+      "when": {
+        "menu2": 5,
+        "menu2tab": 2
+      },
+      "name": "Obols › Upgrades",
+      "proof": "foto:0184"
+    },
+    {
+      "when": {
+        "menu2": 5,
+        "menu2tab": 3
+      },
+      "name": "Obols › Totals",
+      "proof": "foto:0185"
+    },
+    {
+      "when": {
+        "menu2": 6
+      },
+      "name": "Storage",
+      "proof": "foto:0028"
+    },
+    {
+      "when": {
+        "menu2": 14
+      },
+      "name": "Stamps",
+      "tabs": true,
+      "proof": "foto:0163"
+    },
+    {
+      "when": {
+        "menu2": 14,
+        "H1._GeneralINFO[36]": 0
+      },
+      "name": "Stamps › Combat",
+      "proof": "foto:0163"
+    },
+    {
+      "when": {
+        "menu2": 14,
+        "H1._GeneralINFO[36]": 1
+      },
+      "name": "Stamps › Skills",
+      "proof": "foto:0164"
+    },
+    {
+      "when": {
+        "menu2": 14,
+        "H1._GeneralINFO[36]": 2
+      },
+      "name": "Stamps › Misc",
+      "proof": "foto:0165"
+    },
+    {
+      "when": {
+        "menu2": 14,
+        "H1._GeneralINFO[36]": 3
+      },
+      "name": "Stamps › Bribes",
+      "proof": "foto:0166"
+    },
+    {
+      "when": {
+        "menu2": 16
+      },
+      "name": "Boss Door",
+      "proof": "foto:0549"
+    },
+    {
+      "when": {
+        "menu2": 17
+      },
+      "name": "Anvil › Produce",
+      "tabs": true,
+      "proof": "foto:0147"
+    },
+    {
+      "when": {
+        "menu2": 17,
+        "H3._GenINFO[8]": 0
+      },
+      "name": "Anvil › Produce",
+      "proof": "foto:0147"
+    },
+    {
+      "when": {
+        "menu2": 17,
+        "H3._GenINFO[8]": 1
+      },
+      "name": "Anvil › Produce › Buy Points",
+      "proof": "foto:0150"
+    },
+    {
+      "when": {
+        "menu2": 17,
+        "H3._GenINFO[8]": 2
+      },
+      "name": "Anvil › Produce › Spend Points",
+      "proof": "foto:0148"
+    },
+    {
+      "when": {
+        "menu2": 18
+      },
+      "name": "Colosseum",
+      "proof": "foto:0553"
+    },
+    {
+      "when": {
+        "menu2": 19
+      },
+      "name": "Fishing Toolkit",
+      "proof": "foto:0257"
+    },
+    {
+      "when": {
+        "menu2": 20
+      },
+      "name": "Post Office",
+      "tabs": true,
+      "proof": "foto:0247"
+    },
+    {
+      "when": {
+        "menu2": 20,
+        "H5._GenINFO[1]": 0
+      },
+      "name": "Post Office › Orders",
+      "proof": "foto:0247"
+    },
+    {
+      "when": {
+        "menu2": 20,
+        "H5._GenINFO[1]": 1
+      },
+      "name": "Post Office › Orders",
+      "proof": "foto:0248"
+    },
+    {
+      "when": {
+        "menu2": 20,
+        "H5._GenINFO[1]": 5
+      },
+      "name": "Post Office › Upgrade",
+      "proof": "foto:0249"
+    },
+    {
+      "when": {
+        "menu2": 20,
+        "H5._GenINFO[1]": 6
+      },
+      "name": "Post Office › Upgrade",
+      "proof": "foto:0250"
+    },
+    {
+      "when": {
+        "menu2": 21
+      },
+      "name": "Alchemy",
+      "tabs": true,
+      "proof": "foto:0188"
+    },
+    {
+      "when": {
+        "menu2": 21,
+        "H5._GenINFO[17]": 0
+      },
+      "name": "Alchemy › Brewing",
+      "proof": "foto:0188"
+    },
+    {
+      "when": {
+        "menu2": 21,
+        "H5._GenINFO[17]": 1
+      },
+      "name": "Alchemy › Liquid",
+      "proof": "foto:0189"
+    },
+    {
+      "when": {
+        "menu2": 21,
+        "H5._GenINFO[17]": 2
+      },
+      "name": "Alchemy › Vials",
+      "proof": "foto:0190"
+    },
+    {
+      "when": {
+        "menu2": 21,
+        "H5._GenINFO[17]": 3
+      },
+      "name": "Alchemy › P2W",
+      "proof": "foto:0191"
+    },
+    {
+      "when": {
+        "menu2": 23
+      },
+      "name": "Tasks",
+      "tabs": true,
+      "proof": "foto:0171"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 0
+      },
+      "name": "Tasks › W1",
+      "proof": "foto:0171"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 1
+      },
+      "name": "Tasks › W2",
+      "proof": "foto:0172"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 2
+      },
+      "name": "Tasks › W3",
+      "proof": "foto:0173"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 3
+      },
+      "name": "Tasks › W4",
+      "proof": "foto:0174"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 4
+      },
+      "name": "Tasks › W5",
+      "proof": "foto:0175"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 5
+      },
+      "name": "Tasks › W6",
+      "proof": "foto:0176"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 6
+      },
+      "name": "Tasks › W7",
+      "proof": "foto:0177"
+    },
+    {
+      "when": {
+        "menu2": 23,
+        "H6._GenINFO[2]": 9
+      },
+      "name": "Tasks › Unlocks",
+      "proof": "foto:0178"
+    },
+    {
+      "when": {
+        "menu2": 24
+      },
+      "name": "Star Signs",
+      "tabs": true,
+      "proof": "foto:0240"
+    },
+    {
+      "when": {
+        "menu2": 24,
+        "H7._GenINFO[75]": 0
+      },
+      "name": "Star Signs › Chronus",
+      "proof": "foto:0240"
+    },
+    {
+      "when": {
+        "menu2": 24,
+        "H7._GenINFO[75]": 1
+      },
+      "name": "Star Signs › Hydron",
+      "proof": "foto:0241"
+    },
+    {
+      "when": {
+        "menu2": 24,
+        "H7._GenINFO[75]": 2
+      },
+      "name": "Star Signs › Seraph",
+      "proof": "foto:0242"
+    },
+    {
+      "when": {
+        "menu2": 25
+      },
+      "name": "Trapping",
+      "proof": "foto:0295"
+    },
+    {
+      "when": {
+        "menu2": 26
+      },
+      "name": "Refinery",
+      "tabs": true,
+      "proof": "foto:0046"
+    },
+    {
+      "when": {
+        "menu2": 26,
+        "H7._GenINFO[35]": 0
+      },
+      "name": "Refinery › Combustion",
+      "proof": "foto:0046"
+    },
+    {
+      "when": {
+        "menu2": 26,
+        "H7._GenINFO[35]": 1
+      },
+      "name": "Refinery › Synthesis",
+      "proof": "foto:0268"
+    },
+    {
+      "when": {
+        "menu2": 26,
+        "H7._GenINFO[35]": 2
+      },
+      "name": "Refinery › Polymerize",
+      "proof": "foto:0269"
+    },
+    {
+      "when": {
+        "menu2": 27
+      },
+      "name": "Prayers",
+      "proof": "foto:0272"
+    },
+    {
+      "when": {
+        "menu2": 28
+      },
+      "name": "Construction",
+      "tabs": true,
+      "proof": "foto:0196"
+    },
+    {
+      "when": {
+        "menu2": 28,
+        "H8._GenINFO[3]": 0
+      },
+      "name": "Construction › Build",
+      "proof": "foto:0198"
+    },
+    {
+      "when": {
+        "menu2": 28,
+        "H8._GenINFO[3]": 1
+      },
+      "name": "Construction › Cogs",
+      "proof": "foto:0197"
+    },
+    {
+      "when": {
+        "menu2": 29
+      },
+      "name": "Shrines",
+      "proof": "foto:0544"
+    },
+    {
+      "when": {
+        "menu2": 30
+      },
+      "name": "3D Printer",
+      "proof": "foto:0204"
+    },
+    {
+      "when": {
+        "menu2": 31
+      },
+      "name": "Talent Library",
+      "proof": "foto:0023"
+    },
+    {
+      "when": {
+        "menu2": 32
+      },
+      "name": "Eagle Eye Trap-O-Vision",
+      "proof": "foto:0289"
+    },
+    {
+      "when": {
+        "menu2": 33
+      },
+      "name": "Salt Lick",
+      "proof": "foto:0274"
+    },
+    {
+      "when": {
+        "menu2": 34
+      },
+      "name": "Death Note",
+      "tabs": true,
+      "proof": "foto:0278"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": -1
+      },
+      "name": "Death Note › Minibosses",
+      "proof": "foto:0279"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 0
+      },
+      "name": "Death Note › Blunder Hills",
+      "proof": "foto:0280"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 1
+      },
+      "name": "Death Note › Yum-Yum Desert",
+      "proof": "foto:0281"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 2
+      },
+      "name": "Death Note › Frostbite Tundra",
+      "proof": "foto:0282"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 3
+      },
+      "name": "Death Note › Hyperion Nebula",
+      "proof": "foto:0283"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 4
+      },
+      "name": "Death Note › Smolderin' Plateau",
+      "proof": "foto:0284"
+    },
+    {
+      "when": {
+        "menu2": 34,
+        "H8._GenINFO[43]": 6
+      },
+      "name": "Death Note › Shimmerfin Deep",
+      "proof": "foto:0286"
+    },
+    {
+      "when": {
+        "menu2": 35
+      },
+      "name": "Arcade",
+      "proof": "foto:0193"
+    },
+    {
+      "when": {
+        "menu2": 36
+      },
+      "name": "Cooking",
+      "proof": "foto:0315"
+    },
+    {
+      "when": {
+        "menu2": 37
+      },
+      "name": "Dinner Menu",
+      "proof": "foto:0313"
+    },
+    {
+      "when": {
+        "menu2": 38
+      },
+      "name": "Breeding",
+      "tabs": true,
+      "proof": "foto:0317"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 0
+      },
+      "name": "Breeding › Breeding",
+      "proof": "foto:0318"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 1
+      },
+      "name": "Breeding › Teams",
+      "proof": "foto:0319"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 2
+      },
+      "name": "Breeding › Upgrade",
+      "proof": "foto:0320"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 3
+      },
+      "name": "Breeding › Database",
+      "tabs": true,
+      "proof": "foto:0321"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 3,
+        "H22._GenINFO[54]": 0
+      },
+      "name": "Breeding › Database › Storage",
+      "proof": "foto:0328"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 3,
+        "H22._GenINFO[54]": 1
+      },
+      "name": "Breeding › Database › Genetics",
+      "proof": "foto:0322"
+    },
+    {
+      "when": {
+        "menu2": 38,
+        "H22._GenINFO[8]": 3,
+        "H22._GenINFO[54]": 2
+      },
+      "name": "Breeding › Database › Shinies",
+      "proof": "foto:0323"
+    },
+    {
+      "when": {
+        "menu2": 39
+      },
+      "name": "Lab",
+      "tabs": true,
+      "proof": "foto:0331"
+    },
+    {
+      "when": {
+        "menu2": 39,
+        "H22._GenINFO[82]": 0
+      },
+      "name": "Lab › Mainframe",
+      "proof": "foto:0331"
+    },
+    {
+      "when": {
+        "menu2": 39,
+        "H22._GenINFO[82]": 1
+      },
+      "name": "Lab › Console",
+      "proof": "foto:0332"
+    },
+    {
+      "when": {
+        "menu2": 40
+      },
+      "name": "Chip Repository",
+      "proof": "foto:0334"
+    },
+    {
+      "when": {
+        "menu2": 41
+      },
+      "name": "Trapper Drone",
+      "proof": "foto:0288"
+    },
+    {
+      "when": {
+        "menu2": 42
+      },
+      "name": "Automation Station",
+      "proof": "foto:0297"
+    },
+    {
+      "when": {
+        "menu2": 43
+      },
+      "name": "Worship Totem",
+      "proof": "foto:0299"
+    },
+    {
+      "when": {
+        "menu2": 44
+      },
+      "name": "Sailing",
+      "tabs": true,
+      "proof": "foto:0341"
+    },
+    {
+      "when": {
+        "menu2": 44,
+        "H23._GenINFO[18]": 0
+      },
+      "name": "Sailing › Map",
+      "proof": "foto:0341"
+    },
+    {
+      "when": {
+        "menu2": 44,
+        "H23._GenINFO[18]": 1
+      },
+      "name": "Sailing › Crew",
+      "proof": "foto:0342"
+    },
+    {
+      "when": {
+        "menu2": 45
+      },
+      "name": "Gaming",
+      "tabs": true,
+      "proof": "foto:0201"
+    },
+    {
+      "when": {
+        "menu2": 45,
+        "H23._GenINFO[70]": 0
+      },
+      "name": "Gaming",
+      "proof": "foto:0201"
+    },
+    {
+      "when": {
+        "menu2": 45,
+        "H23._GenINFO[70]": 1
+      },
+      "name": "Gaming › Log Book",
+      "proof": "sprite:GamingBG"
+    }
+  ],
+  "unprovenWindows": [15]
+}

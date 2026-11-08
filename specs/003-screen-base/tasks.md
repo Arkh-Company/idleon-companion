@@ -129,7 +129,7 @@ the fixture of captured states.
 
 ### Tests for Phase 3
 
-- [ ] T010 [US1] Captured states fixture in src/shared/screens/fixtures/captured-states.jsonl
+- [X] T010 [US1] Captured states fixture in src/shared/screens/fixtures/captured-states.jsonl
   - Files: `src/shared/screens/fixtures/captured-states.jsonl`, one JSON per line (Prettier does not touch `.jsonl`).
   - Source, outside the repository: `C:\Users\Vinicius\idleon-companion\lab\out\estado.jsonl` and section 7 of
     `C:\Users\Vinicius\idleon-companion\docs\product\mapa-de-telas.md`. Generate it once with a throwaway script outside
@@ -143,7 +143,7 @@ the fixture of captured states.
     notes of the row ("Gallery, fechado" → `The Gallery`; "None (HUD)" → `None`). A row whose result is "diverge" uses the
     corrected name of section 7 and of `resultados-testes-no-jogo.md` (cave 17 is The Lair, window 42 is Automation
     Station, Sushi tab 2 is Bonus). The rows "inconclusivo" stay out.
-- [ ] T011 [US1] Captured states test in src/shared/screens/captured.test.ts
+- [X] T011 [US1] Captured states test in src/shared/screens/captured.test.ts
   - Files: `src/shared/screens/captured.test.ts`
   - Cases: each line with `menu2 <= 45` gives `expected` through `identifyScreen(reading, SCREEN_CATALOG)`, the failure
     naming the photo; no tie in any line; every line has `char` `"Tester"` or `null`, and `codexSel` `null`; `Reading`
@@ -151,14 +151,14 @@ the fixture of captured states.
 
 ### Implementation for Phase 3
 
-- [ ] T012 [US1] Overlays, menus and Codex rules in src/shared/screens/rules/menus.json
+- [X] T012 [US1] Overlays, menus and Codex rules in src/shared/screens/rules/menus.json
   - Files: `src/shared/screens/rules/menus.json`, `src/shared/screens/catalog.ts`
   - Source: sections 5 (Mapa 1), 6 and 7 of the screen map. Includes `overlays` (`scene` `PlayerSelect` → `Character select`,
     `ol18` 1 → `AFK Gains`), `None` (`menu` 0, `menu2` 0, proof of a "None" row of section 7), World Map, Menu and its
     tabs, Items, Talents, Attacks, Quik Ref and the Codex tabs and subscreens.
   - A rule only with proof: a section 7 row "confere", "novo rótulo" or corrected → `foto:<id>`; a section 6 row "provado"
     → `sprite:<name>`. Anything else gets no rule. A screen with tabs or subscreens gets `tabs: true`.
-- [ ] T013 [US2] [US3] Windows 0 to 45 in src/shared/screens/rules/windows-0-45.json
+- [X] T013 [US2] [US3] Windows 0 to 45 in src/shared/screens/rules/windows-0-45.json
   - Files: `src/shared/screens/rules/windows-0-45.json`, `src/shared/screens/catalog.ts`
   - Source: "Mapa 2" of section 5, with sections 6 and 7. Each tab or subscreen repeats its window's conditions (FR-005).
   - A window of the game without proof goes to `unprovenWindows`. The windows of section 7's "não vistas" list get a rule

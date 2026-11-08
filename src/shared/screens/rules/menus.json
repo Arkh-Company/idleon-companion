@@ -1,0 +1,591 @@
+{
+  "overlays": [
+    {
+      "when": {
+        "scene": "PlayerSelect"
+      },
+      "name": "Character select",
+      "proof": "foto:0001"
+    },
+    {
+      "when": {
+        "ol18": 1
+      },
+      "name": "AFK Gains",
+      "proof": "foto:0010"
+    }
+  ],
+  "screens": [
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0
+      },
+      "name": "None",
+      "proof": "foto:0003"
+    },
+    {
+      "when": {
+        "menu": 4,
+        "menu2": 0
+      },
+      "name": "World Map",
+      "tabs": true,
+      "proof": "foto:0004"
+    },
+    {
+      "when": {
+        "menu": 4,
+        "menu2": 0,
+        "H3._GenINFO[81]": -1
+      },
+      "name": "World Map",
+      "proof": "foto:0567"
+    },
+    {
+      "when": {
+        "menu": 4,
+        "menu2": 0,
+        "H3._GenINFO[81]": 0
+      },
+      "name": "World Map › Collect Resource",
+      "proof": "foto:0564"
+    },
+    {
+      "when": {
+        "menu": 4,
+        "menu2": 0,
+        "H3._GenINFO[81]": 1
+      },
+      "name": "World Map › Upgrade Outposts",
+      "proof": "foto:0565"
+    },
+    {
+      "when": {
+        "menu": 4,
+        "menu2": 0,
+        "H3._GenINFO[81]": 2
+      },
+      "name": "World Map › Move Units",
+      "proof": "foto:0566"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 0
+      },
+      "name": "Menu",
+      "proof": "foto:0007"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 8
+      },
+      "name": "Menu › Change Server",
+      "proof": "foto:0131"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 9
+      },
+      "name": "Menu › Swap Players",
+      "proof": "foto:0049"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 10
+      },
+      "name": "Menu › AFK Info",
+      "proof": "foto:0008"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 11
+      },
+      "name": "Menu › Gem Shop",
+      "proof": "sprite:menubut4"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 12
+      },
+      "name": "Menu › Options",
+      "proof": "foto:0133"
+    },
+    {
+      "when": {
+        "menu": 5,
+        "menu2": 13
+      },
+      "name": "Menu › Patch Notes",
+      "proof": "foto:0136"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0
+      },
+      "name": "Items",
+      "tabs": true,
+      "proof": "foto:0006"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 0
+      },
+      "name": "Items › Equipment",
+      "tabs": true,
+      "proof": "foto:0006"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 0,
+        "H0._MenuType2TabPage": 0,
+        "ol19": 0
+      },
+      "name": "Items › Equipment",
+      "proof": "sprite:UIename1"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 0,
+        "H0._MenuType2TabPage": 0,
+        "ol19": 1
+      },
+      "name": "Items › Equipment › Specials",
+      "proof": "sprite:UIename2"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 0,
+        "H0._MenuType2TabPage": 1
+      },
+      "name": "Items › Equipment › Tools",
+      "proof": "sprite:UIename3"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 0,
+        "H0._MenuType2TabPage": 2
+      },
+      "name": "Items › Equipment › Foods",
+      "proof": "sprite:UIename4"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 1
+      },
+      "name": "Items › Skills",
+      "proof": "foto:0079"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 7
+      },
+      "name": "Items › Skills › Catching",
+      "proof": "foto:0080"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 21
+      },
+      "name": "Items › Skills › Research",
+      "proof": "foto:0082"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 50
+      },
+      "name": "Items › Info",
+      "proof": "foto:0084"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 51
+      },
+      "name": "Items › Info › Inventory Slots Owned",
+      "proof": "foto:0085"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 52
+      },
+      "name": "Items › Info › Storage Slots Owned",
+      "proof": "foto:0087"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 53
+      },
+      "name": "Items › Info › Carry Cap",
+      "proof": "foto:0089"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 54
+      },
+      "name": "Items › Info › Account-wide Items",
+      "proof": "foto:0091"
+    },
+    {
+      "when": {
+        "menu": 1,
+        "menu2": 0,
+        "menu2tab": 55
+      },
+      "name": "Items › Info › NPC Tokens",
+      "proof": "foto:0093"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0
+      },
+      "name": "Talents",
+      "tabs": true,
+      "proof": "foto:0061"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 6
+      },
+      "name": "Talents › Rage Basics",
+      "proof": "foto:0061"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 16
+      },
+      "name": "Talents › Royal Guardian",
+      "proof": "foto:0062"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 12
+      },
+      "name": "Talents › Divine Knight",
+      "proof": "foto:0063"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 7
+      },
+      "name": "Talents › Warrior",
+      "proof": "foto:0097"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 9
+      },
+      "name": "Talents › Squire",
+      "proof": "foto:0098"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": 0
+      },
+      "name": "Talents › Specials 1",
+      "proof": "foto:0101"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": -1
+      },
+      "name": "Talents › Specials 2",
+      "proof": "foto:0102"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": -2
+      },
+      "name": "Talents › Specials 3",
+      "proof": "foto:0103"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": -3
+      },
+      "name": "Talents › Specials 4",
+      "proof": "foto:0104"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 0,
+        "skillTab": -4
+      },
+      "name": "Talents › Specials 5",
+      "proof": "foto:0105"
+    },
+    {
+      "when": {
+        "menu": 2,
+        "menu2": 7
+      },
+      "name": "Talents › Assign Attacks",
+      "proof": "foto:0543"
+    },
+    {
+      "when": {
+        "menu": 6,
+        "menu2": 0
+      },
+      "name": "Attacks",
+      "proof": "foto:0493"
+    },
+    {
+      "when": {
+        "menu": 50,
+        "menu2": 0
+      },
+      "name": "Island Selection",
+      "proof": "foto:0254"
+    },
+    {
+      "when": {
+        "menu": 51,
+        "menu2": 0
+      },
+      "name": "Raft Travel",
+      "proof": "foto:0259"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0
+      },
+      "name": "Codex",
+      "tabs": true,
+      "proof": "foto:0011"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 2
+      },
+      "name": "Codex › Quik Ref",
+      "tabs": true,
+      "proof": "foto:0011"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 2,
+        "nd37": 0
+      },
+      "name": "Codex › Quik Ref",
+      "proof": "foto:0011"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 2,
+        "nd37": 1
+      },
+      "name": "Codex › Quik Ref › EZ Access",
+      "proof": "foto:0122"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 3
+      },
+      "name": "Codex › Cards",
+      "tabs": true,
+      "proof": "foto:0125"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 3,
+        "H6._GenINFO[109]": 0
+      },
+      "name": "Codex › Cards",
+      "proof": "foto:0125"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 3,
+        "H6._GenINFO[109]": 1
+      },
+      "name": "Codex › Cards › Sets",
+      "proof": "foto:0124"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 3,
+        "H6._GenINFO[109]": 2
+      },
+      "name": "Codex › Cards › Filters",
+      "proof": "foto:0126"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6
+      },
+      "name": "Codex › Guild",
+      "tabs": true,
+      "proof": "foto:0128"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[61]": 3
+      },
+      "name": "Codex › Guild › Guild Points Claimboard",
+      "proof": "foto:0128"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 0
+      },
+      "name": "Codex › Guild › Invite",
+      "proof": "sprite:Gpopup0"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 1
+      },
+      "name": "Codex › Guild › Kick",
+      "proof": "sprite:Gpopup1"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 2
+      },
+      "name": "Codex › Guild › Leave",
+      "proof": "sprite:Gpopup2"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 3
+      },
+      "name": "Codex › Guild › Join",
+      "proof": "sprite:Gpopup3"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 4
+      },
+      "name": "Codex › Guild › Invited",
+      "proof": "sprite:Gpopup4"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 5
+      },
+      "name": "Codex › Guild › Choose a Guild Name and Icon",
+      "proof": "sprite:Gpopup5"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 6
+      },
+      "name": "Codex › Guild › Transfer Ownership",
+      "proof": "sprite:Gpopup6"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 7
+      },
+      "name": "Codex › Guild › Guild Leaderboards",
+      "proof": "sprite:Gpopup7"
+    },
+    {
+      "when": {
+        "menu": 3,
+        "menu2": 0,
+        "codexTab": 6,
+        "H6._GenINFO[76]": 8
+      },
+      "name": "Codex › Guild › Swap Guild Display",
+      "proof": "sprite:Gpopup8"
+    }
+  ]
+}

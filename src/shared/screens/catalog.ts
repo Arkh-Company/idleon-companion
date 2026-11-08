@@ -2,6 +2,8 @@
 import { isObject } from "../link.ts";
 import { FIELDS } from "../reading.ts";
 import type { ScreenCatalog, ScreenRule } from "../types.ts";
+import menus from "./rules/menus.json" with { type: "json" };
+import windows0To45 from "./rules/windows-0-45.json" with { type: "json" };
 
 const PROOF = /^(foto|sprite):\S+$/;
 const BEHAVIOR_KEY = /^H\d+\.\w+(\[\d+\])?$/;
@@ -68,3 +70,6 @@ export function parseScreenCatalog(parts: unknown[]): ScreenCatalog {
   for (const n of catalog.unprovenWindows) if (inRules.has(n)) fail(n);
   return catalog;
 }
+
+/** Every proven rule of the game's screens. */
+export const SCREEN_CATALOG = parseScreenCatalog([menus, windows0To45]);
