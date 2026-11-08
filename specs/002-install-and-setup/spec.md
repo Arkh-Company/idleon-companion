@@ -417,6 +417,8 @@ a atualização espera o jogo fechar.
 | Durante `connecting` (a tomada do motor pode ficar anexada até 120 s e travar o X), há "Let the game close"? | resolved | durante a implementação (Vinicius, 08/11): não, por agora; limitação conhecida e rara. |
 | Desinstalar ou reinstalar com o jogo aberto derruba o jogo? | resolved | durante a implementação (Vinicius, 08/11): não. O electron-builder encerra os processos da pasta instalada antes de qualquer código nosso (research R6 partia da ordem contrária), então o `installer.nsh` define uma checagem própria que para com "Close the game first." se `LegendsOfIdleon.exe` estiver rodando, no desinstalador e no instalador. |
 | A pasta de instalação é mesmo `%LOCALAPPDATA%\Programs\IdleOn Companion\` (FR-001)? | resolved | durante a implementação (Vinicius, 08/11): não; o electron-builder usa o `name` do `package.json`, e a pasta real é `%LOCALAPPDATA%\Programs\idleon-companion\`, com o executável `IdleOn Companion.exe`. Aceita: o caminho segue fixo entre versões, que é o que a opção da Steam precisa. Onde a spec, o plano e os contratos citam a outra pasta, vale esta linha. |
+| Como achar a conta usada por último, se o `loginusers.vdf` real não tem `"MostRecent"`? | resolved | durante a implementação (roteiro manual, Vinicius, 08/11): a conta com `"MostRecent" "1"` quando existir; senão, a de `timestamp` mais alto. O arquivo real da Steam traz só `AutoLogin` e `timestamp`. |
+| A janela mantém o menu padrão do Electron (File, Edit, View, Window)? | resolved | durante a implementação (Vinicius, 08/11): não; a janela fica sem a barra de menu, que também abria as ferramentas de desenvolvedor. |
 
 ## Origem do design
 
