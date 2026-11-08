@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { modulesFor } from "../shared/index.ts";
 import type { GameContext, Status, SteamState } from "../shared/index.ts";
 import { screenMap } from "./modules/screen-map.ts";
-import { SettingsView } from "./SettingsView.tsx";
+import { SettingsView, SteamSettings } from "./SettingsView.tsx";
 import { SetupView, steamUnknown } from "./SetupView.tsx";
 import { StatusBar } from "./StatusBar.tsx";
 
@@ -31,12 +31,27 @@ export function App() {
   const finishSetup = useCallback(() => {
     setSetupFinished(true);
   }, []);
+  // So the window knows Steam is set up once the setup screen's last line goes (a removal right after).
+  useEffect(() => {
+    if (setupFinished) loadSteam();
+  }, [setupFinished, loadSteam]);
+  const hideSetupLine = useCallback(() => {
+    setSetupFinished(false);
+  }, []);
+  // A new key: the setup screen starts over, without the last line of the setup before.
+  const [setupRun, setSetupRun] = useState(0);
+  const showSteam = useCallback((s: SteamState) => {
+    setSetupFinished(false);
+    setSetupRun((n) => n + 1);
+    setSteam(s);
+  }, []);
 
   return (
     <main>
       <h1>IdleOn Companion</h1>
       {steam && (!steam.configured || setupFinished) && (
         <SetupView
+          key={setupRun}
           state={steam}
           onReload={loadSteam}
           onFinished={finishSetup}
@@ -52,7 +67,14 @@ export function App() {
                 <Panel ctx={ctx} send={send} />
               </section>
             ))}
-          <SettingsView />
+          <SettingsView>
+            <SteamSettings
+              gameOpen={steam.gameOpen || status?.game === "running"}
+              onReload={loadSteam}
+              onSteam={showSteam}
+              onRemoveStart={hideSetupLine}
+            />
+          </SettingsView>
         </>
       )}
     </main>

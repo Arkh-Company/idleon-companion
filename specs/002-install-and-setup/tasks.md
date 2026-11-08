@@ -375,7 +375,7 @@ with Vinicius, quickstart §3 steps 3–5.
 
 ### Tests for Phase 6
 
-- [ ] T060 [P] [US3] Removal flow in `src/main/steam/remove.test.ts`
+- [X] T060 [P] [US3] Removal flow in `src/main/steam/remove.test.ts`
   - Files: `src/main/steam/remove.test.ts`
   - Signatures tested: `runRemove(sys: SteamSystem, store: SetupStoreLike, onProgress): Promise<SetupProgress>`.
   - Cases: two configured accounts → both files lose only their `inserted` text, and both leave `steam-setup.json`;
@@ -383,32 +383,32 @@ with Vinicius, quickstart §3 steps 3–5.
     written; game open → `failed: game-open`, nothing touched; Steam not closing in 30 s → `failed:
     steam-did-not-close`, nothing written; one account's file unreadable → that account is kept in the store, the other
     is done, result `failed: unreadable-config`; nothing configured → `done` without closing Steam.
-- [ ] T061 [P] [US3] Uninstaller mode exit codes in `src/main/remove-from-steam.test.ts`
+- [X] T061 [P] [US3] Uninstaller mode exit codes in `src/main/remove-from-steam.test.ts`
   - Files: `src/main/remove-from-steam.test.ts`
   - Signatures tested: `exitCodeFor(p: SetupProgress): 0 | 2 | 3 | 4` — done → 0; `game-open` → 2;
     `steam-did-not-close` → 3; `unreadable-config` → 4; `steam-did-not-open` → 0 (the option is already clean).
-- [ ] T062 [P] [US3] Settings in `src/renderer/ui.test.tsx` (or `src/renderer/settings.test.tsx` past 400 lines)
+- [X] T062 [P] [US3] Settings in `src/renderer/ui.test.tsx` (or `src/renderer/settings.test.tsx` past 400 lines)
   - Cases: "Set up Steam" opens the setup screen for the last-used account (or "Steam is already set up for <name>");
     "Remove from Steam" asks for a confirmation, then calls `removeFromSteam` and shows the steps; disabled with
     "Close the game first" while the game is open.
 
 ### Implementation for Phase 6
 
-- [ ] T063 [US3] `src/main/steam/remove.ts` as tested in T060; `steam:remove` IPC wired in `src/main/index.ts`
+- [X] T063 [US3] `src/main/steam/remove.ts` as tested in T060; `steam:remove` IPC wired in `src/main/index.ts`
   - Files: `src/main/steam/remove.ts`, `src/main/steam/index.ts`, `src/main/index.ts`
   - Signature: `runRemove(sys, store, onProgress)` (T060)
-- [ ] T064 [US3] `src/main/remove-from-steam.ts`: runs `runRemove` with the real system, no window, no single-instance
+- [X] T064 [US3] `src/main/remove-from-steam.ts`: runs `runRemove` with the real system, no window, no single-instance
   lock, then `app.exit(exitCodeFor(result))` (T061)
   - Files: `src/main/remove-from-steam.ts`
   - Signature: `exitCodeFor(p: SetupProgress): 0 | 2 | 3 | 4` (T061); the default export runs the flow and exits
-- [ ] T065 [US3] Uninstaller script `build/installer.nsh`
+- [X] T065 [US3] Uninstaller script `build/installer.nsh`
   - Files: `build/installer.nsh`, `electron-builder.yml` (`nsis.include: build/installer.nsh`)
   - Macro `customUnInit`, inside `${ifNot} ${isUpdated}`: `MessageBox MB_YESNO` "Steam will close to remove the
     companion from the launch option of Legends of Idleon. Continue?"; yes → `ExecWait '"$INSTDIR\IdleOn
     Companion.exe" --remove-from-steam' $0`; `$0 == 2` → `MessageBox` "Close the game first." and `Abort`; no, `3` or
     `4` → `MessageBox` with the text to remove, `"$INSTDIR\IdleOn Companion.exe" --keeper`, and go on (FR-013).
   - Check (manual, quickstart §4): the macro runs before any file is removed; an update (`--updated`) skips it.
-- [ ] T066 [US3] Settings buttons in `src/renderer/SettingsView.tsx` as tested in T062
+- [X] T066 [US3] Settings buttons in `src/renderer/SettingsView.tsx` as tested in T062
   - Files: `src/renderer/SettingsView.tsx`
   - Cases: T062
 

@@ -26,7 +26,7 @@ const isFinished = (p: SetupProgress | null) =>
   p === "done" || reasonOf(p) === "steam-did-not-open";
 
 /** The text of a failed call, without the prefix Electron adds to what crosses IPC. */
-const errorText = (e: unknown) =>
+export const errorText = (e: unknown) =>
   (e instanceof Error ? e.message : String(e)).replace(
     /^Error invoking remote method '[^']+': (Error: )?/,
     "",
