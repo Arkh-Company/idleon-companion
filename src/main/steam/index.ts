@@ -1,15 +1,7 @@
-// Public API of src/main/steam: src/main/index.ts and remove-from-steam.ts import from here only.
-export {
-  addPart,
-  companionPart,
-  hasConsoleScript,
-  optionState,
-  removePart,
-} from "./launch-option.ts";
-export { IDLEON_APP_ID, readSteam } from "./locate.ts";
+// Public API of src/main/steam: the rest of src/main imports from here only.
+export { companionPart } from "./launch-option.ts";
+export { steamJobs } from "./jobs.ts";
 export { runRemove } from "./remove.ts";
-export { GAME_IMAGE, runSetup, steamState } from "./setup.ts";
-export type { SetupStoreLike, SteamSystem } from "./setup.ts";
+export { GAME_IMAGE, steamState } from "./setup.ts";
+export type { SteamSystem } from "./setup.ts";
 export { steamSystem } from "./system.ts";
-export type { FsLike, Runner, SteamFiles } from "./locate.ts";
-export { VdfShapeError, getLaunchOptions, setLaunchOptions } from "./vdf.ts";

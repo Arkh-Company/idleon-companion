@@ -1,5 +1,5 @@
 // The app's lifecycle decisions (plan Task 10; Review Focus 5 for second-instance).
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
 import {
   NOT_CONNECTED,
@@ -9,7 +9,9 @@ import {
   shouldReload,
   statusOnLinkDrop,
   trayItems,
+  trayUpdater,
 } from "./lifecycle.ts";
+import type { TrayItem } from "./lifecycle.ts";
 
 test("a start from Steam shows the window when the setting says so", () => {
   expect(decide("start-from-steam", { ...DEFAULT_SETTINGS }, false)).toEqual([
@@ -151,6 +153,19 @@ test.each([
     expect(trayItems(status)).toEqual(["Show/Hide", "Quit"]);
   },
 );
+
+test("the tray menu is replaced only when its items change: a repeated status leaves an open menu alone", () => {
+  const setMenu = vi.fn<(items: TrayItem[]) => void>();
+  const update = trayUpdater(setMenu);
+
+  update({ game: "running", reader: "attached" });
+  update({ game: "running", reader: "attached", lastReadingAt: 5 });
+  expect(setMenu).toHaveBeenCalledTimes(1);
+
+  update({ game: "running", reader: "released" });
+  expect(setMenu).toHaveBeenCalledTimes(2);
+  expect(setMenu).toHaveBeenLastCalledWith(["Show/Hide", "Reconnect", "Quit"]);
+});
 
 test("one job at a time: a call while one runs gets that job's result and starts nothing", async () => {
   const one = oneAtATime<string>();

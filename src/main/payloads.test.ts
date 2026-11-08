@@ -114,7 +114,8 @@ test.each([
   expect(linkStatus(value)).toBeNull();
 });
 
-// steam:state, steam:setup, steam:remove, reader:release, reader:reconnect and update:install carry no body.
+// settings:get, steam:state, steam:setup, steam:remove, reader:release, reader:reconnect and update:install carry no
+// body.
 test.each([
   ["a missing body", undefined],
   ["an empty object", {}],
@@ -134,6 +135,13 @@ test.each([
 });
 
 // ponytail: reads the source because index.ts imports electron and no test may load it.
+test("settings:get refuses a body before it answers", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /handle\(IPC\.settingsGet, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
+});
+
 test("reader:confirm-attach refuses a body before it acts", () => {
   const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
   expect(source).toMatch(

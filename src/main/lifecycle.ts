@@ -36,6 +36,20 @@ export function trayItems(status: Status): TrayItem[] {
   return ["Show/Hide", "Quit"];
 }
 
+/** Calls `setMenu` only when the items change: the status repeats every second while reading, and replacing a menu that
+ * is open could close it. */
+export function trayUpdater(
+  setMenu: (items: TrayItem[]) => void,
+): (status: Status) => void {
+  let shown = "";
+  return (status) => {
+    const items = trayItems(status);
+    if (items.join() === shown) return;
+    shown = items.join();
+    setMenu(items);
+  };
+}
+
 /** Runs one job at a time: a call while one runs gets that job's result and starts nothing. */
 export function oneAtATime<T>(): (job: () => Promise<T>) => Promise<T> {
   let running: Promise<T> | null = null;

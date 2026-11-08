@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
-import type { Reading, SetupProgress, Status } from "../shared/index.ts";
+import type { Reading, Status } from "../shared/index.ts";
 import {
   DEFAULT_CATALOG,
   loadCatalog,
@@ -16,10 +16,9 @@ import {
   decide,
   launchEvent,
   NOT_CONNECTED,
-  oneAtATime,
   shouldReload,
   statusOnLinkDrop,
-  trayItems,
+  trayUpdater,
 } from "./lifecycle.ts";
 import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
@@ -34,8 +33,7 @@ import { loadSettings, saveSettings } from "./settings.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import {
   companionPart,
-  runRemove,
-  runSetup,
+  steamJobs,
   steamState,
   steamSystem,
 } from "./steam/index.ts";
@@ -75,7 +73,7 @@ function start(): void {
   const setStatus = (s: Status) => {
     status = s;
     send(IPC.statusUpdate, s);
-    updateTray();
+    updateTray(s);
     return updates.onStatus();
   };
 
@@ -142,19 +140,15 @@ function start(): void {
       app.quit();
     },
   };
-  let trayShown = "";
-  const updateTray = () => {
-    const items = trayItems(status);
-    // ponytail: the status repeats every second while reading, and replacing a menu that is open could close it.
-    if (tray.isDestroyed() || items.join() === trayShown) return;
-    trayShown = items.join();
+  const updateTray = trayUpdater((items) => {
+    if (tray.isDestroyed()) return;
     tray.setContextMenu(
       Menu.buildFromTemplate(
         items.map((label) => ({ label, click: trayClicks[label] })),
       ),
     );
-  };
-  updateTray();
+  });
+  updateTray(status);
   tray.on("click", () => {
     apply("tray-click");
   });
@@ -194,7 +188,11 @@ function start(): void {
   const handle = (channel: string, f: (payload: unknown) => unknown): void => {
     ipcMain.handle(channel, guardIpc(ownUrl, f));
   };
-  handle(IPC.settingsGet, () => settings);
+  handle(IPC.settingsGet, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("settings:get: no body expected");
+    return settings;
+  });
   handle(IPC.settingsSet, (payload) => {
     const s = settingsPayload(payload);
     if (!s) throw new Error("settings:set: invalid settings");
@@ -239,11 +237,9 @@ function start(): void {
     appPath: app.getAppPath(),
   });
   const setupStore = setupStoreIn(dataDir);
-  // Setting up and removing never run together: a second click while one runs gets that one's result.
-  const steamJob = oneAtATime<SetupProgress>();
-  const onSteamProgress = (p: SetupProgress) => {
+  const steam = steamJobs(steamSystem, setupStore, part, (p) => {
     send(IPC.steamProgress, p);
-  };
+  });
   handle(IPC.steamState, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:state: no body expected");
@@ -252,16 +248,12 @@ function start(): void {
   handle(IPC.steamSetup, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:setup: no body expected");
-    return steamJob(() =>
-      runSetup(steamSystem, setupStore, part, onSteamProgress),
-    );
+    return steam.setup();
   });
   handle(IPC.steamRemove, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:remove: no body expected");
-    return steamJob(() =>
-      runRemove(steamSystem, setupStore, part, onSteamProgress),
-    );
+    return steam.remove();
   });
 
   app.on("second-instance", (_e, argv) => {
