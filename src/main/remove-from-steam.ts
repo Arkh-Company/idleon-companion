@@ -2,14 +2,13 @@
 // with no window and no single-instance lock, reported by the exit code. electron is imported only when the mode runs,
 // so the tests can load this file.
 import { join } from "node:path";
-import type { SetupProgress } from "../shared/index.ts";
+import type { SetupFailure, SetupProgress } from "../shared/index.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import { companionPart, runRemove, steamSystem } from "./steam/index.ts";
 
 type ExitCode = 0 | 2 | 3 | 4;
-type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
 
-const EXIT: Record<Reason, ExitCode> = {
+const EXIT: Record<SetupFailure, ExitCode> = {
   "game-open": 2,
   "steam-did-not-close": 3,
   "unreadable-config": 4,

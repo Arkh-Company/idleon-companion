@@ -1,7 +1,11 @@
 // The setup flow (FR-005 to FR-010, ADR 0004): what the setup screen shows, and the one click that closes Steam the
 // normal way, keeps a copy, adds the companion's part to the launch option and reopens Steam. Every system operation
 // is injected (SteamSystem), so the tests touch no Steam, no registry and no process; nothing here can kill a process.
-import type { SetupProgress, SteamState } from "../../shared/index.ts";
+import type {
+  SetupFailure,
+  SetupProgress,
+  SteamState,
+} from "../../shared/index.ts";
 import { recordSetup } from "../setup-store.ts";
 import type { SteamSetupFile } from "../setup-store.ts";
 import { addPart, hasConsoleScript, optionState } from "./launch-option.ts";
@@ -38,8 +42,7 @@ export interface SetupStoreLike {
   backupPath(accountId: string): string;
 }
 
-type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
-export const failed = (reason: Reason): SetupProgress => ({
+export const failed = (reason: SetupFailure): SetupProgress => ({
   step: "failed",
   reason,
 });

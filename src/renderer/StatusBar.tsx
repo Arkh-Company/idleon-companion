@@ -2,6 +2,7 @@
 // the update warning (spec §7.2, decided on 07/11), "Let the game close" / "Reconnect" (002, US2) and "Restart to
 // update" (002, US4).
 import { useEffect, useState } from "react";
+import { GAME_UPDATED } from "../shared/index.ts";
 import type { Status, UpdateState } from "../shared/index.ts";
 
 const NOT_LAUNCHED =
@@ -10,8 +11,6 @@ const GAME: Record<Exclude<Status["game"], "not-launched">, string> = {
   running: "Game running",
   closed: "Game closed",
 };
-// A game update stops the reader until the game reopens: "Reconnect" would do nothing (spec, Open Questions, 08/11).
-const GAME_UPDATED = "Game updated: the reader needs an update";
 const READER: Record<Status["reader"], string> = {
   attached: "Reader attached",
   connecting: "Reader connecting",

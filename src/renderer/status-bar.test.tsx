@@ -2,6 +2,7 @@
 // "Let the game close" and "Reconnect" in the status bar (spec US2, FR-015 to FR-018, FR-034, Edge Cases).
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
+import { GAME_UPDATED } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
@@ -132,7 +133,7 @@ test.each([
 test.each<Status["reader"]>(["error", "released"])(
   "a game update (reader %s): the message stays and Reconnect is gone, it would do nothing",
   (reader) => {
-    const message = "Game updated: the reader needs an update";
+    const message = GAME_UPDATED;
     const { rerender } = render(<StatusBar status={RELEASED} />);
 
     rerender(<StatusBar status={{ game: "running", reader, message }} />);

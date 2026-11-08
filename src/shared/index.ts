@@ -3,7 +3,7 @@ export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export { modulesFor } from "./modules.ts";
 export { toReading } from "./reading.ts";
-export { DEFAULT_SETTINGS, IPC, moduleChannel } from "./types.ts";
+export { DEFAULT_SETTINGS, GAME_UPDATED, IPC, moduleChannel } from "./types.ts";
 export type {
   Catalog,
   CatalogTable,
@@ -13,6 +13,7 @@ export type {
   GameContext,
   Reading,
   Settings,
+  SetupFailure,
   SetupProgress,
   Status,
   SteamState,

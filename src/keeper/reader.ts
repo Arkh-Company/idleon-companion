@@ -1,11 +1,10 @@
 // The reader loop: takes the engine once, runs read.js on it every second and emits each new reading.
-import { toReading } from "../shared/index.ts";
+import { GAME_UPDATED, toReading } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AnchorNotFound, OBJECT_GROUP, acquireEngine } from "./engine-ref.ts";
 import type { EngineRef } from "./engine-ref.ts";
 
-const GAME_UPDATED = "Game updated: the reader needs an update";
 /** Failed readings in a row before the status says so (spec, Open Questions, 07/11). */
 const FAILS_BEFORE_WARNING = 10;
 

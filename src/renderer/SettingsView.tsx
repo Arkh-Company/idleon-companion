@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type {
+  SetupFailure,
   SetupProgress,
   Settings,
   SteamState,
@@ -17,7 +18,6 @@ const LABELS: Record<keyof Settings, string> = {
 };
 
 type Step = Exclude<SetupProgress, "done" | { step: "failed" }>;
-type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
 
 const STEP: Record<Step, string> = {
   "closing-steam": "Closing Steam…",
@@ -25,7 +25,7 @@ const STEP: Record<Step, string> = {
   "opening-steam": "Opening Steam…",
 };
 const DONE = "Removed from Steam.";
-const FAILURE: Record<Exclude<Reason, "game-open">, string> = {
+const REMOVAL_FAILURE: Record<Exclude<SetupFailure, "game-open">, string> = {
   "steam-did-not-close": "Steam did not close. Nothing was changed.",
   "unreadable-config":
     "Some of Steam's settings could not be read. Those accounts were not changed.",
@@ -92,7 +92,7 @@ export function SteamSettings({
         (result) => {
           if (typeof result !== "object") setLine(DONE);
           else if (result.reason === "game-open") onReload();
-          else setLine(FAILURE[result.reason]);
+          else setLine(REMOVAL_FAILURE[result.reason]);
         },
         (e: unknown) => {
           setLine(`Remove did not finish: ${errorText(e)}`);

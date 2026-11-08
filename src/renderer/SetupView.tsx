@@ -1,9 +1,12 @@
 // The setup screen (FR-005 to FR-011, FR-014, FR-029): what was found in Steam and the one button that sets it up. The
 // flow itself runs in the main process (src/main/steam/setup.ts); this only shows its steps.
 import { useCallback, useEffect, useState } from "react";
-import type { SetupProgress, SteamState } from "../shared/index.ts";
+import type {
+  SetupFailure,
+  SetupProgress,
+  SteamState,
+} from "../shared/index.ts";
 
-type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
 type Step = Exclude<SetupProgress, "done" | { step: "failed" }>;
 
 const STEP: Record<Step, string> = {
@@ -11,7 +14,7 @@ const STEP: Record<Step, string> = {
   "setting-up": "Setting up…",
   "opening-steam": "Opening Steam…",
 };
-const FAILURE: Record<Reason, string | null> = {
+const FAILURE: Record<SetupFailure, string | null> = {
   "game-open": null, // the reloaded state disables the button and says it
   "steam-did-not-close": "Steam did not close. Nothing was changed.",
   "unreadable-config":
@@ -20,7 +23,7 @@ const FAILURE: Record<Reason, string | null> = {
 };
 const ALL_SET = "All set. Press Play in Steam as usual.";
 
-const reasonOf = (p: SetupProgress | null): Reason | null =>
+const reasonOf = (p: SetupProgress | null): SetupFailure | null =>
   typeof p === "object" && p !== null ? p.reason : null;
 const isFinished = (p: SetupProgress | null) =>
   p === "done" || reasonOf(p) === "steam-did-not-open";

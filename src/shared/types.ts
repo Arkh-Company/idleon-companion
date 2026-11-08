@@ -83,6 +83,10 @@ export interface Status {
   lastReadingAt?: number;
 }
 
+/** `Status.message` when a game update stopped the reader until the game reopens: "Reconnect" would do nothing (spec,
+ * Open Questions, 08/11). */
+export const GAME_UPDATED = "Game updated: the reader needs an update";
+
 /** settings.json (spec §5.5). */
 export interface Settings {
   showWindowOnGameStart: boolean;
@@ -155,19 +159,18 @@ export interface SteamState {
 }
 
 /** One step of setting up or removing (data-model.md). Only "steam-did-not-open" comes after the write. */
+export type SetupFailure =
+  | "game-open"
+  | "steam-did-not-close"
+  | "unreadable-config"
+  | "steam-did-not-open";
+
 export type SetupProgress =
   | "closing-steam"
   | "setting-up"
   | "opening-steam"
   | "done"
-  | {
-      step: "failed";
-      reason:
-        | "game-open"
-        | "steam-did-not-close"
-        | "unreadable-config"
-        | "steam-did-not-open";
-    };
+  | { step: "failed"; reason: SetupFailure };
 
 /** The app's update, main → window (data-model.md). `canInstall` is false while the game is open. */
 export type UpdateState =
