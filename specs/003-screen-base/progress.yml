@@ -7,3 +7,17 @@ phases:
   prototype: {status: done, date: 2026-11-08}
   plan: {status: done, date: 2026-11-08}
   tasks: {status: done, date: 2026-11-08}
+execution:
+  branch: feat/003-screen-base
+  phases:
+    - {name: "Foundational (T001-T005)", status: pending}
+    - {name: "US1 identificacao (T006-T009)", status: pending}
+    - {name: "US1-US3 janelas 0-45 (T010-T013)", status: pending}
+    - {name: "US1-US3 janelas 46-110 (T014-T017)", status: pending}
+    - {name: "US5 (T018-T023)", status: pending}
+    - {name: "US6 (T024-T026)", status: pending}
+    - {name: "US1 e US4 janela (T027-T032)", status: pending}
+    - {name: "US4 names.json (T033-T034)", status: pending}
+    - {name: "Polish (T035-T037)", status: pending}
+  feature_review: pending
+  code_pr: null
