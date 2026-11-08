@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.3.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.2.0...v0.3.0) (2026-11-08)
+
+
+### Features
+
+* installer, Steam setup, let the game close and automatic updates ([7a42771](https://github.com/Arkh-Company/idleon-companion/commit/7a42771b2e924f79398d1991fa8f752c87f89dc4))
+* **installer:** say so when the uninstall ends ([cd81f77](https://github.com/Arkh-Company/idleon-companion/commit/cd81f772489cf98e41c9f0962ad80f7b47af0297))
+* **installer:** undo the Steam setup when uninstalling ([5a6d3fa](https://github.com/Arkh-Company/idleon-companion/commit/5a6d3fa727473e067a0fab3cd4a5b2194b30d863))
+* **ipc:** payload check for the bodiless channels of 002 ([7e0a765](https://github.com/Arkh-Company/idleon-companion/commit/7e0a7657aaf225aad11e35134412bd64a109d592))
+* **ipc:** steam:state and steam:setup in the main process; steam:progress without replay ([4850149](https://github.com/Arkh-Company/idleon-companion/commit/4850149178831365443a452cf167e65ce4525615))
+* **keeper:** reader stop resolves after the engine is let go ([7660130](https://github.com/Arkh-Company/idleon-companion/commit/7660130206a90a92c36c274122997b4fc0d7a6da))
+* **keeper:** release the game and reconnect on the link messages ([9fb9bff](https://github.com/Arkh-Company/idleon-companion/commit/9fb9bff0cdaacda64710c2d568b69c9aa51455ec))
+* **renderer:** setup screen, shown alone until Steam is set up ([8340444](https://github.com/Arkh-Company/idleon-companion/commit/83404440365fb259fba0a6e7319c4ebefc50a0e3))
+* **settings:** leave undoing the Steam setup to the uninstaller ([aef81e4](https://github.com/Arkh-Company/idleon-companion/commit/aef81e411b1d7aaea418fed18a3d610a5d520f4d))
+* **shared:** contracts of 002 - IPC names, Steam, setup and update types, release and reconnect ([0d75667](https://github.com/Arkh-Company/idleon-companion/commit/0d75667e9a5c4f1b5e639d0b42787732d9dbce7b))
+* **start:** one executable that is the keeper with --keeper and the app without it ([5fd1453](https://github.com/Arkh-Company/idleon-companion/commit/5fd1453e53995ae8a73425137e7357ad7b42e63f))
+* **start:** the uninstaller's mode removes the companion from Steam ([60c4d16](https://github.com/Arkh-Company/idleon-companion/commit/60c4d16fd620349f42bd8ea635ec77c86dda532e))
+* **steam:** locate Steam, its last account and the game, with the runner and the file reads injected ([b168aa6](https://github.com/Arkh-Company/idleon-companion/commit/b168aa6646daf17e8f625375af8c3a645e18f23c))
+* **steam:** remove the companion from the launch option ([703bec5](https://github.com/Arkh-Company/idleon-companion/commit/703bec50490fa17436eb69e6981eeb75c2d4f58b))
+* **steam:** setup flow that closes Steam, keeps a copy, adds the part and reopens Steam ([e82f059](https://github.com/Arkh-Company/idleon-companion/commit/e82f0593851bd9c38447fe47e0c99d98737d10c4))
+* **steam:** setup records of each account, and the module's entry file ([ba9e330](https://github.com/Arkh-Company/idleon-companion/commit/ba9e330294ca22c062830dde50243926bd306fa1))
+* **steam:** VDF reader that splices only the launch option, and the companion's part of it ([a98a8cd](https://github.com/Arkh-Company/idleon-companion/commit/a98a8cde6a3ebddae4a50d52b9a40faf923141fa))
+* **ui:** let the game close and reconnect from the status bar and tray ([d9884e5](https://github.com/Arkh-Company/idleon-companion/commit/d9884e5482a95ea9eca5850751223a8dde2097ff))
+* **ui:** set up and remove Steam from Settings ([cd571e1](https://github.com/Arkh-Company/idleon-companion/commit/cd571e132888101f3f77684cadca911fac7b04ef))
+* **updates:** find and install new versions with the game closed ([4a88fba](https://github.com/Arkh-Company/idleon-companion/commit/4a88fba941f93665de2ae90fbf479a06d266865b))
+
+
+### Bug Fixes
+
+* **installer:** show the closing box without copying the template's removal ([c34aad5](https://github.com/Arkh-Company/idleon-companion/commit/c34aad56a61da3521350762a61f1ef90a91b0674))
+* **installer:** stop before closing anything while the game is open ([ac42166](https://github.com/Arkh-Company/idleon-companion/commit/ac4216683f7e5619f62444c06d8f3cd9324e2f43))
+* **installer:** tasklist by full path and no desktop shortcut ([66a8b3d](https://github.com/Arkh-Company/idleon-companion/commit/66a8b3d2a77d0cf899170c8d45f80d27e6ffe404))
+* **ipc:** reader:confirm-attach refuses a body ([93b96aa](https://github.com/Arkh-Company/idleon-companion/commit/93b96aabb94c82a194881c3b5c1c9280dc1e2954))
+* **steam:** another companion's launch option, and text around an inserted command ([94b4a7b](https://github.com/Arkh-Company/idleon-companion/commit/94b4a7b42975549c73a710af35a6ea2a1767f755))
+* **steam:** check the bytes before offering setup, and give the text to paste by hand ([6536bcf](https://github.com/Arkh-Company/idleon-companion/commit/6536bcf157a90393aab28860e7ca290b9ea4b26c))
+* **steam:** find the last-used account by timestamp without MostRecent ([ec5b21b](https://github.com/Arkh-Company/idleon-companion/commit/ec5b21b284698e630a35612f6273fd5406e1a430))
+* **steam:** reopen Steam when waiting for it to close fails ([bda0acf](https://github.com/Arkh-Company/idleon-companion/commit/bda0acf376ddd9e6344914b66394d1daae6a954b))
+* **steam:** undo takes out the companion's part also when the user deleted their own text ([9a6a0e5](https://github.com/Arkh-Company/idleon-companion/commit/9a6a0e5c4483f30fb67cad128ce73ac333d24d3b))
+* **steam:** vdf that keeps line breaks and tabs escaped, and a timeout on Windows tools ([77bc952](https://github.com/Arkh-Company/idleon-companion/commit/77bc952825216aa08c1ce44766847116cf387f5c))
+* **ui:** hide Reconnect once the game updated ([5b2d4c6](https://github.com/Arkh-Company/idleon-companion/commit/5b2d4c661ac12ad3ec2c4de9cabaf5379ab0b905))
+* **updates:** settle the install flag before quitting with the game ([7d529ba](https://github.com/Arkh-Company/idleon-companion/commit/7d529bacddea5512418d19cf41edcd54082995f6))
+* **window:** remove the default Electron menu bar ([191e979](https://github.com/Arkh-Company/idleon-companion/commit/191e9792dee0e123404f35d5bbd7eb552f412bb9))
+
 ## [0.2.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.1.1...v0.2.0) (2026-11-07)
 
 
