@@ -45,6 +45,8 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     d.log(label, { id: pid, ...data });
   };
   let confirmed: (() => void) | undefined;
+  /** "Let the game close" and "Reconnect": a message before the game is launched does nothing. */
+  let onReaderMessage: (m: "release" | "reconnect") => void = () => undefined;
   let server: Awaited<ReturnType<typeof startLinkServer>> | undefined;
   // Spec §3: zero ban risk. Anything that keeps the keeper from checking the game opens it without the debugging pipe.
   let safe = true;
@@ -59,7 +61,11 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       "Could not create the data folder: reading is off for this session.";
   }
   try {
-    server = await startLinkServer(d.pipePath, () => {
+    server = await startLinkServer(d.pipePath, (m) => {
+      if (m !== "confirm-attach") {
+        onReaderMessage(m);
+        return;
+      }
       const run = confirmed;
       confirmed = undefined; // a second click does nothing
       run?.();
@@ -146,7 +152,31 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     );
   };
   // Only a game launched with the pipe has a Cdp, so nothing can read a game opened without it.
-  if (game.cdp) startReading(game.cdp);
+  // The debugging pipe, kept for "Reconnect" until the game exits. It is never closed: that would close the game.
+  let cdp = game.cdp;
+  let released = false;
+  const release = async () => {
+    if (!reader) return; // no reader (a game without the pipe), or already released
+    const stopping = reader;
+    reader = undefined;
+    await stopping.stop();
+    if (!cdp) return; // the game exited meanwhile: "closed" is already out
+    released = true;
+    log("released");
+    publishStatus({ game: "running", reader: "released" });
+  };
+  const reconnect = () => {
+    if (!released || !cdp) return;
+    released = false;
+    log("reconnect");
+    startReading(cdp); // the same reader as 001: one new pause, property reads only
+  };
+  // One after the other: a reconnect sent right after a release waits for it, so two sessions never run at once.
+  let turn = Promise.resolve();
+  onReaderMessage = (m) => {
+    turn = turn.then(m === "release" ? release : reconnect);
+  };
+  if (cdp) startReading(cdp);
   else if (warning)
     publishStatus({ game: "running", reader: "error", message: warning });
 
@@ -158,6 +188,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
 
   await game.exited;
   confirmed = undefined;
+  cdp = undefined;
   void reader?.stop();
   publishStatus({ game: "closed", reader: "error" });
   await server?.close();

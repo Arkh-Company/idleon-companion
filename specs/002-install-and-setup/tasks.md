@@ -328,7 +328,7 @@ with Vinicius, quickstart §3 steps 3–5.
   - Cases: `await reader.stop()` resolves only after `Runtime.releaseObjectGroup` and `Target.detachFromTarget` were
     sent for the held session; a stop while `acquireEngine` is still running resolves after that engine is let go;
     a second `stop()` resolves too.
-- [ ] T051 [P] [US2] Release and reconnect in `src/keeper/keeper-release.test.ts`
+- [X] T051 [P] [US2] Release and reconnect in `src/keeper/keeper-release.test.ts`
   - Files: `src/keeper/keeper-release.test.ts` (new; same fakes as `keeper.test.ts`)
   - Cases: a link `release` while reading → reader stopped, status `{ game: "running", reader: "released" }`, the game
     process and its pipe untouched (no close call on the `Cdp`); `reconnect` after it → a new `read` call (one new
@@ -350,7 +350,7 @@ with Vinicius, quickstart §3 steps 3–5.
 
 - [X] T053 [US2] `stop(): Promise<void>` in `src/keeper/reader.ts` as tested in T050 (callers in
   `src/keeper/index.ts` and `keeper.ts` updated)
-- [ ] T054 [US2] Release and reconnect in `src/keeper/keeper.ts` and `src/keeper/link-server.ts`
+- [X] T054 [US2] Release and reconnect in `src/keeper/keeper.ts` and `src/keeper/link-server.ts`
   - `startLinkServer(pipePath, onMessage: (m: "confirm-attach" | "release" | "reconnect") => void)`; `runKeeper`
     keeps the `Cdp` of the launched game, and on `release` awaits `reader.stop()` and publishes `released`; on
     `reconnect` (only when released and `game.cdp` exists) calls `startReading(game.cdp)` again (contracts/link.md).
