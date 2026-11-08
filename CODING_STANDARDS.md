@@ -48,3 +48,9 @@ Every branch or state reset a change adds has one assertion that fails when that
 Good: a retry test that keeps `setupSteam` pending and asserts that the old alert is gone.
 Bad: a retry test that ends in the screen's final line, which returns before the alert is drawn, so removing the reset
 changes nothing.
+
+### Rules wired in the Electron entry are tested
+
+Every decision in `src/main/index.ts` (a shared lock, a memory of the last state) lives in a function that a test reaches and that fails when the wiring is removed.
+Good: `steamJobs(sys, store, part, onProgress)` returns `{ setup, remove }` over one lock, and a test with `fake-system` asserts one `shutdown` when both are called.
+Bad: two `handle()` calls in `index.ts` sharing a `oneAtATime` that only has a test of its own, so giving each one a separate lock keeps the CI green.
