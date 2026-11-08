@@ -1,5 +1,5 @@
 # The installer (research R2; ADR 0003): one per-user NSIS install at a fixed path
-# (%LOCALAPPDATA%\Programs\IdleOn Companion\), so the Steam launch option stays valid across versions.
+# (%LOCALAPPDATA%\Programs\idleon-companion\), so the Steam launch option stays valid across versions.
 # No game file and no code signing (FR-002, spec Assumptions). `just package` builds it; `just release` publishes it.
 appId: com.arkh.idleon-companion
 productName: IdleOn Companion

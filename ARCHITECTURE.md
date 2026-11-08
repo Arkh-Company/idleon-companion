@@ -24,7 +24,7 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
 
 - **One executable** (`src/start/`, built to `out/main/start.js`, the `main` of `package.json`). The per-user NSIS
   installer (`electron-builder.yml`) puts one `IdleOn Companion.exe` at a fixed path,
-  `%LOCALAPPDATA%\Programs\IdleOn Companion\`, so Steam's launch option stays valid across versions. `roleFor` takes the
+  `%LOCALAPPDATA%\Programs\idleon-companion\`, so Steam's launch option stays valid across versions. `roleFor` takes the
   first flag it knows from the command line, and the entry loads only that role's bundle: `--keeper` is the keeper,
   `--remove-from-steam` is the uninstaller's mode (`src/main/remove-from-steam.ts`: no window, no single-instance lock,
   the result in the exit code), and anything else is the app. No console script stands between Steam and the game: with
