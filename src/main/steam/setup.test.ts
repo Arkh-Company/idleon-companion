@@ -229,3 +229,13 @@ test("the part found once Steam closed: done, nothing written, Steam reopened", 
   expect(await s.run()).toBe("done");
   expect(s.changes()).toEqual([`shutdown ${STEAM}`, `start ${STEAM}`]);
 });
+
+test("isRunning failing after -shutdown: Steam is not left closed, the error passed on", async () => {
+  const s = setup();
+  s.w.onShutdown = () => {
+    s.sys.isRunning = () => Promise.reject(new Error("tasklist failed"));
+  };
+  await expect(s.run()).rejects.toThrow("tasklist failed");
+  expect(s.changes()).toEqual([`shutdown ${STEAM}`, `start ${STEAM}`]);
+  expect(s.w.disk.get(FILE)).toBe(LOCALCONFIG);
+});

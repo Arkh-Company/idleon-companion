@@ -136,6 +136,34 @@ async function closeSteam(
   return true;
 }
 
+/** Closes Steam, runs `work` with it closed and reopens it. `work` resolves false when a file could not be read. Steam
+ * is never left closed: on any error here it is reopened and the error passed on. */
+export async function withSteamClosed(
+  sys: SteamSystem,
+  steamPath: string,
+  onProgress: (p: SetupProgress) => void,
+  work: () => Promise<boolean>,
+): Promise<SetupProgress> {
+  onProgress("closing-steam");
+  let readable: boolean;
+  try {
+    if (!(await closeSteam(sys, steamPath)))
+      return failed("steam-did-not-close");
+    onProgress("setting-up");
+    readable = await work();
+  } catch (e) {
+    await sys.startSteam(steamPath).catch(() => undefined);
+    throw e;
+  }
+  onProgress("opening-steam");
+  const opened = await sys.startSteam(steamPath).then(
+    () => true,
+    () => false,
+  );
+  if (!readable) return failed("unreadable-config");
+  return opened ? "done" : failed("steam-did-not-open");
+}
+
 interface Target {
   steamPath: string;
   accountId: string;
@@ -206,23 +234,9 @@ export async function runSetup(
   if (optionState(current, part) === "companion") return finish("done");
   if (await sys.isRunning(GAME_IMAGE)) return finish(failed("game-open"));
 
-  onProgress("closing-steam");
-  if (!(await closeSteam(sys, t.steamPath)))
-    return finish(failed("steam-did-not-close"));
-  onProgress("setting-up");
-  let written: boolean;
-  try {
-    written = await writeOption(sys, store, t, part);
-  } catch (e) {
-    // a failed copy or write: Steam is not left closed
-    await sys.startSteam(t.steamPath).catch(() => undefined);
-    throw e;
-  }
-  onProgress("opening-steam");
-  const opened = await sys.startSteam(t.steamPath).then(
-    () => true,
-    () => false,
+  return finish(
+    await withSteamClosed(sys, t.steamPath, onProgress, () =>
+      writeOption(sys, store, t, part),
+    ),
   );
-  if (!written) return finish(failed("unreadable-config"));
-  return finish(opened ? "done" : failed("steam-did-not-open"));
 }
