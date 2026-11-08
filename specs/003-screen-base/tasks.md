@@ -91,14 +91,14 @@ behavior produces no key and no error.
 
 ### Tests for Phase 2
 
-- [ ] T006 [P] [US1] identifyScreen tests in src/shared/screens/identify.test.ts
+- [X] T006 [P] [US1] identifyScreen tests in src/shared/screens/identify.test.ts
   - Files: `src/shared/screens/identify.test.ts`
   - Cases: one rule matches; the rule with more conditions wins whatever the order in the list; two with the same count
     → "Unknown screen"; an overlay beats a screen with more conditions; no rule → "Unknown screen"; a winning rule with
     `tabs` → `name + " › Unknown tab"`, and a more specific tab rule beats it; a tab value left from another window never
     shows (`menu2` different, same `menu2tab`); a condition on an absent `behaviors` key never matches; `0`, `-1`, `0.2`
     and a text compare by equality; `null` in the reading never matches a condition.
-- [ ] T007 [P] [US1] Catalog validation tests in src/shared/screens/catalog.test.ts
+- [X] T007 [P] [US1] Catalog validation tests in src/shared/screens/catalog.test.ts
   - Files: `src/shared/screens/catalog.test.ts`
   - Cases, each with invented rules: a rule without `proof`, with a `proof` outside `foto:<id>` and `sprite:<name>`, with
     an empty `when` or with a blank `name` is refused; a `when` key that is neither a `Reading` field nor
@@ -107,11 +107,11 @@ behavior produces no key and no error.
 
 ### Implementation for Phase 2
 
-- [ ] T008 [US1] identifyScreen in src/shared/screens/identify.ts
+- [X] T008 [US1] identifyScreen in src/shared/screens/identify.ts
   - Files: `src/shared/screens/identify.ts`, `src/shared/index.ts`, `src/shared/types.ts`
   - Signatures: `ScreenRule`, `ScreenCatalog` as in data-model.md; `identifyScreen(r: Reading, catalog: ScreenCatalog):
     string`, following the pseudocode of data-model.md. Own-property lookups only (`Object.hasOwn`).
-- [ ] T009 [US1] parseScreenCatalog in src/shared/screens/catalog.ts
+- [X] T009 [US1] parseScreenCatalog in src/shared/screens/catalog.ts
   - Files: `src/shared/screens/catalog.ts`, `src/shared/index.ts`
   - Signature: `parseScreenCatalog(parts: unknown[]): ScreenCatalog`, which joins the parts and throws on any invalid rule.
     `SCREEN_CATALOG` and `KNOWN_WINDOWS: ReadonlySet<number>` come in Phase 3 and 4.

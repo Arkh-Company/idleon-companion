@@ -30,6 +30,7 @@ const FIELDS: Record<keyof Omit<Reading, "t">, (v: unknown) => boolean> = {
   hole: isNumberOrNull,
   behaviors: (v) => isObject(v) && Object.values(v).every(isSimple),
 };
+export { FIELDS };
 
 /** `value` as a Reading stamped at `t`; null when its shape is not a Reading's. */
 export function toReading(value: unknown, t: number): Reading | null {

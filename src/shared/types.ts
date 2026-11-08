@@ -47,6 +47,24 @@ export interface Reading {
   behaviors: Record<string, number | string | boolean | null>;
 }
 
+/** One line of the screen catalog: `when` holds equalities, all of them needed, on Reading fields or behavior keys. */
+export interface ScreenRule {
+  when: Record<string, number | string>;
+  /** The whole path, separated by " › " */
+  name: string;
+  /** The screen has tabs or subscreens: when this rule wins, the tab is unknown. */
+  tabs?: true;
+  /** foto:<id> or sprite:<name> */
+  proof: string;
+}
+
+export interface ScreenCatalog {
+  overlays: ScreenRule[];
+  screens: ScreenRule[];
+  /** MenuType2 numbers that exist in the game and have no proof yet */
+  unprovenWindows: number[];
+}
+
 export interface Entry {
   name: string;
   status: "deduced" | "confirmed";
