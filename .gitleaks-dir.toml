@@ -9,6 +9,8 @@ allowlists = [{ description = "os .env locais, que o .gitignore ignora e o gitle
     '(^|/)\.env\.(?:keys|local|[^/.]+\.local)$',
 ] }, { description = "a saída do electron-vite (out/), que o .gitignore ignora: o bundle do react-dom tem nomes como MozPrintableKey", paths = [
     '(^|/)out/',
+] }, { description = "a saída do electron-builder (dist/), que o .gitignore ignora: varrer o binário do instalador é lento e inútil", paths = [
+    '(^|/)dist/',
 ] }]
 
 [extend]

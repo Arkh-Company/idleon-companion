@@ -1,0 +1,6 @@
+# pnpm 11 fails an install that has a build script nobody decided on. electron-winstaller comes with electron-builder
+# and only serves Squirrel, which this project does not use (specs/002-install-and-setup/research.md, R2).
+packages:
+  - "."
+allowBuilds:
+  electron-winstaller: false

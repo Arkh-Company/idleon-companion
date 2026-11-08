@@ -18,7 +18,7 @@ cd 'C:\Users\Vinicius\ClaudeCowork\idleon-companion' && just package
 ```
 
 Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de administrador; o app fica em
-`%LOCALAPPDATA%\Programs\IdleOn Companion\`; atalho no menu Iniciar; "IdleOn Companion" em Aplicativos instalados
+`%LOCALAPPDATA%\Programs\idleon-companion\`; atalho no menu Iniciar; "IdleOn Companion" em Aplicativos instalados
 (FR-001). O SmartScreen pode avisar ("More info" → "Run anyway").
 
 ## 2. Tela de configuração (US1)
@@ -31,6 +31,7 @@ Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de admi
 5. Conferir: a opção na Steam ganhou só a parte do companion; o resto do texto continua (FR-008);
    `%APPDATA%\IdleOn Companion\steam-backup\` tem a cópia (FR-027); `steam-setup.json` não tem nome de conta (FR-028).
 6. Comparar o `localconfig.vdf` com a cópia: só a linha da opção difere.
+7. Só com o teclado: Tab chega em cada botão da tela e Enter o aciona (FR-034).
 
 ## 3. Jogar, comprar, fechar (US1, US2)
 
@@ -42,13 +43,16 @@ Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de admi
    o X fecha o jogo em ≤ 2 s (SC-003).
 5. Noutra sessão: "Let the game close", depois "Reconnect": uma pausa nova no `keeper.log` (`attached` com `pausedMs`),
    o painel volta em ≤ 2 s (SC-004).
+6. Repetir "Let the game close" e "Reconnect" pelo menu da bandeja, com a janela escondida; ver se o menu não fecha
+   sozinho quando o item troca.
 
 ## 4. Desfazer (US3)
 
-1. Settings → "Remove from Steam": a opção volta ao texto sem a parte do companion (SC-005).
-2. "Set up Steam" de novo, depois desinstalar pelo Windows: o desinstalador pergunta, fecha a Steam, tira a parte e
-   reabre; o jogo abre pela Steam sem o companion (FR-013).
+1. Com a configuração feita, desinstalar pelo Windows: o desinstalador pergunta, fecha a Steam, tira a parte e
+   reabre; o jogo abre pela Steam sem o companion (FR-013, SC-005); no fim, uma caixa diz que foi desinstalado.
 3. Repetir recusando fechar a Steam: o desinstalador mostra o texto a tirar e termina.
+4. Com o jogo aberto, desinstalar e rodar o instalador de novo: os dois param com "Close the game first." e o jogo
+   continua aberto, com o guardião lendo.
 
 ## 5. Desenvolvimento
 

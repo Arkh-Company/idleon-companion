@@ -75,7 +75,7 @@ test("exe path with spaces and parentheses keeps every arg", () => {
   expect(fakeSpawn.mock.calls[0]?.[2].env?.ELECTRON_ENABLE_LOGGING).toBe("1");
 });
 
-test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
+test("the game never inherits ELECTRON_RUN_AS_NODE from the environment", () => {
   const fakeSpawn = pipeSpawn();
   vi.stubEnv("ELECTRON_RUN_AS_NODE", "1");
   try {
@@ -95,7 +95,7 @@ test("the game never inherits the keeper's ELECTRON_RUN_AS_NODE", () => {
   );
 });
 
-test("without the debugging pipe the Steam args pass unchanged, with no pipes and no ELECTRON_RUN_AS_NODE", () => {
+test("without the debugging pipe the Steam args pass unchanged, with no pipes and no ELECTRON_RUN_AS_NODE from the environment", () => {
   const fakeSpawn = noPipeSpawn();
   vi.stubEnv("ELECTRON_RUN_AS_NODE", "1");
   let launched: ReturnType<typeof launchGame>;
@@ -197,7 +197,7 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
       try {
         await sleep(ms);
       } finally {
-        r.stop();
+        void r.stop();
         killTree(g.child.pid);
         await g.exited;
       }
@@ -278,7 +278,7 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
         )
           await sleep(250);
       } finally {
-        r.stop();
+        void r.stop();
         killTree(g.child.pid);
         await g.exited;
       }

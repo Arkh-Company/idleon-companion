@@ -1,11 +1,10 @@
 // The reader loop: takes the engine once, runs read.js on it every second and emits each new reading.
-import { toReading } from "../shared/index.ts";
+import { GAME_UPDATED, toReading } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AnchorNotFound, OBJECT_GROUP, acquireEngine } from "./engine-ref.ts";
 import type { EngineRef } from "./engine-ref.ts";
 
-const GAME_UPDATED = "Game updated: the reader needs an update";
 /** Failed readings in a row before the status says so (spec, Open Questions, 07/11). */
 const FAILS_BEFORE_WARNING = 10;
 
@@ -34,7 +33,7 @@ export function startReader(
     /** Called on every good reading, changed or not, with its time (the window's "last reading N s ago"). */
     onRead?: (t: number) => void;
   } = {},
-): { stop(): void } {
+): { stop(): Promise<void> } {
   const pollMs = opts.pollMs ?? 1000;
   const retryMs = opts.retryMs ?? 5000;
   const anchor = opts.anchor ?? "getGameAttribute:function(";
@@ -45,6 +44,10 @@ export function startReader(
   let wake: (() => void) | undefined;
   const sleep = (ms: number) =>
     new Promise<void>((resolve) => {
+      if (stopped) {
+        resolve(); // a stop that came during a reading does not wait out the poll
+        return;
+      }
       const timer = setTimeout(resolve, ms);
       wake = () => {
         clearTimeout(timer);
@@ -189,11 +192,13 @@ export function startReader(
   }
 
   // Whatever ends the loop, a reference still held is let go (a stop can arrive while acquireEngine finishes).
-  void loop().finally(() => (ref ? release(ref) : undefined));
+  const done = loop().finally(() => (ref ? release(ref) : undefined));
   return {
+    /** Resolves once the engine reference is let go and the page detached; the debugging pipe stays open. */
     stop() {
       stopped = true;
       wake?.();
+      return done;
     },
   };
 }

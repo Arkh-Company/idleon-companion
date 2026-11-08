@@ -24,6 +24,43 @@ export function launchEvent(
   return first ? "start-manual" : "second-instance";
 }
 
+export type TrayItem =
+  "Show/Hide" | "Let the game close" | "Reconnect" | "Quit";
+
+/** The tray menu in the spec's order (FR-031): the reader's item only when there is a game to let go or read again. */
+export function trayItems(status: Status): TrayItem[] {
+  if (status.game === "running" && status.reader === "attached")
+    return ["Show/Hide", "Let the game close", "Quit"];
+  if (status.game === "running" && status.reader === "released")
+    return ["Show/Hide", "Reconnect", "Quit"];
+  return ["Show/Hide", "Quit"];
+}
+
+/** Calls `setMenu` only when the items change: the status repeats every second while reading, and replacing a menu that
+ * is open could close it. */
+export function trayUpdater(
+  setMenu: (items: TrayItem[]) => void,
+): (status: Status) => void {
+  let shown = "";
+  return (status) => {
+    const items = trayItems(status);
+    if (items.join() === shown) return;
+    shown = items.join();
+    setMenu(items);
+  };
+}
+
+/** Runs one job at a time: a call while one runs gets that job's result and starts nothing. */
+export function oneAtATime<T>(): (job: () => Promise<T>) => Promise<T> {
+  let running: Promise<T> | null = null;
+  return (job) => {
+    running ??= job().finally(() => {
+      running = null;
+    });
+    return running;
+  };
+}
+
 const RELOADS_PER_MINUTE = 3;
 
 /**

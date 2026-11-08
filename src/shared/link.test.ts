@@ -37,8 +37,31 @@ test("the decoder reads Buffers, also with a character split across them", () =>
   ]);
 });
 
+test("release and reconnect decode bare, also with extra fields", () => {
+  const got: LinkMessage[] = [];
+  createLineDecoder((m) => got.push(m))(
+    '{"type":"release"}\n{"type":"reconnect"}\n{"type":"release","x":1}\n{"type":"reconnect","pid":2}\n',
+  );
+  expect(got).toEqual([
+    { type: "release" },
+    { type: "reconnect" },
+    { type: "release" },
+    { type: "reconnect" },
+  ]);
+});
+
+test.each<LinkMessage>([{ type: "release" }, { type: "reconnect" }])(
+  "$type round-trips through a line",
+  (m) => {
+    const got: LinkMessage[] = [];
+    createLineDecoder((x) => got.push(x))(encodeLine(m));
+    expect(got).toEqual([m]);
+  },
+);
+
 test.each([
   ["an unknown type", '{"type":"other"}'],
+  ["a type close to release", '{"type":"release-all"}'],
   ["a reading without its body", '{"type":"reading"}'],
   ["a status without its body", '{"type":"status","status":null}'],
   ["JSON that is not an object", "42"],

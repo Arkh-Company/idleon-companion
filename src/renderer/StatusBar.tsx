@@ -1,7 +1,9 @@
-// The status bar (spec §5.6): game, reader, last reading, and the keeper's message. Only the update warning
-// (spec §7.2, decided on 07/11) has a button: "Connect next time" records the game code for the next session.
+// The status bar (spec §5.6): game, reader, last reading, and the keeper's message. Its buttons: "Connect next time" on
+// the update warning (spec §7.2, decided on 07/11), "Let the game close" / "Reconnect" (002, US2) and "Restart to
+// update" (002, US4).
 import { useEffect, useState } from "react";
-import type { Status } from "../shared/index.ts";
+import { GAME_UPDATED } from "../shared/index.ts";
+import type { Status, UpdateState } from "../shared/index.ts";
 
 const NOT_LAUNCHED =
   "Live reading needs the game to be launched through Steam with the companion launch option.";
@@ -13,6 +15,7 @@ const READER: Record<Status["reader"], string> = {
   attached: "Reader attached",
   connecting: "Reader connecting",
   error: "Reader off",
+  released: "Reader off",
 };
 
 export function StatusBar({ status }: { status: Status }) {
@@ -27,9 +30,21 @@ export function StatusBar({ status }: { status: Status }) {
       clearInterval(timer);
     };
   }, []);
+  const [update, setUpdate] = useState<UpdateState | null>(null);
+  useEffect(() => window.companion.onUpdate(setUpdate), []);
 
   const { message, lastReadingAt } = status;
   const warning = message?.startsWith("The game code changed") === true;
+  const running = status.game === "running";
+  const attached = running && status.reader === "attached";
+  const released = running && status.reader === "released";
+  // A reconnect that fails keeps "Reconnect" (spec, Edge Cases), until reading is back or the game closes.
+  const [afterRelease, setAfterRelease] = useState(false);
+  if (released && !afterRelease) setAfterRelease(true);
+  if (afterRelease && (attached || !running)) setAfterRelease(false);
+  const canReconnect =
+    message !== GAME_UPDATED &&
+    (released || (afterRelease && status.reader === "error"));
   return (
     <div className="status-bar" role="status">
       {status.game === "not-launched" ? (
@@ -39,6 +54,12 @@ export function StatusBar({ status }: { status: Status }) {
           <span>{GAME[status.game]}</span>
           {" · "}
           <span>{READER[status.reader]}</span>
+          {released && (
+            <>
+              {" · "}
+              <span>You can close the game now</span>
+            </>
+          )}
           {lastReadingAt !== undefined && (
             <>
               {" · "}
@@ -48,6 +69,29 @@ export function StatusBar({ status }: { status: Status }) {
         </p>
       )}
       {message !== undefined && <p className="message">{message}</p>}
+      {attached && (
+        <>
+          <p>To close the game, press Let the game close first.</p>
+          <button
+            type="button"
+            onClick={() => {
+              void window.companion.releaseGame();
+            }}
+          >
+            Let the game close
+          </button>
+        </>
+      )}
+      {canReconnect && (
+        <button
+          type="button"
+          onClick={() => {
+            void window.companion.reconnect();
+          }}
+        >
+          Reconnect
+        </button>
+      )}
       {warning &&
         (confirmedFor === message ? (
           <p>Reading starts next time the game opens.</p>
@@ -63,6 +107,21 @@ export function StatusBar({ status }: { status: Status }) {
             Connect next time
           </button>
         ))}
+      {update?.state === "ready" && (
+        <>
+          <p>Update ready</p>
+          <button
+            type="button"
+            disabled={!update.canInstall}
+            onClick={() => {
+              void window.companion.installUpdate();
+            }}
+          >
+            Restart to update
+          </button>
+          {!update.canInstall && <p>Update installs after the game closes</p>}
+        </>
+      )}
     </div>
   );
 }

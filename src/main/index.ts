@@ -18,16 +18,26 @@ import {
   NOT_CONNECTED,
   shouldReload,
   statusOnLinkDrop,
+  trayUpdater,
 } from "./lifecycle.ts";
-import type { LifecycleAction, LifecycleEvent } from "./lifecycle.ts";
+import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
 import {
+  emptyPayload,
   linkReading,
   linkStatus,
   namePayload,
   settingsPayload,
 } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
+import { setupStoreIn } from "./setup-store.ts";
+import {
+  companionPart,
+  steamSetupJob,
+  steamState,
+  steamSystem,
+} from "./steam/index.ts";
+import { afterGameClosed, installCheck, startUpdates } from "./updates.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -49,6 +59,8 @@ function start(): void {
     devUrl ??
     pathToFileURL(join(import.meta.dirname, "../renderer/index.html")).href;
 
+  // No File/Edit/View/Window bar: on Windows, null also removes its shortcuts to the developer tools.
+  Menu.setApplicationMenu(null);
   const win = new BrowserWindow({
     ...windowOptions(join(import.meta.dirname, "../preload/index.cjs")),
     show: false, // the start event decides (setting "Show window when the game starts")
@@ -63,6 +75,8 @@ function start(): void {
   const setStatus = (s: Status) => {
     status = s;
     send(IPC.statusUpdate, s);
+    updateTray(s);
+    return updates.onStatus();
   };
 
   // Navigation lockdown (Electron security checklist): no new windows, no page but the own one.
@@ -81,6 +95,7 @@ function start(): void {
   win.webContents.on("did-finish-load", () => {
     send(IPC.statusUpdate, status);
     sendContext();
+    updates.replay();
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);
@@ -113,25 +128,40 @@ function start(): void {
   );
   const tray = new Tray(icon);
   tray.setToolTip("IdleOn Companion");
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      {
-        label: "Show/Hide",
-        click: () => {
-          apply("tray-click");
-        },
-      },
-      {
-        label: "Quit",
-        click: () => {
-          app.quit();
-        },
-      },
-    ]),
-  );
+  const trayClicks: Record<TrayItem, () => void> = {
+    "Show/Hide": () => {
+      apply("tray-click");
+    },
+    "Let the game close": () => {
+      link.send({ type: "release" });
+    },
+    Reconnect: () => {
+      link.send({ type: "reconnect" });
+    },
+    Quit: () => {
+      app.quit();
+    },
+  };
+  const updateTray = trayUpdater((items) => {
+    if (tray.isDestroyed()) return;
+    tray.setContextMenu(
+      Menu.buildFromTemplate(
+        items.map((label) => ({ label, click: trayClicks[label] })),
+      ),
+    );
+  });
+  updateTray(status);
   tray.on("click", () => {
     apply("tray-click");
   });
+
+  const updates = startUpdates(
+    (u) => {
+      send(IPC.updateState, u);
+    },
+    installCheck(() => status, steamSystem),
+    { isPackaged: app.isPackaged },
+  );
 
   const link = connectLink(
     LINK_PIPE,
@@ -144,12 +174,15 @@ function start(): void {
       } else if (m.type === "status") {
         const s = linkStatus(m.status);
         if (!s) return;
-        setStatus(s);
-        if (s.game === "closed") apply("game-exited");
+        const settled = setStatus(s);
+        if (s.game === "closed")
+          void afterGameClosed(settled, () => {
+            apply("game-exited");
+          });
       }
     },
     (up) => {
-      if (!up) setStatus(statusOnLinkDrop(status));
+      if (!up) void setStatus(statusOnLinkDrop(status));
     },
   );
 
@@ -157,7 +190,11 @@ function start(): void {
   const handle = (channel: string, f: (payload: unknown) => unknown): void => {
     ipcMain.handle(channel, guardIpc(ownUrl, f));
   };
-  handle(IPC.settingsGet, () => settings);
+  handle(IPC.settingsGet, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("settings:get: no body expected");
+    return settings;
+  });
   handle(IPC.settingsSet, (payload) => {
     const s = settingsPayload(payload);
     if (!s) throw new Error("settings:set: invalid settings");
@@ -174,8 +211,46 @@ function start(): void {
     catalog = named;
     sendContext();
   });
-  handle(IPC.confirmAttach, () => {
+  handle(IPC.confirmAttach, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:confirm-attach: no body expected");
     link.send({ type: "confirm-attach" });
+  });
+  handle(IPC.readerRelease, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:release: no body expected");
+    link.send({ type: "release" });
+  });
+  handle(IPC.readerReconnect, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:reconnect: no body expected");
+    link.send({ type: "reconnect" });
+  });
+  handle(IPC.updateInstall, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("update:install: no body expected");
+    return updates.install();
+  });
+
+  // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).
+  const part = companionPart({
+    execPath: process.execPath,
+    defaultApp: process.defaultApp, // undefined when packaged, though typed boolean
+    appPath: app.getAppPath(),
+  });
+  const setupStore = setupStoreIn(dataDir);
+  const setUpSteam = steamSetupJob(steamSystem, setupStore, part, (p) => {
+    send(IPC.steamProgress, p);
+  });
+  handle(IPC.steamState, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("steam:state: no body expected");
+    return steamState(steamSystem, setupStore, part);
+  });
+  handle(IPC.steamSetup, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("steam:setup: no body expected");
+    return setUpSteam();
   });
 
   app.on("second-instance", (_e, argv) => {

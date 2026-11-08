@@ -6,7 +6,8 @@ the game.
 ## Processes
 
 **Keeper**:
-The process Steam starts in place of the game; it opens the game, holds its debugging pipe and reads it for the whole
+The process Steam starts in place of the game: the companion's own executable with `--keeper`, in Electron's main
+process and without `ELECTRON_RUN_AS_NODE`; it opens the game, holds its debugging pipe and reads it for the whole
 session.
 _Avoid_: launcher, guardian, daemon
 
@@ -15,7 +16,8 @@ The companion's window, tray and catalog, a process apart from the keeper that c
 _Avoid_: client, UI process
 
 **Link**:
-The local named pipe between the keeper and the app, carrying readings, statuses and the confirmation of an update.
+The local named pipe between the keeper and the app, carrying readings, statuses, the confirmation of an update and
+the requests to let go of the game or read it again.
 _Avoid_: channel, socket, bridge
 
 ## Reading the game
@@ -39,3 +41,33 @@ _Avoid_: anti-cheat check, scanner
 **Catalog**:
 The names of the game's screen numbers, each one deduced from the game code or confirmed by the player.
 _Avoid_: dictionary, mapping, names list
+
+## Steam and install
+
+**Launch option**:
+The text in the game's Steam properties that tells Steam what to run when the player presses Play.
+_Avoid_: launch parameter, launch command, Steam argument
+
+**Companion part**:
+What the companion adds to the launch option, `"<exe>" --keeper ` right before `%command%`, and the only text it ever
+takes out of it, which happens only when the companion is uninstalled.
+_Avoid_: prefix, wrapper, launch script
+
+**Setup screen**:
+The window's only content while Steam is not set up for the most recent account, with the one button that closes Steam,
+adds the companion part and reopens Steam.
+_Avoid_: onboarding, wizard
+
+**Let the game close**:
+The action, in the status bar and the tray, that makes the keeper let go of the game's page so its X closes it again; the
+debugging pipe stays open.
+_Avoid_: detach, disconnect
+
+**Reconnect**:
+The action that takes the engine reference again after **Let the game close**, with one new pause.
+_Avoid_: reattach, resume
+
+**Releases repository**:
+The public GitHub repository with only the installers and update files, `Arkh-Company/idleon-companion-releases`, and the
+only place the app reaches over the network.
+_Avoid_: update server, CDN

@@ -1,13 +1,17 @@
 // The app's lifecycle decisions (plan Task 10; Review Focus 5 for second-instance).
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
 import {
   NOT_CONNECTED,
   decide,
   launchEvent,
+  oneAtATime,
   shouldReload,
   statusOnLinkDrop,
+  trayItems,
+  trayUpdater,
 } from "./lifecycle.ts";
+import type { TrayItem } from "./lifecycle.ts";
 
 test("a start from Steam shows the window when the setting says so", () => {
   expect(decide("start-from-steam", { ...DEFAULT_SETTINGS }, false)).toEqual([
@@ -118,4 +122,78 @@ test("a window reloads at most 3 times a minute", () => {
       now,
     ),
   ).toBe(true);
+});
+
+test("while reading, the tray offers Let the game close", () => {
+  expect(trayItems({ game: "running", reader: "attached" })).toEqual([
+    "Show/Hide",
+    "Let the game close",
+    "Quit",
+  ]);
+});
+
+test("once released, the tray offers Reconnect", () => {
+  expect(trayItems({ game: "running", reader: "released" })).toEqual([
+    "Show/Hide",
+    "Reconnect",
+    "Quit",
+  ]);
+});
+
+test.each([
+  { game: "closed", reader: "attached" },
+  { game: "closed", reader: "released" },
+  { game: "not-launched", reader: "attached" },
+  { game: "not-launched", reader: "released" },
+  { game: "running", reader: "connecting" },
+  { game: "running", reader: "error" },
+] as const)(
+  "with no game to let go (%o) the tray has only its two items",
+  (status) => {
+    expect(trayItems(status)).toEqual(["Show/Hide", "Quit"]);
+  },
+);
+
+test("the tray menu is replaced only when its items change: a repeated status leaves an open menu alone", () => {
+  const setMenu = vi.fn<(items: TrayItem[]) => void>();
+  const update = trayUpdater(setMenu);
+
+  update({ game: "running", reader: "attached" });
+  update({ game: "running", reader: "attached", lastReadingAt: 5 });
+  expect(setMenu).toHaveBeenCalledTimes(1);
+
+  update({ game: "running", reader: "released" });
+  expect(setMenu).toHaveBeenCalledTimes(2);
+  expect(setMenu).toHaveBeenLastCalledWith(["Show/Hide", "Reconnect", "Quit"]);
+});
+
+test("one job at a time: a call while one runs gets that job's result and starts nothing", async () => {
+  const one = oneAtATime<string>();
+  let finishFirst: (v: string) => void = () => undefined;
+  const first = one(
+    () =>
+      new Promise<string>((resolve) => {
+        finishFirst = resolve;
+      }),
+  );
+  let started = false;
+  const second = one(() => {
+    started = true;
+    return Promise.resolve("second");
+  });
+
+  finishFirst("first");
+
+  expect(await first).toBe("first");
+  expect(await second).toBe("first");
+  expect(started).toBe(false);
+});
+
+test("the next job runs once the last one ended, also after a failure", async () => {
+  const one = oneAtATime<string>();
+  await expect(one(() => Promise.reject(new Error("no")))).rejects.toThrow(
+    "no",
+  );
+  expect(await one(() => Promise.resolve("next"))).toBe("next");
+  expect(await one(() => Promise.resolve("and next"))).toBe("and next");
 });

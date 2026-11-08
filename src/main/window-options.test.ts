@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
   guardIpc,
@@ -53,4 +55,12 @@ test("the window is titled and isolated from Node", () => {
   expect(options.webPreferences?.nodeIntegration).toBe(false);
   expect(options.webPreferences?.sandbox).not.toBe(false);
   expect(options.webPreferences?.preload).toBe("x/preload.cjs");
+});
+
+// ponytail: reads the source because index.ts imports electron and no test may load it.
+test("the default menu bar is gone before the window is created", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /Menu\.setApplicationMenu\(null\);[\s\S]*new BrowserWindow\(/,
+  );
 });

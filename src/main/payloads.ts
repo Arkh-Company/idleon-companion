@@ -37,6 +37,12 @@ export function settingsPayload(v: unknown): Settings | null {
   return { showWindowOnGameStart, closeWithGame, alwaysOnTop };
 }
 
+/** A channel without a body (`settings:get`, `reader:confirm-attach`, `steam:state`, `steam:setup`,
+ * `reader:release`, `reader:reconnect`, `update:install`): only a missing body or an empty object passes. */
+export function emptyPayload(v: unknown): boolean {
+  return v === undefined || (isObject(v) && Object.keys(v).length === 0);
+}
+
 /** The body of a `reading` link message, with the keeper's time; null when its shape is not a Reading's. */
 export function linkReading(v: unknown): Reading | null {
   return isObject(v) && typeof v.t === "number" ? toReading(v, v.t) : null;
@@ -52,6 +58,7 @@ const READERS = {
   attached: true,
   connecting: true,
   error: true,
+  released: true,
 } satisfies Record<Status["reader"], true>;
 const oneOf = (set: object, v: unknown) =>
   typeof v === "string" && Object.hasOwn(set, v);

@@ -15,7 +15,7 @@ export class AlreadyRunning extends Error {
 
 export async function startLinkServer(
   pipePath: string,
-  onConfirm: () => void,
+  onMessage: (m: "confirm-attach" | "release" | "reconnect") => void,
 ): Promise<{ publish(m: LinkMessage): void; close(): Promise<void> }> {
   const clients = new Set<Socket>();
   let lastStatus: LinkMessage | undefined;
@@ -32,7 +32,12 @@ export async function startLinkServer(
     socket.on(
       "data",
       createLineDecoder((m) => {
-        if (m.type === "confirm-attach") onConfirm();
+        if (
+          m.type === "confirm-attach" ||
+          m.type === "release" ||
+          m.type === "reconnect"
+        )
+          onMessage(m.type);
       }),
     );
     write(socket, lastStatus);

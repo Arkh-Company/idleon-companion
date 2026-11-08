@@ -1,0 +1,16 @@
+// Made-up test file in the shape of Steam's config\loginusers.vdf: no real account data.
+"users"
+{
+	"76561197960265729"
+	{
+		"AccountName"		"test_one"
+		"PersonaName"		"Test One"
+		"MostRecent"		"0"
+	}
+	"76561197960265830"
+	{
+		"AccountName"		"test_two"
+		"PersonaName"		"Test \"Two\""
+		"MostRecent"		"1"
+	}
+}

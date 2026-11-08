@@ -6,6 +6,9 @@ it is the keeper, a plain Node process (`electron.exe` with `ELECTRON_RUN_AS_NOD
 game, and it ends only after the game. The app (window, tray, catalog) is a separate process that talks to the keeper
 over a local named pipe, so it can close, crash or be killed with the game open.
 
+Since [ADR 0003](0003-one-executable-launched-by-steam.md), the keeper is the companion's own executable with `--keeper`,
+in Electron's main process and without `ELECTRON_RUN_AS_NODE`; the rest of this decision stands.
+
 ## Considered Options
 
 - **One Electron app that spawns the game.** Rejected: closing or crashing the app would close the pipe and the game,

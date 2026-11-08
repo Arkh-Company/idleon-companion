@@ -1,8 +1,11 @@
 // The shape checks of what reaches the main process from the window (IPC) and from the keeper (link).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
+  emptyPayload,
   linkReading,
   linkStatus,
   namePayload,
@@ -90,9 +93,17 @@ test("a link status without the optional fields passes", () => {
   });
 });
 
+test("a link status with the reader released passes", () => {
+  expect(linkStatus({ game: "running", reader: "released" })).toStrictEqual({
+    game: "running",
+    reader: "released",
+  });
+});
+
 test.each([
   ["a game outside its values", { ...status, game: "paused" }],
   ["a reader outside its values", { ...status, reader: "lost" }],
+  ["a paused reader", { ...status, reader: "paused" }],
   ["a message that is not text", { ...status, message: 5 }],
   [
     "a last reading time that is not a number",
@@ -101,4 +112,38 @@ test.each([
   ["no object", "status"],
 ])("a link status with %s is refused", (_name, value) => {
   expect(linkStatus(value)).toBeNull();
+});
+
+// settings:get, steam:state, steam:setup, reader:release, reader:reconnect and update:install carry no body.
+test.each([
+  ["a missing body", undefined],
+  ["an empty object", {}],
+])("a bodiless channel accepts %s", (_name, payload) => {
+  expect(emptyPayload(payload)).toBe(true);
+});
+
+test.each([
+  ["null", null],
+  ["an object with a field", { account: "102" }],
+  ["an array", []],
+  ["a text", ""],
+  ["a number", 0],
+  ["a boolean", false],
+])("a bodiless channel refuses %s", (_name, payload) => {
+  expect(emptyPayload(payload)).toBe(false);
+});
+
+// ponytail: reads the source because index.ts imports electron and no test may load it.
+test("settings:get refuses a body before it answers", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /handle\(IPC\.settingsGet, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
+});
+
+test("reader:confirm-attach refuses a body before it acts", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /handle\(IPC\.confirmAttach, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
 });

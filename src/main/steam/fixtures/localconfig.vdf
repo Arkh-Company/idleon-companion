@@ -1,0 +1,30 @@
+// Made-up test file in the shape of Steam's userdata\<id>\config\localconfig.vdf: no real account data.
+"UserLocalConfigStore"
+{
+	"friends"
+	{
+		"PersonaName"		"Test \"Quoted\" Name"
+	}
+	"Software"
+	{
+		"Valve"
+		{
+			"Steam"
+			{
+				"Apps"
+				{
+					"440"
+					{
+						"LastPlayed"		"1700000000"
+						"LaunchOptions"		"-novid"
+					}
+					"1476970"
+					{
+						"LastPlayed"		"1700000001"
+						"LaunchOptions"		"\"C:\\Tools\\fps.exe\" %command% -windowed"
+					}
+				}
+			}
+		}
+	}
+}

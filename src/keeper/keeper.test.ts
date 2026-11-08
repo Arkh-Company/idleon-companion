@@ -62,7 +62,7 @@ function harness(gameCode: () => string | undefined) {
     read: (_cdp, onReading, onStatus, onAttached, onRead) => {
       order.push("read");
       readers.push({ onReading, onStatus, onAttached, onRead });
-      return { stop: () => order.push("stop") };
+      return { stop: () => (order.push("stop"), Promise.resolve()) };
     },
     startApp: () => order.push("app"),
     log: (label, data) => logs.push({ label, ...data }),

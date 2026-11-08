@@ -1,12 +1,13 @@
 {
   "name": "idleon-companion",
+  "productName": "IdleOn Companion",
   "version": "0.2.0",
   "description": "Desktop companion for Legends of Idleon (Steam): shows live, read-only, where you are and what is open in the game.",
   "private": true,
   "license": "UNLICENSED",
   "author": "Arkh-BR",
   "type": "module",
-  "main": "out/main/index.js",
+  "main": "out/main/start.js",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@testing-library/dom": "10.4.2",
@@ -16,6 +17,7 @@
     "@types/react-dom": "19.3.0",
     "dependency-cruiser": "18.7.2",
     "electron": "45.2.3",
+    "electron-builder": "26.18.0",
     "electron-vite": "6.0.0",
     "eslint": "^10.11.0",
     "jsdom": "31.0.0",
@@ -26,6 +28,7 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
+    "electron-updater": "6.8.11",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   }
