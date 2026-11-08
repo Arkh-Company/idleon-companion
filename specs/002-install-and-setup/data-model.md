@@ -38,6 +38,7 @@ type SteamState = {
   gameOpen: boolean;      // FR-014
   error?: string;         // arquivo ilegível ou formato inesperado (nada é gravado)
   details: { file: string; backup: string } | null;
+  manualOption: string; // a parte do companion seguida de %command%, para colar à mão (Edge Cases, FR-011)
 };
 ```
 
