@@ -7,6 +7,7 @@ export {
   removePart,
 } from "./launch-option.ts";
 export { IDLEON_APP_ID, readSteam } from "./locate.ts";
+export { runRemove } from "./remove.ts";
 export { runSetup, steamState } from "./setup.ts";
 export type { SetupStoreLike, SteamSystem } from "./setup.ts";
 export { steamSystem } from "./system.ts";

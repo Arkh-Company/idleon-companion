@@ -57,6 +57,9 @@ export function steamPathFromReg(regOutput: string): string | null {
   return m?.[1] ? m[1].replaceAll("/", "\\") : null;
 }
 
+export const localConfigPath = (steamPath: string, accountId: string) =>
+  win32.join(steamPath, "userdata", accountId, "config", "localconfig.vdf");
+
 /** Reads Steam's folder, last account, whether the game is installed and where that account's localconfig.vdf is. Nothing is
  * written. A broken loginusers.vdf or libraryfolders.vdf rejects with VdfShapeError. */
 export async function readSteam(run: Runner, fs: FsLike): Promise<SteamFiles> {
@@ -109,17 +112,10 @@ export async function readSteam(run: Runner, fs: FsLike): Promise<SteamFiles> {
     }
   }
   if (!account) return { steamPath, account, gameInstalled, localConfig: null };
-  const path = win32.join(
-    steamPath,
-    "userdata",
-    account.id,
-    "config",
-    "localconfig.vdf",
-  );
   return {
     steamPath,
     account,
     gameInstalled,
-    localConfig: { path },
+    localConfig: { path: localConfigPath(steamPath, account.id) },
   };
 }

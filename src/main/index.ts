@@ -16,6 +16,7 @@ import {
   decide,
   launchEvent,
   NOT_CONNECTED,
+  oneAtATime,
   shouldReload,
   statusOnLinkDrop,
   trayItems,
@@ -30,14 +31,14 @@ import {
   settingsPayload,
 } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
-import { loadSetup, saveSetup } from "./setup-store.ts";
+import { setupStoreIn } from "./setup-store.ts";
 import {
   companionPart,
+  runRemove,
   runSetup,
   steamState,
   steamSystem,
 } from "./steam/index.ts";
-import type { SetupStoreLike } from "./steam/index.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -218,16 +219,12 @@ function start(): void {
     defaultApp: process.defaultApp, // undefined when packaged, though typed boolean
     appPath: app.getAppPath(),
   });
-  const setupFile = join(dataDir, "steam-setup.json");
-  const setupStore: SetupStoreLike = {
-    load: () => loadSetup(setupFile),
-    save: (s) => {
-      saveSetup(setupFile, s);
-    },
-    backupPath: (id) => join(dataDir, "steam-backup", `${id}-localconfig.vdf`),
+  const setupStore = setupStoreIn(dataDir);
+  // Setting up and removing never run together: a second click while one runs gets that one's result.
+  const steamJob = oneAtATime<SetupProgress>();
+  const onSteamProgress = (p: SetupProgress) => {
+    send(IPC.steamProgress, p);
   };
-  // One setup at a time: a second click while one runs gets the same result.
-  let setup: Promise<SetupProgress> | null = null;
   handle(IPC.steamState, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:state: no body expected");
@@ -236,12 +233,16 @@ function start(): void {
   handle(IPC.steamSetup, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:setup: no body expected");
-    setup ??= runSetup(steamSystem, setupStore, part, (p) => {
-      send(IPC.steamProgress, p);
-    }).finally(() => {
-      setup = null;
-    });
-    return setup;
+    return steamJob(() =>
+      runSetup(steamSystem, setupStore, part, onSteamProgress),
+    );
+  });
+  handle(IPC.steamRemove, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("steam:remove: no body expected");
+    return steamJob(() =>
+      runRemove(steamSystem, setupStore, part, onSteamProgress),
+    );
   });
 
   app.on("second-instance", (_e, argv) => {

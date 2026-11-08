@@ -4,6 +4,7 @@ import { join, win32 } from "node:path";
 import type { SetupProgress } from "../../shared/index.ts";
 import type { SteamSetupFile } from "../setup-store.ts";
 import type { SteamFiles } from "./locate.ts";
+import { runRemove } from "./remove.ts";
 import { runSetup } from "./setup.ts";
 import type { SetupStoreLike, SteamSystem } from "./setup.ts";
 
@@ -35,6 +36,8 @@ export interface World {
   onShutdown?: () => void;
   startFails?: boolean;
   copyFails?: boolean;
+  /** steam-setup.json at the start. */
+  records?: SteamSetupFile;
 }
 
 export const steamFiles = (): SteamFiles => ({
@@ -98,7 +101,7 @@ export function setup(o: Partial<World> = {}) {
       return Promise.resolve();
     },
   };
-  let saved: SteamSetupFile = { accounts: {} };
+  let saved: SteamSetupFile = w.records ?? { accounts: {} };
   const store: SetupStoreLike = {
     load: () => saved,
     save: (s) => {
@@ -108,10 +111,11 @@ export function setup(o: Partial<World> = {}) {
     backupPath: (id) => `C:\\Data\\steam-backup\\${id}-localconfig.vdf`,
   };
   const progress: SetupProgress[] = [];
-  const run = () =>
-    runSetup(sys, store, PART, (p) => {
-      progress.push(p);
-    });
+  const onProgress = (p: SetupProgress) => {
+    progress.push(p);
+  };
+  const run = () => runSetup(sys, store, PART, onProgress);
+  const remove = () => runRemove(sys, store, PART, onProgress);
   return {
     w,
     sys,
@@ -119,6 +123,7 @@ export function setup(o: Partial<World> = {}) {
     calls,
     progress,
     run,
+    remove,
     time: () => time,
     saved: () => saved,
     /** Calls that change something: Steam's state or a file. */

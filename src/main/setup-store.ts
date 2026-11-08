@@ -7,7 +7,7 @@ import {
   renameSync,
   writeFileSync,
 } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
 export interface SteamSetupRecord {
   /** The exact text the companion added to the option. */
@@ -99,5 +99,18 @@ export function forgetAccount(
     accounts: Object.fromEntries(
       Object.entries(s.accounts).filter(([id]) => id !== accountId),
     ),
+  };
+}
+
+/** The records and copies of the companion's data folder, for the setup and removal flows. */
+export function setupStoreIn(dataDir: string) {
+  const file = join(dataDir, "steam-setup.json");
+  return {
+    load: () => loadSetup(file),
+    save: (s: SteamSetupFile) => {
+      saveSetup(file, s);
+    },
+    backupPath: (id: string) =>
+      join(dataDir, "steam-backup", `${id}-localconfig.vdf`),
   };
 }

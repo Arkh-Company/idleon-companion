@@ -5,6 +5,7 @@ import {
   NOT_CONNECTED,
   decide,
   launchEvent,
+  oneAtATime,
   shouldReload,
   statusOnLinkDrop,
   trayItems,
@@ -150,3 +151,34 @@ test.each([
     expect(trayItems(status)).toEqual(["Show/Hide", "Quit"]);
   },
 );
+
+test("one job at a time: a call while one runs gets that job's result and starts nothing", async () => {
+  const one = oneAtATime<string>();
+  let finishFirst = (_v: string): void => undefined;
+  const first = one(
+    () =>
+      new Promise<string>((resolve) => {
+        finishFirst = resolve;
+      }),
+  );
+  let started = false;
+  const second = one(() => {
+    started = true;
+    return Promise.resolve("second");
+  });
+
+  finishFirst("first");
+
+  expect(await first).toBe("first");
+  expect(await second).toBe("first");
+  expect(started).toBe(false);
+});
+
+test("the next job runs once the last one ended, also after a failure", async () => {
+  const one = oneAtATime<string>();
+  await expect(one(() => Promise.reject(new Error("no")))).rejects.toThrow(
+    "no",
+  );
+  expect(await one(() => Promise.resolve("next"))).toBe("next");
+  expect(await one(() => Promise.resolve("and next"))).toBe("and next");
+});

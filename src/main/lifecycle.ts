@@ -36,6 +36,17 @@ export function trayItems(status: Status): TrayItem[] {
   return ["Show/Hide", "Quit"];
 }
 
+/** Runs one job at a time: a call while one runs gets that job's result and starts nothing. */
+export function oneAtATime<T>(): (job: () => Promise<T>) => Promise<T> {
+  let running: Promise<T> | null = null;
+  return (job) => {
+    running ??= job().finally(() => {
+      running = null;
+    });
+    return running;
+  };
+}
+
 const RELOADS_PER_MINUTE = 3;
 
 /**

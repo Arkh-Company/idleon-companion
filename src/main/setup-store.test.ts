@@ -13,6 +13,7 @@ import {
   loadSetup,
   recordSetup,
   saveSetup,
+  setupStoreIn,
 } from "./setup-store.ts";
 import type { SteamSetupFile, SteamSetupRecord } from "./setup-store.ts";
 
@@ -109,4 +110,20 @@ test("the saved JSON has no name field anywhere (FR-028)", () => {
   );
   saveSetup(file, recordSetup(loadSetup(file), "103", withName));
   expect(readFileSync(file, "utf8")).not.toContain("name");
+});
+
+test("the store of a data folder: steam-setup.json and the steam-backup folder inside it", () => {
+  const dir = mkdtempSync(join(tmpdir(), "setup-store-"));
+  const store = setupStoreIn(dir);
+  const rec = { inserted: "x", before: "", backupFile: "c", setAt: 1 };
+
+  store.save({ accounts: { "102": rec } });
+
+  expect(loadSetup(join(dir, "steam-setup.json"))).toEqual({
+    accounts: { "102": rec },
+  });
+  expect(store.load()).toEqual({ accounts: { "102": rec } });
+  expect(store.backupPath("102")).toBe(
+    join(dir, "steam-backup", "102-localconfig.vdf"),
+  );
 });

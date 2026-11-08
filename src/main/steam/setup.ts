@@ -39,11 +39,14 @@ export interface SetupStoreLike {
 }
 
 type Reason = Extract<SetupProgress, { step: "failed" }>["reason"];
-const failed = (reason: Reason): SetupProgress => ({ step: "failed", reason });
+export const failed = (reason: Reason): SetupProgress => ({
+  step: "failed",
+  reason,
+});
 
 /** The file's text, undefined when it does not exist; throws VdfShapeError when it is not UTF-8 (writing it back would
  * change its bytes). */
-async function configText(
+export async function configText(
   sys: SteamSystem,
   path: string,
 ): Promise<string | undefined> {
@@ -56,7 +59,7 @@ async function configText(
 }
 
 /** The account's current option; throws when the text is missing or the option could not be written safely. */
-function currentOption(text: string | undefined): string {
+export function currentOption(text: string | undefined): string {
   if (text === undefined) throw new Error("localconfig.vdf not found");
   setLaunchOptions(text, IDLEON_APP_ID, ""); // a dry run: throws VdfShapeError on a shape it cannot edit
   return getLaunchOptions(text, IDLEON_APP_ID) ?? "";
@@ -164,6 +167,19 @@ export async function withSteamClosed(
   return opened ? "done" : failed("steam-did-not-open");
 }
 
+/** Copies the file to the account's backup unless a copy exists (FR-027); the backup's path. */
+export async function keepFirstCopy(
+  sys: SteamSystem,
+  store: SetupStoreLike,
+  accountId: string,
+  file: string,
+): Promise<string> {
+  const backupFile = store.backupPath(accountId);
+  if ((await sys.readFile(backupFile)) === undefined)
+    await sys.copyFile(file, backupFile);
+  return backupFile;
+}
+
 interface Target {
   steamPath: string;
   accountId: string;
@@ -193,9 +209,7 @@ async function writeOption(
     return false;
   }
   if (inserted === "") return true; // the part is there already: nothing to write
-  const backupFile = store.backupPath(t.accountId);
-  if ((await sys.readFile(backupFile)) === undefined)
-    await sys.copyFile(t.file, backupFile);
+  const backupFile = await keepFirstCopy(sys, store, t.accountId, t.file);
   await sys.writeFileAtomic(t.file, out);
   store.save(
     recordSetup(store.load(), t.accountId, {
