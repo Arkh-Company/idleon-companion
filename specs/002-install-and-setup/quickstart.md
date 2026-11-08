@@ -31,6 +31,7 @@ Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de admi
 5. Conferir: a opção na Steam ganhou só a parte do companion; o resto do texto continua (FR-008);
    `%APPDATA%\IdleOn Companion\steam-backup\` tem a cópia (FR-027); `steam-setup.json` não tem nome de conta (FR-028).
 6. Comparar o `localconfig.vdf` com a cópia: só a linha da opção difere.
+7. Só com o teclado: Tab chega em cada botão da tela e Enter o aciona (FR-034).
 
 ## 3. Jogar, comprar, fechar (US1, US2)
 

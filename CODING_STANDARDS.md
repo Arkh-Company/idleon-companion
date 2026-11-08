@@ -41,3 +41,10 @@ Bad: a test that checks `names.map`, `names.window` and `names.afk` while `names
 Every cleanup, fallback or swallowed error that keeps the game safe has a test that runs on the CI (a fake `Cdp`, not only the Edge integration test) and fails when that path is removed.
 Good: `engine-ref.test.ts` drives `acquireEngine` with a fake `Cdp` whose `Debugger.evaluateOnCallFrame` rejects and asserts `Debugger.removeBreakpoint` and `Debugger.resume` are sent after it.
 Bad: a `try { onReading(r) } catch {}` whose only test sits inside `describe.skipIf(!existsSync(EDGE))`, so the CI stays green when the `catch` is removed.
+
+### Every branch or state reset is seen failing
+
+Every branch or state reset a change adds has one assertion that fails when that line is removed.
+Good: a retry test that keeps `setupSteam` pending and asserts that the old alert is gone.
+Bad: a retry test that ends in the screen's final line, which returns before the alert is drawn, so removing the reset
+changes nothing.
