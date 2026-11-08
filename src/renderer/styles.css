@@ -53,6 +53,26 @@ h2 {
   width: 10rem;
 }
 
+.setup p {
+  margin: 0 0 0.25rem;
+}
+
+.setup .alert {
+  font-weight: 600;
+}
+
+.setup button {
+  margin: 0.5rem 0.5rem 0.25rem 0;
+}
+
+.setup code {
+  word-break: break-all;
+}
+
+.setup dd {
+  margin: 0 0 0.25rem 1rem;
+}
+
 .settings {
   margin-top: 1rem;
 }

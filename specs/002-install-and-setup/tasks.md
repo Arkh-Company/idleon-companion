@@ -273,7 +273,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
     `failed: unreadable-config`, nothing written; `startSteam` throwing → `failed: steam-did-not-open` after the write;
     option already the companion's → `done` with no shutdown ("Steam is already set up for <name>");
     `steamState` gives `option.state`, `consoleScript`, `configured`, `gameOpen`, `details` and never writes.
-- [ ] T041 [P] [US1] Setup screen in `src/renderer/SetupView.test.tsx` (`// @vitest-environment jsdom`)
+- [X] T041 [P] [US1] Setup screen in `src/renderer/SetupView.test.tsx` (`// @vitest-environment jsdom`)
   - Files: `src/renderer/SetupView.test.tsx`
   - Cases: shows "Steam found", the account name, "Legends of Idleon found" and the option state ("not set" /
     the current text and the new text with "The companion only adds to your launch option; nothing is removed.");
@@ -284,7 +284,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
     done → "All set. Press Play in Steam as usual."; "Details" shows the exact option, the file and the copy (FR-011);
     Steam not found / game not installed / no account → what is missing and no setup button; buttons reachable with
     Tab and pressed with Enter (FR-034).
-- [ ] T042 [P] [US1] App shows only the setup screen when not configured in `src/renderer/App.test.tsx`
+- [X] T042 [P] [US1] App shows only the setup screen when not configured in `src/renderer/App.test.tsx`
   - Files: `src/renderer/App.test.tsx`
   - Cases: `steamState` with `configured: false` → only `SetupView` (no panel, no settings); `configured: true` → the
     001 window; after a `done` progress the window switches to the 001 window.
@@ -304,7 +304,7 @@ each state; with Vinicius, quickstart §2 and §3 (option written, purchase wind
     payload checks of T043; the part from `companionPart({ execPath: process.execPath, defaultApp:
     process.defaultApp === true, appPath: app.getAppPath() })`; the backup at
     `join(dataDir, "steam-backup", `${id}-localconfig.vdf`)`. The preload gains the `CompanionApi` methods of T022.
-- [ ] T046 [US1] `src/renderer/SetupView.tsx` and `src/renderer/App.tsx` as tested in T041 and T042 (styles in
+- [X] T046 [US1] `src/renderer/SetupView.tsx` and `src/renderer/App.tsx` as tested in T041 and T042 (styles in
   `styles.css`, no inline styles: CSP)
 
 **Verify**: `just test-one src/main/steam/setup.test.ts`, `just test-one src/renderer/SetupView.test.tsx`,
