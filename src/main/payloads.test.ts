@@ -114,8 +114,7 @@ test.each([
   expect(linkStatus(value)).toBeNull();
 });
 
-// settings:get, steam:state, steam:setup, steam:remove, reader:release, reader:reconnect and update:install carry no
-// body.
+// settings:get, steam:state, steam:setup, reader:release, reader:reconnect and update:install carry no body.
 test.each([
   ["a missing body", undefined],
   ["an empty object", {}],

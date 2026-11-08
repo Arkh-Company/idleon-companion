@@ -31,13 +31,6 @@ export function App() {
   const finishSetup = useCallback(() => {
     setSetupFinished(true);
   }, []);
-  // So the window knows Steam is set up once the setup screen's last line goes (a removal right after).
-  useEffect(() => {
-    if (setupFinished) loadSteam();
-  }, [setupFinished, loadSteam]);
-  const hideSetupLine = useCallback(() => {
-    setSetupFinished(false);
-  }, []);
   // A new key: the setup screen starts over, without the last line of the setup before.
   const [setupRun, setSetupRun] = useState(0);
   const showSteam = useCallback((s: SteamState) => {
@@ -68,12 +61,7 @@ export function App() {
               </section>
             ))}
           <SettingsView>
-            <SteamSettings
-              gameOpen={steam.gameOpen || status?.game === "running"}
-              onReload={loadSteam}
-              onSteam={showSteam}
-              onRemoveStart={hideSetupLine}
-            />
+            <SteamSettings onReload={loadSteam} onSteam={showSteam} />
           </SettingsView>
         </>
       )}

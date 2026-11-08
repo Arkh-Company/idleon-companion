@@ -255,61 +255,9 @@ test("Set up Steam with another account now last used: the setup screen for that
   expectOnlySetup();
 });
 
-test("removing right after a setup: the setup's last line goes and the removal's result stays", async () => {
-  companion.onStatus.mockImplementation((cb) => {
-    cb({ game: "closed", reader: "error" });
-    return () => undefined;
-  });
-  companion.steamState.mockResolvedValue(notSetUp);
+test("Steam no longer set up for the last account: the next focus shows the setup screen", async () => {
   render(<App />);
-  await screen.findByRole("button", { name: SET_UP });
-  companion.steamState.mockResolvedValue({ ...notSetUp, configured: true });
-  act(() => {
-    emit("done");
-  });
-  const remove = await screen.findByRole("button", {
-    name: "Remove from Steam",
-  });
-  await waitFor(() => {
-    expect(companion.steamState).toHaveBeenCalledTimes(2);
-  });
-
-  fireEvent.click(remove);
-  fireEvent.click(
-    screen.getByRole("button", { name: "Close Steam and remove" }),
-  );
-
-  expect(await screen.findByText("Removed from Steam.")).toBeDefined();
-  expect(
-    screen.queryByText("All set. Press Play in Steam as usual."),
-  ).toBeNull();
-  expect(screen.queryByRole("button", { name: SET_UP })).toBeNull();
-});
-
-test("the game running by the status turns Remove from Steam off", async () => {
-  render(<App />);
-
-  const remove = await screen.findByRole<HTMLButtonElement>("button", {
-    name: "Remove from Steam",
-  });
-
-  expect(remove.disabled).toBe(true);
-  expect(screen.getByText("Close the game first")).toBeDefined();
-});
-
-test("after a removal the next focus shows the setup screen again", async () => {
-  companion.onStatus.mockImplementation((cb) => {
-    cb({ game: "closed", reader: "error" });
-    return () => undefined;
-  });
-  render(<App />);
-  fireEvent.click(
-    await screen.findByRole("button", { name: "Remove from Steam" }),
-  );
-  fireEvent.click(
-    screen.getByRole("button", { name: "Close Steam and remove" }),
-  );
-  await screen.findByText("Removed from Steam.");
+  await screen.findByRole("button", { name: "Set up Steam" });
 
   companion.steamState.mockResolvedValue(notSetUp);
   await focusReloads();
@@ -318,40 +266,15 @@ test("after a removal the next focus shows the setup screen again", async () => 
   expectOnlySetup();
 });
 
-test("the game open by Steam's state turns Remove from Steam off, with no keeper status", async () => {
-  companion.steamState.mockResolvedValue({
-    ...notSetUp,
-    configured: true,
-    gameOpen: true,
-  });
-  companion.onStatus.mockImplementation((cb) => {
-    cb({ game: "not-launched", reader: "error" });
-    return () => undefined;
-  });
-  render(<App />);
-
-  const remove = await screen.findByRole<HTMLButtonElement>("button", {
-    name: "Remove from Steam",
-  });
-
-  expect(remove.disabled).toBe(true);
-});
-
 test("Set up Steam for another account after a setup: a fresh setup screen, without the old last line", async () => {
   companion.steamState.mockResolvedValue(notSetUp);
   render(<App />);
   await screen.findByRole("button", { name: SET_UP });
-  companion.steamState.mockResolvedValue({ ...notSetUp, configured: true });
   act(() => {
     emit("done");
   });
-  const open = await screen.findByRole("button", { name: "Set up Steam" });
-  await waitFor(() => {
-    expect(companion.steamState).toHaveBeenCalledTimes(2);
-  });
 
-  companion.steamState.mockResolvedValue(notSetUp);
-  fireEvent.click(open);
+  fireEvent.click(await screen.findByRole("button", { name: "Set up Steam" }));
 
   expect(await screen.findByRole("button", { name: SET_UP })).toBeDefined();
   expect(

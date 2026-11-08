@@ -123,7 +123,6 @@ export const IPC = {
   confirmAttach: "reader:confirm-attach",
   steamState: "steam:state",
   steamSetup: "steam:setup",
-  steamRemove: "steam:remove",
   steamProgress: "steam:progress",
   readerRelease: "reader:release",
   readerReconnect: "reader:reconnect",
@@ -195,7 +194,6 @@ export interface CompanionApi {
   confirmAttach(): Promise<void>;
   steamState(): Promise<SteamState>;
   setupSteam(): Promise<SetupProgress>;
-  removeFromSteam(): Promise<SetupProgress>;
   onSetupProgress(cb: (p: SetupProgress) => void): () => void;
   releaseGame(): Promise<void>;
   reconnect(): Promise<void>;

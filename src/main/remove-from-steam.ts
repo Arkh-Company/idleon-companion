@@ -1,4 +1,4 @@
-// The uninstaller's mode (`--remove-from-steam`, contracts/command-line.md; research R6): the "Remove from Steam" flow
+// The uninstaller's mode (`--remove-from-steam`, contracts/command-line.md; research R6): the removal flow
 // with no window and no single-instance lock, reported by the exit code. electron is imported only when the mode runs,
 // so the tests can load this file.
 import { join } from "node:path";

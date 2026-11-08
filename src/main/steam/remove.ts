@@ -1,4 +1,4 @@
-// Undoing the setup (FR-009, FR-012, FR-013; research R5, R6): "Remove from Steam" and the uninstaller take the
+// Undoing the setup (FR-009, FR-012, FR-013; research R5, R6): the uninstaller takes the
 // companion's part out of every configured account and out of the last-used one, with the same close-and-reopen flow as
 // the setup. Only the companion's part leaves the option; what the user changed after the setup stays.
 import type { SetupProgress } from "../../shared/index.ts";
@@ -69,7 +69,7 @@ async function takeOut(
   return true;
 }
 
-/** "Remove from Steam". Every step goes to `onProgress`, the last one is returned. Steam is closed only when an account
+/** The removal. Every step goes to `onProgress`, the last one is returned. Steam is closed only when an account
  * may have something to take out. */
 export async function runRemove(
   sys: SteamSystem,

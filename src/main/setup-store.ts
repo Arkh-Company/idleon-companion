@@ -1,5 +1,5 @@
 // steam-setup.json (data-model.md SteamSetupRecord): what the companion added to each account's launch option, so
-// "Remove from Steam" and the uninstaller take out only that. Only the numeric account id is kept, never a name (FR-028).
+// the uninstaller takes out only that. Only the numeric account id is kept, never a name (FR-028).
 import {
   existsSync,
   mkdirSync,

@@ -11,7 +11,6 @@ test("IPC holds the fixed channel names", () => {
     confirmAttach: "reader:confirm-attach",
     steamState: "steam:state",
     steamSetup: "steam:setup",
-    steamRemove: "steam:remove",
     steamProgress: "steam:progress",
     readerRelease: "reader:release",
     readerReconnect: "reader:reconnect",

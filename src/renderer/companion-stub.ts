@@ -36,9 +36,6 @@ export function stubCompanion(): CompanionStub {
     setupSteam: vi.fn<CompanionApi["setupSteam"]>(() =>
       Promise.resolve("done"),
     ),
-    removeFromSteam: vi.fn<CompanionApi["removeFromSteam"]>(() =>
-      Promise.resolve("done"),
-    ),
     onSetupProgress: vi.fn<CompanionApi["onSetupProgress"]>(
       () => () => undefined,
     ),

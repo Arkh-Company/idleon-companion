@@ -33,7 +33,7 @@ import { loadSettings, saveSettings } from "./settings.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import {
   companionPart,
-  steamJobs,
+  steamSetupJob,
   steamState,
   steamSystem,
 } from "./steam/index.ts";
@@ -239,7 +239,7 @@ function start(): void {
     appPath: app.getAppPath(),
   });
   const setupStore = setupStoreIn(dataDir);
-  const steam = steamJobs(steamSystem, setupStore, part, (p) => {
+  const setUpSteam = steamSetupJob(steamSystem, setupStore, part, (p) => {
     send(IPC.steamProgress, p);
   });
   handle(IPC.steamState, (payload) => {
@@ -250,12 +250,7 @@ function start(): void {
   handle(IPC.steamSetup, (payload) => {
     if (!emptyPayload(payload))
       throw new Error("steam:setup: no body expected");
-    return steam.setup();
-  });
-  handle(IPC.steamRemove, (payload) => {
-    if (!emptyPayload(payload))
-      throw new Error("steam:remove: no body expected");
-    return steam.remove();
+    return setUpSteam();
   });
 
   app.on("second-instance", (_e, argv) => {

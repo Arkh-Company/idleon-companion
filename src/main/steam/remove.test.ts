@@ -1,4 +1,4 @@
-// "Remove from Steam" and the uninstaller over fake system operations: no Steam, no registry, no process, no file.
+// The uninstaller's removal over fake system operations: no Steam, no registry, no process, no file.
 import { win32 } from "node:path";
 import { expect, test } from "vitest";
 import {

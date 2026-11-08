@@ -38,8 +38,6 @@ const api: CompanionApi = {
     (await ipcRenderer.invoke(IPC.steamState)) as SteamState,
   setupSteam: async () =>
     (await ipcRenderer.invoke(IPC.steamSetup)) as SetupProgress,
-  removeFromSteam: async () =>
-    (await ipcRenderer.invoke(IPC.steamRemove)) as SetupProgress,
   // Each step of setting up goes only to whoever listens at that moment: a late screen must not see an old "done".
   onSetupProgress: listen(IPC.steamProgress, false),
   releaseGame: async () => {
