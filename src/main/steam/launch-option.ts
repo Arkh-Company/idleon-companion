@@ -27,16 +27,27 @@ export function addPart(
       next: current.slice(0, at) + part + current.slice(at),
       inserted: part,
     };
-  const inserted = current === "" ? part + COMMAND : `${part}${COMMAND} `;
+  if (current.trim() === "") {
+    const whole = part + COMMAND;
+    return { next: whole, inserted: whole };
+  }
+  const inserted = `${part}${COMMAND} `;
   return { next: inserted + current, inserted };
 }
 
 /** The option without the text the companion inserted, once. When that text is gone, its version without the trailing
- * space is tried (the user deleted their own text after `%command% `); otherwise the option is unchanged. */
+ * space is tried (the user deleted their own text after `%command% `); otherwise the option is unchanged. Text the user
+ * wrote before an inserted `%command%` keeps it: without it, that text would go after the game's command. */
 export function removePart(current: string, inserted: string): string {
   for (const text of [inserted, inserted.trimEnd()]) {
     const at = text === "" ? -1 : current.indexOf(text);
-    if (at >= 0) return current.slice(0, at) + current.slice(at + text.length);
+    if (at < 0) continue;
+    const command = text.indexOf(COMMAND);
+    const kept =
+      command >= 0 && current.slice(0, at).trim() !== ""
+        ? text.slice(command)
+        : "";
+    return current.slice(0, at) + kept + current.slice(at + text.length);
   }
   return current;
 }
@@ -44,9 +55,13 @@ export function removePart(current: string, inserted: string): string {
 export function optionState(
   current: string,
   part: string,
-): "not-set" | "companion" | "other" {
+): "not-set" | "companion" | "other-companion" | "other" {
   if (current.trim() === "") return "not-set";
-  return current.includes(part) ? "companion" : "other";
+  if (current.includes(part)) return "companion";
+  const at = current.indexOf(COMMAND);
+  return at >= 0 && current.slice(0, at).includes("--keeper ")
+    ? "other-companion"
+    : "other";
 }
 
 /** The user's text runs a .cmd or .bat before `%command%`: Steam then starts the game from a console (a warning). */

@@ -219,6 +219,30 @@ test("steamState rejecting: the error shows and the next focus asks again", asyn
   expect(screen.queryByRole("alert")).toBeNull();
 });
 
+test("another companion in the launch option: the warning, no setup button, nothing to paste", async () => {
+  const next = '"C:\\Old.exe" --keeper "C:\\App.exe" --keeper %command%';
+  companion.steamState.mockResolvedValue({
+    ...notSetUp,
+    option: {
+      current: '"C:\\Old.exe" --keeper %command%',
+      next,
+      state: "other-companion",
+      consoleScript: false,
+    },
+  });
+  render(<App />);
+
+  expect(
+    await screen.findByText(
+      "Another companion is already in the launch option",
+    ),
+  ).toBeDefined();
+  expect(screen.queryByRole("button", { name: SET_UP })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Details" }));
+  expect(screen.getByText("Test Two", { selector: "dd" })).toBeDefined();
+  expect(screen.queryByText(next)).toBeNull();
+});
+
 test("Set up Steam with another account now last used: the setup screen for that account", async () => {
   render(<App />);
   const open = await screen.findByRole("button", { name: "Set up Steam" });

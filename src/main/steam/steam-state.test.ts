@@ -55,6 +55,13 @@ test.each([
   ["with the companion's part", AFTER, "companion", true, false],
   ["empty", "", "not-set", false, false],
   ["with a console script", '"C:\\x\\run.cmd" %command%', "other", false, true],
+  [
+    "of another companion",
+    '"C:\\Old.exe" --keeper %command%',
+    "other-companion",
+    false,
+    false,
+  ],
 ])(
   "steamState with an option %s",
   async (_name, current, state, configured, consoleScript) => {

@@ -143,7 +143,8 @@ export interface SteamState {
     current: string;
     /** the text after adding the companion's part */
     next: string;
-    state: "not-set" | "companion" | "other";
+    /** "other-companion": `--keeper ` before %command% without this companion's part (a warning, no setup). */
+    state: "not-set" | "companion" | "other-companion" | "other";
     /** the user's text runs a .cmd/.bat before %command% (a warning) */
     consoleScript: boolean;
   } | null;
@@ -158,13 +159,13 @@ export interface SteamState {
   manualOption: string;
 }
 
-/** One step of setting up or removing (data-model.md). Only "steam-did-not-open" comes after the write. */
 export type SetupFailure =
   | "game-open"
   | "steam-did-not-close"
   | "unreadable-config"
   | "steam-did-not-open";
 
+/** One step of setting up or removing (data-model.md). Only "steam-did-not-open" comes after the write. */
 export type SetupProgress =
   | "closing-steam"
   | "setting-up"

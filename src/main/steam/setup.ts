@@ -190,8 +190,8 @@ interface Target {
 }
 
 /** With Steam closed: reads the file again (Steam rewrites it when it exits), keeps the first copy, writes only the
- * option and records what was added. False, with nothing written, when the file is missing, is not UTF-8 or has a shape
- * that cannot be edited. */
+ * option and records what was added. False, with nothing written, when the file is missing, is not UTF-8, has a shape
+ * that cannot be edited or its option already runs another companion. */
 async function writeOption(
   sys: SteamSystem,
   store: SetupStoreLike,
@@ -205,6 +205,7 @@ async function writeOption(
     const text = await configText(sys, t.file);
     if (text === undefined) return false;
     before = currentOption(text);
+    if (optionState(before, part) === "other-companion") return false;
     const added = addPart(before, part);
     inserted = added.inserted;
     out = setLaunchOptions(text, IDLEON_APP_ID, added.next);
@@ -248,7 +249,10 @@ export async function runSetup(
   } catch {
     return finish(failed("unreadable-config"));
   }
-  if (optionState(current, part) === "companion") return finish("done");
+  const option = optionState(current, part);
+  if (option === "companion") return finish("done");
+  // ponytail: no reason of its own: the screen offers no setup button for an option of another companion
+  if (option === "other-companion") return finish(failed("unreadable-config"));
   if (await sys.isRunning(GAME_IMAGE)) return finish(failed("game-open"));
 
   return finish(

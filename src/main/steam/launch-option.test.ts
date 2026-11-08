@@ -63,11 +63,31 @@ test("removing when the inserted text is gone changes nothing", () => {
   expect(removePart("-windowed", "")).toBe("-windowed");
 });
 
+test("adding to an option of only spaces is adding to an empty one", () => {
+  const whole = `${PART}%command%`;
+  expect(addPart("  ", PART)).toEqual({ next: whole, inserted: whole });
+});
+
+test.each([
+  ["FOO %command%", `${PART}%command%`, `FOO ${PART}%command%`],
+  ["FOO %command% -bar", `${PART}%command% `, `FOO ${PART}%command% -bar`],
+  ["FOO %command%", `${PART}%command% `, `FOO ${PART}%command%`],
+])(
+  "the user's text before the part keeps a command to run: %j",
+  (expected, inserted, current) => {
+    expect(removePart(current, inserted)).toBe(expected);
+  },
+);
+
 test.each([
   ["", "not-set"],
   ["  ", "not-set"],
   [`${PART}%command%`, "companion"],
   ["-windowed", "other"],
+  ["%command% --keeper -x", "other"],
+  ["--keeper -x", "other"],
+  ['"C:\\Old\\IdleOn Companion.exe" --keeper %command%', "other-companion"],
+  ['FOO "C:\\Old.exe" "C:\\repo" --keeper %command% -x', "other-companion"],
 ])("the state of %j is %s", (current, state) => {
   expect(optionState(current, PART)).toBe(state);
 });

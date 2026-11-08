@@ -115,11 +115,14 @@ export function SetupView({
 
   const { error, account, option, details, manualOption } = state;
   const steamFound = state.steam === "found";
-  const canSetUp = option !== null && state.game === "installed";
+  const otherCompanion = option?.state === "other-companion";
+  const canSetUp =
+    option !== null && state.game === "installed" && !otherCompanion;
   const alert = crash ?? error ?? (reason && FAILURE[reason]);
   const retry = crash !== null || (reason !== null && reason !== "game-open");
   const pasteNow = error !== undefined && manualOption !== "";
-  const detailOption = pasteNow ? "" : (option?.next ?? manualOption);
+  const detailOption =
+    pasteNow || otherCompanion ? "" : (option?.next ?? manualOption);
   const hasDetails =
     detailOption !== "" || account !== null || details !== null;
 
@@ -142,6 +145,9 @@ export function SetupView({
       )}
 
       {option?.state === "not-set" && <p>Launch option: not set</p>}
+      {otherCompanion && (
+        <p>Another companion is already in the launch option</p>
+      )}
       {option?.state === "other" && (
         <>
           <p>Launch option now:</p>

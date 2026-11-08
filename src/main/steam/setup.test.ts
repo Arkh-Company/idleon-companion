@@ -55,6 +55,28 @@ test("setup closes Steam, waits for it, copies, writes, reopens Steam and record
   });
 });
 
+const WITH_OTHER_COMPANION = Buffer.from(
+  LOCALCONFIG.toString("utf8").replace(
+    esc(BEFORE),
+    esc('"C:\\Old.exe" --keeper %command%'),
+  ),
+);
+const NOT_WRITTEN = { step: "failed", reason: "unreadable-config" };
+
+test("another companion in the option: Steam stays open and nothing is written", async () => {
+  const s = setup({ disk: new Map([[FILE, WITH_OTHER_COMPANION]]) });
+  expect(await s.run()).toEqual(NOT_WRITTEN);
+  expect(s.changes()).toEqual([]);
+});
+
+test("another companion in the file Steam leaves when it closes: nothing is written and Steam reopens", async () => {
+  const s = setup({
+    onShutdown: () => s.w.disk.set(FILE, WITH_OTHER_COMPANION),
+  });
+  expect(await s.run()).toEqual(NOT_WRITTEN);
+  expect(s.changes()).toEqual([`shutdown ${STEAM}`, `start ${STEAM}`]);
+});
+
 test("the written file differs from the read one only in the option's text", async () => {
   const s = setup();
   await s.run();
