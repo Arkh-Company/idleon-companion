@@ -26,7 +26,7 @@ export const esc = (s: string) =>
   s.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 
 export interface World {
-  /** What readSteam gives; its localConfig text is read from `disk` at each call. */
+  /** What readSteam gives. */
   files: SteamFiles | Error;
   disk: Map<string, Buffer>;
   running: Set<string>;
@@ -41,7 +41,7 @@ export const steamFiles = (): SteamFiles => ({
   steamPath: STEAM,
   account: { id: "102", name: "Test Two" },
   gameInstalled: true,
-  localConfig: { path: FILE, text: undefined },
+  localConfig: { path: FILE },
 });
 
 export function setup(o: Partial<World> = {}) {
@@ -60,12 +60,7 @@ export function setup(o: Partial<World> = {}) {
     readSteam: () => {
       calls.push("readSteam");
       if (w.files instanceof Error) return Promise.reject(w.files);
-      const f = w.files;
-      const lc = f.localConfig && {
-        path: f.localConfig.path,
-        text: w.disk.get(f.localConfig.path)?.toString("utf8"),
-      };
-      return Promise.resolve({ ...f, localConfig: lc });
+      return Promise.resolve(w.files);
     },
     isRunning: (image) =>
       Promise.resolve(image === "steam.exe" ? steamUp() : w.running.has(image)),

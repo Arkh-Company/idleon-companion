@@ -19,8 +19,8 @@ export interface SteamFiles {
   /** `name` is PersonaName, for the screen only: never saved nor logged (FR-028). */
   account: { id: string; name: string } | null;
   gameInstalled: boolean;
-  /** The account's localconfig.vdf (`text` undefined when missing); null without Steam or an account. */
-  localConfig: { path: string; text: string | undefined } | null;
+  /** Where the account's localconfig.vdf is (it may not exist); null without Steam or an account. */
+  localConfig: { path: string } | null;
 }
 
 /** The account of loginusers.vdf marked `"MostRecent" "1"`: `id` is the 32-bit id of its `userdata` folder. */
@@ -57,7 +57,7 @@ export function steamPathFromReg(regOutput: string): string | null {
   return m?.[1] ? m[1].replaceAll("/", "\\") : null;
 }
 
-/** Reads Steam's folder, last account, whether the game is installed and that account's localconfig.vdf. Nothing is
+/** Reads Steam's folder, last account, whether the game is installed and where that account's localconfig.vdf is. Nothing is
  * written. A broken loginusers.vdf or libraryfolders.vdf rejects with VdfShapeError. */
 export async function readSteam(run: Runner, fs: FsLike): Promise<SteamFiles> {
   let steamPath: string | null = null;
@@ -120,6 +120,6 @@ export async function readSteam(run: Runner, fs: FsLike): Promise<SteamFiles> {
     steamPath,
     account,
     gameInstalled,
-    localConfig: { path, text: await fs.readText(path) },
+    localConfig: { path },
   };
 }

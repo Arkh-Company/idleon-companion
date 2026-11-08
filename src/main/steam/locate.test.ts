@@ -108,7 +108,7 @@ test("readSteam runs reg query without a shell and reads the account's files", a
     steamPath: STEAM,
     account: { id: "102", name: 'Test "Two"' },
     gameInstalled: true,
-    localConfig: { path, text: LOCALCONFIG },
+    localConfig: { path },
   });
   expect(calls).toEqual([
     ["reg", ["query", "HKCU\\Software\\Valve\\Steam", "/v", "SteamPath"]],
@@ -149,13 +149,12 @@ test("readSteam without loginusers.vdf: no account and no localconfig", async ()
   });
 });
 
-test("readSteam with the account's localconfig.vdf missing gives its path and no text", async () => {
+test("readSteam with the account's localconfig.vdf missing still gives its path", async () => {
   const files = Object.fromEntries(
     Object.entries(steamFiles).filter(([k]) => !k.endsWith("localconfig.vdf")),
   );
   const r = await readSteam(() => Promise.resolve(REG_OUTPUT), fakeFs(files));
   expect(r.localConfig).toEqual({
     path: win32.join(STEAM, "userdata", "102", "config", "localconfig.vdf"),
-    text: undefined,
   });
 });

@@ -162,7 +162,7 @@ test.each([
   ["no account", { ...steamFiles(), account: null, localConfig: null }],
   [
     "no localconfig.vdf",
-    { ...steamFiles(), localConfig: { path: "C:\\none.vdf", text: undefined } },
+    { ...steamFiles(), localConfig: { path: "C:\\none.vdf" } },
   ],
 ])("with %s: unreadable-config, Steam untouched", async (_name, files) => {
   const s = setup({ files });
