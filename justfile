@@ -95,8 +95,10 @@ package: build
     pnpm exec electron-builder --win nsis --publish never
 
 # Só no terminal do próprio usuário, com o GH_TOKEN dele: a sessão nunca lê nem pede o token (002, research R8)
+# O rascunho vem antes: sem ele, cada publicador do electron-builder cria o seu, e a versão sai em dois rascunhos
 # Publica o instalador na release pública Arkh-Company/idleon-companion-releases
 release: build
+    gh release create "v$(node -p "require('./package.json').version")" --repo Arkh-Company/idleon-companion-releases --draft --title "$(node -p "require('./package.json').version")" --notes "IdleOn Companion"
     pnpm exec electron-builder --win nsis --publish always
 
 clean:
