@@ -39,7 +39,7 @@ import {
   steamState,
   steamSystem,
 } from "./steam/index.ts";
-import { installCheck, startUpdates } from "./updates.ts";
+import { afterGameClosed, installCheck, startUpdates } from "./updates.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -76,7 +76,7 @@ function start(): void {
     status = s;
     send(IPC.statusUpdate, s);
     updateTray();
-    updates.onStatus();
+    return updates.onStatus();
   };
 
   // Navigation lockdown (Electron security checklist): no new windows, no page but the own one.
@@ -178,12 +178,15 @@ function start(): void {
       } else if (m.type === "status") {
         const s = linkStatus(m.status);
         if (!s) return;
-        setStatus(s);
-        if (s.game === "closed") apply("game-exited");
+        const settled = setStatus(s);
+        if (s.game === "closed")
+          void afterGameClosed(settled, () => {
+            apply("game-exited");
+          });
       }
     },
     (up) => {
-      if (!up) setStatus(statusOnLinkDrop(status));
+      if (!up) void setStatus(statusOnLinkDrop(status));
     },
   );
 

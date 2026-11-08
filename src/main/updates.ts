@@ -84,6 +84,17 @@ export function installCheck(
   };
 }
 
+/**
+ * Quits for a game that closed only after `settle` (the look of that status) answered: electron-updater reads the
+ * install-on-quit flag at quit, and it was off while the game ran. A look that fails does not keep the app open.
+ */
+export function afterGameClosed(
+  settle: Promise<unknown>,
+  quit: () => void,
+): Promise<void> {
+  return settle.then(quit, quit);
+}
+
 // electron-updater is CommonJS and `autoUpdater` is a getter that ESM's named imports do not see. Loaded on use, so
 // tests and development never load it.
 const loadUpdater = async (): Promise<Updater> =>
@@ -97,10 +108,11 @@ export function startUpdates(
   send: (u: UpdateState) => void,
   canInstallNow: () => Promise<boolean>,
   options: { isPackaged: boolean; load?: () => Promise<Updater> },
-): { install(): Promise<void>; onStatus(): void; replay(): void } {
+): { install(): Promise<void>; onStatus(): Promise<void>; replay(): void } {
   let state: UpdateState = { state: "none" };
   let updater: Updater | undefined;
   let newestLook = 0;
+  let appliedLook = 0;
 
   const publish = (next: UpdateState) => {
     if (JSON.stringify(next) === JSON.stringify(state)) return;
@@ -111,18 +123,19 @@ export function startUpdates(
     publish(nextUpdateState(state, event, version));
   };
 
-  /** Decides again, for the button and for quitting; of two looks at once, only the newest counts. */
+  /** Decides again, for the button and for quitting; an answer older than one already applied does not count. */
   const look = async (): Promise<boolean> => {
     const mine = ++newestLook;
     const can = await canInstallNow();
-    if (mine === newestLook && updater && state.state === "ready") {
+    if (mine > appliedLook && updater && state.state === "ready") {
+      appliedLook = mine;
       updater.autoInstallOnAppQuit = can;
       publish({ ...state, canInstall: can });
     }
     return can;
   };
-  const lookIfReady = () => {
-    if (state.state === "ready") void look();
+  const lookIfReady = async (): Promise<void> => {
+    if (state.state === "ready") await look();
   };
 
   const begin = (u: Updater) => {
@@ -157,7 +170,9 @@ export function startUpdates(
     };
     check();
     setInterval(check, CHECK_EVERY_MS);
-    setInterval(lookIfReady, LOOK_FOR_GAME_EVERY_MS);
+    setInterval(() => {
+      void lookIfReady();
+    }, LOOK_FOR_GAME_EVERY_MS);
   };
 
   if (shouldCheck(options))

@@ -212,7 +212,7 @@ describe("startUpdates", () => {
     const send = vi.fn();
     const h = startUpdates(send, canInstallNow, { isPackaged: false, load });
     await vi.advanceTimersByTimeAsync(SIX_HOURS);
-    h.onStatus();
+    void h.onStatus();
     await h.install();
 
     expect(load).not.toHaveBeenCalled();
@@ -241,7 +241,7 @@ describe("startUpdates", () => {
   test("a status before any download leaves the flag on", async () => {
     const { updater, handle } = await started(false);
 
-    handle.onStatus();
+    void handle.onStatus();
     await flush();
 
     expect(updater.autoInstallOnAppQuit).toBe(true);
@@ -308,7 +308,7 @@ describe("startUpdates", () => {
     expect(updater.autoInstallOnAppQuit).toBe(true);
 
     answer.can = false;
-    handle.onStatus();
+    void handle.onStatus();
     await flush();
 
     expect(updater.autoInstallOnAppQuit).toBe(false);
@@ -328,7 +328,7 @@ describe("startUpdates", () => {
     );
     await flush();
     updater.emit("update-downloaded", { version: "1.2.3" });
-    h.onStatus();
+    void h.onStatus();
 
     answers[1]?.(false);
     await flush();
@@ -351,7 +351,7 @@ describe("startUpdates", () => {
   test("nothing looks for the game while no update is ready", async () => {
     const { canInstallNow, handle } = await started();
 
-    handle.onStatus();
+    void handle.onStatus();
     await vi.advanceTimersByTimeAsync(60_000);
 
     expect(canInstallNow).not.toHaveBeenCalled();
