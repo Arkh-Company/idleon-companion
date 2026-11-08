@@ -43,6 +43,8 @@ Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de admi
    o X fecha o jogo em ≤ 2 s (SC-003).
 5. Noutra sessão: "Let the game close", depois "Reconnect": uma pausa nova no `keeper.log` (`attached` com `pausedMs`),
    o painel volta em ≤ 2 s (SC-004).
+6. Repetir "Let the game close" e "Reconnect" pelo menu da bandeja, com a janela escondida; ver se o menu não fecha
+   sozinho quando o item troca.
 
 ## 4. Desfazer (US3)
 

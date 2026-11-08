@@ -413,6 +413,8 @@ a atualização espera o jogo fechar.
 | Se o usuário apaga o próprio texto depois da configuração (ex.: tira ` -windowed`), o desfazer ainda tira a parte do companion? | resolved | durante a implementação: sim (FR-009). Quando o texto inserido guardado não está mais na opção, o desfazer tenta o mesmo texto sem o espaço do fim, de modo que `"<exe>" --keeper %command%` sai inteiro e a Steam nunca fica apontando para um exe desinstalado. Achado da revisão da fase 3, 07/11. |
 | Se a opção tem a parte do companion mas não há registro dela (o `steam-setup.json` se perdeu, ou o texto foi colado à mão), "Remove from Steam" e o desinstalador tiram mesmo assim? | resolved | durante a implementação: sim (Vinicius, 07/11; FR-009, FR-013). Sem o texto inserido guardado, o desfazer tira a parte do companion (`"<exe>" --keeper `) quando a acha no texto atual da opção, para o jogo nunca ficar apontando para um exe desinstalado. |
 | De onde vem o texto para colar à mão quando o arquivo da Steam não pode ser lido? | resolved | durante a implementação (Vinicius, 08/11): o estado que a tela recebe ganha `manualOption`, a parte do companion seguida de `%command%`, mostrado nesse caso (Edge Cases, FR-011). |
+| "Reconnect" continua na barra quando a mensagem é "Game updated" (o leitor parou e o clique não teria efeito)? | resolved | durante a implementação (Vinicius, 08/11): não; a barra esconde o botão nesse caso. Até o jogo reabrir, não há o que reconectar. |
+| Durante `connecting` (a tomada do motor pode ficar anexada até 120 s e travar o X), há "Let the game close"? | resolved | durante a implementação (Vinicius, 08/11): não, por agora; limitação conhecida e rara. |
 
 ## Origem do design
 
