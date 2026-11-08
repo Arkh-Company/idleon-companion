@@ -7,7 +7,7 @@ Steam's overlay and the gem store work. See [ARCHITECTURE.md](../ARCHITECTURE.md
 
 ## Install
 
-1. Download `IdleOn Companion Setup <version>.exe` from the
+1. Download `IdleOn-Companion-Setup-<version>.exe` from the
    [release page](https://github.com/Arkh-Company/idleon-companion-releases/releases).
 2. Run it. It asks for no administrator rights, installs to `%LOCALAPPDATA%\Programs\idleon-companion\`, adds a Start
    menu shortcut and opens the companion when it ends.

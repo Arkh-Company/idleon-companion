@@ -126,11 +126,12 @@ moment, so a late screen never sees an old "done".
   text; when that text is gone or there is no record (the undo without a record: a lost `steam-setup.json`, or a part
   pasted by hand), it takes out the companion's part, so the game never keeps pointing at an uninstalled exe. Without a
   record, the first write keeps a copy too.
-- `build/installer.nsh` defines two macros. `customCheckAppRunning` replaces electron-builder's check, which stops every
-  process of the installed folder before any custom macro runs and so would stop the keeper and the game: with
-  `LegendsOfIdleon.exe` running, installing, uninstalling and updating stop with "Close the game first." `customUnInit`,
-  except in an update (`--updated`), asks and runs `--remove-from-steam`: exit code 2 (the game opened meanwhile) aborts
-  with the same message, and a refusal or any other failure shows the text to remove by hand and goes on.
+- `build/installer.nsh` defines two macros. electron-builder's check stops every process of the installed folder before
+  any custom macro runs, and so would stop the keeper and the game. `customCheckAppRunning` runs in its place: it stops
+  when `LegendsOfIdleon.exe` runs (installing, uninstalling and updating end with "Close the game first.") and otherwise
+  calls electron-builder's own check. `customUnInit`, except in an update (`--updated`), asks and runs
+  `--remove-from-steam`: exit code 2 (the game opened meanwhile) aborts with the same message, and a refusal or any other
+  failure shows the text to remove by hand and goes on.
 
 ## Updates
 

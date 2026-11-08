@@ -15,5 +15,5 @@ only the text it added (Vinicius, 07/11).
 
 Setup and removal close and reopen Steam, and refuse while the game is open. A copy of the file from before the first
 write stays in the data folder. The uninstaller runs the same removal (`--remove-from-steam`), except during an update.
-The uninstaller stops the processes of the installed folder before its custom macros run, so `customCheckAppRunning`
-stops first when the game is open.
+The uninstaller's built-in `CHECK_APP_RUNNING` runs in `un.onInit` before `customUnInit`; `customCheckAppRunning` takes
+its place and stops with "Close the game first." while the game runs.
