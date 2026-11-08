@@ -67,7 +67,7 @@ test("the panel shows the world, the menu, the Codex tab with its item, the char
       ctx={ctx(
         { world: 6, menu: 3, codexTab: 0, codexSel: "Scripticus" },
         {
-          character: "Darkhe",
+          character: "Tester",
           afk: "w6d3",
           names: {
             menu: { name: "Codex", status: "confirmed" },
@@ -84,7 +84,7 @@ test("the panel shows the world, the menu, the Codex tab with its item, the char
   expect(screen.getByText("Codex")).toBeDefined();
   expect(screen.getByText("Quests")).toBeDefined();
   expect(screen.getByText("Scripticus")).toBeDefined();
-  expect(screen.getByText("Darkhe")).toBeDefined();
+  expect(screen.getByText("Tester")).toBeDefined();
   expect(screen.getByText("Samurai Guardian")).toBeDefined();
 });
 

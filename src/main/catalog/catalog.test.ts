@@ -42,7 +42,7 @@ const base: Reading = {
   menu2: 0,
   menu2tab: 0,
   skillTab: 0,
-  char: "Darkhe",
+  char: "Tester",
   afk: null,
   codexTab: null,
   ...READ_NULLS,

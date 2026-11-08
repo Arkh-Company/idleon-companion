@@ -8,7 +8,7 @@ const base = {
   menu2: 0,
   menu2tab: 0,
   skillTab: 18,
-  char: "Darkhe",
+  char: "Tester",
   afk: "w6d3",
   codexTab: 0,
   codexSel: "Scripticus",
