@@ -30,12 +30,79 @@ test("the most recent account: its 32-bit id from the SteamID64 and its PersonaN
   });
 });
 
-test("no account marked MostRecent gives null", () => {
+const ONE = "76561197960265729"; // 32-bit id 1
+const TWO = "76561197960265830"; // 32-bit id 102
+const account = (key: string, name: string, fields: string) =>
+  `"${key}" { "PersonaName" "${name}" ${fields} }`;
+const loginusers = (...accounts: string[]) =>
+  `"users" { ${accounts.join(" ")} }`;
+const FIRST = { id: "1", name: "A" };
+const SECOND = { id: "102", name: "B" };
+
+test("every account at MostRecent 0 and no timestamp: none is marked, the first is taken", () => {
   expect(
     mostRecentAccount(
       LOGINUSERS.replace('"MostRecent"\t\t"1"', '"MostRecent"\t\t"0"'),
     ),
-  ).toBeNull();
+  ).toEqual({ id: "1", name: "Test One" });
+});
+
+test("no valid account gives null", () => {
+  expect(mostRecentAccount('"users" { }')).toBeNull();
+  expect(mostRecentAccount('"other" { }')).toBeNull();
+});
+
+test("a file without MostRecent and one account gives that account", () => {
+  expect(
+    mostRecentAccount(
+      loginusers(account(ONE, "A", '"AutoLogin" "1" "timestamp" "1700000000"')),
+    ),
+  ).toEqual(FIRST);
+});
+
+test.each([
+  ["999", "1000"],
+  ["9007199254740992", "9007199254740993"],
+])(
+  "without MostRecent the higher timestamp wins, in both orders (%s, %s)",
+  (low, high) => {
+    const older = account(ONE, "A", `"AutoLogin" "0" "timestamp" "${low}"`);
+    const newer = account(TWO, "B", `"AutoLogin" "1" "timestamp" "${high}"`);
+    expect(mostRecentAccount(loginusers(older, newer))).toEqual(SECOND);
+    expect(mostRecentAccount(loginusers(newer, older))).toEqual(SECOND);
+  },
+);
+
+test('"MostRecent" "1" beats a higher timestamp, in both orders', () => {
+  const marked = account(ONE, "A", '"MostRecent" "1" "timestamp" "100"');
+  const newer = account(TWO, "B", '"MostRecent" "0" "timestamp" "200"');
+  expect(mostRecentAccount(loginusers(marked, newer))).toEqual(FIRST);
+  expect(mostRecentAccount(loginusers(newer, marked))).toEqual(FIRST);
+});
+
+test.each([
+  ["missing", ""],
+  ["not a number", '"timestamp" "abc"'],
+  ["negative", '"timestamp" "-5"'],
+  ["empty", '"timestamp" ""'],
+])("a %s timestamp counts as the lowest, in both orders", (_name, fields) => {
+  const bad = account(ONE, "A", fields);
+  const zero = account(TWO, "B", '"timestamp" "0"');
+  expect(mostRecentAccount(loginusers(bad, zero))).toEqual(SECOND);
+  expect(mostRecentAccount(loginusers(zero, bad))).toEqual(SECOND);
+});
+
+test("an account key that is not a SteamID64 loses even with the highest timestamp", () => {
+  const valid = account(ONE, "A", '"timestamp" "1"');
+  expect(
+    mostRecentAccount(
+      loginusers(
+        account("abc", "X", '"timestamp" "9"'),
+        account("5", "Y", '"timestamp" "9"'),
+        valid,
+      ),
+    ),
+  ).toEqual(FIRST);
 });
 
 test("a SteamID64 near 2^63 is converted exactly (BigInt, not floats)", () => {

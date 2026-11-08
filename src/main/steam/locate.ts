@@ -23,22 +23,32 @@ export interface SteamFiles {
   localConfig: { path: string } | null;
 }
 
-/** The account of loginusers.vdf marked `"MostRecent" "1"`: `id` is the 32-bit id of its `userdata` folder. */
+/** The last-used account of loginusers.vdf: the one marked `"MostRecent" "1"`, else (real Steam files may not have that
+ * key) the one with the highest `timestamp`, a missing or invalid one counting as the lowest. `id` is the 32-bit id of
+ * its `userdata` folder; null without a valid account. */
 export function mostRecentAccount(
   loginusersText: string,
 ): { id: string; name: string } | null {
   const users = findPath(parseVdf(loginusersText), ["users"])?.children ?? [];
+  let latest: { id: string; name: string } | null = null;
+  let latestTime = -1n;
   for (const u of users) {
-    if (!/^\d+$/.test(u.key) || findPath(u, ["MostRecent"])?.value !== "1")
-      continue;
+    if (!/^\d+$/.test(u.key)) continue;
     const id = BigInt(u.key) - STEAMID64_BASE;
     if (id < 0n) continue;
-    return {
+    const found = {
       id: id.toString(),
       name: findPath(u, ["PersonaName"])?.value ?? "",
     };
+    if (findPath(u, ["MostRecent"])?.value === "1") return found;
+    const stamp = findPath(u, ["timestamp"])?.value ?? "";
+    const time = /^\d+$/.test(stamp) ? BigInt(stamp) : -1n;
+    if (!latest || time > latestTime) {
+      latest = found;
+      latestTime = time;
+    }
   }
-  return null;
+  return latest;
 }
 
 /** The library folders of libraryfolders.vdf: `"<n>" { "path" "…" }`, or `"<n>" "…"` in the old format. */
