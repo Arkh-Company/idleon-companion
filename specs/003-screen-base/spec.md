@@ -16,6 +16,15 @@ Hoje o app diz "unnamed #N" e pede ao jogador para digitar o nome. O catálogo t
 
 A base de provas vem da rodada no jogo real em 08/11/2026 (84 janelas abertas, 266 estados comparados com foto) e da leitura dos sprites do jogo instalado.
 
+## Clarifications
+
+### Session 2026-11-08
+
+- Q: Onde aparecem os números de tela novos que o guardião achar? → A: Só no `keeper.log`; o jogador não vê nada.
+- Q: Quando as tabelas do jogo não puderem ser lidas, o que aparece no lugar do nome? → A: "Unknown map" e "Unknown monster".
+- Q: Junto com o `names.json`, o app apaga também o `.bak` e o `.bad`? → A: Sim, os três.
+- Q: Qual regra vale se duas casarem, e quando as tabelas são lidas? → A: Ficam para o plano.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Saber em que tela estou (Priority: P1)
@@ -61,8 +70,8 @@ O painel distingue a seleção de personagem, a tela AFK Gains e estar dentro de
 
 **Acceptance Scenarios**:
 
-1. **Given** a seleção de personagem, **When** o leitor lê o estado, **Then** o painel a identifica, e a falta de campos de personagem não é tratada como erro.
-2. **Given** a tela AFK Gains, **When** o leitor lê o estado, **Then** o painel mostra AFK Gains.
+1. **Given** a seleção de personagem, **When** o leitor lê o estado, **Then** o painel mostra "Character select", e a falta de campos de personagem não é tratada como erro.
+2. **Given** a tela AFK Gains, **When** o leitor lê o estado, **Then** o painel mostra "AFK Gains".
 3. **Given** o jogador dentro de uma caverna, com a janela da caverna fechada, **When** o leitor lê o estado, **Then** o painel mostra o nome da caverna.
 
 ---
@@ -78,7 +87,7 @@ O "Name it" desaparece. Número desconhecido aparece como "Unknown screen", sem 
 **Acceptance Scenarios**:
 
 1. **Given** qualquer tela desconhecida, **When** o painel a mostra, **Then** não há campo nem botão para nomear.
-2. **Given** um usuário com `names.json` da versão anterior, **When** ele abre a nova versão, **Then** o arquivo é apagado e nada depende dele.
+2. **Given** um usuário com `names.json` da versão anterior, **When** ele abre a nova versão, **Then** o arquivo e os seus `.bak` e `.bad` são apagados, e nada depende deles.
 
 ---
 
@@ -94,7 +103,7 @@ Os nomes de mapas e monstros vêm do jogo instalado em cada máquina.
 
 1. **Given** o jogo instalado, **When** o jogador está num mapa, **Then** o painel mostra o nome do mapa lido do jogo dele.
 2. **Given** um alvo AFK, **When** o leitor lê o estado, **Then** o painel mostra o nome do monstro lido do jogo dele.
-3. **Given** as tabelas ilegíveis, **When** o leitor lê o estado, **Then** o app não quebra nem inventa um nome.
+3. **Given** as tabelas ilegíveis, **When** o leitor lê o estado, **Then** o app não quebra e mostra "Unknown map" e "Unknown monster".
 
 ---
 
@@ -109,7 +118,7 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 **Acceptance Scenarios**:
 
 1. **Given** um patch com uma tela nova, **When** o jogador a abre, **Then** o painel mostra "Unknown screen".
-2. **Given** o código do jogo instalado com números que o catálogo não conhece, **When** o guardião verifica o jogo, **Then** ele aponta esses números.
+2. **Given** o código do jogo instalado com números que o catálogo não conhece, **When** o guardião verifica o jogo, **Then** ele registra esses números no `keeper.log`, e o jogador não vê nada.
 3. **Given** a verificação em andamento, **When** o jogo abre, **Then** a abertura não atrasa e nada é chamado dentro do jogo.
 
 ---
@@ -122,7 +131,7 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 - **Nomes incertos** (janelas 53, 58 e 75 no mapa): sem prova, "Unknown screen" (FR-003).
 - **Personagem de outra classe**: talentos ainda não vistos (Grimoire, Compass, Medallions, Tesseract) sem prova aparecem como "Unknown screen".
 - **Diálogo com NPC, carregamento e login**: não detectáveis; valem como jogo normal.
-- **Tabelas do jogo ausentes ou em formato novo**: o app segue; ver Open Questions.
+- **Tabelas do jogo ausentes ou em formato novo**: o app segue e mostra "Unknown map" e "Unknown monster" (FR-016).
 - **Código do jogo sem suspeita, mas com número novo**: o guardião aponta o número sem mudar o que ele já faz para proteger o jogador (o vigia de update da 001).
 
 ## Requirements *(mandatory)*
@@ -136,7 +145,7 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 - **FR-003**: O app MUST mostrar um nome só com prova: foto da rodada no jogo, ou texto do sprite ligado ao valor no código do jogo. Sem prova: "Unknown screen".
 - **FR-004**: As 23 janelas não abertas na rodada MUST ter nome só se a prova por sprite existir; as demais aparecem como "Unknown screen" até serem vistas.
 - **FR-005**: Uma aba MUST valer só junto da janela dela, porque os campos guardam o valor antigo depois de fechar.
-- **FR-006**: Aba sem nome confirmado numa janela conhecida MUST aparecer como "Unknown tab", ao lado do nome da janela.
+- **FR-006**: Aba ou subtela sem nome confirmado numa janela conhecida MUST aparecer como "Unknown tab", ao lado do nome da janela, no mesmo formato dos outros nomes (por exemplo: "Breeding › Unknown tab").
 
 **Leitura**
 
@@ -151,23 +160,23 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 **Sem nada a preencher**
 
 - **FR-011**: O "Name it" MUST sair por completo: o componente, o canal `catalog:name`, a gravação de nomes e os status `deduced`/`confirmed` na interface.
-- **FR-012**: O app MUST apagar o `names.json` da versão anterior em `%APPDATA%` (decisão do Vinicius).
-- **FR-013**: Nenhum campo para o jogador preencher MUST existir em toda a interface.
+- **FR-012**: O app MUST apagar, na primeira abertura da nova versão, o `names.json` da versão anterior em `%APPDATA%` e os seus `names.json.bak` e `names.json.bad` (decisão do Vinicius). Se não der para apagar, o app MUST seguir funcionando e tentar de novo na próxima abertura.
+- **FR-013**: Nenhum campo para o jogador preencher MUST existir em toda a interface. Campo é caixa de texto; as caixas de marcar de Settings continuam.
 
 **Nomes do jogo de cada usuário**
 
-- **FR-014**: Os nomes de mapas e monstros MUST vir do jogo instalado em cada máquina, lidos das tabelas do código do jogo (decisão do Vinicius).
-- **FR-015**: O arquivo do jogo MUST NOT entrar no repositório nem no instalador.
-- **FR-016**: Quando as tabelas não puderem ser lidas, o app MUST seguir funcionando e MUST NOT inventar um nome.
+- **FR-014**: Os nomes de mapas e monstros MUST vir do jogo instalado em cada máquina, lidos das tabelas do código do jogo (decisão do Vinicius). O arquivo do jogo MUST ser lido só como texto e MUST NOT ser executado pelo app; os nomes tirados dele aparecem como texto simples.
+- **FR-015**: O arquivo do jogo MUST NOT entrar no repositório nem no instalador. O código de jogo de exemplo dos testes MUST ser inventado, sem trecho do arquivo real.
+- **FR-016**: Quando as tabelas não puderem ser lidas, ou não tiverem o número do mapa ou do monstro, o app MUST seguir funcionando e MUST mostrar "Unknown map" e "Unknown monster", sem inventar um nome.
 
 **Patch do jogo**
 
-- **FR-017**: O guardião MUST apontar sozinho os números de tela do código do jogo instalado que o catálogo não conhece (decisão do Vinicius).
-- **FR-018**: A verificação MUST NOT atrasar a abertura do jogo e MUST NOT chamar nada dentro dele: ela só lê o arquivo instalado, como o vigia de update já faz.
+- **FR-017**: O guardião MUST registrar sozinho, só no `keeper.log`, os números de tela do código do jogo instalado que o catálogo não conhece (decisão do Vinicius).
+- **FR-018**: A verificação MUST rodar depois de o jogo ser aberto, MUST NOT atrasar a abertura e MUST NOT chamar nada dentro dele: ela só lê o arquivo instalado, como o vigia de update já faz.
 
 **Painel e testes**
 
-- **FR-019**: O painel MUST mostrar a tela e a aba de forma simples, para o Vinicius conferir usando.
+- **FR-019**: O painel MUST mostrar a tela e a aba de forma simples, para o Vinicius conferir usando: a tabela de hoje, com uma linha "Screen" (janela › aba › subtela) no lugar das linhas Menu, Window e Codex tab; World, Map, Character e AFK target ficam. Sem janela aberta, a linha mostra "None".
 - **FR-020**: Os testes MUST usar dados capturados na rodada (estado → nome esperado), sem nomes de jogadores e sem jogo aberto.
 
 ### Key Entities
@@ -219,8 +228,19 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 | Nomes de mapas e monstros vêm do jogo de cada usuário nesta feature? | resolved | Vinicius, 08/11: sim (FR-014). |
 | A verificação de números novos roda quando? | resolved | Vinicius, 08/11: automática, no guardião (FR-017). |
 | Aba sem nome confirmado aparece como? | resolved | Vinicius, 08/11: "Unknown tab" ao lado do nome da janela (FR-006). |
-| Onde o resultado da verificação de números novos aparece: só no `keeper.log`, ou também para o jogador? | open | |
-| O que o painel mostra quando as tabelas do jogo não podem ser lidas: o número do mapa, ou "Unknown map"? | open | |
-| Junto com o `names.json`, o app apaga também o `names.json.bak` e o `names.json.bad`? | open | |
-| Se duas regras casam com o mesmo estado, qual vale? | open | |
-| Quando as tabelas do jogo são lidas: a cada abertura do jogo, ou só quando o código do jogo muda? | open | |
+| Onde o resultado da verificação de números novos aparece: só no `keeper.log`, ou também para o jogador? | resolved | Vinicius, 08/11: só no `keeper.log` (FR-017). |
+| O que o painel mostra quando as tabelas do jogo não podem ser lidas: o número do mapa, ou "Unknown map"? | resolved | Vinicius, 08/11: "Unknown map" e "Unknown monster" (FR-016). |
+| Junto com o `names.json`, o app apaga também o `names.json.bak` e o `names.json.bad`? | resolved | Vinicius, 08/11: sim, os três (FR-012). |
+| Se duas regras casam com o mesmo estado, qual vale? | to plan | Vinicius, 08/11: o plano responde no `research.md`. |
+| Quando as tabelas do jogo são lidas: a cada abertura do jogo, ou só quando o código do jogo muda? | to plan | Vinicius, 08/11: o plano responde no `research.md`. |
+| Quando o `names.json` é apagado? | resolved | Padrão do agente: na primeira abertura do app na nova versão (FR-012). |
+| Quando a verificação de números novos roda? | resolved | Padrão do agente: depois de o jogo ser aberto, para não atrasar a abertura (FR-018). |
+| Que texto o painel mostra na seleção de personagem e na tela de ganhos AFK? | resolved | Padrão do agente: "Character select" e "AFK Gains" (US3). |
+| As janelas 53, 58 e 75, com nome incerto no mapa, aparecem como? | resolved | Padrão do agente: "Unknown screen", até haver prova (Edge Cases, FR-003). |
+| Como o app trata o arquivo do jogo? (security CHK006: lido só como texto, nunca executado, nomes como texto simples) | resolved | Padrão do agente: só lido como texto, nunca executado; os nomes aparecem como texto simples (FR-014). |
+| O que acontece quando não dá para apagar os arquivos? (security CHK013) | resolved | Padrão do agente: o app segue funcionando e tenta de novo na próxima abertura (FR-012). |
+| De onde vem o código de jogo de exemplo dos testes? (security CHK015) | resolved | Padrão do agente: é inventado, sem trecho do arquivo real (FR-015). |
+| O que é o painel "simples" e o que ele mostra sem janela aberta? (ux CHK001, CHK005) | resolved | Padrão do agente: a tabela de hoje, com uma linha "Screen" (janela › aba › subtela) no lugar de Menu, Window e Codex tab; sem janela aberta, "None" (FR-019). |
+| Subtela sem nome confirmado aparece como? (ux CHK008) | resolved | Padrão do agente: "Unknown tab", no mesmo formato, como "Breeding › Unknown tab" (FR-006). |
+| O que aparece quando a tabela legível não tem o número do mapa ou do monstro? (ux CHK010) | resolved | Padrão do agente: "Unknown map" e "Unknown monster" (FR-016). |
+| O que conta como campo a preencher? (ux CHK018) | resolved | Padrão do agente: caixa de texto; as caixas de marcar de Settings continuam (FR-013). |
