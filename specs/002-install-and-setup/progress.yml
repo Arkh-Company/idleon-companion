@@ -17,7 +17,7 @@ execution:
     - {name: "US1 (T041, T042, T046)", status: done, commits: 8279df5..8340444}
     - {name: US2, status: done, commits: a6af105..d9884e5}
     - {name: US3, status: done, commits: 5c69f61..ac42166}
-    - {name: US4, status: pending}
+    - {name: US4, status: done, commits: 8324b59..7d529ba}
     - {name: Polish, status: pending}
   feature_review: pending
   code_pr: null
