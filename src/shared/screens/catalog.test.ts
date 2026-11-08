@@ -64,6 +64,9 @@ test.each<[string, unknown]>([
   ["an empty name", { ...good, name: "" }],
   ["a blank name", { ...good, name: "   " }],
   ["tabs that are not true", { ...good, tabs: false }],
+  ["a misspelled field", { ...good, tab: true }],
+  ["a text in a number field", { ...good, when: { menu2tab: "2" } }],
+  ["a number in a text field", { ...good, when: { scene: 2 } }],
 ])("an invalid rule is refused: %s", (_, rule) => {
   expect(() => parseScreenCatalog([{ screens: [rule] }])).toThrow(REFUSED);
   expect(() => parseScreenCatalog([{ overlays: [rule] }])).toThrow(REFUSED);

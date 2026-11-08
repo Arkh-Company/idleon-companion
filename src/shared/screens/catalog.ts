@@ -5,6 +5,7 @@ import type { ScreenCatalog, ScreenRule } from "../types.ts";
 
 const PROOF = /^(foto|sprite):\S+$/;
 const BEHAVIOR_KEY = /^H\d+\.\w+(\[\d+\])?$/;
+const RULE_KEYS = new Set(["when", "name", "tabs", "proof"]);
 
 function fail(what: unknown): never {
   throw new Error(`Invalid screen catalog: ${JSON.stringify(what)}`);
@@ -15,12 +16,15 @@ const isWhenKey = (key: string) =>
   (Object.hasOwn(FIELDS, key) && key !== "char" && key !== "behaviors");
 
 const isCondition = ([key, value]: [string, unknown]) =>
-  isWhenKey(key) && (typeof value === "number" || typeof value === "string");
+  isWhenKey(key) &&
+  (typeof value === "number" || typeof value === "string") &&
+  (!Object.hasOwn(FIELDS, key) || FIELDS[key as keyof typeof FIELDS](value));
 
 function isRule(v: unknown): v is ScreenRule {
   if (!isObject(v)) return false;
   const { when, name, tabs, proof } = v;
   return (
+    Object.keys(v).every((key) => RULE_KEYS.has(key)) &&
     isObject(when) &&
     Object.keys(when).length > 0 &&
     Object.entries(when).every(isCondition) &&
