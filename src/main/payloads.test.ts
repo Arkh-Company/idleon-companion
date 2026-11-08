@@ -1,4 +1,6 @@
 // The shape checks of what reaches the main process from the window (IPC) and from the keeper (link).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
@@ -129,4 +131,12 @@ test.each([
   ["a boolean", false],
 ])("a bodiless channel refuses %s", (_name, payload) => {
   expect(emptyPayload(payload)).toBe(false);
+});
+
+// ponytail: reads the source because index.ts imports electron and no test may load it.
+test("reader:confirm-attach refuses a body before it acts", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /handle\(IPC\.confirmAttach, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
 });

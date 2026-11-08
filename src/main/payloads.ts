@@ -37,8 +37,8 @@ export function settingsPayload(v: unknown): Settings | null {
   return { showWindowOnGameStart, closeWithGame, alwaysOnTop };
 }
 
-/** A channel without a body (`steam:state`, `steam:setup`, `steam:remove`, `reader:release`, `reader:reconnect`,
- * `update:install`): only a missing body or an empty object passes. */
+/** A channel without a body (`reader:confirm-attach`, `steam:state`, `steam:setup`, `steam:remove`, `reader:release`,
+ * `reader:reconnect`, `update:install`): only a missing body or an empty object passes. */
 export function emptyPayload(v: unknown): boolean {
   return v === undefined || (isObject(v) && Object.keys(v).length === 0);
 }

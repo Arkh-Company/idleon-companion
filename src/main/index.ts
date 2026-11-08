@@ -183,7 +183,9 @@ function start(): void {
     catalog = named;
     sendContext();
   });
-  handle(IPC.confirmAttach, () => {
+  handle(IPC.confirmAttach, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:confirm-attach: no body expected");
     link.send({ type: "confirm-attach" });
   });
 
