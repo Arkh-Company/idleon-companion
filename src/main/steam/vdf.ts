@@ -134,7 +134,12 @@ export function getLaunchOptions(
     ?.value;
 }
 
-const escape = (s: string) => s.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+const escape = (s: string) =>
+  s
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', '\\"')
+    .replaceAll("\n", "\\n")
+    .replaceAll("\t", "\\t");
 
 /** Inserts `lines` (each without indentation or line end) as the last children of `block`, one tab deeper than the
  * line of its closing brace. */
@@ -142,17 +147,15 @@ function insertInto(text: string, block: VdfNode, lines: string[]): string {
   const eol = text.includes("\r\n") ? "\r\n" : "\n";
   const lineStart = text.lastIndexOf("\n", block.end - 1) + 1;
   const indent = text.slice(lineStart, block.end);
-  if (/^[ \t]*$/.test(indent)) {
-    const body = lines.map((l) => `${indent}\t${l}${eol}`).join("");
-    return text.slice(0, lineStart) + body + text.slice(lineStart);
-  }
-  // ponytail: a closing brace sharing its line (Steam never writes it so): the lines go before it, unindented
-  const body = lines.map((l) => `${eol}${l}`).join("") + eol;
-  return text.slice(0, block.end) + body + text.slice(block.end);
+  if (!/^[ \t]*$/.test(indent))
+    throw new VdfShapeError("closing brace shares its line");
+  const body = lines.map((l) => `${indent}\t${l}${eol}`).join("");
+  return text.slice(0, lineStart) + body + text.slice(lineStart);
 }
 
 /** The localconfig.vdf text with `appId`'s launch option set to `option`: only that value's text changes, or one line
- * (or the app's block) is inserted. Throws VdfShapeError when the text has no apps block. */
+ * (or the app's block) is inserted. Throws VdfShapeError when the text has no apps block, or the block to insert into
+ * closes on a line it shares. */
 export function setLaunchOptions(
   text: string,
   appId: string,

@@ -25,6 +25,7 @@ const run: Runner = async (name, args) =>
   (
     await exec(systemTool(name, process.env.SystemRoot), args, {
       windowsHide: true,
+      timeout: 10_000,
     })
   ).stdout;
 

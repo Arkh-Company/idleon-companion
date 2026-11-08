@@ -142,6 +142,22 @@ test("\\r\\n line endings are kept", () => {
   expect(prefix + suffix).toBe(noApp.length); // only an insertion, nothing of the file changed
 });
 
+test("a line break and a tab go back escaped, as they were read", () => {
+  const option = "-a\n-b\t-c";
+  const out = setLaunchOptions(fixture, GAME, option);
+  expect(out).toContain('"-a\\n-b\\t-c"');
+  expect(getLaunchOptions(out, GAME)).toBe(option);
+});
+
+test.each([
+  ["the game has no block", GAME],
+  ["the game's block has no option", "440"],
+])("a closing brace sharing its line throws when %s", (_name, app) => {
+  const text =
+    '"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "440" { } } } } } }';
+  expect(() => setLaunchOptions(text, app, "-x")).toThrow(VdfShapeError);
+});
+
 test("with no apps path it throws VdfShapeError", () => {
   expect(() =>
     setLaunchOptions('"UserLocalConfigStore" { "Software" { } }', GAME, "-x"),

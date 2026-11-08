@@ -2,8 +2,23 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { steamSystem, systemTool } from "./system.ts";
+
+// No Windows tool runs in these tests: the promisified execFile answers with an empty output.
+const { execFile } = vi.hoisted(() => ({
+  execFile: vi.fn(
+    (
+      _file: string,
+      _args: string[],
+      _options: unknown,
+      done: (e: null, out: { stdout: string }) => void,
+    ) => {
+      done(null, { stdout: "" });
+    },
+  ),
+}));
+vi.mock("node:child_process", () => ({ execFile, spawn: vi.fn() }));
 
 const dirs: string[] = [];
 const tempDir = () => {
@@ -20,6 +35,14 @@ test("reg.exe and tasklist.exe come from System32 by full path, never by name al
   expect(systemTool("tasklist", undefined)).toBe(
     "C:\\Windows\\System32\\tasklist.exe",
   );
+});
+
+test("a Windows tool shows no window and is stopped after 10 s", async () => {
+  await steamSystem.isRunning("steam.exe");
+  expect(execFile.mock.calls[0]?.[2]).toEqual({
+    windowsHide: true,
+    timeout: 10_000,
+  });
 });
 
 test("readFile gives the bytes, or undefined for a missing file", async () => {
