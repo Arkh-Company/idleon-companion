@@ -154,7 +154,7 @@ test.each([
 
 test("one job at a time: a call while one runs gets that job's result and starts nothing", async () => {
   const one = oneAtATime<string>();
-  let finishFirst = (_v: string): void => undefined;
+  let finishFirst: (v: string) => void = () => undefined;
   const first = one(
     () =>
       new Promise<string>((resolve) => {
