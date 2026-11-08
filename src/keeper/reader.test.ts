@@ -87,7 +87,7 @@ test("a throwing onReading neither stops the reader nor takes the engine again",
   try {
     for (let i = 0; i < 100 && readings.length < 3; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
     await sleep(20);
     process.off("unhandledRejection", onUnhandled);
   }
@@ -111,7 +111,7 @@ test("onRead fires on every good reading, also when it did not change", async ()
   try {
     for (let i = 0; i < 100 && reads.length < 3; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(readings).toHaveLength(1);
   expect(reads.length).toBeGreaterThanOrEqual(3);
@@ -136,7 +136,7 @@ test("an exception inside read.js keeps the engine reference", async () => {
   try {
     for (let i = 0; i < 100 && reads < 5; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(reads).toBeGreaterThanOrEqual(5);
   expect(attached(statuses)).toBe(1);
@@ -180,7 +180,7 @@ test("ten failed readings in a row warn once, without taking the engine again", 
   try {
     for (let i = 0; i < 100 && f.reads() < 25; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(statuses.filter((s) => s.message)).toEqual([
     {
@@ -207,7 +207,7 @@ test("a reading of the wrong shape counts as a failed reading", async () => {
     for (let i = 0; i < 100 && !statuses.some((s) => s.message); i++)
       await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(statuses.find((s) => s.message)?.message).toBe(
     "Reading failed: the reading has the wrong shape",
@@ -229,7 +229,7 @@ test("a good reading after the warning clears the message once", async () => {
   try {
     for (let i = 0; i < 100 && f.reads() < 15; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(readings).toHaveLength(1);
   expect(statuses.slice(1)).toEqual([
@@ -256,7 +256,7 @@ test("onAttached gets how long the game was paused", async () => {
   try {
     for (let i = 0; i < 100 && paused.length === 0; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   expect(paused).toHaveLength(1);
   expect(paused[0]).toBeGreaterThanOrEqual(0);
@@ -281,7 +281,7 @@ test("a lost engine reference (a reload) is released, and the engine is taken ag
   try {
     for (let i = 0; i < 100 && readings.length === 0; i++) await sleep(10);
   } finally {
-    r.stop();
+    void r.stop();
   }
   const attaches = sent.flatMap((m, i) =>
     m === "Target.attachToTarget" ? [i] : [],
@@ -313,7 +313,7 @@ test("a game without the anchor (an update) is not taken again for this game loa
     { pollMs: 5, retryMs: 5 },
   );
   await sleep(100);
-  r.stop();
+  void r.stop();
   expect(sent.filter((m) => m === "Target.attachToTarget")).toHaveLength(1);
   expect(statuses.at(-1)).toEqual({
     game: "running",
@@ -326,7 +326,7 @@ test("a stop while the engine is being taken still lets the game go", async () =
   const { cdp, sent } = fakeCdp();
   const send = cdp.send.bind(cdp);
   cdp.send = (method, ...rest) => {
-    if (method === "Debugger.resume") r.stop(); // the keeper stops while acquireEngine finishes
+    if (method === "Debugger.resume") void r.stop(); // the keeper stops while acquireEngine finishes
     return send(method, ...rest);
   };
   const r = startReader(

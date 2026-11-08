@@ -322,7 +322,7 @@ with Vinicius, quickstart §3 steps 3–5.
 
 ### Tests for Phase 5
 
-- [ ] T050 [P] [US2] Reader stop resolves after the release in `src/keeper/reader.test.ts`
+- [X] T050 [P] [US2] Reader stop resolves after the release in `src/keeper/reader.test.ts`
   - Files: `src/keeper/reader.test.ts` (343 lines: add at most ~40; if it would pass 400, put the cases in
     `src/keeper/reader-stop.test.ts`)
   - Cases: `await reader.stop()` resolves only after `Runtime.releaseObjectGroup` and `Target.detachFromTarget` were
@@ -348,7 +348,7 @@ with Vinicius, quickstart §3 steps 3–5.
 
 ### Implementation for Phase 5
 
-- [ ] T053 [US2] `stop(): Promise<void>` in `src/keeper/reader.ts` as tested in T050 (callers in
+- [X] T053 [US2] `stop(): Promise<void>` in `src/keeper/reader.ts` as tested in T050 (callers in
   `src/keeper/index.ts` and `keeper.ts` updated)
 - [ ] T054 [US2] Release and reconnect in `src/keeper/keeper.ts` and `src/keeper/link-server.ts`
   - `startLinkServer(pipePath, onMessage: (m: "confirm-attach" | "release" | "reconnect") => void)`; `runKeeper`

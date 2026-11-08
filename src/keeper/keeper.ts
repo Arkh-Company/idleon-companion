@@ -31,7 +31,7 @@ export interface KeeperDeps {
     onStatus: (s: Status) => void,
     onAttached: (pausedMs: number) => void,
     onRead: (t: number) => void,
-  ): { stop(): void };
+  ): { stop(): Promise<void> };
   startApp(): void;
   log: KeeperLog;
 }
@@ -126,7 +126,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
     lastStatus = status;
     sendStatus();
   };
-  let reader: { stop(): void } | undefined;
+  let reader: { stop(): Promise<void> } | undefined;
   const startReading = (cdp: Cdp) => {
     reader = d.read(
       cdp,
@@ -158,7 +158,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
 
   await game.exited;
   confirmed = undefined;
-  reader?.stop();
+  void reader?.stop();
   publishStatus({ game: "closed", reader: "error" });
   await server?.close();
   log("keeper-exit");

@@ -34,7 +34,7 @@ export function startReader(
     /** Called on every good reading, changed or not, with its time (the window's "last reading N s ago"). */
     onRead?: (t: number) => void;
   } = {},
-): { stop(): void } {
+): { stop(): Promise<void> } {
   const pollMs = opts.pollMs ?? 1000;
   const retryMs = opts.retryMs ?? 5000;
   const anchor = opts.anchor ?? "getGameAttribute:function(";
@@ -45,6 +45,10 @@ export function startReader(
   let wake: (() => void) | undefined;
   const sleep = (ms: number) =>
     new Promise<void>((resolve) => {
+      if (stopped) {
+        resolve(); // a stop that came during a reading does not wait out the poll
+        return;
+      }
       const timer = setTimeout(resolve, ms);
       wake = () => {
         clearTimeout(timer);
@@ -189,11 +193,13 @@ export function startReader(
   }
 
   // Whatever ends the loop, a reference still held is let go (a stop can arrive while acquireEngine finishes).
-  void loop().finally(() => (ref ? release(ref) : undefined));
+  const done = loop().finally(() => (ref ? release(ref) : undefined));
   return {
+    /** Resolves once the engine reference is let go and the page detached; the debugging pipe stays open. */
     stop() {
       stopped = true;
       wake?.();
+      return done;
     },
   };
 }

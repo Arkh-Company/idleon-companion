@@ -197,7 +197,7 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
       try {
         await sleep(ms);
       } finally {
-        r.stop();
+        void r.stop();
         killTree(g.child.pid);
         await g.exited;
       }
@@ -278,7 +278,7 @@ describe.skipIf(process.env.IDLEON_EDGE_TESTS !== "1" || !existsSync(EDGE))(
         )
           await sleep(250);
       } finally {
-        r.stop();
+        void r.stop();
         killTree(g.child.pid);
         await g.exited;
       }
