@@ -33,8 +33,8 @@ const api: CompanionApi = {
   confirmAttach: async () => {
     await ipcRenderer.invoke(IPC.confirmAttach);
   },
-  // The channels of 002 (contracts/ipc.md). ponytail: the main process answers steam:state and steam:setup now, the
-  // others as their story lands (tasks.md Phases 5–7); until then nothing in the window calls them.
+  // The channels of 002 (contracts/ipc.md). ponytail: the main process answers steam:state, steam:setup and the reader
+  // channels now, the others as their story lands (tasks.md Phases 6–7); until then nothing in the window calls them.
   steamState: async () =>
     (await ipcRenderer.invoke(IPC.steamState)) as SteamState,
   setupSteam: async () =>

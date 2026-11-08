@@ -24,6 +24,18 @@ export function launchEvent(
   return first ? "start-manual" : "second-instance";
 }
 
+export type TrayItem =
+  "Show/Hide" | "Let the game close" | "Reconnect" | "Quit";
+
+/** The tray menu in the spec's order (FR-031): the reader's item only when there is a game to let go or read again. */
+export function trayItems(status: Status): TrayItem[] {
+  if (status.game === "running" && status.reader === "attached")
+    return ["Show/Hide", "Let the game close", "Quit"];
+  if (status.game === "running" && status.reader === "released")
+    return ["Show/Hide", "Reconnect", "Quit"];
+  return ["Show/Hide", "Quit"];
+}
+
 const RELOADS_PER_MINUTE = 3;
 
 /**

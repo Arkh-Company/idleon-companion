@@ -18,8 +18,9 @@ import {
   NOT_CONNECTED,
   shouldReload,
   statusOnLinkDrop,
+  trayItems,
 } from "./lifecycle.ts";
-import type { LifecycleAction, LifecycleEvent } from "./lifecycle.ts";
+import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
 import {
   emptyPayload,
@@ -72,6 +73,7 @@ function start(): void {
   const setStatus = (s: Status) => {
     status = s;
     send(IPC.statusUpdate, s);
+    updateTray();
   };
 
   // Navigation lockdown (Electron security checklist): no new windows, no page but the own one.
@@ -122,22 +124,33 @@ function start(): void {
   );
   const tray = new Tray(icon);
   tray.setToolTip("IdleOn Companion");
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      {
-        label: "Show/Hide",
-        click: () => {
-          apply("tray-click");
-        },
-      },
-      {
-        label: "Quit",
-        click: () => {
-          app.quit();
-        },
-      },
-    ]),
-  );
+  const trayClicks: Record<TrayItem, () => void> = {
+    "Show/Hide": () => {
+      apply("tray-click");
+    },
+    "Let the game close": () => {
+      link.send({ type: "release" });
+    },
+    Reconnect: () => {
+      link.send({ type: "reconnect" });
+    },
+    Quit: () => {
+      app.quit();
+    },
+  };
+  let trayShown = "";
+  const updateTray = () => {
+    const items = trayItems(status);
+    // ponytail: the status repeats every second while reading, and replacing a menu that is open could close it.
+    if (tray.isDestroyed() || items.join() === trayShown) return;
+    trayShown = items.join();
+    tray.setContextMenu(
+      Menu.buildFromTemplate(
+        items.map((label) => ({ label, click: trayClicks[label] })),
+      ),
+    );
+  };
+  updateTray();
   tray.on("click", () => {
     apply("tray-click");
   });
@@ -187,6 +200,16 @@ function start(): void {
     if (!emptyPayload(payload))
       throw new Error("reader:confirm-attach: no body expected");
     link.send({ type: "confirm-attach" });
+  });
+  handle(IPC.readerRelease, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:release: no body expected");
+    link.send({ type: "release" });
+  });
+  handle(IPC.readerReconnect, (payload) => {
+    if (!emptyPayload(payload))
+      throw new Error("reader:reconnect: no body expected");
+    link.send({ type: "reconnect" });
   });
 
   // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).

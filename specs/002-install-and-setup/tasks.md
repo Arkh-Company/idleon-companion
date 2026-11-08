@@ -336,7 +336,7 @@ with Vinicius, quickstart §3 steps 3–5.
     opened without the pipe) → ignored; `release` then `reconnect` sent at once → the new reader starts only after the
     old stop resolved; the game exiting while released → the keeper ends as in 001; log lines `released` and
     `reconnect` carry the game pid as `id`.
-- [ ] T052 [P] [US2] Status bar and tray in `src/renderer/ui.test.tsx` and `src/main/lifecycle.test.ts`
+- [X] T052 [P] [US2] Status bar and tray in `src/renderer/ui.test.tsx` and `src/main/lifecycle.test.ts`
   - Files: `src/renderer/ui.test.tsx` (318 lines: new cases in `src/renderer/status-bar.test.tsx` if it would pass
     400), `src/main/lifecycle.test.ts`
   - Cases: `reader: "attached"` → button "Let the game close" and the line "To close the game, press Let the game close
@@ -354,7 +354,7 @@ with Vinicius, quickstart §3 steps 3–5.
   - `startLinkServer(pipePath, onMessage: (m: "confirm-attach" | "release" | "reconnect") => void)`; `runKeeper`
     keeps the `Cdp` of the launched game, and on `release` awaits `reader.stop()` and publishes `released`; on
     `reconnect` (only when released and `game.cdp` exists) calls `startReading(game.cdp)` again (contracts/link.md).
-- [ ] T055 [US2] Window and tray
+- [X] T055 [US2] Window and tray
   - Files: `src/renderer/StatusBar.tsx`, `src/main/lifecycle.ts`, `src/main/index.ts`, `src/main/payloads.ts`,
     `src/preload/index.ts`
   - `READER` gains `released: "Reader off"`; the buttons and the line of T052; `reader:release` and

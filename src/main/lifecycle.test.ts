@@ -7,6 +7,7 @@ import {
   launchEvent,
   shouldReload,
   statusOnLinkDrop,
+  trayItems,
 } from "./lifecycle.ts";
 
 test("a start from Steam shows the window when the setting says so", () => {
@@ -119,3 +120,33 @@ test("a window reloads at most 3 times a minute", () => {
     ),
   ).toBe(true);
 });
+
+test("while reading, the tray offers Let the game close", () => {
+  expect(trayItems({ game: "running", reader: "attached" })).toEqual([
+    "Show/Hide",
+    "Let the game close",
+    "Quit",
+  ]);
+});
+
+test("once released, the tray offers Reconnect", () => {
+  expect(trayItems({ game: "running", reader: "released" })).toEqual([
+    "Show/Hide",
+    "Reconnect",
+    "Quit",
+  ]);
+});
+
+test.each([
+  { game: "closed", reader: "attached" },
+  { game: "closed", reader: "released" },
+  { game: "not-launched", reader: "attached" },
+  { game: "not-launched", reader: "released" },
+  { game: "running", reader: "connecting" },
+  { game: "running", reader: "error" },
+] as const)(
+  "with no game to let go (%o) the tray has only its two items",
+  (status) => {
+    expect(trayItems(status)).toEqual(["Show/Hide", "Quit"]);
+  },
+);
