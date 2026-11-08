@@ -5,7 +5,7 @@ module.exports = {
     {
       name: "keeper-and-shared-without-electron",
       comment:
-        "The keeper runs as plain Node (ELECTRON_RUN_AS_NODE) and shared code runs everywhere: neither may load Electron.",
+        "The keeper stays plain Node code inside Electron's main process (ADR 0003) and shared code runs everywhere: neither may load Electron.",
       severity: "error",
       from: { path: "^src/(keeper|shared)/" },
       to: { path: "node_modules/electron/" },
