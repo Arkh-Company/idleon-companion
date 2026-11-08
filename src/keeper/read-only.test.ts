@@ -4,9 +4,13 @@ import { Script, runInNewContext } from "node:vm";
 import { expect, test } from "vitest";
 import { loadReadSource } from "./read-source.ts";
 
+// Counted as well as thrown: read.js catches errors on the behavior paths, so a throw alone can go unseen.
+let gameCalls = 0;
+
 const trap = () =>
   new Proxy(() => undefined, {
     apply() {
+      gameCalls++;
       throw new Error("game function called");
     },
   });
@@ -42,7 +46,7 @@ function engine(attrs: Record<string, unknown>, top: Record<string, unknown>) {
     MenuType2: 44,
     MenuType2TabSelected: 2,
     SkillTabSelected: 18,
-    UserInfo: ["Darkhe"],
+    UserInfo: ["Tester"],
     AFKtarget: "w6d3",
     AttackSelected: 1,
     InventorySelected: 2,
@@ -59,7 +63,7 @@ function engine(attrs: Record<string, unknown>, top: Record<string, unknown>) {
     NONdummies: sparse({ 37: 6 }),
     Holes: [[3, 8]],
     // An array with a trap for a method: the reader walks it by index, with property reads only.
-    GetPlayersUsernames: Object.assign(["Someone", "Darkhe"], {
+    GetPlayersUsernames: Object.assign(["Someone", "Tester"], {
       indexOf: trap(),
     }),
     PixelHelperActor: actors([
@@ -79,7 +83,10 @@ function read(
 ): Record<string, unknown> {
   const src = loadReadSource(join(import.meta.dirname, "read.js"));
   const fn = runInNewContext(src) as (this: unknown) => Record<string, unknown>;
-  return fn.call(engine(attrs, top));
+  gameCalls = 0;
+  const out = fn.call(engine(attrs, top));
+  expect(gameCalls).toBe(0);
+  return out;
 }
 
 // The table of contracts/read-fields.md, on purpose repeated here: it is what read.js is checked against.
@@ -129,7 +136,7 @@ test("read.js calls no game function", () => {
     menu2: 44,
     menu2tab: 2,
     skillTab: 18,
-    char: "Darkhe",
+    char: "Tester",
     afk: "w6d3",
     codexTab: 0,
     codexSel: "Scripticus",
