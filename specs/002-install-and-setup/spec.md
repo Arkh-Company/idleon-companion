@@ -416,6 +416,7 @@ a atualização espera o jogo fechar.
 | "Reconnect" continua na barra quando a mensagem é "Game updated" (o leitor parou e o clique não teria efeito)? | resolved | durante a implementação (Vinicius, 08/11): não; a barra esconde o botão nesse caso. Até o jogo reabrir, não há o que reconectar. |
 | Durante `connecting` (a tomada do motor pode ficar anexada até 120 s e travar o X), há "Let the game close"? | resolved | durante a implementação (Vinicius, 08/11): não, por agora; limitação conhecida e rara. |
 | Desinstalar ou reinstalar com o jogo aberto derruba o jogo? | resolved | durante a implementação (Vinicius, 08/11): não. O electron-builder encerra os processos da pasta instalada antes de qualquer código nosso (research R6 partia da ordem contrária), então o `installer.nsh` define uma checagem própria que para com "Close the game first." se `LegendsOfIdleon.exe` estiver rodando, no desinstalador e no instalador. |
+| A pasta de instalação é mesmo `%LOCALAPPDATA%\Programs\IdleOn Companion\` (FR-001)? | resolved | durante a implementação (Vinicius, 08/11): não; o electron-builder usa o `name` do `package.json`, e a pasta real é `%LOCALAPPDATA%\Programs\idleon-companion\`, com o executável `IdleOn Companion.exe`. Aceita: o caminho segue fixo entre versões, que é o que a opção da Steam precisa. Onde a spec, o plano e os contratos citam a outra pasta, vale esta linha. |
 
 ## Origem do design
 

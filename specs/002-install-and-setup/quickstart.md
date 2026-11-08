@@ -18,7 +18,7 @@ cd 'C:\Users\Vinicius\ClaudeCowork\idleon-companion' && just package
 ```
 
 Esperado: `dist\IdleOn Companion Setup <versão>.exe`. Rodar: sem pedido de administrador; o app fica em
-`%LOCALAPPDATA%\Programs\IdleOn Companion\`; atalho no menu Iniciar; "IdleOn Companion" em Aplicativos instalados
+`%LOCALAPPDATA%\Programs\idleon-companion\`; atalho no menu Iniciar; "IdleOn Companion" em Aplicativos instalados
 (FR-001). O SmartScreen pode avisar ("More info" → "Run anyway").
 
 ## 2. Tela de configuração (US1)
