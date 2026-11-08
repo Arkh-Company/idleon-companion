@@ -106,7 +106,7 @@ painel mostra "Unknown map" até elas chegarem, e o app refaz o contexto nessa h
 
 ## R9. Testes com dados capturados (FR-020, SC-001)
 
-**Decision**: um JSON em `src/shared/screens/fixtures/captured-states.json`, gerado uma vez a partir de
+**Decision**: um arquivo JSONL (uma linha por estado, para o Prettier não o expandir) em `src/shared/screens/fixtures/captured-states.jsonl`, gerado uma vez a partir de
 `lab\out\estado.jsonl` e da seção 7 do mapa de telas, por um script descartável fora do repositório. Cada item tem a
 leitura, o nome esperado e o número da foto. `char` vira `"Tester"` (ou `null` na seleção de personagem) e `codexSel` vira
 `null`. Os 5 estados inconclusivos ficam de fora.

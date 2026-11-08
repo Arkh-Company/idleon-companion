@@ -84,7 +84,7 @@ src/shared/
 │   ├── rules/menus.json         # overlays, menus, Quik Ref, Codex, Items, Talents
 │   ├── rules/windows-0-45.json
 │   ├── rules/windows-46-110.json
-│   └── fixtures/captured-states.json
+│   └── fixtures/captured-states.jsonl
 ├── types.ts, reading.ts, link.ts, index.ts   # Reading, GameContext, GameTables, mensagem tables
 
 src/keeper/
