@@ -10,7 +10,7 @@ phases:
 execution:
   branch: feat/004-data-base
   phases:
-    - {name: "Foundational (T001-T006)", status: pending}
+    - {name: "Foundational (T001-T006)", status: done, commits: a82d0ba..1a4a23a}
     - {name: "US1 slices (T007-T012)", status: pending}
     - {name: "US2 vars (T013-T016)", status: pending}
     - {name: "US1 link and mosaic (T017-T023)", status: pending}
