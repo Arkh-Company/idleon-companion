@@ -99,6 +99,87 @@ test("a fast piece that changes during a confirmation waits for it, in one calcu
   expect(h.dues[1]?.attrs).toEqual({ EquipmentMap: 2, Cards: 2 });
 });
 
+test("an actions piece that changes at every read is due at the third read", () => {
+  const h = setup();
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  h.add([worn(2)], WHOLE);
+  h.add([worn(3)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+  h.add([worn(4)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+  expect(h.dues[1]?.attrs).toEqual({ EquipmentMap: 4 });
+});
+
+test("a confirmation at the second read asks for one calculation and counts no read", () => {
+  const h = setup();
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  h.add([worn(2)], WHOLE);
+  h.add([worn(3)], WHOLE);
+  h.add([worn(3)], WHOLE); // confirmed: the two reads before it no longer count
+  expect(h.texts).toHaveLength(2);
+  h.add([worn(3)], WHOLE);
+  h.add([worn(4)], WHOLE);
+  h.add([worn(5)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+});
+
+test("after the limit the count of reads starts over", () => {
+  const h = setup();
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  for (const value of [2, 3, 4]) h.add([worn(value)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+  for (const value of [5, 6]) h.add([worn(value)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+  h.add([worn(7)], WHOLE);
+  expect(h.texts).toHaveLength(3);
+});
+
+test("what the limit calculated is not calculated again when the piece settles", () => {
+  const h = setup();
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  for (const value of [2, 3, 4, 4]) h.add([worn(value)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+});
+
+test("a read of another slice during a confirmation does not count for the limit", () => {
+  const h = setup();
+  h.add([]);
+  h.add([worn(1), piece("Cards", 1)], WHOLE);
+  h.add([worn(2)], WHOLE);
+  h.add([piece("Cards", 2)], WHOLE);
+  h.add([piece("Cards", 3)], WHOLE);
+  h.add([worn(3)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+});
+
+test("after a map change the limit waits for cycles.fast to rise", () => {
+  const h = setup();
+  const map6 = { char: "Aria", map: 6 };
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  for (const value of [2, 3, 4])
+    h.add([worn(value)], { fast: 0, all: 1 }, map6);
+  expect(h.texts).toHaveLength(1);
+  h.add([], { fast: 1, all: 1 }, map6);
+  expect(h.texts).toHaveLength(2);
+  expect(h.dues[1]?.attrs).toEqual({ EquipmentMap: 4 });
+});
+
+test("a confirmation during a map change starts the count of reads over", () => {
+  const h = setup();
+  const held = { fast: 0, all: 1 };
+  const map6 = { char: "Aria", map: 6 };
+  h.add([]);
+  h.add([worn(1)], WHOLE);
+  for (const value of [2, 3, 3, 4]) h.add([worn(value)], held, map6);
+  h.add([], { fast: 1, all: 1 }, map6);
+  expect(h.texts).toHaveLength(1);
+});
+
 test("after a map change nothing is due until cycles.fast rises", () => {
   const h = setup();
   const map6 = { char: "Aria", map: 6 };

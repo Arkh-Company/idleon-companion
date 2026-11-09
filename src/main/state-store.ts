@@ -16,6 +16,8 @@ interface Piece {
 }
 
 const CHARACTERS = "PlayerDATABASE";
+/** Reads in a row that an actions slice may change with no confirmation, about 1 s: after them it is calculated anyway. */
+const UNCONFIRMED_READS_LIMIT = 3;
 
 /**
  * Only what the reader sends. A path comes from the link: `__proto__` is dropped so it can never reach a prototype, and
@@ -59,6 +61,8 @@ export function createStateStore(cb: {
   let changed = false;
   /** Actions pieces that changed and whose next read has not come equal yet (R7, "Confirmando"). */
   const unsettled = new Set<string>();
+  /** Reads in a row that brought a change to the actions and left it unconfirmed. */
+  let unconfirmedReads = 0;
   let calculated = false;
   let fast = 0;
   let map: number | null = null;
@@ -83,13 +87,19 @@ export function createStateStore(cb: {
       if (path.length === 3 && path[1] === child) pieces.delete(key);
   }
 
-  /** What a read of a piece means for the next calculation; `isNew` when its value differs from the stored one. */
-  function note(path: StatePath, key: string, isNew: boolean): void {
+  /**
+   * What a read of a piece means for the next calculation; `isNew` when its value differs from the stored one.
+   * Answers whether it is a change of the actions, the only one that counts towards the limit.
+   */
+  function note(path: StatePath, key: string, isNew: boolean): boolean {
     const group = groupOf(path, char);
     if (group === ACTIONS_GROUP) {
       if (isNew) unsettled.add(key);
       else if (unsettled.delete(key)) changed = true;
-    } else if (group !== null && isNew) changed = true;
+      return isNew;
+    }
+    if (group !== null && isNew) changed = true;
+    return false;
   }
 
   function mosaicJson(): string {
@@ -126,6 +136,7 @@ export function createStateStore(cb: {
       };
       if (map !== null && s.sentinel.map !== map) held = true;
       map = s.sentinel.map;
+      let actionsMoved = false;
       for (const { path, value } of s.pieces) {
         if (!belongs(path)) continue;
         const kept = path[0] === "_vars" ? closedList(value) : value;
@@ -134,21 +145,29 @@ export function createStateStore(cb: {
         // A `_vars` read that failed comes empty: it must not erase the good ones. With none yet, `vars` stays `{}`.
         if (path[0] === "_vars" && text === "{}") continue;
         if (path[0] === CHARACTERS && path.length === 2) dropSubkeys(path[1]);
-        note(path, key, pieces.get(key)?.text !== text);
+        if (note(path, key, pieces.get(key)?.text !== text))
+          actionsMoved = true;
         pieces.set(key, { path, value: kept, text });
       }
+      if (unsettled.size === 0) unconfirmedReads = 0;
+      else if (actionsMoved) unconfirmedReads += 1;
       // A map change zeroes `fast` in the keeper, so a rise always means a whole pass on the new map.
       if (s.cycles.fast > fast) held = false;
       fast = s.cycles.fast;
       // Joined midway, the next rise of `all` only closes the rotation already begun: it takes one more.
+      const ready =
+        unsettled.size === 0
+          ? changed
+          : unconfirmedReads >= UNCONFIRMED_READS_LIMIT;
       const due = calculated
-        ? changed && unsettled.size === 0 && !held
+        ? ready && !held
         : s.cycles.fast >= 1 &&
           s.cycles.all >= start.all + (start.fresh ? 1 : 2);
       if (!due) return;
       calculated = true;
       changed = false;
       unsettled.clear();
+      unconfirmedReads = 0;
       cb.onDue(mosaicJson());
     },
     clear() {
