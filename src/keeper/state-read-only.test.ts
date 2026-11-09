@@ -268,10 +268,16 @@ test("a three-item path reads the subkey of a child", () => {
 test.each([
   ["a missing character", ["PlayerDATABASE", "B", "x"]],
   ["a missing subkey", ["PlayerDATABASE", "A", "nope"]],
-  ["a level past the third", ["PlayerDATABASE", "A", "x", "y"]],
   ["__proto__ as the subkey", ["PlayerDATABASE", "A", "__proto__"]],
 ])("%s answers null", (_name, path) => {
   expect(slice(database(stringMap({ x: [9] })), [path]).out).toEqual([null]);
+});
+
+test("a level past the third answers null, even when it exists", () => {
+  const hero = stringMap({ x: stringMap({ y: [9] }) });
+  expect(
+    slice(database(hero), [["PlayerDATABASE", "A", "x", "y"]]).out,
+  ).toEqual([null]);
 });
 
 test("a three-item path into something that is not a map answers null", () => {

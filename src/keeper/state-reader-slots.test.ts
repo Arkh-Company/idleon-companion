@@ -1,5 +1,6 @@
 // The 12 slots of a second, the first lap and the grouping by the catalog (005: FR-014, FR-018, FR-021, research R3, R9).
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { ACTIONS_GROUP, CATALOG, groupOf } from "../shared/index.ts";
 import type { StatePath } from "../shared/index.ts";
 import {
   actionKeys,
@@ -27,13 +28,16 @@ const hugeSlow = (n: number) => {
     value: (p: StatePath): unknown => (keys.includes(p[0]) ? HUGE : 1),
   };
 };
+/** Cards and Spice too big to share a slice once measured, so the fast lane has 2 slices from the second read on. */
+const hugeFast = (p: StatePath): unknown =>
+  p[0] === "Cards" || p[0] === "Spice" ? HUGE : 1;
 const lanes = (sent: Parameters<typeof sliceReads>[0]) =>
   sliceReads(sent).map((s) => laneOf(s.paths[0]));
 
 test("after the first lap, 12 slots are 3 actions, 7 fast and 2 slow, in the pattern", async () => {
   const { keys, value } = hugeSlow(5);
   const { sent } = setup({ top: ["Gear", "Cards", "Spice", ...keys], value });
-  await tick(6 + 12); // list, 4 slices of the first lap, list, then the slots
+  await tick(5 + 12); // list, 3 slices of the first lap, list, then the slots
   const slots = lanes(sent).slice(-12);
   expect(slots).toEqual([
     "actions",
@@ -57,7 +61,7 @@ test("after the first lap, 12 slots are 3 actions, 7 fast and 2 slow, in the pat
 test("with no actions piece their slots go to the other fast slices", async () => {
   const { keys, value } = hugeSlow(5);
   const { sent } = setup({ top: ["Cards", "Spice", ...keys], value });
-  await tick(5 + 12);
+  await tick(4 + 12);
   expect(lanes(sent).slice(-12)).toEqual([
     "fast",
     "fast",
@@ -88,7 +92,9 @@ test("with only the actions piece and the slow ones, the fast slots go to the ac
 
 test("the first lap takes every slot: actions, then fast, then slow, and only then the count of all rises", async () => {
   const slow = slowKeys(13);
-  const { sent, slices } = setup({ top: [...slow, "Spice", "Cards", "Gear"] });
+  const { sent, slices } = setup({
+    top: [...slow, ...fastKeys(13), "Gear"],
+  });
   await tick(6);
   expect(lanes(sent)).toEqual(["actions", "fast", "fast", "slow", "slow"]);
   expect(slices.map((s) => s.cycles.all)).toEqual([0, 0, 0, 0, 1]);
@@ -96,12 +102,34 @@ test("the first lap takes every slot: actions, then fast, then slow, and only th
   expect(sent.at(-1)?.source).toBe("LIST");
 });
 
-test("a change of character restarts the first lap", async () => {
+test("a change of character after the first lap starts a new one", async () => {
+  const { keys, value } = hugeSlow(2);
+  const { game, sent, slices } = setup({
+    top: ["Gear", "Cards", "Spice", ...keys],
+    value: (p) => (p[0] === "Cards" || p[0] === "Spice" ? HUGE : value(p)),
+  });
+  await tick(4); // the list and the first lap of 3 slices: every piece is measured
+  game.char = "Mate";
+  await tick(); // the list sees Mate
+  expect(sent.at(-1)?.source).toBe("LIST");
+  await tick(5);
+  expect(lanes(sent).slice(-5)).toEqual([
+    "actions",
+    "fast",
+    "fast",
+    "slow",
+    "slow",
+  ]);
+  expect(slices.slice(-5).map((s) => s.cycles.all)).toEqual([0, 0, 0, 0, 1]);
+});
+
+test("a change of character in the middle of the first lap restarts it", async () => {
   const slow = slowKeys(13);
   const { game, sent, slices } = setup({
     top: ["Gear", "Cards", "Spice", ...slow],
+    value: hugeFast,
   });
-  await tick(3); // the list, the actions and one fast slice
+  await tick(2); // the list and the actions
   game.char = "Mate";
   await tick(2); // the slice that sees Mate and then the list
   expect(sent.at(-1)?.source).toBe("LIST");
@@ -118,11 +146,14 @@ test("a change of character restarts the first lap", async () => {
 
 test("the fast count rises when the actions and the other fast slices were all read", async () => {
   const { keys, value } = hugeSlow(5);
-  const { slices } = setup({ top: ["Gear", "Cards", "Spice", ...keys], value });
-  await tick(5);
-  expect(slices.map((s) => s.cycles.fast)).toEqual([0, 0, 1, 1]);
+  const { slices } = setup({
+    top: ["Gear", "Cards", "Spice", ...keys],
+    value: (p) => (p[0] === "Cards" || p[0] === "Spice" ? HUGE : value(p)),
+  });
+  await tick(4);
+  expect(slices.map((s) => s.cycles.fast)).toEqual([0, 1, 1]);
   await tick(5); // the list, then actions, fast, slow and fast
-  expect(slices.slice(4).map((s) => s.cycles.fast)).toEqual([1, 1, 1, 2]);
+  expect(slices.slice(3).map((s) => s.cycles.fast)).toEqual([1, 1, 1, 2]);
 });
 
 test("a change of map restarts the pass of the actions too", async () => {
@@ -148,25 +179,59 @@ test("after a change of map, the fast count waits for the actions to be read aga
   expect(slices.slice(-5).map((s) => s.cycles.fast)).toEqual([0, 0, 0, 0, 1]);
 });
 
-test("the pieces of a group travel together, and groups go in the catalog's order", async () => {
+test("the pieces of a group go side by side, and groups go in the catalog's order", async () => {
   const { sent } = setup({
     top: ["Spice", "ChestMap", "Research", "Cards", "Gear", "GearCache"],
   });
   await tick(5);
   expect(sliceReads(sent).map((s) => s.paths)).toEqual([
     [["Gear"], ["GearCache"]],
-    [["Research"], ["Cards"]],
-    [["Spice"]],
+    [["Research"], ["Cards"], ["Spice"]],
     [["ChestMap"]],
   ]);
 });
 
-test("a group over the limit becomes successive slices", async () => {
+test("a group over the limit becomes successive slices, and the next group fills the last one", async () => {
   const keys = fastKeys(13);
   const { sent } = setup({ top: ["Spice", ...keys] });
-  await tick(4);
-  expect(sliceReads(sent).map((s) => s.paths.length)).toEqual([12, 1, 1]);
-  expect(sliceReads(sent)[2]?.paths).toEqual([["Spice"]]);
+  await tick(3);
+  expect(sliceReads(sent).map((s) => s.paths.length)).toEqual([12, 2]);
+  expect(sliceReads(sent)[1]?.paths).toEqual([["Fast12"], ["Spice"]]);
+});
+
+test("with the real catalog, a pass of the fast lane fits its 7 slots of a second", async () => {
+  const fast = CATALOG.filter(
+    (r) => r.reading === "rápida" && r.group !== ACTIONS_GROUP,
+  );
+  const name = (prefix: string) =>
+    fast
+      .filter((r) => r.name.startsWith(prefix))
+      .map((r) => r.name.slice(prefix.length));
+  const bytes = new Map(CATALOG.map((r) => [r.name, r.bytes]));
+  const { sent } = setup(
+    {
+      top: fast.filter((r) => !r.name.includes(".")).map((r) => r.name),
+      split: { DNSM: name("DNSM."), PlayerDATABASE: ["Hero"] },
+      value: (p) => {
+        const row = p.length === 3 ? `Personagem.${p[2]}` : p.join(".");
+        return "x".repeat(Math.max((bytes.get(row) ?? 2) - 2, 0));
+      },
+    },
+    undefined,
+    CATALOG,
+  );
+  await tick(40); // the first lap measures every piece; then, more than 2 s of slots
+  const secondList = sent.findIndex((s, i) => i > 0 && s.source === "LIST");
+  const firstKeys = sent
+    .slice(secondList)
+    .flatMap((s) => s.paths.slice(0, 1))
+    .filter((p) => {
+      const group = groupOf(p, "Hero");
+      return group !== null && group !== ACTIONS_GROUP;
+    })
+    .map((p) => p.join("."));
+  expect(new Set(firstKeys).size).toBeGreaterThan(1);
+  expect(new Set(firstKeys).size).toBeLessThanOrEqual(7);
 });
 
 test("a piece over the limit goes alone once measured", async () => {

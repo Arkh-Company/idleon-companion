@@ -86,8 +86,8 @@ type Sentinel = StateSlice["sentinel"] & { char: string };
 
 /** One lane's place in the rotation. */
 interface Queue {
-  /** The paths of each content group, in the catalog's order: a slice never mixes two. */
-  sets: StatePath[][];
+  /** In the catalog's order of groups, so the pieces of a group stay side by side (FR-018). */
+  paths: StatePath[];
   groups: PlanPiece[][];
   next: number;
   /** Read whole since the keys were listed; a lane with nothing to read starts done. */
@@ -145,20 +145,18 @@ export function startStateReader(deps: {
     .map((r) => r.name.slice(CHARACTER_ROW.length));
 
   /** A `slow` pass starts with the `_vars`, in a slot of their own. */
-  const queue = (sets: StatePath[][], lane: Lane): Queue => {
-    const groups = sets.flatMap((paths) =>
-      pack(
-        paths.map((path) => ({
-          path,
-          bytes: measured.get(JSON.stringify(path)) ?? null,
-        })),
-        MAX_SLICE_BYTES,
-      ),
+  const queue = (paths: StatePath[], lane: Lane): Queue => {
+    const groups = pack(
+      paths.map((path) => ({
+        path,
+        bytes: measured.get(JSON.stringify(path)) ?? null,
+      })),
+      MAX_SLICE_BYTES,
     );
     if (deps.vars && lane === "slow")
       groups.unshift([{ path: VARS_PATH, bytes: null }]);
     return {
-      sets,
+      paths,
       groups,
       next: 0,
       done: groups.length === 0,
@@ -233,22 +231,23 @@ export function startStateReader(deps: {
         x,
       ]),
     ].map((path) => ({ path, group: groupIn(rows, path, now.char) }));
-    const sets = (keep: (group: string) => boolean) =>
+    const inOrder = (keep: (group: string) => boolean) =>
       groupNames
         .filter(keep)
-        .map((g) => tagged.filter((t) => t.group === g).map((t) => t.path));
+        .flatMap((g) => tagged.filter((t) => t.group === g).map((t) => t.path));
     const slow = tagged.filter((t) => t.group === null).map((t) => t.path);
+    // One pack per lane, not per group: with 35 groups, a pass of the fast lane would take about 5 s (R2, R3).
     if (tagged.length > 0)
       plan = {
         actions: queue(
-          sets((g) => g === ACTIONS_GROUP),
+          inOrder((g) => g === ACTIONS_GROUP),
           "actions",
         ),
         fast: queue(
-          sets((g) => g !== ACTIONS_GROUP),
+          inOrder((g) => g !== ACTIONS_GROUP),
           "fast",
         ),
-        slow: queue([slow], "slow"),
+        slow: queue(slow, "slow"),
       };
   }
 
@@ -261,7 +260,7 @@ export function startStateReader(deps: {
     const q = p[lane];
     q.next++;
     if (q.next < q.groups.length) return;
-    p[lane] = { ...queue(q.sets, lane), done: true, passed: true };
+    p[lane] = { ...queue(q.paths, lane), done: true, passed: true };
     if (lane !== "slow" && passed(p.actions) && passed(p.fast)) {
       cycles = { ...cycles, fast: cycles.fast + 1 };
       p.actions.passed = false;

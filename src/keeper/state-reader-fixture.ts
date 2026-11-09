@@ -71,7 +71,11 @@ interface Sent {
   returnByValue: boolean;
 }
 
-export function setup(over: Partial<Game> = {}, vars?: VarsReader) {
+export function setup(
+  over: Partial<Game> = {},
+  vars?: VarsReader,
+  catalog: readonly CatalogRow[] = TEST_CATALOG,
+) {
   const game: Game = {
     char: "Hero",
     map: 1,
@@ -139,7 +143,7 @@ export function setup(over: Partial<Game> = {}, vars?: VarsReader) {
       h.onSlice(s);
     },
     onFailing: h.onFailing,
-    catalog: TEST_CATALOG,
+    catalog,
     ...(vars ? { vars } : {}),
   });
   return { ...h, h, reader };
