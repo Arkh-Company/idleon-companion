@@ -175,17 +175,16 @@ test("replay with no reading yet sends nothing", () => {
 
 // ponytail: reads the source because index.ts imports electron and no test may load it.
 test.each([
-  ["the link's tables, checked,", /tracker\.tables\(linkTables\(m\.tables\)\)/],
   [
-    "the link's reading, checked,",
-    /linkReading\(m\.reading\)[\s\S]*?tracker\.reading\(r\)/,
+    "the routes to the link",
+    /connectLink\(LINK_PIPE, routes\.message, routes\.connected\)/,
   ],
-  ["each page load", /did-finish-load[\s\S]*?tracker\.replay\(\)/],
-])("the app wires %s to the tracker", (_name, wiring) => {
-  const source = readFileSync(
-    join(import.meta.dirname, "link-routes.ts"),
-    "utf8",
-  );
+  [
+    "the stats pipeline to the routes",
+    /const stats = startStatsPipeline\(\{[\s\S]*?routeLink\(\{\s+tracker,\s+stats,/,
+  ],
+])("the app wires %s", (_name, wiring) => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
 
   expect(source).toMatch(wiring);
 });

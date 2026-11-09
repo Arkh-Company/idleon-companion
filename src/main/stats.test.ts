@@ -165,6 +165,7 @@ test.each<[string, unknown]>([
   check(numbers(), [900, 22, 33, 44]);
   c.pass(35_001);
   expect(check(numbers(), list)).toEqual(new Set());
+  expect(check(numbers(), [900, 22, 33, 44])).toEqual(new Set()); // the time starts over
 });
 
 test("a number that was not calculated is not compared", () => {

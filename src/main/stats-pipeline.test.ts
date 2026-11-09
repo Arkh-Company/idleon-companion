@@ -114,6 +114,7 @@ test("the slices that come before the reading with the character are kept", asyn
   h.p.reading(reading(null));
   h.files();
   h.slice([vars, piece("Cards", "early")]);
+  expect(h.last()).toEqual(CALCULATING);
   h.p.reading(reading());
   h.slice([], { formula: 1, all: 1 });
   await h.ready();

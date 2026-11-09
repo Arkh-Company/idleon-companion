@@ -151,7 +151,14 @@ const slice = {
 const withPiece = (piece: unknown) => ({ ...slice, pieces: [piece] });
 
 test("a link slice of the right shape keeps only its fields", () => {
-  expect(linkState({ ...slice, extra: 1 })).toStrictEqual(slice);
+  const padded = {
+    ...slice,
+    extra: 1,
+    sentinel: { ...slice.sentinel, extra: 1 },
+    pieces: slice.pieces.map((p) => ({ ...p, extra: 1 })),
+    cycles: { ...slice.cycles, extra: 1 },
+  };
+  expect(linkState(padded)).toStrictEqual(slice);
 });
 
 test("a link slice taken with no character passes", () => {
@@ -176,7 +183,7 @@ test.each([
   ],
   ["a time that is not a number", { ...slice, at: "5" }],
   ["pieces that are not a list", { ...slice, pieces: {} }],
-  ["a piece that is not an object", withPiece(1)],
+  ["a piece that is not an object", withPiece(null)],
   ["a path that is not a list", withPiece({ path: "Cards", value: 1 })],
   ["a path of no items", withPiece({ path: [], value: 1 })],
   ["a path of 3 items", withPiece({ path: ["a", "b", "c"], value: 1 })],
