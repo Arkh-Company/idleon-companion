@@ -182,7 +182,10 @@ test.each([
   ],
   ["each page load", /did-finish-load[\s\S]*?tracker\.replay\(\)/],
 ])("the app wires %s to the tracker", (_name, wiring) => {
-  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  const source = readFileSync(
+    join(import.meta.dirname, "link-routes.ts"),
+    "utf8",
+  );
 
   expect(source).toMatch(wiring);
 });

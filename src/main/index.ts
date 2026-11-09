@@ -15,18 +15,12 @@ import {
   launchEvent,
   NOT_CONNECTED,
   shouldReload,
-  statusOnLinkDrop,
   trayUpdater,
 } from "./lifecycle.ts";
 import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
-import {
-  emptyPayload,
-  linkReading,
-  linkStatus,
-  linkTables,
-  settingsPayload,
-} from "./payloads.ts";
+import { routeLink } from "./link-routes.ts";
+import { emptyPayload, settingsPayload } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
@@ -36,7 +30,7 @@ import {
   steamState,
   steamSystem,
 } from "./steam/index.ts";
-import { afterGameClosed, installCheck, startUpdates } from "./updates.ts";
+import { installCheck, startUpdates } from "./updates.ts";
 import {
   guardIpc,
   isAllowedNavigation,
@@ -88,12 +82,6 @@ function start(): void {
     if (!shouldReload(details.reason, !win.isDestroyed(), reloads, now)) return;
     reloads.push(now);
     win.webContents.reload();
-  });
-  win.webContents.on("did-finish-load", () => {
-    send(IPC.statusUpdate, status);
-    tracker.replay();
-    updates.replay();
-    stats.replay();
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);
@@ -174,35 +162,21 @@ function start(): void {
     readFiles: readGameFiles,
   });
 
-  const link = connectLink(
-    LINK_PIPE,
-    (m) => {
-      if (m.type === "reading") {
-        const r = linkReading(m.reading);
-        if (!r) return; // the decoder checks only the message type
-        tracker.reading(r);
-        stats.reading(r);
-      } else if (m.type === "tables") {
-        tracker.tables(linkTables(m.tables));
-      } else if (m.type === "status") {
-        const s = linkStatus(m.status);
-        if (!s) return;
-        stats.status(s);
-        const settled = setStatus(s);
-        if (s.game === "closed")
-          void afterGameClosed(settled, () => {
-            apply("game-exited");
-          });
-      } else stats.message(m);
+  const routes = routeLink({
+    tracker,
+    stats,
+    updates,
+    status: () => status,
+    setStatus,
+    sendStatus: (s) => {
+      send(IPC.statusUpdate, s);
     },
-    (up) => {
-      if (!up) {
-        const dropped = statusOnLinkDrop(status);
-        stats.status(dropped);
-        void setStatus(dropped);
-      }
+    gameExited: () => {
+      apply("game-exited");
     },
-  );
+    page: win.webContents,
+  });
+  const link = connectLink(LINK_PIPE, routes.message, routes.connected);
 
   /** IPC only from the window's own page; a payload of the wrong shape is refused before use. */
   const handle = (channel: string, f: (payload: unknown) => unknown): void => {
