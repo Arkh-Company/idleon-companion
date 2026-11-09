@@ -1,0 +1,4 @@
+feature: 004-data-base
+phases:
+  brainstorm: {status: done, date: 2026-11-09}
+  specify: {status: done, date: 2026-11-09}
