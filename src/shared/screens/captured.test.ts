@@ -146,6 +146,12 @@ test.each(CAPTURED.map((c) => [c.photo, c] as const))(
   (_, { reading: r }) => {
     expect([null, "Tester"]).toContain(r.char);
     expect(r.codexSel).toBeNull();
+    // "Blank" is the game's own word for an empty slot; any other text could be typed by a player.
+    expect(
+      Object.values(r.behaviors).filter(
+        (v) => typeof v === "string" && v !== "Blank",
+      ),
+    ).toEqual([]);
   },
 );
 
