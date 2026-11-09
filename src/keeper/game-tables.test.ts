@@ -49,7 +49,7 @@ test.each([
     'x.MapName=function(){return"a b".split(" ")};',
   ],
   ["two candidates", MAPS + maps("Other More", "c d")],
-  ["lists of different lengths", maps("Vale Peak", "only_one")],
+  ["lists of different lengths", maps("Vale Peak Hill", "a b")],
   ["an empty name in a list", maps("Vale  Peak", "a b c")],
   ["a list of one", maps("Vale", "a")],
 ])("maps with %s are null, and the monsters still read", (_name, code) => {
