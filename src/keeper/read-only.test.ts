@@ -2,6 +2,7 @@
 import { join } from "node:path";
 import { Script, runInNewContext } from "node:vm";
 import { expect, test } from "vitest";
+import { READ_CONTRACT } from "./read-contract-fixture.ts";
 import { loadReadSource } from "./read-source.ts";
 
 // Counted as well as thrown: read.js catches errors on the behavior paths, so a throw alone can go unseen.
@@ -89,32 +90,10 @@ function read(
   return out;
 }
 
-// The table of contracts/read-fields.md, on purpose repeated here: it is what read.js is checked against.
-const CONTRACT: [number, number, string, number[] | null][] = [
-  [0, 29, "_MenuType2TabPage", null],
-  [0, 29, "_AnvilTabSelected", null],
-  [0, 29, "_TabIndex0to5", null],
-  [1, 116, "_GeneralINFO", [17, 36]],
-  [2, 167, "_GeneralInfo", [0]],
-  [3, 201, "_GenINFO", [8, 15, 68, 81]],
-  [4, 229, "_GenInfo", [0, 23]],
-  [5, 232, "_GenINFO", [1, 17, 72]],
-  [6, 312, "_GenINFO", [2, 42, 61, 76, 109, 111, 117]],
-  [7, 340, "_GenINFO", [35, 38, 75]],
-  [8, 481, "_GenINFO", [3, 5, 43, 45, 57]],
-  [21, 510, "_GenINFO", [16, 51, 59]],
-  [22, 548, "_GenINFO", [8, 54, 62, 82]],
-  [23, 577, "_GenINFO", [18, 70, 76]],
-  [24, 623, "_GenINFO", [5, 9, 57, 146]],
-  [25, 670, "_GenINFO", [42, 213]],
-  [26, 713, "_GenINFO", [49, 124]],
-  [27, 741, "_GenINFO", [0, 19, 116, 142, 212]],
-];
-
 /** The contract as behaviors whose every value is unique, and the keys they must produce. */
 function contractGame() {
   const expected: Record<string, unknown> = {};
-  const rows: Behavior[] = CONTRACT.map(([n, id, field, indexes], row) => {
+  const rows: Behavior[] = READ_CONTRACT.map(([n, id, field, indexes], row) => {
     if (indexes === null) {
       expected[`H${String(n)}.${field}`] = row;
       return [n, id, field, row];
