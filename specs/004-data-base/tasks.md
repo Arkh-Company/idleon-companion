@@ -207,19 +207,19 @@ pass; `just check` passes.
 
 ### Tests for Phase 4
 
-- [ ] T017 [P] [US1] Keeper publication in src/keeper/keeper-state.test.ts
+- [X] T017 [P] [US1] Keeper publication in src/keeper/keeper-state.test.ts
   - Files: `src/keeper/keeper-state.test.ts` (harness as in `src/keeper/keeper-scan.test.ts`)
   - Cases: each slice given to the `read` callback is published as `state`; the JSON of every `log` call has no value of the slice
     (use `FAKE-STATE-VALUE`) and the name `state` is no label; `gameFiles` goes once after a launch with `cdp`, with the
     `resources()` given; a launch without `cdp` publishes no `gameFiles`; a missing `resources` publishes nothing and breaks nothing.
-- [ ] T018 [P] [US1] The last game folder for a late app in src/link.test.ts
+- [X] T018 [P] [US1] The last game folder for a late app in src/link.test.ts
   - Files: `src/link.test.ts`
   - Cases: a client that connects after a `gameFiles` gets it; after a `state` gets no `state`.
-- [ ] T019 [P] [US1] Script paths in src/keeper/command-line.test.ts
+- [X] T019 [P] [US1] Script paths in src/keeper/command-line.test.ts
   - Files: `src/keeper/command-line.test.ts`
   - Cases: `readJsPath(p, "state-slice.js")` is `src/keeper/state-slice.js` in development and `state-slice.js` in `resources` when
     packaged; with no second argument, `read.js` as today.
-- [ ] T020 [P] [US1] Mosaic tests in src/main/state-store.test.ts
+- [X] T020 [P] [US1] Mosaic tests in src/main/state-store.test.ts
   - Files: `src/main/state-store.test.ts`
   - Cases: the newest value per piece wins; a two-item path lands in `attrs[parent].$m[child]`; `["_vars"]` lands in `vars`, and only
     keys of `VARS_KEYS` are kept from it; `attrs` has no key of `STATE_EXCLUDED`; nothing is due before `cycles.all` reaches 1;
@@ -230,16 +230,16 @@ pass; `just check` passes.
 
 ### Implementation for Phase 4
 
-- [ ] T021 [US1] Publication in src/keeper/keeper.ts and src/keeper/link-server.ts
+- [X] T021 [US1] Publication in src/keeper/keeper.ts and src/keeper/link-server.ts
   - Files: `src/keeper/keeper.ts`, `src/keeper/link-server.ts`
   - Change: `KeeperDeps.read` gains a last parameter `onSlice: (s: StateSlice) => void`, and `KeeperDeps` an optional `resources?: () => string`; the callback only
     calls `server?.publish`, without `log`. The server keeps the last `gameFiles` and writes it to a new client; it does not keep `state`.
-- [ ] T022 [US1] Wiring in src/keeper/index.ts, src/keeper/command-line.ts and electron-builder.yml
+- [X] T022 [US1] Wiring in src/keeper/index.ts, src/keeper/command-line.ts and electron-builder.yml
   - Files: `src/keeper/index.ts`, `src/keeper/command-line.ts`, `electron-builder.yml`
   - Change: `readJsPath(p, file = "read.js")`. `read` creates one `oneAtATime()`, starts `startReader` with `onEngine` and `turn` and
     `startStateReader`, with the sources loaded once by `loadReadSource`, and its `stop()` stops the state reader first. `onFailing` logs the
     label `state-read-failing`, with no data. `resources: () => join(dirname(exe), "resources")`. Two `extraResources` entries for the scripts.
-- [ ] T023 [US1] The mosaic in src/main/state-store.ts
+- [X] T023 [US1] The mosaic in src/main/state-store.ts
   - Files: `src/main/state-store.ts`
   - Signature: `createStateStore(cb: { onDue: (mosaicJson: string) => void; onCharacter: (char: string | null) => void }): { add(s: StateSlice): void; clear(): void }`.
   - Split maps are `{ $m: { child: value } }` with no `$c`: both are `haxe.ds.StringMap`, the calculator's default. A piece compares with its old value by its JSON text.
