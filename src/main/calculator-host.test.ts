@@ -340,6 +340,7 @@ test("reset terminates with no unavailable, drops the waiting mosaic and allows 
   host.calculate(mosaic(2));
   host.reset();
   expect(worker.terminated).toBe(1);
+  await vi.advanceTimersByTimeAsync(120_000);
   expect(onUnavailable).not.toHaveBeenCalled();
   host.setFiles(RESOURCES);
   await flush();
