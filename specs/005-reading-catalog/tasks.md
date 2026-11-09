@@ -146,7 +146,7 @@ a fresh engine over the same mosaic.
 
 ### Tests for Phase 3
 
-- [ ] T012 [US1] Long-lived context tests in src/calculator/engine.test.ts and src/calculator/index.test.ts
+- [X] T012 [US1] Long-lived context tests in src/calculator/engine.test.ts and src/calculator/index.test.ts
   - Files: `src/calculator/engine.test.ts`, `src/calculator/index.test.ts` (existing: the cases that expected a fresh
     context per calculation and a restore before each number change to the new contract)
   - Cases, with the invented game: the game boots once for 3 calculations; mosaic A, then B, then A give the numbers of a
@@ -157,12 +157,12 @@ a fresh engine over the same mosaic.
 
 ### Implementation for Phase 3
 
-- [ ] T013 [US1] The calculation in src/calculator/context.js
+- [X] T013 [US1] The calculation in src/calculator/context.js
   - Files: `src/calculator/context.js`
   - Reference: `prototipo/vivo.cjs`, mode `v4`. Changes: `helperPlan(lazyDnsm)` builds the steps and quiets the game only once;
     on later calls it adds the lazy maps to the new state and answers the same plan; `finishHelpers` becomes `reapply` only;
     `number(block, arg)` no longer restores; `snapshot` and `restore` are removed.
-- [ ] T014 [US1] One boot in src/calculator/engine.ts
+- [X] T014 [US1] One boot in src/calculator/engine.ts
   - Files: `src/calculator/engine.ts`
   - Change: `createEngine` boots once and keeps `{ sandbox, run }`; `calculate` sets `__mosaic`, runs `loadMosaic`, `helperPlan`,
     each `helperStep` with its time limit, `finishHelpers`, and the numbers. The ponytail note on fresh contexts goes.
