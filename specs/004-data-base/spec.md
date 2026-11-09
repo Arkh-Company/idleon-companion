@@ -25,6 +25,7 @@ Provado em 08/11/2026 com o jogo aberto: Drop Rate, Damage, HP, MP, STR, AGI, WI
 - Q: O que a aba mostra enquanto calcula? → A: "Calculating" só antes do primeiro cálculo; depois os números se atualizam no lugar.
 - Q: Quando os `_vars` são relidos? → A: Na rotação, a cada ciclo de leitura.
 - Q: Qual o tempo máximo de um cálculo? → A: Fica para o plano, depois de medir.
+- Q: Qual o tamanho máximo da fatia? → A: 25 KB, depois da medição com o jogo aberto.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -105,7 +106,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 
 **Retrato**
 
-- **FR-001**: O app MUST manter o estado atualizado enquanto o jogo roda, em leitura contínua por fatias de até 50 KB, com alvo de idade de até 1 s para tela e personagem, 5 s para os campos dos 10 números e 20 s para o estado inteiro, a confirmar por medição (decisão do Vinicius, 09/11).
+- **FR-001**: O app MUST manter o estado atualizado enquanto o jogo roda, em leitura contínua por fatias de até 25 KB, com alvo de idade de até 1 s para tela e personagem, 5 s para os campos dos 10 números e 20 s para o estado inteiro, a confirmar por medição (decisão do Vinicius, 09/11).
 - **FR-002**: Cada fatia MUST ser uma leitura curta e sem estado, uma por vez, com a lista de chaves e o cursor fora do jogo, e MUST NOT deixar nada residente na página do jogo.
 - **FR-003**: O retrato MUST percorrer só propriedades de dados: MUST NOT acionar getter nem usar `JSON.stringify` em objeto do jogo. Objeto `String` vira texto.
 - **FR-004**: O retrato MUST deixar de fora as tabelas grandes que o cálculo já tem: `CustomLists`, `ItemDefinitionsGET`, `MonsterDefinitionsGET`, `DialogueDefGET`, `PixelHelperActor` e `CustomMaps`.
@@ -165,7 +166,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 ## Assumptions
 
 - A prova existe para um só personagem (Royal Guardian): o Vinicius não consegue abrir outras classes até terça-feira, e comparar outras classes não é critério para fechar esta feature.
-- Retrato inteiro medido em 917 KB, 9–21 ms dentro do jogo e 62–159 ms de ida e volta. O custo por fatia não foi medido, e a prova dos 10 números usou um retrato atômico: o protótipo mede as duas coisas antes do plano. O jogo roda Electron 11.5 (Chromium 87). `_vars`: 27 chaves, em 25 objetos inspecionados. `DNSM.CompanionBon`: 94 bônus.
+- Retrato inteiro medido em 917 KB, 9–21 ms dentro do jogo e 62–159 ms de ida e volta. O protótipo mediu 0,6 ms de função típica e 1,65 ms no p95 por fatia de 25 KB, sem piora visível de quadros, e o retrato em fatias deu os mesmos números que o inteiro, com a personagem parada (`prototipo/README.md`). O jogo roda Electron 11.5 (Chromium 87). `_vars`: 27 chaves, em 25 objetos inspecionados. `DNSM.CompanionBon`: 94 bônus.
 - O retrato não copia os `_GenINFO` dos comportamentos, que o cálculo reconstrói: sub-casos que dependem deles podem divergir.
 - Custo de memória e tempo de inicialização do cálculo dentro do app não foram medidos.
 - A posição da Lava sobre leitura de memória é desconhecida e pesa antes de distribuir.
@@ -205,7 +206,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 | Qual o tempo máximo de um cálculo antes de virar "unavailable"? | to plan | Vinicius, 09/11: o plano mede e escolhe. |
 | Como o `N.js` fica sem caminho até a rede, e como o processo isolado recebe os arquivos do jogo? (security CHK009) | to plan | Vinicius, 09/11, no desenho: o plano responde no `research.md`. |
 | Qual o formato de cada número na aba? (ux CHK004) | to plan | Vinicius, 09/11, no desenho: o plano responde. |
-| Qual o tamanho e a forma de cada leitura? | resolved | Padrão do agente: fatias de até 50 KB, uma por vez, nada residente no jogo (FR-001, FR-002). Confirmado pelo Vinicius, 09/11. |
+| Qual o tamanho e a forma de cada leitura? | resolved | Vinicius, 09/11, depois do protótipo: fatias de até 25 KB, uma por vez, nada residente no jogo (FR-001, FR-002). |
 | Quão atual fica cada dado? | resolved | Padrão do agente: 1 s para tela e personagem, 5 s para os campos dos 10 números, 20 s para o estado inteiro, a confirmar por medição (FR-001). Confirmado pelo Vinicius, 09/11. |
 | Os números têm conferência? | resolved | Padrão do agente: STR, AGI, WIS e LUK comparados à `StatList`; divergência vira "unavailable" (FR-023). Confirmado pelo Vinicius, 09/11. |
 | O que fazer na troca de personagem ou de mapa? | resolved | Padrão do agente: descartar a leitura parcial (FR-022). Confirmado pelo Vinicius, 09/11. |
