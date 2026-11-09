@@ -5,6 +5,7 @@ import type { StatePath, StateSlice } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
 import { oneAtATime, startStateReader } from "./state-reader.ts";
+import type { VarsReader } from "./vars-reader.ts";
 
 const REF: EngineRef = { sessionId: "S", objectId: "O", pausedMs: 1 };
 export const formulaKeys = (n: number) => [...FORMULA_KEYS].slice(0, n);
@@ -24,7 +25,7 @@ interface Sent {
   returnByValue: boolean;
 }
 
-export function setup(over: Partial<Game> = {}) {
+export function setup(over: Partial<Game> = {}, vars?: VarsReader) {
   const game: Game = {
     char: "Hero",
     map: 1,
@@ -92,6 +93,7 @@ export function setup(over: Partial<Game> = {}) {
       h.onSlice(s);
     },
     onFailing: h.onFailing,
+    ...(vars ? { vars } : {}),
   });
   return { ...h, h, reader };
 }

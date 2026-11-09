@@ -166,7 +166,7 @@ fake CDP sees one call at a time.
 
 ### Tests for Phase 3
 
-- [ ] T013 [P] [US2] Tests of the search in src/keeper/vars-reader.test.ts
+- [X] T013 [P] [US2] Tests of the search in src/keeper/vars-reader.test.ts
   - Files: `src/keeper/vars-reader.test.ts`, with a fake `send` that answers `Runtime.getProperties` from an invented tree
   - Cases: the holder is found at depth up to 5 from `[[Scopes]]`, when at least 3 list keys are on one object; global scopes are
     skipped; the search stops at 3000 objects and gives `null`, and does not search again for the same engine; a new engine
@@ -176,21 +176,21 @@ fake CDP sees one call at a time.
     a rejected read of the holder drops it, gives `null` and the next engine searches again; the holder is held in the
     `objectGroup` of the reader, released by `release()`; no `Runtime.callFunctionOn` declaration calls anything but a
     property read.
-- [ ] T014 [P] [US2] Vars in the rotation, in src/keeper/state-reader-vars.test.ts
+- [X] T014 [P] [US2] Vars in the rotation, in src/keeper/state-reader-vars.test.ts
   - Files: `src/keeper/state-reader-vars.test.ts`
   - Cases: each new formula rotation emits one slice with the one piece `{ path: ["_vars"], value }`, counted among the
     formula slots; a `null` from the reader emits `value: {}`; `stop()` releases the holder.
 
 ### Implementation for Phase 3
 
-- [ ] T015 [US2] The search and the read in src/keeper/vars-reader.ts
+- [X] T015 [US2] The search and the read in src/keeper/vars-reader.ts
   - Files: `src/keeper/vars-reader.ts`
   - Signature: `createVarsReader(send: Cdp["send"]): VarsReader`, with `VarsReader = { read(ref: EngineRef): Promise<Record<string, unknown> | null>; release(ref: EngineRef | null): Promise<void> }`.
   - Reference, outside the repository: `varsMemoria` in `C:\Users\Vinicius\idleon-companion\lab\sessao.cjs`, and research R10. To find the
     function whose scopes are read, `Runtime.callFunctionOn` with `function () { return window.React.createElement; }`,
     `returnByValue: false` and its own `objectGroup`: it reads a property and calls nothing. Filter by `VARS_KEYS` in the one
     place the names are looked at; nothing else is kept, returned or logged.
-- [ ] T016 [US2] Vars in src/keeper/state-reader.ts
+- [X] T016 [US2] Vars in src/keeper/state-reader.ts
   - Files: `src/keeper/state-reader.ts`
   - Change: at the start of each formula rotation, `vars.read(ref)` inside `turn`, and its slice; `stop()` calls `vars.release`.
 

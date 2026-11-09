@@ -4,7 +4,9 @@ import { classOf, isObject } from "../shared/index.ts";
 import type { StateClass, StatePath, StateSlice } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
+import type { VarsReader } from "./vars-reader.ts";
 
+const VARS_PATH: StatePath = ["_vars"];
 const MAX_SLICE_BYTES = 25_000;
 const UNREAD_CHARACTER_BYTES = 25_000;
 const UNREAD_BYTES = 2_000;
@@ -16,12 +18,6 @@ export interface PlanPiece {
   path: StatePath;
   /** Measured at the last read; `null` before the first one. */
   bytes: number | null;
-}
-
-/** Not read yet: the `_vars` join the rotation in T016. */
-export interface VarsReader {
-  read(ref: EngineRef): Promise<Record<string, unknown> | null>;
-  release(ref: EngineRef | null): Promise<void>;
 }
 
 export function pieceBytes(p: PlanPiece): number {
@@ -112,18 +108,19 @@ export function startStateReader(deps: {
   let cycles = { formula: 0, all: 0 };
   const measured = new Map<string, number>();
 
-  const queue = (paths: StatePath[]): Queue => ({
-    paths,
-    groups: pack(
+  /** A `formula` pass starts with the `_vars`, in a slot of their own. */
+  const queue = (paths: StatePath[], cls: StateClass): Queue => {
+    const groups = pack(
       paths.map((path) => ({
         path,
         bytes: measured.get(JSON.stringify(path)) ?? null,
       })),
       MAX_SLICE_BYTES,
-    ),
-    next: 0,
-    done: paths.length === 0,
-  });
+    );
+    if (deps.vars && cls === "formula")
+      groups.unshift([{ path: VARS_PATH, bytes: null }]);
+    return { paths, groups, next: 0, done: groups.length === 0 };
+  };
 
   /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial `formula` pass. */
   function observe(now: Sentinel | null): void {
@@ -178,7 +175,10 @@ export function startStateReader(deps: {
       ),
     ];
     const of = (cls: StateClass) =>
-      queue(paths.filter((p) => classOf(p, now.char) === cls));
+      queue(
+        paths.filter((p) => classOf(p, now.char) === cls),
+        cls,
+      );
     if (paths.length > 0) plan = { formula: of("formula"), other: of("other") };
   }
 
@@ -188,7 +188,7 @@ export function startStateReader(deps: {
     const q = p[cls];
     q.next++;
     if (q.next < q.groups.length) return;
-    p[cls] = { ...queue(q.paths), done: true };
+    p[cls] = { ...queue(q.paths, cls), done: true };
     if (cls === "formula") cycles = { ...cycles, formula: cycles.formula + 1 };
     if (p.formula.done && p.other.done) {
       cycles = { ...cycles, all: cycles.all + 1 };
@@ -207,11 +207,15 @@ export function startStateReader(deps: {
           : "formula";
     const q = p[cls];
     const paths = (q.groups[q.next] ?? []).map((x) => x.path);
-    const v = await evaluate(ref, deps.sliceSource, paths);
+    const isVars = paths[0] === VARS_PATH;
+    const reads = isVars ? [] : paths;
+    const v = await evaluate(ref, deps.sliceSource, reads); // with no reads, it answers only the sentinel
     const now = sentinelOf(v);
-    if (!Array.isArray(v.out) || v.out.length !== paths.length)
+    if (!Array.isArray(v.out) || v.out.length !== reads.length)
       throw new Error("bad slice");
-    const values = v.out as unknown[];
+    const values = isVars
+      ? [(now && (await deps.vars?.read(ref))) ?? {}]
+      : (v.out as unknown[]);
     if (stopped) return;
     fails = 0;
     paths.forEach((path, i) => {
@@ -262,11 +266,12 @@ export function startStateReader(deps: {
   }, deps.everyMs ?? 250);
 
   return {
-    /** Resolves after the read in flight, if any; none starts after this. */
-    stop() {
+    /** Resolves after the read in flight, if any, and the release of the `_vars`; no read starts after this. */
+    async stop() {
       stopped = true;
       clearInterval(timer);
-      return busy ?? Promise.resolve();
+      await busy;
+      await deps.vars?.release(deps.engine());
     },
   };
 }
