@@ -180,7 +180,7 @@ after the next read of it comes the same.
 
 ### Tests for Phase 4
 
-- [ ] T015 [P] [US1] Mosaic tests in src/main/state-store.test.ts
+- [X] T015 [P] [US1] Mosaic tests in src/main/state-store.test.ts
   - Files: `src/main/state-store.test.ts` (existing: the cases of "a whole rotation and a change" change to the new rule)
   - Cases: nothing is due before the first lap ends (FR-021); after it, a changed fast piece outside `ações` is due in that
     same slice; a slow piece that changed is not due alone; an `ações` slice that changed is due only when the next read of
@@ -188,22 +188,22 @@ after the next read of it comes the same.
     `cycles.fast` before anything is due; a character change wipes the mosaic and starts the first lap again; a
     `["PlayerDATABASE", char, x]` piece enters the mosaic under the character; a whole character arriving drops the stored
     subkeys of that character (R8); `__proto__` in any of the 3 levels is dropped; a 3-level path on another top key is dropped.
-- [ ] T016 [P] [US1] Host tests in src/main/calculator-host.test.ts
+- [X] T016 [P] [US1] Host tests in src/main/calculator-host.test.ts
   - Files: `src/main/calculator-host.test.ts`, `src/main/calculator-host-fixture.ts`
   - Cases: after a result, the next calculation waits 60 ms (existing 5 s cases change); only the newest waiting mosaic is sent;
     one calculation in flight.
-- [ ] T017 [US1] Pipeline test in src/main/stats-pipeline.test.ts
+- [X] T017 [US1] Pipeline test in src/main/stats-pipeline.test.ts
   - Files: `src/main/stats-pipeline.test.ts`, `src/main/stats-pipeline-fixture.ts`
   - Cases: the fixture sends `cycles: { fast, all }`; the first number appears only after the first lap, and a changed fast piece
     reaches `tracker.result` with no new rotation.
 
 ### Implementation for Phase 4
 
-- [ ] T018 [US1] The mosaic in src/main/state-store.ts
+- [X] T018 [US1] The mosaic in src/main/state-store.ts
   - Files: `src/main/state-store.ts`
   - Change: `belongs` and `mosaicJson` take the third level, only under `PlayerDATABASE`; the due rule of data-model.md, "Confirmando"
     included; a whole character drops its subkeys.
-- [ ] T019 [US1] The gap in src/main/calculator-host.ts
+- [X] T019 [US1] The gap in src/main/calculator-host.ts
   - Files: `src/main/calculator-host.ts`
   - Change: `CALC_GAP_MS = 60`.
 
