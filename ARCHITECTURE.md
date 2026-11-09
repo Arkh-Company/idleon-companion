@@ -42,7 +42,7 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   "Let the game close" (the link's `release`) stops the reader, lets go of the engine reference and detaches from the
   page, so the game's X closes it again; the debugging pipe stays open, and the status becomes `reader: "released"`.
   "Reconnect" (`reconnect`) starts a new reader on that pipe, with one new pause. The two run one after the other, so two
-  sessions never exist at once. Neither is offered during `connecting`, a known limit. Once per game load, right after
+  sessions never exist at once. Neither is offered during `connecting`, a known limit. Once per game launch, right after
   starting the app, it takes the map and monster names out of the text of the installed game code (`game-tables.ts`,
   which never runs that text) and sends them to the app as `tables`.
 - **App** (`src/main/`, `src/preload/`, `src/renderer/`, built to `out/main/index.js`, `out/preload/index.cjs` and
@@ -99,7 +99,7 @@ message per line.
 | `{ "type": "reconnect" }`          | app → keeper | "Reconnect"; ignored unless `reader` is `"released"`             |
 
 A new client first gets the last tables, the last status and the last reading. The keeper sends `tables` once per game
-load, and on each one the app builds the context again from the last reading. A second keeper finds the pipe taken and exits without
+launch, and on each one the app builds the context again from the last reading. A second keeper finds the pipe taken and exits without
 launching anything. The app tries the pipe again every 5 s while it is missing.
 
 **IPC, main ↔ window** (spec §5.4), through the preload only:
