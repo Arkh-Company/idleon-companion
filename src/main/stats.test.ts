@@ -134,6 +134,31 @@ test("a different value passes for 50 s and then is unavailable", () => {
   expect(check(numbers(), list)).toEqual(new Set(["luk"]));
 });
 
+test("a number that keeps changing while the list has not caught up stays available", () => {
+  const c = clock();
+  const check = statListCheck(c.now);
+  const list = [11, 22, 33, 900];
+  expect(check(numbers({ luk: 100 }), list)).toEqual(new Set()); // 0 s
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set()); // 0 s, A -> B
+  c.pass(30_000);
+  expect(check(numbers({ luk: 300 }), list)).toEqual(new Set()); // 30 s, B -> C
+  c.pass(25_000);
+  expect(check(numbers({ luk: 400 }), list)).toEqual(new Set()); // 55 s, C -> D
+});
+
+test("a number that stopped changing, still different from the list, is unavailable after 50 s", () => {
+  const c = clock();
+  const check = statListCheck(c.now);
+  const list = [11, 22, 33, 900];
+  check(numbers({ luk: 100 }), list);
+  c.pass(30_000);
+  check(numbers({ luk: 200 }), list);
+  c.pass(50_000);
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set());
+  c.pass(1);
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set(["luk"]));
+});
+
 test("the list is read as STR, AGI, WIS, LUK", () => {
   const c = clock();
   const check = statListCheck(c.now);

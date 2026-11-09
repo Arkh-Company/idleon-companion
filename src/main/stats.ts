@@ -73,11 +73,14 @@ const LISTED = ["str", "agi", "wis", "luk"] as const;
  * so a new equipment must not look like a broken number. */
 const DIFFERENT_MS = 50_000;
 
-/** Which of the four numbers have been away from the game's own list for too long; nothing, without a usable list. */
+/**
+ * Which of the four numbers have been away from the game's own list for too long, without changing; nothing, without a
+ * usable list. Each change of a number starts its time over, because the list is then behind it and not wrong.
+ */
 export function statListCheck(
   now: () => number,
 ): (n: CalcNumbers, list: unknown) => Set<string> {
-  const since = new Map<string, number>();
+  const since = new Map<string, { at: number; value: number }>();
   return (n, list) => {
     const out = new Set<string>();
     if (
@@ -98,8 +101,9 @@ export function statListCheck(
         since.delete(id);
         return;
       }
-      const start = since.get(id) ?? now();
-      since.set(id, start);
+      const known = since.get(id);
+      const start = known?.value === mine ? known.at : now();
+      since.set(id, { at: start, value: mine });
       if (now() - start > DIFFERENT_MS) out.add(id);
     });
     return out;
