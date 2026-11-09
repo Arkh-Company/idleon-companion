@@ -17,6 +17,7 @@ import { readGameTables } from "./game-tables.ts";
 import type * as GameTablesModule from "./game-tables.ts";
 import { runKeeper } from "./keeper.ts";
 import type { KeeperDeps } from "./keeper.ts";
+import type * as LinkServerModule from "./link-server.ts";
 
 vi.mock("./game-tables.ts", async (original) => ({
   ...(await original<typeof GameTablesModule>()),
@@ -24,6 +25,27 @@ vi.mock("./game-tables.ts", async (original) => ({
 }));
 const { readGameTables: realRead } =
   await vi.importActual<typeof GameTablesModule>("./game-tables.ts");
+
+// The whole scan runs before an app can connect, and a new app only gets the last of each kind: this sees every message.
+const published = vi.hoisted((): LinkMessage[] => []);
+vi.mock("./link-server.ts", async (original) => {
+  const real = await original<typeof LinkServerModule>();
+  return {
+    ...real,
+    startLinkServer: async (
+      ...args: Parameters<typeof real.startLinkServer>
+    ) => {
+      const server = await real.startLinkServer(...args);
+      return {
+        ...server,
+        publish: (m: LinkMessage) => {
+          published.push(m);
+          server.publish(m);
+        },
+      };
+    },
+  };
+});
 
 let n = 0;
 function pipePath(): string {
@@ -193,5 +215,50 @@ test("a new client gets the tables first, then the status, then the reading", as
     { type: "tables", tables: TABLES },
     { type: "status", status },
     { type: "reading", reading },
+  ]);
+});
+
+const UNKNOWN_NUMBERS =
+  'e.h.MenuType2=3;e.h.MenuType2=999;22==a.getGameAttribute("MenuType2");';
+const UNKNOWN_LINE = {
+  label: "unknown-screen-numbers",
+  id: 42,
+  numbers: [22, 999],
+};
+
+test("only the numbers outside the catalog are logged", async () => {
+  const h = await keeper(() => UNKNOWN_NUMBERS);
+  expect(h.logs).toContainEqual(UNKNOWN_LINE);
+});
+
+test("known numbers log nothing", async () => {
+  const h = await keeper(
+    () => 'e.h.MenuType2=3;110==a.getGameAttribute("MenuType2");',
+  );
+  expect(h.logs.map((l) => l.label)).not.toContain("unknown-screen-numbers");
+});
+
+test("the numbers go to the log and never on the link", async () => {
+  published.length = 0;
+  const h = await keeper(() => UNKNOWN_NUMBERS);
+  expect(h.logs).toContainEqual(UNKNOWN_LINE);
+  expect(published).toEqual([{ type: "tables", tables: NO_TABLES }]);
+});
+
+test("with detection markers the keeper still warns and opens the game without the pipe, and logs the numbers", async () => {
+  const h = await keeper(() => `debugger;${UNKNOWN_NUMBERS}`);
+  expect(h.order).toEqual(["launch-no-pipe", "app", "scan"]);
+  expect(h.logs).toContainEqual(UNKNOWN_LINE);
+  expect(await app(h.deps.pipePath, 2)).toEqual([
+    { type: "tables", tables: NO_TABLES },
+    {
+      type: "status",
+      status: {
+        game: "running",
+        reader: "error",
+        message:
+          "The game code changed and contains: debugger. Reading is off for this session.",
+      },
+    },
   ]);
 });

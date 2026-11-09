@@ -262,11 +262,11 @@ that number, and nothing reaches the player.
 
 ### Tests for Phase 6
 
-- [ ] T024 [P] [US6] screenNumbers tests in src/keeper/game-tables.test.ts
+- [X] T024 [P] [US6] screenNumbers tests in src/keeper/game-tables.test.ts
   - Files: `src/keeper/game-tables.test.ts`, invented code only.
   - Cases: a literal write and a literal comparison of `MenuType2` are found; `MenuType` and `MenuType2TabSelected` are not;
     sorted, without repeats.
-- [ ] T025 [US6] Unknown numbers in src/keeper/keeper-scan.test.ts
+- [X] T025 [US6] Unknown numbers in src/keeper/keeper-scan.test.ts
   - Files: `src/keeper/keeper-scan.test.ts`
   - Cases: a number outside `KNOWN_WINDOWS` logs `unknown-screen-numbers` with `numbers`; only known numbers logs nothing;
     no message with these numbers goes on the link; with detection markers in the code, the keeper still warns and opens
@@ -274,7 +274,7 @@ that number, and nothing reaches the player.
 
 ### Implementation for Phase 6
 
-- [ ] T026 [US6] screenNumbers and the log in src/keeper/game-tables.ts and src/keeper/keeper.ts
+- [X] T026 [US6] screenNumbers and the log in src/keeper/game-tables.ts and src/keeper/keeper.ts
   - Files: `src/keeper/game-tables.ts`, `src/keeper/keeper.ts`
   - Signature: `screenNumbers(code: string): number[]`. The log line is `log("unknown-screen-numbers", { numbers })`, only
     numbers ([contracts/link.md](contracts/link.md)).
