@@ -84,3 +84,9 @@ Bad: `label: "<b>Bold</b>"` in that test, a text of the compiled catalog that ne
 A test that scans source text for a forbidden call matches every spelling that reaches it and reads every file the guarded data passes through.
 Good: `loads("(?:node:)?net")` over all of `src/` in `no-network.test.ts`, with a "the scan catches %s" case per form.
 Bad: `/node:vm/` over `game-tables.ts` alone, while the game text also sits in `keeper.ts` and `import "vm"` passes.
+
+### Test tables live once
+
+A table or builder that two test files repeat (a contract table, a `Reading` builder) lives in one `*-fixture.ts` next to the code and is imported by both.
+Good: `READ_NULLS` in `src/shared/reading-fixture.ts`, spread into the `Reading` literal of seven tests.
+Bad: the 18-row behavior table typed in `read-only.test.ts` and again in `read-fields.test.ts`, so a change to the contract needs two edits and the two tests can drift apart.
