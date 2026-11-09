@@ -203,7 +203,7 @@ for (const it of [...inventario.values()].sort((a, b) => a.nome.localeCompare(b.
   const nums = imp ? [...imp.numeros] : [];
   const muda = [...it.muda.keys()];
   const dia = muda.some((j) => DIA_A_DIA.has(j));
-  const rapida = nums.length > 0 && dia;
+  const rapida = nums.length > 0 && !it.nome.startsWith("OutrosPersonagens."); // FR-012, decisao do Vinicius
   linhas.push({
     nome: it.nome, tipo: it.tipo, tamanho: it.tamanho, natureza: natureza(it),
     numeros: !imp ? "não medido" : nums.length === TODOS ? "todos" : nums.join(", ") || (imp.quebrou.size ? "só quebra" : "nenhum"),
@@ -239,7 +239,8 @@ for (const j of DIA_A_DIA) {
 const tabela = (lista) => lista.map((l) => `| \`${l.nome}\` | ${l.tamanho} | ${l.natureza} | ${l.numeros} | ${l.muda} | ${l.mecanica} |`).join("\n");
 const cab = "| Peça | Bytes | Natureza | Números | Muda em | Mecânica |\n| --- | ---: | --- | --- | --- | --- |\n";
 const parado = (l) => l.muda.split(", ").includes("parado");
-const soAcao = rapidas.filter((l) => !parado(l)), tambem = rapidas.filter(parado), semMudar = linhas.filter((l) => l.impactoSemMudar);
+const semMudar = linhas.filter((l) => l.impactoSemMudar);
+const soAcao = rapidas.filter((l) => !parado(l) && !l.impactoSemMudar), tambem = rapidas.filter((l) => parado(l) && !l.impactoSemMudar);
 const bytes = (a) => a.reduce((s, l) => s + l.tamanho, 0);
 console.log(`grupos: so acao ${soAcao.length}/${bytes(soAcao)} | muda parado ${tambem.length}/${bytes(tambem)} | sem mudar ${semMudar.length}/${bytes(semMudar)}`);
 const secao = (t, a) => `## ${t} (${a.length} peças, ${bytes(a)} bytes)\n\n${cab}${tabela(a)}\n\n`;

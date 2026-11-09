@@ -41,17 +41,19 @@ Alterações usadas na etapa 3: dobrar, zerar e inverter; nas peças com texto, 
 
 As 101 peças com impacto, em [`revisar.md`](revisar.md):
 
-| Grupo | Peças | Tamanho | Leitura pela regra atual |
+| Grupo | Peças | Tamanho | Leitura |
 | --- | ---: | ---: | --- |
-| A. Muda só com ação do jogador | 11 | 12,8 KB | Rápida |
+| A. Muda só com ação do jogador | 11 | 12,8 KB | Rápida, fatia com prioridade |
 | B. Muda também com o personagem parado | 25 | 76,6 KB | Rápida |
-| C. Não mudou nas ações do roteiro | 65 | 79,4 KB | Lenta |
+| C. Não mudou nas ações do roteiro | 65 | 79,4 KB | 61 na rápida; as 4 de outros personagens (49 KB) na lenta |
+
+O roteiro não cobriu todas as ações do dia a dia: ele tirou e recolocou o mesmo item, e por isso `EquipmentMap` não mudou, embora troque ao pôr outro item. Decisão do Vinicius, em 09/11: toda peça com impacto vai para a rápida, salvo as de outros personagens, que só mudam quando ele joga com eles.
 
 **Decisões para o plano.**
 
-- O grupo A forma a fatia de maior frequência: equipamento, obols e os caches ligados a eles.
-- O grupo B fica na leitura rápida, em fatias por conteúdo, com frequência menor; ele custa perto de 4 leituras.
-- O grupo C é pergunta aberta na spec: o roteiro não cobriu todas as ações do dia a dia. Exemplo: ele tirou e recolocou o mesmo item, e por isso `EquipmentMap` não mudou, embora troque ao pôr outro item.
+- `EquipmentMap` e `SetBonusTOTz` entram na fatia de equipamento e ações, junto do grupo A: 17,4 KB, numa leitura só.
+- As demais peças da rápida ficam em fatias por conteúdo.
+- Com 4 leituras por segundo, só a fatia de equipamento cumpria menos de 1 s. O Vinicius pediu menos de 1 s para qualquer mudança nos números mostrados: isso pede mais leituras por segundo e um cálculo mais enxuto, a provar num segundo protótipo.
 
 ## Limites
 

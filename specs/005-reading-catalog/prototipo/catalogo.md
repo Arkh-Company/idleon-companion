@@ -37,17 +37,17 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `_vars.votePercent2` | lista | 10 | dado de origem | nenhum | não mudou | Eventos da conta | — | lenta |
 | `_Visited` | lista | 5 | cache derivado | nenhum | buff, trocar mapa, matar, parado | a conferir | — | lenta |
 | `aa` | número | 1 | tabela fixa | nenhum | não mudou | a conferir | — | lenta |
-| `AchieveReg` | lista | 1113 | dado de origem | todos | não mudou | Tarefas e conquistas | Stats | lenta |
+| `AchieveReg` | lista | 1113 | dado de origem | todos | não mudou | Tarefas e conquistas | Stats | rápida |
 | `ActionTimer` | número | 1 | interface | nenhum | matar | Status do personagem (a conferir) | — | lenta |
 | `AFKtarget` | texto | 7 | dado de origem | só quebra | buff, trocar mapa | AFK | — | lenta |
 | `AnvilCraftStatus` | lista | 841 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `AnvilPA` | lista | 325 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `AnvilPAselect` | lista | 7 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `AnvilPAstats` | lista | 20 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
-| `ArcadeUpg` | lista | 302 | dado de origem | todos | não mudou | Arcade | Stats | lenta |
-| `Arcane` | lista | 288 | dado de origem | todos | não mudou | Star Signs (a conferir) | Stats | lenta |
+| `ArcadeUpg` | lista | 302 | dado de origem | todos | não mudou | Arcade | Stats | rápida |
+| `Arcane` | lista | 288 | dado de origem | todos | não mudou | Star Signs (a conferir) | Stats | rápida |
 | `ArcUnclaim` | mapa | 34 | dado de origem | nenhum | não mudou | a conferir | — | lenta |
-| `Atoms` | lista | 58 | dado de origem | damageMax, damageMin | não mudou | Átomos | Stats | lenta |
+| `Atoms` | lista | 58 | dado de origem | damageMax, damageMin | não mudou | Átomos | Stats | rápida |
 | `AttackCooldowns` | mapa | 741 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Combate (a conferir) | — | lenta |
 | `AttackLoadout` | lista | 407 | dado de origem | nenhum | não mudou | AFK (a conferir) | — | lenta |
 | `AttackMoveGET` | mapa | 16235 | tabela fixa | nenhum | não mudou | AFK (a conferir) | — | lenta |
@@ -60,11 +60,11 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `BossHP` | número | 1 | cache derivado | nenhum | não mudou | Status do personagem | — | lenta |
 | `BossInfo` | lista | 129 | dado de origem | nenhum | não mudou | Status do personagem (a conferir) | — | lenta |
 | `Breeding` | lista | 2773 | dado de origem | nenhum | não mudou | Pets e companheiros | — | lenta |
-| `BribeStatus` | lista | 83 | dado de origem | todos | não mudou | Status do personagem | Stats | lenta |
+| `BribeStatus` | lista | 83 | dado de origem | todos | não mudou | Status do personagem | Stats | rápida |
 | `Bubba` | lista | 364 | dado de origem | damageMax, damageMin | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | AFK (a conferir) | Stats | rápida |
 | `BuffsActive` | lista | 17 | dado de origem | damageMax, damageMin, hp, str | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Buffs | Stats | rápida |
 | `BugInfo` | lista | 346 | dado de origem | nenhum | não mudou | Skills de coleta | — | lenta |
-| `BundlesReceived` | mapa | 783 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | lenta |
+| `BundlesReceived` | mapa | 783 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | rápida |
 | `Captains` | lista | 979 | dado de origem | nenhum | não mudou | Sailing | — | lenta |
 | `CardPreset` | lista | 608 | dado de origem | nenhum | não mudou | Cards | — | lenta |
 | `Cards` | lista | 32654 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, matar | Cards | Stats | rápida |
@@ -72,7 +72,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `CauldronInfo` | lista | 2031 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Alquimia | — | lenta |
 | `CauldronJobs` | lista | 336 | dado de origem | nenhum | não mudou | Alquimia | — | lenta |
 | `CauldronP2W` | lista | 568 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Alquimia | Stats | rápida |
-| `CharacterClass` | número | 2 | dado de origem | damageMax, damageMin, accuracy | não mudou | Itens e equipamento (a conferir) | Stats | lenta |
+| `CharacterClass` | número | 2 | dado de origem | damageMax, damageMin, accuracy | não mudou | Itens e equipamento (a conferir) | Stats | rápida |
 | `Chat` | mapa | 482 | cache derivado | nenhum | buff, trocar mapa | Interface | — | lenta |
 | `ChatBubbleActors` | mapa | 34 | cache derivado | nenhum | não mudou | Alquimia | — | lenta |
 | `ChestMap` | lista | 30435 | dado de origem | nenhum | matar | Itens e equipamento | — | lenta |
@@ -83,14 +83,14 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `CloudsaveTimer` | número | 8 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Interface (a conferir) | — | lenta |
 | `CogMap` | lista | 14800 | dado de origem | nenhum | buff | Construção (a conferir) | — | lenta |
 | `CogOrder` | lista | 2490 | dado de origem | nenhum | não mudou | Construção (a conferir) | — | lenta |
-| `Compass` | lista | 2579 | dado de origem | damageMax, damageMin, afkGains | não mudou | Stamps (a conferir) | Stats | lenta |
+| `Compass` | lista | 2579 | dado de origem | damageMax, damageMin, afkGains | não mudou | Stamps (a conferir) | Stats | rápida |
 | `Cooking` | lista | 319 | dado de origem | nenhum | não mudou | Comida e cozinha | — | lenta |
 | `CookMaster` | lista | 334 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Comida e cozinha | — | lenta |
 | `CurrenciesOwned` | mapa | 545 | dado de origem | nenhum | trocar obol, matar, parado | Itens e equipamento (a conferir) | — | lenta |
 | `CurrentMap` | número | 1 | dado de origem | dropRate, damageMax, damageMin | buff, trocar mapa | Mapa | Stats | rápida |
 | `DamagePixels` | lista | 2 | cache derivado | nenhum | não mudou | Combate | — | lenta |
 | `displayData` | mapa | 808 | cache derivado | nenhum | tirar item, trocar obol | Guilda (a conferir) | — | lenta |
-| `Divinity` | lista | 143 | dado de origem | damageMax, damageMin | matar | Divinity | Stats | lenta |
+| `Divinity` | lista | 143 | dado de origem | damageMax, damageMin | matar | Divinity | Stats | rápida |
 | `DNSM.5secDN` | número | 2 | cache derivado | nenhum | buff | a conferir | — | lenta |
 | `DNSM.5secDN2` | número | 1 | cache derivado | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.AddChestzDL` | lista | 2 | rascunho | não medido | não mudou | Itens e equipamento | — | lenta |
@@ -135,7 +135,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.CalcTalentDT1` | texto | 7 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.CalcTalentMAP` | mapa | 560 | cache derivado | nenhum | matar, parado | Combate (a conferir) | — | lenta |
 | `DNSM.CanMove0or1DN` | número | 1 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.CapeVineBonTOT` | mapa | 602 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | lenta |
+| `DNSM.CapeVineBonTOT` | mapa | 602 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | rápida |
 | `DNSM.CaptnBonuz` | número | 4 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.CardBonusS` | mapa | 832 | tabela fixa | nenhum | não mudou | Cards | — | lenta |
 | `DNSM.CardBonusS_old` | mapa | 126 | tabela fixa | nenhum | não mudou | Cards | — | lenta |
@@ -157,7 +157,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.ChatYvals` | mapa | 62 | tabela fixa | nenhum | não mudou | Interface | — | lenta |
 | `DNSM.CheckQuestDN1` | número | 5 | rascunho | nenhum | não mudou | Quests e NPCs | — | lenta |
 | `DNSM.CheckQuestDN2` | número | 1 | rascunho | nenhum | não mudou | Quests e NPCs | — | lenta |
-| `DNSM.ChipBbonusz` | mapa | 122 | cache derivado | todos | não mudou | Laboratório | Stats | lenta |
+| `DNSM.ChipBbonusz` | mapa | 122 | cache derivado | todos | não mudou | Laboratório | Stats | rápida |
 | `DNSM.CkMst_AcLvT` | número | 4 | tabela fixa | nenhum | não mudou | Summoning (a conferir) | — | lenta |
 | `DNSM.CkMst_RbLvT` | número | 3 | tabela fixa | nenhum | não mudou | Summoning (a conferir) | — | lenta |
 | `DNSM.CloudLoadMAPZz_SL_8` | mapa | 1068 | cache derivado | nenhum | não mudou | a conferir | — | lenta |
@@ -166,7 +166,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.CommaDT1` | texto | 12 | rascunho | nenhum | tirar item, colocar item, parado | a conferir | — | lenta |
 | `DNSM.CommaDT2` | texto | 10 | rascunho | nenhum | tirar item, colocar item, parado | a conferir | — | lenta |
 | `DNSM.CommaDT3` | texto | 2 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.CompanionBon` | mapa | 805 | cache derivado | todos | não mudou | Pets e companheiros | Stats | lenta |
+| `DNSM.CompanionBon` | mapa | 805 | cache derivado | todos | não mudou | Pets e companheiros | Stats | rápida |
 | `DNSM.CompanionLVz` | mapa | 706 | tabela fixa | nenhum | não mudou | Pets e companheiros | — | lenta |
 | `DNSM.ConstructDN2` | número | 11 | rascunho | nenhum | buff | Construção | — | lenta |
 | `DNSM.CookinzzDN1` | número | 1 | rascunho | nenhum | não mudou | Comida e cozinha | — | lenta |
@@ -182,9 +182,9 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.DropRateLUK` | número | 18 | rascunho | nenhum | tirar item, colocar item, matar | Status do personagem (a conferir) | — | lenta |
 | `DNSM.DropRateLUK2` | número | 17 | rascunho | nenhum | não mudou | Status do personagem (a conferir) | — | lenta |
 | `DNSM.DungeonStats` | mapa | 34 | cache derivado | nenhum | não mudou | Status do personagem | — | lenta |
-| `DNSM.EclipseSk` | número | 2 | cache derivado | damageMax, damageMin | não mudou | a conferir | Stats | lenta |
-| `DNSM.EmperorBon` | lista | 42 | cache derivado | todos | não mudou | a conferir | Stats | lenta |
-| `DNSM.ExoticFarmBon` | lista | 1108 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Farming | Stats | lenta |
+| `DNSM.EclipseSk` | número | 2 | cache derivado | damageMax, damageMin | não mudou | a conferir | Stats | rápida |
+| `DNSM.EmperorBon` | lista | 42 | cache derivado | todos | não mudou | a conferir | Stats | rápida |
+| `DNSM.ExoticFarmBon` | lista | 1108 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Farming | Stats | rápida |
 | `DNSM.ExpGainLUK` | número | 17 | rascunho | nenhum | tirar item, colocar item, matar | Skills e experiência | — | lenta |
 | `DNSM.ExpGainLUK2` | número | 17 | rascunho | nenhum | não mudou | Skills e experiência | — | lenta |
 | `DNSM.ExpGainLUK3` | número | 2 | rascunho | nenhum | não mudou | Skills e experiência | — | lenta |
@@ -193,34 +193,34 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.ExpGainLUK6` | número | 18 | rascunho | nenhum | não mudou | Skills e experiência | — | lenta |
 | `DNSM.ExtraMinEff` | número | 1 | cache derivado | nenhum | não mudou | Skills de coleta | — | lenta |
 | `DNSM.FamBonusLz` | lista | 61 | rascunho | nenhum | talento, parado, buff | a conferir | — | lenta |
-| `DNSM.FamBonusQTYs` | mapa | 1072 | cache derivado | todos | não mudou | Status do personagem (a conferir) | Stats | lenta |
+| `DNSM.FamBonusQTYs` | mapa | 1072 | cache derivado | todos | não mudou | Status do personagem (a conferir) | Stats | rápida |
 | `DNSM.FishTKdl` | lista | 18 | rascunho | nenhum | não mudou | Skills de coleta | — | lenta |
 | `DNSM.FishTKdl2` | lista | 9 | rascunho | nenhum | não mudou | Skills de coleta | — | lenta |
 | `DNSM.FishTKdl3` | lista | 2 | rascunho | nenhum | não mudou | Skills de coleta | — | lenta |
 | `DNSM.FishTKdn` | número | 1 | rascunho | nenhum | não mudou | Skills de coleta | — | lenta |
 | `DNSM.FishTKdn3` | número | 1 | rascunho | nenhum | não mudou | Skills de coleta | — | lenta |
-| `DNSM.FlurboStats` | mapa | 103 | cache derivado | damageMax, damageMin, accuracy, afkGains | não mudou | Status do personagem | Stats | lenta |
-| `DNSM.FountBonT` | lista | 302 | cache derivado | damageMax, damageMin, dropRate | não mudou | Holes (a conferir) | Stats | lenta |
+| `DNSM.FlurboStats` | mapa | 103 | cache derivado | damageMax, damageMin, accuracy, afkGains | não mudou | Status do personagem | Stats | rápida |
+| `DNSM.FountBonT` | lista | 302 | cache derivado | damageMax, damageMin, dropRate | não mudou | Holes (a conferir) | Stats | rápida |
 | `DNSM.FountBonTdn` | número | 1 | rascunho | nenhum | não mudou | Holes (a conferir) | — | lenta |
 | `DNSM.FountDL1` | lista | 3 | rascunho | nenhum | não mudou | Holes (a conferir) | — | lenta |
 | `DNSM.FracIsBn` | lista | 17 | tabela fixa | nenhum | não mudou | Eventos da conta (a conferir) | — | lenta |
-| `DNSM.FrendBonzStatz` | lista | 159 | cache derivado | damageMax, damageMin, dropRate | não mudou | Status do personagem | Stats | lenta |
+| `DNSM.FrendBonzStatz` | lista | 159 | cache derivado | damageMax, damageMin, dropRate | não mudou | Status do personagem | Stats | rápida |
 | `DNSM.FrendChatyDL1` | lista | 23 | rascunho | nenhum | não mudou | Interface | — | lenta |
 | `DNSM.GalleryDL` | lista | 35 | rascunho | não medido | não mudou | a conferir | — | lenta |
 | `DNSM.GalleryDN1` | número | 2 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.GalleryDN2` | número | 17 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.GalleryDT` | texto | 38 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.GalleryDT2` | texto | 20 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.GalleryNametagBonTOT` | mapa | 1128 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | lenta |
+| `DNSM.GalleryNametagBonTOT` | mapa | 1128 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | rápida |
 | `DNSM.GalleryNametagsOwned` | número | 2 | rascunho | não medido | não mudou | a conferir | — | lenta |
-| `DNSM.GalleryTrophyBonTOT` | mapa | 739 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | lenta |
+| `DNSM.GalleryTrophyBonTOT` | mapa | 739 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | rápida |
 | `DNSM.GenKeychainzDN` | número | 1 | rascunho | nenhum | buff, trocar mapa | a conferir | — | lenta |
 | `DNSM.GenKeychainzDN2` | número | 1 | rascunho | nenhum | buff, trocar mapa | a conferir | — | lenta |
 | `DNSM.GenKeychainzL` | lista | 50 | rascunho | nenhum | buff, trocar mapa | a conferir | — | lenta |
 | `DNSM.GfoodBonus` | número | 17 | rascunho | nenhum | não mudou | Comida e cozinha | — | lenta |
 | `DNSM.GfoodBonusMULTI` | número | 16 | tabela fixa | nenhum | não mudou | Comida e cozinha | — | lenta |
 | `DNSM.GfoodMap` | mapa | 423 | rascunho | nenhum | não mudou | Comida e cozinha | — | lenta |
-| `DNSM.GlimboTOT` | número | 4 | cache derivado | dropRate | não mudou | Skills de coleta (a conferir) | Stats | lenta |
+| `DNSM.GlimboTOT` | número | 4 | cache derivado | dropRate | não mudou | Skills de coleta (a conferir) | Stats | rápida |
 | `DNSM.Grid_PTSspent` | número | 3 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.GurtBonuzzDN` | número | 18 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.GurtBonuzzDN2` | número | 1 | rascunho | nenhum | não mudou | a conferir | — | lenta |
@@ -240,7 +240,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.ItemRemovalDN2` | número | 7 | rascunho | nenhum | matar | Itens e equipamento | — | lenta |
 | `DNSM.ItemRemovalDT1` | texto | 8 | rascunho | nenhum | matar | Itens e equipamento | — | lenta |
 | `DNSM.ItemzzSellPricesz` | mapa | 10164 | tabela fixa | nenhum | não mudou | Itens e equipamento | — | lenta |
-| `DNSM.KilRoDmg` | número | 3 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | lenta |
+| `DNSM.KilRoDmg` | número | 3 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | rápida |
 | `DNSM.KNWLG_sushtot` | lista | 177 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.KpKDumm` | número | 1 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.KpKDumm2` | número | 17 | rascunho | nenhum | tirar item, colocar item, talento, parado, matar | a conferir | — | lenta |
@@ -249,7 +249,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.LoreEpiBon` | lista | 188 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.ManaRegen` | número | 1 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.ManaRegenM` | mapa | 491 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.MealBonusesS` | mapa | 1323 | cache derivado | todos | não mudou | Comida e cozinha | Stats | lenta |
+| `DNSM.MealBonusesS` | mapa | 1323 | cache derivado | todos | não mudou | Comida e cozinha | Stats | rápida |
 | `DNSM.MKtzioDN` | número | 17 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.MKtzioDN2` | número | 7 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.MonsterDmgRedux` | número | 1 | rascunho | nenhum | não mudou | Combate | — | lenta |
@@ -282,9 +282,9 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.Orbletcost` | número | 3 | rascunho | não medido | não mudou | a conferir | — | lenta |
 | `DNSM.OrngSushSumz` | número | 1 | tabela fixa | não medido | não mudou | a conferir | — | lenta |
 | `DNSM.OverkillEXPONENT` | número | 1 | rascunho | nenhum | não mudou | Combate | — | lenta |
-| `DNSM.OwlBonus` | lista | 36 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Summoning (a conferir) | Stats | lenta |
+| `DNSM.OwlBonus` | lista | 36 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Summoning (a conferir) | Stats | rápida |
 | `DNSM.OwlBonusAll` | número | 4 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
-| `DNSM.PaletteBonz` | lista | 421 | cache derivado | damageMax, damageMin | não mudou | Gaming (a conferir) | Stats | lenta |
+| `DNSM.PaletteBonz` | lista | 421 | cache derivado | damageMax, damageMin | não mudou | Gaming (a conferir) | Stats | rápida |
 | `DNSM.PetszzBrDN1` | número | 2 | rascunho | nenhum | não mudou | Pets e companheiros (a conferir) | — | lenta |
 | `DNSM.PetszzBrDN2` | número | 1 | rascunho | nenhum | não mudou | Pets e companheiros (a conferir) | — | lenta |
 | `DNSM.PetszzBrDNq` | número | 1 | rascunho | nenhum | não mudou | Pets e companheiros (a conferir) | — | lenta |
@@ -297,7 +297,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.playHPbasePOT2` | número | 1 | rascunho | nenhum | não mudou | Status do personagem | — | lenta |
 | `DNSM.PostOffInfoDN1` | número | 3 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.PrayNonEq` | número | 1 | cache derivado | damageMax, damageMin, accuracy, dropRate, afkGains | buff | Prayers (a conferir) | Stats | rápida |
-| `DNSM.PremHatBonTOT` | mapa | 710 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | lenta |
+| `DNSM.PremHatBonTOT` | mapa | 710 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Status do personagem (a conferir) | Stats | rápida |
 | `DNSM.random39` | número | 1 | tabela fixa | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.RandomEventqDL` | lista | 352 | rascunho | nenhum | não mudou | Eventos da conta | — | lenta |
 | `DNSM.RandomEventqDN` | número | 3 | rascunho | nenhum | não mudou | Eventos da conta | — | lenta |
@@ -314,7 +314,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.ResearchKalMap` | mapa | 75 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.RG_suppo` | mapa | 73 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.RLMultzDN` | número | 2 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
-| `DNSM.RooBonus` | lista | 51 | cache derivado | damageMax, damageMin, accuracy, afkGains | não mudou | Summoning (a conferir) | Stats | lenta |
+| `DNSM.RooBonus` | lista | 51 | cache derivado | damageMax, damageMin, accuracy, afkGains | não mudou | Summoning (a conferir) | Stats | rápida |
 | `DNSM.RooBonusAll` | número | 3 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
 | `DNSM.RooDN3` | número | 3 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
 | `DNSM.RooDN4` | número | 5 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
@@ -327,13 +327,13 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.SailzDN3` | número | 17 | tabela fixa | não medido | não mudou | Sailing (a conferir) | — | lenta |
 | `DNSM.SavePlDN` | número | 1 | tabela fixa | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.SCBcogTot` | lista | 19 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.SetBonusTOTz` | mapa | 355 | cache derivado | todos | não mudou | a conferir | Stats | lenta |
-| `DNSM.ShinyBonusS` | mapa | 245 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Pets e companheiros | Stats | lenta |
+| `DNSM.SetBonusTOTz` | mapa | 355 | cache derivado | todos | não mudou | a conferir | Stats | rápida |
+| `DNSM.ShinyBonusS` | mapa | 245 | cache derivado | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Pets e companheiros | Stats | rápida |
 | `DNSM.ShrineStuffz723` | lista | 107 | tabela fixa | nenhum | não mudou | Shrines | — | lenta |
 | `DNSM.SigTotPup` | número | 2 | rascunho | nenhum | não mudou | Laboratório (a conferir) | — | lenta |
-| `DNSM.SigTotPup2` | número | 2 | cache derivado | damageMax, damageMin | não mudou | Laboratório (a conferir) | Stats | lenta |
+| `DNSM.SigTotPup2` | número | 2 | cache derivado | damageMax, damageMin | não mudou | Laboratório (a conferir) | Stats | rápida |
 | `DNSM.SkillageDN` | número | 1 | rascunho | nenhum | não mudou | Combate | — | lenta |
-| `DNSM.skillLvRanks` | lista | 49 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | lenta |
+| `DNSM.skillLvRanks` | lista | 49 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | rápida |
 | `DNSM.skillLvRanksDN` | número | 3 | rascunho | nenhum | não mudou | Combate | — | lenta |
 | `DNSM.skillLvRanksDN2` | número | 2 | rascunho | nenhum | buff, trocar mapa, matar, parado | Combate | — | lenta |
 | `DNSM.skillLvTotals` | lista | 121 | tabela fixa | nenhum | não mudou | Combate | — | lenta |
@@ -342,7 +342,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.SpelunkyDN` | número | 3 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.SpelunkyGrD` | número | 2 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.SpelunkyUpgDN` | número | 4 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.SpelunkyUpgTOT` | lista | 324 | cache derivado | damageMax, damageMin, dropRate | não mudou | a conferir | Stats | lenta |
+| `DNSM.SpelunkyUpgTOT` | lista | 324 | cache derivado | damageMax, damageMin, dropRate | não mudou | a conferir | Stats | rápida |
 | `DNSM.StampBonuses_Map_Of_Val` | mapa | 1375 | cache derivado | todos | buff, trocar mapa, matar, parado | Stamps | Stats | rápida |
 | `DNSM.StarSigns` | mapa | 839 | cache derivado | nenhum | não mudou | Star Signs | — | lenta |
 | `DNSM.StarSignsDL` | lista | 409 | rascunho | nenhum | não mudou | Star Signs | — | lenta |
@@ -361,7 +361,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.SuffixDN1` | número | 1 | rascunho | nenhum | não mudou | AFK (a conferir) | — | lenta |
 | `DNSM.SuffixDN2` | número | 18 | rascunho | nenhum | não mudou | AFK (a conferir) | — | lenta |
 | `DNSM.SumAllEss` | número | 22 | rascunho | nenhum | não mudou | Summoning (a conferir) | — | lenta |
-| `DNSM.SummWinBonus` | lista | 111 | cache derivado | todos | não mudou | Summoning (a conferir) | Stats | lenta |
+| `DNSM.SummWinBonus` | lista | 111 | cache derivado | todos | não mudou | Summoning (a conferir) | Stats | rápida |
 | `DNSM.SumUpgMoltoz` | número | 1 | rascunho | nenhum | buff, trocar mapa, matar, parado | Summoning (a conferir) | — | lenta |
 | `DNSM.Sushi7zDN` | número | 1 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.Sushi7zUpgCostDN` | número | 1 | rascunho | não medido | não mudou | a conferir | — | lenta |
@@ -376,8 +376,8 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.taskppNum2` | número | 3 | rascunho | nenhum | não mudou | Tarefas e conquistas | — | lenta |
 | `DNSM.TimeHappyHourDN1` | número | 6 | rascunho | nenhum | não mudou | Eventos da conta | — | lenta |
 | `DNSM.TKnS_DN` | número | 2 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.TomeQTY` | lista | 931 | cache derivado | damageMax, damageMin, luk, dropRate | não mudou | Eventos da conta | Stats | lenta |
-| `DNSM.TomeQTYtot` | número | 5 | cache derivado | damageMax, damageMin, dropRate | não mudou | Eventos da conta | Stats | lenta |
+| `DNSM.TomeQTY` | lista | 931 | cache derivado | damageMax, damageMin, luk, dropRate | não mudou | Eventos da conta | Stats | rápida |
+| `DNSM.TomeQTYtot` | número | 5 | cache derivado | damageMax, damageMin, dropRate | não mudou | Eventos da conta | Stats | rápida |
 | `DNSM.TotalStatsDM` | mapa | 34 | rascunho | nenhum | não mudou | Status do personagem | — | lenta |
 | `DNSM.TotalStatsDN2` | número | 1 | rascunho | nenhum | tirar item, trocar obol, talento, parado, buff, matar | Status do personagem | — | lenta |
 | `DNSM.TotalStatsDT2` | texto | 3 | rascunho | nenhum | não mudou | Status do personagem | — | lenta |
@@ -390,14 +390,14 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DNSM.TotOccLVz` | número | 3 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DNSM.TotStatMAP` | mapa | 319 | cache derivado | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Status do personagem | — | lenta |
 | `DNSM.TotStatSkMAP` | mapa | 66 | cache derivado | nenhum | buff, trocar mapa, matar, parado | Status do personagem | — | lenta |
-| `DNSM.TotStickrz` | número | 3 | cache derivado | damageMax, damageMin | não mudou | Farming (a conferir) | Stats | lenta |
+| `DNSM.TotStickrz` | número | 3 | cache derivado | damageMax, damageMin | não mudou | Farming (a conferir) | Stats | rápida |
 | `DNSM.TotUnitzAllMapz` | mapa | 936 | tabela fixa | nenhum | não mudou | Mapa (a conferir) | — | lenta |
 | `DNSM.TUAM_DL` | lista | 9 | rascunho | nenhum | não mudou | a conferir | — | lenta |
-| `DNSM.UNQ_sushi` | número | 2 | cache derivado | damageMax, damageMin, dropRate | não mudou | a conferir | Stats | lenta |
+| `DNSM.UNQ_sushi` | número | 2 | cache derivado | damageMax, damageMin, dropRate | não mudou | a conferir | Stats | rápida |
 | `DNSM.UnqCardzCol` | número | 3 | rascunho | nenhum | não mudou | Cards | — | lenta |
 | `DNSM.VaultKillzDN3` | número | 1 | rascunho | nenhum | não mudou | Combate | — | lenta |
 | `DNSM.VaultKillzDN4` | número | 17 | rascunho | nenhum | não mudou | Combate | — | lenta |
-| `DNSM.VaultKillzTOT` | lista | 118 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | lenta |
+| `DNSM.VaultKillzTOT` | lista | 118 | cache derivado | damageMax, damageMin | não mudou | Combate | Stats | rápida |
 | `DNSM.WWzDN1` | número | 2 | rascunho | nenhum | não mudou | a conferir | — | lenta |
 | `DoOnce` | número | 1 | tabela fixa | nenhum | não mudou | a conferir | — | lenta |
 | `DoOnceREAL` | número | 5 | dado de origem | nenhum | não mudou | Holes (a conferir) | — | lenta |
@@ -430,7 +430,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `DummyText3` | texto | 9 | dado de origem | nenhum | não mudou | Interface | — | lenta |
 | `DungItems` | mapa | 34 | tabela fixa | nenhum | não mudou | Itens e equipamento | — | lenta |
 | `DungUpg` | lista | 264 | dado de origem | nenhum | não mudou | Itens e equipamento (a conferir) | — | lenta |
-| `EquipmentMap` | lista | 4166 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Itens e equipamento | Stats | lenta |
+| `EquipmentMap` | lista | 4166 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Itens e equipamento | Stats | rápida |
 | `EquipmentOrder` | lista | 636 | dado de origem | todos | tirar item, colocar item | Itens e equipamento | Stats | rápida |
 | `EquipmentQuantity` | lista | 139 | dado de origem | todos | tirar item, colocar item | Itens e equipamento | Stats | rápida |
 | `Exp0` | lista | 413 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Skills e experiência | — | lenta |
@@ -439,25 +439,25 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `FamilyValuesMap` | mapa | 371 | dado de origem | nenhum | não mudou | Interface (a conferir) | — | lenta |
 | `FarmCrop` | mapa | 6260 | dado de origem | nenhum | não mudou | Farming | — | lenta |
 | `FarmPlot` | lista | 1856 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Farming | — | lenta |
-| `FarmRank` | lista | 904 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Farming | Stats | lenta |
+| `FarmRank` | lista | 904 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | não mudou | Farming | Stats | rápida |
 | `FarmUpg` | lista | 430 | dado de origem | nenhum | não mudou | Farming | — | lenta |
 | `FlagsPlaced` | lista | 75 | dado de origem | nenhum | não mudou | a conferir | — | lenta |
 | `FlagUnlock` | lista | 781 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | a conferir | — | lenta |
 | `FoodCooldowns` | lista | 17 | dado de origem | nenhum | não mudou | Comida e cozinha | — | lenta |
-| `FoodSlotsOwned` | número | 1 | dado de origem | todos | não mudou | Comida e cozinha | Stats | lenta |
+| `FoodSlotsOwned` | número | 1 | dado de origem | todos | não mudou | Comida e cozinha | Stats | rápida |
 | `ForgeIntervalProgress` | lista | 33 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `ForgeItemOrder` | lista | 609 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `ForgeItemQuantity` | lista | 177 | dado de origem | nenhum | não mudou | Forja e bigorna | — | lenta |
 | `FurnaceLevels` | lista | 19 | dado de origem | nenhum | não mudou | Forja e bigorna (a conferir) | — | lenta |
 | `Gaming` | lista | 234 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Gaming | Stats | rápida |
 | `GamingSprout` | lista | 872 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Gaming | — | lenta |
-| `GemItemsPurchased` | lista | 621 | dado de origem | todos | não mudou | Itens e equipamento | Stats | lenta |
+| `GemItemsPurchased` | lista | 621 | dado de origem | todos | não mudou | Itens e equipamento | Stats | rápida |
 | `gemshopCloudsave` | número | 1 | interface | nenhum | não mudou | a conferir | — | lenta |
 | `GemsOwned` | número | 3 | dado de origem | nenhum | não mudou | Eventos da conta (a conferir) | — | lenta |
 | `GemsPacksPurchased` | lista | 3 | dado de origem | nenhum | não mudou | a conferir | — | lenta |
-| `GetPlayersUsernames` | lista | 106 | cache derivado | todos | não mudou | Obols (a conferir) | Stats | lenta |
+| `GetPlayersUsernames` | lista | 106 | cache derivado | todos | não mudou | Obols (a conferir) | Stats | rápida |
 | `GreenStacks` | lista | 4824 | dado de origem | nenhum | não mudou | Itens e equipamento (a conferir) | — | lenta |
-| `Grimoire` | lista | 296 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | lenta |
+| `Grimoire` | lista | 296 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | rápida |
 | `GuildTasks` | lista | 156 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, matar | Guilda | Stats | rápida |
 | `HintStatus` | lista | 172 | dado de origem | nenhum | não mudou | Status do personagem | — | lenta |
 | `Holes` | lista | 6439 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Holes | Stats | rápida |
@@ -476,9 +476,9 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `KRbest` | mapa | 962 | dado de origem | nenhum | não mudou | Combate (a conferir) | — | lenta |
 | `Lab` | lista | 527 | dado de origem | nenhum | não mudou | Laboratório | — | lenta |
 | `LockedSlots` | lista | 225 | dado de origem | nenhum | não mudou | Interface (a conferir) | — | lenta |
-| `Lv0` | lista | 100 | dado de origem | todos | não mudou | Skills e experiência | Stats | lenta |
+| `Lv0` | lista | 100 | dado de origem | todos | não mudou | Skills e experiência | Stats | rápida |
 | `LvTotal0` | lista | 7 | interface | nenhum | não mudou | a conferir | — | lenta |
-| `MapBon` | lista | 2085 | dado de origem | dropRate, afkGains | não mudou | Mapa | Stats | lenta |
+| `MapBon` | lista | 2085 | dado de origem | dropRate, afkGains | não mudou | Mapa | Stats | rápida |
 | `MapMonstersList` | lista | 397 | cache derivado | nenhum | buff, trocar mapa, matar, parado | Mapa | — | lenta |
 | `MaxCarryCap` | mapa | 192 | dado de origem | nenhum | não mudou | Itens e equipamento (a conferir) | — | lenta |
 | `Meals` | lista | 2920 | dado de origem | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Comida e cozinha | — | lenta |
@@ -507,7 +507,7 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `NONdummies` | lista | 453 | cache derivado | nenhum | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Eventos da conta (a conferir) | — | lenta |
 | `NormalText` | mapa | 545 | tabela fixa | nenhum | não mudou | Interface | — | lenta |
 | `NPCdialogue` | mapa | 1549 | dado de origem | nenhum | não mudou | Quests e NPCs | — | lenta |
-| `Number2Letter` | lista | 629 | cache derivado | todos | não mudou | Quests e NPCs (a conferir) | Stats | lenta |
+| `Number2Letter` | lista | 629 | cache derivado | todos | não mudou | Quests e NPCs (a conferir) | Stats | rápida |
 | `ObolEquippedMap` | lista | 3813 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | trocar obol | Obols | Stats | rápida |
 | `ObolEquippedOrder` | lista | 688 | dado de origem | damageMax, damageMin, hp, mp, accuracy, str, agi, wis, luk, dropRate | trocar obol | Obols | Stats | rápida |
 | `ObolInventoryMap` | lista | 13178 | dado de origem | nenhum | trocar obol | Obols | — | lenta |
@@ -635,9 +635,9 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `PlayerStuff` | lista | 37 | dado de origem | damageMax, damageMin, hp, str | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Itens e equipamento (a conferir) | Stats | rápida |
 | `PopupType` | número | 3 | interface | nenhum | tirar item | Interface | — | lenta |
 | `PortalSelectedArrow` | número | 2 | interface | nenhum | não mudou | Mapa | — | lenta |
-| `PostOfficeInfo` | lista | 691 | dado de origem | todos | não mudou | Tarefas e conquistas (a conferir) | Stats | lenta |
+| `PostOfficeInfo` | lista | 691 | dado de origem | todos | não mudou | Tarefas e conquistas (a conferir) | Stats | rápida |
 | `PrayersActive` | lista | 34 | dado de origem | dropRate, afkGains | buff | Prayers | Stats | rápida |
-| `PrayersUnlocked` | lista | 68 | dado de origem | afkGains | não mudou | Prayers | Stats | lenta |
+| `PrayersUnlocked` | lista | 68 | dado de origem | afkGains | não mudou | Prayers | Stats | rápida |
 | `PreviousMap` | número | 1 | interface | nenhum | buff, matar | a conferir | — | lenta |
 | `Printer` | lista | 2698 | dado de origem | nenhum | não mudou | Combate (a conferir) | — | lenta |
 | `PrinterXtra` | lista | 3306 | dado de origem | nenhum | não mudou | Status do personagem (a conferir) | — | lenta |
@@ -648,27 +648,27 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `Research` | lista | 5921 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Skills de coleta (a conferir) | Stats | rápida |
 | `RespawnTime` | número | 1 | dado de origem | nenhum | não mudou | Mapa | — | lenta |
 | `Ribbon` | lista | 287 | dado de origem | nenhum | não mudou | Comida e cozinha | — | lenta |
-| `Rift` | lista | 23 | dado de origem | todos | não mudou | Sailing (a conferir) | Stats | lenta |
+| `Rift` | lista | 23 | dado de origem | todos | não mudou | Sailing (a conferir) | Stats | rápida |
 | `RoyalG` | lista | 2213 | dado de origem | damageMax, damageMin, dropRate | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Obols (a conferir) | Stats | rápida |
 | `RoyalMaps` | lista | 7604 | dado de origem | nenhum | buff, trocar mapa | Mapa (a conferir) | — | lenta |
 | `SailChests` | lista | 2 | dado de origem | nenhum | não mudou | Itens e equipamento | — | lenta |
-| `Sailing` | lista | 976 | dado de origem | damageMax, damageMin | não mudou | Sailing | Stats | lenta |
-| `SaltLick` | lista | 65 | dado de origem | damageMax, damageMin | não mudou | Refinaria | Stats | lenta |
+| `Sailing` | lista | 976 | dado de origem | damageMax, damageMin | não mudou | Sailing | Stats | rápida |
+| `SaltLick` | lista | 65 | dado de origem | damageMax, damageMin | não mudou | Refinaria | Stats | rápida |
 | `SceneEvents_n` | texto | 16 | cache derivado | nenhum | buff, trocar mapa | Mapa | — | lenta |
 | `ServerGemsReceived` | número | 6 | dado de origem | nenhum | não mudou | Mapa (a conferir) | — | lenta |
 | `ShopStock` | lista | 502 | dado de origem | nenhum | não mudou | Obols (a conferir) | — | lenta |
 | `ShowItemDescriptionBox` | número | 1 | cache derivado | nenhum | não mudou | Itens e equipamento | — | lenta |
-| `ShrineInfo` | lista | 323 | dado de origem | damageMax, damageMin, hp, dropRate, afkGains | não mudou | Shrines | Stats | lenta |
+| `ShrineInfo` | lista | 323 | dado de origem | damageMax, damageMin, hp, dropRate, afkGains | não mudou | Shrines | Stats | rápida |
 | `SkillLevels` | lista | 1557 | dado de origem | todos | talento, parado | Combate | Stats | rápida |
 | `SkillLevelsMAX` | lista | 2154 | dado de origem | nenhum | parado | Combate | — | lenta |
 | `SkillTabSelected` | número | 2 | interface | nenhum | parado | Combate | — | lenta |
 | `Spelunk` | lista | 7380 | dado de origem | todos | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Holes (a conferir) | Stats | rápida |
-| `StampLevel` | lista | 495 | dado de origem | damageMax, damageMin | não mudou | Stamps | Stats | lenta |
+| `StampLevel` | lista | 495 | dado de origem | damageMax, damageMin | não mudou | Stamps | Stats | rápida |
 | `StampLevelMAX` | lista | 495 | dado de origem | nenhum | não mudou | Stamps | — | lenta |
 | `StarSignProg` | lista | 680 | dado de origem | nenhum | não mudou | Star Signs | — | lenta |
 | `StarSignsUnlocked` | mapa | 1387 | dado de origem | nenhum | não mudou | Star Signs | — | lenta |
-| `StatueG` | lista | 121 | dado de origem | damageMax, damageMin, hp, accuracy | não mudou | Estátuas | Stats | lenta |
-| `StatueLevels` | lista | 740 | dado de origem | damageMax, damageMin, hp, accuracy | matar, parado | Estátuas | Stats | lenta |
+| `StatueG` | lista | 121 | dado de origem | damageMax, damageMin, hp, accuracy | não mudou | Estátuas | Stats | rápida |
+| `StatueLevels` | lista | 740 | dado de origem | damageMax, damageMin, hp, accuracy | matar, parado | Estátuas | Stats | rápida |
 | `SteamAchieve` | lista | 262 | dado de origem | nenhum | não mudou | Tarefas e conquistas | — | lenta |
 | `Summon` | lista | 1462 | dado de origem | damageMax, damageMin | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Summoning | Stats | rápida |
 | `SuperDL` | lista | 8 | interface | nenhum | não mudou | a conferir | — | lenta |
@@ -681,10 +681,10 @@ Protótipo da 005, gerado por `catalogo.cjs`. Uma linha por peça do estado, só
 | `Tess` | lista | 681 | dado de origem | nenhum | não mudou | a conferir | — | lenta |
 | `TestList` | lista | 2 | tabela fixa | nenhum | não mudou | a conferir | — | lenta |
 | `TimeAway` | mapa | 450 | dado de origem | damageMax, damageMin, dropRate | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | AFK | Stats | rápida |
-| `TotemInfo` | lista | 212 | dado de origem | damageMax, damageMin | não mudou | Skills de coleta (a conferir) | Stats | lenta |
+| `TotemInfo` | lista | 212 | dado de origem | damageMax, damageMin | não mudou | Skills de coleta (a conferir) | Stats | rápida |
 | `TowerInfo` | lista | 548 | dado de origem | damageMax, damageMin | tirar item, colocar item, trocar obol, talento, parado, buff, trocar mapa, matar | Construção | Stats | rápida |
-| `UpgVault` | lista | 341 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | lenta |
-| `UserInfo` | lista | 10 | cache derivado | hp, mp, str, agi, wis, luk, dropRate | não mudou | Mapa (a conferir) | Stats | lenta |
+| `UpgVault` | lista | 341 | dado de origem | todos | não mudou | Summoning (a conferir) | Stats | rápida |
+| `UserInfo` | lista | 10 | cache derivado | hp, mp, str, agi, wis, luk, dropRate | não mudou | Mapa (a conferir) | Stats | rápida |
 | `WeaponID` | número | 1 | tabela fixa | nenhum | não mudou | Itens e equipamento | — | lenta |
 | `WeaponType` | número | 2 | cache derivado | nenhum | colocar item, trocar obol, buff, matar, parado | Itens e equipamento | — | lenta |
-| `WeeklyBoss` | mapa | 1045 | dado de origem | damageMax, damageMin, dropRate | não mudou | Cards (a conferir) | Stats | lenta |
+| `WeeklyBoss` | mapa | 1045 | dado de origem | damageMax, damageMin, dropRate | não mudou | Cards (a conferir) | Stats | rápida |

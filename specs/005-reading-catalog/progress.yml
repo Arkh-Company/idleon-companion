@@ -2,5 +2,5 @@ feature: 005-reading-catalog
 phases:
   brainstorm: {status: done, date: 2026-11-09}
   specify: {status: done, date: 2026-11-09}
-  clarify: {status: in_progress, date: 2026-11-09, rounds: 1, open: 1, to_plan: 0}
+  clarify: {status: done, date: 2026-11-09, rounds: 2, open: 0, to_plan: 2}
   prototype: {status: done, date: 2026-11-09}

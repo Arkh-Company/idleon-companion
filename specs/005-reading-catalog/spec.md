@@ -20,26 +20,28 @@ A causa de fundo é que a leitura não sabe o que importa. A lista atual veio de
 
 ### Session 2026-11-09
 
-- Q: Em quanto tempo, no máximo, o Drop Rate precisa mudar na aba depois de tirar ou colocar um item? → A: Até 1 s.
-- Q: O que separa as leituras? → A: Só duas, rápida e lenta; a lenta é para o que só muda com patch ou muito devagar dentro do jogo.
+- Q: Em quanto tempo, no máximo, um número precisa mudar na aba depois de uma mudança no jogo? → A: Menos de 1 s, para qualquer mudança que afete um número mostrado, considerando as mecânicas (como mover um objeto do Research), não só item, obol, prayer e mapa.
+- Q: O que separa as leituras? → A: Só duas, rápida e lenta (o critério de cada uma ficou na última pergunta desta sessão).
 - Q: O que conta como impacto provado ao alterar uma peça? → A: Qualquer diferença no valor bruto de um número mostrado.
+- Q: Das 101 peças com impacto medidas no protótipo, quais ficam na leitura rápida? → A: Todas, salvo as 4 de outros personagens, que só mudam quando o jogador usa aquele personagem.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver o número acompanhar o jogo (Priority: P1)
 
-O jogador tira ou coloca um item e, em até 1 s, o Drop Rate muda na aba, num passo só, sem passar por um valor intermediário.
+O jogador muda algo no jogo que afeta um número mostrado (tira um item, troca um obol, move um objeto do Research) e, em menos de 1 s, o número muda na aba, num passo só, sem passar por um valor intermediário.
 
 **Why this priority**: é a queixa que originou a feature e o valor que o jogador percebe.
 
-**Independent Test**: com o jogo aberto, tirar e colocar um item várias vezes e medir, no log de diagnóstico, o tempo até o número mudar e quantas mudanças ele teve.
+**Independent Test**: com o jogo aberto, fazer as mudanças várias vezes e medir, no log de diagnóstico, o tempo até o número mudar e quantas mudanças ele teve.
 
 **Acceptance Scenarios**:
 
-1. **Given** um personagem com os números na tela, **When** o jogador tira um item que dá Drop Rate, **Then** o número muda em até 1 s.
-2. **Given** a mesma situação, **When** o jogador coloca o item de volta, **Then** o número volta ao valor anterior em até 1 s.
+1. **Given** um personagem com os números na tela, **When** o jogador tira um item que dá Drop Rate, **Then** o número muda em menos de 1 s.
+2. **Given** a mesma situação, **When** o jogador coloca o item de volta, **Then** o número volta ao valor anterior em menos de 1 s.
 3. **Given** uma troca de item, **When** o número muda, **Then** ele vai direto ao valor final, sem valor intermediário.
 4. **Given** a leitura nova ligada, **When** se comparam os quadros do jogo com a linha de base, **Then** ela não perde mais quadros.
+5. **Given** um número que depende de uma mecânica fora do equipamento, **When** o jogador muda um bônus dela, como mover um objeto do Research, **Then** o número muda em menos de 1 s.
 
 ---
 
@@ -68,7 +70,7 @@ Uma feature nova declara os números que mostra, o catálogo diz quais peças el
 
 **Acceptance Scenarios**:
 
-1. **Given** um número novo declarado, **When** as peças dele têm impacto provado e mudam jogando, **Then** elas passam à leitura rápida.
+1. **Given** um número novo declarado, **When** as peças dele têm impacto provado e não são de outro personagem, **Then** elas passam à leitura rápida.
 2. **Given** o catálogo e as listas de leitura, **When** os dois divergem, **Then** a verificação do projeto falha.
 
 ---
@@ -120,9 +122,9 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 
 **Regra de decisão**
 
-- **FR-012**: Uma peça MUST ficar na leitura rápida quando tiver impacto provado num número mostrado e mudar com ações do dia a dia do jogador (trocar item, obol ou talento, buff, trocar de mapa).
-- **FR-013**: Só existem duas leituras: rápida e lenta (decisão do Vinicius). A lenta MUST ser para o que só muda com patch ou muito devagar dentro do jogo.
-- **FR-014**: Toda peça que não atender FR-012 MUST ficar na leitura lenta, inclusive rascunhos, tabelas fixas e peças desconhecidas.
+- **FR-012**: Uma peça MUST ficar na leitura rápida quando tiver impacto provado num número mostrado, salvo as peças de outros personagens.
+- **FR-013**: Só existem duas leituras: rápida e lenta (decisão do Vinicius).
+- **FR-014**: Toda peça que não atender FR-012 MUST ficar na leitura lenta, inclusive rascunhos, tabelas fixas, peças sem impacto provado, peças desconhecidas e as de outros personagens.
 - **FR-015**: Nenhuma peça MUST deixar de ser lida.
 
 **Features**
@@ -134,7 +136,7 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 
 - **FR-018**: As fatias MUST ser agrupadas por conteúdo, para o que muda junto vir junto, como o equipamento e os caches do `DNSM`.
 - **FR-019**: O tamanho de 25 KB MUST valer só como teto de cada leitura.
-- **FR-020**: O custo no jogo MUST seguir o medido: até 4 leituras por segundo, nunca duas em voo, só propriedades, nada residente na página.
+- **FR-020**: A leitura MUST ter a menor frequência que cumpra o SC-001 sem piorar os quadros (SC-002), nunca com duas em voo, só propriedades e nada residente na página.
 - **FR-021**: A primeira volta ao entrar num personagem MUST ler tudo antes de mostrar número.
 - **FR-022**: O inventário MUST poder rodar de novo depois de um patch e apontar o que é novo e o que sumiu.
 
@@ -150,13 +152,12 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 
 ### Measurable Outcomes
 
-- **SC-001**: Tirar e colocar um item reflete no Drop Rate em até 1 s, num passo só, em todas as trocas de um roteiro de pelo menos 10 trocas.
+- **SC-001**: Qualquer mudança numa peça da leitura rápida reflete nos números afetados em menos de 1 s. Tirar e colocar um item reflete no Drop Rate nesse prazo, num passo só, em todas as trocas de um roteiro de pelo menos 10 trocas.
 - **SC-002**: Com a leitura nova, o jogo não perde mais quadros que na linha de base, em p95 e p99.
 - **SC-003**: O catálogo cobre 100% das peças do inventário.
 - **SC-004**: Toda peça da leitura rápida tem impacto provado num número mostrado.
 - **SC-005**: Sobre o mesmo estado, os 10 números da aba saem iguais aos de um cálculo completo do zero, inclusive depois de trocas de item e de mapa.
 - **SC-006**: A verificação falha quando uma lista de leitura diverge do catálogo.
-
 ## Assumptions
 
 - A análise usa a mesma cópia local do jogo e os estados reais já usados na 004, fora do repositório.
@@ -169,6 +170,7 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 - O estado tem cerca de 930 KB em 558 peças; os 10 outros personagens somam 462 KB.
 - Ponto de partida para as fatias, a confirmar pelo catálogo: equipamento e caches do `DNSM` juntos; personagem em uso (inventário, buffs, prayers, mapa, HP, MP, experiência); uma fatia por sistema (Cards, stamps, alquimia, cozinha); e a lenta (outros personagens e o resto).
 - Sem registrar os campos que o cálculo lê (decisão do Vinicius), uma peça que só importa numa situação ausente dos estados usados aparece sem impacto.
+- O protótipo mediu 101 peças com impacto em 684 (`prototipo/revisar.md`): 11 mudam só com ação do jogador, 25 mudam também com o personagem parado e 65 não mudaram nas ações do roteiro, que não cobriu todas as ações do dia a dia.
 - Comida não é ação do jogador nesta análise: o prato fica no menu para sempre e o bônus só muda se outro bônus mexer no valor (Vinicius, 09/11). A coleta de AFK não foi jogada no roteiro: exige trocar de personagem.
 
 ### Dependências
@@ -179,9 +181,10 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 ### Deixado para quem construir (plano)
 
 - O formato do catálogo e como ele é gerado.
-- O número exato de fatias e a frequência de cada leitura dentro das 4 por segundo.
+- O número exato de fatias e a frequência de cada leitura, a partir de um segundo protótipo que mede os quadros do jogo.
 - As etapas de análise cabem no protótipo da feature, antes do plano.
-- Como o cálculo cabe no alvo de 1 s. Medido: os 11 números levam 18 ms; o restante do tempo vai em carregar o jogo (540 ms), nos ajudantes (1.905 ms) e em restaurar o estado (cerca de 100 ms por número). O protótipo prova se dá para manter o cálculo pronto e aplicar só o que mudou, com os mesmos números (SC-005).
+- Como o cálculo cabe no alvo de menos de 1 s. O protótipo provou manter o jogo carregado e refazer estado e ajudantes a cada cálculo, com 135 de 135 pares iguais a um cálculo do zero e p95 de 346 ms (`prototipo/README.md`); falta enxugar esse tempo e tirar a espera do cálculo em andamento.
+- A frequência de recálculo e quanto do processador ela usa com o jogo aberto.
 
 ## Out of Scope *(mandatory)*
 
@@ -195,8 +198,8 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 
 | Question | State | Answer |
 | --- | --- | --- |
-| Qual é o tempo-alvo para o Drop Rate refletir uma troca de item? | resolved | Vinicius, 09/11: até 1 s (SC-001). |
-| O que separa as leituras rápida e lenta? | resolved | Vinicius, 09/11: só duas leituras; a lenta é para o que muda com patch ou muito devagar (FR-012 a FR-014). |
+| Qual é o tempo-alvo para um número refletir uma mudança no jogo? | resolved | Vinicius, 09/11: menos de 1 s, para qualquer mudança que afete um número mostrado (SC-001). |
+| O que separa as leituras rápida e lenta? | resolved | Vinicius, 09/11: só duas leituras; rápida é toda peça com impacto provado, salvo outros personagens (FR-012 a FR-014). |
 | Qual alteração de valor conta como impacto provado num número? | resolved | Vinicius, 09/11: qualquer diferença no valor bruto (FR-007). |
 | Quantas trocas o roteiro de aceitação precisa ter? (SC-001) | resolved | Padrão do agente: pelo menos 10 trocas de item. |
 | O log do roteiro tem limite de conteúdo? (security CHK009) | resolved | Padrão do agente: só nomes de peças, horários e o texto dos números mostrados (FR-009). |
@@ -205,4 +208,6 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 | Registrar os campos lidos pelo cálculo? | resolved | Vinicius, 09/11: não. |
 | Medir o impacto removendo ou alterando a peça? | resolved | Desenho aprovado pelo Vinicius, 09/11: alterando valores; remoção só quando não der. |
 | Peça desconhecida depois de um patch? | resolved | Vinicius, 09/11: cai na leitura lenta, sem quebrar (FR-014). |
-| Das 65 peças com impacto que não mudaram no roteiro (grupo C de `prototipo/revisar.md`), quais mudam com ação do dia a dia e sobem para a rápida? | open | |
+| Das 65 peças com impacto que não mudaram no roteiro (grupo C de `prototipo/revisar.md`), quais sobem para a rápida? | resolved | Vinicius, 09/11: 61 sobem; as 4 de outros personagens ficam na lenta (FR-012). |
+| Qual é o limite numérico de leituras por segundo? (security CHK004) | to plan | Vinicius, 09/11: sai do segundo protótipo com medição de quadros; a regra está no FR-020. |
+| Como cumprir menos de 1 s? | to plan | Vinicius, 09/11: mais leituras por segundo e cálculo enxuto, provados por um segundo protótipo com medição de quadros. |
