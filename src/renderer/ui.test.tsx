@@ -84,10 +84,23 @@ test.each([
 });
 
 test("a name with markup shows as literal text", () => {
-  render(<ScreenMapPanel ctx={ctx({ label: "<b>Bold</b>" })} send={send} />);
+  render(
+    <ScreenMapPanel
+      ctx={ctx(
+        {},
+        {
+          character: "<b>Tester</b>",
+          names: { map: "<b>Map</b>", afk: "<i>Mob</i>" },
+        },
+      )}
+      send={send}
+    />,
+  );
 
-  expect(screen.getByText("<b>Bold</b>")).toBeDefined();
-  expect(document.querySelector("b")).toBe(null);
+  expect(screen.getByText("<b>Map</b>")).toBeDefined();
+  expect(screen.getByText("<i>Mob</i>")).toBeDefined();
+  expect(screen.getByText("<b>Tester</b>")).toBeDefined();
+  expect(document.querySelector("b, i")).toBe(null);
 });
 
 test("the panel says when no character is selected", () => {
