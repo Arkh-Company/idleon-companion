@@ -33,9 +33,30 @@ screen from another), by property reads only.
 _Avoid_: snapshot, sample, poll
 
 **Slice**:
-A piece of the account's state of up to 25 KB, read by property reads only and carried over the **Link**; one every 250 ms,
+A piece of the account's state of up to 25 KB, read by property reads only and carried over the **Link**; 12 a second,
 never two at once, and nothing stays in the game between them.
 _Avoid_: snapshot, chunk, batch
+
+**Catalog**:
+The table in the repository with one line per piece of the game's state: what it is, which numbers it affects, when it
+changes and in which reading it goes. It is the single source of the reading lists, and has no account value, player
+name or text of the game's code.
+_Avoid_: reading list, manifest
+
+**Fast reading**:
+Every piece of the **Catalog** with a proven impact on a number the companion shows, except the pieces of other
+characters, so that a change reaches the number in less than 1 s.
+_Avoid_: `formula`
+
+**Slow reading**:
+Every other piece, one the **Catalog** does not know included: still read, only later.
+_Avoid_: `other`
+
+**Actions slice**:
+The **Slice** of the **Fast reading** with what changes together when the player acts, such as the equipment and the game's
+caches of it, with 3 of the 12 reads of each second. A change in it is calculated when the next read comes equal, or
+after 3 reads in a row that keep changing it.
+_Avoid_: equipment slice, priority slice
 
 **Mosaic**:
 The app's copy of the state, in memory only and never saved or logged, with the newest value of each piece that the
@@ -44,7 +65,7 @@ _Avoid_: snapshot, retrato, cache
 
 **Sentinel**:
 The character and the map that every **Slice** carries: a new character starts the **Mosaic** over, and a new map waits a
-whole rotation before the next calculation.
+whole pass of the **Fast reading** before the next calculation.
 _Avoid_: marker, version
 
 **Calculator**:
@@ -59,12 +80,12 @@ _Avoid_: anti-cheat check, scanner
 
 ## Names
 
-**Catalog**:
+**Screen catalog**:
 The list of **Screen rules** that ships in the companion, each with its proof; the player never adds to it.
 _Avoid_: dictionary, mapping, names list
 
 **Screen rule**:
-One line of the **Catalog**: the equalities a **Reading** must meet, all of them, the screen's name and the proof of that
+One line of the **Screen catalog**: the equalities a **Reading** must meet, all of them, the screen's name and the proof of that
 name (a photo or a sprite). The rule with the most conditions wins.
 _Avoid_: entry, pattern, match
 

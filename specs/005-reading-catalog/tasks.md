@@ -259,16 +259,16 @@ Verify: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `ju
 
 ### Tests for Phase 6
 
-- [ ] T026 Check the documents against the code in src/shared/modules.test.ts
+- [X] T026 Check the documents against the code in src/shared/modules.test.ts
   - Files: `src/shared/modules.test.ts` only if it lists the modules of `src/shared`
   - Cases: the new entry is listed, when that test lists them; otherwise no change.
 
 ### Implementation for Phase 6
 
-- [ ] T027 [P] Reading in ARCHITECTURE.md
+- [X] T027 [P] Reading in ARCHITECTURE.md
   - Files: `ARCHITECTURE.md`
   - Changes: reading at 12 per second by the catalog, the slot division, the long-lived context (ADR 0007), the settled `ações` slice.
-- [ ] T028 [P] Terms in GLOSSARY.md
+- [X] T028 [P] Terms in GLOSSARY.md
   - Files: `GLOSSARY.md`
   - Changes: **Catalog**, **Fast reading**, **Slow reading**, **Actions slice**; _Avoid_ `formula` and `other` for readings.
 
