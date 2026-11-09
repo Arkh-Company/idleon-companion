@@ -214,7 +214,7 @@ export function startStateReader(deps: {
     if (!Array.isArray(v.out) || v.out.length !== reads.length)
       throw new Error("bad slice");
     const values = isVars
-      ? [(now && (await deps.vars?.read(ref))) ?? {}]
+      ? [(now && (await deps.vars?.read(ref, () => stopped))) ?? {}]
       : (v.out as unknown[]);
     if (stopped) return;
     fails = 0;

@@ -33,16 +33,18 @@ function game(attrs: Record<string, unknown> = {}) {
 }
 type Engine = ReturnType<typeof game>;
 
-const footprint = (engine: Engine) =>
-  [globalThis, engine, engine.gameAttributes, engine.gameAttributes.h].map(
-    (o) => Reflect.ownKeys(o).map(String),
+const footprint = (engine: object) => {
+  const attrs = (engine as Partial<Engine>).gameAttributes;
+  return [globalThis, engine, ...(attrs ? [attrs, attrs.h] : [])].map((o) =>
+    Reflect.ownKeys(o).map(String),
   );
+};
 
-function run(file: string, engine: Engine, args: unknown[]): unknown {
+function run(file: string, engine: object, args: unknown[]): unknown {
   const before = footprint(engine);
   const fn = runInThisContext(
     loadReadSource(join(import.meta.dirname, file)),
-  ) as (this: Engine, ...a: unknown[]) => unknown;
+  ) as (this: object, ...a: unknown[]) => unknown;
   sprung = 0;
   const out = fn.apply(engine, args);
   expect(sprung).toBe(0);
@@ -66,6 +68,8 @@ const list = (engine: Engine = game()) =>
 const slice = (engine: Engine, paths: string[][]) =>
   run("state-slice.js", engine, [paths]) as Sliced;
 const copy = (value: unknown) => slice(game({ V: value }), [["V"]]).out[0];
+/** With `null` for the paths, the script copies its own `this`: how the objects of the `_vars` are read. */
+const copySelf = (target: object) => run("state-slice.js", target, [null]);
 
 const nest = (n: number, leaf: unknown = 1): unknown =>
   n === 0 ? leaf : { a: nest(n - 1, leaf) };
@@ -273,6 +277,46 @@ test("a toJSON is never run, accessor or function", () => {
 
 test("a Symbol.toStringTag accessor is never read", () => {
   expect(copy(withAccessor({ a: 1 }, Symbol.toStringTag))).toEqual({ a: 1 });
+});
+
+test.each([
+  ["a plain object", { a: 1, b: [2, { c: "x" }] }],
+  ["a list", [1, "a", null]],
+])("with null, the script copies its this: %s", (_name, target) => {
+  expect(copySelf(target)).toEqual(target);
+});
+
+test("with null, a map of this becomes $m and $c", () => {
+  expect(copySelf(stringMap({ a: 1 }))).toEqual({
+    $m: { a: 1 },
+    $c: "haxe.ds.StringMap",
+  });
+});
+
+test("copying this fires no accessor, on it or inside it", () => {
+  const inner = withAccessor({ b: 2 }, "trapped");
+  expect(copySelf(withAccessor({ a: 1, inner }, "trapped"))).toEqual({
+    a: 1,
+    inner: { b: 2 },
+  });
+  expect(copySelf([withAccessor({ b: 2 }, "trapped")])).toEqual([{ b: 2 }]);
+});
+
+test("copying this calls no function, not even a toJSON", () => {
+  expect(copySelf({ a: 1, f: fnTrap(), toJSON: fnTrap() })).toEqual({
+    a: 1,
+    f: { $x: 1 },
+    toJSON: { $x: 1 },
+  });
+  expect(copySelf(fnTrap())).toEqual({ $x: 1 });
+});
+
+test("copying this leaves nothing on what it copies", () => {
+  const inner = { b: 2 };
+  const target = { a: inner };
+  copySelf(target);
+  expect(Reflect.ownKeys(target)).toEqual(["a"]);
+  expect(Reflect.ownKeys(inner)).toEqual(["b"]);
 });
 
 test("the slice writes nothing on what it copies", () => {

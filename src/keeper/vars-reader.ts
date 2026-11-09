@@ -5,8 +5,11 @@ import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
 
 export interface VarsReader {
-  /** The values of the closed list, or `null` when they cannot be had: it never rejects. */
-  read(ref: EngineRef): Promise<Record<string, unknown> | null>;
+  /** The values of the closed list, or `null` when they cannot be had: it never rejects. A search ends at `isStopped`. */
+  read(
+    ref: EngineRef,
+    isStopped: () => boolean,
+  ): Promise<Record<string, unknown> | null>;
   release(ref: EngineRef | null): Promise<void>;
 }
 
@@ -39,7 +42,11 @@ const closedList = new Set(VARS_KEYS);
 const listed = (props: Prop[]): Valued[] =>
   props.filter((p): p is Valued => closedList.has(p.name) && "value" in p);
 
-export function createVarsReader(send: Cdp["send"]): VarsReader {
+/** `copySource` is the text of `state-slice.js`: by value, the V8 serializer would fire the getters of a game object. */
+export function createVarsReader(
+  send: Cdp["send"],
+  copySource: string,
+): VarsReader {
   /** The engine already searched; its search, right or wrong, is not repeated. */
   let searched: string | null = null;
   let holder: string | null = null;
@@ -71,10 +78,17 @@ export function createVarsReader(send: Cdp["send"]): VarsReader {
     functionDeclaration: string,
     returnByValue: boolean,
     objectGroup: string,
+    args: { value: unknown }[] = [],
   ): Promise<Remote> {
     const answer = (await send(
       "Runtime.callFunctionOn",
-      { objectId, functionDeclaration, returnByValue, objectGroup },
+      {
+        objectId,
+        functionDeclaration,
+        returnByValue,
+        objectGroup,
+        arguments: args,
+      },
       ref.sessionId,
     )) as { result?: Remote; exceptionDetails?: unknown };
     if (answer.exceptionDetails !== undefined || !answer.result)
@@ -102,7 +116,10 @@ export function createVarsReader(send: Cdp["send"]): VarsReader {
   };
 
   /** Walks the scopes of the function, breadth first, and keeps a reference to the first object with the keys. */
-  async function search(ref: EngineRef): Promise<string | null> {
+  async function search(
+    ref: EngineRef,
+    isStopped: () => boolean,
+  ): Promise<string | null> {
     const fn = await handle(ref, ref.objectId, TAKE_FUNCTION, READ_GROUP);
     const scopes = (await properties(ref, fn)).internal.find(
       (p) => p.name === "[[Scopes]]",
@@ -114,6 +131,7 @@ export function createVarsReader(send: Cdp["send"]): VarsReader {
         queue.push({ id: value.objectId, depth: 0 });
     // ponytail: no visited set, as CDP gives a new id to each sight of an object; the depth and the limit end the walk.
     for (const { id, depth } of queue) {
+      if (isStopped()) return null;
       const { result } = await properties(ref, id);
       if (listed(result).length >= MIN_KEYS)
         return handle(ref, id, SELF, HOLDER_GROUP);
@@ -137,20 +155,24 @@ export function createVarsReader(send: Cdp["send"]): VarsReader {
     const out: Record<string, unknown> = {};
     for (const { name, value } of listed((await properties(ref, self)).result))
       out[name] = value.objectId
-        ? (await run(ref, value.objectId, SELF, true, READ_GROUP)).value
+        ? (
+            await run(ref, value.objectId, copySource, true, READ_GROUP, [
+              { value: null },
+            ])
+          ).value
         : value.value;
     return out;
   }
 
   return {
-    async read(ref) {
+    async read(ref, isStopped) {
       const engine = `${ref.sessionId}:${ref.objectId}`;
       if (engine === searched && holder === null) return null;
       try {
         if (engine !== searched) {
           searched = engine;
           holder = null;
-          holder = await search(ref);
+          holder = await search(ref, isStopped);
         }
         return holder === null ? null : await readHolder(ref, holder);
       } catch {

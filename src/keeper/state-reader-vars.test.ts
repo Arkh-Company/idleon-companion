@@ -77,7 +77,7 @@ test("the read is given the engine and runs inside the turn", async () => {
   open();
   await poll;
   await vi.advanceTimersByTimeAsync(0);
-  expect(vars.read).toHaveBeenCalledWith(h.h.ref);
+  expect(vars.read).toHaveBeenCalledWith(h.h.ref, expect.any(Function));
 });
 
 test("no character: the _vars are not read", async () => {
@@ -93,15 +93,21 @@ test("no character: the _vars are not read", async () => {
 
 test("stop() during the read of the _vars gives no slice and releases after it", async () => {
   let open: (v: Record<string, unknown>) => void = () => undefined;
+  let isStopped: () => boolean = () => false;
   const vars = {
-    read: vi.fn(() => new Promise<Record<string, unknown>>((r) => (open = r))),
+    read: vi.fn((_ref: unknown, stoppedNow: () => boolean) => {
+      isStopped = stoppedNow;
+      return new Promise<Record<string, unknown>>((r) => (open = r));
+    }),
     release: vi.fn(() => Promise.resolve()),
   };
   const { reader, slices } = setup({}, vars);
   await tick(2);
   expect(vars.read).toHaveBeenCalledTimes(1);
+  expect(isStopped()).toBe(false);
   const stopped = reader.stop();
   await vi.advanceTimersByTimeAsync(0);
+  expect(isStopped()).toBe(true);
   expect(vars.release).not.toHaveBeenCalled();
   open({ TomePct: 7 });
   await stopped;

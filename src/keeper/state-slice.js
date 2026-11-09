@@ -1,6 +1,7 @@
-// Copies the pieces in `paths` to plain values, with the engine as `this`. Data properties only: no game function, no
-// getter, nothing left in the page (src/keeper/state-read-only.test.ts proves it). Array items are read by index, as
-// measured: no game code defines accessors on them.
+// Copies the pieces in `paths` to plain values, with the engine as `this`; with `null` for `paths`, copies `this` itself
+// (an object of the `_vars`). Data properties only: no game function, no getter, nothing left in the page
+// (src/keeper/state-read-only.test.ts proves it). Array items are read by index, as measured: no game code defines
+// accessors on them.
 (function (paths) {
   var onPath = new WeakSet();
   var own = function (o, k) {
@@ -47,6 +48,7 @@
     onPath.delete(v);
     return res;
   };
+  if (paths === null) return walk(this, 0);
   var g = this.gameAttributes.h;
   var out = [];
   for (var n = 0; n < paths.length; n++) {
