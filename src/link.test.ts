@@ -97,7 +97,7 @@ test("a late client gets no slice", async () => {
       sentinel: { char: "Tester", map: 1 },
       pieces: [],
       at: 1,
-      cycles: { formula: 0, all: 0 },
+      cycles: { fast: 0, all: 0 },
     },
   });
   server.publish({ type: "reading", reading });

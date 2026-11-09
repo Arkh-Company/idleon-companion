@@ -1,6 +1,6 @@
 // The fake game of the state reader's tests: a scripted `send`, invented keys and a 250 ms tick.
 import { expect, vi } from "vitest";
-import { FORMULA_KEYS } from "../shared/index.ts";
+import { CATALOG } from "../shared/index.ts";
 import type { StatePath, StateSlice } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
@@ -8,7 +8,10 @@ import { inTurn, startStateReader } from "./state-reader.ts";
 import type { VarsReader } from "./vars-reader.ts";
 
 const REF: EngineRef = { sessionId: "S", objectId: "O", pausedMs: 1 };
-export const formulaKeys = (n: number) => [...FORMULA_KEYS].slice(0, n);
+export const formulaKeys = (n: number) =>
+  CATALOG.filter((r) => r.reading === "rápida" && !r.name.includes("."))
+    .slice(0, n)
+    .map((r) => r.name);
 
 interface Game {
   char: string | null;

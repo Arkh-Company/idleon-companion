@@ -5,14 +5,15 @@ export { modulesFor } from "./modules.ts";
 export { toReading } from "./reading.ts";
 export { READ_NULLS } from "./reading-fixture.ts";
 export { identifyScreen } from "./screens/identify.ts";
+export { CATALOG, classOf, groupOf } from "./reading-catalog.ts";
 export {
-  classOf,
-  FORMULA_KEYS,
-  NUMBER_IDS,
-  STATE_EXCLUDED,
-  STATE_SPLIT,
-  VARS_KEYS,
-} from "./state.ts";
+  ACTIONS_GROUP,
+  catalogName,
+  catalogProblems,
+  parseCatalog,
+} from "./reading-catalog-rules.ts";
+export type { CatalogRow } from "./reading-catalog-rules.ts";
+export { NUMBER_IDS, STATE_EXCLUDED, STATE_SPLIT, VARS_KEYS } from "./state.ts";
 export type {
   CalcNumbers,
   StateClass,

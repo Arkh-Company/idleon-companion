@@ -3,7 +3,7 @@
 import { join } from "node:path";
 import { runInThisContext } from "node:vm";
 import { expect, test } from "vitest";
-import { FORMULA_KEYS, STATE_EXCLUDED, STATE_SPLIT } from "../shared/index.ts";
+import { CATALOG, STATE_EXCLUDED, STATE_SPLIT } from "../shared/index.ts";
 import { loadReadSource } from "./read-source.ts";
 
 let sprung = 0;
@@ -92,8 +92,8 @@ test("the list leaves out the excluded tables and the split maps", () => {
 
 test("the list leaves out only the excluded tables and the split maps", () => {
   const attrs: Record<string, unknown> = {};
-  for (const key of [...FORMULA_KEYS, ...STATE_EXCLUDED, "ChestMap"])
-    attrs[key] = [1];
+  const named = CATALOG.map((r) => r.name).filter((n) => !n.includes("."));
+  for (const key of [...named, ...STATE_EXCLUDED, "ChestMap"]) attrs[key] = [1];
   for (const key of STATE_SPLIT) attrs[key] = stringMap({ x: 1 });
   const left = new Set([...STATE_EXCLUDED, ...STATE_SPLIT]);
   const expected = Object.keys(game(attrs).gameAttributes.h).filter(

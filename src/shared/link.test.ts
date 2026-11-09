@@ -60,7 +60,7 @@ test.each<LinkMessage>([
       sentinel: { char: "A", map: 7 },
       pieces: [{ path: ["Cards"], value: [1, 2] }],
       at: 5,
-      cycles: { formula: 1, all: 0 },
+      cycles: { fast: 1, all: 0 },
     },
   },
   { type: "gameFiles", resources: "C:\\Game\\resources" },

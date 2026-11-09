@@ -1,15 +1,15 @@
 // The pieces of the game's state, how they travel in slices, and the numbers calculated from them (spec 004).
 
-/** A top key of the state, or a split map and one of its children. */
-export type StatePath = [string] | [string, string];
-export type StateClass = "formula" | "other";
+/** A top key of the state, a split map and one of its children, or a subkey of a character. */
+export type StatePath = [string] | [string, string] | [string, string, string];
+export type StateClass = "fast" | "slow";
 
 /** What one read gives and the link carries. `value` is only data for the calculator. */
 export interface StateSlice {
   sentinel: { char: string | null; map: number };
   pieces: { path: StatePath; value: unknown }[];
   at: number;
-  cycles: { formula: number; all: number };
+  cycles: { fast: number; all: number };
 }
 
 /** Tables the calculator builds from the game's own classes: they never travel. */
@@ -56,158 +56,6 @@ export const VARS_KEYS: readonly string[] = [
   "EventActive",
 ];
 
-/** Top keys the formulas read (research R2): only a priority, no key is left out. */
-export const FORMULA_KEYS: ReadonlySet<string> = new Set([
-  "AFKtarget",
-  "AchieveReg",
-  "AnvilCraftStatus",
-  "AnvilPAstats",
-  "ArcadeUpg",
-  "Arcane",
-  "Atoms",
-  "BGunlocked",
-  "Boats",
-  "Breeding",
-  "BribeStatus",
-  "Bubba",
-  "BuffsActive",
-  "BundlesReceived",
-  "Captains",
-  "Cards",
-  "CauldronBubbles",
-  "CauldronInfo",
-  "CauldronJobs",
-  "CauldronP2W",
-  "CharacterClass",
-  "Chat",
-  "ChestOrder",
-  "ChestQuantity",
-  "CogOrder",
-  "Compass",
-  "CookMaster",
-  "Cooking",
-  "CurrenciesOwned",
-  "CurrentMap",
-  "Divinity",
-  "DoOnceREAL",
-  "Dream",
-  "DummyList",
-  "DummyList2",
-  "DummyList3",
-  "DummyMap",
-  "DummyNumber",
-  "DummyNumber2",
-  "DummyNumber3",
-  "DummyNumber4",
-  "DummyNumber5",
-  "DummyNumbersStatManager",
-  "DummyPixelType",
-  "DummyText",
-  "DummyText2",
-  "DummyText3",
-  "DungItems",
-  "DungUpg",
-  "EquipmentMap",
-  "EquipmentOrder",
-  "EquipmentQuantity",
-  "Exp0",
-  "ExpReq0",
-  "FamilyValuesMap",
-  "FarmCrop",
-  "FarmPlot",
-  "FarmRank",
-  "FarmUpg",
-  "FoodSlotsOwned",
-  "Gaming",
-  "GamingSprout",
-  "GemItemsPurchased",
-  "GetPlayersUsernames",
-  "GreenStacks",
-  "Grimoire",
-  "GuildTasks",
-  "HintStatus",
-  "Holes",
-  "InventoryOrder",
-  "InventorySlotsOwned",
-  "ItemMap",
-  "KRbest",
-  "KillsLeft2Advance",
-  "Lab",
-  "Lv0",
-  "MapBon",
-  "MapMonstersList",
-  "Meals",
-  "Menagerie",
-  "MenuType",
-  "MenuType2",
-  "Money",
-  "MonsterAlive",
-  "MonsterHP",
-  "MonsterWillDie",
-  "MonstersOnScreen",
-  "NONdummies",
-  "Ninja",
-  "NodeLength",
-  "NodeNeighbors",
-  "NodeX",
-  "NodeY",
-  "Number2Letter",
-  "OptionsList",
-  "OptionsListAccount",
-  "OtherPlayers",
-  "PersonalValuesMap",
-  "Pets",
-  "PetsStored",
-  "PlayerHP",
-  "PlayerMP",
-  "PlayerMoveMaps",
-  "PlayerStuff",
-  "PopupType",
-  "PostOfficeInfo",
-  "PrayersActive",
-  "PrayersUnlocked",
-  "Printer",
-  "QuestComplete",
-  "Refinery",
-  "Research",
-  "Ribbon",
-  "Rift",
-  "RoyalG",
-  "RoyalMaps",
-  "SailChests",
-  "Sailing",
-  "SaltLick",
-  "SceneEvents_n",
-  "ServerGemsReceived",
-  "ShrineInfo",
-  "SkillLevels",
-  "Spelunk",
-  "StampLevel",
-  "StampLevelMAX",
-  "StatueG",
-  "StatueLevels",
-  "SteamAchieve",
-  "Summon",
-  "Sushi",
-  "Tasks",
-  "Territory",
-  "Tess",
-  "TimeAway",
-  "TotemInfo",
-  "TowerInfo",
-  "UpgVault",
-  "UserInfo",
-  "WeeklyBoss",
-  "dummyActor",
-  "dummyCritDmgMulti",
-  "dummyDamageDealt",
-  "dummyDisplayEXPTYPE",
-  "dummyDisplayPopup",
-  "dummyMonsterID",
-  "dummyMonsterNODE",
-  "dummyMonsterTYPE",
-]);
-
 export const NUMBER_IDS = [
   "damageMax",
   "damageMin",
@@ -224,15 +72,3 @@ export const NUMBER_IDS = [
 
 /** One number per id; `null` means it could not be calculated. */
 export type CalcNumbers = Record<(typeof NUMBER_IDS)[number], number | null>;
-
-/** The reading priority of a piece, given the active character. */
-export function classOf(path: StatePath, char: string | null): StateClass {
-  const [top, child] = path;
-  const formula =
-    top === "PlayerDATABASE"
-      ? child === char
-      : top === "DNSM"
-        ? child === "CompanionBon" || child === "ShinyBonusS"
-        : top === "_vars" || FORMULA_KEYS.has(top);
-  return formula ? "formula" : "other";
-}

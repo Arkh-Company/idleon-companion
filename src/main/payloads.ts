@@ -93,12 +93,12 @@ export function linkState(v: unknown): StateSlice | null {
   if (!isObject(sentinel) || !isObject(cycles) || !Array.isArray(pieces))
     return null;
   const { char, map } = sentinel;
-  const { formula, all } = cycles;
+  const { fast, all } = cycles;
   if (
     (char !== null && typeof char !== "string") ||
     typeof map !== "number" ||
     typeof at !== "number" ||
-    typeof formula !== "number" ||
+    typeof fast !== "number" ||
     typeof all !== "number" ||
     !pieces.every((p: unknown) => isObject(p) && isPath(p.path))
   )
@@ -110,7 +110,7 @@ export function linkState(v: unknown): StateSlice | null {
       value,
     })),
     at,
-    cycles: { formula, all },
+    cycles: { fast, all },
   };
 }
 

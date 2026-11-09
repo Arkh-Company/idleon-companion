@@ -26,6 +26,12 @@ function belongs(path: StatePath): boolean {
     : STATE_SPLIT.includes(top);
 }
 
+/** Until the store goes by the catalog (T018): the `_vars` and the whole active character still count as fast, as in 004. */
+const isFast = (path: StatePath, char: string): boolean =>
+  path[0] === "_vars" ||
+  (path[0] === "PlayerDATABASE" && path[1] === char) ||
+  classOf(path, char) === "fast";
+
 /** The closed list and nothing else, whatever the piece carries. */
 function closedList(value: unknown): Record<string, unknown> {
   const kept: Record<string, unknown> = {};
@@ -43,7 +49,7 @@ export function createStateStore(cb: {
   const pieces = new Map<string, Piece>();
   let changed = false;
   let calculated = false;
-  let formula = 0;
+  let fast = 0;
   /** Where this mosaic started: `cycles` counts the keeper's rotations, not the ones it received whole. */
   let start: { all: number; fresh: boolean } | null = null;
 
@@ -51,7 +57,7 @@ export function createStateStore(cb: {
     pieces.clear();
     changed = false;
     calculated = false;
-    formula = 0;
+    fast = 0;
     start = null;
   }
 
@@ -83,7 +89,7 @@ export function createStateStore(cb: {
       if (char === null) return;
       start ??= {
         all: s.cycles.all,
-        fresh: s.cycles.all === 0 && s.cycles.formula === 0,
+        fresh: s.cycles.all === 0 && s.cycles.fast === 0,
       };
       for (const { path, value } of s.pieces) {
         if (!belongs(path)) continue;
@@ -92,17 +98,17 @@ export function createStateStore(cb: {
         const text = JSON.stringify(kept);
         // A `_vars` read that failed comes empty: it must not erase the good ones. With none yet, `vars` stays `{}`.
         if (path[0] === "_vars" && text === "{}") continue;
-        if (pieces.get(key)?.text !== text && classOf(path, char) === "formula")
+        if (pieces.get(key)?.text !== text && isFast(path, char))
           changed = true;
         pieces.set(key, { path, value: kept, text });
       }
-      // A map change zeroes `formula` in the keeper, so a rise always means a whole rotation on the new map.
-      const rose = s.cycles.formula > formula;
-      formula = s.cycles.formula;
+      // A map change zeroes `fast` in the keeper, so a rise always means a whole rotation on the new map.
+      const rose = s.cycles.fast > fast;
+      fast = s.cycles.fast;
       // Joined midway, the next rise of `all` only closes the rotation already begun: it takes one more.
       const due = calculated
         ? rose && changed
-        : s.cycles.formula >= 1 &&
+        : s.cycles.fast >= 1 &&
           s.cycles.all >= start.all + (start.fresh ? 1 : 2);
       if (!due) return;
       calculated = true;

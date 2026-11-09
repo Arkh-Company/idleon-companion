@@ -44,19 +44,23 @@ test("the slice of the _vars carries the sentinel the game answered", async () =
 test("it takes a formula slot, and three formula then one other still holds", async () => {
   const { slices } = setup({}, fakeVars());
   await tick(5);
+  // The reader puts the _vars in the fast pass, whatever the catalog says of them.
   expect(
-    slices.map((s) => classOf(s.pieces[0]?.path ?? ["none"], "Hero")),
-  ).toEqual(["formula", "formula", "formula", "other"]);
+    slices.map((s) => {
+      const path = s.pieces[0]?.path ?? ["none"];
+      return path[0] === "_vars" ? "fast" : classOf(path, "Hero");
+    }),
+  ).toEqual(["fast", "fast", "fast", "slow"]);
 });
 
 test("a formula rotation counts only with its _vars and its pieces read", async () => {
   const { slices } = setup({}, fakeVars());
   await tick(5);
   expect(slices.map((s) => s.cycles)).toEqual([
-    { formula: 0, all: 0 },
-    { formula: 1, all: 0 },
-    { formula: 1, all: 0 },
-    { formula: 1, all: 1 },
+    { fast: 0, all: 0 },
+    { fast: 1, all: 0 },
+    { fast: 1, all: 0 },
+    { fast: 1, all: 1 },
   ]);
 });
 

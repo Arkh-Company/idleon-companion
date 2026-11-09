@@ -116,7 +116,7 @@ export function setup() {
     },
     slice(
       pieces: Piece[] = [],
-      cycles: StateSlice["cycles"] = { formula: 0, all: 0 },
+      cycles: StateSlice["cycles"] = { fast: 0, all: 0 },
       char: string | null = CHAR,
     ) {
       p.message({
@@ -126,9 +126,9 @@ export function setup() {
     },
     /** A whole rotation: the slice before it and the one that closes it. */
     rotation(pieces: Piece[] = [vars], char: string | null = CHAR) {
-      h.slice([], { formula, all: formula }, char);
+      h.slice([], { fast: formula, all: formula }, char);
       formula++;
-      h.slice(pieces, { formula, all: formula }, char);
+      h.slice(pieces, { fast: formula, all: formula }, char);
     },
     restartCycles() {
       formula = 0;

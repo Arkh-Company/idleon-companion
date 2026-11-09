@@ -10,7 +10,7 @@ const VARS_PATH: StatePath = ["_vars"];
 const MAX_SLICE_BYTES = 25_000;
 const UNREAD_CHARACTER_BYTES = 25_000;
 const UNREAD_BYTES = 2_000;
-/** Of every 4 slices, 3 are `formula` and the last one is `other` (research R2). */
+/** Of every 4 slices, 3 are `fast` and the last one is `slow` (research R2). */
 const SLOTS_PER_OTHER = 4;
 const FAILS_BEFORE_WARNING = 10;
 
@@ -76,6 +76,12 @@ function sentinelOf(v: Record<string, unknown>): Sentinel | null {
   return { char: v.char, map: v.map };
 }
 
+/** Until the reader goes by the catalog (T010): the whole active character stays in the fast pass, as in 004. */
+const classIn = (path: StatePath, char: string): StateClass =>
+  path[0] === "PlayerDATABASE" && path[1] === char
+    ? "fast"
+    : classOf(path, char);
+
 const isStrings = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((x) => typeof x === "string");
 
@@ -105,10 +111,10 @@ export function startStateReader(deps: {
   let slot = 0;
   let plan: Plan | null = null;
   let last: Sentinel | null = null;
-  let cycles = { formula: 0, all: 0 };
+  let cycles = { fast: 0, all: 0 };
   const measured = new Map<string, number>();
 
-  /** A `formula` pass starts with the `_vars`, in a slot of their own. */
+  /** A `fast` pass starts with the `_vars`, in a slot of their own. */
   const queue = (paths: StatePath[], cls: StateClass): Queue => {
     const groups = pack(
       paths.map((path) => ({
@@ -117,19 +123,19 @@ export function startStateReader(deps: {
       })),
       MAX_SLICE_BYTES,
     );
-    if (deps.vars && cls === "formula")
+    if (deps.vars && cls === "fast")
       groups.unshift([{ path: VARS_PATH, bytes: null }]);
     return { paths, groups, next: 0, done: groups.length === 0 };
   };
 
-  /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial `formula` pass. */
+  /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial `fast` pass. */
   function observe(now: Sentinel | null): void {
     if (now?.char !== last?.char) {
-      cycles = { formula: 0, all: 0 };
+      cycles = { fast: 0, all: 0 };
       plan = null;
     } else if (now?.map !== last?.map) {
-      cycles = { ...cycles, formula: 0 };
-      if (plan) plan.formula.next = 0;
+      cycles = { ...cycles, fast: 0 };
+      if (plan) plan.fast.next = 0;
     }
     last = now;
   }
@@ -175,10 +181,10 @@ export function startStateReader(deps: {
     ];
     const of = (cls: StateClass) =>
       queue(
-        paths.filter((p) => classOf(p, now.char) === cls),
+        paths.filter((p) => classIn(p, now.char) === cls),
         cls,
       );
-    if (paths.length > 0) plan = { formula: of("formula"), other: of("other") };
+    if (paths.length > 0) plan = { fast: of("fast"), slow: of("slow") };
   }
 
   /** The slice's pieces are read: moves the cursor and raises the counts when a pass of the class ends. */
@@ -188,8 +194,8 @@ export function startStateReader(deps: {
     q.next++;
     if (q.next < q.groups.length) return;
     p[cls] = { ...queue(q.paths, cls), done: true };
-    if (cls === "formula") cycles = { ...cycles, formula: cycles.formula + 1 };
-    if (p.formula.done && p.other.done) {
+    if (cls === "fast") cycles = { ...cycles, fast: cycles.fast + 1 };
+    if (p.fast.done && p.slow.done) {
       cycles = { ...cycles, all: cycles.all + 1 };
       plan = null; // the next slot lists the keys again
     }
@@ -197,13 +203,13 @@ export function startStateReader(deps: {
 
   async function readSlice(ref: EngineRef, p: Plan): Promise<void> {
     const wanted: StateClass =
-      slot % SLOTS_PER_OTHER === SLOTS_PER_OTHER - 1 ? "other" : "formula";
+      slot % SLOTS_PER_OTHER === SLOTS_PER_OTHER - 1 ? "slow" : "fast";
     const cls: StateClass =
       p[wanted].groups.length > 0
         ? wanted
-        : wanted === "formula"
-          ? "other"
-          : "formula";
+        : wanted === "fast"
+          ? "slow"
+          : "fast";
     const q = p[cls];
     const paths = (q.groups[q.next] ?? []).map((x) => x.path);
     const isVars = paths[0] === VARS_PATH;

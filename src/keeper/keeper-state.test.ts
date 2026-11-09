@@ -57,7 +57,7 @@ const SLICE: StateSlice = {
   sentinel: { char: "Tester", map: 7 },
   pieces: [{ path: ["Cards"], value: "FAKE-STATE-VALUE" }],
   at: 11,
-  cycles: { formula: 2, all: 1 },
+  cycles: { fast: 2, all: 1 },
 };
 
 /** A running keeper whose game and reader are fakes. */

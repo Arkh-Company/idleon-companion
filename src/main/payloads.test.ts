@@ -146,7 +146,7 @@ const slice = {
     { path: ["PlayerDATABASE", "A"], value: { $m: {} } },
   ],
   at: 5,
-  cycles: { formula: 1, all: 0 },
+  cycles: { fast: 1, all: 0 },
 };
 const withPiece = (piece: unknown) => ({ ...slice, pieces: [piece] });
 
@@ -191,11 +191,11 @@ test.each([
   ["no cycles", { ...slice, cycles: undefined }],
   [
     "a formula cycle that is not a number",
-    { ...slice, cycles: { formula: "1", all: 0 } },
+    { ...slice, cycles: { fast: "1", all: 0 } },
   ],
   [
     "an all cycle that is not a number",
-    { ...slice, cycles: { formula: 1, all: null } },
+    { ...slice, cycles: { fast: 1, all: null } },
   ],
 ])("a link slice with %s is refused", (_name, value) => {
   expect(linkState(value)).toBeNull();

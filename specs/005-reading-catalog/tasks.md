@@ -41,7 +41,7 @@ a reading diverges from the rule.
 
 ### Tests for Phase 1
 
-- [ ] T001 [P] Catalog rules tests in src/shared/reading-catalog-rules.test.ts
+- [X] T001 [P] Catalog rules tests in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases, all with invented rows: `parseCatalog` reads a table of 2 rows into `CatalogRow`, with `numbers` as a list and
     `nenhum`, `não medido` and `só quebra` as an empty list; a row with a missing column throws; `catalogName` maps
@@ -52,26 +52,26 @@ a reading diverges from the rule.
     the row when: `reading` is `rápida` with no declared number, `lenta` with a declared number and no `OutrosPersonagens.`
     prefix, `rápida` on an `OutrosPersonagens.` row, `nature` outside the 5 values, `reading` outside the 2 values, or a
     name repeated.
-- [ ] T002 [P] Real catalog test in src/shared/reading-catalog.test.ts
+- [X] T002 [P] Real catalog test in src/shared/reading-catalog.test.ts
   - Files: `src/shared/reading-catalog.test.ts`
   - Cases: `catalogProblems(CATALOG, NUMBER_IDS)` is empty (SC-004, SC-006); every row has every column filled (FR-002);
     the fast rows sum 97 and the `ações` rows are 13; no row name has more than one dot-separated prefix from the 4 known
     ones; no cell of the file matches a list of invented character names used as a canary, and no `name` equals a key
     of `PlayerDATABASE` in the invented fixture (FR-004).
-- [ ] T003 [P] Shared types tests in src/shared/state.test.ts
+- [X] T003 [P] Shared types tests in src/shared/state.test.ts
   - Files: `src/shared/state.test.ts` (existing: the `classOf` cases of `formula`/`other` move to T001 and this file keeps what
     is left)
   - Cases: `StatePath` accepts 1, 2 and 3 levels; `NUMBER_IDS` still has the 11 ids in the same order as `TARGETS`.
 
 ### Implementation for Phase 1
 
-- [ ] T004 Create the catalog in src/shared/reading-catalog.md
+- [X] T004 Create the catalog in src/shared/reading-catalog.md
   - Files: `src/shared/reading-catalog.md`
   - From `specs/005-reading-catalog/prototipo/catalogo.md`, every row, with the columns kept and one more at the end,
     `Grupo`: `ações` for the 11 rows of section A of `prototipo/revisar.md`, `EquipmentMap` and `DNSM.SetBonusTOTz`; for
     the other `rápida` rows, the `Mecânica` without " (a conferir)"; `—` for `lenta`. `Leitura` of `EquipmentMap` and
     `DNSM.SetBonusTOTz` is already `rápida`. Group rows of a group next to each other is not needed: the reader sorts.
-- [ ] T005 Catalog rules in src/shared/reading-catalog-rules.ts
+- [X] T005 Catalog rules in src/shared/reading-catalog-rules.ts
   - Files: `src/shared/reading-catalog-rules.ts`
   - Signatures: `export interface CatalogRow { name; type; bytes: number; nature; numbers: string[]; changesOn; mechanic; feature; reading: "rápida" | "lenta"; group }`;
     `parseCatalog(text: string): CatalogRow[]`; `catalogName(path: StatePath, char: string | null): string | null`;
@@ -80,12 +80,12 @@ a reading diverges from the rule.
   - Rules quoted from data-model.md: "`reading` é `rápida` se, e só se, `numbers` tem um número declarado por uma feature
     e o nome não começa com `OutrosPersonagens.`"; `nature` "dado de origem, cache derivado, tabela fixa, rascunho ou
     interface". No import with `?raw`: Node runs this file directly in T024.
-- [ ] T006 The catalog data in src/shared/reading-catalog.ts
+- [X] T006 The catalog data in src/shared/reading-catalog.ts
   - Files: `src/shared/reading-catalog.ts`, `src/shared/index.ts`, `src/shared/raw.d.ts` when `*?raw` is not declared for
     this folder
   - Signatures: `export const CATALOG: readonly CatalogRow[]`, `parseCatalog` of the `?raw` import; `index.ts` re-exports
     this file and the rules. The `classOf` and `groupOf` of `index.ts` close over `CATALOG`.
-- [ ] T007 Shared types in src/shared/state.ts
+- [X] T007 Shared types in src/shared/state.ts
   - Files: `src/shared/state.ts`, `src/shared/index.ts`
   - Changes: `StatePath` gets `[string, string, string]`; `StateClass` becomes `"fast" | "slow"`; `StateSlice.cycles` becomes
     `{ fast: number; all: number }`; `FORMULA_KEYS` and the old `classOf` are removed. `NUMBER_IDS` stays: it is what the
