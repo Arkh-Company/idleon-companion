@@ -1,7 +1,7 @@
 // The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, test } from "vitest";
+import { expect, test } from "vitest";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
 
 const maps = (names: string, ids: string) =>
@@ -108,18 +108,55 @@ test("screenNumbers sorts by value and drops repeats", () => {
   ).toEqual([7, 30, 100]);
 });
 
-describe.each(["game-tables.ts", "keeper.ts", "update-watch.ts"])(
-  "%s, where the game code passes as text, never runs it",
-  (file) => {
-    test.each([
-      ["eval", /\beval\b/],
-      ["new Function", /\bnew\s+Function\b/],
-      ["vm module", /["'](?:node:)?vm["']/],
-      ["require(", /\brequire\s*\(/],
-    ])("no %s", (_name, form) => {
-      expect(readFileSync(join(import.meta.dirname, file), "utf8")).not.toMatch(
-        form,
-      );
-    });
+const RUNS_TEXT: [string, RegExp][] = [
+  ["eval", /\beval\b/],
+  ["new Function", /\bnew\s+Function\b/],
+  ["vm module", /["'](?:node:)?vm["']/],
+  ["require(", /\brequire\s*\(/],
+];
+
+// Every file of the keeper, read.js and mock-game/ included; tests never ship.
+const KEEPER_SOURCES = readdirSync(import.meta.dirname, {
+  recursive: true,
+  encoding: "utf8",
+})
+  .map((f) => f.replaceAll("\\", "/"))
+  .filter((f) => /\.(?:tsx?|c?js|mjs)$/.test(f) && !/\.test\.tsx?$/.test(f))
+  .map((file) => ({
+    file,
+    text: readFileSync(join(import.meta.dirname, file), "utf8"),
+  }));
+
+test("the scan for running the game code reads the whole keeper", () => {
+  const files = KEEPER_SOURCES.map((s) => s.file);
+  for (const f of [
+    "game-tables.ts",
+    "keeper.ts",
+    "update-watch.ts",
+    "reader.ts",
+    "read.js",
+  ])
+    expect(files).toContain(f);
+  expect(files.filter((f) => f.startsWith("mock-game/"))).not.toEqual([]);
+});
+
+test.each(RUNS_TEXT)(
+  "no file of the keeper, where the game code passes as text, uses %s",
+  (_name, form) => {
+    expect(
+      KEEPER_SOURCES.filter((s) => form.test(s.text)).map((s) => s.file),
+    ).toEqual([]);
   },
 );
+
+test.each([
+  ["eval(code);", "eval"],
+  ["(0, globalThis.eval)(code);", "eval"],
+  ["new  Function(code)();", "new Function"],
+  ['import vm from "node:vm";', "vm module"],
+  ["import vm from 'vm';", "vm module"],
+  ['const vm = await import("node:vm");', "vm module"],
+  ['const m = require ("x");', "require("],
+])("the scan catches %s", (line, name) => {
+  expect(RUNS_TEXT.find(([n]) => n === name)?.[1].test(line)).toBe(true);
+});
