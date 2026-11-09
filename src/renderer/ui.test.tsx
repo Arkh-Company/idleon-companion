@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-// The window (spec §5.6): the Screen map panel, "Name it", the status bar and the settings view.
+// The window (spec §5.6): the Screen map panel, the status bar and the settings view.
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import type { CatalogTable, GameContext, Status } from "../shared/index.ts";
+import type { GameContext, Status } from "../shared/index.ts";
 import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
 import { ScreenMapPanel } from "./ScreenMapPanel.tsx";
@@ -21,59 +21,44 @@ const ctx = (
   screenPart: Partial<GameContext["screen"]>,
   rest: Partial<Omit<GameContext, "screen">> = {},
 ): GameContext => ({
-  screen: {
-    world: 1,
-    map: 0,
-    menu: 0,
-    window: 0,
-    tab: 0,
-    codexTab: null,
-    codexSel: null,
-    ...screenPart,
-  },
+  screen: { world: 1, map: 0, label: "None", ...screenPart },
   character: null,
   afk: null,
-  names: {},
-  unnamed: [],
+  names: { map: "Unknown map", afk: "None" },
   updatedAt: 1,
   ...rest,
 });
 
 const send = () => Promise.resolve();
 
-test("the panel shows the map with its name and the window's name", () => {
-  render(
-    <ScreenMapPanel
-      ctx={ctx(
-        { map: 264, window: 44 },
-        {
-          names: {
-            map: "Emperor's Castle Doorstep",
-            window: { name: "Sailing", status: "confirmed" },
-          },
-        },
-      )}
-      send={send}
-    />,
-  );
+test("the panel has the rows Screen, World, Map, Character and AFK target, in that order", () => {
+  render(<ScreenMapPanel ctx={ctx({})} send={send} />);
 
-  expect(screen.getByText("264 Emperor's Castle Doorstep")).toBeDefined();
-  expect(screen.getByText("Sailing")).toBeDefined();
+  expect(screen.getAllByRole("rowheader").map((h) => h.textContent)).toEqual([
+    "Screen",
+    "World",
+    "Map",
+    "Character",
+    "AFK target",
+  ]);
 });
 
-test("the panel shows the world, the menu, the Codex tab with its item, the character and the AFK target", () => {
+test("the panel has no Menu, Window or Codex tab row", () => {
+  render(<ScreenMapPanel ctx={ctx({})} send={send} />);
+
+  for (const name of ["Menu", "Window", "Codex tab"])
+    expect(screen.queryByRole("rowheader", { name })).toBe(null);
+});
+
+test("the panel shows the world, the map without its number, the character and the AFK target", () => {
   render(
     <ScreenMapPanel
       ctx={ctx(
-        { world: 6, menu: 3, codexTab: 0, codexSel: "Scripticus" },
+        { world: 6, map: 264 },
         {
           character: "Tester",
           afk: "w6d3",
-          names: {
-            menu: { name: "Codex", status: "confirmed" },
-            codexTab: { name: "Quests", status: "confirmed" },
-            afk: "Samurai Guardian",
-          },
+          names: { map: "Emperor's Castle Doorstep", afk: "Samurai Guardian" },
         },
       )}
       send={send}
@@ -81,17 +66,28 @@ test("the panel shows the world, the menu, the Codex tab with its item, the char
   );
 
   expect(screen.getByText("6")).toBeDefined();
-  expect(screen.getByText("Codex")).toBeDefined();
-  expect(screen.getByText("Quests")).toBeDefined();
-  expect(screen.getByText("Scripticus")).toBeDefined();
+  expect(screen.getByText("Emperor's Castle Doorstep")).toBeDefined();
+  expect(screen.queryByText(/264/)).toBe(null);
   expect(screen.getByText("Tester")).toBeDefined();
   expect(screen.getByText("Samurai Guardian")).toBeDefined();
 });
 
-test("the Codex tab row says the Codex is not open outside menu 3", () => {
-  render(<ScreenMapPanel ctx={ctx({ menu: 0, codexTab: 2 })} send={send} />);
+test.each([
+  "Codex › Cards › Sets",
+  "Breeding › Unknown tab",
+  "Unknown screen",
+  "None",
+])("the Screen row shows %s", (label) => {
+  render(<ScreenMapPanel ctx={ctx({ label })} send={send} />);
 
-  expect(screen.getByText("Not open")).toBeDefined();
+  expect(screen.getByRole("row", { name: `Screen ${label}` })).toBeDefined();
+});
+
+test("a name with markup shows as literal text", () => {
+  render(<ScreenMapPanel ctx={ctx({ label: "<b>Bold</b>" })} send={send} />);
+
+  expect(screen.getByText("<b>Bold</b>")).toBeDefined();
+  expect(document.querySelector("b")).toBe(null);
 });
 
 test("the panel says when no character is selected", () => {
@@ -100,130 +96,38 @@ test("the panel says when no character is selected", () => {
   expect(screen.getByText("No character selected")).toBeDefined();
 });
 
-test("an unnamed window is named with Enter in the Name it field", () => {
-  render(
-    <ScreenMapPanel
-      ctx={ctx({ window: 999 }, { unnamed: [{ table: "menu2", key: "999" }] })}
-      send={send}
-    />,
-  );
-
-  expect(screen.getByText("unnamed #999")).toBeDefined();
-  const field = screen.getByLabelText("Name it");
-  fireEvent.change(field, { target: { value: "Test" } });
-  fireEvent.keyDown(field, { key: "Enter" });
-
-  expect(companion.name).toHaveBeenCalledWith("menu2", "999", "Test");
-});
-
-test.each<[CatalogTable, Partial<GameContext["screen"]>]>([
-  ["menu", { menu: 7 }],
-  ["menu2", { window: 999 }],
-  ["codex", { menu: 3, codexTab: 9 }],
-])("Name it names the %s table", (table, screenPart) => {
-  render(
-    <ScreenMapPanel
-      ctx={ctx(screenPart, { unnamed: [{ table, key: "9" }] })}
-      send={send}
-    />,
-  );
-
-  const field = screen.getByLabelText("Name it");
-  fireEvent.change(field, { target: { value: "Test" } });
-  fireEvent.keyDown(field, { key: "Enter" });
-
-  expect(companion.name).toHaveBeenCalledWith(table, "9", "Test");
-});
-
-test("a new unnamed number in the same table starts with an empty Name it field", () => {
-  const unnamed = (key: string) =>
-    ctx({ window: Number(key) }, { unnamed: [{ table: "menu2", key }] });
-  const { rerender } = render(
-    <ScreenMapPanel ctx={unnamed("999")} send={send} />,
-  );
-  fireEvent.change(screen.getByLabelText("Name it"), {
-    target: { value: "Test" },
-  });
-
-  rerender(<ScreenMapPanel ctx={unnamed("998")} send={send} />);
-
-  expect(screen.getByLabelText<HTMLInputElement>("Name it").value).toBe("");
-});
-
-test("a name that cannot be saved stays in the field with a short message", async () => {
-  companion.name.mockRejectedValue(new Error("EPERM"));
-  render(
-    <ScreenMapPanel
-      ctx={ctx({ window: 999 }, { unnamed: [{ table: "menu2", key: "999" }] })}
-      send={send}
-    />,
-  );
-
-  const field = screen.getByLabelText<HTMLInputElement>("Name it");
-  fireEvent.change(field, { target: { value: "Test" } });
-  fireEvent.keyDown(field, { key: "Enter" });
-
-  expect(await screen.findByText("Could not save the name.")).toBeDefined();
-  expect(field.value).toBe("Test");
-});
-
-test("a map without a name shows only its number", () => {
+test("a map the tables lack shows Unknown map", () => {
   render(<ScreenMapPanel ctx={ctx({ map: 999 })} send={send} />);
 
-  expect(screen.getByText("999")).toBeDefined();
+  expect(screen.getByText("Unknown map")).toBeDefined();
 });
 
-test("a window with neither a name nor Name it shows its bare number", () => {
-  render(<ScreenMapPanel ctx={ctx({ window: 77 })} send={send} />);
-
-  expect(screen.getByText("77")).toBeDefined();
-  expect(screen.queryByLabelText("Name it")).toBe(null);
-});
-
-test("an AFK target without a catalog name shows its id", () => {
-  render(<ScreenMapPanel ctx={ctx({}, { afk: "w9x" })} send={send} />);
-
-  expect(screen.getByText("w9x")).toBeDefined();
-});
-
-test("no AFK target shows None", () => {
-  render(<ScreenMapPanel ctx={ctx({}, { afk: null })} send={send} />);
-
-  expect(screen.getByText("None")).toBeDefined();
-});
-
-test("a blank name is not sent", () => {
-  render(
-    <ScreenMapPanel
-      ctx={ctx({ window: 999 }, { unnamed: [{ table: "menu2", key: "999" }] })}
-      send={send}
-    />,
-  );
-
-  const field = screen.getByLabelText("Name it");
-  fireEvent.change(field, { target: { value: "  " } });
-  fireEvent.keyDown(field, { key: "Enter" });
-
-  expect(companion.name).not.toHaveBeenCalled();
-});
-
-test("a deduced entry is marked as from game code, a confirmed one is not", () => {
+test("an AFK target the tables lack shows Unknown monster", () => {
   render(
     <ScreenMapPanel
       ctx={ctx(
-        { menu: 1, window: 44 },
+        {},
         {
-          names: {
-            menu: { name: "Items", status: "confirmed" },
-            window: { name: "Sailing", status: "deduced" },
-          },
+          afk: "w9x",
+          names: { map: "Unknown map", afk: "Unknown monster" },
         },
       )}
       send={send}
     />,
   );
 
-  expect(screen.getAllByTitle("from game code")).toHaveLength(1);
+  expect(screen.getByText("Unknown monster")).toBeDefined();
+});
+
+test("no AFK target shows None", () => {
+  render(
+    <ScreenMapPanel
+      ctx={ctx({ label: "Sailing" }, { afk: null })}
+      send={send}
+    />,
+  );
+
+  expect(screen.getByText("None")).toBeDefined();
 });
 
 test("the status bar explains how to get a live reading when the game was not launched", () => {

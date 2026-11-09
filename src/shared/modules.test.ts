@@ -3,19 +3,10 @@ import type { CompanionModule, GameContext } from "./index.ts";
 import { modulesFor } from "./index.ts";
 
 const ctx: GameContext = {
-  screen: {
-    world: 6,
-    map: 264,
-    menu: 0,
-    window: 0,
-    tab: 0,
-    codexTab: null,
-    codexSel: null,
-  },
+  screen: { world: 6, map: 264, label: "None" },
   character: null,
   afk: null,
-  names: {},
-  unnamed: [],
+  names: { map: "Unknown map", afk: "None" },
   updatedAt: 1,
 };
 

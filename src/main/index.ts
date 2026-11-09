@@ -4,14 +4,8 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
-import type { Reading, Status } from "../shared/index.ts";
-import {
-  DEFAULT_CATALOG,
-  loadCatalog,
-  nameEntry,
-  saveCatalog,
-} from "./catalog/catalog.ts";
-import { toContext } from "./context.ts";
+import type { Status } from "../shared/index.ts";
+import { contextTracker } from "./context.ts";
 import {
   decide,
   launchEvent,
@@ -26,7 +20,7 @@ import {
   emptyPayload,
   linkReading,
   linkStatus,
-  namePayload,
+  linkTables,
   settingsPayload,
 } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
@@ -47,12 +41,9 @@ import {
 function start(): void {
   const dataDir = join(app.getPath("appData"), "IdleOn Companion");
   const settingsFile = join(dataDir, "settings.json");
-  const namesFile = join(dataDir, "names.json");
   let settings = loadSettings(settingsFile);
-  let catalog = loadCatalog(namesFile, DEFAULT_CATALOG);
   // connectLink calls onConnected(false) only when a live connection drops, so the app starts as "not connected".
   let status = NOT_CONNECTED;
-  let lastReading: Reading | null = null;
 
   const devUrl = process.env.ELECTRON_RENDERER_URL;
   const ownUrl =
@@ -69,9 +60,9 @@ function start(): void {
   const send = (channel: string, value: unknown) => {
     if (!win.isDestroyed()) win.webContents.send(channel, value);
   };
-  const sendContext = () => {
-    if (lastReading) send(IPC.contextUpdate, toContext(lastReading, catalog));
-  };
+  const tracker = contextTracker((c) => {
+    send(IPC.contextUpdate, c);
+  });
   const setStatus = (s: Status) => {
     status = s;
     send(IPC.statusUpdate, s);
@@ -94,7 +85,7 @@ function start(): void {
   });
   win.webContents.on("did-finish-load", () => {
     send(IPC.statusUpdate, status);
-    sendContext();
+    tracker.replay();
     updates.replay();
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
@@ -169,8 +160,9 @@ function start(): void {
       if (m.type === "reading") {
         const r = linkReading(m.reading);
         if (!r) return; // the decoder checks only the message type
-        lastReading = r;
-        sendContext();
+        tracker.reading(r);
+      } else if (m.type === "tables") {
+        tracker.tables(linkTables(m.tables));
       } else if (m.type === "status") {
         const s = linkStatus(m.status);
         if (!s) return;
@@ -201,15 +193,6 @@ function start(): void {
     settings = s;
     saveSettings(settingsFile, s);
     win.setAlwaysOnTop(s.alwaysOnTop);
-  });
-  handle(IPC.catalogName, (payload) => {
-    const p = namePayload(payload);
-    if (!p) throw new Error("catalog:name: invalid name");
-    // Saved first: a failed write rejects the call and the name is not shown as kept.
-    const named = nameEntry(catalog, p.table, p.key, p.name);
-    saveCatalog(namesFile, named);
-    catalog = named;
-    sendContext();
   });
   handle(IPC.confirmAttach, (payload) => {
     if (!emptyPayload(payload))

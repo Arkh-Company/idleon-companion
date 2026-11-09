@@ -98,27 +98,23 @@ export interface Catalog {
   afk: Record<string, string>;
 }
 
-/** One reading translated by the catalog (spec §6.2). */
+/** One reading translated by the screen catalog and the game's tables. */
 export interface GameContext {
   screen: {
     world: number;
     map: number;
-    menu: number;
-    window: number;
-    tab: number;
-    codexTab: number | null;
-    codexSel: string | number | null;
+    /** identifyScreen's result */
+    label: string;
   };
   character: string | null;
+  /** The monster id read, for the modules */
   afk: string | null;
   names: {
-    map?: string;
-    menu?: Entry;
-    window?: Entry;
-    codexTab?: Entry;
-    afk?: string;
+    /** The map's name or "Unknown map" */
+    map: string;
+    /** The monster's name, "Unknown monster" or "None" */
+    afk: string;
   };
-  unnamed: { table: CatalogTable; key: string }[];
   snapshot?: unknown;
   updatedAt: number;
 }

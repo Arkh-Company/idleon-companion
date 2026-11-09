@@ -292,14 +292,14 @@ exists in the whole window.
 
 ### Tests for Phase 7
 
-- [ ] T027 [US1] Context tests in src/main/context.test.ts
+- [X] T027 [US1] Context tests in src/main/context.test.ts
   - Files: `src/main/context.test.ts`
   - Cases: `screen.label` is `identifyScreen`'s result; `names.map` from the tables by map number; `names.afk` from the
     tables; without tables, or a number the table lacks, "Unknown map" and "Unknown monster"; `afk` `null` or `Nothing`
     → "None"; a map number that is negative or a fraction → "Unknown map". `contextTracker`: a reading before the tables sends
     "Unknown map", and the tables arriving send the context again with the name; tables with no reading yet send nothing;
     `replay` resends the last context.
-- [ ] T028 [P] [US4] Panel tests in src/renderer/ui.test.tsx and src/renderer/App.test.tsx
+- [X] T028 [P] [US4] Panel tests in src/renderer/ui.test.tsx and src/renderer/App.test.tsx
   - Files: `src/renderer/ui.test.tsx`, `src/renderer/App.test.tsx`
   - Remove the tests of "Name it", `unnamed #N` and the `deduced` mark (FR-011). Update the context stubs.
   - Cases: rows Screen, World, Map, Character and AFK target, in that order; no Menu, Window or Codex tab row; Screen
@@ -308,12 +308,12 @@ exists in the whole window.
 
 ### Implementation for Phase 7
 
-- [ ] T029 [US1] GameContext, toContext and contextTracker in src/main/context.ts
+- [X] T029 [US1] GameContext, toContext and contextTracker in src/main/context.ts
   - Files: `src/shared/types.ts`, `src/shared/index.ts`, `src/main/context.ts`
   - Signatures: `GameContext` as in data-model.md; `toContext(r: Reading, tables: GameTables): GameContext`;
     `contextTracker(send: (c: GameContext) => void): { reading(r: Reading): void; tables(t: GameTables): void; replay():
     void }`. Tables start as both `null`.
-- [ ] T030 [US4] The panel in src/renderer/ScreenMapPanel.tsx
+- [X] T030 [US4] The panel in src/renderer/ScreenMapPanel.tsx
   - Files: `src/renderer/ScreenMapPanel.tsx`, `src/renderer/styles.css`
   - Change: follow [contracts/ipc.md](contracts/ipc.md); drop `Named` and the `.deduced` style.
 - [ ] T031 [US4] Remove the catalog of the user
@@ -322,7 +322,7 @@ exists in the whole window.
     `IPC.catalogName`, `CompanionApi.name`), `src/shared/index.ts`, `src/shared/types.test.ts`, `src/shared/modules.test.ts`,
     `src/preload/index.ts`, `src/renderer/companion-stub.ts`, `src/main/payloads.ts` and `src/main/payloads.test.ts`
     (`namePayload` and its cases, FR-011).
-- [ ] T032 [US1] The link, the tracker and no name channel in src/main/index.ts
+- [X] T032 [US1] The link, the tracker and no name channel in src/main/index.ts
   - Files: `src/main/index.ts`, `src/main/link-client.ts`
   - Change: use `contextTracker`; `tables` goes through `linkTables` to it; remove `catalog`, `namesFile` and the
     `catalog:name` handler.
