@@ -7,3 +7,14 @@ phases:
   prototype: {status: done, date: 2026-11-09}
   plan: {status: done, date: 2026-11-09}
   tasks: {status: done, date: 2026-11-09}
+execution:
+  branch: feat/005-reading-catalog
+  phases:
+    - {name: "Foundational (T001-T007)", status: pending}
+    - {name: "US1 leitura (T008-T011)", status: pending}
+    - {name: "US1 calculo (T012-T014)", status: pending}
+    - {name: "US1 mosaico (T015-T019)", status: pending}
+    - {name: "US3 e US4 (T020-T025)", status: pending}
+    - {name: "Polish (T026-T028)", status: pending}
+  feature_review: pending
+  code_pr: null
