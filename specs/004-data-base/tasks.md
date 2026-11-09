@@ -101,7 +101,7 @@ fake CDP sees one call at a time.
 
 ### Tests for Phase 2
 
-- [ ] T007 [P] [US1] Read-only proof of the slice in src/keeper/state-read-only.test.ts
+- [X] T007 [P] [US1] Read-only proof of the slice in src/keeper/state-read-only.test.ts
   - Files: `src/keeper/state-read-only.test.ts` (own file, the model is `src/keeper/read-only.test.ts`)
   - Fake engine: a `gameAttributes.h` with arrays, plain objects and Haxe maps (`{ h: {...} }` whose prototype has `__class__`),
     where every function counts and throws, and where some properties are accessors that count and throw: a game object's
@@ -132,7 +132,7 @@ fake CDP sees one call at a time.
 
 ### Implementation for Phase 2
 
-- [ ] T010 [US1] The two read-only scripts in src/keeper/state-list.js and src/keeper/state-slice.js
+- [X] T010 [US1] The two read-only scripts in src/keeper/state-list.js and src/keeper/state-slice.js
   - Files: `src/keeper/state-list.js`, `src/keeper/state-slice.js`
   - Reference: `specs/004-data-base/prototipo/listar.js` and `fatia.js`, without the time and node counters. Answer of
     `state-slice.js`, which takes the paths as its one argument: `{ char, map, out }`.
