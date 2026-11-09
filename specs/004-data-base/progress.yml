@@ -3,3 +3,4 @@ phases:
   brainstorm: {status: done, date: 2026-11-09}
   specify: {status: done, date: 2026-11-09}
   clarify: {status: done, date: 2026-11-09, rounds: 1, open: 0, to_plan: 3}
+  prototype: {status: done, date: 2026-11-09}
