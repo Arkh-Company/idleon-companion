@@ -71,11 +71,16 @@ function setup(read: () => Promise<GameBytes> = files) {
   return { host, workers, options, readFiles, onResult, onUnavailable };
 }
 
-/** A host with its worker ready and calculating mosaic 1. */
-async function running() {
-  const t = setup();
+function starting(read?: () => Promise<GameBytes>) {
+  const t = setup(read);
   t.host.setFiles(RESOURCES);
   t.host.calculate(mosaic(1));
+  return t;
+}
+
+/** A host with its worker ready and calculating mosaic 1. */
+async function running() {
+  const t = starting();
   await flush();
   const worker = nth(t.workers);
   worker.emit("message", { type: "ready" });
@@ -109,19 +114,12 @@ test("the real Worker fits where the fake does", () => {
 
 test("the worker is created with no environment, no stdin and a memory limit", async () => {
   const t = await running();
-  expect(t.options).toEqual([
-    {
-      env: {},
-      stdin: false,
-      resourceLimits: { maxOldGenerationSizeMb: 1024 },
-    },
-  ]);
+  const resourceLimits = { maxOldGenerationSizeMb: 1024 };
+  expect(t.options).toEqual([{ env: {}, stdin: false, resourceLimits }]);
 });
 
 test("the first calculate reads the files once and transfers them to the worker, with no path", async () => {
-  const t = setup();
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
+  const t = starting();
   t.host.calculate(mosaic(2));
   await flush();
   expect(t.readFiles).toHaveBeenCalledTimes(1);
@@ -149,9 +147,7 @@ test("a calculate before the folder is known waits for it", async () => {
 });
 
 test("nothing is calculated before ready, and ready lets only the newest mosaic go", async () => {
-  const t = setup();
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
+  const t = starting();
   t.host.calculate(mosaic(2));
   await flush();
   const worker = nth(t.workers);
@@ -232,9 +228,7 @@ test.each([
 ])(
   "before ready, %s terminates and is unavailable once, and later calculates do nothing",
   async (_name, event, value) => {
-    const t = setup();
-    t.host.setFiles(RESOURCES);
-    t.host.calculate(mosaic(1));
+    const t = starting();
     await flush();
     const worker = nth(t.workers);
     if (event === null) await vi.advanceTimersByTimeAsync(60_000);
@@ -260,18 +254,14 @@ test.each<[string, () => Promise<GameBytes>]>([
     },
   ],
 ])("a read that %s terminates and is unavailable", async (_name, read) => {
-  const t = setup(read);
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
+  const t = starting(read);
   await flush();
   expect(nth(t.workers).terminated).toBe(1);
   expect(t.onUnavailable).toHaveBeenCalledTimes(1);
 });
 
 test("a read that never answers is unavailable at 60 s, and not before", async () => {
-  const t = setup(() => new Promise<GameBytes>(() => undefined));
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
+  const t = starting(() => new Promise<GameBytes>(() => undefined));
   await vi.advanceTimersByTimeAsync(59_999);
   expect(t.onUnavailable).not.toHaveBeenCalled();
   await vi.advanceTimersByTimeAsync(1);
@@ -339,9 +329,7 @@ test("a post that throws is unavailable, and nothing is thrown", async () => {
 });
 
 test("an init that cannot be posted is unavailable", async () => {
-  const t = setup();
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
+  const t = starting();
   nth(t.workers).throwOnPost = true;
   await flush();
   expect(t.onUnavailable).toHaveBeenCalledTimes(1);
@@ -353,7 +341,8 @@ test("reset terminates with no unavailable, drops the waiting mosaic and allows 
   host.reset();
   expect(worker.terminated).toBe(1);
   expect(onUnavailable).not.toHaveBeenCalled();
-  await vi.advanceTimersByTimeAsync(120_000);
+  host.setFiles(RESOURCES);
+  await flush();
   expect(workers).toHaveLength(1);
   host.calculate(mosaic(3));
   await flush();
@@ -375,14 +364,12 @@ test("reset clears an unavailable host", async () => {
 
 test("the old worker's late messages and a late read mean nothing after a reset", async () => {
   let answerRead: (b: GameBytes) => void = () => undefined;
-  const t = setup(
+  const t = starting(
     () =>
       new Promise<GameBytes>((r) => {
         answerRead = r;
       }),
   );
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
   const old = nth(t.workers);
   t.host.reset();
   answerRead(await files());
@@ -392,6 +379,30 @@ test("the old worker's late messages and a late read mean nothing after a reset"
   old.emit("error", new Error("late"));
   expect(old.posted).toEqual([]);
   expect(t.onUnavailable).not.toHaveBeenCalled();
+});
+
+test("a read that rejects after new files says nothing, and leaves the new worker alone", async () => {
+  const reject: ((e: Error) => void)[] = [];
+  const t = starting(
+    () =>
+      new Promise<GameBytes>((_resolve, no) => {
+        reject.push(no);
+      }),
+  );
+  t.host.setFiles(RESOURCES);
+  reject[0]?.(new Error("late"));
+  await flush();
+  expect(t.onUnavailable).not.toHaveBeenCalled();
+  expect(nth(t.workers, 1).terminated).toBe(0);
+});
+
+test("after a reset, nothing is calculated before the new worker is ready", async () => {
+  const { host, workers } = await running();
+  host.reset();
+  host.calculate(mosaic(2));
+  host.calculate(mosaic(3));
+  await flush();
+  expect(nth(workers, 1).calcs()).toEqual([]);
 });
 
 test("reset forgets the 5,000 ms wait", async () => {
