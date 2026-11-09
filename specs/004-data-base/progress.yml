@@ -1,4 +1,5 @@
 feature: 004-data-base
+spec_pr: 16
 phases:
   brainstorm: {status: done, date: 2026-11-09}
   specify: {status: done, date: 2026-11-09}
