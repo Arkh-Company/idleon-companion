@@ -1,13 +1,9 @@
 // The real round: each photo's captured state gives the name the game showed (FR-020, SC-001).
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import {
-  identifyScreen,
-  READ_NULLS,
-  SCREEN_CATALOG,
-  toReading,
-} from "../index.ts";
+import { identifyScreen, READ_NULLS, toReading } from "../index.ts";
 import type { Reading, ScreenCatalog, ScreenRule } from "../index.ts";
+import { SCREEN_CATALOG } from "./index.ts";
 
 interface Captured {
   photo: string;

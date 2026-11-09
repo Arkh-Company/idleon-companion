@@ -1,8 +1,8 @@
 // The keeper's flow (spec §4): holds the link pipe, checks the game code, launches the game (with its debugging pipe
 // only when the code was checked and is clean), reads it and publishes to the app, and ends only after the game.
 // index.ts gives it the real game, reader and app.
-import { KNOWN_WINDOWS } from "../shared/index.ts";
 import type { GameTables, Reading, Status } from "../shared/index.ts";
+import { KNOWN_WINDOWS } from "../shared/screens/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
 import { AlreadyRunning, startLinkServer } from "./link-server.ts";

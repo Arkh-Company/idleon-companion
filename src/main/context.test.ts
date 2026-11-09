@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { identifyScreen, READ_NULLS, SCREEN_CATALOG } from "../shared/index.ts";
+import { identifyScreen, READ_NULLS } from "../shared/index.ts";
 import type { GameContext, GameTables, Reading } from "../shared/index.ts";
+import { SCREEN_CATALOG } from "../shared/screens/index.ts";
 import { contextTracker, toContext } from "./context.ts";
 
 const base: Reading = {

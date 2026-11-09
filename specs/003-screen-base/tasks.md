@@ -25,7 +25,8 @@ changes for everything at once.
 - No network anywhere but `src/main/updates.ts`. Tests never need the game, Steam or the files of `lab\`.
 - Do not touch Steam or any game process. The launch option may be pointing at a test session right now.
 - Identifiers and UI copy in English; code files up to 400 lines (`src/keeper/keeper.test.ts`, 463 lines, does not grow);
-  other folders import shared code from `src/shared/index.ts`; `.ts` relative imports keep their extension.
+  other folders import shared code from `src/shared/index.ts` (exception authorized by the user: `src/keeper` and `src/main`
+  load the catalog from `src/shared/screens/index.ts`); `.ts` relative imports keep their extension.
 - The Executor edits only `tasks.md` inside the spec folder. Anything else there is the session's (lesson 5 of 002).
 - A hook that blocks is never worked around (lesson 4 of 001).
 - A test removed is only one of a behavior FR-011 takes out, and the task says which.
@@ -163,7 +164,8 @@ the fixture of captured states.
   - Source: "Mapa 2" of section 5, with sections 6 and 7. Each tab or subscreen repeats its window's conditions (FR-005).
   - A window of the game without proof goes to `unprovenWindows`. The windows of section 7's "não vistas" list get a rule
     only with a section 6 row "provado" (FR-004).
-  - `SCREEN_CATALOG` is exported from `catalog.ts` and `src/shared/index.ts`.
+  - `SCREEN_CATALOG` is exported from `catalog.ts` and `src/shared/screens/index.ts` (exception authorized by the user; it
+    was `src/shared/index.ts`).
 
 **Verify**: `just test-one src/shared/screens/captured.test.ts` — all pass; `just check` passes.
 
