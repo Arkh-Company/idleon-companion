@@ -15,6 +15,10 @@ import { StatsPanel } from "./StatsPanel.tsx";
 import { StatusBar } from "./StatusBar.tsx";
 
 const MODULES = [screenMap];
+const TABS = [
+  ["map", "Screen map"],
+  ["stats", "Stats"],
+] as const;
 // ponytail: v1 modules never message the main process; module:<id>:* channels when one needs to.
 const send = () => Promise.resolve();
 
@@ -63,26 +67,19 @@ export function App() {
         <>
           {status && <StatusBar status={status} />}
           <div role="tablist" className="tabs">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "map"}
-              onClick={() => {
-                setTab("map");
-              }}
-            >
-              Screen map
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "stats"}
-              onClick={() => {
-                setTab("stats");
-              }}
-            >
-              Stats
-            </button>
+            {TABS.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => {
+                  setTab(id);
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
           {tab === "stats" && <StatsPanel stats={stats} />}
           {tab === "map" &&
