@@ -212,3 +212,4 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 | O que fazer na troca de personagem ou de mapa? | resolved | Padrão do agente: descartar a leitura parcial (FR-022). Confirmado pelo Vinicius, 09/11. |
 | O que acontece com alvo AFK fora da tabela de monstros? | resolved | Padrão do agente: o Damage mostra "unavailable" (Edge Cases). Confirmado pelo Vinicius, 09/11. |
 | O que a aba mostra sem leitura nova? (ux CHK007) | resolved | Padrão do agente: não mostra números do personagem anterior (Edge Cases). Confirmado pelo Vinicius, 09/11. |
+| O que a aba mostra quando a leitura de estado para sem avisar? | resolved | durante a implementação: com personagem selecionado e leitor ligado, 30 s sem nenhuma fatia mostram "Calculator unavailable"; a próxima fatia volta aos números (FR-014). Decisão do Vinicius, 09/11. |
