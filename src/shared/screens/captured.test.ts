@@ -69,8 +69,13 @@ test("a rule's photo proof is a state the rule matches", () => {
   let checked = 0;
   for (const rule of [...SCREEN_CATALOG.overlays, ...SCREEN_CATALOG.screens]) {
     const [kind, id] = rule.proof.split(":");
-    const captured = kind === "foto" && id ? photos.get(id) : undefined;
-    if (!captured) continue;
+    if (kind !== "foto" || !id) continue;
+    const captured = photos.get(id);
+    if (!captured) {
+      // Row 0405 of section 7 is "inconclusivo", so it stays out of the fixture.
+      expect(id, rule.proof).toBe("0405");
+      continue;
+    }
     checked++;
     // Section 7 of the screen map: "Holes[0] continua valendo com a janela 69 fechada". A cave's photo proves the cave
     // in both states, and caves 1, 2, 3, 5 and 12 were only ever photographed with the window open.
