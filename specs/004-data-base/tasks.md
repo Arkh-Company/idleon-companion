@@ -44,17 +44,17 @@ calculator (US1, US3), its host (US3) and only then the tab (US4), which is the 
 
 ### Tests for Phase 1
 
-- [ ] T001 [P] Pieces and classes tests in src/shared/state.test.ts
+- [X] T001 [P] Pieces and classes tests in src/shared/state.test.ts
   - Files: `src/shared/state.test.ts`
   - Cases: `classOf(["Cards"], "A")` is `formula`; `classOf(["ChestMap"], "A")` is `other`; `["PlayerDATABASE","A"]` is
     `formula` and `["PlayerDATABASE","B"]` is `other`, with character `"A"`; `["DNSM","CompanionBon"]` and
     `["DNSM","ShinyBonusS"]` are `formula`, another `DNSM` child is `other`; `["_vars"]` is `formula`; no key of
     `STATE_EXCLUDED` is in `FORMULA_KEYS`; `VARS_KEYS` has 27 distinct names.
-- [ ] T002 [P] Link message tests in src/shared/link.test.ts
+- [X] T002 [P] Link message tests in src/shared/link.test.ts
   - Files: `src/shared/link.test.ts`
   - Cases: a `state` line with an object `slice` and a `gameFiles` line with a string `resources` reach `onMessage`; a
     `state` without `slice`, or a `gameFiles` with a number, are dropped without throwing.
-- [ ] T003 [P] Slice and files checks in src/main/payloads.test.ts
+- [X] T003 [P] Slice and files checks in src/main/payloads.test.ts
   - Files: `src/main/payloads.test.ts`
   - Cases of `linkState`: a good slice passes; `sentinel.char` accepts a string or `null`; `sentinel.map` not a number,
     `at` not a number, `pieces` not an array, a `path` of 0 or 3 items, a `path` item not a string or `cycles` with a
@@ -63,7 +63,7 @@ calculator (US1, US3), its host (US3) and only then the tab (US4), which is the 
 
 ### Implementation for Phase 1
 
-- [ ] T004 Pieces, classes and types in src/shared/state.ts
+- [X] T004 Pieces, classes and types in src/shared/state.ts
   - Files: `src/shared/state.ts`, `src/shared/index.ts`
   - Signatures: `StatePath = [string] | [string, string]`; `StateClass = "formula" | "other"`;
     `StateSlice = { sentinel: { char: string | null; map: number }; pieces: { path: StatePath; value: unknown }[]; at: number; cycles: { formula: number; all: number } }`;
@@ -78,11 +78,11 @@ calculator (US1, US3), its host (US3) and only then the tab (US4), which is the 
     `DivCostAfter3`, `DustCost`, `A_MineCost`, `A_MineHP`, `A_divArc`, `KillroySwap`, `EventActive`.
   - `FORMULA_KEYS` (research R2; only a priority, no key is left out):
     `AFKtarget AchieveReg AnvilCraftStatus AnvilPAstats ArcadeUpg Arcane Atoms BGunlocked Boats Breeding BribeStatus Bubba BuffsActive BundlesReceived Captains Cards CauldronBubbles CauldronInfo CauldronJobs CauldronP2W CharacterClass Chat ChestOrder ChestQuantity CogOrder Compass CookMaster Cooking CurrenciesOwned CurrentMap Divinity DoOnceREAL Dream DummyList DummyList2 DummyList3 DummyMap DummyNumber DummyNumber2 DummyNumber3 DummyNumber4 DummyNumber5 DummyNumbersStatManager DummyPixelType DummyText DummyText2 DummyText3 DungItems DungUpg EquipmentMap EquipmentOrder EquipmentQuantity Exp0 ExpReq0 FamilyValuesMap FarmCrop FarmPlot FarmRank FarmUpg FoodSlotsOwned Gaming GamingSprout GemItemsPurchased GetPlayersUsernames GreenStacks Grimoire GuildTasks HintStatus Holes InventoryOrder InventorySlotsOwned ItemMap KRbest KillsLeft2Advance Lab Lv0 MapBon MapMonstersList Meals Menagerie MenuType MenuType2 Money MonsterAlive MonsterHP MonsterWillDie MonstersOnScreen NONdummies Ninja NodeLength NodeNeighbors NodeX NodeY Number2Letter OptionsList OptionsListAccount OtherPlayers PersonalValuesMap Pets PetsStored PlayerHP PlayerMP PlayerMoveMaps PlayerStuff PopupType PostOfficeInfo PrayersActive PrayersUnlocked Printer QuestComplete Refinery Research Ribbon Rift RoyalG RoyalMaps SailChests Sailing SaltLick SceneEvents_n ServerGemsReceived ShrineInfo SkillLevels Spelunk StampLevel StampLevelMAX StatueG StatueLevels SteamAchieve Summon Sushi Tasks Territory Tess TimeAway TotemInfo TowerInfo UpgVault UserInfo WeeklyBoss dummyActor dummyCritDmgMulti dummyDamageDealt dummyDisplayEXPTYPE dummyDisplayPopup dummyMonsterID dummyMonsterNODE dummyMonsterTYPE`
-- [ ] T005 The two messages in src/shared/link.ts
+- [X] T005 The two messages in src/shared/link.ts
   - Files: `src/shared/link.ts`
   - Change: `LinkMessage` gains `{ type: "state"; slice: StateSlice }` and `{ type: "gameFiles"; resources: string }`;
     `toMessage` passes them when `slice` is an object and `resources` a string.
-- [ ] T006 linkState and linkGameFiles in src/main/payloads.ts
+- [X] T006 linkState and linkGameFiles in src/main/payloads.ts
   - Files: `src/main/payloads.ts`
   - Signatures: `linkState(v: unknown): StateSlice | null`; `linkGameFiles(v: unknown): string | null`. `value` is not
     inspected: it is only data for the calculator.

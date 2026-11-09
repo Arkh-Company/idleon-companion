@@ -6,7 +6,9 @@ import { DEFAULT_SETTINGS, READ_NULLS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
   emptyPayload,
+  linkGameFiles,
   linkReading,
+  linkState,
   linkStatus,
   linkTables,
   settingsPayload,
@@ -135,6 +137,82 @@ test.each([
   ["a list", []],
 ])("link tables whose body is %s give both null", (_name, value) => {
   expect(linkTables(value)).toStrictEqual({ maps: null, monsters: null });
+});
+
+const slice = {
+  sentinel: { char: "A", map: 7 },
+  pieces: [
+    { path: ["Cards"], value: [1, 2] },
+    { path: ["PlayerDATABASE", "A"], value: { $m: {} } },
+  ],
+  at: 5,
+  cycles: { formula: 1, all: 0 },
+};
+const withPiece = (piece: unknown) => ({ ...slice, pieces: [piece] });
+
+test("a link slice of the right shape keeps only its fields", () => {
+  expect(linkState({ ...slice, extra: 1 })).toStrictEqual(slice);
+});
+
+test("a link slice taken with no character passes", () => {
+  const noChar = { ...slice, sentinel: { char: null, map: 7 } };
+  expect(linkState(noChar)).toStrictEqual(noChar);
+});
+
+test("the value of a piece is not inspected", () => {
+  const odd = withPiece({ path: ["Cards"], value: "anything" });
+  expect(linkState(odd)).toStrictEqual(odd);
+});
+
+test.each([
+  ["no object", "state"],
+  ["a list", []],
+  ["no sentinel", { ...slice, sentinel: undefined }],
+  ["a character that is a number", { ...slice, sentinel: { char: 1, map: 7 } }],
+  ["no character", { ...slice, sentinel: { map: 7 } }],
+  [
+    "a map that is not a number",
+    { ...slice, sentinel: { char: "A", map: "7" } },
+  ],
+  ["a time that is not a number", { ...slice, at: "5" }],
+  ["pieces that are not a list", { ...slice, pieces: {} }],
+  ["a piece that is not an object", withPiece(1)],
+  ["a path that is not a list", withPiece({ path: "Cards", value: 1 })],
+  ["a path of no items", withPiece({ path: [], value: 1 })],
+  ["a path of 3 items", withPiece({ path: ["a", "b", "c"], value: 1 })],
+  ["a path item that is not text", withPiece({ path: ["a", 1], value: 1 })],
+  ["no cycles", { ...slice, cycles: undefined }],
+  [
+    "a formula cycle that is not a number",
+    { ...slice, cycles: { formula: "1", all: 0 } },
+  ],
+  [
+    "an all cycle that is not a number",
+    { ...slice, cycles: { formula: 1, all: null } },
+  ],
+])("a link slice with %s is refused", (_name, value) => {
+  expect(linkState(value)).toBeNull();
+});
+
+test.each([
+  ["the game's folder", "C:\\Steam\\Game\\resources"],
+  ["another case", "D:\\Game\\RESOURCES"],
+  ["a closing separator", "C:\\Game\\Resources\\"],
+  ["forward slashes", "C:/Game/resources"],
+])("link game files with %s pass", (_name, path) => {
+  expect(linkGameFiles(path)).toBe(path);
+});
+
+test.each([
+  ["no text", 5],
+  ["an empty text", ""],
+  ["a relative path", "Game\\resources"],
+  ["only the folder name", "resources"],
+  ["a drive-relative path", "C:resources"],
+  ["another last folder", "C:\\Game\\resources\\app"],
+  ["a name that only ends like it", "C:\\Game\\myresources"],
+])("link game files with %s are refused", (_name, value) => {
+  expect(linkGameFiles(value)).toBeNull();
 });
 
 // settings:get, steam:state, steam:setup, reader:release, reader:reconnect and update:install carry no body.

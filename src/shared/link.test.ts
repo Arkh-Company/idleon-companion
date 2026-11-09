@@ -54,6 +54,16 @@ test.each<LinkMessage>([
   { type: "release" },
   { type: "reconnect" },
   { type: "tables", tables: { maps: ["Vale"], monsters: null } },
+  {
+    type: "state",
+    slice: {
+      sentinel: { char: "A", map: 7 },
+      pieces: [{ path: ["Cards"], value: [1, 2] }],
+      at: 5,
+      cycles: { formula: 1, all: 0 },
+    },
+  },
+  { type: "gameFiles", resources: "C:\\Game\\resources" },
 ])("$type round-trips through a line", (m) => {
   const got: LinkMessage[] = [];
   createLineDecoder((x) => got.push(x))(encodeLine(m));
@@ -67,6 +77,10 @@ test.each([
   ["a status without its body", '{"type":"status","status":null}'],
   ["tables without their body", '{"type":"tables"}'],
   ["tables that are not an object", '{"type":"tables","tables":[1]}'],
+  ["a state without its slice", '{"type":"state"}'],
+  ["a state whose slice is a list", '{"type":"state","slice":[1]}'],
+  ["game files without their folder", '{"type":"gameFiles"}'],
+  ["game files whose folder is a number", '{"type":"gameFiles","resources":1}'],
   ["JSON that is not an object", "42"],
 ])("the decoder skips %s", (_name, line) => {
   const got: LinkMessage[] = [];

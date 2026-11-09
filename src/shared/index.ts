@@ -5,6 +5,20 @@ export { modulesFor } from "./modules.ts";
 export { toReading } from "./reading.ts";
 export { READ_NULLS } from "./reading-fixture.ts";
 export { identifyScreen } from "./screens/identify.ts";
+export {
+  classOf,
+  FORMULA_KEYS,
+  NUMBER_IDS,
+  STATE_EXCLUDED,
+  STATE_SPLIT,
+  VARS_KEYS,
+} from "./state.ts";
+export type {
+  CalcNumbers,
+  StateClass,
+  StatePath,
+  StateSlice,
+} from "./state.ts";
 export { DEFAULT_SETTINGS, GAME_UPDATED, IPC, moduleChannel } from "./types.ts";
 export type {
   CompanionApi,

@@ -1,4 +1,5 @@
 // The keeper ↔ app link (spec §5.4): one JSON message per line over a local named pipe, never TCP.
+import type { StateSlice } from "./state.ts";
 import type { GameTables, Reading, Status } from "./types.ts";
 
 export const LINK_PIPE = "\\\\.\\pipe\\idleon-companion";
@@ -7,6 +8,8 @@ export type LinkMessage =
   | { type: "reading"; reading: Reading }
   | { type: "status"; status: Status }
   | { type: "tables"; tables: GameTables }
+  | { type: "state"; slice: StateSlice }
+  | { type: "gameFiles"; resources: string }
   | { type: "confirm-attach" }
   | { type: "release" }
   | { type: "reconnect" };
@@ -39,6 +42,9 @@ function toMessage(line: string): LinkMessage | null {
   if (v.type === "reading" && isObject(v.reading)) return v as LinkMessage;
   if (v.type === "status" && isObject(v.status)) return v as LinkMessage;
   if (v.type === "tables" && isObject(v.tables)) return v as LinkMessage;
+  if (v.type === "state" && isObject(v.slice)) return v as LinkMessage;
+  if (v.type === "gameFiles" && typeof v.resources === "string")
+    return v as LinkMessage;
   return null;
 }
 
