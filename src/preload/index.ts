@@ -47,6 +47,7 @@ const api: CompanionApi = {
   installUpdate: async () => {
     await ipcRenderer.invoke(IPC.updateInstall);
   },
+  onStats: listen(IPC.statsUpdate, true),
 };
 
 contextBridge.exposeInMainWorld("companion", api);

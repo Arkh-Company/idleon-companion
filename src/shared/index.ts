@@ -31,6 +31,7 @@ export type {
   Settings,
   SetupFailure,
   SetupProgress,
+  Stats,
   Status,
   SteamState,
   UpdateState,

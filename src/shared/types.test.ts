@@ -15,6 +15,7 @@ test("IPC holds the fixed channel names", () => {
     readerReconnect: "reader:reconnect",
     updateState: "update:state",
     updateInstall: "update:install",
+    statsUpdate: "stats:update",
   });
 });
 
