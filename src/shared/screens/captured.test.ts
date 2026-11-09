@@ -63,6 +63,22 @@ test.each(CAPTURED.map((c) => [c.photo, c] as const))(
   },
 );
 
+test("a rule's photo proof is a state the rule matches", () => {
+  const photos = new Map(CAPTURED.map((c) => [c.photo, c]));
+  let checked = 0;
+  for (const rule of [...SCREEN_CATALOG.overlays, ...SCREEN_CATALOG.screens]) {
+    const [kind, id] = rule.proof.split(":");
+    const captured = kind === "foto" && id ? photos.get(id) : undefined;
+    if (!captured) continue;
+    checked++;
+    expect(
+      identifyScreen(reading(captured), alone(rule)),
+      `${rule.proof} does not match "${rule.name}"`,
+    ).not.toBe("Unknown screen");
+  }
+  expect(checked).toBeGreaterThan(0);
+});
+
 test.each(CAPTURED.map((c) => [c.photo, c] as const))(
   "photo %s carries no player name",
   (_, { reading: r }) => {
