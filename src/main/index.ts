@@ -2,11 +2,14 @@
 // instance, the settings and the fixed IPC channels. The app never launches the game and never touches its pipe.
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { Worker } from "node:worker_threads";
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
+import { calculatorPath } from "./calculator-host.ts";
 import { contextTracker } from "./context.ts";
 import { forgetOldNames } from "./forget-names.ts";
+import { readGameFiles } from "./game-files.ts";
 import {
   decide,
   launchEvent,
@@ -26,6 +29,7 @@ import {
 } from "./payloads.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
 import { setupStoreIn } from "./setup-store.ts";
+import { startStatsPipeline } from "./stats-pipeline.ts";
 import {
   companionPart,
   steamSetupJob,
@@ -89,6 +93,7 @@ function start(): void {
     send(IPC.statusUpdate, status);
     tracker.replay();
     updates.replay();
+    stats.replay();
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);
@@ -156,6 +161,19 @@ function start(): void {
     { isPackaged: app.isPackaged },
   );
 
+  // The calculator's worker is the app's, never the keeper's: a crash of it cannot reach the game (FR-010, FR-016).
+  const stats = startStatsPipeline({
+    send: (s) => {
+      send(IPC.statsUpdate, s);
+    },
+    createWorker: (options) =>
+      new Worker(
+        `${calculatorPath(import.meta.dirname)}/calculator.js`,
+        options,
+      ),
+    readFiles: readGameFiles,
+  });
+
   const link = connectLink(
     LINK_PIPE,
     (m) => {
@@ -163,20 +181,26 @@ function start(): void {
         const r = linkReading(m.reading);
         if (!r) return; // the decoder checks only the message type
         tracker.reading(r);
+        stats.reading(r);
       } else if (m.type === "tables") {
         tracker.tables(linkTables(m.tables));
       } else if (m.type === "status") {
         const s = linkStatus(m.status);
         if (!s) return;
+        stats.status(s);
         const settled = setStatus(s);
         if (s.game === "closed")
           void afterGameClosed(settled, () => {
             apply("game-exited");
           });
-      }
+      } else stats.message(m);
     },
     (up) => {
-      if (!up) void setStatus(statusOnLinkDrop(status));
+      if (!up) {
+        const dropped = statusOnLinkDrop(status);
+        stats.status(dropped);
+        void setStatus(dropped);
+      }
     },
   );
 
