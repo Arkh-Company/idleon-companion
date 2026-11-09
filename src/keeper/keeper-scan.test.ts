@@ -109,7 +109,10 @@ async function keeper(
       reader.onStatus = onStatus;
       return { stop: () => Promise.resolve() };
     },
-    startApp: () => order.push("app"),
+    startApp: () => {
+      order.push("app");
+      logs.push({ label: "app" });
+    },
     log: (label, data) => logs.push({ label, ...data }),
   };
   const run = runKeeper(deps);
@@ -228,6 +231,10 @@ const UNKNOWN_LINE = {
 
 test("only the numbers outside the catalog are logged", async () => {
   const h = await keeper(() => UNKNOWN_NUMBERS);
+  const labels = h.logs.map((l) => l.label);
+  expect(labels.indexOf("unknown-screen-numbers")).toBeGreaterThan(
+    labels.indexOf("app"),
+  );
   expect(h.logs).toContainEqual(UNKNOWN_LINE);
 });
 
