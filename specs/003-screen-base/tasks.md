@@ -177,24 +177,24 @@ the fixture of captured states.
 
 ### Tests for Phase 4
 
-- [ ] T014 [US1] All captured states and the catalog's invariants in src/shared/screens/captured.test.ts and catalog.test.ts
+- [X] T014 [US1] All captured states and the catalog's invariants in src/shared/screens/captured.test.ts and catalog.test.ts
   - Files: `src/shared/screens/captured.test.ts`, `src/shared/screens/catalog.test.ts`
   - Change: remove the `menu2 <= 45` filter.
   - Cases: `KNOWN_WINDOWS` has exactly the 108 numbers (the rules' `menu2` plus `unprovenWindows`, 0 to 110 without 22, 50
     and 51); window 64 is `Orion` and not `The Hole`; 53, 58 and 75 give "Unknown screen"; each of the 18 caves is named
     with the window closed (`menu` 0, `menu2` 0, `hole` N), and 17 is `The Lair`.
-- [ ] T015 [P] [US1] Rule keys exist in the reader in src/keeper/read-fields.test.ts
+- [X] T015 [P] [US1] Rule keys exist in the reader in src/keeper/read-fields.test.ts
   - Files: `src/keeper/read-fields.test.ts`
   - Case: run `read.js` over a fake engine in which every behavior of the contract exists; every `H...` key used by a
     rule of `SCREEN_CATALOG` is a key of its `behaviors`, so a mistyped key cannot leave a rule that never matches.
 
 ### Implementation for Phase 4
 
-- [ ] T016 [US2] [US3] Windows 46 to 110 in src/shared/screens/rules/windows-46-110.json
+- [X] T016 [US2] [US3] Windows 46 to 110 in src/shared/screens/rules/windows-46-110.json
   - Files: `src/shared/screens/rules/windows-46-110.json`, `src/shared/screens/catalog.ts`
   - Source and rules as in T013, from "Mapa das janelas `MenuType2` 46 a 110". The caves of The Hole: `hole` N with the
     names of the row of window 69.
-- [ ] T017 [US1] KNOWN_WINDOWS in src/shared/screens/catalog.ts
+- [X] T017 [US1] KNOWN_WINDOWS in src/shared/screens/catalog.ts
   - Files: `src/shared/screens/catalog.ts`, `src/shared/index.ts`
   - Signature: `KNOWN_WINDOWS: ReadonlySet<number>`.
 

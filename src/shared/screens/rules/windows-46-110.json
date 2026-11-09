@@ -1,0 +1,958 @@
+{
+  "screens": [
+    {
+      "when": {
+        "menu2": 46
+      },
+      "name": "Divinity",
+      "tabs": true,
+      "proof": "foto:0349"
+    },
+    {
+      "when": {
+        "menu2": 46,
+        "H23._GenINFO[76]": 0
+      },
+      "name": "Divinity › Offerings",
+      "proof": "foto:0349"
+    },
+    {
+      "when": {
+        "menu2": 46,
+        "H23._GenINFO[76]": 1
+      },
+      "name": "Divinity › Style Choices",
+      "proof": "foto:0350"
+    },
+    {
+      "when": {
+        "menu2": 46,
+        "H23._GenINFO[76]": 2
+      },
+      "name": "Divinity › Divinity per Character",
+      "proof": "foto:0352"
+    },
+    {
+      "when": {
+        "menu2": 46,
+        "H23._GenINFO[76]": 3
+      },
+      "name": "Divinity › Minor Link Bonus",
+      "proof": "foto:0361"
+    },
+    {
+      "when": {
+        "menu2": 47
+      },
+      "name": "The Slab",
+      "proof": "foto:0364"
+    },
+    {
+      "when": {
+        "menu2": 48
+      },
+      "name": "Captain Recruitment",
+      "proof": "foto:0347"
+    },
+    {
+      "when": {
+        "menu2": 49
+      },
+      "name": "Atom Collider",
+      "proof": "foto:0301"
+    },
+    {
+      "when": {
+        "menu2": 54
+      },
+      "name": "Farming",
+      "proof": "foto:0410"
+    },
+    {
+      "when": {
+        "menu2": 55
+      },
+      "name": "Farming Market",
+      "tabs": true,
+      "proof": "foto:0412"
+    },
+    {
+      "when": {
+        "menu2": 55,
+        "H24._GenINFO[57]": 0
+      },
+      "name": "Farming Market › Day Market",
+      "proof": "foto:0412"
+    },
+    {
+      "when": {
+        "menu2": 55,
+        "H24._GenINFO[57]": 1
+      },
+      "name": "Farming Market › Night Market",
+      "proof": "foto:0413"
+    },
+    {
+      "when": {
+        "menu2": 55,
+        "H24._GenINFO[57]": 2
+      },
+      "name": "Farming Market › Crop Depot",
+      "proof": "foto:0414"
+    },
+    {
+      "when": {
+        "menu2": 55,
+        "H24._GenINFO[57]": 3
+      },
+      "name": "Farming Market › Exotic Market",
+      "proof": "foto:0415"
+    },
+    {
+      "when": {
+        "menu2": 55,
+        "H24._GenINFO[57]": 4
+      },
+      "name": "Farming Market › Sticker Depot",
+      "proof": "foto:0416"
+    },
+    {
+      "when": {
+        "menu2": 56
+      },
+      "name": "Sneaking",
+      "proof": "foto:0206"
+    },
+    {
+      "when": {
+        "menu2": 57
+      },
+      "name": "Jade Emporium",
+      "proof": "foto:0426"
+    },
+    {
+      "when": {
+        "menu2": 60
+      },
+      "name": "Summoning Upgrades",
+      "proof": "foto:0422"
+    },
+    {
+      "when": {
+        "menu2": 61
+      },
+      "name": "Summoner's Table",
+      "proof": "foto:0420"
+    },
+    {
+      "when": {
+        "menu2": 62
+      },
+      "name": "The Tome",
+      "proof": "foto:0533"
+    },
+    {
+      "when": {
+        "menu2": 64
+      },
+      "name": "Orion",
+      "proof": "foto:0219"
+    },
+    {
+      "when": {
+        "menu2": 65
+      },
+      "name": "Poppy",
+      "proof": "foto:0220"
+    },
+    {
+      "when": {
+        "menu2": 66
+      },
+      "name": "Bonus Ballot",
+      "proof": "sprite:VoteBG"
+    },
+    {
+      "when": {
+        "menu2": 67
+      },
+      "name": "Event Shop",
+      "proof": "sprite:EventShop"
+    },
+    {
+      "when": {
+        "menu2": 68
+      },
+      "name": "The Hole › Villagers",
+      "tabs": true,
+      "proof": "foto:0368"
+    },
+    {
+      "when": {
+        "menu2": 68,
+        "H25._GenINFO[42]": 0
+      },
+      "name": "The Hole › Villagers › Explorer",
+      "proof": "foto:0368"
+    },
+    {
+      "when": {
+        "menu2": 68,
+        "H25._GenINFO[42]": 1
+      },
+      "name": "The Hole › Villagers › Engineer",
+      "proof": "foto:0369"
+    },
+    {
+      "when": {
+        "menu2": 68,
+        "H25._GenINFO[42]": 2
+      },
+      "name": "The Hole › Villagers › Bonuses",
+      "proof": "foto:0370"
+    },
+    {
+      "when": {
+        "menu2": 68,
+        "H25._GenINFO[42]": 3
+      },
+      "name": "The Hole › Villagers › Measurements",
+      "proof": "foto:0371"
+    },
+    {
+      "when": {
+        "menu2": 68,
+        "H25._GenINFO[42]": 4
+      },
+      "name": "The Hole › Villagers › Study",
+      "proof": "foto:0372"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 0
+      },
+      "name": "The Well",
+      "proof": "foto:0375"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 0
+      },
+      "name": "The Well",
+      "proof": "foto:0376"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 1
+      },
+      "name": "Motherlode",
+      "proof": "foto:0377"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 1
+      },
+      "name": "Motherlode",
+      "proof": "foto:0377"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 2
+      },
+      "name": "The Den",
+      "proof": "foto:0378"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 2
+      },
+      "name": "The Den",
+      "proof": "foto:0378"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 3
+      },
+      "name": "Bravery",
+      "proof": "foto:0379"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 3
+      },
+      "name": "Bravery",
+      "proof": "foto:0379"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 4
+      },
+      "name": "The Bell",
+      "proof": "foto:0380"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 4
+      },
+      "name": "The Bell",
+      "proof": "foto:0380"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 5
+      },
+      "name": "The Harp",
+      "proof": "foto:0382"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 5
+      },
+      "name": "The Harp",
+      "proof": "foto:0382"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 6
+      },
+      "name": "The Lamp",
+      "proof": "foto:0383"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 6
+      },
+      "name": "The Lamp",
+      "proof": "foto:0383"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 7
+      },
+      "name": "The Hive",
+      "proof": "foto:0385"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 7
+      },
+      "name": "The Hive",
+      "proof": "foto:0385"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 8
+      },
+      "name": "Grotto",
+      "proof": "foto:0387"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 8
+      },
+      "name": "Grotto",
+      "proof": "foto:0387"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 9
+      },
+      "name": "Justice",
+      "proof": "foto:0389"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 9
+      },
+      "name": "Justice",
+      "proof": "foto:0389"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 10
+      },
+      "name": "The Jars",
+      "proof": "foto:0391"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 10
+      },
+      "name": "The Jars",
+      "proof": "foto:0391"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 11
+      },
+      "name": "Evertree",
+      "proof": "foto:0393"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 11
+      },
+      "name": "Evertree",
+      "proof": "foto:0393"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 12
+      },
+      "name": "Wisdom",
+      "proof": "foto:0395"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 12
+      },
+      "name": "Wisdom",
+      "proof": "foto:0395"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 13
+      },
+      "name": "Gambit",
+      "proof": "foto:0396"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 13
+      },
+      "name": "Gambit",
+      "proof": "foto:0396"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 14
+      },
+      "name": "Temple",
+      "proof": "foto:0398"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 14
+      },
+      "name": "Temple",
+      "proof": "foto:0398"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 15
+      },
+      "name": "Fountain",
+      "proof": "foto:0400"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 15
+      },
+      "name": "Fountain",
+      "proof": "foto:0400"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 16
+      },
+      "name": "Trench",
+      "proof": "foto:0402"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 16
+      },
+      "name": "Trench",
+      "proof": "foto:0402"
+    },
+    {
+      "when": {
+        "menu": 0,
+        "menu2": 0,
+        "hole": 17
+      },
+      "name": "The Lair",
+      "proof": "foto:0405"
+    },
+    {
+      "when": {
+        "menu2": 69,
+        "hole": 17
+      },
+      "name": "The Lair",
+      "proof": "foto:0405"
+    },
+    {
+      "when": {
+        "menu2": 71
+      },
+      "name": "Grimoire",
+      "proof": "sprite:GrimoireBG"
+    },
+    {
+      "when": {
+        "menu2": 72
+      },
+      "name": "The Upgrade Vault",
+      "proof": "foto:0014"
+    },
+    {
+      "when": {
+        "menu2": 74
+      },
+      "name": "Giftmas Wish",
+      "proof": "sprite:Event_Wish"
+    },
+    {
+      "when": {
+        "menu2": 76
+      },
+      "name": "Compass",
+      "proof": "sprite:CompassBG"
+    },
+    {
+      "when": {
+        "menu2": 77
+      },
+      "name": "Medallion Collection",
+      "proof": "sprite:MedBG"
+    },
+    {
+      "when": {
+        "menu2": 78
+      },
+      "name": "Emperor Showdown",
+      "proof": "foto:0432"
+    },
+    {
+      "when": {
+        "menu2": 79
+      },
+      "name": "Armor-Set Smithy",
+      "proof": "sprite:SetsBG"
+    },
+    {
+      "when": {
+        "menu2": 81
+      },
+      "name": "Tesseract",
+      "proof": "sprite:TachBG"
+    },
+    {
+      "when": {
+        "menu2": 82
+      },
+      "name": "Spelunking",
+      "tabs": true,
+      "proof": "foto:0208"
+    },
+    {
+      "when": {
+        "menu2": 82,
+        "H26._GenINFO[49]": 0
+      },
+      "name": "Spelunking",
+      "proof": "foto:0208"
+    },
+    {
+      "when": {
+        "menu2": 82,
+        "H26._GenINFO[49]": 2
+      },
+      "name": "Spelunking › Upgrades",
+      "proof": "foto:0209"
+    },
+    {
+      "when": {
+        "menu2": 82,
+        "H26._GenINFO[49]": 3
+      },
+      "name": "Spelunking › Lore Journal",
+      "proof": "foto:0211"
+    },
+    {
+      "when": {
+        "menu2": 82,
+        "H26._GenINFO[49]": 4
+      },
+      "name": "Spelunking › Elixir Belt",
+      "proof": "foto:0212"
+    },
+    {
+      "when": {
+        "menu2": 83
+      },
+      "name": "Coral Reef",
+      "proof": "foto:0435"
+    },
+    {
+      "when": {
+        "menu2": 84
+      },
+      "name": "Swishy Hoops Shop",
+      "proof": "sprite:HoopShopBG"
+    },
+    {
+      "when": {
+        "menu2": 85
+      },
+      "name": "Dancing Coral",
+      "proof": "foto:0442"
+    },
+    {
+      "when": {
+        "menu2": 86
+      },
+      "name": "Coral Kid",
+      "proof": "foto:0353"
+    },
+    {
+      "when": {
+        "menu2": 88
+      },
+      "name": "Throwy Darts Shop",
+      "proof": "sprite:DartShopBG"
+    },
+    {
+      "when": {
+        "menu2": 89
+      },
+      "name": "The Gallery",
+      "tabs": true,
+      "proof": "foto:0446"
+    },
+    {
+      "when": {
+        "menu2": 89,
+        "H26._GenINFO[124]": 0
+      },
+      "name": "The Gallery",
+      "proof": "foto:0450"
+    },
+    {
+      "when": {
+        "menu2": 89,
+        "H26._GenINFO[124]": 1
+      },
+      "name": "The Gallery › View Trophy Bonuses",
+      "proof": "foto:0448"
+    },
+    {
+      "when": {
+        "menu2": 89,
+        "H26._GenINFO[124]": 2
+      },
+      "name": "The Gallery › View Trophy Bonuses",
+      "proof": "sprite:GalleryButton0"
+    },
+    {
+      "when": {
+        "menu2": 89,
+        "H26._GenINFO[124]": 3
+      },
+      "name": "The Gallery › View Nametag Bonuses",
+      "proof": "foto:0447"
+    },
+    {
+      "when": {
+        "menu2": 89,
+        "H26._GenINFO[124]": 4
+      },
+      "name": "The Gallery › View Nametag Bonuses",
+      "proof": "foto:0452"
+    },
+    {
+      "when": {
+        "menu2": 90
+      },
+      "name": "Multi Meritocracy",
+      "proof": "foto:0437"
+    },
+    {
+      "when": {
+        "menu2": 91
+      },
+      "name": "Legend Talents",
+      "proof": "foto:0458"
+    },
+    {
+      "when": {
+        "menu2": 92
+      },
+      "name": "The Clamworks",
+      "proof": "foto:0463"
+    },
+    {
+      "when": {
+        "menu2": 93
+      },
+      "name": "Zenith Market",
+      "proof": "foto:0466"
+    },
+    {
+      "when": {
+        "menu2": 94
+      },
+      "name": "Bubba",
+      "proof": "foto:0218"
+    },
+    {
+      "when": {
+        "menu2": 95
+      },
+      "name": "The Hat Rack",
+      "proof": "foto:0305"
+    },
+    {
+      "when": {
+        "menu2": 96
+      },
+      "name": "Research",
+      "tabs": true,
+      "proof": "foto:0471"
+    },
+    {
+      "when": {
+        "menu2": 96,
+        "H27._GenINFO[0]": 0
+      },
+      "name": "Research",
+      "proof": "foto:0471"
+    },
+    {
+      "when": {
+        "menu2": 97
+      },
+      "name": "Mr. Minehead's Depth Charge",
+      "tabs": true,
+      "proof": "foto:0473"
+    },
+    {
+      "when": {
+        "menu2": 97,
+        "H27._GenINFO[19]": 0
+      },
+      "name": "Mr. Minehead's Depth Charge › Opponents",
+      "proof": "foto:0473"
+    },
+    {
+      "when": {
+        "menu2": 97,
+        "H27._GenINFO[19]": 1
+      },
+      "name": "Mr. Minehead's Depth Charge › Upgrades",
+      "proof": "foto:0474"
+    },
+    {
+      "when": {
+        "menu2": 97,
+        "H27._GenINFO[19]": 2
+      },
+      "name": "Mr. Minehead's Depth Charge › Bonuses",
+      "proof": "foto:0475"
+    },
+    {
+      "when": {
+        "menu2": 98
+      },
+      "name": "The Grand Tournament",
+      "tabs": true,
+      "proof": "foto:0017"
+    },
+    {
+      "when": {
+        "menu2": 98,
+        "H27._GenINFO[116]": 0
+      },
+      "name": "The Grand Tournament",
+      "proof": "foto:0017"
+    },
+    {
+      "when": {
+        "menu2": 98,
+        "H27._GenINFO[116]": 3
+      },
+      "name": "The Grand Tournament › Rewards",
+      "proof": "foto:0561"
+    },
+    {
+      "when": {
+        "menu2": 99
+      },
+      "name": "Glimbo's Swap Meet",
+      "proof": "foto:0557"
+    },
+    {
+      "when": {
+        "menu2": 100
+      },
+      "name": "Advanced Features",
+      "proof": "foto:0134"
+    },
+    {
+      "when": {
+        "menu2": 101
+      },
+      "name": "Halloween Lucky Pet Winners",
+      "proof": "sprite:HourlyWinBG"
+    },
+    {
+      "when": {
+        "menu2": 102
+      },
+      "name": "Sushi Station",
+      "tabs": true,
+      "proof": "foto:0477"
+    },
+    {
+      "when": {
+        "menu2": 102,
+        "H27._GenINFO[142]": 0
+      },
+      "name": "Sushi Station › Sushi",
+      "proof": "foto:0477"
+    },
+    {
+      "when": {
+        "menu2": 102,
+        "H27._GenINFO[142]": 1
+      },
+      "name": "Sushi Station › Upgrades",
+      "proof": "foto:0478"
+    },
+    {
+      "when": {
+        "menu2": 102,
+        "H27._GenINFO[142]": 2
+      },
+      "name": "Sushi Station › Bonus",
+      "proof": "foto:0479"
+    },
+    {
+      "when": {
+        "menu2": 103
+      },
+      "name": "The Button",
+      "proof": "foto:0489"
+    },
+    {
+      "when": {
+        "menu2": 105
+      },
+      "name": "Royal Statues",
+      "proof": "foto:0500"
+    },
+    {
+      "when": {
+        "menu2": 106
+      },
+      "name": "Royal Armory",
+      "proof": "foto:0528"
+    },
+    {
+      "when": {
+        "menu2": 107
+      },
+      "name": "Lil Orblet Shop",
+      "proof": "foto:0529"
+    },
+    {
+      "when": {
+        "menu2": 108
+      },
+      "name": "Jelly Operator",
+      "tabs": true,
+      "proof": "foto:0481"
+    },
+    {
+      "when": {
+        "menu2": 108,
+        "H27._GenINFO[212]": 0
+      },
+      "name": "Jelly Operator › Jelly",
+      "proof": "foto:0481"
+    },
+    {
+      "when": {
+        "menu2": 108,
+        "H27._GenINFO[212]": 1
+      },
+      "name": "Jelly Operator › Upgrade",
+      "proof": "foto:0482"
+    },
+    {
+      "when": {
+        "menu2": 108,
+        "H27._GenINFO[212]": 2
+      },
+      "name": "Jelly Operator › Bonus",
+      "proof": "foto:0483"
+    },
+    {
+      "when": {
+        "menu2": 109
+      },
+      "name": "Luminous Menagerie",
+      "proof": "foto:0485"
+    },
+    {
+      "when": {
+        "menu2": 110
+      },
+      "name": "The Cape Vine",
+      "proof": "foto:0511"
+    }
+  ],
+  "unprovenWindows": [52, 53, 58, 59, 63, 70, 73, 75, 80, 87, 104]
+}

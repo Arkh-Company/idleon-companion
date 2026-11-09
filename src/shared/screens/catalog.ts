@@ -4,6 +4,7 @@ import { FIELDS } from "../reading.ts";
 import type { ScreenCatalog, ScreenRule } from "../types.ts";
 import menus from "./rules/menus.json" with { type: "json" };
 import windows0To45 from "./rules/windows-0-45.json" with { type: "json" };
+import windows46To110 from "./rules/windows-46-110.json" with { type: "json" };
 
 const PROOF = /^(foto|sprite):\S+$/;
 const BEHAVIOR_KEY = /^H\d+\.\w+(\[\d+\])?$/;
@@ -72,4 +73,16 @@ export function parseScreenCatalog(parts: unknown[]): ScreenCatalog {
 }
 
 /** Every proven rule of the game's screens. */
-export const SCREEN_CATALOG = parseScreenCatalog([menus, windows0To45]);
+export const SCREEN_CATALOG = parseScreenCatalog([
+  menus,
+  windows0To45,
+  windows46To110,
+]);
+
+/** Every window number of the game, proven or not. */
+export const KNOWN_WINDOWS: ReadonlySet<number> = new Set([
+  ...[...SCREEN_CATALOG.overlays, ...SCREEN_CATALOG.screens].flatMap((rule) =>
+    typeof rule.when.menu2 === "number" ? [rule.when.menu2] : [],
+  ),
+  ...SCREEN_CATALOG.unprovenWindows,
+]);

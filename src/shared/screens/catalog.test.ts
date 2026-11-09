@@ -1,6 +1,6 @@
 // The checks every rule of the screen catalog passes. Every rule here is invented.
 import { expect, test } from "vitest";
-import { parseScreenCatalog } from "../index.ts";
+import { KNOWN_WINDOWS, parseScreenCatalog, SCREEN_CATALOG } from "../index.ts";
 
 const REFUSED = /^Invalid screen catalog/;
 const good = { when: { menu2: 5 }, name: "Hall", proof: "foto:0001" };
@@ -145,4 +145,21 @@ test("an unproven number that no rule uses passes", () => {
     parseScreenCatalog([{ screens: [good], unprovenWindows: [6] }])
       .unprovenWindows,
   ).toEqual([6]);
+});
+
+test("the known windows are the 108 of the game", () => {
+  const game = Array.from({ length: 111 }, (_, n) => n).filter(
+    (n) => ![22, 50, 51].includes(n),
+  );
+  expect(game).toHaveLength(108);
+  expect([...KNOWN_WINDOWS].toSorted((a, b) => a - b)).toEqual(game);
+});
+
+test("the known windows are the rules' and the unproven ones", () => {
+  const inRules = [...SCREEN_CATALOG.overlays, ...SCREEN_CATALOG.screens]
+    .map((rule) => rule.when.menu2)
+    .filter((n) => typeof n === "number");
+  expect(KNOWN_WINDOWS).toEqual(
+    new Set([...inRules, ...SCREEN_CATALOG.unprovenWindows]),
+  );
 });
