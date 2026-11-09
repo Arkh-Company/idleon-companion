@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.3.1...v0.4.0) (2026-11-09)
+
+
+### Features
+
+* name every screen from proven rules and the installed game ([#14](https://github.com/Arkh-Company/idleon-companion/issues/14)) ([01a85b9](https://github.com/Arkh-Company/idleon-companion/commit/01a85b986ff5502d09b3dd558912bd0d5395b46c))
+
 ## [0.3.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.3.0...v0.3.1) (2026-11-08)
 
 
