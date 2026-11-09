@@ -1,5 +1,6 @@
-// The keeper's side of the link (spec §5.4): a local named-pipe server that sends every app the last tables, status
-// and reading, then each new message. Node `net` on a pipe path only, never TCP.
+// The keeper's side of the link (spec §5.4): a local named-pipe server that sends every app the last tables, status,
+// reading and game folder, then each new message. The slices are not kept: the mosaic rebuilds in a rotation.
+// Node `net` on a pipe path only, never TCP.
 import { createServer } from "node:net";
 import type { Socket } from "node:net";
 import { createLineDecoder, encodeLine } from "../shared/index.ts";
@@ -21,6 +22,7 @@ export async function startLinkServer(
   let lastTables: LinkMessage | undefined;
   let lastStatus: LinkMessage | undefined;
   let lastReading: LinkMessage | undefined;
+  let lastGameFiles: LinkMessage | undefined;
   const write = (s: Socket, m: LinkMessage | undefined) => {
     if (m && s.writable) s.write(encodeLine(m));
   };
@@ -44,6 +46,7 @@ export async function startLinkServer(
     write(socket, lastTables);
     write(socket, lastStatus);
     write(socket, lastReading);
+    write(socket, lastGameFiles);
   });
   await new Promise<void>((resolve, reject) => {
     server.once("error", (e: NodeJS.ErrnoException) => {
@@ -58,6 +61,7 @@ export async function startLinkServer(
       if (m.type === "tables") lastTables = m;
       if (m.type === "status") lastStatus = m;
       if (m.type === "reading") lastReading = m;
+      if (m.type === "gameFiles") lastGameFiles = m;
       for (const c of clients) write(c, m);
     },
     close() {

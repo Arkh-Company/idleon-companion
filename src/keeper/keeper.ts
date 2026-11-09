@@ -1,7 +1,12 @@
 // The keeper's flow (spec §4): holds the link pipe, checks the game code, launches the game (with its debugging pipe
 // only when the code was checked and is clean), reads it and publishes to the app, and ends only after the game.
 // index.ts gives it the real game, reader and app.
-import type { GameTables, Reading, Status } from "../shared/index.ts";
+import type {
+  GameTables,
+  Reading,
+  StateSlice,
+  Status,
+} from "../shared/index.ts";
 import { KNOWN_WINDOWS } from "../shared/screens/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
@@ -33,7 +38,10 @@ export interface KeeperDeps {
     onStatus: (s: Status) => void,
     onAttached: (pausedMs: number) => void,
     onRead: (t: number) => void,
+    onSlice: (s: StateSlice) => void,
   ): { stop(): Promise<void> };
+  /** The game's `resources` folder, published once for the app to read the game's files from. */
+  resources?: () => string;
   startApp(): void;
   log: KeeperLog;
 }
@@ -156,11 +164,17 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
         lastReadingAt = t;
         sendStatus();
       },
+      // Never logged: the state lives only in memory (FR-007).
+      (slice) => {
+        server?.publish({ type: "state", slice });
+      },
     );
   };
   // Only a game launched with the pipe has a Cdp, so nothing can read a game opened without it.
   // The debugging pipe, kept for "Reconnect" until the game exits. It is never closed: that would close the game.
   let cdp = game.cdp;
+  if (cdp && d.resources)
+    server?.publish({ type: "gameFiles", resources: d.resources() });
   const release = async () => {
     if (!reader) return; // no reader (a game without the pipe), or already released
     const stopping = reader;

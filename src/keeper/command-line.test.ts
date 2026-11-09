@@ -58,3 +58,18 @@ test("read.js comes from resources when packaged and from src/keeper in developm
     readJsPath({ defaultApp: true, resourcesPath: "R", repoRoot: "C" }),
   ).toBe(join("C", "src/keeper/read.js"));
 });
+
+test("another script comes from the same two places", () => {
+  expect(
+    readJsPath(
+      { defaultApp: false, resourcesPath: "R", repoRoot: "C" },
+      "state-slice.js",
+    ),
+  ).toBe(join("R", "state-slice.js"));
+  expect(
+    readJsPath(
+      { defaultApp: true, resourcesPath: "R", repoRoot: "C" },
+      "state-slice.js",
+    ),
+  ).toBe(join("C", "src/keeper/state-slice.js"));
+});

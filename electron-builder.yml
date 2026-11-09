@@ -9,10 +9,14 @@ directories:
 files:
   - out/**
   - package.json
-# The keeper loads read.js on every cycle, from resources\read.js next to app.asar.
+# The keeper loads read.js on every cycle, and the two state scripts once, from resources\ next to app.asar.
 extraResources:
   - from: src/keeper/read.js
     to: read.js
+  - from: src/keeper/state-list.js
+    to: state-list.js
+  - from: src/keeper/state-slice.js
+    to: state-slice.js
 win:
   target: nsis
 nsis:

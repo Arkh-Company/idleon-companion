@@ -24,13 +24,16 @@ export function appCommand(p: {
   };
 }
 
-/** read.js: an extra resource next to app.asar when packaged; the source file in development. */
-export function readJsPath(p: {
-  defaultApp: boolean;
-  resourcesPath: string;
-  repoRoot: string;
-}): string {
+/** A script sent to the game: an extra resource next to app.asar when packaged; the source file in development. */
+export function readJsPath(
+  p: {
+    defaultApp: boolean;
+    resourcesPath: string;
+    repoRoot: string;
+  },
+  file = "read.js",
+): string {
   return p.defaultApp
-    ? join(p.repoRoot, "src/keeper/read.js")
-    : join(p.resourcesPath, "read.js");
+    ? join(p.repoRoot, "src/keeper", file)
+    : join(p.resourcesPath, file);
 }

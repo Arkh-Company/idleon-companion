@@ -3,15 +3,19 @@
 import { spawn } from "node:child_process";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { LINK_PIPE } from "../shared/index.ts";
+import type { Cdp } from "./cdp.ts";
 import { appCommand, gameCommand, readJsPath } from "./command-line.ts";
+import type { EngineRef } from "./engine-ref.ts";
 import { keepAlive, runKeeper } from "./keeper.ts";
-import type { KeeperLog } from "./keeper.ts";
+import type { KeeperDeps, KeeperLog } from "./keeper.ts";
 import { launchGame } from "./launch.ts";
 import { loadReadSource } from "./read-source.ts";
 import { startReader } from "./reader.ts";
+import { oneAtATime, startStateReader } from "./state-reader.ts";
 import { readInstalledGameCode } from "./update-watch.ts";
+import { createVarsReader } from "./vars-reader.ts";
 
 const dataDir = join(process.env.APPDATA ?? homedir(), "IdleOn Companion");
 const logFile = join(dataDir, "keeper.log");
@@ -19,11 +23,12 @@ const logFile = join(dataDir, "keeper.log");
 const repoRoot = resolve(import.meta.dirname, "../..");
 // ponytail: Electron types it as boolean, but it is undefined when packaged; only its truthiness is used.
 const defaultApp = process.defaultApp;
-const readJs = readJsPath({
+const paths = {
   defaultApp,
   resourcesPath: process.resourcesPath,
   repoRoot,
-});
+};
+const readJs = readJsPath(paths);
 
 /** The game's pid once it is launched: every keeper.log line carries it as `id` (null before the launch). */
 let gamePid: number | null = null;
@@ -59,6 +64,65 @@ function startApp(): void {
     .unref();
 }
 
+const logStateFailing = () => {
+  log("state-read-failing", { id: gamePid });
+};
+
+/** Once for the whole session; a missing script only turns the state reading off: ending the keeper closes the game. */
+function loadStateScripts(): {
+  listSource: string;
+  sliceSource: string;
+} | null {
+  try {
+    return {
+      listSource: loadReadSource(readJsPath(paths, "state-list.js")),
+      sliceSource: loadReadSource(readJsPath(paths, "state-slice.js")),
+    };
+  } catch {
+    logStateFailing();
+    return null;
+  }
+}
+
+/** The 1 s reader and, sharing its engine and one read at a time, the reader of the state. */
+const startReaders =
+  (scripts: ReturnType<typeof loadStateScripts>): KeeperDeps["read"] =>
+  (cdp, onReading, onStatus, onAttached, onRead, onSlice) => {
+    const turn = oneAtATime();
+    let engine: EngineRef | null = null;
+    const reader = startReader(
+      cdp,
+      () => loadReadSource(readJs),
+      onReading,
+      onStatus,
+      {
+        onAttached,
+        onRead,
+        onEngine: (ref) => {
+          engine = ref;
+        },
+        turn,
+      },
+    );
+    if (!scripts) return reader;
+    const send: Cdp["send"] = (...args) => cdp.send(...args);
+    const state = startStateReader({
+      send,
+      engine: () => engine,
+      ...scripts,
+      turn,
+      onSlice,
+      onFailing: logStateFailing,
+      vars: createVarsReader(send, scripts.sliceSource),
+    });
+    return {
+      async stop() {
+        await state.stop();
+        await reader.stop();
+      },
+    };
+  };
+
 async function main(): Promise<number> {
   keepAlive(log, () => gamePid);
   const game = gameCommand(process.argv);
@@ -85,11 +149,8 @@ async function main(): Promise<number> {
       return { pid: g.child.pid, cdp: g.cdp, exited: g.exited };
     },
     // read.js is loaded on every cycle, so a change to it takes effect without reopening the game (spec §5.2).
-    read: (cdp, onReading, onStatus, onAttached, onRead) =>
-      startReader(cdp, () => loadReadSource(readJs), onReading, onStatus, {
-        onAttached,
-        onRead,
-      }),
+    read: startReaders(loadStateScripts()),
+    resources: () => join(dirname(exe), "resources"),
     startApp,
     log,
   });
