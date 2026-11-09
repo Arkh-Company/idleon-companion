@@ -134,8 +134,9 @@ export function startStatsPipeline(deps: {
       host.setFiles(resources);
     } else if (m.type === "state") {
       const s = linkState(m.slice);
-      // A slice read just before the reader let go or the character left arrives after the news of it.
-      if (!s || !attached || !selected) return;
+      // A slice read just before the reader let go arrives after the news of it. No check of `selected`: the state
+      // reader sees a new character before the `reading` does, and those first slices are part of the mosaic.
+      if (!s || !attached) return;
       store.add(s);
       if (s.sentinel.char === null) return;
       tracker.slice();

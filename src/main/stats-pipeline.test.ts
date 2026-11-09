@@ -93,10 +93,8 @@ test("other messages are left alone", () => {
   expect(h.sent).toEqual([]);
 });
 
-test("no slice counts before the reader and a character are known", () => {
+test("no slice counts before the reader is attached", () => {
   const h = setup();
-  h.slice();
-  h.p.status(ATTACHED);
   h.slice();
   expect(h.sent).toEqual([]);
 });
@@ -110,13 +108,19 @@ test("a slice that arrives after the reader let go shows nothing", () => {
   expect(h.sent).toEqual([]);
 });
 
-test("a slice that arrives after the character left shows nothing", () => {
+test("the slices that come before the reading with the character are kept", async () => {
   const h = setup();
-  h.open();
+  h.p.status(ATTACHED);
   h.p.reading(reading(null));
-  h.sent.length = 0;
-  h.slice();
-  expect(h.sent).toEqual([]);
+  h.files();
+  h.slice([vars, piece("Cards", "early")]);
+  h.p.reading(reading());
+  h.slice([], { formula: 1, all: 1 });
+  await h.ready();
+  expect(JSON.parse(h.worker().calcs()[0] ?? "")).toMatchObject({
+    attrs: { Cards: "early" },
+    vars: { A_friendBons: 1 },
+  });
 });
 
 test.each<[string, (h: ReturnType<typeof setup>) => void]>([
