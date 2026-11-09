@@ -72,3 +72,9 @@ Bad: `nsExec::Exec '"$CmdPath" /C tasklist …'`, which lets `cmd` search the wo
 Every character or account name in a test, a fixture or an example is invented, never copied from a capture or a real session.
 Good: `char: "Tester"` in a `Reading` literal.
 Bad: the name of the character used in the game round, pasted into a `Reading` literal because the state was copied from a capture.
+
+### The test of a criterion feeds the field the criterion names
+
+A test written for a security or spec criterion passes the risky data through the real field the criterion names, and fails when only that field loses the protection.
+Good: `names: { map: "<b>Map</b>", afk: "<i>Mob</i>" }` in the test that names from the game show as plain text.
+Bad: `label: "<b>Bold</b>"` in that test, a text of the compiled catalog that never comes from the game, so the game's names are not exercised.
