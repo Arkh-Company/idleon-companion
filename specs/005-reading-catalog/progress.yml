@@ -13,7 +13,7 @@ execution:
     - {name: "Foundational (T001-T007)", status: done, commits: 6fd00fc..551585d}
     - {name: "US1 leitura (T008-T011)", status: done, commits: c3d9de1..015a570}
     - {name: "US1 calculo (T012-T014)", status: done, commits: 1fc1244..2bca796}
-    - {name: "US1 mosaico (T015-T019)", status: pending}
+    - {name: "US1 mosaico (T015-T019)", status: done, commits: 00b6dd6..73fda29}
     - {name: "US3 e US4 (T020-T025)", status: pending}
     - {name: "Polish (T026-T028)", status: pending}
   feature_review: pending
