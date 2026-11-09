@@ -1,5 +1,6 @@
 // The rules of the catalog, with no import of the table: plain Node runs this file (scripts/reading-inventory.ts).
-import { NUMBER_IDS } from "./state.ts";
+import { isObject } from "./link.ts";
+import { NUMBER_IDS, VARS_KEYS } from "./state.ts";
 import type { StateClass, StatePath } from "./state.ts";
 
 export interface CatalogRow {
@@ -159,4 +160,44 @@ export function catalogProblems(
       );
     return problems;
   });
+}
+
+function mapOf(value: unknown): Record<string, unknown> {
+  return isObject(value) && isObject(value.$m) ? value.$m : {};
+}
+
+/** The catalog name of each piece of a real state, sorted: a character's name never comes out, and `_vars` only as the closed list. */
+export function inventoryNames(
+  state: { attrs: Record<string, unknown>; vars?: Record<string, unknown> },
+  char: string,
+): string[] {
+  const { attrs, vars = {} } = state;
+  const names = new Set<string>();
+  for (const [top, value] of Object.entries(attrs)) {
+    if (top === "DNSM")
+      for (const child of Object.keys(mapOf(value))) names.add(`DNSM.${child}`);
+    else if (top === "PlayerDATABASE")
+      for (const [who, character] of Object.entries(mapOf(value)))
+        for (const sub of Object.keys(mapOf(character)))
+          names.add(
+            who === char ? `Personagem.${sub}` : `${OTHER_CHARACTERS}${sub}`,
+          );
+    else names.add(top);
+  }
+  for (const key of VARS_KEYS)
+    if (Object.hasOwn(vars, key)) names.add(`_vars.${key}`);
+  return [...names].sort();
+}
+
+/** What a patch brought and took away: the names outside the catalog, and the rows no name answered (FR-022). */
+export function diffInventory(
+  rows: readonly CatalogRow[],
+  names: readonly string[],
+): { added: string[]; gone: string[] } {
+  const known = new Set(rows.map((r) => r.name));
+  const seen = new Set(names);
+  return {
+    added: names.filter((n) => !known.has(n)).sort(),
+    gone: [...known].filter((n) => !seen.has(n)).sort(),
+  };
 }

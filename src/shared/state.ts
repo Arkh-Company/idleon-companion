@@ -56,6 +56,11 @@ export const VARS_KEYS: readonly string[] = [
   "EventActive",
 ];
 
+/**
+ * The numbers the app shows. A feature declares its numbers here, and the catalog check (`catalogProblems`) says which rows
+ * to promote to the fast reading. A new number also means measuring the catalog's `todos` rows again: they start to cite
+ * it with no measurement.
+ */
 export const NUMBER_IDS = [
   "damageMax",
   "damageMin",

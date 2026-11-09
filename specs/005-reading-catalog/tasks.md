@@ -220,30 +220,30 @@ one extra piece and one renamed piece lists both.
 
 ### Tests for Phase 5
 
-- [ ] T020 [P] [US3] Declared number test in src/shared/reading-catalog-rules.test.ts
+- [X] T020 [P] [US3] Declared number test in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases: `catalogProblems(rows, [...ids, "inventedNumber"])` names the `lenta` row that affects `inventedNumber`, and is empty
     once the row is `rápida`.
-- [ ] T021 [P] [US4] Inventory tests in src/shared/reading-catalog-rules.test.ts
+- [X] T021 [P] [US4] Inventory tests in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases: `inventoryNames` of an invented state has top keys, `DNSM.x`, `Personagem.x`, `OutrosPersonagens.x` and only the closed
     `_vars` keys, with no character name; `diffInventory` lists a new piece and, for a renamed one, the new name in `added` and
     the old in `gone`; both lists are sorted.
-- [ ] T022 [P] [US4] Unknown piece test in src/keeper/state-reader.test.ts
+- [X] T022 [P] [US4] Unknown piece test in src/keeper/state-reader.test.ts
   - Files: `src/keeper/state-reader.test.ts`
   - Cases: a key of the state outside the catalog goes in a slow slice, the rotation completes and no error is reported (FR-015).
 
 ### Implementation for Phase 5
 
-- [ ] T023 [US4] Inventory rules in src/shared/reading-catalog-rules.ts
+- [X] T023 [US4] Inventory rules in src/shared/reading-catalog-rules.ts
   - Files: `src/shared/reading-catalog-rules.ts`
   - Signatures: `inventoryNames(state: { attrs: Record<string, unknown>; vars?: Record<string, unknown> }, char: string): string[]`;
     `diffInventory(rows, names): { added: string[]; gone: string[] }`.
-- [ ] T024 [US4] The inventory script in scripts/reading-inventory.ts
+- [X] T024 [US4] The inventory script in scripts/reading-inventory.ts
   - Files: `scripts/reading-inventory.ts`
   - Usage: `node scripts/reading-inventory.ts <state.json>`. Reads the catalog file and the state, and prints only the names of
     `added` and `gone`. Imports `src/shared/reading-catalog-rules.ts` directly, since plain Node has no `?raw`.
-- [ ] T025 [US3] How to add a number in src/shared/state.ts
+- [X] T025 [US3] How to add a number in src/shared/state.ts
   - Files: `src/shared/state.ts`
   - Change: a comment over `NUMBER_IDS` saying a feature declares its numbers here and the catalog check says what to promote.
 

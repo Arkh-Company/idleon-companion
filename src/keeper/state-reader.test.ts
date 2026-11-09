@@ -287,6 +287,19 @@ test("the class of a piece follows the character the list answered", async () =>
   expect(sent.at(-1)?.paths).toEqual([["PlayerDATABASE", "Mate", "Skills"]]);
 });
 
+test("a key outside the catalog goes with the slow pieces, and the rotation completes with no error (FR-015)", async () => {
+  const { onFailing, sent, slices } = setup({
+    top: ["Cards", "ChestMap", "NewInAPatch"],
+  });
+  await tick(3);
+  expect(sliceReads(sent).at(-1)?.paths).toEqual([
+    ["ChestMap"],
+    ["NewInAPatch"],
+  ]);
+  expect(slices.at(-1)?.cycles.all).toBe(1);
+  expect(onFailing).not.toHaveBeenCalled();
+});
+
 test("an engine of null reads nothing, and it is asked for at each slot", async () => {
   const h = setup();
   h.h.ref = null;

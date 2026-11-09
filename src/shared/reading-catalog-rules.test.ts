@@ -4,7 +4,9 @@ import {
   catalogName,
   catalogProblems,
   classOf,
+  diffInventory,
   groupOf,
+  inventoryNames,
   parseCatalog,
 } from "./reading-catalog-rules.ts";
 import type { CatalogRow } from "./reading-catalog-rules.ts";
@@ -240,5 +242,88 @@ describe("catalogProblems", () => {
     expect(
       catalogProblems([slow("A"), { ...slow("B"), nature }], shown),
     ).toEqual([]);
+  });
+
+  describe("a number a new feature declares (US3)", () => {
+    const declared = [...NUMBER_IDS, "inventedNumber"];
+    const affecting = row({
+      name: "Foo",
+      numbers: ["inventedNumber"],
+      reading: "lenta",
+      group: "—",
+    });
+
+    test("names the `lenta` row that affects it", () => {
+      expect(catalogProblems([affecting], NUMBER_IDS)).toEqual([]);
+      const problems = catalogProblems([affecting], declared);
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toContain("Foo");
+    });
+
+    test("has no problem once the row is `rápida`", () => {
+      const promoted = { ...affecting, reading: "rápida", group: "Combate" };
+      expect(catalogProblems([promoted as CatalogRow], declared)).toEqual([]);
+    });
+  });
+});
+
+describe("inventoryNames", () => {
+  const state = {
+    attrs: {
+      Cards: [1],
+      DNSM: { $m: { Totals: 1, Buffs: 2 } },
+      PlayerDATABASE: {
+        $m: {
+          Aria: { $m: { SkillLevels: 1, Bag: 2 } },
+          Bruno: { $m: { SkillLevels: 3, Pets: 4 } },
+        },
+      },
+    },
+    vars: { TomePct: 1, NotInTheClosedList: 2 },
+  };
+
+  test("names each piece by its catalog name, sorted and with no character name", () => {
+    expect(inventoryNames(state, "Aria")).toEqual([
+      "Cards",
+      "DNSM.Buffs",
+      "DNSM.Totals",
+      "OutrosPersonagens.Pets",
+      "OutrosPersonagens.SkillLevels",
+      "Personagem.Bag",
+      "Personagem.SkillLevels",
+      "_vars.TomePct",
+    ]);
+  });
+
+  test("a state with no _vars has no _vars name", () => {
+    expect(inventoryNames({ attrs: { Cards: [1] } }, "Aria")).toEqual([
+      "Cards",
+    ]);
+  });
+
+  test("a split map or a character that is no map adds nothing", () => {
+    expect(
+      inventoryNames(
+        { attrs: { DNSM: 5, PlayerDATABASE: { $m: { Aria: null } } } },
+        "Aria",
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("diffInventory", () => {
+  test("a new piece is added, a renamed one is added and gone, both sorted", () => {
+    const rows = [slow("Zed"), slow("Old"), slow("Same")];
+    expect(diffInventory(rows, ["Zeta", "Same", "New"])).toEqual({
+      added: ["New", "Zeta"],
+      gone: ["Old", "Zed"],
+    });
+  });
+
+  test("the same names give two empty lists", () => {
+    expect(diffInventory([slow("Same")], ["Same"])).toEqual({
+      added: [],
+      gone: [],
+    });
   });
 });
