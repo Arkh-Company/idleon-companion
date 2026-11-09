@@ -69,8 +69,9 @@ export function statsRows(
 
 /** Positions 0 to 3 of the game's `StatList` (research R11). */
 const LISTED = ["str", "agi", "wis", "luk"] as const;
-/** The game writes the list every 30 s, so a new equipment must not look like a broken number. */
-const DIFFERENT_MS = 35_000;
+/** The game writes the list every 30 s and it arrives with the whole character, in the slow reading (about 15 s more),
+ * so a new equipment must not look like a broken number. */
+const DIFFERENT_MS = 50_000;
 
 /** Which of the four numbers have been away from the game's own list for too long; nothing, without a usable list. */
 export function statListCheck(
