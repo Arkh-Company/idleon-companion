@@ -13,6 +13,10 @@ const START_MS = 8_000;
 
 type Decompress = (data: Uint8Array) => Uint8Array | null;
 
+/** The host's own method: `array.set` would look it up in the context, where the game can replace it and receive host bytes. */
+// eslint-disable-next-line @typescript-eslint/unbound-method -- only ever called with `.call`
+const copyInto = Uint8Array.prototype.set;
+
 /** Maps the game creates lazily, read as `DNSM").h.KEY.h`, except the ones it fills itself when absent (a text scan). */
 function lazyDnsmKeys(code: string): string[] {
   const pattern = 'DNSM").h.';
@@ -74,7 +78,7 @@ export function createEngine(
             Buffer.from(data.buffer, data.byteOffset, data.byteLength),
           );
           const out = new ContextArray(bytes.length);
-          out.set(bytes);
+          copyInto.call(out, bytes);
           return out;
         } catch {
           return null; // A host error never reaches the game: it could climb to the host's Function.
@@ -88,7 +92,7 @@ export function createEngine(
 
     game.runInContext(context, { timeout: START_MS });
     const pakCopy = new ContextArray(pak.length);
-    pakCopy.set(pak);
+    copyInto.call(pakCopy, pak);
     sandbox.__pak = pakCopy;
     run("__calc.start(__pak)", START_MS);
     run("__calc.tables()", START_MS);

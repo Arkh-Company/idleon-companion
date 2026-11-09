@@ -4,6 +4,14 @@
 // that read the state). `Scenario`, in the state, picks what the accuracy and HP blocks do, one behavior per test.
 var lime = { $scripts: {} };
 
+// A game that replaces an array method sees what the host hands to it, if the host goes through the context's prototype.
+var setCalls = 0;
+var contextSet = Uint8Array.prototype.set;
+Uint8Array.prototype.set = function (source, offset) {
+  setCalls++;
+  return contextSet.call(this, source, offset);
+};
+
 lime.$scripts.N = function (_exports, $global) {
   var A = {};
   var a = function () {};
@@ -300,6 +308,10 @@ lime.$scripts.N = function (_exports, $global) {
         library.getText("missing") === "" &&
         library.getText("known") === "text-known";
       return ok ? 1 : 0;
+    },
+    arraySet: function (s) {
+      pako.ungzip(new Uint8Array(s.Packed));
+      return setCalls;
     },
     decompress: function (s) {
       var out = pako.ungzip(new Uint8Array(s.Packed));

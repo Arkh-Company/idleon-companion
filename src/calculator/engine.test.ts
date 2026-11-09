@@ -29,10 +29,13 @@ beforeAll(() => {
   engine = createEngine(GAME, PAK);
 });
 
+const mosaicOf = (attrs: object = {}, vars: object = {}): string =>
+  JSON.stringify({ attrs: { ...BASE, ...attrs }, vars, skipped: [] });
 const calc = (attrs: object = {}, vars: object = {}): CalcNumbers =>
-  engine.calculate(
-    JSON.stringify({ attrs: { ...BASE, ...attrs }, vars, skipped: [] }),
-  );
+  engine.calculate(mosaicOf(attrs, vars));
+/** The game of a patch that moved this class: only its definition is renamed. */
+const moved = (name: string): string =>
+  GAME.replace(`A["${name}"] =`, `A["moved.${name}"] =`);
 const scenario = (Scenario: string, attrs: object = {}, vars: object = {}) =>
   calc({ ...attrs, Scenario }, vars);
 
@@ -116,6 +119,11 @@ describe("isolation (FR-008)", () => {
     expect(scenario("decompress", { Packed }).accuracy).toBe(42);
   });
 
+  test("the host copies bytes without the context's Uint8Array.prototype.set", () => {
+    const Packed = [...gzipSync(new Uint8Array([42]))];
+    expect(scenario("arraySet", { Packed }).accuracy).toBe(0);
+  });
+
   test("assets the game does not have read as empty text", () => {
     expect(scenario("assets").accuracy).toBe(1);
   });
@@ -179,8 +187,58 @@ describe("a game that does not start", () => {
       `${GAME};lime.$scripts.N = function () { throw new Error("broken"); };`,
     ],
     ["does not parse", `${GAME} )`],
+    ...[
+      "js.Boot",
+      "lime.utils.Log",
+      "haxe.Serializer",
+      "haxe.Unserializer",
+      "scripts.CustomLists",
+      "scripts.CustomLists2",
+      "scripts.CustomLists3",
+      "scripts.CustomMaps",
+      "scripts.CustomMapsREAL",
+    ].map((name) => [`moved ${name}`, moved(name)]),
+    ...["Item", "Monster", "Dialogue"].map((kind) => [
+      `moved every scripts.${kind}Definitions`,
+      GAME.replaceAll(
+        `A["scripts.${kind}Definitions`,
+        `A["moved.${kind}Definitions`,
+      ),
+    ]),
+    [
+      "left only a scripts.MonsterDefinitions class not followed by digits",
+      GAME.replace(
+        'A["scripts.MonsterDefinitions"]',
+        'A["scripts.MonsterDefinitionsOld"]',
+      ),
+    ],
   ])("%s", (_name, code) => {
     expect(() => createEngine(code, PAK)).toThrow();
+  });
+
+  test("a definitions class that comes numbered is enough", () => {
+    const numbered = createEngine(
+      GAME.replace(
+        'A["scripts.ItemDefinitions"]',
+        'A["scripts.ItemDefinitions7"]',
+      ),
+      PAK,
+    );
+    const n = numbered.calculate(mosaicOf({ Scenario: "tables" }));
+    expect(n.accuracy).toBe(511);
+  });
+
+  test("a table that throws stays out, and only what reads it is unavailable", () => {
+    const broken = createEngine(
+      GAME.replace(
+        "ListTwo: function () {",
+        'ListTwo: function () {\nthrow new Error("broken table");',
+      ),
+      PAK,
+    );
+    const n = broken.calculate(mosaicOf({ Scenario: "tables" }));
+    expect(n.accuracy).toBeNull();
+    expect(n.str).toBe(11);
   });
 
   test("a mosaic that is not JSON makes the calculation fail", () => {

@@ -129,13 +129,33 @@
     return new hx["haxe.ds.StringMap"]();
   }
 
+  // A definitions class may come numbered: the prefix alone, or followed by digits.
+  var definitionsOf = (prefix) =>
+    Object.keys(hx).filter(
+      (k) => k.indexOf(prefix) === 0 && /^\d*$/.test(k.slice(prefix.length)),
+    );
+
   function defs(prefix) {
     var map = newMap();
-    Object.keys(hx).forEach((k) => {
-      if (k.indexOf(prefix) === 0 && /^\d*$/.test(k.slice(prefix.length)))
-        Object.assign(map.h, hx[k].get().h);
+    definitionsOf(prefix).forEach((k) => {
+      Object.assign(map.h, hx[k].get().h);
     });
     return map;
+  }
+
+  // prettier-ignore
+  var REQUIRED_CLASSES = ["js.Boot", "lime.utils.Log", "haxe.Serializer", "haxe.Unserializer", "scripts.CustomLists", "scripts.CustomLists2", "scripts.CustomLists3", "scripts.CustomMaps", "scripts.CustomMapsREAL"];
+  // prettier-ignore
+  var REQUIRED_DEFINITIONS = ["scripts.ItemDefinitions", "scripts.MonsterDefinitions", "scripts.DialogueDefinitions"];
+
+  // A patch that moved one of these would go on in silence, with empty tables or a state that is not restored.
+  function requireClasses() {
+    REQUIRED_CLASSES.forEach((name) => {
+      if (!hx[name]) throw new Error("missing " + name);
+    });
+    REQUIRED_DEFINITIONS.forEach((prefix) => {
+      if (!definitionsOf(prefix).length) throw new Error("missing " + prefix);
+    });
   }
 
   // Every zero-argument static function of the classes, called once and keyed by its name (research R14).
@@ -143,7 +163,6 @@
     var map = newMap();
     names.forEach((name) => {
       var C = hx[name];
-      if (!C) return;
       Object.getOwnPropertyNames(C).forEach((k) => {
         var isTable =
           k.indexOf("__") !== 0 &&
@@ -252,6 +271,7 @@
     start: (pak) => {
       G.lime.$scripts.N({}, G);
       hx = G.__hx;
+      requireClasses();
       Object.keys(hx).forEach((name) => {
         var C = hx[name];
         if (!C) return;
