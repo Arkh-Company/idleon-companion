@@ -43,9 +43,12 @@ export function readGameTables(code: string): GameTables {
 
 const NUMBER = String.raw`(-?\d+(?:\.\d+)?)`;
 const WINDOW_NUMBER_FORMS = [
-  new RegExp(String.raw`\.h\.MenuType2\s*=\s*${NUMBER}(?![\d.])`, "g"),
   new RegExp(
-    String.raw`${NUMBER}\s*==\s*[\w.$]*getGameAttribute\("MenuType2"\)`,
+    String.raw`\.h\.MenuType2\s*=\s*${NUMBER}(?![\d.]|\s*[-+*/%])`,
+    "g",
+  ),
+  new RegExp(
+    String.raw`(?<![\w.$])${NUMBER}\s*==\s*[\w.$]*getGameAttribute\("MenuType2"\)`,
     "g",
   ),
 ];

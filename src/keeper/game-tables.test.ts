@@ -94,6 +94,8 @@ test.each([
   ["the tab written", "e.h.MenuType2TabSelected=3;"],
   ["the tab compared", '3==a.getGameAttribute("MenuType2TabSelected");'],
   ["a number that runs into a property", "e.h.MenuType2=7.x;"],
+  ["a number that starts an expression", "e.h.MenuType2=100+r;"],
+  ["a number at the end of a name", 'a999==b.getGameAttribute("MenuType2");'],
 ])("screenNumbers ignores %s", (_name, code) => {
   expect(screenNumbers(code)).toEqual([]);
 });
