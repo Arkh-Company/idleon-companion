@@ -114,6 +114,30 @@ test("stop with nothing in flight resolves and reads no more", async () => {
   expect(h.sent).toEqual([]);
 });
 
+test("a stop while a slot waits for its turn starts no read", async () => {
+  const h = setup();
+  let open: () => void = () => undefined;
+  const poll = h.turn(() => new Promise<void>((r) => (open = r)));
+  await tick();
+  const stopped = h.reader.stop();
+  open();
+  await Promise.all([poll, stopped]);
+  expect(h.sent).toEqual([]);
+});
+
+test("an engine lost while a slot waits for its turn is not read, and is no failure", async () => {
+  const h = setup();
+  let open: () => void = () => undefined;
+  const poll = h.turn(() => new Promise<void>((r) => (open = r)));
+  await tick();
+  h.h.ref = null;
+  open();
+  await poll;
+  await tick(12);
+  expect(h.sent).toEqual([]);
+  expect(h.onFailing).not.toHaveBeenCalled();
+});
+
 test("oneAtATime runs one after the other, even past a rejection", async () => {
   const turn = oneAtATime();
   const order: string[] = [];
