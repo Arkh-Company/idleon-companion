@@ -1,7 +1,7 @@
 // What the state reader does when a read fails, a callback throws or the reader stops (FR-002).
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { setup, sliceReads, tick } from "./state-reader-fixture.ts";
-import { oneAtATime } from "./state-reader.ts";
+import { inTurn } from "./state-reader.ts";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -79,6 +79,21 @@ test("a good read starts the count of failures again", async () => {
   expect(h.onFailing).not.toHaveBeenCalled();
 });
 
+test("a good slice starts the count of failures again", async () => {
+  const h = setup();
+  const fail = () => {
+    throw new Error("gone");
+  };
+  await tick(); // the list, so that every read below is a slice
+  h.h.answer = fail;
+  await tick(9);
+  h.h.answer = null;
+  await tick();
+  h.h.answer = fail;
+  await tick(9);
+  expect(h.onFailing).not.toHaveBeenCalled();
+});
+
 test("a callback that throws does not stop the reader or count as a failure", async () => {
   const h = setup();
   h.h.onSlice = () => {
@@ -138,8 +153,8 @@ test("an engine lost while a slot waits for its turn is not read, and is no fail
   expect(h.onFailing).not.toHaveBeenCalled();
 });
 
-test("oneAtATime runs one after the other, even past a rejection", async () => {
-  const turn = oneAtATime();
+test("inTurn runs one after the other, even past a rejection", async () => {
+  const turn = inTurn();
   const order: string[] = [];
   let open: () => void = () => undefined;
   const first = turn(

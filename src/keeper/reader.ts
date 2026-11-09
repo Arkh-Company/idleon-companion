@@ -4,6 +4,7 @@ import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AnchorNotFound, OBJECT_GROUP, acquireEngine } from "./engine-ref.ts";
 import type { EngineRef } from "./engine-ref.ts";
+import { safely } from "./state-reader.ts";
 
 /** Failed readings in a row before the status says so (spec, Open Questions, 07/11). */
 const FAILS_BEFORE_WARNING = 10;
@@ -59,14 +60,6 @@ export function startReader(
       };
     });
 
-  /** A callback that throws is the caller's problem: it never stops the loop or takes the engine again. */
-  const safely = (f: () => void) => {
-    try {
-      f();
-    } catch {
-      // ignored on purpose
-    }
-  };
   const failed = (e: unknown) => {
     safely(() => {
       onStatus({

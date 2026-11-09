@@ -47,7 +47,7 @@ export function pack(pieces: PlanPiece[], maxBytes: number): PlanPiece[][] {
 }
 
 /** Runs what it is given one at a time, in order; a rejection goes to its caller and does not stop the next one. */
-export function oneAtATime(): <T>(f: () => Promise<T>) => Promise<T> {
+export function inTurn(): <T>(f: () => Promise<T>) => Promise<T> {
   let tail: Promise<unknown> = Promise.resolve();
   return <T>(f: () => Promise<T>) => {
     const run = tail.then(f);
@@ -79,8 +79,8 @@ function sentinelOf(v: Record<string, unknown>): Sentinel | null {
 const isStrings = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((x) => typeof x === "string");
 
-/** A callback that throws is the caller's problem: it never stops the rotation. */
-function safely(f: () => void): void {
+/** A callback that throws is the caller's problem: it never stops a reader. */
+export function safely(f: () => void): void {
   try {
     f();
   } catch {
@@ -93,7 +93,7 @@ export function startStateReader(deps: {
   engine: () => EngineRef | null;
   listSource: string;
   sliceSource: string;
-  turn: ReturnType<typeof oneAtATime>;
+  turn: ReturnType<typeof inTurn>;
   onSlice: (s: StateSlice) => void;
   onFailing: () => void;
   vars?: VarsReader;
@@ -164,7 +164,6 @@ export function startStateReader(deps: {
     const children = Object.entries(split);
     if (!children.every(([, kids]) => isStrings(kids)))
       throw new Error("bad list of keys");
-    if (stopped) return;
     fails = 0;
     observe(now);
     if (!now) return;
@@ -246,7 +245,6 @@ export function startStateReader(deps: {
 
   /** The cursor did not move, so the next slot reads the same pieces: no pass counts with a piece missing. */
   function failed(): void {
-    if (stopped) return;
     fails++;
     if (fails === FAILS_BEFORE_WARNING)
       safely(() => {

@@ -3,7 +3,7 @@ import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
 import type { KeeperDeps, KeeperLog } from "./keeper.ts";
 import { startReader } from "./reader.ts";
-import { oneAtATime, startStateReader } from "./state-reader.ts";
+import { inTurn, startStateReader } from "./state-reader.ts";
 import { createVarsReader } from "./vars-reader.ts";
 
 /** Gives the text of a script sent to the game, by its file name; throws when it cannot. */
@@ -34,7 +34,7 @@ export function startReaders(
   log: KeeperLog,
 ): KeeperDeps["read"] {
   return (cdp, onReading, onStatus, onAttached, onRead, onSlice) => {
-    const turn = oneAtATime();
+    const turn = inTurn();
     let engine: EngineRef | null = null;
     const reader = startReader(
       cdp,

@@ -4,7 +4,7 @@ import { FORMULA_KEYS } from "../shared/index.ts";
 import type { StatePath, StateSlice } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
-import { oneAtATime, startStateReader } from "./state-reader.ts";
+import { inTurn, startStateReader } from "./state-reader.ts";
 import type { VarsReader } from "./vars-reader.ts";
 
 const REF: EngineRef = { sessionId: "S", objectId: "O", pausedMs: 1 };
@@ -49,7 +49,7 @@ export function setup(over: Partial<Game> = {}, vars?: VarsReader) {
     onSlice: (s: StateSlice) => {
       slices.push(s);
     },
-    turn: oneAtATime(),
+    turn: inTurn(),
   };
   const send: Cdp["send"] = async (method, params, sessionId) => {
     const p = params as {
