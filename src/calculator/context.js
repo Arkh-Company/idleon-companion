@@ -145,11 +145,11 @@
   }
 
   // prettier-ignore
-  var REQUIRED_CLASSES = ["js.Boot", "lime.utils.Log", "haxe.Serializer", "haxe.Unserializer", "scripts.CustomLists", "scripts.CustomLists2", "scripts.CustomLists3", "scripts.CustomMaps", "scripts.CustomMapsREAL"];
+  var REQUIRED_CLASSES = ["js.Boot", "lime.utils.Log", "scripts.CustomLists", "scripts.CustomLists2", "scripts.CustomLists3", "scripts.CustomMaps", "scripts.CustomMapsREAL"];
   // prettier-ignore
   var REQUIRED_DEFINITIONS = ["scripts.ItemDefinitions", "scripts.MonsterDefinitions", "scripts.DialogueDefinitions"];
 
-  // A patch that moved one of these would go on in silence, with empty tables or a state that is not restored.
+  // A patch that moved one of these would go on in silence, with empty tables or a game that is not quieted.
   function requireClasses() {
     REQUIRED_CLASSES.forEach((name) => {
       if (!hx[name]) throw new Error("missing " + name);
@@ -254,17 +254,14 @@
 
   // prettier-ignore
   var HELPER_ACTORS = [[0, 29], [1, 116], [2, 167], [3, 201], [4, 229], [5, 232], [6, 312], [7, 340], [8, 481], [9, 498], [10, 112], [12, 122], [16, 245], [19, 293], [20, 93], [21, 510], [22, 548], [23, 577], [24, 623], [25, 670], [26, 713], [27, 741], [28, 786]];
-  var CONSTRUCT_MS = 5000;
-  var INIT_MS = 8000;
 
   // The steps read the instances and the state when they run, because each calculation starts new ones of both.
   function planHelpers() {
     quietGame();
-    var add = (ms, run) => steps.push({ ms: ms, run: run });
     var starSigns = () => owner.StarSigns._customBlock_StarSigns(0);
-    add(CONSTRUCT_MS, starSigns);
+    steps.push(starSigns);
     HELPER_ACTORS.forEach((pair) => {
-      add(CONSTRUCT_MS, () => {
+      steps.push(() => {
         var name = "ActorEvents_" + pair[1];
         var actor = mkActor(insts);
         insts[name] = new hx["scripts." + name](0, actor, 0);
@@ -273,16 +270,16 @@
     });
     for (var pass = 0; pass < 2; pass++)
       HELPER_ACTORS.forEach((pair) => {
-        add(INIT_MS, () => {
+        steps.push(() => {
           var inst = insts["ActorEvents_" + pair[1]];
           if (inst) inst.init();
         });
       });
-    add(CONSTRUCT_MS, starSigns);
-    add(CONSTRUCT_MS, () => {
+    steps.push(starSigns);
+    steps.push(() => {
       everyScene = new hx["scripts.Design_23_23_EveryScene"](0, 0);
     });
-    add(INIT_MS, () => {
+    steps.push(() => {
       if (everyScene) everyScene.init();
     });
   }
@@ -358,7 +355,7 @@
       eng.gameAttributes.h = live;
     },
 
-    // Prepares the game's helper actors on stubs, and answers how long the host gives to each `helperStep`.
+    // Prepares the game's helper actors on stubs, for `helperSteps`.
     helperPlan: (lazyDnsm) => {
       var attrs = eng.gameAttributes.h;
       if (!steps.length) planHelpers();
@@ -368,10 +365,19 @@
         lazyDnsm.forEach((k) => {
           if (!hasOwn(attrs.DNSM.h, k)) attrs.DNSM.h[k] = newMap();
         });
-      return JSON.stringify(steps.map((s) => s.ms));
     },
 
-    helperStep: (i) => steps[i].run(),
+    // One call, with each error caught here: an error that crossed to the host would have Node decorate its stack with
+    // the game's whole 24 MB line. A helper that fails leaves its sub-cases to the numbers that need them.
+    helperSteps: () => {
+      steps.forEach((step) => {
+        try {
+          step();
+        } catch {
+          // Next helper.
+        }
+      });
+    },
 
     finishHelpers: reapply,
 

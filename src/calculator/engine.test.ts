@@ -2,8 +2,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { beforeAll, describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test, vi } from "vitest";
 import { createEngine } from "./engine.ts";
+import { handleMessage } from "./index.ts";
 import type { CalcNumbers } from "./targets.ts";
 
 const GAME = readFileSync(
@@ -100,12 +101,25 @@ describe("numbers", () => {
     expect(performance.now() - started).toBeLessThan(4000);
   }, 10_000);
 
-  test("a helper in an endless loop is cut within its 8 s, and the numbers still come out", () => {
+  test("a helper in an endless loop makes that calculation null within 8 s, and the next one works", () => {
+    const port = { postMessage: vi.fn() };
+    const code = new TextEncoder().encode(GAME);
+    handleMessage({ type: "init", code, pak: PAK }, port);
     const started = performance.now();
-    const n = scenario("endlessInit");
-    expect(n.hp).toBe(500);
-    expect(n.str).toBe(11);
+    handleMessage(
+      { type: "calc", mosaic: mosaicOf({ Scenario: "endlessInit" }) },
+      port,
+    );
     expect(performance.now() - started).toBeLessThan(12_000);
+    handleMessage({ type: "calc", mosaic: mosaicOf() }, port);
+    const [, stuck, next] = port.postMessage.mock.calls.map(
+      (c) => c[0] as { numbers: CalcNumbers },
+    );
+    expect(Object.values(stuck?.numbers ?? {}).length).toBe(11);
+    expect(Object.values(stuck?.numbers ?? {}).every((v) => v === null)).toBe(
+      true,
+    );
+    expect(next?.numbers.hp).toBe(500);
   }, 20_000);
 
   test("finishing the helpers in an endless loop fails the calculation within 8 s", () => {
@@ -243,6 +257,15 @@ describe("the long-lived context", () => {
       expect(long.calculate(mosaic)).toEqual(newEngine().calculate(mosaic));
   });
 
+  test("the host makes one call for all the helpers of a calculation", () => {
+    expect(accuracies("helperCalls", 3)).toEqual([1, 2, 3]);
+    expect(accuracies("initPasses", 3)).toEqual([2, 4, 6]);
+  });
+
+  test("a helper that throws does not stop the others", () => {
+    expect(scenario("otherHelpers").accuracy).toBe(1);
+  });
+
   test("a helper that throws fails only its numbers, and the next calculation works", () => {
     const long = newEngine();
     const n = long.calculate(mosaicOf({ Scenario: "helperThrows" }));
@@ -290,8 +313,6 @@ describe("a game that does not start", () => {
     ...[
       "js.Boot",
       "lime.utils.Log",
-      "haxe.Serializer",
-      "haxe.Unserializer",
       "scripts.CustomLists",
       "scripts.CustomLists2",
       "scripts.CustomLists3",

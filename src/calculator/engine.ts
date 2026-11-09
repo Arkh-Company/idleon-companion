@@ -87,16 +87,8 @@ export function createEngine(
     calculate(mosaicJson) {
       sandbox.__mosaic = mosaicJson;
       run("__calc.loadMosaic()", START_MS);
-      const stepsMs = JSON.parse(
-        run(`__calc.helperPlan(${lazyDnsm})`, START_MS) as string,
-      ) as number[];
-      stepsMs.forEach((ms, i) => {
-        try {
-          run(`__calc.helperStep(${String(i)})`, ms);
-        } catch {
-          // A helper that fails leaves its sub-cases to the numbers that need them.
-        }
-      });
+      run(`__calc.helperPlan(${lazyDnsm})`, START_MS);
+      run("__calc.helperSteps()", START_MS);
       run("__calc.finishHelpers()", START_MS);
       return Object.fromEntries(
         TARGETS.map(([id, block, arg]) => {

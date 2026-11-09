@@ -40,8 +40,6 @@ lime.$scripts.N = function (_exports, $global) {
     this.h = {};
     this.isIntMap = true;
   };
-  A["haxe.Serializer"] = {};
-  A["haxe.Unserializer"] = {};
 
   var packed = null;
   A["haxe.io.Bytes"] = {
@@ -135,15 +133,24 @@ lime.$scripts.N = function (_exports, $global) {
       throw new Error("this constructor is broken");
   };
 
-  var actorsMade = 0;
+  // Each one is answered by the accuracy block, in the scenario of its name. The host's calls reach `__calc` here too.
+  var counts = { actors: 0, initPasses: 0, helperCalls: 0 };
+  var helperSteps = $global.__calc.helperSteps;
+  $global.__calc.helperSteps = function () {
+    counts.helperCalls++;
+    return helperSteps();
+  };
+
   var HelperActor = function (_a, actor) {
     brokenConstructor();
-    actorsMade++;
+    counts.actors++;
     this.actor = actor;
   };
   HelperActor.prototype.init = function () {
     var s = state();
-    if (s.Scenario === "helperThrows") throw new Error("this helper is broken");
+    counts.initPasses++;
+    if (s.Scenario === "helperThrows" || s.Scenario === "otherHelpers")
+      throw new Error("this helper is broken");
     // The values of the mosaic are written back after the helpers: this one never finishes being written.
     if (s.Scenario === "endlessFinish")
       Object.defineProperty(s, "Scenario", {
@@ -264,8 +271,8 @@ lime.$scripts.N = function (_exports, $global) {
     bonus: function (s) {
       return s.DNSM.h.CompanionBon.h.b1 + s.DNSM.h.ShinyBonusS.h.s1;
     },
-    actors: function () {
-      return actorsMade;
+    otherHelpers: function (s) {
+      return s.EverySceneRan.length;
     },
     noActor: function (s) {
       return (
@@ -379,6 +386,7 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_PlayerAccTot = function () {
     var s = state();
+    if (s.Scenario in counts) return counts[s.Scenario];
     var scenario = accuracyScenarios[s.Scenario];
     if (scenario) return scenario(s);
     return s.Base.h.acc;
@@ -397,14 +405,8 @@ lime.$scripts.N = function (_exports, $global) {
   };
 
   // In the scenario "order", each number is the turn its block ran in, counted in the state the numbers share.
-  [
-    "DamageDealed",
-    "PlayerHPmax",
-    "PlayerMPmax",
-    "PlayerAccTot",
-    "TotalStats",
-    "AFKgainrates",
-  ].forEach(function (name) {
+  // prettier-ignore
+  ["DamageDealed", "PlayerHPmax", "PlayerMPmax", "PlayerAccTot", "TotalStats", "AFKgainrates"].forEach(function (name) {
     var block = Blocks["_customBlock_" + name];
     Blocks["_customBlock_" + name] = function (sub) {
       var s = state();
