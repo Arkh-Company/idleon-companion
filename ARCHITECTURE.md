@@ -65,7 +65,7 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   read brings comes from the **catalog** (`src/shared/reading-catalog.md`), the single source of the reading lists: a
   test fails on a row that breaks its rules. The **fast reading** is every piece with a proven impact on a number shown,
   except the pieces of other characters; the **slow reading** is all the rest, a piece the catalog does not know
-  included, so no piece goes unread. Of the 12 slots of each second, 3 go to the **actions slice** (the catalog's group
+  included, so a new piece is still read; only the six fixed tables of `STATE_EXCLUDED`, which the calculator builds from the game's own classes, and the `_vars` outside the closed list `VARS_KEYS` are never read. Of the 12 slots of each second, 3 go to the **actions slice** (the catalog's group
   `ações`), 7 to the other fast slices and 2 to the slow reading, and a slot whose lane has nothing to read goes to
   another lane. On entering a character the first lap takes every slot, a pass of the fast reading and then the slow
   one, and no number is shown before it ends. After a game patch, `node scripts/reading-inventory.ts <state.json>` lists

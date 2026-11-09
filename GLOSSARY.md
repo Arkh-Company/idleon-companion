@@ -49,7 +49,7 @@ characters, so that a change reaches the number in less than 1 s.
 _Avoid_: `formula`
 
 **Slow reading**:
-Every other piece, one the **Catalog** does not know included: still read, only later.
+Every other piece, one the **Catalog** does not know included: still read, only later. The fixed tables the calculator builds itself and the `_vars` outside the closed list are never read.
 _Avoid_: `other`
 
 **Actions slice**:
