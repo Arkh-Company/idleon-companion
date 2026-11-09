@@ -29,6 +29,8 @@ interface Remote {
   objectId?: string;
   description?: string;
   value?: unknown;
+  /** How CDP sends a number JSON cannot hold; `value` is absent then. */
+  unserializableValue?: string;
 }
 interface Prop {
   name: string;
@@ -133,7 +135,8 @@ export function createVarsReader(
     for (const { id, depth } of queue) {
       if (isStopped()) return null;
       const { result } = await properties(ref, id);
-      if (listed(result).length >= MIN_KEYS)
+      // A scope object (depth 0) is V8's copy of the moment: read again, it would never change.
+      if (depth > 0 && listed(result).length >= MIN_KEYS)
         return handle(ref, id, SELF, HOLDER_GROUP);
       if (depth === MAX_DEPTH) continue;
       for (const { value } of result)
@@ -160,7 +163,9 @@ export function createVarsReader(
               { value: null },
             ])
           ).value
-        : value.value;
+        : value.unserializableValue !== undefined
+          ? { $n: value.unserializableValue }
+          : value.value;
     return out;
   }
 
@@ -171,7 +176,6 @@ export function createVarsReader(
       try {
         if (engine !== searched) {
           searched = engine;
-          holder = null;
           holder = await search(ref, isStopped);
         }
         return holder === null ? null : await readHolder(ref, holder);

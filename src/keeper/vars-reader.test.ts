@@ -11,6 +11,7 @@ interface Remote {
   objectId?: string;
   description?: string;
   value?: unknown;
+  unserializableValue?: string;
 }
 interface Prop {
   name: string;
@@ -119,11 +120,22 @@ const released = (calls: Call[]) =>
 const functionCalls = (calls: Call[]) =>
   calls.filter((c) => c.method === "Runtime.callFunctionOn");
 
-test.each([0, 1, 5])("the holder is found at depth %d", async (depth) => {
+test.each([1, 5])("the holder is found at depth %d", async (depth) => {
   const g = game(chain(depth, LISTED));
   expect(await createVarsReader(g.send, COPY).read(REF, running)).toEqual(
     VALUES,
   );
+});
+
+test("a scope with the keys is a copy of the moment: the search goes past it", async () => {
+  const g = game({
+    scope: [...LISTED, { name: "next", value: obj("o1") }],
+    o1: [...LISTED.slice(1), { name: "TomePct", value: prim(9) }],
+  });
+  expect(await createVarsReader(g.send, COPY).read(REF, running)).toEqual({
+    ...VALUES,
+    TomePct: 9,
+  });
 });
 
 test("an object deeper than 5 is not inspected", async () => {
@@ -134,21 +146,36 @@ test("an object deeper than 5 is not inspected", async () => {
 
 test("three list keys on one object make the holder, two do not", async () => {
   const g = game({
-    scope: [...LISTED.slice(0, 2), { name: "next", value: obj("o1") }],
-    o1: LISTED.slice(1),
+    scope: [{ name: "next", value: obj("o1") }],
+    o1: [...LISTED.slice(0, 2), { name: "next", value: obj("o2") }],
+    o2: LISTED.slice(1),
   });
   expect(await createVarsReader(g.send, COPY).read(REF, running)).toBeNull();
 });
 
 test("a key that is an accessor does not count and is not read", async () => {
-  const g = game({
-    scope: [
+  const g = game(
+    chain(1, [
       ...LISTED.slice(0, 2),
       { name: "ChipRepo", get: obj("getter", "function") },
-    ],
-  });
+    ]),
+  );
   expect(await createVarsReader(g.send, COPY).read(REF, running)).toBeNull();
   expect(JSON.stringify(g.calls)).not.toContain("getter");
+});
+
+test("only objects are walked: a function with an id is not inspected", async () => {
+  const g = game({
+    scope: [
+      {
+        name: "f",
+        value: { type: "function", objectId: "gameFn", description: "fn" },
+      },
+    ],
+    gameFn: LISTED,
+  });
+  expect(await createVarsReader(g.send, COPY).read(REF, running)).toBeNull();
+  expect(inspected(g.calls)).toEqual(["scope"]);
 });
 
 test("the global scopes are skipped", async () => {
@@ -200,7 +227,7 @@ test("a search that found nothing is not repeated for the same engine, and a new
 });
 
 test("the same object id in another session is another engine", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   const r = createVarsReader(g.send, COPY);
   await r.read(REF, running);
   g.calls.length = 0;
@@ -215,17 +242,15 @@ test("the same object id in another session is another engine", async () => {
 
 test("primitives, null and objects of the list come back with their values", async () => {
   const g = game(
-    {
-      scope: [
-        { name: "TomePct", value: prim(7) },
-        {
-          name: "TomeOn",
-          value: { type: "object", subtype: "null", value: null },
-        },
-        { name: "voteCategories", value: obj("list", "Array(2)") },
-        { name: "A_ResXP", value: obj("map") },
-      ],
-    },
+    chain(1, [
+      { name: "TomePct", value: prim(7) },
+      {
+        name: "TomeOn",
+        value: { type: "object", subtype: "null", value: null },
+      },
+      { name: "voteCategories", value: obj("list", "Array(2)") },
+      { name: "A_ResXP", value: obj("map") },
+    ]),
     undefined,
     { list: [1, 2], map: { a: 1 } },
   );
@@ -237,15 +262,32 @@ test("primitives, null and objects of the list come back with their values", asy
   });
 });
 
+test.each(["Infinity", "-Infinity", "NaN"])(
+  "%s, which JSON cannot hold, comes back as $n",
+  async (text) => {
+    const g = game(
+      chain(1, [
+        ...LISTED.slice(1),
+        {
+          name: "TomePct",
+          value: { type: "number", unserializableValue: text },
+        },
+      ]),
+    );
+    expect(await createVarsReader(g.send, COPY).read(REF, running)).toEqual({
+      ...VALUES,
+      TomePct: { $n: text },
+    });
+  },
+);
+
 test("a key outside the list never leaves, by name or by value", async () => {
   const g = game(
-    {
-      scope: [
-        ...LISTED,
-        { name: "bearerBlob", value: prim("FAKE-LOGIN-TOKEN") },
-        { name: "bearerBox", value: obj("box") },
-      ],
-    },
+    chain(1, [
+      ...LISTED,
+      { name: "bearerBlob", value: prim("FAKE-LOGIN-TOKEN") },
+      { name: "bearerBox", value: obj("box") },
+    ]),
     undefined,
     { box: { inner: "FAKE-LOGIN-TOKEN" } },
   );
@@ -277,7 +319,7 @@ test("the next read uses only the holder and sees its new values", async () => {
 test.each(["reject", "exception"] as const)(
   "a read of the holder that fails (%s) drops it, and only the next engine searches",
   async (fail) => {
-    const g = game(chain(0, LISTED));
+    const g = game(chain(1, LISTED));
     const r = createVarsReader(g.send, COPY);
     await r.read(REF, running);
     g.fail = fail;
@@ -291,7 +333,7 @@ test.each(["reject", "exception"] as const)(
 );
 
 test("a search that fails gives null and is not repeated for the same engine", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   const r = createVarsReader(g.send, COPY);
   g.fail = "reject";
   expect(await r.read(REF, running)).toBeNull();
@@ -313,12 +355,12 @@ test("no [[Scopes]] gives null", async () => {
 });
 
 test("the holder stays in the reader's own group until release()", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   const r = createVarsReader(g.send, COPY);
   await r.read(REF, running);
   await r.read(REF, running);
   const group = functionCalls(g.calls).find(
-    (c) => c.params.objectId === "scope" && c.params.returnByValue === false,
+    (c) => c.params.objectId === "o1" && c.params.returnByValue === false,
   )?.params.objectGroup;
   expect(group).toEqual(expect.any(String));
   expect(group).not.toBe(OBJECT_GROUP);
@@ -343,7 +385,7 @@ test("every other handle a read opens is released with it", async () => {
 });
 
 test("after release() the next read searches again", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   const r = createVarsReader(g.send, COPY);
   await r.read(REF, running);
   await r.release(REF);
@@ -353,7 +395,7 @@ test("after release() the next read searches again", async () => {
 });
 
 test("release(null) sends nothing, and a release that fails resolves", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   const r = createVarsReader(g.send, COPY);
   await r.release(null);
   expect(g.calls).toEqual([]);
@@ -363,7 +405,7 @@ test("release(null) sends nothing, and a release that fails resolves", async () 
 
 test("the only declarations are two property reads and the proven copy", async () => {
   const g = game(
-    { scope: [...LISTED, { name: "A_ResXP", value: obj("map") }] },
+    chain(1, [...LISTED, { name: "A_ResXP", value: obj("map") }]),
     undefined,
     { map: { a: 1 } },
   );
@@ -382,7 +424,7 @@ test("the only declarations are two property reads and the proven copy", async (
 
 test("only the copy comes by value, and it is told to copy its this", async () => {
   const g = game(
-    { scope: [...LISTED, { name: "A_ResXP", value: obj("map") }] },
+    chain(1, [...LISTED, { name: "A_ResXP", value: obj("map") }]),
     undefined,
     { map: { a: 1 } },
   );
@@ -399,7 +441,7 @@ test("only the copy comes by value, and it is told to copy its this", async () =
 });
 
 test("the function is taken from the engine by reference", async () => {
-  const g = game(chain(0, LISTED));
+  const g = game(chain(1, LISTED));
   await createVarsReader(g.send, COPY).read(REF, running);
   expect(g.calls[0]).toMatchObject({
     method: "Runtime.callFunctionOn",
