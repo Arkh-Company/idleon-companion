@@ -344,41 +344,41 @@ that does not start gives a failure.
 
 ### Tests for Phase 7
 
-- [ ] T034 [P] [US4] Format and check tests in src/main/stats.test.ts
+- [X] T034 [P] [US4] Format and check tests in src/main/stats.test.ts
   - Files: `src/main/stats.test.ts`, invented numbers only
   - Cases of `formatNumber`: rounds up, `1234.1` is `1,235`; `999,999,999,999` with separators; a trillion and up is `T`, `351.2e12` is `352T`; `1e15` and up is `E` with 2 decimals truncated, `1.499e33` is `1.49E33`.
   - Cases of `statsRows`: 10 rows in the order Drop Rate, Damage, HP, MP, STR, AGI, WIS, LUK, Accuracy, AFK Gains; `Drop Rate` ends in `x`; `Damage` is `min – max`, and either one `null` makes `unavailable`; `Accuracy` always in `E` notation; `AFK Gains` is the value × 100 with `%`; a `null` makes only its row `unavailable`.
   - Cases of `statListCheck`, whose list is `[STR, AGI, WIS, LUK, ...]`, confirmed in the game (research R11): a value within 1%, or 1 point, passes; a different value passes for 35 s, as the game writes the list every 30 s; after 35 s still different, that row is `unavailable`; equal again clears it; no list, or a list with a non-number, checks nothing.
   - Cases of the tracker, as the table of data-model.md: `none` → `calculating` at the first slice of a character; `calculating` → `ready` at the first result; `ready` stays `ready` with new rows and never shows `calculating` again for the same character (FR-024); a new character → `calculating`, without the old rows; `clear()` → `none`; `unavailable` holds until a new start; `replay()` repeats the last value.
-- [ ] T035 [P] [US4] Panel tests in src/renderer/StatsPanel.test.tsx
+- [X] T035 [P] [US4] Panel tests in src/renderer/StatsPanel.test.tsx
   - Files: `src/renderer/StatsPanel.test.tsx`
   - Cases: `calculating` shows `Calculating`; `unavailable` shows `Calculator unavailable`; `ready` shows the 10 labels with their text, and a row `unavailable`; `none` and `null` show no row; no `input`, `textarea` or `select` in any state (FR-020).
-- [ ] T036 [P] [US4] Tabs test in src/renderer/stats-tab.test.tsx
+- [X] T036 [P] [US4] Tabs test in src/renderer/stats-tab.test.tsx
   - Files: `src/renderer/stats-tab.test.tsx`, with the stub of `src/renderer/companion-stub.ts`
   - Cases: two tabs, `Screen map` selected by default; choosing `Stats` shows its panel and hides the map; going back shows the map again.
-- [ ] T037 [P] [US4] End-to-end in src/main/stats-pipeline.test.ts
+- [X] T037 [P] [US4] End-to-end in src/main/stats-pipeline.test.ts
   - Files: `src/main/stats-pipeline.test.ts`, with invented slices and a fake worker
   - Cases: slices of a whole rotation and a `gameFiles` end with a `calc`; its `result` sends `ready` on `stats:update`; a `state` with a bad shape is dropped; a reading with `char: null`, a status with the reader not `attached` and a closed game send `none` and wipe the mosaic; after `unavailable`, the rest goes on without throwing, and a new `gameFiles` starts over.
 
 ### Implementation for Phase 7
 
-- [ ] T038 [US4] Types and the channel
+- [X] T038 [US4] Types and the channel
   - Files: `src/shared/types.ts`, `src/shared/index.ts`, `src/preload/index.ts`, `src/renderer/companion-stub.ts`
   - Change: `IPC.statsUpdate = "stats:update"`; `Stats` as in data-model.md: `{ state: "none" } | { state: "calculating" } | { state: "ready"; rows: { label: string; text: string }[] } | { state: "unavailable" }`; `CompanionApi.onStats`, with replay.
-- [ ] T039 [US4] Format, check and tracker in src/main/stats.ts
+- [X] T039 [US4] Format, check and tracker in src/main/stats.ts
   - Files: `src/main/stats.ts`
   - Signatures: `formatNumber(n: number): string`; `statsRows(n: CalcNumbers, unavailable: ReadonlySet<string>): Stats`; `statListCheck(now: () => number): (n: CalcNumbers, list: unknown) => Set<string>`; `statsTracker(send: (s: Stats) => void)`.
-- [ ] T040 [US4] The pipeline in src/main/stats-pipeline.ts and src/main/index.ts
+- [X] T040 [US4] The pipeline in src/main/stats-pipeline.ts and src/main/index.ts
   - Files: `src/main/stats-pipeline.ts`, `src/main/index.ts`
   - Signature: `startStatsPipeline(deps: { send: (s: Stats) => void; createWorker: () => WorkerLike; readFiles: (resources: string) => Promise<GameBytes> }): { message(m: LinkMessage): void; reading(r: Reading): void; status(s: Status): void; replay(): void }`, joining the store, the host, the check and the tracker. `StatList` comes from the mosaic: `attrs.PlayerDATABASE.$m[char].$m.PersonalValuesMap.$m.StatList`.
   - `index.ts` passes the link's messages, readings and statuses to it, replays on `did-finish-load`, creates `new Worker(calculatorPath(import.meta.dirname) + "/calculator.js", { env: {}, stdin: false, resourceLimits })`.
-- [ ] T041 [US4] The panel and the tabs
+- [X] T041 [US4] The panel and the tabs
   - Files: `src/renderer/StatsPanel.tsx`, `src/renderer/App.tsx`, `src/renderer/styles.css`
   - Two `role="tab"` buttons around the panels of [contracts/ipc.md](contracts/ipc.md). A plain list, on purpose: the final tab is another feature.
-- [ ] T042 [P] [US4] The boundary in ARCHITECTURE.md
+- [X] T042 [P] [US4] The boundary in ARCHITECTURE.md
   - Files: `ARCHITECTURE.md`
   - Change: the calculator as a fourth part: isolated worker owned by the app, what crosses into it, the reading in slices, and the link to [ADR 0006](../../docs/adr/0006-game-code-runs-in-an-isolated-worker.md).
-- [ ] T043 [P] [US4] The words in GLOSSARY.md
+- [X] T043 [P] [US4] The words in GLOSSARY.md
   - Files: `GLOSSARY.md`
   - Change: `slice`, `mosaic`, `sentinel`, `calculator`, in the file's format.
 

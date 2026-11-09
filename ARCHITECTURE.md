@@ -8,7 +8,8 @@ The decisions that are hard to reverse are in [docs/adr/](docs/adr/) ([0001](doc
 the debugging pipe in a keeper process; [0002](docs/adr/0002-fail-closed-update-watch.md): the update watch fails closed;
 [0003](docs/adr/0003-one-executable-launched-by-steam.md): one executable, launched by Steam directly;
 [0004](docs/adr/0004-steam-launch-option-spliced-with-steam-closed.md): the launch option spliced with Steam closed;
-[0005](docs/adr/0005-updates-from-a-public-releases-repository.md): updates from a public releases repository), and the
+[0005](docs/adr/0005-updates-from-a-public-releases-repository.md): updates from a public releases repository;
+[0006](docs/adr/0006-game-code-runs-in-an-isolated-worker.md): the game's code runs in an isolated worker), and the
 terms in [GLOSSARY.md](GLOSSARY.md).
 
 ## One executable, two processes
@@ -18,9 +19,11 @@ Steam ─▶ "IdleOn Companion.exe" --keeper %command%
            └─ src/start/ picks the role ─▶ keeper (Electron's main process, no window, no electron import)
                                              ├─ spawns the game with --remote-debugging-pipe (fd 3/4, no TCP port)
                                              ├─ reads it every 1000 ms (read.js: property reads only)
+                                             ├─ reads the state in slices, one every 250 ms (state-slice.js: property reads only)
                                              ├─ named pipe \\.\pipe\idleon-companion ◀──▶ app (link client)
                                              └─ spawns the same exe detached with --from-steam
 app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──▶ window (React)
+  └─ worker_threads ──▶ calculator (src/calculator/, no network, no app APIs): the game's code over the mosaic
 ```
 
 - **One executable** (`src/start/`, built to `out/main/start.js`, the `main` of `package.json`). The per-user NSIS
@@ -54,17 +57,28 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   (`launchEvent`). When the keeper ends after the game, the window keeps "Game closed · last reading N s ago"
   (`statusOnLinkDrop`). The window's X hides it in the tray, and only the tray's "Quit", the game exiting with "Close
   companion when the game closes", or the system ending the session end the app.
+- **Calculator** (`src/calculator/`, built to `out/main/calculator.js`, unpacked next to the asar). The fourth part: a
+  worker owned by the app, never by the keeper, so its crash or hang cannot reach the game
+  ([ADR 0006](docs/adr/0006-game-code-runs-in-an-isolated-worker.md)). The keeper reads the state in **slices** of up to
+  25 KB, one every 250 ms and never two in flight, by property reads only, and publishes them; the app assembles them in
+  a **mosaic** kept only in memory (`state-store.ts`), and starts over when the **sentinel** of a slice names another
+  character. What crosses into the worker is only data: the bytes of the installed `N.js` and `default.pak`, read by the
+  app (`game-files.ts`), never a path, and the mosaic as JSON text. Inside, the game's code runs in a `node:vm` context
+  with no network, no code generation and no host object. `calculator-host.ts` feeds it the newest mosaic, one calculation
+  at a time, and turns any failure, hang or death of it into "unavailable"; `stats-pipeline.ts` joins all of this into
+  the `Stats` the window shows.
 
 ## Code folders
 
-| Folder          | Runs in                                    | What it holds                                                                                                                                                                                                                                                                                                                                                                                          |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/start/`    | Electron's main process, first of all      | `index.ts` (the entry: loads only the role's bundle), `dispatch.ts` (`roleFor`)                                                                                                                                                                                                                                                                                                                        |
-| `src/keeper/`   | the keeper (Electron's main process)       | `index.ts` (entry), `keeper.ts` (the flow), `command-line.ts`, `launch.ts`, `cdp.ts`, `engine-ref.ts`, `reader.ts`, `read-source.ts`, `read.js`, `game-tables.ts`, `update-watch.ts`, `link-server.ts`; `mock-game/` is a test fixture                                                                                                                                                                 |
-| `src/main/`     | the app's main process                     | `index.ts` (entry: window, tray, link, IPC), `steam/`, `setup-store.ts`, `remove-from-steam.ts`, `updates.ts`, `forget-names.ts`, `context.ts`, `settings.ts`, `lifecycle.ts`, `link-client.ts`, `payloads.ts`, `window-options.ts`                                                                                                                                                                    |
-| `src/preload/`  | the window's preload (sandboxed, CommonJS) | `index.ts`: exposes `window.companion` (`CompanionApi`); `channel.ts`: one main → window channel                                                                                                                                                                                                                                                                                                       |
-| `src/renderer/` | the window (sandboxed, no Node)            | `App.tsx`, `SetupView.tsx`, `StatusBar.tsx`, `SettingsView.tsx`, `ScreenMapPanel.tsx`, `modules/screen-map.ts`, `styles.css`                                                                                                                                                                                                                                                                           |
-| `src/shared/`   | everywhere                                 | the contracts: `types.ts`, `link.ts` (line codec), `reading.ts` (`toReading`), `modules.ts` (`modulesFor`), `screens/` (the screen catalog: `identify.ts`, `catalog.ts`, `rules/*.json`); other folders import `src/shared/index.ts` only, except that the keeper and the app load the catalog from its own entry, `src/shared/screens/index.ts`, so the preload and the window do not carry its rules |
+| Folder            | Runs in                                    | What it holds                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/start/`      | Electron's main process, first of all      | `index.ts` (the entry: loads only the role's bundle), `dispatch.ts` (`roleFor`)                                                                                                                                                                                                                                                                                                                                                                                           |
+| `src/keeper/`     | the keeper (Electron's main process)       | `index.ts` (entry), `keeper.ts` (the flow), `command-line.ts`, `launch.ts`, `cdp.ts`, `engine-ref.ts`, `reader.ts`, `read-source.ts`, `read.js`, `game-tables.ts`, `update-watch.ts`, `link-server.ts`, `state-reader.ts`, `state-list.js`, `state-slice.js`, `vars-reader.ts`; `mock-game/` is a test fixture                                                                                                                                                            |
+| `src/main/`       | the app's main process                     | `index.ts` (entry: window, tray, link, IPC), `steam/`, `setup-store.ts`, `remove-from-steam.ts`, `updates.ts`, `forget-names.ts`, `context.ts`, `settings.ts`, `lifecycle.ts`, `link-client.ts`, `payloads.ts`, `window-options.ts`, `state-store.ts`, `game-files.ts`, `calculator-host.ts`, `stats.ts`, `stats-pipeline.ts`                                                                                                                                             |
+| `src/preload/`    | the window's preload (sandboxed, CommonJS) | `index.ts`: exposes `window.companion` (`CompanionApi`); `channel.ts`: one main → window channel                                                                                                                                                                                                                                                                                                                                                                          |
+| `src/renderer/`   | the window (sandboxed, no Node)            | `App.tsx`, `SetupView.tsx`, `StatusBar.tsx`, `SettingsView.tsx`, `ScreenMapPanel.tsx`, `StatsPanel.tsx`, `modules/screen-map.ts`, `styles.css`                                                                                                                                                                                                                                                                                                                            |
+| `src/calculator/` | a worker of the app's main process         | `index.ts` (the worker's entry), `engine.ts`, `context.js` (what runs inside the `node:vm` context), `targets.ts` (the 10 numbers); `fixtures/` is an invented game for the tests                                                                                                                                                                                                                                                                                         |
+| `src/shared/`     | everywhere                                 | the contracts: `types.ts`, `state.ts` (the pieces of the state, the classes and the numbers), `link.ts` (line codec), `reading.ts` (`toReading`), `modules.ts` (`modulesFor`), `screens/` (the screen catalog: `identify.ts`, `catalog.ts`, `rules/*.json`); other folders import `src/shared/index.ts` only, except that the keeper and the app load the catalog from its own entry, `src/shared/screens/index.ts`, so the preload and the window do not carry its rules |
 
 Pure logic (`roleFor`, `decide`, `modulesFor`, `channel`, catalog, context, settings, payload checks, `windowOptions`,
 the VDF and launch-option code, the update decisions) lives in files without an `electron` import, so tests load it
@@ -89,16 +103,18 @@ sits in `src/shared/` because the keeper needs `KNOWN_WINDOWS` and `keeper-alone
 **Link, keeper ↔ app** (spec §5.4): the named pipe `\\.\pipe\idleon-companion` (Node `net`, never TCP), one JSON
 message per line.
 
-| Message                            | Direction    | Content                                                          |
-| ---------------------------------- | ------------ | ---------------------------------------------------------------- |
-| `{ "type": "reading", "reading" }` | keeper → app | a new `Reading`                                                  |
-| `{ "type": "status", "status" }`   | keeper → app | `Status`: `game`, `reader`, `message?`, `lastReadingAt?`         |
-| `{ "type": "tables", "tables" }`   | keeper → app | `GameTables`: map and monster names, `null` for a table not read |
-| `{ "type": "confirm-attach" }`     | app → keeper | the user clicked "Connect next time"                             |
-| `{ "type": "release" }`            | app → keeper | "Let the game close"; ignored with no reader running             |
-| `{ "type": "reconnect" }`          | app → keeper | "Reconnect"; ignored unless `reader` is `"released"`             |
+| Message                                | Direction    | Content                                                                           |
+| -------------------------------------- | ------------ | --------------------------------------------------------------------------------- |
+| `{ "type": "reading", "reading" }`     | keeper → app | a new `Reading`                                                                   |
+| `{ "type": "status", "status" }`       | keeper → app | `Status`: `game`, `reader`, `message?`, `lastReadingAt?`                          |
+| `{ "type": "tables", "tables" }`       | keeper → app | `GameTables`: map and monster names, `null` for a table not read                  |
+| `{ "type": "state", "slice" }`         | keeper → app | `StateSlice`: one slice of the state, never logged and never stored by the keeper |
+| `{ "type": "gameFiles", "resources" }` | keeper → app | the `resources` folder of the game launched, once per launch                      |
+| `{ "type": "confirm-attach" }`         | app → keeper | the user clicked "Connect next time"                                              |
+| `{ "type": "release" }`                | app → keeper | "Let the game close"; ignored with no reader running                              |
+| `{ "type": "reconnect" }`              | app → keeper | "Reconnect"; ignored unless `reader` is `"released"`                              |
 
-A new client first gets the last tables, the last status and the last reading. The keeper sends `tables` once per game
+A new client first gets the last tables, the last status, the last reading and the last `gameFiles`; slices are not resent, because the mosaic builds up again in one rotation. The keeper sends `tables` once per game
 launch, and on each one the app builds the context again from the last reading. A second keeper finds the pipe taken and exits without
 launching anything. The app tries the pipe again every 5 s while it is missing.
 
@@ -117,9 +133,10 @@ launching anything. The app tries the pipe again every 5 s while it is missing.
 | `steam:progress`                | main → window | `SetupProgress`, each step of a setup                  |
 | `update:state`                  | main → window | `UpdateState`                                          |
 | `update:install`                | window → main | installs a ready update; refused with the game open    |
+| `stats:update`                  | main → window | `Stats`: the Stats tab's state                         |
 | `module:<id>:*`                 | both          | reserved for modules (none in v1)                      |
 
-The preload (`src/preload/channel.ts`) keeps the last `context:update`, `status:update` and `update:state` and replays
+The preload (`src/preload/channel.ts`) keeps the last `context:update`, `status:update`, `update:state` and `stats:update` and replays
 them to a late subscriber. `steam:progress` does not repeat its last value: a step goes only to whoever listens at that
 moment, so a late screen never sees an old "done".
 
@@ -165,16 +182,19 @@ also refuses (`customCheckAppRunning`).
 
 `.dependency-cruiser.cjs`, run by `just arch` inside `just check`. Every rule is an error.
 
-| Rule                                 | Forbids                                                     | Why                                                                                                                                                               |
-| ------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `keeper-and-shared-without-electron` | `src/keeper/` and `src/shared/` importing `electron`        | the keeper stays plain Node code inside Electron's main process (ADR 0003), and shared code runs everywhere                                                       |
-| `start-only-dispatches`              | `src/start/` importing any `src/` file but the entries      | the entry only picks the role: the keeper's, the app's or the uninstaller mode's entry                                                                            |
-| `keeper-alone`                       | `src/keeper/` importing `src/main`, `preload` or `renderer` | the keeper holds the game's pipe and must not depend on the app                                                                                                   |
-| `main-not-keeper-or-renderer`        | `src/main/` importing `src/keeper` or `renderer`            | the main process reaches the keeper over the link and the window over IPC, never by import                                                                        |
-| `preload-alone`                      | `src/preload/` importing `src/main`, `keeper` or `renderer` | the preload is the window's thin bridge                                                                                                                           |
-| `renderer-without-node`              | `src/renderer/` importing `src/main`, `keeper` or `preload` | the window reaches the main process only through `window.companion`                                                                                               |
-| `renderer-without-node-core`         | `src/renderer/` importing Node core modules                 | the window is sandboxed, without Node. Exception, accepted on 07/11: `*.test.ts(x)` files, which run in Node and may read files (the CSP test reads `index.html`) |
-| `shared-alone`                       | `src/shared/` importing any of the four process folders     | shared code is the common contract and depends on none of them                                                                                                    |
+| Rule                                 | Forbids                                                                   | Why                                                                                                                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `keeper-and-shared-without-electron` | `src/keeper/` and `src/shared/` importing `electron`                      | the keeper stays plain Node code inside Electron's main process (ADR 0003), and shared code runs everywhere                                                       |
+| `start-only-dispatches`              | `src/start/` importing any `src/` file but the entries                    | the entry only picks the role: the keeper's, the app's or the uninstaller mode's entry                                                                            |
+| `keeper-alone`                       | `src/keeper/` importing `src/main`, `preload` or `renderer`               | the keeper holds the game's pipe and must not depend on the app                                                                                                   |
+| `main-not-keeper-or-renderer`        | `src/main/` importing `src/keeper` or `renderer`                          | the main process reaches the keeper over the link and the window over IPC, never by import                                                                        |
+| `preload-alone`                      | `src/preload/` importing `src/main`, `keeper` or `renderer`               | the preload is the window's thin bridge                                                                                                                           |
+| `renderer-without-node`              | `src/renderer/` importing `src/main`, `keeper` or `preload`               | the window reaches the main process only through `window.companion`                                                                                               |
+| `renderer-without-node-core`         | `src/renderer/` importing Node core modules                               | the window is sandboxed, without Node. Exception, accepted on 07/11: `*.test.ts(x)` files, which run in Node and may read files (the CSP test reads `index.html`) |
+| `shared-alone`                       | `src/shared/` importing any of the four process folders                   | shared code is the common contract and depends on none of them                                                                                                    |
+| `calculator-alone`                   | `src/calculator/` importing any other `src/` folder, tests excepted       | its bundle stays one file, and it reaches nothing of the app                                                                                                      |
+| `nothing-imports-the-calculator`     | `src/main`, `keeper`, `preload` or `renderer` importing `src/calculator/` | the game's code only runs inside the worker (ADR 0006)                                                                                                            |
+| `vm-only-in-the-calculator`          | any `src/` file but `src/calculator/` and tests using `node:vm`           | elsewhere the game's files stay text                                                                                                                              |
 
 ## Safety
 
@@ -195,6 +215,9 @@ also refuses (`customCheckAppRunning`).
   reads: the keeper records the hash of clean code afterwards, and a hash that cannot be saved is logged
   (`game-hash-not-saved`) without closing the pipe. The game never depends on the app: in every one of these cases it
   still opens. See [ADR 0002](docs/adr/0002-fail-closed-update-watch.md).
+- **The game's code runs only in the calculator.** The one exception to the rule above, in `src/calculator/`, in a worker
+  of the app with no `env`, no network and no code generation; the state in memory only, never in `keeper.log` (see the
+  Calculator part and [ADR 0006](docs/adr/0006-game-code-runs-in-an-isolated-worker.md)).
 - **Navigation lockdown** (`src/main/window-options.ts`, `src/main/index.ts`): `sandbox`, `contextIsolation`, no
   `nodeIntegration`; `setWindowOpenHandler` denies every new window, and `will-navigate` is prevented for any URL but the
   window's own page (`isAllowedNavigation`). The page has the CSP `default-src 'self'`, so the UI has no inline styles.
