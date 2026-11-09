@@ -7,8 +7,8 @@ const orUnknown = (name: string | undefined, unknown: string) =>
 
 export function toContext(r: Reading, tables: GameTables): GameContext {
   const { maps, monsters } = tables;
-  // Object.hasOwn: a negative or fractional number is no index of the list, and an id like "constructor" no monster.
-  const map = maps && Object.hasOwn(maps, r.map) ? maps[r.map] : undefined;
+  const map = maps?.[r.map];
+  // Object.hasOwn: an id like "constructor" is no monster.
   const monster =
     monsters && r.afk !== null && Object.hasOwn(monsters, r.afk)
       ? monsters[r.afk]
