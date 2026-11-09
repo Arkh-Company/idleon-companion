@@ -114,10 +114,10 @@ export function linkState(v: unknown): StateSlice | null {
   };
 }
 
-/** The body of a `gameFiles` link message: an absolute path to a folder named `resources`, else null. */
+/** The body of a `gameFiles` link message: a path on a drive to a folder named `resources`, else null. */
 export function linkGameFiles(v: unknown): string | null {
   return typeof v === "string" &&
-    win32.isAbsolute(v) &&
+    /^[a-z]:[\\/]/i.test(v) &&
     win32.basename(v).toLowerCase() === "resources"
     ? v
     : null;

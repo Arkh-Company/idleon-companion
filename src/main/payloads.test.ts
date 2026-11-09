@@ -211,6 +211,11 @@ test.each([
   ["a drive-relative path", "C:resources"],
   ["another last folder", "C:\\Game\\resources\\app"],
   ["a name that only ends like it", "C:\\Game\\myresources"],
+  ["a network path", "\\\\server\\share\\resources"],
+  ["a network path with forward slashes", "//server/share/resources"],
+  ["a path with no drive", "\\Game\\resources"],
+  ["a long network path", "\\\\?\\UNC\\server\\share\\resources"],
+  ["a long path on a drive", "\\\\?\\C:\\Game\\resources"],
 ])("link game files with %s are refused", (_name, value) => {
   expect(linkGameFiles(value)).toBeNull();
 });
