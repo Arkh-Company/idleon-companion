@@ -90,3 +90,9 @@ Bad: `/node:vm/` over `game-tables.ts` alone, while the game text also sits in `
 A table or builder that two test files repeat (a contract table, a `Reading` builder) lives in one `*-fixture.ts` next to the code and is imported by both.
 Good: `READ_NULLS` in `src/shared/reading-fixture.ts`, spread into the `Reading` literal of seven tests.
 Bad: the 18-row behavior table typed in `read-only.test.ts` and again in `read-fields.test.ts`, so a change to the contract needs two edits and the two tests can drift apart.
+
+### A forced copy of a shared literal is pinned both ways
+
+When a file cannot import `src/shared/index.ts` (a script run as text inside the game, the calculator's lone bundle), its copy of a shared literal has one test that fails when either side changes.
+Good: `expect(TARGETS.map(([id]) => id)).toEqual([...NUMBER_IDS])` in `src/calculator/index.test.ts`, which fails for a key added on either side.
+Bad: a `SKIP` in a script with a comment "keep equal to STATE_EXCLUDED", while the only test feeds the fake engine every `STATE_EXCLUDED` key and stays green when `SKIP` gains a key the test never puts in the engine.
