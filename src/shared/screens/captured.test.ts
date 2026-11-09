@@ -1,8 +1,9 @@
 // The real round: each photo's captured state gives the name the game showed (FR-020, SC-001).
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import { identifyScreen, READ_NULLS, toReading } from "../index.ts";
+import { identifyScreen, toReading } from "../index.ts";
 import type { Reading, ScreenCatalog, ScreenRule } from "../index.ts";
+import { readingOf } from "../reading-fixture.ts";
 import { SCREEN_CATALOG } from "./index.ts";
 
 interface Captured {
@@ -108,44 +109,34 @@ const CAVES = [
   "The Lair",
 ];
 
-const state = (fields: Partial<Reading>): Reading => ({
-  ...READ_NULLS,
-  map: 1,
-  menu: 0,
-  menu2: 0,
-  menu2tab: 0,
-  skillTab: 0,
-  char: null,
-  afk: null,
-  codexTab: null,
-  t: 0,
-  ...fields,
-});
-
 test.each(CAVES.map((name, hole) => [hole, name] as const))(
   "cave %i is named with the window closed and open: %s",
   (hole, name) => {
     for (const menu2 of [0, 69])
-      expect(identifyScreen(state({ menu2, hole }), SCREEN_CATALOG)).toBe(name);
+      expect(identifyScreen(readingOf({ menu2, hole }), SCREEN_CATALOG)).toBe(
+        name,
+      );
   },
 );
 
 test("outside a cave the screen with no window is None", () => {
-  expect(identifyScreen(state({ hole: -1 }), SCREEN_CATALOG)).toBe("None");
+  expect(identifyScreen(readingOf({ hole: -1 }), SCREEN_CATALOG)).toBe("None");
 });
 
 test("another window opened inside a cave names that window", () => {
-  expect(identifyScreen(state({ menu2: 72, hole: 3 }), SCREEN_CATALOG)).toBe(
-    "The Upgrade Vault",
-  );
+  expect(
+    identifyScreen(readingOf({ menu2: 72, hole: 3 }), SCREEN_CATALOG),
+  ).toBe("The Upgrade Vault");
 });
 
 test("window 64 is Orion, not The Hole", () => {
-  expect(identifyScreen(state({ menu2: 64 }), SCREEN_CATALOG)).toBe("Orion");
+  expect(identifyScreen(readingOf({ menu2: 64 }), SCREEN_CATALOG)).toBe(
+    "Orion",
+  );
 });
 
 test.each([53, 58, 75])("window %i has no proven name", (menu2) => {
-  expect(identifyScreen(state({ menu2 }), SCREEN_CATALOG)).toBe(
+  expect(identifyScreen(readingOf({ menu2 }), SCREEN_CATALOG)).toBe(
     "Unknown screen",
   );
 });
