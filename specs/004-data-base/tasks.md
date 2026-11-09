@@ -312,20 +312,20 @@ that does not start gives a failure.
 
 ### Tests for Phase 6
 
-- [ ] T030 [P] [US3] Game files tests in src/main/game-files.test.ts
+- [X] T030 [P] [US3] Game files tests in src/main/game-files.test.ts
   - Files: `src/main/game-files.test.ts`, with an injected `read`
   - Cases: reads `app.asar/distBuild/static/game/N.js` and `app.asar/distBuild/static/game/lib/default.pak` under `resources`; if the asar is not there, `app/distBuild/...`, as the update watch does; a missing file rejects; the bytes come back as `Uint8Array`s.
-- [ ] T031 [P] [US3] Worker path test in src/main/calculator-host.test.ts
+- [X] T031 [P] [US3] Worker path test in src/main/calculator-host.test.ts
   - Files: `src/main/calculator-host.test.ts`, with a fake worker, fake timers
   - Cases of `calculatorPath`: a folder inside `app.asar` maps to `app.asar.unpacked`; a development folder is unchanged.
   - Cases of the host: the first `calculate` reads the files once and posts `init` with the buffers in the transfer list, and no path in any message; `ready` lets the newest mosaic go; only one calculation at a time, and while one runs a newer one replaces the waiting one; the next calculation waits 5,000 ms after the last ended; a `result` reaches `onResult`, with any absent or non-number id as `null`; no `ready` in 60 s, `failed`, a read that rejects, no answer in 15 s, the worker's `error` or `exit`: `terminate()` and `onUnavailable`, once, and later `calculate`s do nothing; a mosaic with an empty `vars` gives `onUnavailable` (FR-015); `reset()` terminates and allows a new start; the worker was created with `env: {}`, `stdin: false` and `resourceLimits`; nothing throws to the caller.
 
 ### Implementation for Phase 6
 
-- [ ] T032 [US3] The files in src/main/game-files.ts
+- [X] T032 [US3] The files in src/main/game-files.ts
   - Files: `src/main/game-files.ts`
   - Signature: `readGameFiles(resources: string, read = readFile): Promise<{ code: Uint8Array; pak: Uint8Array }>`, with Electron's `fs`, which understands asar.
-- [ ] T033 [US3] The host in src/main/calculator-host.ts
+- [X] T033 [US3] The host in src/main/calculator-host.ts
   - Files: `src/main/calculator-host.ts`
   - Signatures: `calculatorPath(dir: string): string`;
     `createCalculatorHost(deps: { createWorker: () => WorkerLike; readFiles: () => Promise<GameBytes>; onResult: (n: CalcNumbers) => void; onUnavailable: () => void }): { calculate(mosaicJson: string): void; setFiles(resources: string): void; reset(): void }`.
