@@ -16,11 +16,21 @@ Provado em 08/11/2026 com o jogo aberto: Drop Rate, Damage, HP, MP, STR, AGI, WI
 
 **Regra central: o jogo nunca é afetado.** Dentro do jogo em execução, o app só lê propriedades. Se um cálculo não der certo, a aba diz "unavailable".
 
+## Clarifications
+
+### Session 2026-11-09
+
+- Q: A leitura roda com a aba "Stats" fechada? → A: Sim, roda sempre.
+- Q: Como ler o estado sem travar o jogo? → A: Em leitura contínua por fatias pequenas, em vez de um retrato único; um protótipo mede o custo antes do plano.
+- Q: O que a aba mostra enquanto calcula? → A: "Calculating" só antes do primeiro cálculo; depois os números se atualizam no lugar.
+- Q: Quando os `_vars` são relidos? → A: Na rotação, a cada ciclo de leitura.
+- Q: Qual o tempo máximo de um cálculo? → A: Fica para o plano, depois de medir.
+
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Números ao abrir uma tela (Priority: P1)
+### User Story 1 - Números ao vivo (Priority: P1)
 
-O jogador abre uma janela do jogo, e o app tira um retrato do estado e calcula os números do personagem ativo.
+Enquanto o jogo roda, o app mantém o estado atualizado em leitura contínua e calcula os números do personagem ativo, sem o jogador pedir e sem travar o jogo.
 
 **Why this priority**: é o valor central da feature e o que os blocos seguintes vão usar.
 
@@ -28,9 +38,10 @@ O jogador abre uma janela do jogo, e o app tira um retrato do estado e calcula o
 
 **Acceptance Scenarios**:
 
-1. **Given** o jogo com o personagem Royal Guardian, **When** o jogador abre uma janela, **Then** a aba mostra os 10 números iguais aos do Player Info, com o arredondamento do jogo.
-2. **Given** o jogador trocando de janela várias vezes em poucos segundos, **When** o app tira os retratos, **Then** sai no máximo 1 retrato a cada 5 s, e o último estado é o que vale.
-3. **Given** o jogador trocando só de aba dentro da mesma janela, **When** o app acompanha o jogo, **Then** nenhum retrato novo é tirado.
+1. **Given** o jogo com o personagem Royal Guardian, **When** o estado foi lido, **Then** a aba mostra os 10 números iguais aos do Player Info, com o arredondamento do jogo.
+2. **Given** o jogador navegando ou em combate, **When** o app lê o estado, **Then** cada leitura é pequena e o número mostrado reflete o estado dentro do alvo de idade.
+3. **Given** a leitura ligada, **When** se comparam os quadros do jogo com e sem ela, **Then** ela não perde mais quadros que a linha de base sem leitura.
+4. **Given** a troca de personagem ou de mapa, **When** o app lê o estado, **Then** o ciclo parcial é descartado e nada mistura dois personagens.
 
 ---
 
@@ -83,8 +94,8 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 ### Edge Cases
 
 - **Alvo AFK fora da tabela de monstros**: o Damage precisa dele; sem ele, o Damage mostra "unavailable".
-- **Seleção de personagem ou nenhum personagem**: não há retrato, e a aba não mostra números do personagem anterior.
-- **Leitura solta ("Let the game close") ou desligada pelo vigia de update**: não há retrato; a aba não finge ter número novo.
+- **Seleção de personagem ou nenhum personagem**: não há leitura nova, e a aba não mostra números do personagem anterior.
+- **Leitura solta ("Let the game close") ou desligada pelo vigia de update**: não há leitura nova, e a aba não mostra números do personagem anterior.
 - **Sub-casos que dependem de atores em cena**: 7,1% dos sub-casos falham offline; o número afetado mostra "unavailable" em vez de um valor incerto.
 - **Campos que a inicialização do cálculo reescreve** (como `AFKtarget`): valem os do retrato (FR-012).
 
@@ -94,12 +105,12 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 
 **Retrato**
 
-- **FR-001**: O app MUST tirar um retrato do estado da conta ao mudar de janela, no máximo 1 a cada 5 s, valendo o último estado (decisão do Vinicius, com o limite aprovado no desenho).
-- **FR-002**: O retrato MUST NOT rodar a cada segundo nem ao trocar só de aba.
+- **FR-001**: O app MUST manter o estado atualizado enquanto o jogo roda, em leitura contínua por fatias de até 50 KB, com alvo de idade de até 1 s para tela e personagem, 5 s para os campos dos 10 números e 20 s para o estado inteiro, a confirmar por medição (decisão do Vinicius, 09/11).
+- **FR-002**: Cada fatia MUST ser uma leitura curta e sem estado, uma por vez, com a lista de chaves e o cursor fora do jogo, e MUST NOT deixar nada residente na página do jogo.
 - **FR-003**: O retrato MUST percorrer só propriedades de dados: MUST NOT acionar getter nem usar `JSON.stringify` em objeto do jogo. Objeto `String` vira texto.
 - **FR-004**: O retrato MUST deixar de fora as tabelas grandes que o cálculo já tem: `CustomLists`, `ItemDefinitionsGET`, `MonsterDefinitionsGET`, `DialogueDefGET`, `PixelHelperActor` e `CustomMaps`.
 - **FR-005**: O app MUST ler do jogo ao vivo os bônus de companions (`DNSM.CompanionBon`) e o cache de shiny (`DNSM.ShinyBonusS`).
-- **FR-006**: O app MUST ler `_vars` da memória sem chamar a função que os contém, só as chaves de uma lista fechada, com limite de objetos inspecionados.
+- **FR-006**: O app MUST ler `_vars` da memória sem chamar a função que os contém, a cada ciclo da rotação, só as chaves de uma lista fechada, com limite de objetos inspecionados.
 - **FR-007**: Nada fora da lista fechada MUST ser guardado ou registrado. O retrato MUST ficar só na memória: MUST NOT ir para o disco nem para o `keeper.log`.
 
 **Cálculo**
@@ -123,6 +134,12 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 - **FR-018**: Os números MUST seguir o arredondamento com que o jogo os exibe.
 - **FR-019**: Com personagem de outra classe, a aba MUST mostrar os números normalmente, sem aviso (decisão do Vinicius).
 - **FR-020**: A aba MUST NOT ter campo para o jogador preencher.
+- **FR-024**: Antes do primeiro cálculo, a aba MUST mostrar "Calculating"; depois, os números MUST se atualizar no lugar, sem voltar a esse texto.
+
+**Coerência e conferência**
+
+- **FR-022**: Chaves que dependem entre si MUST vir na mesma fatia, e a troca de personagem ou de mapa MUST descartar o ciclo parcial.
+- **FR-023**: Quando disponível, STR, AGI, WIS e LUK MUST ser comparados à lista `StatList` que o próprio jogo grava, e uma divergência MUST mostrar "unavailable".
 
 **Testes**
 
@@ -130,7 +147,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 
 ### Key Entities
 
-- **Retrato**: cópia em memória do estado da conta num instante, com os bônus e os `_vars` da lista fechada.
+- **Retrato**: cópia em memória do estado da conta, montada em mosaico de grupos de chaves, cada um coerente e com sua idade, com os bônus e os `_vars` da lista fechada.
 - **Cálculo**: execução isolada do código do jogo sobre um retrato, que resulta nos números.
 - **Número**: valor exibido na aba, ou "unavailable".
 
@@ -139,7 +156,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 ### Measurable Outcomes
 
 - **SC-001**: Com o personagem Royal Guardian, os 10 números batem com o Player Info, com o arredondamento do jogo.
-- **SC-002**: Sai no máximo 1 retrato a cada 5 s.
+- **SC-002**: Com a leitura ligada, o jogo não perde mais quadros que na linha de base sem leitura, em p95 e p99 na pior tela.
 - **SC-003**: Com a rede desligada, o resultado é igual.
 - **SC-004**: Nenhuma função do jogo em execução é chamada, e nada é gravado no save: o teste de só-leitura continua passando com o retrato.
 - **SC-005**: Um token falso colocado perto dos `_vars` não aparece em nenhum retrato nem em nenhum log.
@@ -148,7 +165,7 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 ## Assumptions
 
 - A prova existe para um só personagem (Royal Guardian): o Vinicius não consegue abrir outras classes até terça-feira, e comparar outras classes não é critério para fechar esta feature.
-- Retrato medido em 917 KB, 9–21 ms dentro do jogo e 62–159 ms de ida e volta. `_vars`: 27 chaves, em 25 objetos inspecionados. `DNSM.CompanionBon`: 94 bônus.
+- Retrato inteiro medido em 917 KB, 9–21 ms dentro do jogo e 62–159 ms de ida e volta. O custo por fatia não foi medido, e a prova dos 10 números usou um retrato atômico: o protótipo mede as duas coisas antes do plano. O jogo roda Electron 11.5 (Chromium 87). `_vars`: 27 chaves, em 25 objetos inspecionados. `DNSM.CompanionBon`: 94 bônus.
 - O retrato não copia os `_GenINFO` dos comportamentos, que o cálculo reconstrói: sub-casos que dependem deles podem divergir.
 - Custo de memória e tempo de inicialização do cálculo dentro do app não foram medidos.
 - A posição da Lava sobre leitura de memória é desconhecida e pesa antes de distribuir.
@@ -178,11 +195,19 @@ Uma aba simples mostra os números calculados, para comparar com o jogo.
 | --- | --- | --- |
 | Executar o `N.js` é permitido? | resolved | Vinicius, 09/11: só no módulo isolado novo, com ADR (FR-008, FR-009). |
 | "Nunca chamar função do jogo" cobre a cópia offline? | resolved | Vinicius, 09/11: emenda de uma linha antes do código (Dependências). |
-| Quando tirar o retrato? | resolved | Vinicius, 09/11: automático ao abrir uma tela (FR-001). |
+| Quando tirar o retrato? | resolved | Vinicius, 09/11: leitura contínua em fatias, depois da pesquisa sobre o custo no jogo (FR-001, relatório "Leitura do jogo sem travar"). |
 | Quais números a aba mostra? | resolved | Vinicius, 09/11: os 10 já provados, numa aba simples (FR-017). |
 | Comparar outras classes antes de fechar? | resolved | Vinicius, 09/11: só o Royal Guardian por enquanto (Assumptions). |
 | Com outra classe, o que a aba mostra? | resolved | Vinicius, 09/11: os números normalmente, sem aviso (FR-019). |
-| Retrato roda com a aba "Stats" fechada? | open | |
-| O que a aba mostra antes do primeiro cálculo e enquanto calcula? | open | |
-| Quando os `_vars` são relidos: a cada retrato ou uma vez por sessão do jogo? | open | |
-| Qual o tempo máximo de um cálculo antes de virar "unavailable"? | open | |
+| Retrato roda com a aba "Stats" fechada? | resolved | Vinicius, 09/11: roda sempre. |
+| O que a aba mostra antes do primeiro cálculo e enquanto calcula? | resolved | Vinicius, 09/11: "Calculating" só antes do primeiro cálculo (FR-024). |
+| Quando os `_vars` são relidos: a cada retrato ou uma vez por sessão do jogo? | resolved | Vinicius, 09/11: na rotação, a cada ciclo (FR-006). |
+| Qual o tempo máximo de um cálculo antes de virar "unavailable"? | to plan | Vinicius, 09/11: o plano mede e escolhe. |
+| Como o `N.js` fica sem caminho até a rede, e como o processo isolado recebe os arquivos do jogo? (security CHK009) | to plan | Vinicius, 09/11, no desenho: o plano responde no `research.md`. |
+| Qual o formato de cada número na aba? (ux CHK004) | to plan | Vinicius, 09/11, no desenho: o plano responde. |
+| Qual o tamanho e a forma de cada leitura? | resolved | Padrão do agente: fatias de até 50 KB, uma por vez, nada residente no jogo (FR-001, FR-002). Confirmado pelo Vinicius, 09/11. |
+| Quão atual fica cada dado? | resolved | Padrão do agente: 1 s para tela e personagem, 5 s para os campos dos 10 números, 20 s para o estado inteiro, a confirmar por medição (FR-001). Confirmado pelo Vinicius, 09/11. |
+| Os números têm conferência? | resolved | Padrão do agente: STR, AGI, WIS e LUK comparados à `StatList`; divergência vira "unavailable" (FR-023). Confirmado pelo Vinicius, 09/11. |
+| O que fazer na troca de personagem ou de mapa? | resolved | Padrão do agente: descartar a leitura parcial (FR-022). Confirmado pelo Vinicius, 09/11. |
+| O que acontece com alvo AFK fora da tabela de monstros? | resolved | Padrão do agente: o Damage mostra "unavailable" (Edge Cases). Confirmado pelo Vinicius, 09/11. |
+| O que a aba mostra sem leitura nova? (ux CHK007) | resolved | Padrão do agente: não mostra números do personagem anterior (Edge Cases). Confirmado pelo Vinicius, 09/11. |
