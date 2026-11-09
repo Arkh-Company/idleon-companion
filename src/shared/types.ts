@@ -161,7 +161,6 @@ export interface CompanionModule {
 export const IPC = {
   contextUpdate: "context:update",
   statusUpdate: "status:update",
-  catalogName: "catalog:name",
   settingsGet: "settings:get",
   settingsSet: "settings:set",
   confirmAttach: "reader:confirm-attach",
@@ -232,7 +231,6 @@ export function moduleChannel(id: string, name: string): string {
 export interface CompanionApi {
   onContext(cb: (ctx: GameContext) => void): () => void;
   onStatus(cb: (status: Status) => void): () => void;
-  name(table: CatalogTable, key: string, name: string): Promise<void>;
   getSettings(): Promise<Settings>;
   setSettings(s: Settings): Promise<void>;
   confirmAttach(): Promise<void>;

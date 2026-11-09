@@ -5,7 +5,6 @@ test("IPC holds the fixed channel names", () => {
   expect(IPC).toEqual({
     contextUpdate: "context:update",
     statusUpdate: "status:update",
-    catalogName: "catalog:name",
     settingsGet: "settings:get",
     settingsSet: "settings:set",
     confirmAttach: "reader:confirm-attach",

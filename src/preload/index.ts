@@ -22,9 +22,6 @@ const listen = (name: string, replay: boolean) =>
 const api: CompanionApi = {
   onContext: listen(IPC.contextUpdate, true),
   onStatus: listen(IPC.statusUpdate, true),
-  name: async (table, key, name) => {
-    await ipcRenderer.invoke(IPC.catalogName, { table, key, name });
-  },
   getSettings: async () =>
     (await ipcRenderer.invoke(IPC.settingsGet)) as Settings,
   setSettings: async (s) => {

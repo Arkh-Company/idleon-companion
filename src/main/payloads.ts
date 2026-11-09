@@ -1,29 +1,7 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
 import { isObject, toReading } from "../shared/index.ts";
-import type {
-  CatalogTable,
-  GameTables,
-  Reading,
-  Settings,
-  Status,
-} from "../shared/index.ts";
-import { catalogKey } from "./catalog/catalog.ts";
-
-const TABLES: readonly unknown[] = ["menu", "menu2", "codex"];
-
-/** `catalog:name`: a known table, the catalog key of a finite number, a non-blank name (trimmed). */
-export function namePayload(
-  v: unknown,
-): { table: CatalogTable; key: string; name: string } | null {
-  if (!isObject(v) || !TABLES.includes(v.table)) return null;
-  const { key, name } = v;
-  if (typeof key !== "string" || typeof name !== "string") return null;
-  const n = Number(key);
-  if (!Number.isFinite(n) || catalogKey(n) !== key) return null;
-  if (name.trim() === "") return null;
-  return { table: v.table as CatalogTable, key, name: name.trim() };
-}
+import type { GameTables, Reading, Settings, Status } from "../shared/index.ts";
 
 /** `settings:set`: the three booleans, nothing else kept. */
 export function settingsPayload(v: unknown): Settings | null {

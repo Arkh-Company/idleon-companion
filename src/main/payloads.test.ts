@@ -9,32 +9,8 @@ import {
   linkReading,
   linkStatus,
   linkTables,
-  namePayload,
   settingsPayload,
 } from "./payloads.ts";
-
-test("a name payload with a known table, a number key and a name passes, the name trimmed", () => {
-  expect(
-    namePayload({ table: "menu2", key: "999", name: " Test ", x: 1 }),
-  ).toEqual({ table: "menu2", key: "999", name: "Test" });
-  expect(namePayload({ table: "menu", key: "0.1", name: "A" })?.key).toBe(
-    "0.1",
-  );
-});
-
-test.each([
-  ["no object", "menu2"],
-  ["an unknown table", { table: "quickref", key: "1", name: "A" }],
-  ["a key that is not text", { table: "menu", key: 1, name: "A" }],
-  ["a key that is not a number", { table: "menu", key: "abc", name: "A" }],
-  ["a key that is not finite", { table: "menu", key: "NaN", name: "A" }],
-  ["a key written another way", { table: "menu", key: "01", name: "A" }],
-  ["a name that is not text", { table: "codex", key: "1", name: 5 }],
-  ["an empty name", { table: "codex", key: "1", name: "" }],
-  ["a blank name", { table: "codex", key: "1", name: "   " }],
-])("a name payload with %s is refused", (_name, payload) => {
-  expect(namePayload(payload)).toBeNull();
-});
 
 test("a settings payload with the three booleans passes, unknown keys dropped", () => {
   expect(
