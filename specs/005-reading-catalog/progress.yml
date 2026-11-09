@@ -10,7 +10,7 @@ phases:
 execution:
   branch: feat/005-reading-catalog
   phases:
-    - {name: "Foundational (T001-T007)", status: pending}
+    - {name: "Foundational (T001-T007)", status: done, commits: 6fd00fc..551585d}
     - {name: "US1 leitura (T008-T011)", status: pending}
     - {name: "US1 calculo (T012-T014)", status: pending}
     - {name: "US1 mosaico (T015-T019)", status: pending}
