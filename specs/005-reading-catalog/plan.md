@@ -66,7 +66,8 @@ specs/005-reading-catalog/
 ```text
 src/shared/
 ├── reading-catalog.md      # novo: a tabela, fonte única
-├── reading-catalog.ts      # novo: lê a tabela, listas de leitura, classOf, diffInventory
+├── reading-catalog-rules.ts # novo: lê a tabela, classOf, catalogProblems, diffInventory
+├── reading-catalog.ts      # novo: o catálogo importado como texto (?raw)
 ├── state.ts                # StatePath de 3 níveis, fast/slow, sem FORMULA_KEYS
 └── raw.d.ts                # tipo do import ?raw, se shared ainda não tiver
 src/keeper/
