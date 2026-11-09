@@ -50,20 +50,23 @@ test("release and reconnect decode bare, also with extra fields", () => {
   ]);
 });
 
-test.each<LinkMessage>([{ type: "release" }, { type: "reconnect" }])(
-  "$type round-trips through a line",
-  (m) => {
-    const got: LinkMessage[] = [];
-    createLineDecoder((x) => got.push(x))(encodeLine(m));
-    expect(got).toEqual([m]);
-  },
-);
+test.each<LinkMessage>([
+  { type: "release" },
+  { type: "reconnect" },
+  { type: "tables", tables: { maps: ["Vale"], monsters: null } },
+])("$type round-trips through a line", (m) => {
+  const got: LinkMessage[] = [];
+  createLineDecoder((x) => got.push(x))(encodeLine(m));
+  expect(got).toEqual([m]);
+});
 
 test.each([
   ["an unknown type", '{"type":"other"}'],
   ["a type close to release", '{"type":"release-all"}'],
   ["a reading without its body", '{"type":"reading"}'],
   ["a status without its body", '{"type":"status","status":null}'],
+  ["tables without their body", '{"type":"tables"}'],
+  ["tables that are not an object", '{"type":"tables","tables":[1]}'],
   ["JSON that is not an object", "42"],
 ])("the decoder skips %s", (_name, line) => {
   const got: LinkMessage[] = [];

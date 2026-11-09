@@ -8,6 +8,7 @@ import {
   emptyPayload,
   linkReading,
   linkStatus,
+  linkTables,
   namePayload,
   settingsPayload,
 } from "./payloads.ts";
@@ -112,6 +113,52 @@ test.each([
   ["no object", "status"],
 ])("a link status with %s is refused", (_name, value) => {
   expect(linkStatus(value)).toBeNull();
+});
+
+const tables = { maps: ["Vale", "Peak"], monsters: { a1: "Beast" } };
+
+test("link tables of the right shape keep only their fields", () => {
+  expect(linkTables({ ...tables, extra: 1 })).toStrictEqual(tables);
+  expect(linkTables({ maps: null, monsters: null })).toStrictEqual({
+    maps: null,
+    monsters: null,
+  });
+});
+
+test.each([
+  [
+    "a number in maps",
+    { ...tables, maps: ["Vale", 1] },
+    { ...tables, maps: null },
+  ],
+  [
+    "maps that are not a list",
+    { ...tables, maps: "Vale" },
+    { ...tables, maps: null },
+  ],
+  [
+    "a number in monsters",
+    { ...tables, monsters: { a1: 1 } },
+    { ...tables, monsters: null },
+  ],
+  [
+    "an array as monsters",
+    { ...tables, monsters: ["Beast"] },
+    { ...tables, monsters: null },
+  ],
+])(
+  "link tables with %s count as unread for that table only",
+  (_name, value, expected) => {
+    expect(linkTables(value)).toStrictEqual(expected);
+  },
+);
+
+test.each([
+  ["a text", "tables"],
+  ["null", null],
+  ["a list", []],
+])("link tables whose body is %s give both null", (_name, value) => {
+  expect(linkTables(value)).toStrictEqual({ maps: null, monsters: null });
 });
 
 // settings:get, steam:state, steam:setup, reader:release, reader:reconnect and update:install carry no body.
