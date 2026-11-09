@@ -90,10 +90,10 @@ a reading diverges from the rule.
   - Changes: `StatePath` gets `[string, string, string]`; `StateClass` becomes `"fast" | "slow"`; `StateSlice.cycles` becomes
     `{ fast: number; all: number }`; `FORMULA_KEYS` and the old `classOf` are removed. `NUMBER_IDS` stays: it is what the
     Stats tab declares (FR-016).
-  - Note: T010 and T021 change the users of the removed names; until then `just check` runs at the end of the phase with
+  - Note: T010 and T018 change the users of the removed names; until then `just check` runs at the end of the phase with
     the state-reader and state-store kept compiling by mapping `formula` to `fast` and `other` to `slow` inside them.
 
-**Verify**: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `just check` - passes.
+Verify: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `just check` - passes.
 
 ---
 
@@ -133,7 +133,7 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
   - Change: a path of 3 levels reads `h`, then the child, then its `h`, then the subkey, all by `Object.getOwnPropertyDescriptor`.
     No other change to what it copies.
 
-**Verify**: `just test-one src/keeper/state-reader.test.ts` - all pass; `just check` - passes.
+Verify: `just test-one src/keeper/state-reader.test.ts` - all pass; `just check` - passes.
 
 ---
 
@@ -167,7 +167,7 @@ a fresh engine over the same mosaic.
   - Change: `createEngine` boots once and keeps `{ sandbox, run }`; `calculate` sets `__mosaic`, runs `loadMosaic`, `helperPlan`,
     each `helperStep` with its time limit, `finishHelpers`, and the numbers. The ponytail note on fresh contexts goes.
 
-**Verify**: `just test-one src/calculator/engine.test.ts` - all pass; `just check` - passes.
+Verify: `just test-one src/calculator/engine.test.ts` - all pass; `just check` - passes.
 
 ---
 
@@ -207,7 +207,7 @@ after the next read of it comes the same.
   - Files: `src/main/calculator-host.ts`
   - Change: `CALC_GAP_MS = 60`.
 
-**Verify**: `just test-one src/main/state-store.test.ts` - all pass; `just check` - passes.
+Verify: `just test-one src/main/state-store.test.ts` - all pass; `just check` - passes.
 
 ---
 
@@ -247,7 +247,7 @@ one extra piece and one renamed piece lists both.
   - Files: `src/shared/state.ts`
   - Change: a comment over `NUMBER_IDS` saying a feature declares its numbers here and the catalog check says what to promote.
 
-**Verify**: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `just check` - passes.
+Verify: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `just check` - passes.
 
 ---
 
@@ -272,7 +272,7 @@ one extra piece and one renamed piece lists both.
   - Files: `GLOSSARY.md`
   - Changes: **Catalog**, **Fast reading**, **Slow reading**, **Actions slice**; _Avoid_ `formula` and `other` for readings.
 
-**Verify**: `just check` - passes.
+Verify: `just check` - passes.
 
 ---
 
