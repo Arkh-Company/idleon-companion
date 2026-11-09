@@ -13,7 +13,7 @@ execution:
     - {name: "Foundational (T001-T005)", status: done, commits: 54f8845..654bbc9}
     - {name: "US1 identificacao (T006-T009)", status: done, commits: 907ea64..1c4c610}
     - {name: "US1-US3 janelas 0-45 (T010-T013)", status: done, commits: 93ba6ef..d577dc8}
-    - {name: "US1-US3 janelas 46-110 (T014-T017)", status: pending}
+    - {name: "US1-US3 janelas 46-110 (T014-T017)", status: done, commits: ee448b9..5f3fe9f}
     - {name: "US5 (T018-T023)", status: pending}
     - {name: "US6 (T024-T026)", status: pending}
     - {name: "US1 e US4 janela (T027-T032)", status: pending}
