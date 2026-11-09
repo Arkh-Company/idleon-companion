@@ -106,7 +106,7 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
 
 ### Tests for Phase 2
 
-- [ ] T008 [P] [US1] Third path level in src/keeper/state-read-only.test.ts
+- [X] T008 [P] [US1] Third path level in src/keeper/state-read-only.test.ts
   - Files: `src/keeper/state-read-only.test.ts`
   - Cases: the traps of the existing suite (getter and function that throw when touched) also pass for
     `["PlayerDATABASE","A","x"]`; a missing character or subkey answers `null`; a level past the third answers `null`.
@@ -128,7 +128,7 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
     queues `actions`, `fast` and `slow`, built from the listed paths plus the `Personagem.x` fast rows as
     `["PlayerDATABASE", char, x]`; grouping sorts by `groupOf` and `pack`s each group up to `MAX_SLICE_BYTES`.
   - Removes `SLOTS_PER_OTHER`. A first lap uses every slot: `actions`, then `fast`, then `slow`, then `cycles.all` rises.
-- [ ] T011 [US1] The third level in src/keeper/state-slice.js
+- [X] T011 [US1] The third level in src/keeper/state-slice.js
   - Files: `src/keeper/state-slice.js`
   - Change: a path of 3 levels reads `h`, then the child, then its `h`, then the subkey, all by `Object.getOwnPropertyDescriptor`.
     No other change to what it copies.

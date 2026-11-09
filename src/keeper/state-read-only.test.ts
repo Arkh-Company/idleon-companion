@@ -255,6 +255,61 @@ test("a two-item path into something that is not a map gives null", () => {
   expect(slice(game({ Cards: 3 }), [["Cards", "x"]]).out).toEqual([null]);
 });
 
+const database = (hero: unknown) =>
+  game({ PlayerDATABASE: stringMap({ A: hero }) });
+const subkey = ["PlayerDATABASE", "A", "x"];
+
+test("a three-item path reads the subkey of a child", () => {
+  expect(slice(database(stringMap({ x: [9], y: 1 })), [subkey]).out).toEqual([
+    [9],
+  ]);
+});
+
+test.each([
+  ["a missing character", ["PlayerDATABASE", "B", "x"]],
+  ["a missing subkey", ["PlayerDATABASE", "A", "nope"]],
+  ["a level past the third", ["PlayerDATABASE", "A", "x", "y"]],
+  ["__proto__ as the subkey", ["PlayerDATABASE", "A", "__proto__"]],
+])("%s answers null", (_name, path) => {
+  expect(slice(database(stringMap({ x: [9] })), [path]).out).toEqual([null]);
+});
+
+test("a three-item path into something that is not a map answers null", () => {
+  expect(slice(database({ x: 1 }), [subkey]).out).toEqual([null]);
+  expect(slice(database(3), [subkey]).out).toEqual([null]);
+  expect(slice(game({ PlayerDATABASE: 3 }), [subkey]).out).toEqual([null]);
+});
+
+test("an accessor on the subkey is never fired", () => {
+  const h = withAccessor({} as Record<string, unknown>, "x");
+  expect(slice(database(stringMap(h)), [subkey]).out).toEqual([null]);
+});
+
+test("an accessor for the character is never fired", () => {
+  const h = withAccessor({} as Record<string, unknown>, "A");
+  const engine = game({ PlayerDATABASE: stringMap(h) });
+  expect(slice(engine, [subkey]).out).toEqual([null]);
+});
+
+test("an accessor for the character's h is never fired", () => {
+  const hero = mapOn({}, null);
+  Object.defineProperty(hero, "h", { enumerable: true, get: spring });
+  expect(slice(database(hero), [subkey]).out).toEqual([null]);
+});
+
+test("a function at the third level is copied as $x and is not called", () => {
+  expect(slice(database(stringMap({ x: fnTrap() })), [subkey]).out).toEqual([
+    { $x: 1 },
+  ]);
+});
+
+test("an accessor inside the subkey's value is skipped", () => {
+  const value = withAccessor({ a: 1 }, "secret");
+  expect(slice(database(stringMap({ x: value })), [subkey]).out).toEqual([
+    { a: 1 },
+  ]);
+});
+
 test("an accessor on a game object's property is skipped", () => {
   expect(copy(withAccessor({ a: 1 }, "secret"))).toEqual({ a: 1 });
 });

@@ -48,15 +48,16 @@
     onPath.delete(v);
     return res;
   };
+  var child = function (o, k) {
+    var h = o && typeof o === "object" ? own(o, "h") : null;
+    return h && typeof h === "object" ? own(h, k) : undefined;
+  };
   if (paths === null) return walk(this, 0);
   var g = this.gameAttributes.h;
   var out = [];
   for (var n = 0; n < paths.length; n++) {
-    var cur = own(g, paths[n][0]);
-    if (paths[n].length > 1) {
-      var h = cur && typeof cur === "object" ? own(cur, "h") : null;
-      cur = h && typeof h === "object" ? own(h, paths[n][1]) : undefined;
-    }
+    var cur = paths[n].length > 3 ? undefined : own(g, paths[n][0]);
+    for (var l = 1; l < paths[n].length; l++) cur = child(cur, paths[n][l]);
     out[n] = walk(cur, 0);
   }
   var u = own(g, "UserInfo");
