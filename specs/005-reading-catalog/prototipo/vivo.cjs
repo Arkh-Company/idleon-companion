@@ -52,7 +52,7 @@ const fonte = fs
   .replace(
     "G.__calc = {",
     `G.__calc = {
-    internos: () => ({ eng, hx, snapshot, rev, owner, restore, steps, setVars: (v) => { vars = v; } }),`,
+    internos: () => ({ eng, hx, snapshot, rev, owner, restore, reapply, steps, setVars: (v) => { vars = v; } }),`,
   );
 
 const ACRESCIMO = `(function () {
@@ -81,6 +81,14 @@ const ACRESCIMO = `(function () {
     if (a.DNSM) preguicosas.forEach(function (k) { if (!Object.prototype.hasOwnProperty.call(a.DNSM.h, k)) a.DNSM.h[k] = new I.hx["haxe.ds.StringMap"](); });
     I.steps.forEach(function (p, i) { if (modo === "v3" || i === 0 || i > 23) { try { p.run(); } catch (e) {} } });
     __calc.finishHelpers();
+  };
+  // v4: como a v3, mas os numeros saem direto do estado que os ajudantes deixaram, sem serializar nem restaurar.
+  __calc.ajudantesEnxuta = function (preguicosas) {
+    var I = __calc.internos();
+    var a = I.eng.gameAttributes.h;
+    if (a.DNSM) preguicosas.forEach(function (k) { if (!Object.prototype.hasOwnProperty.call(a.DNSM.h, k)) a.DNSM.h[k] = new I.hx["haxe.ds.StringMap"](); });
+    I.steps.forEach(function (p) { try { p.run(); } catch (e) {} });
+    I.reapply();
   };
   // Para o diagnostico: o estado depois dos ajudantes, por peca. So o hospedeiro compara, nada sai na tela.
   __calc.estado = function () {
@@ -138,7 +146,7 @@ function numeros(m, restaura) {
   const out = {};
   if (restaura === "uma") m.run("__calc.restaura()");
   for (const [id, b, a] of ALVOS) {
-    const f = restaura === "uma" ? "numeroSemRestaurar" : "number";
+    const f = restaura === "cada" ? "number" : "numeroSemRestaurar";
     let v = null;
     try {
       v = m.run(`__calc.${f}(${JSON.stringify(b)},${JSON.stringify(a)})`, 2000);
@@ -187,22 +195,30 @@ carrega(vivo, lidos(arquivos[0]));
 console.log("inicio do contexto vivo", Math.round(performance.now() - t), "ms");
 
 let anterior = JSON.parse(lidos(arquivos[0]));
-const tempos = [], erros = {};
+const tempos = [], erros = {}, fases = [];
 let iguais = 0, pares = 0;
 for (let i = 1; i < arquivos.length; i++) {
   const json = lidos(arquivos[i]);
   const atual = JSON.parse(json);
   const d = diferenca(anterior, atual);
   const t0 = performance.now();
+  let t1 = t0, t2 = t0;
   if (MODO === "v1") {
     vivo.sandbox.__dif = JSON.stringify(d);
     vivo.run("__calc.aplica(__dif)");
+  } else if (MODO === "v4") {
+    vivo.sandbox.__mosaic = json;
+    vivo.run("__calc.loadMosaic()");
+    t1 = performance.now();
+    vivo.run(`__calc.ajudantesEnxuta(${preguicosas})`, 30000);
+    t2 = performance.now();
   } else {
     vivo.sandbox.__mosaic = json;
     vivo.run(`__calc.recarrega(${JSON.stringify(MODO)},${preguicosas})`, 30000);
   }
-  const n = numeros(vivo, RESTAURA);
+  const n = numeros(vivo, MODO === "v4" ? "direto" : RESTAURA);
   const ms = performance.now() - t0;
+  fases.push([t1 - t0, t2 - t1, performance.now() - t2]);
   const zero = liga();
   carrega(zero, json);
   const certo = numeros(zero, "cada");
@@ -226,4 +242,5 @@ for (let i = 1; i < arquivos.length; i++) {
   anterior = atual;
 }
 console.log(`FIM ${MODO}/${RESTAURA}: pares ${pares} iguais ${iguais} | ms p50 ${pct(tempos, 0.5)} p95 ${pct(tempos, 0.95)} max ${Math.round(Math.max(...tempos))} | erros ${JSON.stringify(erros)}`);
+if (MODO === "v4") console.log(`fases p50: estado ${pct(fases.map((f) => f[0]), 0.5)} ajudantes ${pct(fases.map((f) => f[1]), 0.5)} numeros ${pct(fases.map((f) => f[2]), 0.5)} ms`);
 }
