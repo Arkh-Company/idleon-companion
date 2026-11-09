@@ -171,6 +171,14 @@ test("the value of a piece is not inspected", () => {
   expect(linkState(odd)).toStrictEqual(odd);
 });
 
+test("a character's subkey, the third level, passes", () => {
+  const subkey = withPiece({
+    path: ["PlayerDATABASE", "A", "SkillLevels"],
+    value: [1],
+  });
+  expect(linkState(subkey)).toStrictEqual(subkey);
+});
+
 test.each([
   ["no object", "state"],
   ["a list", []],
@@ -187,6 +195,18 @@ test.each([
   ["a path that is not a list", withPiece({ path: "Cards", value: 1 })],
   ["a path of no items", withPiece({ path: [], value: 1 })],
   ["a path of 3 items", withPiece({ path: ["a", "b", "c"], value: 1 })],
+  [
+    "a path of 3 items on a split map other than the characters",
+    withPiece({ path: ["DNSM", "b", "c"], value: 1 }),
+  ],
+  [
+    "a path of 4 items",
+    withPiece({ path: ["PlayerDATABASE", "A", "b", "c"], value: 1 }),
+  ],
+  [
+    "a third level that is not text",
+    withPiece({ path: ["PlayerDATABASE", "A", 1], value: 1 }),
+  ],
   ["a path item that is not text", withPiece({ path: ["a", 1], value: 1 })],
   ["no cycles", { ...slice, cycles: undefined }],
   [

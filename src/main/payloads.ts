@@ -82,8 +82,13 @@ export function linkStatus(v: unknown): Status | null {
   return s;
 }
 
+/** One or two levels, or the third of a character's subkey, the only one that has it. */
 const isPath = (x: unknown): x is StatePath =>
-  Array.isArray(x) && (x.length === 1 || x.length === 2) && x.every(isText);
+  Array.isArray(x) &&
+  (x.length === 1 ||
+    x.length === 2 ||
+    (x.length === 3 && x[0] === "PlayerDATABASE")) &&
+  x.every(isText);
 
 /** The body of a `state` link message with only the slice's fields; null when one is out of shape. The `value` of a
  * piece is not inspected: it is only data for the calculator. */
