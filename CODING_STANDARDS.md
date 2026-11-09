@@ -78,3 +78,9 @@ Bad: the name of the character used in the game round, pasted into a `Reading` l
 A test written for a security or spec criterion passes the risky data through the real field the criterion names, and fails when only that field loses the protection.
 Good: `names: { map: "<b>Map</b>", afk: "<i>Mob</i>" }` in the test that names from the game show as plain text.
 Bad: `label: "<b>Bold</b>"` in that test, a text of the compiled catalog that never comes from the game, so the game's names are not exercised.
+
+### Text-scan guards cover every spelling and path
+
+A test that scans source text for a forbidden call matches every spelling that reaches it and reads every file the guarded data passes through.
+Good: `loads("(?:node:)?net")` over all of `src/` in `no-network.test.ts`, with a "the scan catches %s" case per form.
+Bad: `/node:vm/` over `game-tables.ts` alone, while the game text also sits in `keeper.ts` and `import "vm"` passes.
