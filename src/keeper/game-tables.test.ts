@@ -121,7 +121,9 @@ const KEEPER_SOURCES = readdirSync(import.meta.dirname, {
   encoding: "utf8",
 })
   .map((f) => f.replaceAll("\\", "/"))
-  .filter((f) => /\.(?:tsx?|c?js|mjs)$/.test(f) && !/\.test\.tsx?$/.test(f))
+  .filter(
+    (f) => /\.(?:tsx?|c?js|mjs|html)$/.test(f) && !/\.test\.tsx?$/.test(f),
+  )
   .map((file) => ({
     file,
     text: readFileSync(join(import.meta.dirname, file), "utf8"),
