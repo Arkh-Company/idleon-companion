@@ -74,6 +74,30 @@ module.exports = {
       from: { path: "^src/shared/" },
       to: { path: "^src/(main|keeper|preload|renderer)/" },
     },
+    {
+      name: "calculator-alone",
+      comment:
+        "The calculator runs the game's code in its own bundle: it imports only Node built-ins and its own files (tests excepted).",
+      severity: "error",
+      from: { path: "^src/calculator/", pathNot: "\\.test\\.ts$" },
+      to: { path: "^src/", pathNot: "^src/calculator/" },
+    },
+    {
+      name: "nothing-imports-the-calculator",
+      comment:
+        "The game's code never loads inside the app, the keeper, the preload or the window: the calculator is only started as a worker (ADR 0006).",
+      severity: "error",
+      from: { path: "^src/(main|keeper|preload|renderer)/" },
+      to: { path: "^src/calculator/" },
+    },
+    {
+      name: "vm-only-in-the-calculator",
+      comment:
+        "Only the calculator runs code in node:vm; the rule of feature 003 (the game's files stay text) holds elsewhere (FR-009).",
+      severity: "error",
+      from: { path: "^src/", pathNot: ["^src/calculator/", "\\.test\\.tsx?$"] },
+      to: { path: "^(node:)?vm$", dependencyTypes: ["core"] },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

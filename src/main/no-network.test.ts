@@ -15,40 +15,71 @@ const loads = (module: string) =>
 
 const UPDATER_MODULE = loads("electron-updater");
 const NET_MODULE = loads("(?:node:)?net");
+const STUB_WORDS = /\bXMLHttpRequest\b|\bWebSocket\b/;
 const FORBIDDEN = [
   UPDATER_MODULE,
   loads("(?:node:)?(?:https?|http2|tls|dgram)"),
   /\bfetch\s*\(/,
   /\bnet\.(?:request|fetch)\b/,
-  /\bXMLHttpRequest\b|\bWebSocket\b/,
+  STUB_WORDS,
 ];
+// FR-008, the one exception: the calculator's context defines the stubs that throw under these two words. Every other
+// pattern still applies to it.
+const STUBS_ONLY = "src/calculator/context.js";
 
 function networkUses(file: string, text: string): string[] {
   if (file === UPDATER) return [];
-  const hits = FORBIDDEN.filter((p) => p.test(text)).map(String);
+  const hits = FORBIDDEN.filter(
+    (p) => p.test(text) && !(file === STUBS_ONLY && p === STUB_WORDS),
+  ).map(String);
   if (!PIPE_ONLY.includes(file) && NET_MODULE.test(text))
     hits.push(String(NET_MODULE));
   return hits;
 }
 
-// Tests may open a pipe of their own; they never ship.
+// Tests may open a pipe of their own; they never ship, and neither does the invented game of the calculator's tests.
 const sources = readdirSync(SRC, { recursive: true, encoding: "utf8" })
   .map((f) => f.replaceAll("\\", "/"))
-  .filter((f) => /\.(?:tsx?|c?js|mjs)$/.test(f) && !/\.test\.tsx?$/.test(f))
+  .filter(
+    (f) =>
+      /\.(?:tsx?|c?js|mjs)$/.test(f) &&
+      !/\.test\.tsx?$/.test(f) &&
+      !f.startsWith("calculator/fixtures/"),
+  )
   .map((f) => ({
     file: `src/${f}`,
     text: readFileSync(join(SRC, f), "utf8"),
   }));
 
-test("the scan reads the app, the keeper and the window", () => {
+test("the scan reads the app, the keeper, the window and the calculator", () => {
   const files = sources.map((s) => s.file);
   for (const f of [
     "src/main/index.ts",
     "src/keeper/keeper.ts",
     "src/keeper/read.js",
     "src/renderer/App.tsx",
+    "src/calculator/engine.ts",
+    "src/calculator/context.js",
   ])
     expect(files).toContain(f);
+});
+
+test("the invented game of the tests is not scanned", () => {
+  expect(
+    sources.filter((s) => s.file.includes("/fixtures/")).map((s) => s.file),
+  ).toEqual([]);
+});
+
+test("the calculator's context may only name the two stubs", () => {
+  expect(networkUses(STUBS_ONLY, "G.XMLHttpRequest = refuse;")).toEqual([]);
+  expect(networkUses(STUBS_ONLY, "G.WebSocket = refuse;")).toEqual([]);
+  expect(networkUses(STUBS_ONLY, "await fetch(url);")).not.toEqual([]);
+  expect(
+    networkUses(STUBS_ONLY, 'import https from "node:https";'),
+  ).not.toEqual([]);
+  expect(
+    networkUses("src/calculator/engine.ts", "new WebSocket(url);"),
+  ).not.toEqual([]);
 });
 
 test("only updates.ts loads the updater", () => {

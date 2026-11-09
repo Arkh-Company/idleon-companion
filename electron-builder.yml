@@ -9,6 +9,9 @@ directories:
 files:
   - out/**
   - package.json
+# A worker cannot start from inside an asar: only the calculator goes next to it, in app.asar.unpacked.
+asarUnpack:
+  - out/main/calculator.js
 # The keeper loads read.js on every cycle, and the two state scripts once, from resources\ next to app.asar.
 extraResources:
   - from: src/keeper/read.js
