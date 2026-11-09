@@ -1,4 +1,6 @@
 // The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
 
@@ -102,4 +104,15 @@ test("screenNumbers sorts by value and drops repeats", () => {
       'e.h.MenuType2=30;e.h.MenuType2=7;100==a.getGameAttribute("MenuType2");7==a.getGameAttribute("MenuType2");',
     ),
   ).toEqual([7, 30, 100]);
+});
+
+test.each([
+  ["eval", /\beval\b/],
+  ["new Function", /\bnew\s+Function\b/],
+  ["node:vm", /node:vm/],
+  ["require(", /\brequire\s*\(/],
+])("game-tables.ts has no %s: the game code is never run", (_name, form) => {
+  expect(
+    readFileSync(join(import.meta.dirname, "game-tables.ts"), "utf8"),
+  ).not.toMatch(form);
 });

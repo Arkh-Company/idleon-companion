@@ -364,7 +364,7 @@ deleted does not stop the others.
 
 **Independent Test**: `just check` and `just build` pass; the documents no longer mention what left.
 
-- [ ] T035 A guard against running the game code in src/keeper/game-tables.test.ts
+- [X] T035 A guard against running the game code in src/keeper/game-tables.test.ts
   - Files: `src/keeper/game-tables.test.ts`
   - Case: the source of `game-tables.ts` has no `eval`, `new Function`, `node:vm` or `require(` (FR-014).
 - [ ] T036 [P] Update the architecture in ARCHITECTURE.md
