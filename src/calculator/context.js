@@ -82,7 +82,8 @@
   var mosaicAttrs = {};
   var primitives = {};
   var steps = [];
-  var snapshot = null;
+  var insts = {};
+  var everyScene = null;
 
   // Puts back the shapes the slices travel in: Haxe maps, numbers JSON cannot hold, and what could not be copied.
   function rev(v) {
@@ -189,16 +190,6 @@
     });
   }
 
-  function restore() {
-    var o = {};
-    var un = hx["haxe.Unserializer"];
-    Object.keys(snapshot.ser).forEach((k) => {
-      o[k] = un.run(snapshot.ser[k]);
-    });
-    Object.assign(o, snapshot.ref);
-    eng.gameAttributes.h = o;
-  }
-
   function mkActor(insts) {
     var behaviors = {
       getBehavior: (n) => (hasOwn(insts, n) ? insts[n] : stub(true)),
@@ -266,6 +257,36 @@
   var CONSTRUCT_MS = 5000;
   var INIT_MS = 8000;
 
+  // The steps read the instances and the state when they run, because each calculation starts new ones of both.
+  function planHelpers() {
+    quietGame();
+    var add = (ms, run) => steps.push({ ms: ms, run: run });
+    var starSigns = () => owner.StarSigns._customBlock_StarSigns(0);
+    add(CONSTRUCT_MS, starSigns);
+    HELPER_ACTORS.forEach((pair) => {
+      add(CONSTRUCT_MS, () => {
+        var name = "ActorEvents_" + pair[1];
+        var actor = mkActor(insts);
+        insts[name] = new hx["scripts." + name](0, actor, 0);
+        eng.gameAttributes.h.PixelHelperActor[pair[0]] = actor;
+      });
+    });
+    for (var pass = 0; pass < 2; pass++)
+      HELPER_ACTORS.forEach((pair) => {
+        add(INIT_MS, () => {
+          var inst = insts["ActorEvents_" + pair[1]];
+          if (inst) inst.init();
+        });
+      });
+    add(CONSTRUCT_MS, starSigns);
+    add(CONSTRUCT_MS, () => {
+      everyScene = new hx["scripts.Design_23_23_EveryScene"](0, 0);
+    });
+    add(INIT_MS, () => {
+      if (everyScene) everyScene.init();
+    });
+  }
+
   G.__calc = {
     // After the game's code loaded: runs its entry, empties the blocks that save, and feeds the assets.
     start: (pak) => {
@@ -315,7 +336,6 @@
           "scripts.CustomMaps",
           "scripts.CustomMapsREAL",
         ]),
-        PixelHelperActor: [],
       };
     },
 
@@ -324,6 +344,7 @@
       var m = JSON.parse(G.__mosaic);
       vars = m.vars || {};
       mosaicAttrs = m.attrs;
+      primitives = {};
       var live = {};
       Object.keys(mosaicAttrs).forEach((k) => {
         live[k] = rev(mosaicAttrs[k]);
@@ -333,68 +354,27 @@
       Object.keys(tables).forEach((k) => {
         live[k] = tables[k];
       });
+      live.PixelHelperActor = [];
       eng.gameAttributes.h = live;
     },
 
     // Prepares the game's helper actors on stubs, and answers how long the host gives to each `helperStep`.
     helperPlan: (lazyDnsm) => {
       var attrs = eng.gameAttributes.h;
-      quietGame();
+      if (!steps.length) planHelpers();
+      insts = {};
+      everyScene = null;
       if (attrs.DNSM)
         lazyDnsm.forEach((k) => {
           if (!hasOwn(attrs.DNSM.h, k)) attrs.DNSM.h[k] = newMap();
         });
-      var insts = {};
-      var add = (ms, run) => steps.push({ ms: ms, run: run });
-      var starSigns = () => owner.StarSigns._customBlock_StarSigns(0);
-      add(CONSTRUCT_MS, starSigns);
-      HELPER_ACTORS.forEach((pair) => {
-        add(CONSTRUCT_MS, () => {
-          var name = "ActorEvents_" + pair[1];
-          var actor = mkActor(insts);
-          insts[name] = new hx["scripts." + name](0, actor, 0);
-          attrs.PixelHelperActor[pair[0]] = actor;
-        });
-      });
-      for (var pass = 0; pass < 2; pass++)
-        HELPER_ACTORS.forEach((pair) => {
-          add(INIT_MS, () => {
-            var inst = insts["ActorEvents_" + pair[1]];
-            if (inst) inst.init();
-          });
-        });
-      add(CONSTRUCT_MS, starSigns);
-      var everyScene = null;
-      add(CONSTRUCT_MS, () => {
-        everyScene = new hx["scripts.Design_23_23_EveryScene"](0, 0);
-      });
-      add(INIT_MS, () => {
-        if (everyScene) everyScene.init();
-      });
       return JSON.stringify(steps.map((s) => s.ms));
     },
 
     helperStep: (i) => steps[i].run(),
 
-    // Per key, what can be serialized is rebuilt before each number; the rest (the stub actors) is kept by reference.
-    finishHelpers: () => {
-      reapply();
-      var a = eng.gameAttributes.h;
-      var ser = hx["haxe.Serializer"];
-      var taken = { ser: {}, ref: {} };
-      Object.keys(a).forEach((k) => {
-        try {
-          taken.ser[k] = ser.run(a[k]);
-        } catch {
-          taken.ref[k] = a[k];
-        }
-      });
-      snapshot = taken;
-    },
+    finishHelpers: reapply,
 
-    number: (block, arg) => {
-      restore();
-      return owner[block]["_customBlock_" + block](arg, 0, 0);
-    },
+    number: (block, arg) => owner[block]["_customBlock_" + block](arg, 0, 0),
   };
 });

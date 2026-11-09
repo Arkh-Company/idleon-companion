@@ -1,4 +1,4 @@
-// The engine over an invented game: isolation, restore and every way a number or the start can fail (FR-008, FR-011, FR-012).
+// The engine over an invented game: isolation, the long-lived context and every way a number or the start can fail (FR-008, FR-011, FR-012).
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
@@ -38,6 +38,8 @@ const moved = (name: string): string =>
   GAME.replace(`A["${name}"] =`, `A["moved.${name}"] =`);
 const scenario = (Scenario: string, attrs: object = {}, vars: object = {}) =>
   calc({ ...attrs, Scenario }, vars);
+const newEngine = (): ReturnType<typeof createEngine> =>
+  createEngine(GAME, PAK);
 
 describe("numbers", () => {
   test("come from the mosaic, by id", () => {
@@ -144,8 +146,20 @@ describe("isolation (FR-008)", () => {
 });
 
 describe("state", () => {
-  test("a block that mutates the state does not change the next number", () => {
-    expect(calc().accuracy).toBe(7);
+  test("the numbers run in the order of TARGETS, on one state with no restore", () => {
+    expect(scenario("order")).toEqual({
+      damageMax: 1,
+      damageMin: 2,
+      hp: 3,
+      mp: 4,
+      accuracy: 5,
+      str: 6,
+      agi: 7,
+      wis: 8,
+      luk: 9,
+      dropRate: 10,
+      afkGains: 11,
+    });
   });
 
   test("CloudSAVE and SaveGamee, called by a block, do nothing", () => {
@@ -171,10 +185,82 @@ describe("state", () => {
   test("the tables come from the game's classes, with no save", () => {
     expect(scenario("tables").accuracy).toBe(511);
   });
+});
 
-  test("two calculations in a row share no state", () => {
-    expect(scenario("counter").accuracy).toBe(1);
-    expect(scenario("counter").accuracy).toBe(1);
+describe("the long-lived context", () => {
+  const OTHER = {
+    Base: { $m: { hp: 900, acc: 33 }, $c: "haxe.ds.StringMap" },
+    Damage: [10, 5],
+    Stats: { STR: 1, AGI: 2, WIS: 3, LUK: 4, Drop_Rarity: 9 },
+    AfkRate: 0.25,
+  };
+  const OTHER_BONUS = {
+    DNSM: {
+      $m: { CompanionBon: { $m: { b1: 30 } }, ShinyBonusS: { $m: { s1: 40 } } },
+    },
+  };
+  const VARS = { TomePct: 40, ArcadeBonuses: { $m: { x: 2 } } };
+
+  const accuracies = (Scenario: string, times: number): (number | null)[] => {
+    const long = newEngine();
+    const json = mosaicOf({ Scenario });
+    return Array.from({ length: times }, () => long.calculate(json).accuracy);
+  };
+
+  test("the game boots once for 3 calculations", () => {
+    expect(accuracies("counter", 3)).toEqual([1, 2, 3]);
+  });
+
+  test("the actors are created again in each calculation", () => {
+    expect(accuracies("actors", 3)).toEqual([1, 2, 3]);
+  });
+
+  test.each([
+    ["every number changes", mosaicOf(), mosaicOf(OTHER)],
+    [
+      "a simple value that is gone is not put back",
+      mosaicOf(),
+      mosaicOf({ AFKtarget: undefined }),
+    ],
+    [
+      "the bonuses are the newest mosaic's",
+      mosaicOf({ Scenario: "bonus" }),
+      mosaicOf({ Scenario: "bonus", ...OTHER_BONUS }),
+    ],
+    [
+      "the _vars are the newest mosaic's",
+      mosaicOf({ Scenario: "vars" }, VARS),
+      mosaicOf({ Scenario: "vars" }),
+    ],
+    [
+      "a constructor that fails does not bring back the last actors",
+      mosaicOf({ Scenario: "helper" }),
+      mosaicOf({ Scenario: "noActor" }),
+    ],
+  ])("A, B, A equal a fresh engine: %s", (_name, a, b) => {
+    const long = newEngine();
+    for (const mosaic of [a, b, a])
+      expect(long.calculate(mosaic)).toEqual(newEngine().calculate(mosaic));
+  });
+
+  test("a helper that throws fails only its numbers, and the next calculation works", () => {
+    const long = newEngine();
+    const n = long.calculate(mosaicOf({ Scenario: "helperThrows" }));
+    expect(n.accuracy).toBeNull();
+    expect(n.str).toBe(11);
+    expect(long.calculate(mosaicOf({ Scenario: "helper" })).accuracy).toBe(2);
+  });
+
+  test("a number that throws does not reach the next calculation", () => {
+    const long = newEngine();
+    expect(long.calculate(mosaicOf({ Scenario: "throw" })).hp).toBeNull();
+    expect(long.calculate(mosaicOf()).hp).toBe(500);
+  });
+
+  test("a mosaic that is not JSON leaves the next calculation working", () => {
+    const long = newEngine();
+    expect(() => long.calculate("not json")).toThrow();
+    expect(long.calculate(mosaicOf()).hp).toBe(500);
   });
 });
 

@@ -37,7 +37,6 @@ export function createEngine(
   });
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 
-  // ponytail: a fresh context per calculation, the one shape the lab proved; reuse it if the cost shows up in the game script.
   function boot(): Started {
     // No prototype, or the game's `this.constructor.constructor` would be the host's Function.
     const sandbox = Object.create(null) as Record<string, unknown>;
@@ -82,11 +81,10 @@ export function createEngine(
     return { sandbox, run };
   }
 
-  boot();
+  const { sandbox, run } = boot();
 
   return {
     calculate(mosaicJson) {
-      const { sandbox, run } = boot();
       sandbox.__mosaic = mosaicJson;
       run("__calc.loadMosaic()", START_MS);
       const stepsMs = JSON.parse(
