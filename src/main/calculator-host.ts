@@ -83,7 +83,6 @@ export function createCalculatorHost(deps: {
   }
 
   function fail(): void {
-    if (unavailable) return;
     unavailable = true;
     waiting = null;
     stop();

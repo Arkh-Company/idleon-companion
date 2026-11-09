@@ -4,92 +4,18 @@ import type { Worker } from "node:worker_threads";
 import { afterEach, beforeEach, expect, expectTypeOf, test, vi } from "vitest";
 import { calculatorPath, createCalculatorHost } from "./calculator-host.ts";
 import type { WorkerLike } from "./calculator-host.ts";
+import {
+  answer,
+  files,
+  flush,
+  mosaic,
+  nth,
+  RESOURCES,
+  running,
+  setup,
+  starting,
+} from "./calculator-host-fixture.ts";
 import type { GameBytes } from "./game-files.ts";
-
-const RESOURCES = "C:\\invented\\resources";
-
-type Message = Record<string, unknown>;
-
-class FakeWorker implements WorkerLike {
-  posted: { message: Message; transfer: unknown }[] = [];
-  terminated = 0;
-  throwOnPost = false;
-  private handlers = new Map<string, (value: unknown) => void>();
-  postMessage(message: unknown, transfer?: unknown): void {
-    if (this.throwOnPost) throw new Error("cannot post");
-    this.posted.push({ message: message as Message, transfer });
-  }
-  on(event: string, listener: (value: unknown) => void): void {
-    this.handlers.set(event, listener);
-  }
-  terminate(): void {
-    this.terminated++;
-    this.emit("exit", 1); // A real worker that is terminated also ends with `exit`.
-  }
-  emit(event: string, value?: unknown): void {
-    this.handlers.get(event)?.(value);
-  }
-  calcs(): unknown[] {
-    return this.posted
-      .filter((p) => p.message.type === "calc")
-      .map((p) => p.message.mosaic);
-  }
-}
-
-function nth(workers: FakeWorker[], i = 0): FakeWorker {
-  const w = workers[i];
-  if (!w) throw new Error("no such worker");
-  return w;
-}
-
-const mosaic = (n: number) =>
-  JSON.stringify({ attrs: { n }, vars: { A_invented: 1 }, skipped: [] });
-const files = (): Promise<GameBytes> =>
-  Promise.resolve({
-    code: Uint8Array.from([1, 2]),
-    pak: Uint8Array.from([3]),
-  });
-const flush = () => vi.advanceTimersByTimeAsync(0);
-
-function setup(read: () => Promise<GameBytes> = files) {
-  const workers: FakeWorker[] = [];
-  const options: unknown[] = [];
-  const readFiles = vi.fn(read);
-  const onResult = vi.fn();
-  const onUnavailable = vi.fn();
-  const host = createCalculatorHost({
-    createWorker: (o) => {
-      options.push(o);
-      const w = new FakeWorker();
-      workers.push(w);
-      return w;
-    },
-    readFiles,
-    onResult,
-    onUnavailable,
-  });
-  return { host, workers, options, readFiles, onResult, onUnavailable };
-}
-
-function starting(read?: () => Promise<GameBytes>) {
-  const t = setup(read);
-  t.host.setFiles(RESOURCES);
-  t.host.calculate(mosaic(1));
-  return t;
-}
-
-/** A host with its worker ready and calculating mosaic 1. */
-async function running() {
-  const t = starting();
-  await flush();
-  const worker = nth(t.workers);
-  worker.emit("message", { type: "ready" });
-  return { ...t, worker };
-}
-
-function answer(w: FakeWorker): void {
-  w.emit("message", { type: "result", numbers: {}, ms: 1 });
-}
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -414,6 +340,23 @@ test("reset forgets the 5,000 ms wait", async () => {
   await flush();
   nth(workers, 1).emit("message", { type: "ready" });
   expect(nth(workers, 1).calcs()).toEqual([mosaic(2)]);
+});
+
+test("the wait from before a reset does not cut the new wait short", async () => {
+  const { host, worker, workers } = await running();
+  answer(worker); // its wait ends at 5,000 ms
+  await vi.advanceTimersByTimeAsync(1_000);
+  host.reset();
+  host.calculate(mosaic(2));
+  await flush();
+  const next = nth(workers, 1);
+  next.emit("message", { type: "ready" });
+  answer(next); // this wait ends at 6,000 ms
+  host.calculate(mosaic(3));
+  await vi.advanceTimersByTimeAsync(4_000);
+  expect(next.calcs()).toEqual([mosaic(2)]);
+  await vi.advanceTimersByTimeAsync(1_000);
+  expect(next.calcs()).toEqual([mosaic(2), mosaic(3)]);
 });
 
 test("new files start over, from the new folder, even after unavailable", async () => {
