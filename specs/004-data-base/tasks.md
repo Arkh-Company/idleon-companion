@@ -125,7 +125,7 @@ fake CDP sees one call at a time.
     character zeroes both and lists again; the keys are listed again at the start of each whole rotation; an engine of `null`
     reads nothing; a read that rejects or throws is skipped and the next slot goes on, and only the tenth in a row calls
     `onFailing`, once, with no argument; `stop()` during a read resolves after it and starts no other.
-- [ ] T009 [P] [US1] Engine hooks of the reader in src/keeper/reader-hooks.test.ts
+- [X] T009 [P] [US1] Engine hooks of the reader in src/keeper/reader-hooks.test.ts
   - Files: `src/keeper/reader-hooks.test.ts`, with a fake CDP as in `src/keeper/reader-stop.test.ts`
   - Cases: `onEngine` gets the reference when it is taken and `null` when it is lost and when the reader stops; each poll
     runs inside `turn` when one is given; without `turn` it behaves as before.
@@ -148,7 +148,7 @@ fake CDP sees one call at a time.
     `startStateReader(deps: { send: Cdp["send"]; engine: () => EngineRef | null; listSource: string; sliceSource: string; turn: ReturnType<typeof oneAtATime>; onSlice: (s: StateSlice) => void; onFailing: () => void; vars?: VarsReader; everyMs?: number }): { stop(): Promise<void> }`.
   - `Runtime.callFunctionOn` with `returnByValue: true` and `arguments: [{ value: paths }]`. `everyMs` defaults to 250. Constraint from
     data-model.md: "até 25 KB, salvo uma peça maior, que vai sozinha".
-- [ ] T012 [US1] Hooks in src/keeper/reader.ts
+- [X] T012 [US1] Hooks in src/keeper/reader.ts
   - Files: `src/keeper/reader.ts`
   - Change: `opts` gains `onEngine?: (ref: EngineRef | null) => void` and `turn?: <T>(f: () => Promise<T>) => Promise<T>`; the
     `Runtime.callFunctionOn` of each poll runs inside `turn`. No other behavior changes.
