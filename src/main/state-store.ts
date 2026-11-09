@@ -90,6 +90,8 @@ export function createStateStore(cb: {
         const kept = path[0] === "_vars" ? closedList(value) : value;
         const key = JSON.stringify(path);
         const text = JSON.stringify(kept);
+        // A `_vars` read that failed comes empty: it must not erase the good ones. With none yet, `vars` stays `{}`.
+        if (path[0] === "_vars" && text === "{}") continue;
         if (pieces.get(key)?.text !== text && classOf(path, char) === "formula")
           changed = true;
         pieces.set(key, { path, value: kept, text });

@@ -74,12 +74,23 @@ test("the _vars land in vars, and only the keys of the closed list", () => {
   expect(h.dues[0]?.attrs).toEqual({});
 });
 
-test.each([[null], [7], ["x"], [[1]]])("a _vars of %j keeps nothing", (v) => {
+test("a _vars read that came empty keeps the good ones of this character", () => {
   const h = setup();
   h.add([]);
-  h.add([piece("_vars", v)], WHOLE);
-  expect(h.dues[0]?.vars).toEqual({});
+  h.add([piece("_vars", { TomePct: 9 })], WHOLE);
+  h.add([piece("_vars", {}), piece("Cards", 2)], { formula: 2, all: 1 });
+  expect(h.dues[1]?.vars).toEqual({ TomePct: 9 });
 });
+
+test.each([[null], [7], ["x"], [[1]], [{}]])(
+  "a _vars of %j keeps nothing",
+  (v) => {
+    const h = setup();
+    h.add([]);
+    h.add([piece("_vars", v)], WHOLE);
+    expect(h.dues[0]?.vars).toEqual({});
+  },
+);
 
 test("the excluded keys never enter the mosaic", () => {
   const h = setup();
@@ -118,6 +129,15 @@ test("a first slice with formula rotations already counted is a late join too", 
   h.add([], { formula: 3, all: 1 });
   expect(h.texts).toEqual([]);
   h.add([], { formula: 4, all: 2 });
+  expect(h.texts).toHaveLength(1);
+});
+
+test("a first slice with whole rotations already counted is a late join too", () => {
+  const h = setup();
+  h.add([piece("Cards", 1)], { formula: 0, all: 3 });
+  h.add([], { formula: 1, all: 4 });
+  expect(h.texts).toEqual([]);
+  h.add([], { formula: 2, all: 5 });
   expect(h.texts).toHaveLength(1);
 });
 
