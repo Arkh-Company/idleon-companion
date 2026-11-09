@@ -87,8 +87,8 @@ src/main/
 
 src/calculator/                  # novo: fronteira isolada
 ├── index.ts                     # entrada do worker
-├── engine.ts                    # contexto vm, stubs, arquivos do jogo
-├── helpers.ts, snapshot.ts      # inicialização dos ajudantes, restaurar estado
+├── engine.ts                    # contexto vm, arquivos do jogo, limites
+├── context.js                   # o que roda dentro do contexto: stubs, ajudantes, restaurar estado
 └── targets.ts                   # os 10 números
 
 src/renderer/

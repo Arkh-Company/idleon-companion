@@ -12,9 +12,9 @@ Decisões técnicas da 004. As medidas vêm de [prototipo/README.md](prototipo/R
 
 ## R2. A ordem da rotação (FR-001)
 
-**Decision**: duas classes de peças. A cada segundo, 3 fatias da classe `formula` e 1 da classe `other`. A classe `formula` é uma lista fixa de chaves de topo em `src/shared/state.ts`, tirada da análise estática das fórmulas, e usada só como prioridade: nenhuma chave fica de fora.
+**Decision**: duas classes de peças. A cada segundo, 3 fatias da classe `formula` e 1 da classe `other`. A classe `formula` é uma lista fixa de 148 chaves de topo em `src/shared/state.ts`, tirada da análise estática das fórmulas, mais o personagem ativo, os dois bônus de `DNSM` e os `_vars`. É usada só como prioridade: nenhuma chave fica de fora.
 
-**Rationale**: as chaves das fórmulas somam cerca de 346 KB, ou cerca de 14 fatias, que giram em menos de 5 s. As demais giram em cerca de 20 s. Tela e personagem continuam com a leitura de 1 s que já existe. Atende o alvo de FR-001 sem classe a mais.
+**Rationale**: as chaves das fórmulas somam cerca de 179 KB, e o personagem ativo cerca de 46 KB: cerca de 10 fatias, que giram em menos de 5 s. As demais giram em cerca de 20 s, porque cada outro personagem, com cerca de 46 KB, é uma fatia só. Tela e personagem continuam com a leitura de 1 s que já existe. Atende o alvo de FR-001 sem classe a mais.
 
 **Alternatives considered**: rotação simples, cerca de 7 s para tudo, fora do alvo de 5 s. Prioridade por frequência de mudança exige comparar e guardar histórico, sem ganho medido.
 
@@ -28,9 +28,9 @@ Decisões técnicas da 004. As medidas vêm de [prototipo/README.md](prototipo/R
 
 ## R4. Quando calcular
 
-**Decision**: o app calcula quando a classe `formula` completou um ciclo desde o último cálculo e algum valor mudou. Um cálculo por vez; o mais novo substitui o que esperava. Roda com a aba fechada também (decisão do Vinicius).
+**Decision**: o primeiro cálculo de um personagem espera uma volta inteira, de todas as peças. Depois, o app calcula quando a classe `formula` completou um ciclo desde o último cálculo e algum valor mudou, com pelo menos 5 s entre um cálculo e o próximo. Um cálculo por vez; o mais novo substitui o que esperava. Roda com a aba fechada também (decisão do Vinicius).
 
-**Rationale**: o custo do cálculo fica fora da linha do jogo. Comparar valores evita trabalho à toa.
+**Rationale**: o custo do cálculo fica fora da linha do jogo, mas é de cerca de 2,4 s de um núcleo; sem o intervalo, em combate, ele ocuparia um núcleo quase o tempo todo. Sem a volta inteira, o primeiro cálculo leria chaves ainda ausentes e poderia dar um número errado. Comparar valores evita trabalho à toa.
 
 **Alternatives considered**: um cálculo por fatia, sem ganho e sem mosaico completo.
 
@@ -54,7 +54,7 @@ Decisões técnicas da 004. As medidas vêm de [prototipo/README.md](prototipo/R
 
 **Decision**: quatro camadas. (1) O código do jogo roda num contexto `node:vm` criado com `codeGeneration: { strings: false, wasm: false }`. (2) Nenhum objeto do Node ou do host entra no contexto: stubs e pontes são criados dentro dele, para que `constructor.constructor` seja o do contexto, com geração de código desligada. (3) `XMLHttpRequest`, `fetch`, `WebSocket` e `navigator.sendBeacon` existem só como stubs que lançam erro, e a ponte do Firebase responde como vazia. (4) O worker nasce com `env` vazio, sem `stdin`, e com `resourceLimits`. Teste: um código de jogo inventado que tenta rede pelos caminhos conhecidos não alcança nada.
 
-**Rationale**: `node:vm` sozinho não é barreira de segurança. O código executado é o do jogo oficial, não de um atacante, e no texto dele há 0 `fetch`, 0 `WebSocket`, 0 `require` e 3 menções a `XMLHttpRequest`; o que se quer impedir é rede por engano. Há 1 `eval(` no texto: desligar geração de código exige conferir, no início da implementação, que o cálculo não passa por ele.
+**Rationale**: `node:vm` sozinho não é barreira de segurança. O código executado é o do jogo oficial, não de um atacante, e no texto dele há 0 `fetch`, 0 `WebSocket`, 0 `require` e 3 menções a `XMLHttpRequest`; o que se quer impedir é rede por engano. Há 1 `eval(` no texto, e o cálculo não passa por ele: em 09/11/2026, com a geração de código desligada, os 11 valores saíram iguais. Para `constructor.constructor` ser o do contexto, o objeto dado a `vm.createContext` não pode ter protótipo (`Object.create(null)`).
 
 **Alternatives considered**: permission model do Node, no processo inteiro e não por worker; `utilityProcess` com a sandbox do Chromium, que não roda o Node completo que o motor precisa. O risco que sobra é um escape deliberado do `vm`, aceito porque o código é o do próprio jogo.
 
@@ -84,9 +84,9 @@ Decisões técnicas da 004. As medidas vêm de [prototipo/README.md](prototipo/R
 
 ## R11. Conferência com `StatList` (FR-023)
 
-**Decision**: depois de calcular, comparar STR, AGI, WIS e LUK com `PersonalValuesMap.h.StatList` do personagem ativo, que o jogo grava a cada 30 s. Divergência por mais que a defasagem permite marca o número como "unavailable".
+**Decision**: depois de calcular, comparar STR, AGI, WIS e LUK com as posições 0 a 3 de `PersonalValuesMap.h.StatList` do personagem ativo, que o jogo grava a cada 30 s. Vale como igual até 1% ou 1 ponto de diferença. Uma diferença que dura mais de 35 s marca o número como "unavailable".
 
-**Rationale**: é o único detector de patch de graça. `StatList` pode estar até 30 s atrás, então a comparação tolera um valor alguns ciclos mais velho.
+**Rationale**: é o único detector de patch de graça. A ordem das posições foi conferida no retrato de 09/11/2026, em que as 4 bateram exatamente. `StatList` pode estar até 30 s atrás, e trocar um equipamento não pode virar "unavailable".
 
 **Alternatives considered**: sem conferência (um patch daria números errados em silêncio).
 
@@ -97,3 +97,11 @@ Pipe em CBOR, `SharedObject.data`, leitura do `.log` do LevelDB e `Tracing` em p
 ## R13. ADR
 
 O [ADR 0006](../../docs/adr/0006-game-code-runs-in-an-isolated-worker.md) registra a exceção a "nunca executar o arquivo do jogo". A emenda da constituição sai em branch e PR próprios, antes da primeira linha de código desta feature.
+
+## R14. De onde vêm as tabelas que ficam fora do retrato (FR-004)
+
+**Decision**: `CustomLists` e `CustomMaps` são montadas no worker chamando as funções estáticas sem argumentos das classes `scripts.CustomLists*` e `scripts.CustomMaps*` do jogo instalado, como o próprio jogo faz; itens, monstros e diálogos, pelas classes de definição; `PixelHelperActor` começa vazio.
+
+**Rationale**: no laboratório essas tabelas vinham do save local, e o app não lê o save. Conferido em 09/11/2026: sem o save, com um estado inicial vazio, os 11 valores saíram iguais aos de com o save.
+
+**Alternatives considered**: ler as tabelas do jogo em execução (2,4 MB e 2,2 MB, fora do limite de uma fatia); ler o save do disco (mais um arquivo de conta, sem necessidade).

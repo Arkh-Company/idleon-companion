@@ -11,7 +11,7 @@ Comandos na raiz do repositório.
 | Comando | O que prova |
 | --- | --- |
 | `just test-one src/keeper/state-reader.test.ts` | Rotação, sentinela, uma leitura por vez |
-| `just test-one src/keeper/read-only.test.ts` | A leitura do estado não chama função do jogo nem aciona getter (SC-004) |
+| `just test-one src/keeper/state-read-only.test.ts` | A leitura do estado não chama função do jogo nem aciona getter (SC-004) |
 | `just test-one src/keeper/vars-reader.test.ts` | Token falso perto dos `_vars` não sai (SC-005) |
 | `just test-one src/main/state-store.test.ts` | Mosaico, troca de personagem |
 | `just test-one src/calculator` | Código de jogo inventado: resultado, falha e nenhuma rede (FR-008) |
