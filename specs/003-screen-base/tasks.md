@@ -316,7 +316,7 @@ exists in the whole window.
 - [X] T030 [US4] The panel in src/renderer/ScreenMapPanel.tsx
   - Files: `src/renderer/ScreenMapPanel.tsx`, `src/renderer/styles.css`
   - Change: follow [contracts/ipc.md](contracts/ipc.md); drop `Named` and the `.deduced` style.
-- [ ] T031 [US4] Remove the catalog of the user
+- [X] T031 [US4] Remove the catalog of the user
   - Files: delete `src/renderer/NameIt.tsx`, `src/main/catalog/` (with `catalog.test.ts`, FR-011) and
     `scripts/convert-prototype-names.ts`; change `src/shared/types.ts` (`Catalog`, `Entry`, `CatalogTable`,
     `IPC.catalogName`, `CompanionApi.name`), `src/shared/index.ts`, `src/shared/types.test.ts`, `src/shared/modules.test.ts`,

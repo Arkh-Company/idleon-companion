@@ -73,31 +73,6 @@ export interface GameTables {
   monsters: Record<string, string> | null;
 }
 
-export interface Entry {
-  name: string;
-  status: "deduced" | "confirmed";
-}
-
-/** The tables a player can name from the window. */
-export type CatalogTable = "menu" | "menu2" | "codex";
-
-/** names.json (spec §5.3). */
-export interface Catalog {
-  version: 1;
-  /** MenuType; a key can be "0.1" */
-  menu: Record<string, Entry>;
-  /** MenuType2 */
-  menu2: Record<string, Entry>;
-  /** OptionsList[12] */
-  codex: Record<string, Entry>;
-  /** Quik Ref icons (reference) */
-  quickref: Record<string, Entry>;
-  /** CustomLists.MapDispName */
-  maps: string[];
-  /** MonsterDefinitions Name, by monster id */
-  afk: Record<string, string>;
-}
-
 /** One reading translated by the screen catalog and the game's tables. */
 export interface GameContext {
   screen: {

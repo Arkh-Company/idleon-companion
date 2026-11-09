@@ -12,11 +12,8 @@ export {
 export { identifyScreen } from "./screens/identify.ts";
 export { DEFAULT_SETTINGS, GAME_UPDATED, IPC, moduleChannel } from "./types.ts";
 export type {
-  Catalog,
-  CatalogTable,
   CompanionApi,
   CompanionModule,
-  Entry,
   GameContext,
   GameTables,
   Reading,
