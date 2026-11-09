@@ -42,6 +42,10 @@ lime.$scripts.N = function (_exports, $global) {
   };
   A["haxe.Serializer"] = {
     run: function (value) {
+      if (value === "endlessFinish")
+        for (;;) {
+          // never returns
+        }
       return JSON.stringify(value, function (_key, x) {
         if (typeof x === "function") throw new Error("not serializable");
         if (x === Infinity) return { $inf: 1 };
@@ -164,6 +168,10 @@ lime.$scripts.N = function (_exports, $global) {
 
   var EveryScene = function () {};
   EveryScene.prototype.init = function () {
+    if (state().Scenario === "endlessInit")
+      for (;;) {
+        // never returns
+      }
     state().EverySceneRan = [1];
   };
   A["scripts.Design_23_23_EveryScene"] = EveryScene;
@@ -275,7 +283,11 @@ lime.$scripts.N = function (_exports, $global) {
         bridge("getLoad", "NotAVar") === -1 &&
         bridge("getSomethingElse", "x").length === 0 &&
         bridge("anythingElse", "x") === null &&
-        bridge("isElectron") === true;
+        bridge("isElectron") === true &&
+        bridge("isSteamDeck") === false &&
+        bridge("getCompanionInfoMe") === null &&
+        bridge("getTime") === -1 &&
+        bridge("getLoadString") === "";
       return ok ? 1 : 0;
     },
     lazyDnsm: function () {

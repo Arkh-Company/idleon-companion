@@ -13,31 +13,12 @@ const START_MS = 8_000;
 
 type Decompress = (data: Uint8Array) => Uint8Array | null;
 
-/** The host's own method: `array.set` would look it up in the context, where the game can replace it and receive host bytes. */
-// eslint-disable-next-line @typescript-eslint/unbound-method -- only ever called with `.call`
-const copyInto = Uint8Array.prototype.set;
-
 /** Maps the game creates lazily, read as `DNSM").h.KEY.h`, except the ones it fills itself when absent (a text scan). */
 function lazyDnsmKeys(code: string): string[] {
-  const pattern = 'DNSM").h.';
-  const keys = new Set<string>();
-  for (
-    let at = code.indexOf(pattern);
-    at >= 0;
-    at = code.indexOf(pattern, at + 1)
-  ) {
-    const start = at + pattern.length;
-    const name = /^\w+/.exec(code.slice(start, start + 60))?.[0];
-    if (name === undefined) continue;
-    const end = start + name.length;
-    if (
-      code.startsWith(".h", end) &&
-      !/\w/.test(code.charAt(end + 2)) &&
-      !code.includes(`.h,"${name}")`)
-    )
-      keys.add(name);
-  }
-  return [...keys];
+  const names = [...code.matchAll(/DNSM"\)\.h\.(\w+)\.h(?!\w)/g)].map(
+    (m) => m[1] ?? "",
+  );
+  return [...new Set(names)].filter((n) => !code.includes(`.h,"${n}")`));
 }
 
 interface Started {
@@ -70,6 +51,8 @@ export function createEngine(
       ...decompressors: Decompress[]
     ) => void;
     const ContextArray = run("Uint8Array", START_MS) as Uint8ArrayConstructor;
+    // The host's own `set`, here and for the pak: `array.set` would look it up in the context, where the game can
+    // replace it and receive host bytes.
     const decompressor =
       (inflater: (bytes: Buffer) => Buffer): Decompress =>
       (data) => {
@@ -78,7 +61,7 @@ export function createEngine(
             Buffer.from(data.buffer, data.byteOffset, data.byteLength),
           );
           const out = new ContextArray(bytes.length);
-          copyInto.call(out, bytes);
+          Uint8Array.prototype.set.call(out, bytes);
           return out;
         } catch {
           return null; // A host error never reaches the game: it could climb to the host's Function.
@@ -92,7 +75,7 @@ export function createEngine(
 
     game.runInContext(context, { timeout: START_MS });
     const pakCopy = new ContextArray(pak.length);
-    copyInto.call(pakCopy, pak);
+    Uint8Array.prototype.set.call(pakCopy, pak);
     sandbox.__pak = pakCopy;
     run("__calc.start(__pak)", START_MS);
     run("__calc.tables()", START_MS);

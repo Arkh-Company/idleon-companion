@@ -97,6 +97,20 @@ describe("numbers", () => {
     expect(n.str).toBe(11);
     expect(performance.now() - started).toBeLessThan(4000);
   }, 10_000);
+
+  test("a helper in an endless loop is cut within its 8 s, and the numbers still come out", () => {
+    const started = performance.now();
+    const n = scenario("endlessInit");
+    expect(n.hp).toBe(500);
+    expect(n.str).toBe(11);
+    expect(performance.now() - started).toBeLessThan(12_000);
+  }, 20_000);
+
+  test("finishing the helpers in an endless loop fails the calculation within 8 s", () => {
+    const started = performance.now();
+    expect(() => scenario("endlessFinish")).toThrow();
+    expect(performance.now() - started).toBeLessThan(12_000);
+  }, 20_000);
 });
 
 describe("isolation (FR-008)", () => {
