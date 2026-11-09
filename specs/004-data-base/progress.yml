@@ -15,7 +15,7 @@ execution:
     - {name: "US2 vars (T013-T016)", status: done, commits: e56242f..b9c74c8}
     - {name: "US1 link and mosaic (T017-T023)", status: done, commits: 0c78ec8..3cbde43}
     - {name: "US1 US3 calculator (T024-T029)", status: done, commits: 2baf029..d0ec01b}
-    - {name: "US3 host (T030-T033)", status: pending}
+    - {name: "US3 host (T030-T033)", status: done, commits: d6e76ac..731d5cf}
     - {name: "US4 Stats tab (T034-T043)", status: pending}
   feature_review: pending
   code_pr: null
