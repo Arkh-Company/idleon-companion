@@ -33,8 +33,8 @@ Bad: <example>
 ### One assertion per branch of a mapping
 
 Every table or field a mapping function fills has at least one test assertion that fails when that branch is removed.
-Good: `expect(toContext({ ...base, menu: 0.1 }, cat).names.menu).toEqual({ name: "Quik Ref shortcut (Anvil)", status: "deduced" })` next to the map, window and AFK assertions.
-Bad: a test that checks `names.map`, `names.window` and `names.afk` while `names.menu` is filled by code no test reaches.
+Good: `expect(toContext({ ...base, afk: "Nothing" }, tables).names.afk).toBe("None")` next to the assertions of the map name, the monster name and "Unknown monster".
+Bad: a test that checks `names.map` and `screen.label` while `names.afk` is filled by code no test reaches.
 
 ### Protective paths are tested on the CI
 

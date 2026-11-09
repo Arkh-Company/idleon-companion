@@ -53,7 +53,7 @@ To set up another Steam account, sign in to it, then use **Set up Steam** in Set
   with the game open the button is off and the bar says "Update installs after the game closes". Updating does not touch
   Steam.
 
-Logs and user data live in `%APPDATA%\IdleOn Companion\` (`keeper.log`, `game.log`, `names.json`, `settings.json`,
+Logs and user data live in `%APPDATA%\IdleOn Companion\` (`keeper.log`, `game.log`, `settings.json`,
 `game-hash.json`, `steam-setup.json`, and the copies of Steam's settings file in `steam-backup\`).
 
 ## Undo

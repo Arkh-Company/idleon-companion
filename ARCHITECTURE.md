@@ -2,7 +2,8 @@
 
 IdleOn Companion reads a few fields of Legends of Idleon every second, read-only, and shows them in a window next to
 the game. This file describes the code as it is; the design and its reasons are in
-[specs/001-screen-map/](specs/001-screen-map/spec.md) and [specs/002-install-and-setup/](specs/002-install-and-setup/spec.md).
+[specs/001-screen-map/](specs/001-screen-map/spec.md), [specs/002-install-and-setup/](specs/002-install-and-setup/spec.md)
+and [specs/003-screen-base/](specs/003-screen-base/spec.md).
 The decisions that are hard to reverse are in [docs/adr/](docs/adr/) ([0001](docs/adr/0001-debugging-pipe-in-the-keeper.md):
 the debugging pipe in a keeper process; [0002](docs/adr/0002-fail-closed-update-watch.md): the update watch fails closed;
 [0003](docs/adr/0003-one-executable-launched-by-steam.md): one executable, launched by Steam directly;
@@ -41,10 +42,12 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   "Let the game close" (the link's `release`) stops the reader, lets go of the engine reference and detaches from the
   page, so the game's X closes it again; the debugging pipe stays open, and the status becomes `reader: "released"`.
   "Reconnect" (`reconnect`) starts a new reader on that pipe, with one new pause. The two run one after the other, so two
-  sessions never exist at once. Neither is offered during `connecting`, a known limit.
+  sessions never exist at once. Neither is offered during `connecting`, a known limit. Once per game load, right after
+  starting the app, it takes the map and monster names out of the text of the installed game code (`game-tables.ts`,
+  which never runs that text) and sends them to the app as `tables`.
 - **App** (`src/main/`, `src/preload/`, `src/renderer/`, built to `out/main/index.js`, `out/preload/index.cjs` and
-  `out/renderer/`). A link client: it turns readings into a `GameContext` with the catalog (`names.json`) and sends it
-  to the window. It never launches the game and never touches its pipe, so it can close, crash or be killed with the
+  `out/renderer/`). A link client: it turns readings into a `GameContext` with the screen catalog
+  (`src/shared/screens/`) and the last game tables, kept only in memory, and sends it to the window. It never launches the game and never touches its pipe, so it can close, crash or be killed with the
   game open; reopening it reconnects and gets the last status and reading. While Steam is not set up for the most recent
   account, the window is only the setup screen (`SetupView`). One instance: a second manual launch brings the first
   window forward, and a second launch from Steam (`--from-steam`) follows "Show window when the game starts"
@@ -54,14 +57,14 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
 
 ## Code folders
 
-| Folder          | Runs in                                    | What it holds                                                                                                                                                                                                                |
-| --------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/start/`    | Electron's main process, first of all      | `index.ts` (the entry: loads only the role's bundle), `dispatch.ts` (`roleFor`)                                                                                                                                              |
-| `src/keeper/`   | the keeper (Electron's main process)       | `index.ts` (entry), `keeper.ts` (the flow), `command-line.ts`, `launch.ts`, `cdp.ts`, `engine-ref.ts`, `reader.ts`, `read-source.ts`, `read.js`, `update-watch.ts`, `link-server.ts`; `mock-game/` is a test fixture         |
-| `src/main/`     | the app's main process                     | `index.ts` (entry: window, tray, link, IPC), `steam/`, `setup-store.ts`, `remove-from-steam.ts`, `updates.ts`, `catalog/`, `context.ts`, `settings.ts`, `lifecycle.ts`, `link-client.ts`, `payloads.ts`, `window-options.ts` |
-| `src/preload/`  | the window's preload (sandboxed, CommonJS) | `index.ts`: exposes `window.companion` (`CompanionApi`); `channel.ts`: one main → window channel                                                                                                                             |
-| `src/renderer/` | the window (sandboxed, no Node)            | `App.tsx`, `SetupView.tsx`, `StatusBar.tsx`, `SettingsView.tsx`, `ScreenMapPanel.tsx`, `NameIt.tsx`, `modules/screen-map.ts`, `styles.css`                                                                                   |
-| `src/shared/`   | everywhere                                 | the contracts: `types.ts`, `link.ts` (line codec), `reading.ts` (`toReading`), `modules.ts` (`modulesFor`); other folders import `src/shared/index.ts` only                                                                  |
+| Folder          | Runs in                                    | What it holds                                                                                                                                                                                                                             |
+| --------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/start/`    | Electron's main process, first of all      | `index.ts` (the entry: loads only the role's bundle), `dispatch.ts` (`roleFor`)                                                                                                                                                           |
+| `src/keeper/`   | the keeper (Electron's main process)       | `index.ts` (entry), `keeper.ts` (the flow), `command-line.ts`, `launch.ts`, `cdp.ts`, `engine-ref.ts`, `reader.ts`, `read-source.ts`, `read.js`, `game-tables.ts`, `update-watch.ts`, `link-server.ts`; `mock-game/` is a test fixture    |
+| `src/main/`     | the app's main process                     | `index.ts` (entry: window, tray, link, IPC), `steam/`, `setup-store.ts`, `remove-from-steam.ts`, `updates.ts`, `forget-names.ts`, `context.ts`, `settings.ts`, `lifecycle.ts`, `link-client.ts`, `payloads.ts`, `window-options.ts`       |
+| `src/preload/`  | the window's preload (sandboxed, CommonJS) | `index.ts`: exposes `window.companion` (`CompanionApi`); `channel.ts`: one main → window channel                                                                                                                                          |
+| `src/renderer/` | the window (sandboxed, no Node)            | `App.tsx`, `SetupView.tsx`, `StatusBar.tsx`, `SettingsView.tsx`, `ScreenMapPanel.tsx`, `modules/screen-map.ts`, `styles.css`                                                                                                              |
+| `src/shared/`   | everywhere                                 | the contracts: `types.ts`, `link.ts` (line codec), `reading.ts` (`toReading`), `modules.ts` (`modulesFor`), `screens/` (the screen catalog: `identify.ts`, `catalog.ts`, `rules/*.json`); other folders import `src/shared/index.ts` only |
 
 Pure logic (`roleFor`, `decide`, `modulesFor`, `channel`, catalog, context, settings, payload checks, `windowOptions`,
 the VDF and launch-option code, the update decisions) lives in files without an `electron` import, so tests load it
@@ -71,18 +74,32 @@ without Electron.
 
 ## Contracts
 
+**Reading** (`src/keeper/read.js`, shape checked by `toReading`): the map, the menus, the Codex tab, the character and
+the AFK target, plus what tells one screen from another: `scene`, `attack`, `bag`, `ol1`, `ol3`, `ol18`, `ol19`,
+`ola489`, `nd37`, `hole` and `behaviors` (fields of the game's actors, keyed `H<n>.<field>[<index>]`; a behavior not yet
+in the game has no key and is no error). The usernames list only finds the character's place for `hole`: no name from it
+is in the reading. The full list is in
+[contracts/read-fields.md](specs/003-screen-base/contracts/read-fields.md).
+
+**Screen catalog** (`src/shared/screens/`): the rules in `rules/*.json`, each with equalities over `Reading` fields or
+behavior keys, a name and its proof; a rule without proof fails at load (`parseScreenCatalog`). `identifyScreen` tries
+the overlays and then the screens: the rule with the most conditions wins, and a tie or no rule is "Unknown screen". It
+sits in `src/shared/` because the keeper needs `KNOWN_WINDOWS` and `keeper-alone` keeps it out of `src/main/`.
+
 **Link, keeper ↔ app** (spec §5.4): the named pipe `\\.\pipe\idleon-companion` (Node `net`, never TCP), one JSON
 message per line.
 
-| Message                            | Direction    | Content                                                  |
-| ---------------------------------- | ------------ | -------------------------------------------------------- |
-| `{ "type": "reading", "reading" }` | keeper → app | a new `Reading`                                          |
-| `{ "type": "status", "status" }`   | keeper → app | `Status`: `game`, `reader`, `message?`, `lastReadingAt?` |
-| `{ "type": "confirm-attach" }`     | app → keeper | the user clicked "Connect next time"                     |
-| `{ "type": "release" }`            | app → keeper | "Let the game close"; ignored with no reader running     |
-| `{ "type": "reconnect" }`          | app → keeper | "Reconnect"; ignored unless `reader` is `"released"`     |
+| Message                            | Direction    | Content                                                          |
+| ---------------------------------- | ------------ | ---------------------------------------------------------------- |
+| `{ "type": "reading", "reading" }` | keeper → app | a new `Reading`                                                  |
+| `{ "type": "status", "status" }`   | keeper → app | `Status`: `game`, `reader`, `message?`, `lastReadingAt?`         |
+| `{ "type": "tables", "tables" }`   | keeper → app | `GameTables`: map and monster names, `null` for a table not read |
+| `{ "type": "confirm-attach" }`     | app → keeper | the user clicked "Connect next time"                             |
+| `{ "type": "release" }`            | app → keeper | "Let the game close"; ignored with no reader running             |
+| `{ "type": "reconnect" }`          | app → keeper | "Reconnect"; ignored unless `reader` is `"released"`             |
 
-A new client first gets the last status and the last reading. A second keeper finds the pipe taken and exits without
+A new client first gets the last tables, the last status and the last reading. The keeper sends `tables` once per game
+load, and on each one the app builds the context again from the last reading. A second keeper finds the pipe taken and exits without
 launching anything. The app tries the pipe again every 5 s while it is missing.
 
 **IPC, main ↔ window** (spec §5.4), through the preload only:
@@ -91,7 +108,6 @@ launching anything. The app tries the pipe again every 5 s while it is missing.
 | ------------------------------- | ------------- | ------------------------------------------------------ |
 | `context:update`                | main → window | `GameContext`                                          |
 | `status:update`                 | main → window | `Status`                                               |
-| `catalog:name`                  | window → main | `{ table: "menu" \| "menu2" \| "codex", key, name }`   |
 | `settings:get` / `settings:set` | window ↔ main | `Settings`                                             |
 | `reader:confirm-attach`         | window → main | sent on to the keeper as `confirm-attach`              |
 | `reader:release`                | window → main | sent on to the keeper as `release`                     |
@@ -164,6 +180,9 @@ also refuses (`customCheckAppRunning`).
 
 - **Read-only inside the game.** `read.js` only reads properties; `src/keeper/read-only.test.ts` runs it against an
   engine whose every function throws when called.
+- **The game's file is only text.** `src/keeper/game-tables.ts` reads the installed code with regular expressions and
+  never runs it; `game-tables.test.ts` fails if its source gains `eval`, `new Function`, `node:vm` or `require(`. Any sign
+  of a new format drops that whole table, so no name is guessed.
 - **Fail closed in the keeper** (`src/keeper/keeper.ts`). The game opens without `--remote-debugging-pipe`, and so
   without reading, when the game code is suspicious (changed, with debugger-detection markers: "The game code changed
   and contains: <markers>. Reading is off for this session."; "Connect next time" records its hash for the next
@@ -181,9 +200,9 @@ also refuses (`customCheckAppRunning`).
 - **IPC sender check** (`guardIpc` in `src/main/window-options.ts`): every `ipcMain.handle` refuses a call whose sender
   frame is not the window's own page, or that has none.
 - **Shape checks on every message** (`src/main/payloads.ts`, `src/shared/link.ts`, `src/shared/reading.ts`): the line
-  decoder skips junk lines and checks the message type; the main process checks a link `reading` (`toReading`) and
-  `status` before use, and each IPC payload (`catalog:name`: a known table, a catalog key, a non-blank name;
-  `settings:set`: the three booleans; the other window → main channels take no body); a payload of the wrong shape is
+  decoder skips junk lines and checks the message type; the main process checks a link `reading` (`toReading`),
+  `status` and `tables` (`linkTables`: a table out of shape counts as not read) before use, and each IPC payload
+  (`settings:set`: the three booleans; the other window → main channels take no body); a payload of the wrong shape is
   refused.
 - **The updater is the only network access** (see [Updates](#updates)): the link is a local named pipe, the debugging
   channel is a pipe, and the window's CSP allows only its own files. `src/main/no-network.test.ts` scans the source for
@@ -195,14 +214,20 @@ also refuses (`customCheckAppRunning`).
 
 `%APPDATA%\IdleOn Companion\`, never in the repository:
 
-| File                                | Written by | Content                                                                                                                                                               |
-| ----------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `names.json`                        | app        | the user's catalog, indented, written through `names.json.tmp`; `names.json.bak` before each save, `names.json.bad` for an invalid file (the default catalog is used) |
-| `settings.json`                     | app        | `Settings`; invalid or missing → defaults                                                                                                                             |
-| `steam-setup.json`                  | app        | per account (numeric id only, never a name): the text added, the option before, the copy's path and the time; written through `.tmp`, `.bad` for an invalid file      |
-| `steam-backup\<id>-localconfig.vdf` | app        | the account's `localconfig.vdf` from before the companion's first write; never overwritten                                                                            |
-| `game-hash.json`                    | keeper     | the hash of the last game code checked clean (recorded after the check), or confirmed                                                                                 |
-| `keeper.log`                        | keeper     | one JSON line per entry (`t`, `label`, `id` = the game pid, null before the launch), the pause time included                                                          |
-| `game.log`                          | keeper     | the game's own output                                                                                                                                                 |
+| File                                | Written by | Content                                                                                                                                                          |
+| ----------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `settings.json`                     | app        | `Settings`; invalid or missing → defaults                                                                                                                        |
+| `steam-setup.json`                  | app        | per account (numeric id only, never a name): the text added, the option before, the copy's path and the time; written through `.tmp`, `.bad` for an invalid file |
+| `steam-backup\<id>-localconfig.vdf` | app        | the account's `localconfig.vdf` from before the companion's first write; never overwritten                                                                       |
+| `game-hash.json`                    | keeper     | the hash of the last game code checked clean (recorded after the check), or confirmed                                                                            |
+| `keeper.log`                        | keeper     | one JSON line per entry (`t`, `label`, `id` = the game pid, null before the launch), the pause time included                                                     |
+| `game.log`                          | keeper     | the game's own output                                                                                                                                            |
 
-The default catalog ships in `src/main/catalog/default-names.json`.
+Three labels of `keeper.log` come from the scan of the game code: `unknown-screen-numbers` (`numbers`: the `MenuType2`
+numbers outside `KNOWN_WINDOWS`), `game-tables-unreadable` (`maps` and `monsters`, booleans: `true` means "this table was
+read") and `game-scan-failed` (`error`). The player sees none of them, and they carry nothing of the game's file and no
+player name.
+
+The screen catalog ships in the code (`src/shared/screens/`), and nothing the player types is saved. On every start the
+app deletes the files where earlier versions kept the names the player typed (`src/main/forget-names.ts`); a file it
+cannot delete stops nothing, and the next start tries again.

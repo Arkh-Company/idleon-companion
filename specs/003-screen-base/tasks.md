@@ -367,11 +367,11 @@ deleted does not stop the others.
 - [X] T035 A guard against running the game code in src/keeper/game-tables.test.ts
   - Files: `src/keeper/game-tables.test.ts`
   - Case: the source of `game-tables.ts` has no `eval`, `new Function`, `node:vm` or `require(` (FR-014).
-- [ ] T036 [P] Update the architecture in ARCHITECTURE.md
+- [X] T036 [P] Update the architecture in ARCHITECTURE.md
   - Files: `ARCHITECTURE.md`
   - Change: the `tables` link message; `src/shared/screens/`; `game-tables.ts` in the keeper; no `names.json`, `catalog:name`,
     `NameIt` or `src/main/catalog/`; `forget-names.ts`; the `keeper.log` labels; the new fields of the reader.
-- [ ] T037 [P] Update the glossary in GLOSSARY.md
+- [X] T037 [P] Update the glossary in GLOSSARY.md
   - Files: `GLOSSARY.md`
   - Change: **Catalog** becomes the rules with proof; add **Screen rule**, **Game tables** and "Unknown screen".
 
