@@ -259,7 +259,7 @@ that does not start gives a failure.
 
 ### Tests for Phase 5
 
-- [ ] T024 [US1] An invented game in src/calculator/fixtures/fake-game.js
+- [X] T024 [US1] An invented game in src/calculator/fixtures/fake-game.js
   - Files: `src/calculator/fixtures/fake-game.js`. All invented, none of it copied from the game's file.
   - Contents: one anchor `A["com.stencyl.Engine"]=a,`; `lime.$scripts.N`; a registry with the classes T028 uses
     (`com.stencyl.Engine`, `haxe.ds.StringMap`, JSON-based `haxe.Serializer.run` and `haxe.Unserializer.run`, `haxe.io.Bytes.ofData`,
@@ -269,23 +269,23 @@ that does not start gives a failure.
     `AFKgainrates`, `CloudSAVE`, `SaveGamee`, reading the state. `PlayerMPmax` tries `new XMLHttpRequest()`, `fetch("x")`, `new WebSocket("x")`, `navigator.sendBeacon("x")`, `eval("1")`,
     `new Function("return 1")`, `constructor.constructor("return process")()`, `process`, `require`, and returns how many did not throw. A block that assigns to the state marks a
     field, so the test can see `CloudSAVE` was not run.
-- [ ] T025 [US1] Engine tests in src/calculator/engine.test.ts
+- [X] T025 [US1] Engine tests in src/calculator/engine.test.ts
   - Files: `src/calculator/engine.test.ts`, calling `createEngine` directly, with the fake game and a mosaic built in the test
   - Cases: the numbers come from the mosaic, by id; `mp` is `0` (nothing reached network, code generation or the host; FR-008); each global of the context and the prototype of its `globalThis` have a `constructor.constructor` that refuses to generate code;
     a block that mutates the state does not change the next number (restored before each one, FR-011); `CloudSAVE` and `SaveGamee`, called by a block, do nothing; `AFKtarget` of the mosaic wins over the helper `init` that rewrites it, and so do `CompanionBon` and `ShinyBonusS` (FR-012); `CustomLists`, `CustomMaps`, `ItemDefinitionsGET`, `MonsterDefinitionsGET` and `DialogueDefGET` come from the game's classes, with no save (research R14);
     a `_vars` key answers through the bridge, and other names answer as nothing loaded;
     a block that throws gives `null` for that number alone; `NaN` and `Infinity` give `null`; an `AFKtarget` outside the monster table gives `null` for `damageMax` and `damageMin` (Edge Cases); a block in an endless loop gives `null` within its 2 s; a game with no anchor, with two anchors, or that throws in `lime.$scripts.N` fails at start;
     two calculations in a row share no state.
-- [ ] T026 [P] [US3] Worker messages in src/calculator/index.test.ts
+- [X] T026 [P] [US3] Worker messages in src/calculator/index.test.ts
   - Files: `src/calculator/index.test.ts`, calling `handleMessage` with a fake port and a fake engine
   - Cases: `init` answers `ready`, or `failed` with no game text in the message; `calc` answers `result` with `numbers` and `ms`; a `calc` before `init` or with bad JSON answers `result` with every number `null`; an unknown message does nothing. The ids of `TARGETS` equal `NUMBER_IDS` (a test may import `src/shared`).
 
 ### Implementation for Phase 5
 
-- [ ] T027 [US1] The list of numbers in src/calculator/targets.ts
+- [X] T027 [US1] The list of numbers in src/calculator/targets.ts
   - Files: `src/calculator/targets.ts`
   - `TARGETS`, as `[id, block, argument]`: `damageMax` `DamageDealed` `"Max"`; `damageMin` `DamageDealed` `"Min"`; `hp` `PlayerHPmax` `0`; `mp` `PlayerMPmax` `0`; `accuracy` `PlayerAccTot` `0`; `str`, `agi`, `wis`, `luk` `TotalStats` `"STR"`, `"AGI"`, `"WIS"`, `"LUK"`; `dropRate` `TotalStats` `"Drop_Rarity"`; `afkGains` `AFKgainrates` `"Fighting"`.
-- [ ] T028 [US1] The context and the engine in src/calculator/context.js and src/calculator/engine.ts
+- [X] T028 [US1] The context and the engine in src/calculator/context.js and src/calculator/engine.ts
   - Files: `src/calculator/context.js`, `src/calculator/engine.ts`, `src/calculator/raw.d.ts` (`declare module "*?raw"`)
   - Signature: `createEngine(code: string, pak: Uint8Array): { calculate(mosaicJson: string): CalcNumbers }`, which throws when the game does not start. A fresh `vm` context per `calculate`: the one shape the lab proved. `// ponytail: reuse the context if the cost shows up in the game script.`
   - Reference, outside the repository: `boot.cjs`, `harness.cjs`, `helpers.cjs`, `snap.cjs` in `C:\Users\Vinicius\idleon-companion\research\run\` and `comparar.cjs` in `lab\`. Port them; do not copy game text.
@@ -293,7 +293,7 @@ that does not start gives a failure.
   - Every call into the game is a script text run from the host, with a `timeout`: 2,000 ms per number, 5,000 ms and 8,000 ms for the helpers, as in the lab.
   - Tables, with no save (research R14): `CustomLists` is every zero-argument static function of `scripts.CustomLists`, `CustomLists2` and `CustomLists3`, called once, keyed by its name; `CustomMaps` likewise from `scripts.CustomMaps` and `CustomMapsREAL`; `PixelHelperActor` an empty array; the item, monster and dialogue maps as in `harness.cjs`.
   - Order: boot; tables; the mosaic; primitives and bonus remembered; helpers; primitives and bonus reapplied; per-key snapshot; for each target, restore and call. `_customBlock_CloudSAVE` and `_customBlock_SaveGamee` become empty functions before anything runs. `getServerVarLoad*` of a `_vars` key answers its value.
-- [ ] T029 [US1] Worker entry and boundaries
+- [X] T029 [US1] Worker entry and boundaries
   - Files: `src/calculator/index.ts`, `electron.vite.config.ts`, `.dependency-cruiser.cjs`, `src/main/no-network.test.ts`, `electron-builder.yml`
   - `index.ts`: `handleMessage(m, port, make = createEngine)`, and `parentPort.on("message", ...)` when `parentPort` exists. The bytes of `N.js` decoded to a string inside the worker. `init` builds the engine once, to answer `ready` or `failed`.
   - `rolldownOptions.input` gains `calculator: "src/calculator/index.ts"`. `electron-builder.yml` gains `asarUnpack: [out/main/calculator.js]`.
