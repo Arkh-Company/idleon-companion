@@ -17,5 +17,5 @@ execution:
     - {name: "US1 US3 calculator (T024-T029)", status: done, commits: 2baf029..d0ec01b}
     - {name: "US3 host (T030-T033)", status: done, commits: d6e76ac..731d5cf}
     - {name: "US4 Stats tab (T034-T043)", status: done, commits: 708565c..a3a2669}
-  feature_review: pending
+  feature_review: done
   code_pr: null
