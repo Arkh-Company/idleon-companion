@@ -6,6 +6,7 @@ import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { contextTracker } from "./context.ts";
+import { forgetOldNames } from "./forget-names.ts";
 import {
   decide,
   launchEvent,
@@ -40,6 +41,7 @@ import {
 
 function start(): void {
   const dataDir = join(app.getPath("appData"), "IdleOn Companion");
+  forgetOldNames(dataDir);
   const settingsFile = join(dataDir, "settings.json");
   let settings = loadSettings(settingsFile);
   // connectLink calls onConnected(false) only when a live connection drops, so the app starts as "not connected".

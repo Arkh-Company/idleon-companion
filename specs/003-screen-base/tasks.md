@@ -341,7 +341,7 @@ deleted does not stop the others.
 
 ### Tests for Phase 8
 
-- [ ] T033 [P] [US4] forgetOldNames tests in src/main/forget-names.test.ts
+- [X] T033 [P] [US4] forgetOldNames tests in src/main/forget-names.test.ts
   - Files: `src/main/forget-names.test.ts`, in a temporary folder.
   - Cases: the three files are deleted; `settings.json`, `steam-setup.json` and `game-hash.json` stay; no file and no folder →
     nothing happens; a `names.json` that cannot be deleted (a directory with that name) neither throws nor stops the
@@ -349,7 +349,7 @@ deleted does not stop the others.
 
 ### Implementation for Phase 8
 
-- [ ] T034 [US4] forgetOldNames in src/main/forget-names.ts, called at the start in src/main/index.ts
+- [X] T034 [US4] forgetOldNames in src/main/forget-names.ts, called at the start in src/main/index.ts
   - Files: `src/main/forget-names.ts`, `src/main/index.ts`
   - Signature: `forgetOldNames(dataDir: string): void`. `rmSync` with `force`, each in its own `try`; runs on every start
     (research R7).
