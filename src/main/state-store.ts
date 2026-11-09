@@ -1,6 +1,7 @@
 // The mosaic: the newest value of each piece of the state, only in memory and never logged (FR-007, FR-022).
 import {
-  classOf,
+  ACTIONS_GROUP,
+  groupOf,
   isObject,
   STATE_EXCLUDED,
   STATE_SPLIT,
@@ -14,23 +15,31 @@ interface Piece {
   text: string;
 }
 
+const CHARACTERS = "PlayerDATABASE";
+
 /**
  * Only what the reader sends. A path comes from the link: `__proto__` is dropped so it can never reach a prototype, and
- * a key is either split or whole, so `attrs[top]` is always what the code below expects.
+ * a key is either split or whole, so `attrs[top]` is always what the code below expects. Only a character has a third level.
  */
 function belongs(path: StatePath): boolean {
-  const [top, child] = path;
+  const [top, child, sub] = path;
   if (path.includes("__proto__")) return false;
+  if (sub !== undefined) return top === CHARACTERS;
   return child === undefined
     ? !STATE_EXCLUDED.includes(top) && !STATE_SPLIT.includes(top)
     : STATE_SPLIT.includes(top);
 }
 
-/** Until the store goes by the catalog (T018): the `_vars` and the whole active character still count as fast, as in 004. */
-const isFast = (path: StatePath, char: string): boolean =>
-  path[0] === "_vars" ||
-  (path[0] === "PlayerDATABASE" && path[1] === char) ||
-  classOf(path, char) === "fast";
+/** The character with one subkey on top, in a copy: the stored piece stays as it was read. */
+function withSubkey(
+  whole: unknown,
+  sub: string,
+  value: unknown,
+): Record<string, unknown> {
+  // Before the whole character arrives, or when its read failed, there is only the subkey.
+  const base = isObject(whole) && isObject(whole.$m) ? whole : { $m: {} };
+  return { ...base, $m: { ...(base.$m as object), [sub]: value } };
+}
 
 /** The closed list and nothing else, whatever the piece carries. */
 function closedList(value: unknown): Record<string, unknown> {
@@ -48,24 +57,46 @@ export function createStateStore(cb: {
   let char: string | null = null;
   const pieces = new Map<string, Piece>();
   let changed = false;
+  /** Actions pieces that changed and whose next read has not come equal yet (R7, "Confirmando"). */
+  const unsettled = new Set<string>();
   let calculated = false;
   let fast = 0;
+  let map: number | null = null;
+  /** The map changed: nothing is due until a whole pass of the fast reading on the new one. */
+  let held = false;
   /** Where this mosaic started: `cycles` counts the keeper's rotations, not the ones it received whole. */
   let start: { all: number; fresh: boolean } | null = null;
 
   function wipe(): void {
     pieces.clear();
     changed = false;
+    unsettled.clear();
     calculated = false;
     fast = 0;
+    map = null;
+    held = false;
     start = null;
+  }
+
+  function dropSubkeys(child: string): void {
+    for (const [key, { path }] of pieces)
+      if (path.length === 3 && path[1] === child) pieces.delete(key);
+  }
+
+  /** What a read of a piece means for the next calculation; `isNew` when its value differs from the stored one. */
+  function note(path: StatePath, key: string, isNew: boolean): void {
+    const group = groupOf(path, char);
+    if (group === ACTIONS_GROUP) {
+      if (isNew) unsettled.add(key);
+      else if (unsettled.delete(key)) changed = true;
+    } else if (group !== null && isNew) changed = true;
   }
 
   function mosaicJson(): string {
     const attrs: Record<string, unknown> = {};
     let vars: unknown = {};
     for (const { path, value } of pieces.values()) {
-      const [top, child] = path;
+      const [top, child, sub] = path;
       if (top === "_vars") vars = value;
       else if (child === undefined) attrs[top] = value;
       else {
@@ -73,7 +104,9 @@ export function createStateStore(cb: {
         const split = (attrs[top] ??= { $m: {} }) as {
           $m: Record<string, unknown>;
         };
-        split.$m[child] = value;
+        // A character's subkeys always come after it here: `add` drops them when the whole character arrives.
+        split.$m[child] =
+          sub === undefined ? value : withSubkey(split.$m[child], sub, value);
       }
     }
     return JSON.stringify({ attrs, vars, skipped: STATE_EXCLUDED });
@@ -91,6 +124,8 @@ export function createStateStore(cb: {
         all: s.cycles.all,
         fresh: s.cycles.all === 0 && s.cycles.fast === 0,
       };
+      if (map !== null && s.sentinel.map !== map) held = true;
+      map = s.sentinel.map;
       for (const { path, value } of s.pieces) {
         if (!belongs(path)) continue;
         const kept = path[0] === "_vars" ? closedList(value) : value;
@@ -98,21 +133,22 @@ export function createStateStore(cb: {
         const text = JSON.stringify(kept);
         // A `_vars` read that failed comes empty: it must not erase the good ones. With none yet, `vars` stays `{}`.
         if (path[0] === "_vars" && text === "{}") continue;
-        if (pieces.get(key)?.text !== text && isFast(path, char))
-          changed = true;
+        if (path[0] === CHARACTERS && path.length === 2) dropSubkeys(path[1]);
+        note(path, key, pieces.get(key)?.text !== text);
         pieces.set(key, { path, value: kept, text });
       }
-      // A map change zeroes `fast` in the keeper, so a rise always means a whole rotation on the new map.
-      const rose = s.cycles.fast > fast;
+      // A map change zeroes `fast` in the keeper, so a rise always means a whole pass on the new map.
+      if (s.cycles.fast > fast) held = false;
       fast = s.cycles.fast;
       // Joined midway, the next rise of `all` only closes the rotation already begun: it takes one more.
       const due = calculated
-        ? rose && changed
+        ? changed && unsettled.size === 0 && !held
         : s.cycles.fast >= 1 &&
           s.cycles.all >= start.all + (start.fresh ? 1 : 2);
       if (!due) return;
       calculated = true;
       changed = false;
+      unsettled.clear();
       cb.onDue(mosaicJson());
     },
     clear() {

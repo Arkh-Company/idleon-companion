@@ -1,6 +1,12 @@
 // The check of the Stats pipeline against the game's own StatList (FR-023). Every number and name here is invented.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { reading, setup, statList, vars } from "./stats-pipeline-fixture.ts";
+import {
+  piece,
+  reading,
+  setup,
+  statList,
+  vars,
+} from "./stats-pipeline-fixture.ts";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -23,7 +29,7 @@ test("the numbers are checked against the character's StatList", async () => {
   await vi.advanceTimersByTimeAsync(20_000);
   h.slice([], { fast: 1, all: 1 });
   await vi.advanceTimersByTimeAsync(16_000);
-  h.rotation([vars, statList([900, 22, 33, 45])]);
+  h.rotation([vars, statList([900, 22, 33, 45]), piece("Cards", 1)]); // a whole character alone is not due
   expect(h.worker().calcs()).toHaveLength(2);
   h.answer();
 

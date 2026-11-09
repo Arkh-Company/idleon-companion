@@ -1,43 +1,8 @@
 // The mosaic in memory (FR-022). Every value and character name here is made up (FR-021).
 import { expect, test } from "vitest";
 import { STATE_EXCLUDED, VARS_KEYS } from "../shared/index.ts";
-import type { StatePath, StateSlice } from "../shared/index.ts";
-import { createStateStore } from "./state-store.ts";
-
-type Piece = StateSlice["pieces"][number];
-interface Mosaic {
-  attrs: Record<string, unknown>;
-  vars: Record<string, unknown>;
-  skipped: string[];
-}
-
-const WHOLE = { fast: 1, all: 1 };
-const NONE = { fast: 0, all: 0 };
-
-function setup() {
-  const dues: Mosaic[] = [];
-  const texts: string[] = [];
-  const chars: (string | null)[] = [];
-  const store = createStateStore({
-    onDue: (json) => {
-      texts.push(json);
-      dues.push(JSON.parse(json) as Mosaic);
-    },
-    onCharacter: (c) => chars.push(c),
-  });
-  const add = (
-    pieces: Piece[],
-    cycles = NONE,
-    sentinel: StateSlice["sentinel"] = { char: "Aria", map: 5 },
-  ) => {
-    store.add({ sentinel, pieces, at: 1, cycles });
-  };
-  return { store, add, dues, texts, chars };
-}
-const piece = (top: string, value: unknown): Piece => ({
-  path: [top],
-  value,
-});
+import type { StatePath } from "../shared/index.ts";
+import { NONE, piece, setup, WHOLE } from "./state-store-fixture.ts";
 
 test("the newest value of a piece wins", () => {
   const h = setup();
@@ -155,39 +120,6 @@ test("the first calculation is due once, as the JSON of attrs, vars and skipped"
   ]);
 });
 
-test("after the first, one is due only when a formula value changed and the rotation count rose", () => {
-  const h = setup();
-  h.add([]);
-  h.add([piece("Cards", 1)], WHOLE);
-  h.add([piece("Cards", 2)], WHOLE); // changed, no rise
-  expect(h.texts).toHaveLength(1);
-  h.add([], { fast: 2, all: 1 }); // a rise after the change
-  expect(h.texts).toHaveLength(2);
-  expect(h.dues[1]?.attrs).toEqual({ Cards: 2 });
-  h.add([piece("Cards", 2)], { fast: 3, all: 1 }); // a rise, nothing changed
-  expect(h.texts).toHaveLength(2);
-});
-
-test("a change only in an other value is not due", () => {
-  const h = setup();
-  h.add([]);
-  h.add([piece("ChestMap", 1)], WHOLE);
-  h.add([piece("ChestMap", 2)], { fast: 2, all: 2 });
-  expect(h.texts).toHaveLength(1);
-});
-
-test("the active character's own piece is a formula value", () => {
-  const h = setup();
-  const own = (value: number): Piece => ({
-    path: ["PlayerDATABASE", "Aria"],
-    value,
-  });
-  h.add([]);
-  h.add([own(1)], WHOLE);
-  h.add([own(2)], { fast: 2, all: 1 });
-  expect(h.texts).toHaveLength(2);
-});
-
 test("a new character wipes the pieces and vars and is told", () => {
   const h = setup();
   const bruno = { char: "Bruno", map: 5 };
@@ -257,6 +189,9 @@ const HOSTILE: StatePath[] = [
   ["x", "__proto__"],
   ["constructor", "x"],
   ["PlayerDATABASE", "__proto__"],
+  ["__proto__", "x", "y"],
+  ["PlayerDATABASE", "__proto__", "y"],
+  ["PlayerDATABASE", "Aria", "__proto__"],
 ];
 
 test.each(HOSTILE)("a path %j pollutes no prototype", (...path) => {
@@ -268,6 +203,18 @@ test.each(HOSTILE)("a path %j pollutes no prototype", (...path) => {
   expect(({} as Record<string, unknown>).polluted).toBeUndefined();
   expect(h.dues[0]?.attrs.Cards).toBe(1);
   expect(h.texts[0]).not.toContain("polluted");
+});
+
+const OTHER_TOPS: StatePath[] = [
+  ["DNSM", "x", "y"],
+  ["Cards", "x", "y"],
+];
+
+test.each(OTHER_TOPS)("a 3-level path on %s is dropped", (...path) => {
+  const h = setup();
+  h.add([]);
+  h.add([{ path, value: 1 }, piece("Cards", 1)], WHOLE);
+  expect(h.dues[0]?.attrs).toEqual({ Cards: 1 });
 });
 
 test("a __proto__ piece cannot shadow a split map of the mosaic", () => {

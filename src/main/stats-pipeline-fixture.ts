@@ -100,7 +100,7 @@ export function setup() {
     },
     readFiles,
   });
-  let formula = 0;
+  let laps = 0;
   const h = {
     p,
     workers,
@@ -126,12 +126,12 @@ export function setup() {
     },
     /** A whole rotation: the slice before it and the one that closes it. */
     rotation(pieces: Piece[] = [vars], char: string | null = CHAR) {
-      h.slice([], { fast: formula, all: formula }, char);
-      formula++;
-      h.slice(pieces, { fast: formula, all: formula }, char);
+      h.slice([], { fast: laps, all: laps }, char);
+      laps++;
+      h.slice(pieces, { fast: laps, all: laps }, char);
     },
     restartCycles() {
-      formula = 0;
+      laps = 0;
     },
     files() {
       p.message({ type: "gameFiles", resources: RESOURCES });
