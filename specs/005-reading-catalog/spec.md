@@ -114,13 +114,13 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 - **FR-006**: A natureza MUST sair de quem escreve e quem lê a peça no código do jogo instalado, lido só como texto, na máquina do Vinicius, fora do repositório.
 - **FR-007**: O impacto MUST ser medido alterando os valores de uma peça por vez sobre um estado real e recalculando; a remoção só MUST ser usada quando não der para alterar. Qualquer diferença no valor bruto de um número mostrado MUST contar como impacto provado.
 - **FR-008**: O impacto MUST ser medido sobre 2 estados: personagem parado e depois de trocar equipamento.
-- **FR-009**: As ações em que cada peça muda MUST vir de um roteiro jogado pelo Vinicius: trocar item, obol, talento, comer, buff, trocar de mapa, matar e coletar AFK. O log desse roteiro MUST trazer só nomes de peças, horários e o texto dos números mostrados, sem valor do estado nem nome de personagem.
+- **FR-009**: As ações em que cada peça muda MUST vir de um roteiro jogado pelo Vinicius: trocar item, obol, talento, buff, trocar de mapa e matar. O log desse roteiro MUST trazer só nomes de peças, horários e o texto dos números mostrados, sem valor do estado nem nome de personagem.
 - **FR-010**: A mecânica MUST sair do nome das rotinas que usam a peça, com conferência do Vinicius nos casos duvidosos.
 - **FR-011**: Nenhuma etapa da análise, além do roteiro jogado, MUST tocar no jogo em execução.
 
 **Regra de decisão**
 
-- **FR-012**: Uma peça MUST ficar na leitura rápida quando tiver impacto provado num número mostrado e mudar com ações do dia a dia do jogador (trocar item, obol ou talento, comer, buff, trocar de mapa).
+- **FR-012**: Uma peça MUST ficar na leitura rápida quando tiver impacto provado num número mostrado e mudar com ações do dia a dia do jogador (trocar item, obol ou talento, buff, trocar de mapa).
 - **FR-013**: Só existem duas leituras: rápida e lenta (decisão do Vinicius). A lenta MUST ser para o que só muda com patch ou muito devagar dentro do jogo.
 - **FR-014**: Toda peça que não atender FR-012 MUST ficar na leitura lenta, inclusive rascunhos, tabelas fixas e peças desconhecidas.
 - **FR-015**: Nenhuma peça MUST deixar de ser lida.
@@ -169,6 +169,7 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 - O estado tem cerca de 930 KB em 558 peças; os 10 outros personagens somam 462 KB.
 - Ponto de partida para as fatias, a confirmar pelo catálogo: equipamento e caches do `DNSM` juntos; personagem em uso (inventário, buffs, prayers, mapa, HP, MP, experiência); uma fatia por sistema (Cards, stamps, alquimia, cozinha); e a lenta (outros personagens e o resto).
 - Sem registrar os campos que o cálculo lê (decisão do Vinicius), uma peça que só importa numa situação ausente dos estados usados aparece sem impacto.
+- Comida não é ação do jogador nesta análise: o prato fica no menu para sempre e o bônus só muda se outro bônus mexer no valor (Vinicius, 09/11). A coleta de AFK não foi jogada no roteiro: exige trocar de personagem.
 
 ### Dependências
 
@@ -204,3 +205,4 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 | Registrar os campos lidos pelo cálculo? | resolved | Vinicius, 09/11: não. |
 | Medir o impacto removendo ou alterando a peça? | resolved | Desenho aprovado pelo Vinicius, 09/11: alterando valores; remoção só quando não der. |
 | Peça desconhecida depois de um patch? | resolved | Vinicius, 09/11: cai na leitura lenta, sem quebrar (FR-014). |
+| Das 65 peças com impacto que não mudaram no roteiro (grupo C de `prototipo/revisar.md`), quais mudam com ação do dia a dia e sobem para a rápida? | open | |
