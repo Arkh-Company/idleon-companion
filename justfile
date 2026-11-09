@@ -94,12 +94,13 @@ build:
 package: build
     pnpm exec electron-builder --win nsis --publish never
 
-# Só no terminal do próprio usuário, com o GH_TOKEN dele: a sessão nunca lê nem pede o token (002, research R8)
-# O rascunho vem antes: sem ele, cada publicador do electron-builder cria o seu, e a versão sai em dois rascunhos
+# Roda sozinha no job `instalador` do release.yml; à mão, só no terminal do próprio usuário, com o GH_TOKEN dele: a sessão nunca lê nem pede o token (002, research R8)
+# O rascunho vem antes: sem ele, cada publicador do electron-builder cria o seu, e a versão sai em dois rascunhos. Um rascunho que já exista (de uma tentativa que falhou) é reaproveitado
 # Publica o instalador na release pública Arkh-Company/idleon-companion-releases
 release: build
-    gh release create "v$(node -p "require('./package.json').version")" --repo Arkh-Company/idleon-companion-releases --draft --title "$(node -p "require('./package.json').version")" --notes "IdleOn Companion"
+    gh release view "v$(node -p "require('./package.json').version")" --repo Arkh-Company/idleon-companion-releases --json id *> $null || gh release create "v$(node -p "require('./package.json').version")" --repo Arkh-Company/idleon-companion-releases --draft --title "$(node -p "require('./package.json').version")" --notes "IdleOn Companion"
     pnpm exec electron-builder --win nsis --publish always
+    gh release edit "v$(node -p "require('./package.json').version")" --repo Arkh-Company/idleon-companion-releases --draft=false --latest
 
 clean:
     node -e "for (const p of ['dist', 'out', 'coverage']) require('node:fs').rmSync(p, { recursive: true, force: true })"
