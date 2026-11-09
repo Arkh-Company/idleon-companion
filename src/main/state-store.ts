@@ -44,12 +44,15 @@ export function createStateStore(cb: {
   let changed = false;
   let calculated = false;
   let formula = 0;
+  /** Where this mosaic started: `cycles` counts the keeper's rotations, not the ones it received whole. */
+  let start: { all: number; fresh: boolean } | null = null;
 
   function wipe(): void {
     pieces.clear();
     changed = false;
     calculated = false;
     formula = 0;
+    start = null;
   }
 
   function mosaicJson(): string {
@@ -78,6 +81,10 @@ export function createStateStore(cb: {
         cb.onCharacter(char);
       }
       if (char === null) return;
+      start ??= {
+        all: s.cycles.all,
+        fresh: s.cycles.all === 0 && s.cycles.formula === 0,
+      };
       for (const { path, value } of s.pieces) {
         if (!belongs(path)) continue;
         const kept = path[0] === "_vars" ? closedList(value) : value;
@@ -90,9 +97,11 @@ export function createStateStore(cb: {
       // A map change zeroes `formula` in the keeper, so a rise always means a whole rotation on the new map.
       const rose = s.cycles.formula > formula;
       formula = s.cycles.formula;
+      // Joined midway, the next rise of `all` only closes the rotation already begun: it takes one more.
       const due = calculated
         ? rose && changed
-        : s.cycles.all >= 1 && s.cycles.formula >= 1;
+        : s.cycles.formula >= 1 &&
+          s.cycles.all >= start.all + (start.fresh ? 1 : 2);
       if (!due) return;
       calculated = true;
       changed = false;
