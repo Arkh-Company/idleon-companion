@@ -15,7 +15,7 @@ execution:
     - {name: "US1-US3 janelas 0-45 (T010-T013)", status: done, commits: 93ba6ef..d577dc8}
     - {name: "US1-US3 janelas 46-110 (T014-T017)", status: done, commits: ee448b9..5f3fe9f}
     - {name: "US5 (T018-T023)", status: done, commits: b68a544..12ce290}
-    - {name: "US6 (T024-T026)", status: pending}
+    - {name: "US6 (T024-T026)", status: done, commits: 9e13950..1628e5d}
     - {name: "US1 e US4 janela (T027-T032)", status: pending}
     - {name: "US4 names.json (T033-T034)", status: pending}
     - {name: "Polish (T035-T037)", status: pending}
