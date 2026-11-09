@@ -213,17 +213,17 @@ publishes after `startApp` and a failure ends nothing.
 
 ### Tests for Phase 5
 
-- [ ] T018 [P] [US5] readGameTables tests in src/keeper/game-tables.test.ts
+- [X] T018 [P] [US5] readGameTables tests in src/keeper/game-tables.test.ts
   - Files: `src/keeper/game-tables.test.ts`, invented code only (FR-015).
   - Cases: from `specs/003-screen-base/prototipo/extrair.test.ts`: maps with `_` turned into a space; monsters by id;
     a repeated id keeps the last. Each gives `null` for its table alone: no match; two candidates; lists of different
     lengths; one monster out of format.
-- [ ] T019 [P] [US5] The tables message in the link test and payloads in src/shared/link.test.ts and src/main/payloads.test.ts
+- [X] T019 [P] [US5] The tables message in the link test and payloads in src/shared/link.test.ts and src/main/payloads.test.ts
   - Files: the link test of `src/shared/`, `src/main/payloads.test.ts`
   - Cases: `tables` encodes and decodes; a `tables` that is not an object is junk. `linkTables`: valid tables pass; `maps`
     with a number, `monsters` with a number, or an array as `monsters` count as `null` for that table only; a body that is
     not an object gives both `null`.
-- [ ] T020 [US5] Keeper scan tests in src/keeper/keeper-scan.test.ts
+- [X] T020 [US5] Keeper scan tests in src/keeper/keeper-scan.test.ts
   - Files: `src/keeper/keeper-scan.test.ts`, with the fake `KeeperDeps` as in `src/keeper/keeper-release.test.ts`
   - Cases: the tables are published after `startApp` was called, never before `launch`; no game code → `maps: null` and
     `monsters: null`; an unreadable table logs `game-tables-unreadable` with `maps` and `monsters` booleans; an extraction
@@ -232,17 +232,17 @@ publishes after `startApp` and a failure ends nothing.
 
 ### Implementation for Phase 5
 
-- [ ] T021 [US5] readGameTables in src/keeper/game-tables.ts
+- [X] T021 [US5] readGameTables in src/keeper/game-tables.ts
   - Files: `src/keeper/game-tables.ts`
   - Signature: `readGameTables(code: string): GameTables`. The real version of `lerMapas` and `lerMonstros` of the prototype,
     regular expressions only. "Nothing" stays in the table, with its blank name. Constraint from data-model.md: "`null` =
     não consegui ler".
-- [ ] T022 [US5] GameTables, the link message and linkTables
+- [X] T022 [US5] GameTables, the link message and linkTables
   - Files: `src/shared/types.ts`, `src/shared/link.ts`, `src/shared/index.ts`, `src/keeper/link-server.ts`, `src/main/payloads.ts`
   - Signatures: `GameTables` as in data-model.md; `LinkMessage` gains `{ type: "tables"; tables: GameTables }`;
     `linkTables(v: unknown): GameTables`. The server keeps the last tables and writes them before the status and the
     reading to a new client ([contracts/link.md](contracts/link.md)).
-- [ ] T023 [US5] The scan in the keeper's flow in src/keeper/keeper.ts
+- [X] T023 [US5] The scan in the keeper's flow in src/keeper/keeper.ts
   - Files: `src/keeper/keeper.ts`
   - Change: keep the text from `d.gameCode()` in a variable; right after the `d.startApp()` block, run it inside its own
     `try`, publish `tables`, log, and let go of the text. Synchronous (research R8). Nothing else in the flow changes:

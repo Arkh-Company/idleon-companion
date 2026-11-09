@@ -86,7 +86,7 @@ function app(path: string, order: string[] = []) {
   s.on(
     "data",
     createLineDecoder((m) => {
-      got.push(m);
+      if (m.type !== "tables") got.push(m); // the tables have their own tests, in keeper-scan.test.ts
       if (m.type === "status" && m.status.game === "closed")
         order.push("closed");
     }),
