@@ -7,3 +7,15 @@ phases:
   prototype: {status: done, date: 2026-11-09}
   plan: {status: done, date: 2026-11-09}
   tasks: {status: done, date: 2026-11-09}
+execution:
+  branch: feat/004-data-base
+  phases:
+    - {name: "Foundational (T001-T006)", status: pending}
+    - {name: "US1 slices (T007-T012)", status: pending}
+    - {name: "US2 vars (T013-T016)", status: pending}
+    - {name: "US1 link and mosaic (T017-T023)", status: pending}
+    - {name: "US1 US3 calculator (T024-T029)", status: pending}
+    - {name: "US3 host (T030-T033)", status: pending}
+    - {name: "US4 Stats tab (T034-T043)", status: pending}
+  feature_review: pending
+  code_pr: null
