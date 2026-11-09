@@ -110,7 +110,7 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
   - Files: `src/keeper/state-read-only.test.ts`
   - Cases: the traps of the existing suite (getter and function that throw when touched) also pass for
     `["PlayerDATABASE","A","x"]`; a missing character or subkey answers `null`; a level past the third answers `null`.
-- [ ] T009 [US1] Slot and lap tests in src/keeper/state-reader.test.ts and src/keeper/state-reader-fixture.ts
+- [X] T009 [US1] Slot and lap tests in src/keeper/state-reader.test.ts and src/keeper/state-reader-fixture.ts
   - Files: `src/keeper/state-reader.test.ts`, `src/keeper/state-reader-fixture.ts` (the tick becomes 83 ms, and the invented
     keys come from a test catalog passed to the reader)
   - Cases: the slot pattern of T010 over 12 ticks: 3 `ações`, 7 other fast, 2 slow; no class with nothing to read gives its
@@ -122,7 +122,7 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
 
 ### Implementation for Phase 2
 
-- [ ] T010 [US1] The schedule in src/keeper/state-reader.ts
+- [X] T010 [US1] The schedule in src/keeper/state-reader.ts
   - Files: `src/keeper/state-reader.ts`; split it when it passes 400 lines
   - Signatures: `everyMs` defaults to `83`; `const SLOTS = ["actions","fast","slow","fast","actions","fast","fast","fast","actions","fast","slow","fast"]`;
     queues `actions`, `fast` and `slow`, built from the listed paths plus the `Personagem.x` fast rows as

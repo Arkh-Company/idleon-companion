@@ -10,6 +10,7 @@ export {
   ACTIONS_GROUP,
   catalogName,
   catalogProblems,
+  groupOf as groupIn,
   parseCatalog,
 } from "./reading-catalog-rules.ts";
 export type { CatalogRow } from "./reading-catalog-rules.ts";

@@ -1,17 +1,60 @@
-// The fake game of the state reader's tests: a scripted `send`, invented keys and a 250 ms tick.
+// The fake game of the state reader's tests: a scripted `send`, an invented catalog and an 83 ms tick.
 import { expect, vi } from "vitest";
-import { CATALOG } from "../shared/index.ts";
-import type { StatePath, StateSlice } from "../shared/index.ts";
+import { ACTIONS_GROUP } from "../shared/index.ts";
+import type { CatalogRow, StatePath, StateSlice } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
 import { inTurn, startStateReader } from "./state-reader.ts";
 import type { VarsReader } from "./vars-reader.ts";
 
 const REF: EngineRef = { sessionId: "S", objectId: "O", pausedMs: 1 };
-export const formulaKeys = (n: number) =>
-  CATALOG.filter((r) => r.reading === "rápida" && !r.name.includes("."))
-    .slice(0, n)
-    .map((r) => r.name);
+const named = (prefix: string, n: number) =>
+  Array.from({ length: n }, (_, i) => `${prefix}${String(i)}`);
+export const actionKeys = (n: number) => named("Act", n);
+export const fastKeys = (n: number) => named("Fast", n);
+export const slowKeys = (n: number) => named("Slow", n);
+
+const row = (
+  name: string,
+  reading: CatalogRow["reading"],
+  group: string,
+): CatalogRow => ({
+  name,
+  type: "lista",
+  bytes: 1,
+  nature: "dado de origem",
+  numbers: [],
+  changesOn: "não mudou",
+  mechanic: "a conferir",
+  feature: "—",
+  reading,
+  group,
+});
+const FAST_GROUP = "Alpha";
+export const TEST_CATALOG: readonly CatalogRow[] = [
+  row("Cards", "rápida", FAST_GROUP),
+  row("Research", "rápida", FAST_GROUP),
+  ...fastKeys(30).map((k) => row(k, "rápida", FAST_GROUP)),
+  row("Spice", "rápida", "Beta"),
+  row("Personagem.Skills", "rápida", "Beta"),
+  row("Personagem.Bag", "lenta", "—"),
+  row("Gear", "rápida", ACTIONS_GROUP),
+  row("GearCache", "rápida", ACTIONS_GROUP),
+  ...actionKeys(25).map((k) => row(k, "rápida", ACTIONS_GROUP)),
+  row("ChestMap", "lenta", "—"),
+  ...slowKeys(40).map((k) => row(k, "lenta", "—")),
+];
+
+/** The lane the test catalog puts a path in: anything it does not know is `slow`. */
+export function laneOf(path: StatePath | undefined): string {
+  const name =
+    path?.length === 3 && path[0] === "PlayerDATABASE"
+      ? `Personagem.${path[2]}`
+      : path?.[0];
+  const found = TEST_CATALOG.find((r) => r.name === name);
+  if (found?.reading !== "rápida") return "slow";
+  return found.group === ACTIONS_GROUP ? "actions" : "fast";
+}
 
 interface Game {
   char: string | null;
@@ -96,11 +139,13 @@ export function setup(over: Partial<Game> = {}, vars?: VarsReader) {
       h.onSlice(s);
     },
     onFailing: h.onFailing,
+    catalog: TEST_CATALOG,
     ...(vars ? { vars } : {}),
   });
   return { ...h, h, reader };
 }
 
-export const tick = (n = 1) => vi.advanceTimersByTimeAsync(250 * n);
+export const TICK_MS = 83;
+export const tick = (n = 1) => vi.advanceTimersByTimeAsync(TICK_MS * n);
 export const sliceReads = (sent: Sent[]) =>
   sent.filter((s) => s.source === "SLICE");

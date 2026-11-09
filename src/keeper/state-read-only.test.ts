@@ -281,12 +281,12 @@ test("a three-item path into something that is not a map answers null", () => {
 });
 
 test("an accessor on the subkey is never fired", () => {
-  const h = withAccessor({} as Record<string, unknown>, "x");
+  const h = withAccessor({}, "x");
   expect(slice(database(stringMap(h)), [subkey]).out).toEqual([null]);
 });
 
 test("an accessor for the character is never fired", () => {
-  const h = withAccessor({} as Record<string, unknown>, "A");
+  const h = withAccessor({}, "A");
   const engine = game({ PlayerDATABASE: stringMap(h) });
   expect(slice(engine, [subkey]).out).toEqual([null]);
 });
