@@ -212,4 +212,5 @@ Depois de um patch, o inventário roda de novo e aponta o que é novo ou mudou d
 | Qual é o limite numérico de leituras por segundo? (security CHK004) | to plan | Vinicius, 09/11: sai do segundo protótipo com medição de quadros; a regra está no FR-020. |
 | Como cumprir menos de 1 s? | to plan | Vinicius, 09/11: mais leituras por segundo e cálculo enxuto, provados por um segundo protótipo com medição de quadros. |
 | Quantos números a Stats declara? (FR-016, SC-005) | resolved | durante a implementação: 11 ids em `NUMBER_IDS`, porque o dano máximo e o mínimo contam separados; a aba mostra 10 linhas. |
+| A confirmação da fatia de ações tem limite? (cenário 3 da US1) | resolved | durante a implementação: Vinicius, 09/11: sim, 3 leituras seguidas (cerca de 1 s); depois calcula mesmo sem confirmar, para o número nunca congelar. |
 | Um grupo de conteúdo pode ficar dividido entre duas fatias? (FR-018) | resolved | durante a implementação: Vinicius, 09/11: sim, fora da fatia de ações. A leitura rápida empacota os grupos em sequência, para caber em até 7 fatias e cumprir o SC-001. |
