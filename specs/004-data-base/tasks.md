@@ -112,7 +112,7 @@ fake CDP sees one call at a time.
     numbers, text, booleans, `null`, lists and plain objects; a map becomes `{ $m, $c }`; `Infinity` becomes `{ $n }`; a `String`
     object becomes text; a class instance, a cycle and a depth over 14 become `{ $x: 1 }`; `undefined` becomes `null`; a
     missing path gives `null` in its place and no error; a two-item path reads the child of the map.
-- [ ] T008 [P] [US1] Plan and rotation tests in src/keeper/state-reader.test.ts
+- [X] T008 [P] [US1] Plan and rotation tests in src/keeper/state-reader.test.ts
   - Files: `src/keeper/state-reader.test.ts`, with a fake `send`, fake timers and invented keys
   - Cases of `pack`: pieces are grouped up to 25,000 bytes; a piece larger than the limit goes alone. Of `pieceBytes`: an
     unread `PlayerDATABASE` child counts 25,000 and any other unread piece 2,000, so the first cycle never groups the big ones;
@@ -141,7 +141,7 @@ fake CDP sees one call at a time.
     `Object.getOwnPropertyDescriptor`. Array items are read by index, as measured: no game code defines accessors on them.
     Functions of the language allowed: those of [contracts/state-reading.md](contracts/state-reading.md), plus
     `String.prototype.valueOf`.
-- [ ] T011 [US1] The rotation in src/keeper/state-reader.ts
+- [X] T011 [US1] The rotation in src/keeper/state-reader.ts
   - Files: `src/keeper/state-reader.ts`
   - Signatures: `pack(pieces: PlanPiece[], maxBytes: number): PlanPiece[][]`; `pieceBytes(p: PlanPiece): number`;
     `oneAtATime(): <T>(f: () => Promise<T>) => Promise<T>`;
