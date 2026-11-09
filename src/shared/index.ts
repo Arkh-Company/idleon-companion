@@ -18,6 +18,7 @@ export type {
   CompanionModule,
   Entry,
   GameContext,
+  GameTables,
   Reading,
   ScreenCatalog,
   ScreenRule,

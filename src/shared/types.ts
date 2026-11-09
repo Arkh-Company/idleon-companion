@@ -65,6 +65,14 @@ export interface ScreenCatalog {
   unprovenWindows: number[];
 }
 
+/** The names in the installed game's code; null = could not read that table. */
+export interface GameTables {
+  /** Name by map number */
+  maps: string[] | null;
+  /** Name by monster id */
+  monsters: Record<string, string> | null;
+}
+
 export interface Entry {
   name: string;
   status: "deduced" | "confirmed";
