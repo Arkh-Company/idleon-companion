@@ -225,9 +225,9 @@ also refuses (`customCheckAppRunning`).
 | `game.log`                          | keeper     | the game's own output                                                                                                                                            |
 
 Three labels of `keeper.log` come from the scan of the game code: `unknown-screen-numbers` (`numbers`: the `MenuType2`
-numbers outside `KNOWN_WINDOWS`), `game-tables-unreadable` (`maps` and `monsters`, booleans: `true` means "this table was
-read") and `game-scan-failed` (`error`). The player sees none of them, and they carry nothing of the game's file and no
-player name.
+numbers outside `KNOWN_WINDOWS`), `game-tables-unreadable` (`unreadable`: the names of the tables not read) and
+`game-scan-failed` (`error`). The player sees none of them, and they carry only numbers, the names of the tables and text
+of the error: no text of the game's file and no player name.
 
 The screen catalog ships in the code (`src/shared/screens/`), and nothing the player types is saved. On every start the
 app deletes the files where earlier versions kept the names the player typed (`src/main/forget-names.ts`); a file it

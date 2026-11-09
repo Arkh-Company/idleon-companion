@@ -166,25 +166,21 @@ test("no game code publishes both tables as null and runs no scan", async () => 
   expect(h.logs).toContainEqual({
     label: "game-tables-unreadable",
     id: 42,
-    maps: false,
-    monsters: false,
+    unreadable: ["maps", "monsters"],
   });
 });
 
 test.each([
-  ["maps", MONSTER, { maps: false, monsters: true }],
-  ["monsters", MAPS, { maps: true, monsters: false }],
-])(
-  "unreadable %s are logged with one boolean per table",
-  async (_name, code, flags) => {
-    const h = await keeper(() => code);
-    expect(h.logs).toContainEqual({
-      label: "game-tables-unreadable",
-      id: 42,
-      ...flags,
-    });
-  },
-);
+  ["maps", MONSTER],
+  ["monsters", MAPS],
+])("unreadable %s are logged by name", async (name, code) => {
+  const h = await keeper(() => code);
+  expect(h.logs).toContainEqual({
+    label: "game-tables-unreadable",
+    id: 42,
+    unreadable: [name],
+  });
+});
 
 test("a scan that throws is logged, publishes no names, and the keeper still ends only after the game", async () => {
   const h = await keeper(

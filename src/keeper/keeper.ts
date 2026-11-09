@@ -201,11 +201,10 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       );
       if (numbers.length > 0) log("unknown-screen-numbers", { numbers });
     }
-    if (!tables.maps || !tables.monsters)
-      log("game-tables-unreadable", {
-        maps: tables.maps !== null,
-        monsters: tables.monsters !== null,
-      });
+    const unreadable = (["maps", "monsters"] as const).filter(
+      (table) => !tables[table],
+    );
+    if (unreadable.length > 0) log("game-tables-unreadable", { unreadable });
   } catch (e) {
     log("game-scan-failed", { error: errorText(e) });
   }
