@@ -2,38 +2,15 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { DEFAULT_SETTINGS } from "../shared/index.ts";
+import { DEFAULT_SETTINGS, READ_NULLS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
   emptyPayload,
   linkReading,
   linkStatus,
-  namePayload,
+  linkTables,
   settingsPayload,
 } from "./payloads.ts";
-
-test("a name payload with a known table, a number key and a name passes, the name trimmed", () => {
-  expect(
-    namePayload({ table: "menu2", key: "999", name: " Test ", x: 1 }),
-  ).toEqual({ table: "menu2", key: "999", name: "Test" });
-  expect(namePayload({ table: "menu", key: "0.1", name: "A" })?.key).toBe(
-    "0.1",
-  );
-});
-
-test.each([
-  ["no object", "menu2"],
-  ["an unknown table", { table: "quickref", key: "1", name: "A" }],
-  ["a key that is not text", { table: "menu", key: 1, name: "A" }],
-  ["a key that is not a number", { table: "menu", key: "abc", name: "A" }],
-  ["a key that is not finite", { table: "menu", key: "NaN", name: "A" }],
-  ["a key written another way", { table: "menu", key: "01", name: "A" }],
-  ["a name that is not text", { table: "codex", key: "1", name: 5 }],
-  ["an empty name", { table: "codex", key: "1", name: "" }],
-  ["a blank name", { table: "codex", key: "1", name: "   " }],
-])("a name payload with %s is refused", (_name, payload) => {
-  expect(namePayload(payload)).toBeNull();
-});
 
 test("a settings payload with the three booleans passes, unknown keys dropped", () => {
   expect(
@@ -56,10 +33,10 @@ const reading: Reading = {
   menu2: 0,
   menu2tab: 0,
   skillTab: 0,
-  char: "Darkhe",
+  char: "Tester",
   afk: null,
   codexTab: 2,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 test("a link reading of the right shape keeps its time", () => {
@@ -112,6 +89,52 @@ test.each([
   ["no object", "status"],
 ])("a link status with %s is refused", (_name, value) => {
   expect(linkStatus(value)).toBeNull();
+});
+
+const tables = { maps: ["Vale", "Peak"], monsters: { a1: "Beast" } };
+
+test("link tables of the right shape keep only their fields", () => {
+  expect(linkTables({ ...tables, extra: 1 })).toStrictEqual(tables);
+  expect(linkTables({ maps: null, monsters: null })).toStrictEqual({
+    maps: null,
+    monsters: null,
+  });
+});
+
+test.each([
+  [
+    "a number in maps",
+    { ...tables, maps: ["Vale", 1] },
+    { ...tables, maps: null },
+  ],
+  [
+    "maps that are not a list",
+    { ...tables, maps: "Vale" },
+    { ...tables, maps: null },
+  ],
+  [
+    "a number in monsters",
+    { ...tables, monsters: { a1: 1 } },
+    { ...tables, monsters: null },
+  ],
+  [
+    "an array as monsters",
+    { ...tables, monsters: ["Beast"] },
+    { ...tables, monsters: null },
+  ],
+])(
+  "link tables with %s count as unread for that table only",
+  (_name, value, expected) => {
+    expect(linkTables(value)).toStrictEqual(expected);
+  },
+);
+
+test.each([
+  ["a text", "tables"],
+  ["null", null],
+  ["a list", []],
+])("link tables whose body is %s give both null", (_name, value) => {
+  expect(linkTables(value)).toStrictEqual({ maps: null, monsters: null });
 });
 
 // settings:get, steam:state, steam:setup, reader:release, reader:reconnect and update:install carry no body.

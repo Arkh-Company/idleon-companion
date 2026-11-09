@@ -21,19 +21,10 @@ import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
 
 const ctx: GameContext = {
-  screen: {
-    world: 6,
-    map: 264,
-    menu: 0,
-    window: 0,
-    tab: 0,
-    codexTab: null,
-    codexSel: null,
-  },
+  screen: { world: 6, map: 264, label: "None" },
   character: null,
   afk: null,
-  names: { map: "Emperor's Castle Doorstep" },
-  unnamed: [],
+  names: { map: "Emperor's Castle Doorstep", afk: "None" },
   updatedAt: 1,
 };
 const status: Status = { game: "running", reader: "attached" };
@@ -97,8 +88,15 @@ test("App shows the status and the Screen map panel of the last context", async 
 
   expect(await screen.findByText("Reader attached")).toBeDefined();
   expect(screen.getByRole("heading", { name: "Screen map" })).toBeDefined();
-  expect(screen.getByText("264 Emperor's Castle Doorstep")).toBeDefined();
+  expect(screen.getByText("Emperor's Castle Doorstep")).toBeDefined();
   expect(await screen.findByLabelText("Always on top")).toBeDefined();
+});
+
+test("no text box exists in the whole window (SC-004)", async () => {
+  render(<App />);
+
+  expect(await screen.findByLabelText("Always on top")).toBeDefined();
+  expect(screen.queryAllByRole("textbox")).toEqual([]);
 });
 
 const expectOnlySetup = () => {

@@ -23,54 +23,73 @@ export interface Reading {
   codexTab: number | null;
   /** Quests: OptionsList[13][2]; Friends: NonCloudsave[0][2] */
   codexSel: string | number | null;
+  /** engine.scene.name */
+  scene: string | null;
+  /** AttackSelected */
+  attack: number | null;
+  /** InventorySelected */
+  bag: number | null;
+  /** OptionsList[1] */
+  ol1: number | null;
+  /** OptionsList[3] */
+  ol3: number | null;
+  /** OptionsList[18] */
+  ol18: number | null;
+  /** OptionsList[19] */
+  ol19: number | null;
+  /** OptionsListAccount[489] */
+  ola489: number | null;
+  /** NONdummies[37] */
+  nd37: number | null;
+  /** Holes[0][the character's place in GetPlayersUsernames]; -1 = outside a cave */
+  hole: number | null;
+  /** H<n>.<field>[<index>] or H<n>.<field>; a behavior not yet in the game has no key */
+  behaviors: Record<string, number | string | boolean | null>;
 }
 
-export interface Entry {
+/** One line of the screen catalog: `when` holds equalities, all of them needed, on Reading fields or behavior keys. */
+export interface ScreenRule {
+  when: Record<string, number | string>;
+  /** The whole path, separated by " › " */
   name: string;
-  status: "deduced" | "confirmed";
+  /** The screen has tabs or subscreens: when this rule wins, the tab is unknown. */
+  tabs?: true;
+  /** foto:<id> or sprite:<name> */
+  proof: string;
 }
 
-/** The tables a player can name from the window. */
-export type CatalogTable = "menu" | "menu2" | "codex";
-
-/** names.json (spec §5.3). */
-export interface Catalog {
-  version: 1;
-  /** MenuType; a key can be "0.1" */
-  menu: Record<string, Entry>;
-  /** MenuType2 */
-  menu2: Record<string, Entry>;
-  /** OptionsList[12] */
-  codex: Record<string, Entry>;
-  /** Quik Ref icons (reference) */
-  quickref: Record<string, Entry>;
-  /** CustomLists.MapDispName */
-  maps: string[];
-  /** MonsterDefinitions Name, by monster id */
-  afk: Record<string, string>;
+export interface ScreenCatalog {
+  overlays: ScreenRule[];
+  screens: ScreenRule[];
+  /** MenuType2 numbers that exist in the game and have no proof yet */
+  unprovenWindows: number[];
 }
 
-/** One reading translated by the catalog (spec §6.2). */
+/** The names in the installed game's code; null = could not read that table. */
+export interface GameTables {
+  /** Name by map number */
+  maps: string[] | null;
+  /** Name by monster id */
+  monsters: Record<string, string> | null;
+}
+
+/** One reading translated by the screen catalog and the game's tables. */
 export interface GameContext {
   screen: {
     world: number;
     map: number;
-    menu: number;
-    window: number;
-    tab: number;
-    codexTab: number | null;
-    codexSel: string | number | null;
+    /** identifyScreen's result */
+    label: string;
   };
   character: string | null;
+  /** The monster id read, for the modules */
   afk: string | null;
   names: {
-    map?: string;
-    menu?: Entry;
-    window?: Entry;
-    codexTab?: Entry;
-    afk?: string;
+    /** The map's name or "Unknown map" */
+    map: string;
+    /** The monster's name, "Unknown monster" or "None" */
+    afk: string;
   };
-  unnamed: { table: CatalogTable; key: string }[];
   snapshot?: unknown;
   updatedAt: number;
 }
@@ -117,7 +136,6 @@ export interface CompanionModule {
 export const IPC = {
   contextUpdate: "context:update",
   statusUpdate: "status:update",
-  catalogName: "catalog:name",
   settingsGet: "settings:get",
   settingsSet: "settings:set",
   confirmAttach: "reader:confirm-attach",
@@ -188,7 +206,6 @@ export function moduleChannel(id: string, name: string): string {
 export interface CompanionApi {
   onContext(cb: (ctx: GameContext) => void): () => void;
   onStatus(cb: (status: Status) => void): () => void;
-  name(table: CatalogTable, key: string, name: string): Promise<void>;
   getSettings(): Promise<Settings>;
   setSettings(s: Settings): Promise<void>;
   confirmAttach(): Promise<void>;

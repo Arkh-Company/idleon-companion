@@ -6,7 +6,7 @@ import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
-import { createLineDecoder, encodeLine } from "../shared/index.ts";
+import { createLineDecoder, encodeLine, READ_NULLS } from "../shared/index.ts";
 import type { LinkMessage, Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { keepAlive, runKeeper } from "./keeper.ts";
@@ -86,7 +86,7 @@ function app(path: string, order: string[] = []) {
   s.on(
     "data",
     createLineDecoder((m) => {
-      got.push(m);
+      if (m.type !== "tables") got.push(m); // the tables have their own tests, in keeper-scan.test.ts
       if (m.type === "status" && m.status.game === "closed")
         order.push("closed");
     }),
@@ -105,7 +105,7 @@ const reading: Reading = {
   char: "Tester",
   afk: null,
   codexTab: 2,
-  codexSel: null,
+  ...READ_NULLS,
 };
 
 test("a clean game is launched and read, and what the reader sends reaches the app and the log", async () => {

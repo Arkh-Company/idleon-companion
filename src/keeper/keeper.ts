@@ -1,8 +1,10 @@
 // The keeper's flow (spec §4): holds the link pipe, checks the game code, launches the game (with its debugging pipe
 // only when the code was checked and is clean), reads it and publishes to the app, and ends only after the game.
 // index.ts gives it the real game, reader and app.
-import type { Reading, Status } from "../shared/index.ts";
+import type { GameTables, Reading, Status } from "../shared/index.ts";
+import { KNOWN_WINDOWS } from "../shared/screens/index.ts";
 import type { Cdp } from "./cdp.ts";
+import { readGameTables, screenNumbers } from "./game-tables.ts";
 import { AlreadyRunning, startLinkServer } from "./link-server.ts";
 import { checkGameUpdate, recordGameHash } from "./update-watch.ts";
 
@@ -87,12 +89,17 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       log("game-hash-not-saved", { error: errorText(e) });
     }
   };
+  // Held until the scan after startApp, then let go: the file has millions of characters.
+  const installed = { code: undefined as string | undefined };
   if (safe) {
     try {
-      const code = d.gameCode();
-      if (code === undefined) log("game-update-skipped");
+      installed.code = d.gameCode();
+      if (installed.code === undefined) log("game-update-skipped");
       else {
-        const { markers, hash, changed } = checkGameUpdate(code, d.hashPath);
+        const { markers, hash, changed } = checkGameUpdate(
+          installed.code,
+          d.hashPath,
+        );
         log("game-update", { changed, hash, markers });
         // Spec §7.2: a changed game code with detection markers is not read this session. "Connect next time"
         // records it, so the next session reads it without a warning; until then every session warns again.
@@ -182,6 +189,27 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
   } catch (e) {
     log("app-failed", { error: errorText(e) }); // the game goes on; the app can be opened by hand
   }
+
+  // Research R8: once per opening, right after startApp and synchronous, and a failure only reaches the log. Whatever
+  // happens the app hears, so the tables of an earlier session are never kept.
+  let tables: GameTables = { maps: null, monsters: null };
+  try {
+    if (installed.code !== undefined) {
+      tables = readGameTables(installed.code);
+      const numbers = screenNumbers(installed.code).filter(
+        (n) => !KNOWN_WINDOWS.has(n),
+      );
+      if (numbers.length > 0) log("unknown-screen-numbers", { numbers });
+    }
+    const unreadable = (["maps", "monsters"] as const).filter(
+      (table) => !tables[table],
+    );
+    if (unreadable.length > 0) log("game-tables-unreadable", { unreadable });
+  } catch (e) {
+    log("game-scan-failed", { error: errorText(e) });
+  }
+  installed.code = undefined;
+  server?.publish({ type: "tables", tables });
 
   await game.exited;
   confirmed = undefined;

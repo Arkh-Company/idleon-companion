@@ -12,12 +12,12 @@ session.
 _Avoid_: launcher, guardian, daemon
 
 **App**:
-The companion's window, tray and catalog, a process apart from the keeper that can close without touching the game.
+The companion's window and tray, a process apart from the keeper that can close without touching the game.
 _Avoid_: client, UI process
 
 **Link**:
-The local named pipe between the keeper and the app, carrying readings, statuses, the confirmation of an update and
-the requests to let go of the game or read it again.
+The local named pipe between the keeper and the app, carrying readings, statuses, the game tables, the confirmation of
+an update and the requests to let go of the game or read it again.
 _Avoid_: channel, socket, bridge
 
 ## Reading the game
@@ -28,7 +28,8 @@ every second.
 _Avoid_: hook, attach, injection
 
 **Reading**:
-The few game fields taken at one moment (map, menus, Codex tab, character, AFK target), by property reads only.
+The few game fields taken at one moment (map, menus, Codex tab, character, AFK target and the values that tell one
+screen from another), by property reads only.
 _Avoid_: snapshot, sample, poll
 
 **Update watch**:
@@ -39,8 +40,22 @@ _Avoid_: anti-cheat check, scanner
 ## Names
 
 **Catalog**:
-The names of the game's screen numbers, each one deduced from the game code or confirmed by the player.
+The list of **Screen rules** that ships in the companion, each with its proof; the player never adds to it.
 _Avoid_: dictionary, mapping, names list
+
+**Screen rule**:
+One line of the **Catalog**: the equalities a **Reading** must meet, all of them, the screen's name and the proof of that
+name (a photo or a sprite). The rule with the most conditions wins.
+_Avoid_: entry, pattern, match
+
+**Game tables**:
+The names of the maps and monsters that the **Keeper** takes from the text of the installed game code, which it never
+runs, once per game launch. They stay in the app's memory, and a table it cannot read gives no name.
+_Avoid_: game data, dump
+
+**Unknown screen**:
+What the window shows when no **Screen rule** holds or two tie: a name without proof never appears.
+_Avoid_: unnamed, deduced
 
 ## Steam and install
 

@@ -33,8 +33,8 @@ Bad: <example>
 ### One assertion per branch of a mapping
 
 Every table or field a mapping function fills has at least one test assertion that fails when that branch is removed.
-Good: `expect(toContext({ ...base, menu: 0.1 }, cat).names.menu).toEqual({ name: "Quik Ref shortcut (Anvil)", status: "deduced" })` next to the map, window and AFK assertions.
-Bad: a test that checks `names.map`, `names.window` and `names.afk` while `names.menu` is filled by code no test reaches.
+Good: `expect(toContext({ ...base, afk: "Nothing" }, tables).names.afk).toBe("None")` next to the assertions of the map name, the monster name and "Unknown monster".
+Bad: a test that checks `names.map` and `screen.label` while `names.afk` is filled by code no test reaches.
 
 ### Protective paths are tested on the CI
 
@@ -66,3 +66,27 @@ Bad: `StatusBar.tsx` declaring its own `const GAME_UPDATED = "Game updated: …"
 A Windows tool (`reg`, `tasklist`, `cmd`) runs by its `System32` path, in Node and in NSIS alike, never by name.
 Good: `execFile(systemTool("tasklist", process.env.SystemRoot), …)`; `"$SYSDIR\tasklist.exe"` in `installer.nsh`.
 Bad: `nsExec::Exec '"$CmdPath" /C tasklist …'`, which lets `cmd` search the working folder first.
+
+### Player names in tests are invented
+
+Every character or account name in a test, a fixture or an example is invented, never copied from a capture or a real session.
+Good: `char: "Tester"` in a `Reading` literal.
+Bad: the name of the character used in the game round, pasted into a `Reading` literal because the state was copied from a capture.
+
+### The test of a criterion feeds the field the criterion names
+
+A test written for a security or spec criterion passes the risky data through the real field the criterion names, and fails when only that field loses the protection.
+Good: `names: { map: "<b>Map</b>", afk: "<i>Mob</i>" }` in the test that names from the game show as plain text.
+Bad: `label: "<b>Bold</b>"` in that test, a text of the compiled catalog that never comes from the game, so the game's names are not exercised.
+
+### Text-scan guards cover every spelling and path
+
+A test that scans source text for a forbidden call matches every spelling that reaches it and reads every file the guarded data passes through.
+Good: `loads("(?:node:)?net")` over all of `src/` in `no-network.test.ts`, with a "the scan catches %s" case per form.
+Bad: `/node:vm/` over `game-tables.ts` alone, while the game text also sits in `keeper.ts` and `import "vm"` passes.
+
+### Test tables live once
+
+A table or builder that two test files repeat (a contract table, a `Reading` builder) lives in one `*-fixture.ts` next to the code and is imported by both.
+Good: `READ_NULLS` in `src/shared/reading-fixture.ts`, spread into the `Reading` literal of seven tests.
+Bad: the 18-row behavior table typed in `read-only.test.ts` and again in `read-fields.test.ts`, so a change to the contract needs two edits and the two tests can drift apart.

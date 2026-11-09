@@ -12,7 +12,6 @@ export function stubCompanion(): CompanionStub {
   const companion: CompanionStub = {
     onContext: vi.fn<CompanionApi["onContext"]>(() => () => undefined),
     onStatus: vi.fn<CompanionApi["onStatus"]>(() => () => undefined),
-    name: vi.fn<CompanionApi["name"]>(() => Promise.resolve()),
     getSettings: vi.fn<CompanionApi["getSettings"]>(() =>
       Promise.resolve({ ...DEFAULT_SETTINGS }),
     ),
