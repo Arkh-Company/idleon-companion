@@ -4,6 +4,7 @@ import type { Reading, Status } from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { AnchorNotFound, OBJECT_GROUP, acquireEngine } from "./engine-ref.ts";
 import type { EngineRef } from "./engine-ref.ts";
+import { safely } from "./state-reader.ts";
 
 /** Failed readings in a row before the status says so (spec, Open Questions, 07/11). */
 const FAILS_BEFORE_WARNING = 10;
@@ -32,6 +33,10 @@ export function startReader(
     onAttached?: (pausedMs: number) => void;
     /** Called on every good reading, changed or not, with its time (the window's "last reading N s ago"). */
     onRead?: (t: number) => void;
+    /** The engine reference, when taken; `null` when it is lost and when the reader stops, before it is let go. */
+    onEngine?: (ref: EngineRef | null) => void;
+    /** Each poll runs inside it, so it never overlaps another read of the game. */
+    turn?: <T>(f: () => Promise<T>) => Promise<T>;
   } = {},
 ): { stop(): Promise<void> } {
   const pollMs = opts.pollMs ?? 1000;
@@ -55,14 +60,6 @@ export function startReader(
       };
     });
 
-  /** A callback that throws is the caller's problem: it never stops the loop or takes the engine again. */
-  const safely = (f: () => void) => {
-    try {
-      f();
-    } catch {
-      // ignored on purpose
-    }
-  };
   const failed = (e: unknown) => {
     safely(() => {
       onStatus({
@@ -105,7 +102,11 @@ export function startReader(
         if (isStopped()) return; // the finally below still lets the engine go
         prev = "";
         fails = 0;
-        const { pausedMs } = ref;
+        const taken = ref;
+        const { pausedMs } = taken;
+        safely(() => {
+          opts.onEngine?.(taken);
+        });
         safely(() => {
           opts.onAttached?.(pausedMs);
         });
@@ -124,21 +125,25 @@ export function startReader(
         result: { value?: unknown };
         exceptionDetails?: unknown;
       };
-      try {
-        answer = (await cdp.send(
+      const { objectId, sessionId } = ref;
+      const poll = () =>
+        cdp.send(
           "Runtime.callFunctionOn",
-          {
-            objectId: ref.objectId,
-            functionDeclaration: source,
-            returnByValue: true,
-          },
-          ref.sessionId,
-        )) as typeof answer;
+          { objectId, functionDeclaration: source, returnByValue: true },
+          sessionId,
+        );
+      try {
+        answer = (await (opts.turn
+          ? opts.turn(poll)
+          : poll())) as typeof answer;
       } catch (e) {
         if (isStopped()) return;
         failed(e);
         const lost = ref;
         ref = null;
+        safely(() => {
+          opts.onEngine?.(null);
+        });
         await release(lost);
         await sleep(retryMs);
         continue;
@@ -192,7 +197,12 @@ export function startReader(
   }
 
   // Whatever ends the loop, a reference still held is let go (a stop can arrive while acquireEngine finishes).
-  const done = loop().finally(() => (ref ? release(ref) : undefined));
+  const done = loop().finally(() => {
+    safely(() => {
+      opts.onEngine?.(null);
+    });
+    return ref ? release(ref) : undefined;
+  });
   return {
     /** Resolves once the engine reference is let go and the page detached; the debugging pipe stays open. */
     stop() {

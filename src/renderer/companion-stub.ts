@@ -44,6 +44,7 @@ export function stubCompanion(): CompanionStub {
     installUpdate: vi.fn<CompanionApi["installUpdate"]>(() =>
       Promise.resolve(),
     ),
+    onStats: vi.fn<CompanionApi["onStats"]>(() => () => undefined),
   };
   window.companion = companion;
   return companion;

@@ -5,12 +5,13 @@ export default defineConfig({
   main: {
     build: {
       // One executable, three bundles: out/main/start.js picks the role and loads only the app's (index.js) or the
-      // keeper's (keeper.js), so each role loads only its own code (research R1).
+      // keeper's (keeper.js), so each role loads only its own code (research R1). calculator.js is the app's worker.
       rolldownOptions: {
         input: {
           start: "src/start/index.ts",
           index: "src/main/index.ts",
           keeper: "src/keeper/index.ts",
+          calculator: "src/calculator/index.ts",
         },
       },
     },

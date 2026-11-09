@@ -32,6 +32,26 @@ The few game fields taken at one moment (map, menus, Codex tab, character, AFK t
 screen from another), by property reads only.
 _Avoid_: snapshot, sample, poll
 
+**Slice**:
+A piece of the account's state of up to 25 KB, read by property reads only and carried over the **Link**; one every 250 ms,
+never two at once, and nothing stays in the game between them.
+_Avoid_: snapshot, chunk, batch
+
+**Mosaic**:
+The app's copy of the state, in memory only and never saved or logged, with the newest value of each piece that the
+**Slices** brought.
+_Avoid_: snapshot, retrato, cache
+
+**Sentinel**:
+The character and the map that every **Slice** carries: a new character starts the **Mosaic** over, and a new map waits a
+whole rotation before the next calculation.
+_Avoid_: marker, version
+
+**Calculator**:
+The isolated worker of the app that runs the game's code over the **Mosaic** to give the numbers of the Stats tab, with no
+network and no access to the app; when it cannot, the tab says "unavailable".
+_Avoid_: engine, simulator, sandbox
+
 **Update watch**:
 The check of the installed game code before each launch, which keeps the debugging pipe off when the code changed in a
 suspicious way or cannot be checked.

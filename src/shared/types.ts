@@ -146,6 +146,7 @@ export const IPC = {
   readerReconnect: "reader:reconnect",
   updateState: "update:state",
   updateInstall: "update:install",
+  statsUpdate: "stats:update",
 } as const;
 
 /** What the setup screen shows (data-model.md): read from Steam's files on request, never written. */
@@ -197,6 +198,13 @@ export type UpdateState =
   | { state: "ready"; version: string; canInstall: boolean }
   | { state: "check-failed" };
 
+/** What the Stats tab shows, main → window (data-model.md). */
+export type Stats =
+  | { state: "none" }
+  | { state: "calculating" }
+  | { state: "ready"; rows: { label: string; text: string }[] }
+  | { state: "unavailable" };
+
 /** A channel reserved for one module: `module:<id>:<name>`. */
 export function moduleChannel(id: string, name: string): string {
   return `module:${id}:${name}`;
@@ -216,4 +224,5 @@ export interface CompanionApi {
   reconnect(): Promise<void>;
   onUpdate(cb: (u: UpdateState) => void): () => void;
   installUpdate(): Promise<void>;
+  onStats(cb: (s: Stats) => void): () => void;
 }

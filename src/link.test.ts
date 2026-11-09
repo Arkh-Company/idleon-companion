@@ -68,6 +68,53 @@ test("a late client gets the last status, then the last reading", async () => {
   ]);
 });
 
+test("a late client gets the last game folder", async () => {
+  const path = pipePath();
+  const server = await startLinkServer(path, () => undefined);
+  cleanups.push(() => server.close());
+  server.publish({ type: "gameFiles", resources: "C:\\Old\\resources" });
+  server.publish({ type: "gameFiles", resources: "C:\\New\\resources" });
+  const got: LinkMessage[] = [];
+  const client = connectLink(
+    path,
+    (m) => got.push(m),
+    () => undefined,
+  );
+  cleanups.push(() => {
+    client.close();
+  });
+  await until(() => got.length >= 1);
+  expect(got).toEqual([{ type: "gameFiles", resources: "C:\\New\\resources" }]);
+});
+
+test("a late client gets no slice", async () => {
+  const path = pipePath();
+  const server = await startLinkServer(path, () => undefined);
+  cleanups.push(() => server.close());
+  server.publish({
+    type: "state",
+    slice: {
+      sentinel: { char: "Tester", map: 1 },
+      pieces: [],
+      at: 1,
+      cycles: { formula: 0, all: 0 },
+    },
+  });
+  server.publish({ type: "reading", reading });
+  const got: LinkMessage[] = [];
+  const client = connectLink(
+    path,
+    (m) => got.push(m),
+    () => undefined,
+  );
+  cleanups.push(() => {
+    client.close();
+  });
+  await until(() => got.length >= 1);
+  await sleep(50); // a slice written after the reading would have arrived by now
+  expect(got).toEqual([{ type: "reading", reading }]);
+});
+
 test("a second server on the same pipe rejects with AlreadyRunning", async () => {
   const path = pipePath();
   const server = await startLinkServer(path, () => undefined);
