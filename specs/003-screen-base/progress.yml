@@ -18,6 +18,6 @@ execution:
     - {name: "US6 (T024-T026)", status: done, commits: 9e13950..1628e5d}
     - {name: "US1 e US4 janela (T027-T032)", status: done, commits: 710a432..efa8b9d}
     - {name: "US4 names.json (T033-T034)", status: done, commits: 2ab7ed1..d3d2d70}
-    - {name: "Polish (T035-T037)", status: pending}
+    - {name: "Polish (T035-T037)", status: done, commits: 5fffe99..a7dd7ac}
   feature_review: pending
   code_pr: null
