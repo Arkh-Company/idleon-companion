@@ -1,6 +1,6 @@
 // The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
 import { expect, test } from "vitest";
-import { readGameTables } from "./game-tables.ts";
+import { readGameTables, screenNumbers } from "./game-tables.ts";
 
 const maps = (names: string, ids: string) =>
   `x.MapName=function(){return"${ids}".split(" ")},x.MapDispName=function(){return"${names}".split(" ")};`;
@@ -74,4 +74,32 @@ test.each([
     maps: ["Blue Vale", "Peak"],
     monsters: null,
   });
+});
+
+test.each([
+  ["a write", "e.h.MenuType2=7;", [7]],
+  ["a write with spaces", "e.h.MenuType2 = 7;", [7]],
+  ["a comparison", 'if(99==$a.b.getGameAttribute("MenuType2"))c();', [99]],
+  ["a negative number", "e.h.MenuType2=-1;", [-1]],
+  ["a fraction", "e.h.MenuType2=1.5;", [1.5]],
+])("screenNumbers finds %s of MenuType2", (_name, code, numbers) => {
+  expect(screenNumbers(code)).toEqual(numbers);
+});
+
+test.each([
+  ["MenuType written", "e.h.MenuType=7;"],
+  ["MenuType compared", '7==a.getGameAttribute("MenuType");'],
+  ["the tab written", "e.h.MenuType2TabSelected=3;"],
+  ["the tab compared", '3==a.getGameAttribute("MenuType2TabSelected");'],
+  ["a number that runs into a property", "e.h.MenuType2=7.x;"],
+])("screenNumbers ignores %s", (_name, code) => {
+  expect(screenNumbers(code)).toEqual([]);
+});
+
+test("screenNumbers sorts by value and drops repeats", () => {
+  expect(
+    screenNumbers(
+      'e.h.MenuType2=30;e.h.MenuType2=7;100==a.getGameAttribute("MenuType2");7==a.getGameAttribute("MenuType2");',
+    ),
+  ).toEqual([7, 30, 100]);
 });

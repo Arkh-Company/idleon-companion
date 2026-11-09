@@ -40,3 +40,20 @@ function readMonsters(code: string): Record<string, string> | null {
 export function readGameTables(code: string): GameTables {
   return { maps: readMaps(code), monsters: readMonsters(code) };
 }
+
+const NUMBER = String.raw`(-?\d+(?:\.\d+)?)`;
+const WINDOW_NUMBER_FORMS = [
+  new RegExp(String.raw`\.h\.MenuType2\s*=\s*${NUMBER}(?![\d.])`, "g"),
+  new RegExp(
+    String.raw`${NUMBER}\s*==\s*[\w.$]*getGameAttribute\("MenuType2"\)`,
+    "g",
+  ),
+];
+
+/** The `MenuType2` numbers the code writes or compares as literals: a number that only comes out of a sum is not seen. */
+export function screenNumbers(code: string): number[] {
+  const found = new Set<number>();
+  for (const form of WINDOW_NUMBER_FORMS)
+    for (const [, n] of code.matchAll(form)) found.add(Number(n));
+  return [...found].toSorted((a, b) => a - b);
+}
