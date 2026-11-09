@@ -181,8 +181,9 @@ also refuses (`customCheckAppRunning`).
 - **Read-only inside the game.** `read.js` only reads properties; `src/keeper/read-only.test.ts` runs it against an
   engine whose every function throws when called.
 - **The game's file is only text.** `src/keeper/game-tables.ts` reads the installed code with regular expressions and
-  never runs it; `game-tables.test.ts` fails if its source gains `eval`, `new Function`, `node:vm` or `require(`. Any sign
-  of a new format drops that whole table, so no name is guessed.
+  never runs it; `game-tables.test.ts` fails if `game-tables.ts`, `keeper.ts` or `update-watch.ts`, where that text
+  passes, gains `eval`, `new Function`, the `vm` module or `require(`. Any sign of a new format drops that whole table,
+  so no name is guessed.
 - **Fail closed in the keeper** (`src/keeper/keeper.ts`). The game opens without `--remote-debugging-pipe`, and so
   without reading, when the game code is suspicious (changed, with debugger-detection markers: "The game code changed
   and contains: <markers>. Reading is off for this session."; "Connect next time" records its hash for the next

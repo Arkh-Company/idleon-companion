@@ -1,7 +1,7 @@
 // The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
 
 const maps = (names: string, ids: string) =>
@@ -106,13 +106,18 @@ test("screenNumbers sorts by value and drops repeats", () => {
   ).toEqual([7, 30, 100]);
 });
 
-test.each([
-  ["eval", /\beval\b/],
-  ["new Function", /\bnew\s+Function\b/],
-  ["node:vm", /node:vm/],
-  ["require(", /\brequire\s*\(/],
-])("game-tables.ts has no %s: the game code is never run", (_name, form) => {
-  expect(
-    readFileSync(join(import.meta.dirname, "game-tables.ts"), "utf8"),
-  ).not.toMatch(form);
-});
+describe.each(["game-tables.ts", "keeper.ts", "update-watch.ts"])(
+  "%s, where the game code passes as text, never runs it",
+  (file) => {
+    test.each([
+      ["eval", /\beval\b/],
+      ["new Function", /\bnew\s+Function\b/],
+      ["vm module", /["'](?:node:)?vm["']/],
+      ["require(", /\brequire\s*\(/],
+    ])("no %s", (_name, form) => {
+      expect(readFileSync(join(import.meta.dirname, file), "utf8")).not.toMatch(
+        form,
+      );
+    });
+  },
+);
