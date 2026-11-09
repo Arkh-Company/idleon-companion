@@ -244,3 +244,6 @@ Depois de um patch, o app não quebra nem inventa nome: mostra "Unknown screen" 
 | Subtela sem nome confirmado aparece como? (ux CHK008) | resolved | Padrão do agente: "Unknown tab", no mesmo formato, como "Breeding › Unknown tab" (FR-006). |
 | O que aparece quando a tabela legível não tem o número do mapa ou do monstro? (ux CHK010) | resolved | Padrão do agente: "Unknown map" e "Unknown monster" (FR-016). |
 | O que conta como campo a preencher? (ux CHK018) | resolved | Padrão do agente: caixa de texto; as caixas de marcar de Settings continuam (FR-013). |
+| Nome em branco na tabela do jogo aparece como? | resolved | durante a implementação: Vinicius, 08/11: "Unknown map" ou "Unknown monster", sem inventar um nome (FR-016). |
+| Qual nome vale quando o mapa de telas e o rótulo da tela diferem sem estar errados? | resolved | durante a implementação: Vinicius, 08/11: o nome do mapa de telas, que é mais curto, desde que a foto confirme que é a mesma tela (FR-003). |
+| Caverna com foto em só um estado, janela aberta ou fechada, tem prova? | resolved | durante a implementação: Vinicius, 08/11: sim; `Holes[0]` é o mesmo nos dois estados, então a foto de um prova o nome no outro (FR-003, FR-009). |
