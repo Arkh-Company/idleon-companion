@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.4.0...v0.5.0) (2026-11-09)
+
+
+### Features
+
+* read the game's state in slices and show the calculated numbers ([#18](https://github.com/Arkh-Company/idleon-companion/issues/18)) ([b3ac618](https://github.com/Arkh-Company/idleon-companion/commit/b3ac618235b9e9b7ef4c96bcf6747ebfd522c13a))
+
 ## [0.4.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.3.1...v0.4.0) (2026-11-09)
 
 
