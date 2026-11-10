@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.5.0...v0.6.0) (2026-11-10)
+
+
+### Features
+
+* read the game by a catalog and show any change in under 1 s ([#23](https://github.com/Arkh-Company/idleon-companion/issues/23)) ([f91c2fc](https://github.com/Arkh-Company/idleon-companion/commit/f91c2fc4ac5f6ac2e8733b467837b618466aa197))
+
 ## [0.5.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.4.0...v0.5.0) (2026-11-09)
 
 
