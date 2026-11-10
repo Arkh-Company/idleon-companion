@@ -190,7 +190,7 @@
     });
   }
 
-  function mkActor(insts) {
+  function mkActor() {
     var behaviors = {
       getBehavior: (n) => (hasOwn(insts, n) ? insts[n] : stub(true)),
       getAttribute: none,
@@ -263,7 +263,7 @@
     HELPER_ACTORS.forEach((pair) => {
       steps.push(() => {
         var name = "ActorEvents_" + pair[1];
-        var actor = mkActor(insts);
+        var actor = mkActor();
         insts[name] = new hx["scripts." + name](0, actor, 0);
         eng.gameAttributes.h.PixelHelperActor[pair[0]] = actor;
       });

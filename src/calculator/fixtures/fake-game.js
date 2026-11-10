@@ -405,8 +405,14 @@ lime.$scripts.N = function (_exports, $global) {
   };
 
   // In the scenario "order", each number is the turn its block ran in, counted in the state the numbers share.
-  // prettier-ignore
-  ["DamageDealed", "PlayerHPmax", "PlayerMPmax", "PlayerAccTot", "TotalStats", "AFKgainrates"].forEach(function (name) {
+  [
+    "DamageDealed",
+    "PlayerHPmax",
+    "PlayerMPmax",
+    "PlayerAccTot",
+    "TotalStats",
+    "AFKgainrates",
+  ].forEach(function (name) {
     var block = Blocks["_customBlock_" + name];
     Blocks["_customBlock_" + name] = function (sub) {
       var s = state();

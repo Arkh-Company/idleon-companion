@@ -8,7 +8,7 @@ import type { CalcNumbers } from "./targets.ts";
 
 const ANCHOR = 'A["com.stencyl.Engine"]=a,';
 const NUMBER_MS = 2_000;
-/** The longest a whole step of the start may take: the helpers' longest, as in the lab. */
+/** The limit of each call into the context, the one that runs all the helpers included. */
 const START_MS = 8_000;
 
 type Decompress = (data: Uint8Array) => Uint8Array | null;
