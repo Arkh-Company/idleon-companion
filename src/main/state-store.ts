@@ -44,6 +44,13 @@ function withSubkey(
   return { ...base, $m: { ...(base.$m as object), [sub]: value } };
 }
 
+/** A subkey's value inside its whole character, as text; `undefined` when the character does not have it. */
+function insideWhole(whole: unknown, sub: string): string | undefined {
+  return isObject(whole) && isObject(whole.$m) && Object.hasOwn(whole.$m, sub)
+    ? JSON.stringify(whole.$m[sub])
+    : undefined;
+}
+
 /** The closed list and nothing else, whatever the piece carries. */
 function closedList(value: unknown): Record<string, unknown> {
   const kept: Record<string, unknown> = {};
@@ -80,9 +87,13 @@ export function createStateStore(cb: {
     start = null;
   }
 
-  function dropSubkeys(child: string): void {
-    for (const [key, { path }] of pieces)
-      if (path.length === 3 && path[1] === child) pieces.delete(key);
+  /** The whole character replaces its subkeys; one it disagrees with is a change no later read of the subkey would see. */
+  function dropSubkeys(child: string, whole: unknown): void {
+    for (const [key, { path, text }] of pieces) {
+      if (path.length !== 3 || path[1] !== child) continue;
+      if (insideWhole(whole, path[2]) !== text) note(path, key, true);
+      pieces.delete(key);
+    }
   }
 
   /** What is stored for a path, as text; a subkey dropped by its whole character answers with the value inside it. */
@@ -91,10 +102,7 @@ export function createStateStore(cb: {
     const [top, child, sub] = path;
     if (stored !== undefined || sub === undefined || child === undefined)
       return stored;
-    const whole = pieces.get(JSON.stringify([top, child]))?.value;
-    return isObject(whole) && isObject(whole.$m) && Object.hasOwn(whole.$m, sub)
-      ? JSON.stringify(whole.$m[sub])
-      : undefined;
+    return insideWhole(pieces.get(JSON.stringify([top, child]))?.value, sub);
   }
 
   /**
@@ -156,7 +164,8 @@ export function createStateStore(cb: {
         if (path[0] === "_vars" && text === "{}") continue;
         // A subkey read as `null` says nothing: it must not cover the value of the whole character.
         if (path.length === 3 && value === null) continue;
-        if (path[0] === CHARACTERS && path.length === 2) dropSubkeys(path[1]);
+        if (path[0] === CHARACTERS && path.length === 2)
+          dropSubkeys(path[1], kept);
         if (note(path, key, storedText(path, key) !== text))
           actionsMoved = true;
         pieces.set(key, { path, value: kept, text });

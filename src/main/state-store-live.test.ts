@@ -299,6 +299,25 @@ test("a subkey different from the one in the whole character just read is due", 
   expect(h.dues[1]?.attrs).toEqual(ariaIn({ SkillLevels: 8 }));
 });
 
+test("a whole character that disagrees with a stored subkey is due, once", () => {
+  const h = setup();
+  h.add([]);
+  h.add([skill(7)], WHOLE);
+  h.add([aria({ SkillLevels: 8 })], WHOLE);
+  h.add([skill(8)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+  expect(h.dues[1]?.attrs).toEqual(ariaIn({ SkillLevels: 8 }));
+});
+
+test("a whole character that agrees with a stored subkey is not due", () => {
+  const h = setup();
+  h.add([]);
+  h.add([skill(7)], WHOLE);
+  h.add([aria({ SkillLevels: 7 })], WHOLE);
+  h.add([skill(7)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+});
+
 test("a subkey the whole character does not have is a change", () => {
   const h = setup();
   h.add([]);
