@@ -266,6 +266,47 @@ test("a whole character drops its own stored subkeys, and the newest read wins",
   expect(h.dues[2]?.attrs).toMatchObject(ariaIn({ SkillLevels: 3 }));
 });
 
+test("a subkey read as null keeps the value of the whole character", () => {
+  const h = setup();
+  h.add([]);
+  h.add([aria({ SkillLevels: 9 }), skill(null)], WHOLE);
+  expect(h.dues[0]?.attrs).toEqual(ariaIn({ SkillLevels: 9 }));
+});
+
+test("a subkey read as null keeps its last value and asks for no calculation", () => {
+  const h = setup();
+  h.add([]);
+  h.add([skill(7)], WHOLE);
+  h.add([skill(null)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+  h.add([piece("Cards", 2)], WHOLE);
+  expect(h.dues[1]?.attrs).toMatchObject(onlySkill);
+});
+
+test("a subkey equal to the one in the whole character just read is no change", () => {
+  const h = setup();
+  h.add([]);
+  h.add([aria({ SkillLevels: 9 })], WHOLE);
+  h.add([skill(9)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+});
+
+test("a subkey different from the one in the whole character just read is due", () => {
+  const h = setup();
+  h.add([]);
+  h.add([aria({ SkillLevels: 9 })], WHOLE);
+  h.add([skill(8)], WHOLE);
+  expect(h.dues[1]?.attrs).toEqual(ariaIn({ SkillLevels: 8 }));
+});
+
+test("a subkey the whole character does not have is a change", () => {
+  const h = setup();
+  h.add([]);
+  h.add([aria({ Level: 3 })], WHOLE);
+  h.add([skill(9)], WHOLE);
+  expect(h.texts).toHaveLength(2);
+});
+
 test("building the mosaic leaves the stored character as it was read", () => {
   const h = setup();
   const value = { $m: { SkillLevels: 9 } };

@@ -85,6 +85,18 @@ export function createStateStore(cb: {
       if (path.length === 3 && path[1] === child) pieces.delete(key);
   }
 
+  /** What is stored for a path, as text; a subkey dropped by its whole character answers with the value inside it. */
+  function storedText(path: StatePath, key: string): string | undefined {
+    const stored = pieces.get(key)?.text;
+    const [top, child, sub] = path;
+    if (stored !== undefined || sub === undefined || child === undefined)
+      return stored;
+    const whole = pieces.get(JSON.stringify([top, child]))?.value;
+    return isObject(whole) && isObject(whole.$m) && Object.hasOwn(whole.$m, sub)
+      ? JSON.stringify(whole.$m[sub])
+      : undefined;
+  }
+
   /**
    * What a read of a piece means for the next calculation; `isNew` when its value differs from the stored one.
    * Answers whether it is a change of the actions, the only one that counts towards the limit.
@@ -142,8 +154,10 @@ export function createStateStore(cb: {
         const text = JSON.stringify(kept);
         // A `_vars` read that failed comes empty: it must not erase the good ones. With none yet, `vars` stays `{}`.
         if (path[0] === "_vars" && text === "{}") continue;
+        // A subkey read as `null` says nothing: it must not cover the value of the whole character.
+        if (path.length === 3 && value === null) continue;
         if (path[0] === CHARACTERS && path.length === 2) dropSubkeys(path[1]);
-        if (note(path, key, pieces.get(key)?.text !== text))
+        if (note(path, key, storedText(path, key) !== text))
           actionsMoved = true;
         pieces.set(key, { path, value: kept, text });
       }
