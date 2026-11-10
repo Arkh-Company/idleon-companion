@@ -1,4 +1,4 @@
-// Public API of src/shared: other folders import from here, and the keeper and the app the catalog from screens/index.ts.
+// Public API of src/shared: other folders import from here, and the keeper and the app the screen catalog from screens/index.ts.
 export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export { modulesFor } from "./modules.ts";

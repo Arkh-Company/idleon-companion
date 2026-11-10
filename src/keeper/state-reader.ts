@@ -1,5 +1,6 @@
-// The state rotation: 12 reads of the game a second, by the catalog, never two in flight, property reads only. The keys
-// and the cursor live here, outside the game (FR-001, FR-002). Slices are never logged (FR-007).
+// The state rotation: 12 reads of the game a second nominal (about 10.7 measured on Windows), by the catalog, never two
+// in flight, property reads only. The keys and the cursor live here, outside the game (FR-001, FR-002). Slices are never
+// logged (FR-007).
 import {
   ACTIONS_GROUP,
   CATALOG,
@@ -25,7 +26,10 @@ const FAILS_BEFORE_WARNING = 10;
 
 /** The actions slice has its own slots; the rest of the fast reading is `fast`. */
 type Lane = "actions" | StateClass;
-/** One second of slots (research R3): 3 for the actions slice, 7 for the other fast slices, 2 for the slow reading. */
+/**
+ * One nominal second of slots (research R3): 3 for the actions slice, 7 for the other fast slices, 2 for the slow reading.
+ * The 83 ms interval gives about 10.7 reads a second on Windows, measured, so these 12 take a little over a second.
+ */
 const SLOTS: readonly Lane[] = [
   "actions",
   "fast",
