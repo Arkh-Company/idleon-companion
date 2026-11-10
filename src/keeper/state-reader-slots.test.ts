@@ -144,6 +144,76 @@ test("a change of character in the middle of the first lap restarts it", async (
   expect(slices.at(-1)?.cycles.all).toBe(1);
 });
 
+/** Four fast pieces too big to share a slice once measured, and a slow pass of two slices. */
+const fourFastTwoSlow = () => {
+  const fast = fastKeys(4);
+  const { keys, value } = hugeSlow(2);
+  return {
+    top: [...fast, ...keys],
+    value: (p: StatePath): unknown => (fast.includes(p[0]) ? HUGE : value(p)),
+  };
+};
+const firstKeysAfter = (sent: Parameters<typeof sliceReads>[0], n: number) =>
+  sliceReads(sent)
+    .slice(n)
+    .map((s) => s.paths[0]?.[0]);
+
+test("a fast piece of the last slice is read on time when the slow pass ends before it", async () => {
+  const { sent } = setup(fourFastTwoSlow());
+  await tick(4); // the list, the first lap of 2 slices and the second list
+  const before = sliceReads(sent).length;
+  await tick(11 + 1 + 3); // slots 0 to 10, the list that the end of the slow pass asks for, slots 11 to 13
+  expect(firstKeysAfter(sent, before)).toEqual([
+    "Fast0", // slot 0, the spare of the actions
+    "Fast1",
+    "Slow0",
+    "Fast2",
+    "Fast3",
+    "Fast0",
+    "Fast1",
+    "Fast2",
+    "Fast3",
+    "Fast0", // slot 9
+    "Slow1", // the slow pass ends with the fast lane on its second slice
+    "Fast1", // the fast lane goes on from there
+    "Fast2",
+    "Fast3",
+  ]);
+});
+
+test("the end of a fast pass that began before the list does not raise the count of all", async () => {
+  const { game, sent, slices } = setup(fourFastTwoSlow());
+  await tick(4);
+  const big = game.value;
+  // Measured small from now on: the next list packs the slow pass in one slice, read right after the fast pass ends.
+  game.value = (p) => (p[0].startsWith("Slow") ? 1 : big(p));
+  await tick(11 + 1 + 3); // up to slot 1: Fast1, Fast2 and Fast3 close the pass begun before the list
+  await tick(); // slot 2
+  expect(sliceReads(sent).at(-1)?.paths[0]?.[0]).toBe("Slow0");
+  expect(slices.at(-1)?.cycles.all).toBe(2);
+});
+
+test("a change of map right at the end of the slow pass sends the fast lane back to its start", async () => {
+  const { game, sent } = setup(fourFastTwoSlow());
+  await tick(4 + 10); // up to slot 9, with the fast lane on its second slice
+  game.map = 2;
+  await tick(); // Slow1 sees the new map as it ends the pass
+  await tick(); // the list
+  const before = sliceReads(sent).length;
+  await tick();
+  expect(firstKeysAfter(sent, before)).toEqual(["Fast0"]);
+});
+
+test("a new key in the fast lane starts it again from the first slice", async () => {
+  const { game, sent } = setup(fourFastTwoSlow());
+  await tick(4 + 11);
+  game.top = [...game.top, "Fast4"];
+  await tick(); // the list sees the new key
+  const before = sliceReads(sent).length;
+  await tick();
+  expect(firstKeysAfter(sent, before)).toEqual(["Fast0"]);
+});
+
 test("the fast count rises when the actions and the other fast slices were all read", async () => {
   const { keys, value } = hugeSlow(5);
   const { slices } = setup({

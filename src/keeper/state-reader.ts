@@ -99,6 +99,8 @@ interface Queue {
   done: boolean;
   /** Read whole since `cycles.fast` last rose or the map changed. */
   passed: boolean;
+  /** Kept from the last list in the middle of a pass: the end of this pass is not `done`, as its start came before the list. */
+  resumed: boolean;
 }
 type Plan = Record<Lane, Queue>;
 
@@ -140,6 +142,8 @@ export function startStateReader(deps: {
   let slot = 0;
   let firstLap = true;
   let plan: Plan | null = null;
+  /** A lap ended: the next slot lists the keys again. */
+  let listDue = false;
   let last: Sentinel | null = null;
   let cycles = { fast: 0, all: 0 };
   const measured = new Map<string, number>();
@@ -166,8 +170,15 @@ export function startStateReader(deps: {
       next: 0,
       done: groups.length === 0,
       passed: false,
+      resumed: false,
     };
   };
+
+  /** A lane whose paths did not change keeps its place, so a new list never sends it back to its first slice. */
+  const carried = (fresh: Queue, old: Queue | undefined): Queue =>
+    old && JSON.stringify(old.paths) === JSON.stringify(fresh.paths)
+      ? { ...old, done: fresh.done, resumed: old.next > 0 }
+      : fresh;
 
   /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial pass of the fast reading. */
   function observe(now: Sentinel | null): void {
@@ -242,18 +253,25 @@ export function startStateReader(deps: {
         .flatMap((g) => tagged.filter((t) => t.group === g).map((t) => t.path));
     const slow = tagged.filter((t) => t.group === null).map((t) => t.path);
     // One pack per lane, not per group: with 35 groups, a pass of the fast lane would take about 5 s (R2, R3).
-    if (tagged.length > 0)
-      plan = {
-        actions: queue(
+    if (tagged.length === 0) return;
+    listDue = false;
+    plan = {
+      actions: carried(
+        queue(
           inOrder((g) => g === ACTIONS_GROUP),
           "actions",
         ),
-        fast: queue(
+        plan?.actions,
+      ),
+      fast: carried(
+        queue(
           inOrder((g) => g !== ACTIONS_GROUP),
           "fast",
         ),
-        slow: queue(slow, "slow"),
-      };
+        plan?.fast,
+      ),
+      slow: queue(slow, "slow"),
+    };
   }
 
   /** A pass of the fast reading is both of its lanes read whole; a lane with nothing to read never holds it back. */
@@ -265,7 +283,11 @@ export function startStateReader(deps: {
     const q = p[lane];
     q.next++;
     if (q.next < q.groups.length) return;
-    p[lane] = { ...queue(q.paths, lane), done: true, passed: true };
+    p[lane] = {
+      ...queue(q.paths, lane),
+      done: q.done || !q.resumed,
+      passed: true,
+    };
     if (lane !== "slow" && passed(p.actions) && passed(p.fast)) {
       cycles = { ...cycles, fast: cycles.fast + 1 };
       p.actions.passed = false;
@@ -273,7 +295,7 @@ export function startStateReader(deps: {
     }
     if (p.actions.done && p.fast.done && p.slow.done) {
       cycles = { ...cycles, all: cycles.all + 1 };
-      plan = null; // the next slot lists the keys again
+      listDue = true;
       firstLap = false;
     }
   }
@@ -323,7 +345,7 @@ export function startStateReader(deps: {
     if (stopped) return;
     const ref = deps.engine();
     if (!ref) return;
-    if (plan) await readSlice(ref, plan);
+    if (plan && !listDue) await readSlice(ref, plan);
     else await readList(ref);
   }
 
