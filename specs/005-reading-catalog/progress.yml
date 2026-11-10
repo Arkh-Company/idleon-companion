@@ -17,4 +17,4 @@ execution:
     - {name: "US3 e US4 (T020-T025)", status: done, commits: 74845a8..ebb8439}
     - {name: "Polish (T026-T028)", status: done, commits: ac648c9..43ff131}
   feature_review: done
-  code_pr: null
+  code_pr: 23
