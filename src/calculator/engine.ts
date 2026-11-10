@@ -8,7 +8,7 @@ import type { CalcNumbers } from "./targets.ts";
 
 const ANCHOR = 'A["com.stencyl.Engine"]=a,';
 const NUMBER_MS = 2_000;
-/** The longest a whole step of the start may take: the helpers' longest, as in the lab. */
+/** The limit of each call into the context, the one that runs all the helpers included. */
 const START_MS = 8_000;
 
 type Decompress = (data: Uint8Array) => Uint8Array | null;
@@ -37,7 +37,6 @@ export function createEngine(
   });
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 
-  // ponytail: a fresh context per calculation, the one shape the lab proved; reuse it if the cost shows up in the game script.
   function boot(): Started {
     // No prototype, or the game's `this.constructor.constructor` would be the host's Function.
     const sandbox = Object.create(null) as Record<string, unknown>;
@@ -82,23 +81,14 @@ export function createEngine(
     return { sandbox, run };
   }
 
-  boot();
+  const { sandbox, run } = boot();
 
   return {
     calculate(mosaicJson) {
-      const { sandbox, run } = boot();
       sandbox.__mosaic = mosaicJson;
       run("__calc.loadMosaic()", START_MS);
-      const stepsMs = JSON.parse(
-        run(`__calc.helperPlan(${lazyDnsm})`, START_MS) as string,
-      ) as number[];
-      stepsMs.forEach((ms, i) => {
-        try {
-          run(`__calc.helperStep(${String(i)})`, ms);
-        } catch {
-          // A helper that fails leaves its sub-cases to the numbers that need them.
-        }
-      });
+      run(`__calc.helperPlan(${lazyDnsm})`, START_MS);
+      run("__calc.helperSteps()", START_MS);
       run("__calc.finishHelpers()", START_MS);
       return Object.fromEntries(
         TARGETS.map(([id, block, arg]) => {
@@ -109,7 +99,7 @@ export function createEngine(
               NUMBER_MS,
             );
           } catch {
-            // This number alone is unavailable.
+            // The time limit: this number alone is unavailable.
           }
           return [
             id,

@@ -1,43 +1,8 @@
 // The mosaic in memory (FR-022). Every value and character name here is made up (FR-021).
 import { expect, test } from "vitest";
 import { STATE_EXCLUDED, VARS_KEYS } from "../shared/index.ts";
-import type { StatePath, StateSlice } from "../shared/index.ts";
-import { createStateStore } from "./state-store.ts";
-
-type Piece = StateSlice["pieces"][number];
-interface Mosaic {
-  attrs: Record<string, unknown>;
-  vars: Record<string, unknown>;
-  skipped: string[];
-}
-
-const WHOLE = { formula: 1, all: 1 };
-const NONE = { formula: 0, all: 0 };
-
-function setup() {
-  const dues: Mosaic[] = [];
-  const texts: string[] = [];
-  const chars: (string | null)[] = [];
-  const store = createStateStore({
-    onDue: (json) => {
-      texts.push(json);
-      dues.push(JSON.parse(json) as Mosaic);
-    },
-    onCharacter: (c) => chars.push(c),
-  });
-  const add = (
-    pieces: Piece[],
-    cycles = NONE,
-    sentinel: StateSlice["sentinel"] = { char: "Aria", map: 5 },
-  ) => {
-    store.add({ sentinel, pieces, at: 1, cycles });
-  };
-  return { store, add, dues, texts, chars };
-}
-const piece = (top: string, value: unknown): Piece => ({
-  path: [top],
-  value,
-});
+import type { StatePath } from "../shared/index.ts";
+import { NONE, piece, setup, WHOLE } from "./state-store-fixture.ts";
 
 test("the newest value of a piece wins", () => {
   const h = setup();
@@ -78,7 +43,7 @@ test("a _vars read that came empty keeps the good ones of this character", () =>
   const h = setup();
   h.add([]);
   h.add([piece("_vars", { TomePct: 9 })], WHOLE);
-  h.add([piece("_vars", {}), piece("Cards", 2)], { formula: 2, all: 1 });
+  h.add([piece("_vars", {}), piece("Cards", 2)], { fast: 2, all: 1 });
   expect(h.dues[1]?.vars).toEqual({ TomePct: 9 });
 });
 
@@ -101,43 +66,43 @@ test("the excluded keys never enter the mosaic", () => {
 
 test("nothing is due before a whole rotation of both classes", () => {
   const h = setup();
-  h.add([piece("Cards", 1)], { formula: 3, all: 0 });
+  h.add([piece("Cards", 1)], { fast: 3, all: 0 });
   expect(h.texts).toEqual([]);
 });
 
 test("the map changing before the first whole rotation holds the first calculation", () => {
   const h = setup();
   h.add([]);
-  h.add([piece("Cards", 1)], { formula: 0, all: 1 });
+  h.add([piece("Cards", 1)], { fast: 0, all: 1 });
   expect(h.texts).toEqual([]);
-  h.add([piece("Cards", 1)], { formula: 1, all: 1 });
+  h.add([piece("Cards", 1)], { fast: 1, all: 1 });
   expect(h.texts).toHaveLength(1);
 });
 
 test("an app that joins a game already counting waits for a rotation it saw whole", () => {
   const h = setup();
-  h.add([piece("Cards", 1)], { formula: 7, all: 3 });
-  h.add([], { formula: 8, all: 4 }); // only closes the rotation it joined halfway through
+  h.add([piece("Cards", 1)], { fast: 7, all: 3 });
+  h.add([], { fast: 8, all: 4 }); // only closes the rotation it joined halfway through
   expect(h.texts).toEqual([]);
-  h.add([], { formula: 9, all: 5 });
+  h.add([], { fast: 9, all: 5 });
   expect(h.texts).toHaveLength(1);
 });
 
 test("a first slice with formula rotations already counted is a late join too", () => {
   const h = setup();
-  h.add([piece("Cards", 1)], { formula: 2, all: 0 });
-  h.add([], { formula: 3, all: 1 });
+  h.add([piece("Cards", 1)], { fast: 2, all: 0 });
+  h.add([], { fast: 3, all: 1 });
   expect(h.texts).toEqual([]);
-  h.add([], { formula: 4, all: 2 });
+  h.add([], { fast: 4, all: 2 });
   expect(h.texts).toHaveLength(1);
 });
 
 test("a first slice with whole rotations already counted is a late join too", () => {
   const h = setup();
-  h.add([piece("Cards", 1)], { formula: 0, all: 3 });
-  h.add([], { formula: 1, all: 4 });
+  h.add([piece("Cards", 1)], { fast: 0, all: 3 });
+  h.add([], { fast: 1, all: 4 });
   expect(h.texts).toEqual([]);
-  h.add([], { formula: 2, all: 5 });
+  h.add([], { fast: 2, all: 5 });
   expect(h.texts).toHaveLength(1);
 });
 
@@ -153,39 +118,6 @@ test("the first calculation is due once, as the JSON of attrs, vars and skipped"
       skipped: STATE_EXCLUDED,
     }),
   ]);
-});
-
-test("after the first, one is due only when a formula value changed and the rotation count rose", () => {
-  const h = setup();
-  h.add([]);
-  h.add([piece("Cards", 1)], WHOLE);
-  h.add([piece("Cards", 2)], WHOLE); // changed, no rise
-  expect(h.texts).toHaveLength(1);
-  h.add([], { formula: 2, all: 1 }); // a rise after the change
-  expect(h.texts).toHaveLength(2);
-  expect(h.dues[1]?.attrs).toEqual({ Cards: 2 });
-  h.add([piece("Cards", 2)], { formula: 3, all: 1 }); // a rise, nothing changed
-  expect(h.texts).toHaveLength(2);
-});
-
-test("a change only in an other value is not due", () => {
-  const h = setup();
-  h.add([]);
-  h.add([piece("ChestMap", 1)], WHOLE);
-  h.add([piece("ChestMap", 2)], { formula: 2, all: 2 });
-  expect(h.texts).toHaveLength(1);
-});
-
-test("the active character's own piece is a formula value", () => {
-  const h = setup();
-  const own = (value: number): Piece => ({
-    path: ["PlayerDATABASE", "Aria"],
-    value,
-  });
-  h.add([]);
-  h.add([own(1)], WHOLE);
-  h.add([own(2)], { formula: 2, all: 1 });
-  expect(h.texts).toHaveLength(2);
 });
 
 test("a new character wipes the pieces and vars and is told", () => {
@@ -205,10 +137,10 @@ test("a new map keeps the pieces, tells nothing, and waits for the rotation coun
   const h = setup();
   h.add([]);
   h.add([piece("Cards", 1), piece("Money", 1)], WHOLE);
-  h.add([piece("Cards", 2)], { formula: 0, all: 1 }, { char: "Aria", map: 6 });
+  h.add([piece("Cards", 2)], { fast: 0, all: 1 }, { char: "Aria", map: 6 });
   expect(h.texts).toHaveLength(1);
   expect(h.chars).toEqual(["Aria"]);
-  h.add([], { formula: 1, all: 1 }, { char: "Aria", map: 6 });
+  h.add([], { fast: 1, all: 1 }, { char: "Aria", map: 6 });
   expect(h.texts).toHaveLength(2);
   expect(h.dues[1]?.attrs).toEqual({ Cards: 2, Money: 1 });
 });
@@ -223,7 +155,7 @@ test("no character is a wipe, and its pieces are not kept", () => {
   h.add([piece("Skills", 1)], WHOLE);
   expect(h.chars).toEqual(["Aria", null, "Aria"]);
   expect(h.texts).toHaveLength(1); // the counts on that slice are not of this mosaic
-  h.add([], { formula: 2, all: 3 });
+  h.add([], { fast: 2, all: 3 });
   expect(h.dues[1]?.attrs).toEqual({ Skills: 1 });
 });
 
@@ -236,7 +168,7 @@ test("clear wipes and tells nothing, and the same character starts over", () => 
   h.add([piece("Money", 1)], WHOLE);
   expect(h.chars).toEqual(["Aria", "Aria"]);
   expect(h.texts).toHaveLength(1); // the counts on that slice are not of this mosaic
-  h.add([], { formula: 2, all: 3 });
+  h.add([], { fast: 2, all: 3 });
   expect(h.dues[1]?.attrs).toEqual({ Money: 1 });
   expect(h.dues[1]?.vars).toEqual({});
 });
@@ -244,10 +176,10 @@ test("clear wipes and tells nothing, and the same character starts over", () => 
 test("after clear with high counts, nothing is due on the next slice", () => {
   const h = setup();
   h.add([]);
-  h.add([piece("Cards", 1)], { formula: 9, all: 4 });
+  h.add([piece("Cards", 1)], { fast: 9, all: 4 });
   expect(h.texts).toHaveLength(1);
   h.store.clear();
-  h.add([piece("Cards", 1)], { formula: 10, all: 5 });
+  h.add([piece("Cards", 1)], { fast: 10, all: 5 });
   expect(h.texts).toHaveLength(1);
 });
 
@@ -257,6 +189,9 @@ const HOSTILE: StatePath[] = [
   ["x", "__proto__"],
   ["constructor", "x"],
   ["PlayerDATABASE", "__proto__"],
+  ["__proto__", "x", "y"],
+  ["PlayerDATABASE", "__proto__", "y"],
+  ["PlayerDATABASE", "Aria", "__proto__"],
 ];
 
 test.each(HOSTILE)("a path %j pollutes no prototype", (...path) => {
@@ -268,6 +203,18 @@ test.each(HOSTILE)("a path %j pollutes no prototype", (...path) => {
   expect(({} as Record<string, unknown>).polluted).toBeUndefined();
   expect(h.dues[0]?.attrs.Cards).toBe(1);
   expect(h.texts[0]).not.toContain("polluted");
+});
+
+const OTHER_TOPS: StatePath[] = [
+  ["DNSM", "x", "y"],
+  ["Cards", "x", "y"],
+];
+
+test.each(OTHER_TOPS)("a 3-level path on %s is dropped", (...path) => {
+  const h = setup();
+  h.add([]);
+  h.add([{ path, value: 1 }, piece("Cards", 1)], WHOLE);
+  expect(h.dues[0]?.attrs).toEqual({ Cards: 1 });
 });
 
 test("a __proto__ piece cannot shadow a split map of the mosaic", () => {

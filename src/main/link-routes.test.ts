@@ -28,7 +28,7 @@ const SLICE: StateSlice = {
   sentinel: { char: "Invented", map: 5 },
   pieces: [],
   at: 1,
-  cycles: { formula: 0, all: 0 },
+  cycles: { fast: 0, all: 0 },
 };
 
 function setup(current: Status = RUNNING) {

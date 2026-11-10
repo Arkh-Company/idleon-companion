@@ -82,8 +82,13 @@ export function linkStatus(v: unknown): Status | null {
   return s;
 }
 
+/** One or two levels, or the third of a character's subkey, the only one that has it. */
 const isPath = (x: unknown): x is StatePath =>
-  Array.isArray(x) && (x.length === 1 || x.length === 2) && x.every(isText);
+  Array.isArray(x) &&
+  (x.length === 1 ||
+    x.length === 2 ||
+    (x.length === 3 && x[0] === "PlayerDATABASE")) &&
+  x.every(isText);
 
 /** The body of a `state` link message with only the slice's fields; null when one is out of shape. The `value` of a
  * piece is not inspected: it is only data for the calculator. */
@@ -93,12 +98,12 @@ export function linkState(v: unknown): StateSlice | null {
   if (!isObject(sentinel) || !isObject(cycles) || !Array.isArray(pieces))
     return null;
   const { char, map } = sentinel;
-  const { formula, all } = cycles;
+  const { fast, all } = cycles;
   if (
     (char !== null && typeof char !== "string") ||
     typeof map !== "number" ||
     typeof at !== "number" ||
-    typeof formula !== "number" ||
+    typeof fast !== "number" ||
     typeof all !== "number" ||
     !pieces.every((p: unknown) => isObject(p) && isPath(p.path))
   )
@@ -110,7 +115,7 @@ export function linkState(v: unknown): StateSlice | null {
       value,
     })),
     at,
-    cycles: { formula, all },
+    cycles: { fast, all },
   };
 }
 

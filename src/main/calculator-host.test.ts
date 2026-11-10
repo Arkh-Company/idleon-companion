@@ -88,19 +88,31 @@ test("one calculation at a time, and a newer mosaic replaces the waiting one", a
   host.calculate(mosaic(3));
   expect(worker.calcs()).toEqual([mosaic(1)]);
   answer(worker);
-  await vi.advanceTimersByTimeAsync(5_000);
+  await vi.advanceTimersByTimeAsync(60);
   expect(worker.calcs()).toEqual([mosaic(1), mosaic(3)]);
 });
 
-test("the next calculation waits 5,000 ms after the last ended", async () => {
+test("the next calculation waits 60 ms after the last ended", async () => {
   const { host, worker } = await running();
   await vi.advanceTimersByTimeAsync(1_000);
   answer(worker);
   host.calculate(mosaic(2));
-  await vi.advanceTimersByTimeAsync(4_999);
+  await vi.advanceTimersByTimeAsync(59);
   expect(worker.calcs()).toHaveLength(1);
   await vi.advanceTimersByTimeAsync(1);
   expect(worker.calcs()).toHaveLength(2);
+});
+
+test("a mosaic that arrives during the wait goes alone, and only the newest", async () => {
+  const { host, worker } = await running();
+  answer(worker);
+  host.calculate(mosaic(2));
+  host.calculate(mosaic(3));
+  await vi.advanceTimersByTimeAsync(60);
+  expect(worker.calcs()).toEqual([mosaic(1), mosaic(3)]);
+  host.calculate(mosaic(4));
+  await vi.advanceTimersByTimeAsync(120);
+  expect(worker.calcs()).toEqual([mosaic(1), mosaic(3)]); // the one in flight has not answered
 });
 
 test("a result reaches onResult, with an absent or non-number id as null", async () => {
@@ -332,7 +344,7 @@ test("after a reset, nothing is calculated before the new worker is ready", asyn
   expect(nth(workers, 1).calcs()).toEqual([]);
 });
 
-test("reset forgets the 5,000 ms wait", async () => {
+test("reset forgets the 60 ms wait", async () => {
   const { host, worker, workers } = await running();
   answer(worker);
   host.reset();
@@ -344,18 +356,18 @@ test("reset forgets the 5,000 ms wait", async () => {
 
 test("the wait from before a reset does not cut the new wait short", async () => {
   const { host, worker, workers } = await running();
-  answer(worker); // its wait ends at 5,000 ms
-  await vi.advanceTimersByTimeAsync(1_000);
+  answer(worker); // its wait ends at 60 ms
+  await vi.advanceTimersByTimeAsync(20);
   host.reset();
   host.calculate(mosaic(2));
   await flush();
   const next = nth(workers, 1);
   next.emit("message", { type: "ready" });
-  answer(next); // this wait ends at 6,000 ms
+  answer(next); // this wait ends at 80 ms
   host.calculate(mosaic(3));
-  await vi.advanceTimersByTimeAsync(4_000);
+  await vi.advanceTimersByTimeAsync(40);
   expect(next.calcs()).toEqual([mosaic(2)]);
-  await vi.advanceTimersByTimeAsync(1_000);
+  await vi.advanceTimersByTimeAsync(20);
   expect(next.calcs()).toEqual([mosaic(2), mosaic(3)]);
 });
 

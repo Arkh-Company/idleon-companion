@@ -40,30 +40,6 @@ lime.$scripts.N = function (_exports, $global) {
     this.h = {};
     this.isIntMap = true;
   };
-  A["haxe.Serializer"] = {
-    run: function (value) {
-      if (value === "endlessFinish")
-        for (;;) {
-          // never returns
-        }
-      return JSON.stringify(value, function (_key, x) {
-        if (typeof x === "function") throw new Error("not serializable");
-        if (x === Infinity) return { $inf: 1 };
-        return x instanceof StringMap ? { $sm: x.h } : x;
-      });
-    },
-  };
-  A["haxe.Unserializer"] = {
-    run: function (text) {
-      return JSON.parse(text, function (_key, x) {
-        if (x && x.$inf) return Infinity;
-        if (!x || !x.$sm) return x;
-        var map = new StringMap();
-        map.h = x.$sm;
-        return map;
-      });
-    },
-  };
 
   var packed = null;
   A["haxe.io.Bytes"] = {
@@ -152,11 +128,38 @@ lime.$scripts.N = function (_exports, $global) {
     },
   };
 
+  var brokenConstructor = function () {
+    if (state().Scenario === "noActor")
+      throw new Error("this constructor is broken");
+  };
+
+  // Each one is answered by the accuracy block, in the scenario of its name. The host's calls reach `__calc` here too.
+  var counts = { actors: 0, initPasses: 0, helperCalls: 0 };
+  var helperSteps = $global.__calc.helperSteps;
+  $global.__calc.helperSteps = function () {
+    counts.helperCalls++;
+    return helperSteps();
+  };
+
   var HelperActor = function (_a, actor) {
+    brokenConstructor();
+    counts.actors++;
     this.actor = actor;
   };
   HelperActor.prototype.init = function () {
     var s = state();
+    counts.initPasses++;
+    if (s.Scenario === "helperThrows" || s.Scenario === "otherHelpers")
+      throw new Error("this helper is broken");
+    // The values of the mosaic are written back after the helpers: this one never finishes being written.
+    if (s.Scenario === "endlessFinish")
+      Object.defineProperty(s, "Scenario", {
+        set: function () {
+          for (;;) {
+            // never returns
+          }
+        },
+      });
     A["lime.utils.Log"].error("drawing");
     Script.drawImage();
     s.AFKtarget = "rewritten by a helper";
@@ -166,7 +169,9 @@ lime.$scripts.N = function (_exports, $global) {
   };
   A["scripts.ActorEvents_29"] = HelperActor;
 
-  var EveryScene = function () {};
+  var EveryScene = function () {
+    brokenConstructor();
+  };
   EveryScene.prototype.init = function () {
     if (state().Scenario === "endlessInit")
       for (;;) {
@@ -266,6 +271,19 @@ lime.$scripts.N = function (_exports, $global) {
     bonus: function (s) {
       return s.DNSM.h.CompanionBon.h.b1 + s.DNSM.h.ShinyBonusS.h.s1;
     },
+    otherHelpers: function (s) {
+      return s.EverySceneRan.length;
+    },
+    noActor: function (s) {
+      return (
+        (s.HelperRan ? 1 : 0) +
+        (s.EverySceneRan ? 2 : 0) +
+        (s.PixelHelperActor[0] ? 4 : 0)
+      );
+    },
+    helperThrows: function (s) {
+      return s.HelperRan[0];
+    },
     helper: function (s) {
       return 1 + Number(s.HelperRan[0]) + s.EverySceneRan.length;
     },
@@ -321,6 +339,9 @@ lime.$scripts.N = function (_exports, $global) {
         library.getText("known") === "text-known";
       return ok ? 1 : 0;
     },
+    throwWatched: function (s) {
+      return s.StackReads || 0;
+    },
     arraySet: function (s) {
       pako.ungzip(new Uint8Array(s.Packed));
       return setCalls;
@@ -346,14 +367,23 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_PlayerHPmax = function () {
     var s = state();
     if (s.Scenario === "throw") throw new Error("this block is broken");
+    if (s.Scenario === "throwWatched") {
+      // Node reads the stack of an error that leaves a vm context, to decorate it.
+      var watched = new Error("this block is broken");
+      Object.defineProperty(watched, "stack", {
+        get: function () {
+          s.StackReads = (s.StackReads || 0) + 1;
+          return "";
+        },
+      });
+      throw watched;
+    }
     if (s.Scenario === "notFinite") return NaN;
     if (s.Scenario === "endless")
       for (;;) {
         // never returns
       }
-    var hp = s.Base.h.hp;
-    s.Base.h.hp = -1; // A block that writes to the state: the next number must not see it.
-    return hp;
+    return s.Base.h.hp;
   };
   Blocks._customBlock_PlayerMPmax = function () {
     if (state().Scenario === "globals") return sweepGlobals();
@@ -370,9 +400,10 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_PlayerAccTot = function () {
     var s = state();
+    if (s.Scenario in counts) return counts[s.Scenario];
     var scenario = accuracyScenarios[s.Scenario];
     if (scenario) return scenario(s);
-    return s.Base.h.acc + (s.Base.h.hp < 0 ? 1000 : 0);
+    return s.Base.h.acc;
   };
   Blocks._customBlock_TotalStats = function (sub) {
     return state().Stats[sub];
@@ -386,6 +417,24 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_SaveGamee = function () {
     state().SavedBy = "SaveGamee";
   };
+
+  // In the scenario "order", each number is the turn its block ran in, counted in the state the numbers share.
+  [
+    "DamageDealed",
+    "PlayerHPmax",
+    "PlayerMPmax",
+    "PlayerAccTot",
+    "TotalStats",
+    "AFKgainrates",
+  ].forEach(function (name) {
+    var block = Blocks["_customBlock_" + name];
+    Blocks["_customBlock_" + name] = function (sub) {
+      var s = state();
+      if (s.Scenario !== "order") return block(sub);
+      s.Turn = (s.Turn || 0) + 1;
+      return s.Turn;
+    };
+  });
 
   // The calculator's text scan reads this comment: DNSM").h.LazyOne.h is created for the game; DNSM").h.FilledLater.h is
   // not, because the game fills it itself: .h,"FilledLater")

@@ -116,7 +116,7 @@ test("the slices that come before the reading with the character are kept", asyn
   h.slice([vars, piece("Cards", "early")]);
   expect(h.last()).toEqual(CALCULATING);
   h.p.reading(reading());
-  h.slice([], { formula: 1, all: 1 });
+  h.slice([], { fast: 1, all: 1 });
   await h.ready();
   expect(JSON.parse(h.worker().calcs()[0] ?? "")).toMatchObject({
     attrs: { Cards: "early" },

@@ -16,7 +16,7 @@ export interface WorkerLike {
 
 const INIT_MS = 60_000;
 const SET_MS = 15_000;
-const CALC_GAP_MS = 5_000;
+const CALC_GAP_MS = 60;
 const WORKER_OPTIONS = {
   env: {},
   stdin: false,

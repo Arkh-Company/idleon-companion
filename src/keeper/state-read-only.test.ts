@@ -3,7 +3,7 @@
 import { join } from "node:path";
 import { runInThisContext } from "node:vm";
 import { expect, test } from "vitest";
-import { FORMULA_KEYS, STATE_EXCLUDED, STATE_SPLIT } from "../shared/index.ts";
+import { CATALOG, STATE_EXCLUDED, STATE_SPLIT } from "../shared/index.ts";
 import { loadReadSource } from "./read-source.ts";
 
 let sprung = 0;
@@ -92,8 +92,8 @@ test("the list leaves out the excluded tables and the split maps", () => {
 
 test("the list leaves out only the excluded tables and the split maps", () => {
   const attrs: Record<string, unknown> = {};
-  for (const key of [...FORMULA_KEYS, ...STATE_EXCLUDED, "ChestMap"])
-    attrs[key] = [1];
+  const named = CATALOG.map((r) => r.name).filter((n) => !n.includes("."));
+  for (const key of [...named, ...STATE_EXCLUDED, "ChestMap"]) attrs[key] = [1];
   for (const key of STATE_SPLIT) attrs[key] = stringMap({ x: 1 });
   const left = new Set([...STATE_EXCLUDED, ...STATE_SPLIT]);
   const expected = Object.keys(game(attrs).gameAttributes.h).filter(
@@ -253,6 +253,67 @@ test("a two-item path reads the child of the map", () => {
 
 test("a two-item path into something that is not a map gives null", () => {
   expect(slice(game({ Cards: 3 }), [["Cards", "x"]]).out).toEqual([null]);
+});
+
+const database = (hero: unknown) =>
+  game({ PlayerDATABASE: stringMap({ A: hero }) });
+const subkey = ["PlayerDATABASE", "A", "x"];
+
+test("a three-item path reads the subkey of a child", () => {
+  expect(slice(database(stringMap({ x: [9], y: 1 })), [subkey]).out).toEqual([
+    [9],
+  ]);
+});
+
+test.each([
+  ["a missing character", ["PlayerDATABASE", "B", "x"]],
+  ["a missing subkey", ["PlayerDATABASE", "A", "nope"]],
+  ["__proto__ as the subkey", ["PlayerDATABASE", "A", "__proto__"]],
+])("%s answers null", (_name, path) => {
+  expect(slice(database(stringMap({ x: [9] })), [path]).out).toEqual([null]);
+});
+
+test("a level past the third answers null, even when it exists", () => {
+  const hero = stringMap({ x: stringMap({ y: [9] }) });
+  expect(
+    slice(database(hero), [["PlayerDATABASE", "A", "x", "y"]]).out,
+  ).toEqual([null]);
+});
+
+test("a three-item path into something that is not a map answers null", () => {
+  expect(slice(database({ x: 1 }), [subkey]).out).toEqual([null]);
+  expect(slice(database(3), [subkey]).out).toEqual([null]);
+  expect(slice(game({ PlayerDATABASE: 3 }), [subkey]).out).toEqual([null]);
+});
+
+test("an accessor on the subkey is never fired", () => {
+  const h = withAccessor({}, "x");
+  expect(slice(database(stringMap(h)), [subkey]).out).toEqual([null]);
+});
+
+test("an accessor for the character is never fired", () => {
+  const h = withAccessor({}, "A");
+  const engine = game({ PlayerDATABASE: stringMap(h) });
+  expect(slice(engine, [subkey]).out).toEqual([null]);
+});
+
+test("an accessor for the character's h is never fired", () => {
+  const hero = mapOn({}, null);
+  Object.defineProperty(hero, "h", { enumerable: true, get: spring });
+  expect(slice(database(hero), [subkey]).out).toEqual([null]);
+});
+
+test("a function at the third level is copied as $x and is not called", () => {
+  expect(slice(database(stringMap({ x: fnTrap() })), [subkey]).out).toEqual([
+    { $x: 1 },
+  ]);
+});
+
+test("an accessor inside the subkey's value is skipped", () => {
+  const value = withAccessor({ a: 1 }, "secret");
+  expect(slice(database(stringMap({ x: value })), [subkey]).out).toEqual([
+    { a: 1 },
+  ]);
 });
 
 test("an accessor on a game object's property is skipped", () => {

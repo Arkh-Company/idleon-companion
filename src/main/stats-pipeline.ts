@@ -11,7 +11,7 @@ import { linkGameFiles, linkState } from "./payloads.ts";
 import { createStateStore } from "./state-store.ts";
 import { statListCheck, statsRows, statsTracker } from "./stats.ts";
 
-/** With a character and the reader attached, the state reader sends four slices a second. */
+/** With a character and the reader attached, the state reader sends twelve slices a second. */
 const STALL_MS = 30_000;
 
 function statListOf(mosaicJson: string, char: string | null): unknown {

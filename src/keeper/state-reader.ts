@@ -1,7 +1,19 @@
-// The state rotation: one read of the game every 250 ms, never two in flight, property reads only. The keys and the
-// cursor live here, outside the game (FR-001, FR-002). Slices are never logged (FR-007).
-import { classOf, isObject } from "../shared/index.ts";
-import type { StateClass, StatePath, StateSlice } from "../shared/index.ts";
+// The state rotation: 12 reads of the game a second nominal (about 10.7 measured on Windows), by the catalog, never two
+// in flight, property reads only. The keys and the cursor live here, outside the game (FR-001, FR-002). Slices are never
+// logged (FR-007).
+import {
+  ACTIONS_GROUP,
+  CATALOG,
+  CHARACTER_ROW,
+  groupOf,
+  isObject,
+} from "../shared/index.ts";
+import type {
+  CatalogRow,
+  StateClass,
+  StatePath,
+  StateSlice,
+} from "../shared/index.ts";
 import type { Cdp } from "./cdp.ts";
 import type { EngineRef } from "./engine-ref.ts";
 import type { VarsReader } from "./vars-reader.ts";
@@ -10,9 +22,32 @@ const VARS_PATH: StatePath = ["_vars"];
 const MAX_SLICE_BYTES = 25_000;
 const UNREAD_CHARACTER_BYTES = 25_000;
 const UNREAD_BYTES = 2_000;
-/** Of every 4 slices, 3 are `formula` and the last one is `other` (research R2). */
-const SLOTS_PER_OTHER = 4;
 const FAILS_BEFORE_WARNING = 10;
+
+/** The actions slice has its own slots; the rest of the fast reading is `fast`. */
+type Lane = "actions" | StateClass;
+/**
+ * One nominal second of slots (research R3): 3 for the actions slice, 7 for the other fast slices, 2 for the slow reading.
+ * The 83 ms interval gives about 10.7 reads a second on Windows, measured, so these 12 take a little over a second.
+ */
+const SLOTS: readonly Lane[] = [
+  "actions",
+  "fast",
+  "slow",
+  "fast",
+  "actions",
+  "fast",
+  "fast",
+  "fast",
+  "actions",
+  "fast",
+  "slow",
+  "fast",
+];
+/** The first lap of a character takes every slot, in this order (research R9). */
+const FIRST_LAP: readonly Lane[] = ["actions", "fast", "slow"];
+/** Where a slot goes when its lane has nothing to read. */
+const SPARE_SLOT: readonly Lane[] = ["fast", "actions", "slow"];
 
 export interface PlanPiece {
   path: StatePath;
@@ -58,15 +93,20 @@ export function inTurn(): <T>(f: () => Promise<T>) => Promise<T> {
 
 type Sentinel = StateSlice["sentinel"] & { char: string };
 
-/** One class's place in the rotation. */
+/** One lane's place in the rotation. */
 interface Queue {
+  /** In the catalog's order of groups, so the pieces of a group stay side by side (FR-018). */
   paths: StatePath[];
   groups: PlanPiece[][];
   next: number;
-  /** Read whole since the keys were listed; a class with nothing to read starts done. */
+  /** Read whole since the keys were listed; a lane with nothing to read starts done. */
   done: boolean;
+  /** Read whole since `cycles.fast` last rose or the map changed. */
+  passed: boolean;
+  /** Kept from the last list in the middle of a pass: the end of this pass is not `done`, as its start came before the list. */
+  resumed: boolean;
 }
-type Plan = Record<StateClass, Queue>;
+type Plan = Record<Lane, Queue>;
 
 /** The sentinel of an answer, `null` with no character (there may be no map then); a bad one fails the read. */
 function sentinelOf(v: Record<string, unknown>): Sentinel | null {
@@ -98,18 +138,27 @@ export function startStateReader(deps: {
   onFailing: () => void;
   vars?: VarsReader;
   everyMs?: number;
+  catalog?: readonly CatalogRow[];
 }): { stop(): Promise<void> } {
   let stopped = false;
   let busy: Promise<void> | null = null;
   let fails = 0;
   let slot = 0;
+  let firstLap = true;
   let plan: Plan | null = null;
+  /** A lap ended: the next slot lists the keys again. */
+  let listDue = false;
   let last: Sentinel | null = null;
-  let cycles = { formula: 0, all: 0 };
+  let cycles = { fast: 0, all: 0 };
   const measured = new Map<string, number>();
+  const rows = deps.catalog ?? CATALOG;
+  const groupNames = [...new Set(rows.map((r) => r.group))];
+  const characterSubkeys = rows
+    .filter((r) => r.reading === "rápida" && r.name.startsWith(CHARACTER_ROW))
+    .map((r) => r.name.slice(CHARACTER_ROW.length));
 
-  /** A `formula` pass starts with the `_vars`, in a slot of their own. */
-  const queue = (paths: StatePath[], cls: StateClass): Queue => {
+  /** A `slow` pass starts with the `_vars`, in a slot of their own. */
+  const queue = (paths: StatePath[], lane: Lane): Queue => {
     const groups = pack(
       paths.map((path) => ({
         path,
@@ -117,19 +166,38 @@ export function startStateReader(deps: {
       })),
       MAX_SLICE_BYTES,
     );
-    if (deps.vars && cls === "formula")
+    if (deps.vars && lane === "slow")
       groups.unshift([{ path: VARS_PATH, bytes: null }]);
-    return { paths, groups, next: 0, done: groups.length === 0 };
+    return {
+      paths,
+      groups,
+      next: 0,
+      done: groups.length === 0,
+      passed: false,
+      resumed: false,
+    };
   };
 
-  /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial `formula` pass. */
+  /** A lane whose paths did not change keeps its place, so a new list never sends it back to its first slice. */
+  const carried = (fresh: Queue, old: Queue | undefined): Queue =>
+    old && JSON.stringify(old.paths) === JSON.stringify(fresh.paths)
+      ? { ...old, done: fresh.done, resumed: old.next > 0 }
+      : fresh;
+
+  /** Rotation counts follow the sentinel: a new character starts over, a new map discards the partial pass of the fast reading. */
   function observe(now: Sentinel | null): void {
     if (now?.char !== last?.char) {
-      cycles = { formula: 0, all: 0 };
+      cycles = { fast: 0, all: 0 };
       plan = null;
+      firstLap = true;
     } else if (now?.map !== last?.map) {
-      cycles = { ...cycles, formula: 0 };
-      if (plan) plan.formula.next = 0;
+      cycles = { ...cycles, fast: 0 };
+      if (plan)
+        for (const q of [plan.actions, plan.fast]) {
+          q.next = 0;
+          q.passed = false;
+          q.resumed = false;
+        }
     }
     last = now;
   }
@@ -167,44 +235,87 @@ export function startStateReader(deps: {
     fails = 0;
     observe(now);
     if (!now) return;
-    const paths: StatePath[] = [
+    const listed: StatePath[] = [
       ...top.map((k): StatePath => [k]),
       ...children.flatMap(([k, kids]) =>
         (kids as string[]).map((c): StatePath => [k, c]),
       ),
     ];
-    const of = (cls: StateClass) =>
-      queue(
-        paths.filter((p) => classOf(p, now.char) === cls),
-        cls,
-      );
-    if (paths.length > 0) plan = { formula: of("formula"), other: of("other") };
+    const hasCharacter = listed.some(
+      ([k, c]) => k === "PlayerDATABASE" && c === now.char,
+    );
+    const tagged = [
+      ...listed,
+      ...(hasCharacter ? characterSubkeys : []).map((x): StatePath => [
+        "PlayerDATABASE",
+        now.char,
+        x,
+      ]),
+    ].map((path) => ({ path, group: groupOf(rows, path, now.char) }));
+    const inOrder = (keep: (group: string) => boolean) =>
+      groupNames
+        .filter(keep)
+        .flatMap((g) => tagged.filter((t) => t.group === g).map((t) => t.path));
+    const slow = tagged.filter((t) => t.group === null).map((t) => t.path);
+    // One pack per lane, not per group: with 35 groups, a pass of the fast lane would take about 5 s (R2, R3).
+    if (tagged.length === 0) return;
+    listDue = false;
+    plan = {
+      actions: carried(
+        queue(
+          inOrder((g) => g === ACTIONS_GROUP),
+          "actions",
+        ),
+        plan?.actions,
+      ),
+      fast: carried(
+        queue(
+          inOrder((g) => g !== ACTIONS_GROUP),
+          "fast",
+        ),
+        plan?.fast,
+      ),
+      slow: queue(slow, "slow"),
+    };
   }
 
-  /** The slice's pieces are read: moves the cursor and raises the counts when a pass of the class ends. */
-  function advance(p: Plan, cls: StateClass): void {
-    slot++;
-    const q = p[cls];
+  /** A pass of the fast reading is both of its lanes read whole; a lane with nothing to read never holds it back. */
+  const passed = (q: Queue) => q.passed || q.groups.length === 0;
+
+  /** The slice's pieces are read: moves the cursor and raises the counts when a pass of the lane ends. */
+  function advance(p: Plan, lane: Lane): void {
+    if (!firstLap) slot++;
+    const q = p[lane];
     q.next++;
     if (q.next < q.groups.length) return;
-    p[cls] = { ...queue(q.paths, cls), done: true };
-    if (cls === "formula") cycles = { ...cycles, formula: cycles.formula + 1 };
-    if (p.formula.done && p.other.done) {
+    p[lane] = {
+      ...queue(q.paths, lane),
+      done: q.done || !q.resumed,
+      passed: true,
+    };
+    if (lane !== "slow" && passed(p.actions) && passed(p.fast)) {
+      cycles = { ...cycles, fast: cycles.fast + 1 };
+      p.actions.passed = false;
+      p.fast.passed = false;
+    }
+    if (p.actions.done && p.fast.done && p.slow.done) {
       cycles = { ...cycles, all: cycles.all + 1 };
-      plan = null; // the next slot lists the keys again
+      listDue = true;
+      firstLap = false;
     }
   }
 
+  function laneNow(p: Plan): Lane {
+    if (firstLap) return FIRST_LAP.find((l) => !p[l].done) ?? "slow";
+    const wanted = SLOTS[slot % SLOTS.length] ?? "fast";
+    return (
+      [wanted, ...SPARE_SLOT].find((l) => p[l].groups.length > 0) ?? "slow"
+    );
+  }
+
   async function readSlice(ref: EngineRef, p: Plan): Promise<void> {
-    const wanted: StateClass =
-      slot % SLOTS_PER_OTHER === SLOTS_PER_OTHER - 1 ? "other" : "formula";
-    const cls: StateClass =
-      p[wanted].groups.length > 0
-        ? wanted
-        : wanted === "formula"
-          ? "other"
-          : "formula";
-    const q = p[cls];
+    const lane = laneNow(p);
+    const q = p[lane];
     const paths = (q.groups[q.next] ?? []).map((x) => x.path);
     const isVars = paths[0] === VARS_PATH;
     const reads = isVars ? [] : paths;
@@ -220,7 +331,7 @@ export function startStateReader(deps: {
     paths.forEach((path, i) => {
       measured.set(JSON.stringify(path), JSON.stringify(values[i]).length);
     });
-    advance(p, cls);
+    advance(p, lane);
     observe(now);
     if (!now) return;
     const slice: StateSlice = {
@@ -239,7 +350,7 @@ export function startStateReader(deps: {
     if (stopped) return;
     const ref = deps.engine();
     if (!ref) return;
-    if (plan) await readSlice(ref, plan);
+    if (plan && !listDue) await readSlice(ref, plan);
     else await readList(ref);
   }
 
@@ -261,7 +372,7 @@ export function startStateReader(deps: {
       .finally(() => {
         busy = null;
       });
-  }, deps.everyMs ?? 250);
+  }, deps.everyMs ?? 83);
 
   return {
     /** Resolves after the read in flight, if any, and the release of the `_vars`; no read starts after this. */

@@ -111,7 +111,7 @@ test("a value within 1% of the list passes", () => {
   const c = clock();
   const check = statListCheck(c.now);
   check(numbers({ str: 1005 }), [1000, 22, 33, 44]);
-  c.pass(40_000);
+  c.pass(50_001);
   expect(check(numbers({ str: 1005 }), [1000, 22, 33, 44])).toEqual(new Set());
 });
 
@@ -119,19 +119,44 @@ test("a value within 1 point of the list passes", () => {
   const c = clock();
   const check = statListCheck(c.now);
   check(numbers({ str: 12 }), [11, 22, 33, 44]);
-  c.pass(40_000);
+  c.pass(50_001);
   expect(check(numbers({ str: 12 }), [11, 22, 33, 44])).toEqual(new Set());
 });
 
-test("a different value passes for 35 s and then is unavailable", () => {
+test("a different value passes for 50 s and then is unavailable", () => {
   const c = clock();
   const check = statListCheck(c.now);
   const list = [11, 22, 33, 900];
   expect(check(numbers(), list)).toEqual(new Set());
-  c.pass(35_000);
+  c.pass(50_000);
   expect(check(numbers(), list)).toEqual(new Set());
   c.pass(1);
   expect(check(numbers(), list)).toEqual(new Set(["luk"]));
+});
+
+test("a number that keeps changing while the list has not caught up stays available", () => {
+  const c = clock();
+  const check = statListCheck(c.now);
+  const list = [11, 22, 33, 900];
+  expect(check(numbers({ luk: 100 }), list)).toEqual(new Set()); // 0 s
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set()); // 0 s, A -> B
+  c.pass(30_000);
+  expect(check(numbers({ luk: 300 }), list)).toEqual(new Set()); // 30 s, B -> C
+  c.pass(25_000);
+  expect(check(numbers({ luk: 400 }), list)).toEqual(new Set()); // 55 s, C -> D
+});
+
+test("a number that stopped changing, still different from the list, is unavailable after 50 s", () => {
+  const c = clock();
+  const check = statListCheck(c.now);
+  const list = [11, 22, 33, 900];
+  check(numbers({ luk: 100 }), list);
+  c.pass(30_000);
+  check(numbers({ luk: 200 }), list);
+  c.pass(50_000);
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set());
+  c.pass(1);
+  expect(check(numbers({ luk: 200 }), list)).toEqual(new Set(["luk"]));
 });
 
 test("the list is read as STR, AGI, WIS, LUK", () => {
@@ -139,7 +164,7 @@ test("the list is read as STR, AGI, WIS, LUK", () => {
   const check = statListCheck(c.now);
   const list = [900, 901, 902, 903];
   check(numbers(), list);
-  c.pass(35_001);
+  c.pass(50_001);
   expect(check(numbers(), list)).toEqual(new Set(["str", "agi", "wis", "luk"]));
 });
 
@@ -148,7 +173,7 @@ test("equal again clears the row and its time", () => {
   const check = statListCheck(c.now);
   const far = [900, 22, 33, 44];
   check(numbers(), far);
-  c.pass(35_001);
+  c.pass(50_001);
   expect(check(numbers(), far)).toEqual(new Set(["str"]));
   expect(check(numbers(), [11, 22, 33, 44])).toEqual(new Set());
   expect(check(numbers(), far)).toEqual(new Set());
@@ -163,7 +188,7 @@ test.each<[string, unknown]>([
   const c = clock();
   const check = statListCheck(c.now);
   check(numbers(), [900, 22, 33, 44]);
-  c.pass(35_001);
+  c.pass(50_001);
   expect(check(numbers(), list)).toEqual(new Set());
   expect(check(numbers(), [900, 22, 33, 44])).toEqual(new Set()); // the time starts over
 });
@@ -173,7 +198,7 @@ test("a number that was not calculated is not compared", () => {
   const check = statListCheck(c.now);
   const list = [900, 22, 33, 44];
   check(numbers({ str: null }), list);
-  c.pass(35_001);
+  c.pass(50_001);
   expect(check(numbers({ str: null }), list)).toEqual(new Set());
 });
 

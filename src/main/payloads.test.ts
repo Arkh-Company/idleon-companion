@@ -146,7 +146,7 @@ const slice = {
     { path: ["PlayerDATABASE", "A"], value: { $m: {} } },
   ],
   at: 5,
-  cycles: { formula: 1, all: 0 },
+  cycles: { fast: 1, all: 0 },
 };
 const withPiece = (piece: unknown) => ({ ...slice, pieces: [piece] });
 
@@ -171,6 +171,14 @@ test("the value of a piece is not inspected", () => {
   expect(linkState(odd)).toStrictEqual(odd);
 });
 
+test("a character's subkey, the third level, passes", () => {
+  const subkey = withPiece({
+    path: ["PlayerDATABASE", "A", "SkillLevels"],
+    value: [1],
+  });
+  expect(linkState(subkey)).toStrictEqual(subkey);
+});
+
 test.each([
   ["no object", "state"],
   ["a list", []],
@@ -187,15 +195,27 @@ test.each([
   ["a path that is not a list", withPiece({ path: "Cards", value: 1 })],
   ["a path of no items", withPiece({ path: [], value: 1 })],
   ["a path of 3 items", withPiece({ path: ["a", "b", "c"], value: 1 })],
+  [
+    "a path of 3 items on a split map other than the characters",
+    withPiece({ path: ["DNSM", "b", "c"], value: 1 }),
+  ],
+  [
+    "a path of 4 items",
+    withPiece({ path: ["PlayerDATABASE", "A", "b", "c"], value: 1 }),
+  ],
+  [
+    "a third level that is not text",
+    withPiece({ path: ["PlayerDATABASE", "A", 1], value: 1 }),
+  ],
   ["a path item that is not text", withPiece({ path: ["a", 1], value: 1 })],
   ["no cycles", { ...slice, cycles: undefined }],
   [
     "a formula cycle that is not a number",
-    { ...slice, cycles: { formula: "1", all: 0 } },
+    { ...slice, cycles: { fast: "1", all: 0 } },
   ],
   [
     "an all cycle that is not a number",
-    { ...slice, cycles: { formula: 1, all: null } },
+    { ...slice, cycles: { fast: 1, all: null } },
   ],
 ])("a link slice with %s is refused", (_name, value) => {
   expect(linkState(value)).toBeNull();

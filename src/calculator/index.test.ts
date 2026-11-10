@@ -87,6 +87,22 @@ test("calc with bad JSON answers result with every number null", () => {
   });
 });
 
+test("a calc that fails keeps the engine, and the next calc uses it", () => {
+  const port = fakePort();
+  const calculate = vi
+    .fn<(json: string) => CalcNumbers>()
+    .mockImplementationOnce(() => {
+      throw new Error("broken");
+    })
+    .mockReturnValue(NUMBERS);
+  const make = engineThat(calculate);
+  handleMessage(INIT, port, make);
+  handleMessage({ type: "calc", mosaic: "{}" }, port, make);
+  handleMessage({ type: "calc", mosaic: "{}" }, port, make);
+  expect(make).toHaveBeenCalledOnce();
+  expect(posted(port)[2]).toMatchObject({ type: "result", numbers: NUMBERS });
+});
+
 test.each([[null], ["text"], [{ type: "other" }], [{}]])(
   "an unknown message does nothing: %j",
   (m) => {

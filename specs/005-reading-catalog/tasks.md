@@ -41,7 +41,7 @@ a reading diverges from the rule.
 
 ### Tests for Phase 1
 
-- [ ] T001 [P] Catalog rules tests in src/shared/reading-catalog-rules.test.ts
+- [X] T001 [P] Catalog rules tests in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases, all with invented rows: `parseCatalog` reads a table of 2 rows into `CatalogRow`, with `numbers` as a list and
     `nenhum`, `não medido` and `só quebra` as an empty list; a row with a missing column throws; `catalogName` maps
@@ -52,26 +52,26 @@ a reading diverges from the rule.
     the row when: `reading` is `rápida` with no declared number, `lenta` with a declared number and no `OutrosPersonagens.`
     prefix, `rápida` on an `OutrosPersonagens.` row, `nature` outside the 5 values, `reading` outside the 2 values, or a
     name repeated.
-- [ ] T002 [P] Real catalog test in src/shared/reading-catalog.test.ts
+- [X] T002 [P] Real catalog test in src/shared/reading-catalog.test.ts
   - Files: `src/shared/reading-catalog.test.ts`
   - Cases: `catalogProblems(CATALOG, NUMBER_IDS)` is empty (SC-004, SC-006); every row has every column filled (FR-002);
     the fast rows sum 97 and the `ações` rows are 13; no row name has more than one dot-separated prefix from the 4 known
     ones; no cell of the file matches a list of invented character names used as a canary, and no `name` equals a key
     of `PlayerDATABASE` in the invented fixture (FR-004).
-- [ ] T003 [P] Shared types tests in src/shared/state.test.ts
+- [X] T003 [P] Shared types tests in src/shared/state.test.ts
   - Files: `src/shared/state.test.ts` (existing: the `classOf` cases of `formula`/`other` move to T001 and this file keeps what
     is left)
   - Cases: `StatePath` accepts 1, 2 and 3 levels; `NUMBER_IDS` still has the 11 ids in the same order as `TARGETS`.
 
 ### Implementation for Phase 1
 
-- [ ] T004 Create the catalog in src/shared/reading-catalog.md
+- [X] T004 Create the catalog in src/shared/reading-catalog.md
   - Files: `src/shared/reading-catalog.md`
   - From `specs/005-reading-catalog/prototipo/catalogo.md`, every row, with the columns kept and one more at the end,
     `Grupo`: `ações` for the 11 rows of section A of `prototipo/revisar.md`, `EquipmentMap` and `DNSM.SetBonusTOTz`; for
     the other `rápida` rows, the `Mecânica` without " (a conferir)"; `—` for `lenta`. `Leitura` of `EquipmentMap` and
     `DNSM.SetBonusTOTz` is already `rápida`. Group rows of a group next to each other is not needed: the reader sorts.
-- [ ] T005 Catalog rules in src/shared/reading-catalog-rules.ts
+- [X] T005 Catalog rules in src/shared/reading-catalog-rules.ts
   - Files: `src/shared/reading-catalog-rules.ts`
   - Signatures: `export interface CatalogRow { name; type; bytes: number; nature; numbers: string[]; changesOn; mechanic; feature; reading: "rápida" | "lenta"; group }`;
     `parseCatalog(text: string): CatalogRow[]`; `catalogName(path: StatePath, char: string | null): string | null`;
@@ -80,12 +80,12 @@ a reading diverges from the rule.
   - Rules quoted from data-model.md: "`reading` é `rápida` se, e só se, `numbers` tem um número declarado por uma feature
     e o nome não começa com `OutrosPersonagens.`"; `nature` "dado de origem, cache derivado, tabela fixa, rascunho ou
     interface". No import with `?raw`: Node runs this file directly in T024.
-- [ ] T006 The catalog data in src/shared/reading-catalog.ts
+- [X] T006 The catalog data in src/shared/reading-catalog.ts
   - Files: `src/shared/reading-catalog.ts`, `src/shared/index.ts`, `src/shared/raw.d.ts` when `*?raw` is not declared for
     this folder
   - Signatures: `export const CATALOG: readonly CatalogRow[]`, `parseCatalog` of the `?raw` import; `index.ts` re-exports
     this file and the rules. The `classOf` and `groupOf` of `index.ts` close over `CATALOG`.
-- [ ] T007 Shared types in src/shared/state.ts
+- [X] T007 Shared types in src/shared/state.ts
   - Files: `src/shared/state.ts`, `src/shared/index.ts`
   - Changes: `StatePath` gets `[string, string, string]`; `StateClass` becomes `"fast" | "slow"`; `StateSlice.cycles` becomes
     `{ fast: number; all: number }`; `FORMULA_KEYS` and the old `classOf` are removed. `NUMBER_IDS` stays: it is what the
@@ -106,11 +106,11 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
 
 ### Tests for Phase 2
 
-- [ ] T008 [P] [US1] Third path level in src/keeper/state-read-only.test.ts
+- [X] T008 [P] [US1] Third path level in src/keeper/state-read-only.test.ts
   - Files: `src/keeper/state-read-only.test.ts`
   - Cases: the traps of the existing suite (getter and function that throw when touched) also pass for
     `["PlayerDATABASE","A","x"]`; a missing character or subkey answers `null`; a level past the third answers `null`.
-- [ ] T009 [US1] Slot and lap tests in src/keeper/state-reader.test.ts and src/keeper/state-reader-fixture.ts
+- [X] T009 [US1] Slot and lap tests in src/keeper/state-reader.test.ts and src/keeper/state-reader-fixture.ts
   - Files: `src/keeper/state-reader.test.ts`, `src/keeper/state-reader-fixture.ts` (the tick becomes 83 ms, and the invented
     keys come from a test catalog passed to the reader)
   - Cases: the slot pattern of T010 over 12 ticks: 3 `ações`, 7 other fast, 2 slow; no class with nothing to read gives its
@@ -122,13 +122,13 @@ piece before anything else, and a piece outside the catalog is read as `slow`.
 
 ### Implementation for Phase 2
 
-- [ ] T010 [US1] The schedule in src/keeper/state-reader.ts
+- [X] T010 [US1] The schedule in src/keeper/state-reader.ts
   - Files: `src/keeper/state-reader.ts`; split it when it passes 400 lines
   - Signatures: `everyMs` defaults to `83`; `const SLOTS = ["actions","fast","slow","fast","actions","fast","fast","fast","actions","fast","slow","fast"]`;
     queues `actions`, `fast` and `slow`, built from the listed paths plus the `Personagem.x` fast rows as
     `["PlayerDATABASE", char, x]`; grouping sorts by `groupOf` and `pack`s each group up to `MAX_SLICE_BYTES`.
   - Removes `SLOTS_PER_OTHER`. A first lap uses every slot: `actions`, then `fast`, then `slow`, then `cycles.all` rises.
-- [ ] T011 [US1] The third level in src/keeper/state-slice.js
+- [X] T011 [US1] The third level in src/keeper/state-slice.js
   - Files: `src/keeper/state-slice.js`
   - Change: a path of 3 levels reads `h`, then the child, then its `h`, then the subkey, all by `Object.getOwnPropertyDescriptor`.
     No other change to what it copies.
@@ -146,7 +146,7 @@ a fresh engine over the same mosaic.
 
 ### Tests for Phase 3
 
-- [ ] T012 [US1] Long-lived context tests in src/calculator/engine.test.ts and src/calculator/index.test.ts
+- [X] T012 [US1] Long-lived context tests in src/calculator/engine.test.ts and src/calculator/index.test.ts
   - Files: `src/calculator/engine.test.ts`, `src/calculator/index.test.ts` (existing: the cases that expected a fresh
     context per calculation and a restore before each number change to the new contract)
   - Cases, with the invented game: the game boots once for 3 calculations; mosaic A, then B, then A give the numbers of a
@@ -157,12 +157,12 @@ a fresh engine over the same mosaic.
 
 ### Implementation for Phase 3
 
-- [ ] T013 [US1] The calculation in src/calculator/context.js
+- [X] T013 [US1] The calculation in src/calculator/context.js
   - Files: `src/calculator/context.js`
   - Reference: `prototipo/vivo.cjs`, mode `v4`. Changes: `helperPlan(lazyDnsm)` builds the steps and quiets the game only once;
     on later calls it adds the lazy maps to the new state and answers the same plan; `finishHelpers` becomes `reapply` only;
     `number(block, arg)` no longer restores; `snapshot` and `restore` are removed.
-- [ ] T014 [US1] One boot in src/calculator/engine.ts
+- [X] T014 [US1] One boot in src/calculator/engine.ts
   - Files: `src/calculator/engine.ts`
   - Change: `createEngine` boots once and keeps `{ sandbox, run }`; `calculate` sets `__mosaic`, runs `loadMosaic`, `helperPlan`,
     each `helperStep` with its time limit, `finishHelpers`, and the numbers. The ponytail note on fresh contexts goes.
@@ -180,7 +180,7 @@ after the next read of it comes the same.
 
 ### Tests for Phase 4
 
-- [ ] T015 [P] [US1] Mosaic tests in src/main/state-store.test.ts
+- [X] T015 [P] [US1] Mosaic tests in src/main/state-store.test.ts
   - Files: `src/main/state-store.test.ts` (existing: the cases of "a whole rotation and a change" change to the new rule)
   - Cases: nothing is due before the first lap ends (FR-021); after it, a changed fast piece outside `ações` is due in that
     same slice; a slow piece that changed is not due alone; an `ações` slice that changed is due only when the next read of
@@ -188,22 +188,22 @@ after the next read of it comes the same.
     `cycles.fast` before anything is due; a character change wipes the mosaic and starts the first lap again; a
     `["PlayerDATABASE", char, x]` piece enters the mosaic under the character; a whole character arriving drops the stored
     subkeys of that character (R8); `__proto__` in any of the 3 levels is dropped; a 3-level path on another top key is dropped.
-- [ ] T016 [P] [US1] Host tests in src/main/calculator-host.test.ts
+- [X] T016 [P] [US1] Host tests in src/main/calculator-host.test.ts
   - Files: `src/main/calculator-host.test.ts`, `src/main/calculator-host-fixture.ts`
   - Cases: after a result, the next calculation waits 60 ms (existing 5 s cases change); only the newest waiting mosaic is sent;
     one calculation in flight.
-- [ ] T017 [US1] Pipeline test in src/main/stats-pipeline.test.ts
+- [X] T017 [US1] Pipeline test in src/main/stats-pipeline.test.ts
   - Files: `src/main/stats-pipeline.test.ts`, `src/main/stats-pipeline-fixture.ts`
   - Cases: the fixture sends `cycles: { fast, all }`; the first number appears only after the first lap, and a changed fast piece
     reaches `tracker.result` with no new rotation.
 
 ### Implementation for Phase 4
 
-- [ ] T018 [US1] The mosaic in src/main/state-store.ts
+- [X] T018 [US1] The mosaic in src/main/state-store.ts
   - Files: `src/main/state-store.ts`
   - Change: `belongs` and `mosaicJson` take the third level, only under `PlayerDATABASE`; the due rule of data-model.md, "Confirmando"
     included; a whole character drops its subkeys.
-- [ ] T019 [US1] The gap in src/main/calculator-host.ts
+- [X] T019 [US1] The gap in src/main/calculator-host.ts
   - Files: `src/main/calculator-host.ts`
   - Change: `CALC_GAP_MS = 60`.
 
@@ -220,30 +220,30 @@ one extra piece and one renamed piece lists both.
 
 ### Tests for Phase 5
 
-- [ ] T020 [P] [US3] Declared number test in src/shared/reading-catalog-rules.test.ts
+- [X] T020 [P] [US3] Declared number test in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases: `catalogProblems(rows, [...ids, "inventedNumber"])` names the `lenta` row that affects `inventedNumber`, and is empty
     once the row is `rápida`.
-- [ ] T021 [P] [US4] Inventory tests in src/shared/reading-catalog-rules.test.ts
+- [X] T021 [P] [US4] Inventory tests in src/shared/reading-catalog-rules.test.ts
   - Files: `src/shared/reading-catalog-rules.test.ts`
   - Cases: `inventoryNames` of an invented state has top keys, `DNSM.x`, `Personagem.x`, `OutrosPersonagens.x` and only the closed
     `_vars` keys, with no character name; `diffInventory` lists a new piece and, for a renamed one, the new name in `added` and
     the old in `gone`; both lists are sorted.
-- [ ] T022 [P] [US4] Unknown piece test in src/keeper/state-reader.test.ts
+- [X] T022 [P] [US4] Unknown piece test in src/keeper/state-reader.test.ts
   - Files: `src/keeper/state-reader.test.ts`
   - Cases: a key of the state outside the catalog goes in a slow slice, the rotation completes and no error is reported (FR-015).
 
 ### Implementation for Phase 5
 
-- [ ] T023 [US4] Inventory rules in src/shared/reading-catalog-rules.ts
+- [X] T023 [US4] Inventory rules in src/shared/reading-catalog-rules.ts
   - Files: `src/shared/reading-catalog-rules.ts`
   - Signatures: `inventoryNames(state: { attrs: Record<string, unknown>; vars?: Record<string, unknown> }, char: string): string[]`;
     `diffInventory(rows, names): { added: string[]; gone: string[] }`.
-- [ ] T024 [US4] The inventory script in scripts/reading-inventory.ts
+- [X] T024 [US4] The inventory script in scripts/reading-inventory.ts
   - Files: `scripts/reading-inventory.ts`
   - Usage: `node scripts/reading-inventory.ts <state.json>`. Reads the catalog file and the state, and prints only the names of
     `added` and `gone`. Imports `src/shared/reading-catalog-rules.ts` directly, since plain Node has no `?raw`.
-- [ ] T025 [US3] How to add a number in src/shared/state.ts
+- [X] T025 [US3] How to add a number in src/shared/state.ts
   - Files: `src/shared/state.ts`
   - Change: a comment over `NUMBER_IDS` saying a feature declares its numbers here and the catalog check says what to promote.
 
@@ -259,16 +259,16 @@ Verify: `just test-one src/shared/reading-catalog-rules.test.ts` - all pass; `ju
 
 ### Tests for Phase 6
 
-- [ ] T026 Check the documents against the code in src/shared/modules.test.ts
+- [X] T026 Check the documents against the code in src/shared/modules.test.ts
   - Files: `src/shared/modules.test.ts` only if it lists the modules of `src/shared`
   - Cases: the new entry is listed, when that test lists them; otherwise no change.
 
 ### Implementation for Phase 6
 
-- [ ] T027 [P] Reading in ARCHITECTURE.md
+- [X] T027 [P] Reading in ARCHITECTURE.md
   - Files: `ARCHITECTURE.md`
   - Changes: reading at 12 per second by the catalog, the slot division, the long-lived context (ADR 0007), the settled `ações` slice.
-- [ ] T028 [P] Terms in GLOSSARY.md
+- [X] T028 [P] Terms in GLOSSARY.md
   - Files: `GLOSSARY.md`
   - Changes: **Catalog**, **Fast reading**, **Slow reading**, **Actions slice**; _Avoid_ `formula` and `other` for readings.
 

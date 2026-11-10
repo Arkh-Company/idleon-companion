@@ -1,27 +1,31 @@
-// The pieces of the state and their classes: a class is only a reading priority, no key is left out (research R2).
+// The shared shapes of the state; the class of a piece comes from the catalog (reading-catalog-rules.test.ts).
 import { expect, test } from "vitest";
-import { classOf, FORMULA_KEYS, STATE_EXCLUDED, VARS_KEYS } from "./state.ts";
-import type { StateClass, StatePath } from "./state.ts";
+import { NUMBER_IDS, VARS_KEYS } from "./state.ts";
+import type { StatePath } from "./state.ts";
 
-test.each<[string, StatePath, StateClass]>([
-  ["a key the formulas read", ["Cards"], "formula"],
-  ["a key the formulas do not read", ["ChestMap"], "other"],
-  ["the active character", ["PlayerDATABASE", "A"], "formula"],
-  ["another character", ["PlayerDATABASE", "B"], "other"],
-  ["the companion bonus", ["DNSM", "CompanionBon"], "formula"],
-  ["the shiny bonus", ["DNSM", "ShinyBonusS"], "formula"],
-  ["another child of DNSM", ["DNSM", "Other"], "other"],
-  ["the _vars", ["_vars"], "formula"],
-])("%s has its class", (_name, path, expected) => {
-  expect(classOf(path, "A")).toBe(expected);
+test("a path has 1, 2 or 3 levels", () => {
+  const paths: StatePath[] = [
+    ["Cards"],
+    ["DNSM", "x"],
+    ["PlayerDATABASE", "A", "x"],
+  ];
+  expect(paths.map((p) => p.length)).toEqual([1, 2, 3]);
 });
 
-test("with no character, no entry of PlayerDATABASE is the active one", () => {
-  expect(classOf(["PlayerDATABASE", "A"], null)).toBe("other");
-});
-
-test("no excluded key is a formula key", () => {
-  expect(STATE_EXCLUDED.filter((k) => FORMULA_KEYS.has(k))).toEqual([]);
+test("the numbers keep their 11 ids in the order of TARGETS", () => {
+  expect(NUMBER_IDS).toEqual([
+    "damageMax",
+    "damageMin",
+    "hp",
+    "mp",
+    "accuracy",
+    "str",
+    "agi",
+    "wis",
+    "luk",
+    "dropRate",
+    "afkGains",
+  ]);
 });
 
 test("the closed list of _vars has 27 distinct names", () => {
