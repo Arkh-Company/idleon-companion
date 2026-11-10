@@ -196,6 +196,7 @@ export function startStateReader(deps: {
         for (const q of [plan.actions, plan.fast]) {
           q.next = 0;
           q.passed = false;
+          q.resumed = false;
         }
     }
     last = now;

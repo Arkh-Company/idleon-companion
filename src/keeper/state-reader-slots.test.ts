@@ -193,6 +193,18 @@ test("the end of a fast pass that began before the list does not raise the count
   expect(slices.at(-1)?.cycles.all).toBe(2);
 });
 
+test("after a change of map, a resumed fast lane counts its next whole pass for the count of all", async () => {
+  const { game, sent, slices } = setup(fourFastTwoSlow());
+  await tick(4);
+  const big = game.value;
+  game.value = (p) => (p[0].startsWith("Slow") ? 1 : big(p));
+  await tick(11 + 1); // up to the list, which keeps the fast lane on its second slice
+  game.map = 2;
+  await tick(6); // Fast1 sees the map, then Fast0, Fast1, Slow0, Fast2 and Fast3: a whole pass on the new map
+  expect(sliceReads(sent).at(-1)?.paths[0]?.[0]).toBe("Fast3");
+  expect(slices.at(-1)?.cycles.all).toBe(3);
+});
+
 test("a change of map right at the end of the slow pass sends the fast lane back to its start", async () => {
   const { game, sent } = setup(fourFastTwoSlow());
   await tick(4 + 10); // up to slot 9, with the fast lane on its second slice
