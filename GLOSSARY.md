@@ -33,8 +33,8 @@ screen from another), by property reads only.
 _Avoid_: snapshot, sample, poll
 
 **Slice**:
-A piece of the account's state of up to 25 KB, read by property reads only and carried over the **Link**; 12 a second,
-never two at once, and nothing stays in the game between them.
+A piece of the account's state of up to 25 KB, read by property reads only and carried over the **Link**; 12 a second
+nominal (about 10.7 measured on Windows), never two at once, and nothing stays in the game between them.
 _Avoid_: snapshot, chunk, batch
 
 **Catalog**:
