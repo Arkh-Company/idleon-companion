@@ -339,6 +339,9 @@ lime.$scripts.N = function (_exports, $global) {
         library.getText("known") === "text-known";
       return ok ? 1 : 0;
     },
+    throwWatched: function (s) {
+      return s.StackReads || 0;
+    },
     arraySet: function (s) {
       pako.ungzip(new Uint8Array(s.Packed));
       return setCalls;
@@ -364,6 +367,17 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_PlayerHPmax = function () {
     var s = state();
     if (s.Scenario === "throw") throw new Error("this block is broken");
+    if (s.Scenario === "throwWatched") {
+      // Node reads the stack of an error that leaves a vm context, to decorate it.
+      var watched = new Error("this block is broken");
+      Object.defineProperty(watched, "stack", {
+        get: function () {
+          s.StackReads = (s.StackReads || 0) + 1;
+          return "";
+        },
+      });
+      throw watched;
+    }
     if (s.Scenario === "notFinite") return NaN;
     if (s.Scenario === "endless")
       for (;;) {

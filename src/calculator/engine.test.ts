@@ -77,6 +77,12 @@ describe("numbers", () => {
     expect(n.str).toBe(11);
   });
 
+  test("a block that throws is answered inside the context: no error reaches the host", () => {
+    const n = scenario("throwWatched");
+    expect(n.hp).toBeNull();
+    expect(n.accuracy).toBe(0); // how many times something outside the game read the error's stack
+  });
+
   test("NaN gives null", () => {
     expect(scenario("notFinite").hp).toBeNull();
   });

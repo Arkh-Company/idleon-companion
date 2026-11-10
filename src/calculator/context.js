@@ -381,6 +381,13 @@
 
     finishHelpers: reapply,
 
-    number: (block, arg) => owner[block]["_customBlock_" + block](arg, 0, 0),
+    // Caught here, as in `helperSteps`: this number alone is unavailable. A time limit is not an error and still cuts it.
+    number: (block, arg) => {
+      try {
+        return owner[block]["_customBlock_" + block](arg, 0, 0);
+      } catch {
+        return null;
+      }
+    },
   };
 });

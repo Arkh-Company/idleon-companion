@@ -99,7 +99,7 @@ export function createEngine(
               NUMBER_MS,
             );
           } catch {
-            // This number alone is unavailable.
+            // The time limit: this number alone is unavailable.
           }
           return [
             id,
