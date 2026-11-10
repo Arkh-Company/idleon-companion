@@ -191,6 +191,7 @@ describe("catalogProblems", () => {
     slow("Baz"),
     row({ name: "OutrosPersonagens.Foo", reading: "lenta", group: "—" }),
     row({ name: "Qux", numbers: ["mp"], reading: "lenta", group: "—" }),
+    row({ name: "_vars.Foo", reading: "lenta", group: "—" }),
   ];
 
   test("a right table has no problem", () => {
@@ -214,6 +215,7 @@ describe("catalogProblems", () => {
       row({ name: "OutrosPersonagens.Bad" }),
       "OutrosPersonagens.Bad",
     ],
+    ["`rápida` on a _vars key", row({ name: "_vars.Bad" }), "_vars.Bad"],
     ["a nature outside the 5", row({ name: "Bad", nature: "outra" }), "Bad"],
     [
       "a reading outside the 2",

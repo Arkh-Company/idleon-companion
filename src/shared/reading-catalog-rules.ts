@@ -30,6 +30,8 @@ const NATURES = [
   "interface",
 ];
 const OTHER_CHARACTERS = "OutrosPersonagens.";
+/** Rows the keeper never reads in the fast reading: the other characters, and the `_vars`, which have a slot of the slow one. */
+const NEVER_FAST = [OTHER_CHARACTERS, "_vars."];
 
 function parseNumbers(cell: string): string[] {
   if (NO_NUMBERS.includes(cell)) return [];
@@ -130,7 +132,7 @@ export function catalogProblems(
       problems.push(`${name}: unknown nature "${nature}"`);
     const expected =
       numbers.some((n) => shownNumbers.includes(n)) &&
-      !name.startsWith(OTHER_CHARACTERS)
+      !NEVER_FAST.some((prefix) => name.startsWith(prefix))
         ? "rápida"
         : "lenta";
     if ((reading as string) !== expected)
