@@ -226,7 +226,7 @@ test("with the real catalog, a pass of the fast lane fits its 7 slots of a secon
     .slice(secondList)
     .flatMap((s) => s.paths.slice(0, 1))
     .filter((p) => {
-      const group = groupOf(p, "Hero");
+      const group = groupOf(CATALOG, p, "Hero");
       return group !== null && group !== ACTIONS_GROUP;
     })
     .map((p) => p.join("."));

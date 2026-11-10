@@ -1,6 +1,7 @@
 // The mosaic: the newest value of each piece of the state, only in memory and never logged (FR-007, FR-022).
 import {
   ACTIONS_GROUP,
+  CATALOG,
   groupOf,
   isObject,
   STATE_EXCLUDED,
@@ -74,11 +75,8 @@ export function createStateStore(cb: {
   function wipe(): void {
     pieces.clear();
     changed = false;
-    unsettled.clear();
     calculated = false;
     fast = 0;
-    map = null;
-    held = false;
     start = null;
   }
 
@@ -92,7 +90,7 @@ export function createStateStore(cb: {
    * Answers whether it is a change of the actions, the only one that counts towards the limit.
    */
   function note(path: StatePath, key: string, isNew: boolean): boolean {
-    const group = groupOf(path, char);
+    const group = groupOf(CATALOG, path, char);
     if (group === ACTIONS_GROUP) {
       if (isNew) unsettled.add(key);
       else if (unsettled.delete(key)) changed = true;

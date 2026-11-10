@@ -17,6 +17,7 @@ export interface CatalogRow {
 }
 
 export const ACTIONS_GROUP = "ações";
+export const CHARACTER_ROW = "Personagem.";
 
 const COLUMNS = 10;
 const NO_NUMBERS = ["nenhum", "não medido", "só quebra"];
@@ -49,40 +50,18 @@ function parseRow(line: string): CatalogRow {
     bytes < 0
   )
     throw new Error(`bad catalog row: ${line}`);
-  const [
-    name,
-    type,
-    ,
-    nature,
-    numbers,
-    changesOn,
-    mechanic,
-    feature,
-    reading,
-    group,
-  ] = cells as [
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-  ];
+  const at = (i: number) => cells[i] ?? "";
   return {
-    name: name.replaceAll("`", ""),
-    type,
+    name: at(0).replaceAll("`", ""),
+    type: at(1),
     bytes,
-    nature,
-    numbers: parseNumbers(numbers),
-    changesOn,
-    mechanic,
-    feature,
-    reading: reading as CatalogRow["reading"],
-    group,
+    nature: at(3),
+    numbers: parseNumbers(at(4)),
+    changesOn: at(5),
+    mechanic: at(6),
+    feature: at(7),
+    reading: at(8) as CatalogRow["reading"],
+    group: at(9),
   };
 }
 
@@ -105,7 +84,7 @@ export function catalogName(
   if (child === undefined) return top === "_vars" ? null : top;
   if (sub === undefined) return top === "DNSM" ? `DNSM.${child}` : null;
   return top === "PlayerDATABASE" && child === char
-    ? `Personagem.${sub}`
+    ? `${CHARACTER_ROW}${sub}`
     : null;
 }
 
@@ -180,7 +159,9 @@ export function inventoryNames(
       for (const [who, character] of Object.entries(mapOf(value)))
         for (const sub of Object.keys(mapOf(character)))
           names.add(
-            who === char ? `Personagem.${sub}` : `${OTHER_CHARACTERS}${sub}`,
+            who === char
+              ? `${CHARACTER_ROW}${sub}`
+              : `${OTHER_CHARACTERS}${sub}`,
           );
     else names.add(top);
   }

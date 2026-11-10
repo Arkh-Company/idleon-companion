@@ -1,6 +1,12 @@
 // The state rotation: 12 reads of the game a second, by the catalog, never two in flight, property reads only. The keys
 // and the cursor live here, outside the game (FR-001, FR-002). Slices are never logged (FR-007).
-import { ACTIONS_GROUP, CATALOG, groupIn, isObject } from "../shared/index.ts";
+import {
+  ACTIONS_GROUP,
+  CATALOG,
+  CHARACTER_ROW,
+  groupOf,
+  isObject,
+} from "../shared/index.ts";
 import type {
   CatalogRow,
   StateClass,
@@ -15,7 +21,6 @@ const VARS_PATH: StatePath = ["_vars"];
 const MAX_SLICE_BYTES = 25_000;
 const UNREAD_CHARACTER_BYTES = 25_000;
 const UNREAD_BYTES = 2_000;
-const CHARACTER_ROW = "Personagem.";
 const FAILS_BEFORE_WARNING = 10;
 
 /** The actions slice has its own slots; the rest of the fast reading is `fast`. */
@@ -230,7 +235,7 @@ export function startStateReader(deps: {
         now.char,
         x,
       ]),
-    ].map((path) => ({ path, group: groupIn(rows, path, now.char) }));
+    ].map((path) => ({ path, group: groupOf(rows, path, now.char) }));
     const inOrder = (keep: (group: string) => boolean) =>
       groupNames
         .filter(keep)
