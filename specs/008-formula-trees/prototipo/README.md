@@ -35,6 +35,26 @@ Mede o que o protótipo offline não alcança: a leitura do ator vivo e se o val
 
 Decide: se a leitura dos quatro campos do ator cabe a cada ciclo (a meta é a mesma da leitura de hoje, poucos ms) e se a troca de estado dá o valor certo para um inativo (0 diferenças) ou se o seletor de personagem precisa de mais chaves.
 
+### Resultado do roteiro (13/11, 14h37–14h40)
+
+Sessão do laboratório: uma pausa só (~283 ms), mapa de combate com alvo AFK, dois retratos (personagem A ativo; um minuto depois, personagem B ativo) e as `_vars` do dia. Os retratos ficam em `lab\out\`, fora do repositório, até a pesquisa usá-los como gabarito; depois são apagados.
+
+**Ator vivo (`ator-vivo.js`):** os quatro campos foram achados só por propriedade (`behaviors.cache.h["ActorEvents_N"].script`): `_MonsterType` (texto, o código do monstro), `_MonsterHPtot` e `_RespawnTime` (números) e `_TargetEnemy` (vazio em AFK). Leitura: **6,2 ms** com a ida e volta pelo canal, menos de 1 ms dentro do jogo. **Decisão:** cabe em cada ciclo de leitura, como os comportamentos que o leitor já lê.
+
+**Personagem inativo (`compare-inactive.cjs`):** o personagem calculado pela troca das 45 chaves (sem `PostOfficeInfo`) contra o mesmo personagem ativo, nos dois sentidos:
+
+| Número | Diferença (B inativo no retrato A) | Diferença (A inativo no retrato B) |
+| --- | ---: | ---: |
+| Drop Rate | 75,5% | 75,6% |
+| Accuracy | 59,0% | 59,4% |
+| HP | 53,2% | 53,1% |
+| Damage Max | 15,0% | 14,8% |
+| AFK gains (Fighting) | 7,0% | 7,4% |
+| LUK | 0,88% | 1,22% |
+| STR, AGI, WIS, MP | < 0,5% | < 0,5% |
+
+**Decisão:** a troca só das chaves do personagem **não basta**. Os atributos de base quase batem; o que depende de mapa, de talento de classe e dos caches que o jogo calcula para o ativo (`DNSM`) erra muito. O seletor de personagem (FR-020) precisa do conjunto completo de estado de um inativo: o mapa e o alvo AFK de cada um, e quais caches o jogo refaz por personagem. Pedido à bancada, com estes dois retratos como gabarito (0 diferenças é a meta). Até lá, o plan trata o inativo como a fase de maior risco.
+
 ## Como rodar
 
 Da raiz do repositório, com a bancada e o jogo da bancada na máquina do Vinicius:

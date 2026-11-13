@@ -9,9 +9,10 @@ const vm = require("node:vm");
 
 const LAB = "C:/Users/Vinicius/idleon-companion/lab";
 const RUN = "C:/Users/Vinicius/idleon-companion/research/run";
-const SNAP = path.join(LAB, "out", "retrato-character-9.json");
+const DEFAULT_SNAP = path.join(LAB, "out", "retrato-character-9.json");
 
-module.exports = function loadGame(edit) {
+module.exports = function loadGame(edit, snapFile = process.env.PROTO_SNAP || DEFAULT_SNAP) {
+  const SNAP = snapFile;
   process.env.LAB_SAVE ??= path.join(LAB, "out", "save-base.raw");
   const t0 = performance.now();
   const H = require(path.join(RUN, "harness.cjs"))();
