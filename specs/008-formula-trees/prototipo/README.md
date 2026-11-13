@@ -53,7 +53,21 @@ Sessão do laboratório: uma pausa só (~283 ms), mapa de combate com alvo AFK, 
 | LUK | 0,88% | 1,22% |
 | STR, AGI, WIS, MP | < 0,5% | < 0,5% |
 
-**Decisão:** a troca só das chaves do personagem **não basta**. Os atributos de base quase batem; o que depende de mapa, de talento de classe e dos caches que o jogo calcula para o ativo (`DNSM`) erra muito. O seletor de personagem (FR-020) precisa do conjunto completo de estado de um inativo: o mapa e o alvo AFK de cada um, e quais caches o jogo refaz por personagem. Pedido à bancada, com estes dois retratos como gabarito (0 diferenças é a meta). Até lá, o plan trata o inativo como a fase de maior risco.
+**Decisão:** a troca só das chaves do personagem **não basta**. Os atributos de base quase batem; o que depende de mapa, de talento de classe e dos caches que o jogo calcula para o ativo (`DNSM`) erra muito. O seletor de personagem (FR-020) precisa do conjunto completo de estado de um inativo: o mapa e o alvo AFK de cada um, e quais caches o jogo refaz por personagem. Pedido à bancada, com estes dois retratos como gabarito (0 diferenças é a meta).
+
+**Resolvido pela bancada (agente I1, rodada 4, 13/11):** os 11 números do inativo saem com **0 diferença** nos dois sentidos (no sentido "A inativo em B", contra o A reconstruído, porque o retrato A tinha caches de cena atrasados). Relatório e referência fora do repositório: `SCRATCH\r4-i1\relatorio-i1.txt` e `inactive.cjs` (`buildInactive`). **Não reproduzido aqui:** os retratos de 13/11 foram apagados antes da conferência do lado do app. O que o plan leva:
+
+1. Regravar o ativo no `PlayerDATABASE`, como o jogo faz (`add_new_player_to_database`).
+2. A troca do próprio jogo (`LoadPlayerInfo`):
+   - as 33 chaves de mesmo nome e os números (`CurrentMap`, `AFKtarget` como texto, HP, MP…);
+   - só um índice de `ObolEquippedOrder`, `ObolEquippedMap` e `PostOfficeInfo[3]`;
+   - as chaves com outro nome: `Cards[2]` ← `CardEquip`, `Cards[3]` ← `CSetEq`, `PrayersActive` ← `Prayers`, `PlacedTraps` ← `PldTraps` e `TimeAway.Player` ← `PlayerAwayTime`.
+3. Refazer os caches de cena (Lab, `EveryScene.init`, `TotalStats("calcEtcBonuses")`), zerando a memória do `TotalStats` antes de cada passo.
+4. Calcular.
+
+O personagem ativo é calculado com o `DNSM` vivo, sem reconstruir. Não há leitura nova. Uma lista com formato inesperado para o cálculo com aviso. Custo: ~130 ms por inativo num contexto quente.
+
+**Ainda não conferido:** os outros 9 personagens (saem números finitos, sem gabarito) e os ~1.100 números do catálogo, que podem ler caches por personagem que os 11 da Stats não leem.
 
 ## Como rodar
 
