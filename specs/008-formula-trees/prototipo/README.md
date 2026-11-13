@@ -22,6 +22,19 @@ Máquina: a do Vinicius, Windows 11, Node 24.13. Os tempos são de uma máquina 
 - **Se o valor de um personagem inativo está certo:** no mesmo roteiro, entrar com 2 ou 3 personagens no jogo e comparar o Drop Rate da tela com o que a troca de estado calcula.
 - **A árvore sem compactação** (sem `shown earlier`): a gravação já é sem compactação (23.928 nós); o número de linhas da árvore montada sem compactar é o da base (5.024 no Drop Rate). O custo de desenhar 5.024 linhas na janela fica para o plan (a árvore só desenha os ramos abertos).
 
+## Roteiro com o jogo aberto (antes do plan, cerca de 15 min)
+
+Mede o que o protótipo offline não alcança: a leitura do ator vivo e se o valor de um personagem inativo está certo. Usa a sessão do laboratório (`lab\sessao.cjs`), que abre o jogo pelo canal do depurador, pausa uma vez e depois só lê propriedades, e segue `docs\product\roteiro-testes-no-jogo.md` §1, §3 e §7 (como abrir, não fechar a janela do teste, `soltar` no fim).
+
+| Passo | O Vinicius | O Claude |
+| --- | --- | --- |
+| 1 | Anota a opção de inicialização da Steam, troca pela linha da sessão do laboratório e clica em Jogar | Copia `ator-vivo.js` para `lab\` |
+| 2 | Entra num personagem A, vai a um mapa de combate com alvo AFK e avisa | Manda `run ator-vivo.js` e `retrato` pelo `lab\cmd.txt` e lê o resultado em `lab\out\` |
+| 3 | Troca para um personagem B, de outra classe, e avisa | Manda `retrato` de novo |
+| 4 | Digita `soltar`, fecha o jogo e restaura a opção da Steam | Offline: calcula o Drop Rate de B pela troca de estado sobre o retrato de A e compara com o de B ativo no retrato de B. Os dois retratos são apagados no fim (§8 do roteiro) |
+
+Decide: se a leitura dos quatro campos do ator cabe a cada ciclo (a meta é a mesma da leitura de hoje, poucos ms) e se a troca de estado dá o valor certo para um inativo (0 diferenças) ou se o seletor de personagem precisa de mais chaves.
+
 ## Como rodar
 
 Da raiz do repositório, com a bancada e o jogo da bancada na máquina do Vinicius:
