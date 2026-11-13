@@ -2,4 +2,4 @@ feature: 008-formula-trees
 phases:
   brainstorm: {status: done, date: 2026-11-12}
   specify: {status: done, date: 2026-11-12}
-  clarify: {status: in_progress, date: 2026-11-12, rounds: 2, open: 7, to_plan: 10}
+  clarify: {status: in_progress, date: 2026-11-12, rounds: 3, open: 2, to_plan: 10}

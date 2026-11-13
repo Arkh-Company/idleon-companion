@@ -46,7 +46,7 @@ São dois públicos: o jogador com pouca experiência, que precisa entender em s
 - Q: E com o jogo fechado ou com troca de personagem? → A: Na troca, recalcula. Com o jogo fechado, a árvore e a Stats ficam com a última leitura e "last reading N s ago" (isso muda a 004).
 - Q: Como a árvore se abre? → A: Expande no lugar, como pastas. Na 008, isso vale dentro do painel lateral.
 - Q: E o personagem? → A: Abre no ativo, com um seletor para os outros. Um inativo leva a faixa "not the active character".
-- Q: Os rótulos? → A: Aprovados: `saved by the game`, `no name yet`, `shown earlier`, só "parts", `repeated step`, `changes while you play`. Ficam como estão o `?` e o `Raw bonus`.
+- Q: Os rótulos? → A: Aprovados: `saved by the game`, `no name yet`, `shown earlier`, só "parts", `repeated step`, `changes while you play`. Ficam como estão o `?` e o `Raw bonus`. (O `shown earlier` saiu depois, no clarify: FR-015.)
 
 ### Session 2026-11-12
 
@@ -59,6 +59,12 @@ São dois públicos: o jogador com pouca experiência, que precisa entender em s
 - Q: Nos bônus de retorno decrescente (curva que se aproxima de um máximo sem chegar), o que a linha mostra? → A: Quanto do máximo o jogador já atingiu, em texto ao lado do nome, sem barra: "62% reached · max +40%". O máximo sai da própria conta do jogo; uma curva sem máximo não mostra nada.
 - Q: Em que família de cor fica o selo `Raw bonus`? → A: "Set by the game" (cinza), com a frase "Set by the game: the bonus this source gives." O que o jogador controla (ter o companion, equipar o item) aparece nas linhas ao lado, como Condition ou Choice. Um companion que o jogador tem fica ativo o tempo todo: não é escolha.
 - Q: Os multiplicadores que valem ×1 ficam num grupo próprio ou junto do "At 0"? → A: Grupo próprio, "At ×1 (N) · no effect yet"; o "At 0 (N)" fica só para as partes que somam.
+- Q: No "How it adds up", o que aparece no lugar de um termo sem nome provado? → A: O código do jogo como está (por exemplo `OptionsListAccount[189]`). Na lista de partes, a linha continua com nome de jogador e `no name yet`.
+- Q: Uma folha de condição que vale "no" vai para o grupo "At 0"? → A: Não. Ela fica na lista, na ordem do jogo, com o selo e o "no". O "At 0" só junta as partes que valem 0.
+- Q: O selo `shown earlier` vale também para folhas? → A: Não há `shown earlier`: uma parte repetida abre do mesmo jeito que na primeira vez, ramo ou folha. (Isso substitui a decisão de 12/11 de compactar as repetições; sem ela, o Drop Rate da base tem 5.024 linhas em vez de 2.414, e a paridade compara com a forma sem compactação.)
+- Q: Quantas marcas o Antes/depois guarda, e a marca sobrevive à troca de personagem? → A: Até 3 marcas com nome, por personagem. A marca é uma foto dos números num momento, que a árvore compara com o agora.
+- Q: As marcas do Antes/depois ficam depois de fechar o app? → A: Sim: ficam salvas mesmo com o app fechado e só apagam quando o jogador dá Clear.
+- Q: Como a árvore avisa que os nomes e selos foram conferidos noutra versão do jogo? → A: Uma faixa só, no topo da árvore: "Names and tags were checked on an older game version. Values are live." Nenhuma marca por linha.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -333,18 +339,18 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
   | `truncated` | `stopped here` |
   | `binding: false` | `over the cap` (o valor que passou do teto) ou `not reached` (o teto que não foi atingido) |
   | `productZero` | `zeroes the total` |
-  | `sameAs` | `shown earlier` |
   | `progress` | `repeated step` |
   | `gameBug` | `game bug: counted twice` |
   | `unchecked` | faixa C18 |
 
+- **FR-012a**: Nas linhas da árvore e na resposta curta MUST NOT aparecer código do jogo: uma parte sem nome provado mostra um nome genérico de jogador com `no name yet`. Dentro de "How it adds up", um termo sem nome provado MUST aparecer como o caminho do jogo, como está (por exemplo `OptionsListAccount[189]`). Esse caminho é nome de estado, nunca trecho do código.
 - **FR-013**: Toda folha com tipo MUST mostrar o selo do tipo e a frase do tipo, com a cor da família do tipo (design.md C4). O `Raw bonus` MUST ficar na família "Set by the game", com a frase "Set by the game: the bonus this source gives."
-- **FR-014**: Cada nó aberto MUST mostrar as partes que mais pesam nele, na ordem do jogo, mais "Small (N)", "At 0 (N)" (partes que somam e valem 0), "At ×1 (N) · no effect yet" (multiplicadores que valem ×1) e "Show all N parts". Os grupos começam fechados. As partes mostradas, "Small" e o resto MUST somar o pai. Os limites (5 a 10 partes, 90% da parcela) são propostas para o protótipo.
-- **FR-015**: Uma parte que já apareceu na árvore MUST virar `shown earlier`, com o valor, e levar à primeira ocorrência.
+- **FR-014**: Cada nó aberto MUST mostrar as partes que mais pesam nele, na ordem do jogo, mais "Small (N)", "At 0 (N)" (partes que somam e valem 0; uma Condition que vale "no" não entra, fica na lista na ordem do jogo), "At ×1 (N) · no effect yet" (multiplicadores que valem ×1) e "Show all N parts". Os grupos começam fechados. As partes mostradas, "Small" e o resto MUST somar o pai. Os limites (5 a 10 partes, 90% da parcela) são propostas para o protótipo.
+- **FR-015**: Uma parte que já apareceu na árvore MUST abrir de novo do mesmo jeito que na primeira vez, com os mesmos filhos e valores. Não há linha de repetição.
 - **FR-015a**: Uma linha cuja conta é uma curva de retorno decrescente com máximo (as curvas que a bancada reconhece) MUST mostrar, em texto ao lado do nome, quanto do máximo já foi atingido e o máximo: "62% reached · max +40%". O máximo MUST sair dos parâmetros da própria conta do jogo. Uma curva sem máximo, ou não reconhecida, MUST NOT mostrar a porcentagem.
 - **FR-016**: Um bug conhecido do jogo MUST aparecer como o jogo o calcula, com o selo e a explicação.
 - **FR-017**: Uma falha no cálculo de uma árvore MUST deixá-la `unavailable`, tentar mais uma vez e não afetar a Stats.
-- **FR-018**: As regras de nome e de tipo MUST levar a versão do jogo em que foram conferidas. Com outra versão, a tela MUST avisar e continuar mostrando os valores.
+- **FR-018**: As regras de nome e de tipo MUST levar a versão do jogo em que foram conferidas. Com outra versão, a tela MUST mostrar uma faixa só, no topo da árvore ("Names and tags were checked on an older game version. Values are live."), sem marca por linha, e MUST continuar mostrando os valores.
 
 **Paridade, personagem e jogo fechado**
 
@@ -357,7 +363,7 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 **Comparação e extras**
 
 - **FR-024**: "Game changed · Refresh" MUST acender só quando muda a raiz ou uma parte de um nó aberto. No Refresh, cada linha que mudou MUST mostrar "was …".
-- **FR-025**: O jogador MUST poder marcar um ponto (Antes/depois), e a árvore MUST mostrar cada diferença entre o estado marcado e o atual.
+- **FR-025**: O jogador MUST poder guardar até 3 marcas com nome por personagem (Antes/depois). Uma marca é a foto dos números num momento. Com uma marca escolhida, a árvore MUST mostrar cada diferença entre a marca e o agora, com o valor da marca e o atual. As marcas MUST ficar salvas na máquina do jogador, mesmo com o app fechado, e só somem quando ele as apaga (Clear). Trocar de personagem não as apaga. O arquivo das marcas MUST NOT ter nome de personagem (o personagem é o seu número) e nunca entra no repositório.
 - **FR-026**: O jogador MUST poder fixar até 5 números ou folhas (Pin). Os fixados MUST ficar numa faixa sob a barra de status, que quebra em duas linhas quando passa de 3. Cada um mostra o nome curto e o valor, MUST ficar destacado quando muda e abre a própria árvore com um toque.
 - **FR-027**: Uma peça que alimenta 2 ou mais números do catálogo MUST mostrar uma bolinha com a quantidade. Um toque MUST listar esses números, e cada um abre a sua árvore. Uma peça de 1 número só MUST NOT mostrar a bolinha.
 - **FR-028**: O acompanhador de farm MUST medir o XP, os itens e o gold por hora do personagem ativo a partir do que observa no estado do jogo, em memória. A contagem MUST começar quando o personagem entra num mapa novo que não é cidade; na cidade ela MUST pausar, de volta ao mesmo mapa MUST continuar, e noutro mapa que não é cidade MUST recomeçar. Ele MUST NOT calcular a taxa por fórmula, nem guardar histórico em disco.
@@ -379,7 +385,7 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **Parcela**: quanto uma parte pesa no nó.
 - **Catálogo de árvores**: a lista dos números que têm árvore, cada um com o sistema ou a skill, a chamada, o estado na bancada, a tela onde aparece e se é "não mostrado".
 - **Painel de sistema**: o que o companion mostra para um sistema: os números não mostrados e a árvore do sistema.
-- **Marca (Antes/depois)**: um estado guardado em memória para comparar.
+- **Marca (Antes/depois)**: uma foto dos números num momento, com nome, por personagem (até 3), salva na máquina até o jogador apagar.
 - **Número fixado (Pin)**: um número ou uma folha visível na barra.
 - **Forma de árvore**: os nomes de parte e as chaves de uma árvore, sem valores, guardados para o radar de patch.
 - **Medição de farm**: as taxas por hora observadas na sessão.
@@ -417,7 +423,7 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **As 52 "sem bloco" como número próprio.** Elas continuam aparecendo como parte, dentro das árvores que as usam. Reescrever a conta à mão diverge do jogo.
 - **Busca livre** e pedido de árvore por chamada livre.
 - **Caçador de zeros** da conta inteira.
-- **Histórico de valores em disco.** O radar guarda só a forma, e o farm só mede na sessão.
+- **Histórico de valores em disco.** O radar guarda só a forma, e o farm só mede na sessão. A única exceção são as marcas do Antes/depois, que o jogador cria e apaga (FR-025).
 - **Simulador e "what-if"**, e comparação com o Idleon Toolbox.
 - **Telas novas no catálogo da 003.** Os sistemas sem tela ficam na aba Formulas.
 
@@ -428,12 +434,12 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | A frase-resposta do topo: três linhas do design (com "At zero for now") ou duas? | resolved | Duas linhas curtas, sem a linha de zeros (FR-006) |
 | Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | resolved | Não há cartões: a árvore começa nos passos do jogo, árvore pura (FR-006) |
 | Os multiplicadores ×1: grupo próprio "At ×1 (N)" ou junto do "At 0"? | resolved | Grupo próprio, "At ×1 (N) · no effect yet" (FR-014) |
-| No ⓘ, o termo sem nome aparece como nome genérico ou como código? | open | |
+| No ⓘ, o termo sem nome aparece como nome genérico ou como código? | resolved | Como código, dentro do "How it adds up"; na lista, nome genérico com `no name yet` (FR-012a) |
 | Teclado na árvore: o treeview do APG inteiro (uma parada) ou uma parada por linha? | open | |
 | Como entra o teste dos 5 segundos (uma pessoa sem bloquear, cinco iniciantes, ou portão para abrir o app)? | open | |
-| Aviso de outra versão do jogo: faixa no topo ou marca por linha? | open | |
-| Uma folha Condition que vale "no" vai para "At 0"? | open | |
-| O selo de repetição vale também para folhas, ou só para ramos? | open | |
+| Aviso de outra versão do jogo: faixa no topo ou marca por linha? | resolved | Faixa no topo, sem marca por linha (FR-018) |
+| Uma folha Condition que vale "no" vai para "At 0"? | resolved | Não: fica na lista, na ordem do jogo (FR-014) |
+| O selo de repetição vale também para folhas, ou só para ramos? | resolved | Nenhum: uma parte repetida abre do mesmo jeito, ramo ou folha (FR-015) |
 | Que nome tem a etapa do meio (hoje `Game adjustments`)? | resolved | Não há etapa do meio: cada passo leva o nome do bônus no jogo, nunca "fixed"; sem nome, `no name yet` (FR-006) |
 | Que rótulo leva a parte que não vale num teto, min/max (hoje `limit wins now`)? | resolved | `over the cap` no valor acima do teto; `not reached` no teto não atingido (FR-012) |
 | Em que família de cor fica o selo `Raw bonus`? | resolved | "Set by the game" (cinza); ter ou equipar fica nas linhas Condition ou Choice (FR-013) |
@@ -441,7 +447,8 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | O rótulo `At zero for now` ainda existe? | resolved | Não: a resposta curta não tem a linha de zeros (FR-006) |
 | O que o acompanhador de farm mostra (por personagem, por mapa, quais itens) e em que janela de tempo mede? | resolved | O personagem ativo; começa ao entrar num mapa novo que não é cidade, pausa na cidade e continua no mesmo mapa (FR-028) |
 | Onde fica o Pin e quantos números cabem nele? | resolved | Faixa sob a barra de status, até 5, quebrando em duas linhas (FR-026) |
-| Antes/depois: quantas marcas, e a marca sobrevive à troca de personagem? | open | |
+| Antes/depois: quantas marcas, e a marca sobrevive à troca de personagem? | resolved | Até 3 marcas com nome por personagem (FR-025) |
+| As marcas do Antes/depois ficam depois de fechar o app? | resolved | Sim: ficam salvas na máquina até o jogador dar Clear, sem nome de personagem (FR-025) |
 | O que o painel de cada sistema mostra em cima: todo "não mostrado" do catálogo daquele sistema, ou uma seleção aprovada sistema a sistema? | resolved | Todos, em grupos fechados (Costs, Caps, Chances, Rates) (FR-004) |
 | O worker das árvores, o host novo, o pedido por número e os tetos (lote 4) | to plan | Decidido em 12/11 que vai ao plano; o protótipo mede |
 | O parser do código do jogo (dependência nova, só com o sim do Vinicius) | to plan | Lote 4.4; o protótipo mede |
