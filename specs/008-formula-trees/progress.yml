@@ -1,4 +1,5 @@
 feature: 008-formula-trees
+spec_pr: 27
 phases:
   brainstorm: {status: done, date: 2026-11-12}
   specify: {status: done, date: 2026-11-12}
