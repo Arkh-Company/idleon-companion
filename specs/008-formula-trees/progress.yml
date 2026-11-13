@@ -5,3 +5,4 @@ phases:
   clarify: {status: done, date: 2026-11-12, rounds: 4, open: 0, to_plan: 10}
   prototype: {status: done, date: 2026-11-12}
   plan: {status: done, date: 2026-11-13}
+  tasks: {status: done, date: 2026-11-13}
