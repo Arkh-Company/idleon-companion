@@ -13,7 +13,7 @@ MANUTENÇÃO (comentário HTML: removido antes de ir ao contexto, 0 token)
 
 Desktop companion for Legends of Idleon (Steam): shows live, read-only, where you are and what is open in the game.
 
-Mission: Mostrar ao jogador de Legends of Idleon, ao vivo e ao lado do jogo, onde ele está e como os sistemas calculam seus números, sem nenhum risco de banimento.
+Mission: Mostrar ao jogador de Legends of Idleon, ao vivo e ao lado do jogo, onde ele está, como os sistemas calculam seus números e quanto ele ganha enquanto joga, sem nenhum risco de banimento.
 
 The project constitution is in [.specify/memory/constitution.md](.specify/memory/constitution.md).
 
