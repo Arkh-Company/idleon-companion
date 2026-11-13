@@ -54,7 +54,11 @@ São dois públicos: o jogador com pouca experiência, que precisa entender em s
 - Q: O que o acompanhador de farm mede, e em que janela de tempo? → A: Começa a contar quando o personagem entra num mapa novo que não é cidade. Na cidade, a contagem pausa; de volta ao mesmo mapa, continua; outro mapa que não é cidade recomeça.
 - Q: Que forma tem a frase-resposta no topo de cada árvore? → A: Duas linhas curtas: a maior parte que soma, com a fatia entre parênteses ("Largest added bonus: Golden Food (66%).") e o maior multiplicador ("Largest multiplier: Equipment ×31.8."). O que vale 0 fica só no "At 0 (N)" da lista.
 - Q: Onde ficam os números fixados com Pin, e quantos cabem? → A: Numa faixa sob a barra de status, até 5 números, que quebra em duas linhas quando passa de 3. O que acabou de mudar fica destacado, e um toque abre a árvore.
-- Q: Como cada cartão das etapas mostra a conta? → A: A operação da etapa e o total até ali ("+84,384% · Total so far 846x" … "×2,145 · Final 2,797,522x").
+- Q: A árvore tem cartões de etapas acima dela? → A: Não. Os cartões repetiam a árvore. A árvore começa direto nos passos do jogo, na ordem do jogo, e é uma árvore pura: cada linha mostra só o próprio valor, e o total aparece só no topo. Nenhum passo se chama "fixed": cada um leva o nome do bônus no jogo, e sem nome provado leva `no name yet`. (Isso substitui a resposta da rodada 1 sobre os cartões e encerra a pergunta do nome da etapa do meio.)
+- Q: Que rótulo leva a parte que não conta num teto (min/max)? → A: Dois rótulos que dizem qual lado e por quê: `over the cap` no valor que passou do teto, quando o teto vence; `not reached` no teto, quando o valor fica abaixo dele.
+- Q: Nos bônus de retorno decrescente (curva que se aproxima de um máximo sem chegar), o que a linha mostra? → A: Quanto do máximo o jogador já atingiu, em texto ao lado do nome, sem barra: "62% reached · max +40%". O máximo sai da própria conta do jogo; uma curva sem máximo não mostra nada.
+- Q: Em que família de cor fica o selo `Raw bonus`? → A: "Set by the game" (cinza), com a frase "Set by the game: the bonus this source gives." O que o jogador controla (ter o companion, equipar o item) aparece nas linhas ao lado, como Condition ou Choice. Um companion que o jogador tem fica ativo o tempo todo: não é escolha.
+- Q: Os multiplicadores que valem ×1 ficam num grupo próprio ou junto do "At 0"? → A: Grupo próprio, "At ×1 (N) · no effect yet"; o "At 0 (N)" fica só para as partes que somam.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -62,7 +66,7 @@ Os números de exemplo são do retrato da bancada, e o personagem aparece sempre
 
 ### User Story 1 - Por que meu Drop Rate é X? (Priority: P1)
 
-Na aba Stats, o jogador toca no valor do Drop Rate. A janela alarga, e o painel lateral abre a árvore. No topo aparece a resposta curta: o valor, igual ao da Stats, e uma frase com a maior parte de cada etapa. Depois vêm as três etapas do jogo. O jogador abre os ramos no lugar, até a folha.
+Na aba Stats, o jogador toca no valor do Drop Rate. A janela alarga, e o painel lateral abre a árvore. No topo aparece a resposta curta: o valor, igual ao da Stats, a maior parte que soma e o maior multiplicador. Logo abaixo vêm os passos do jogo, na ordem do jogo, cada um com o nome do bônus. O jogador abre os ramos no lugar, até a folha.
 
 **Why this priority**: é a pergunta que a feature responde, e é o motor de todas as outras histórias.
 
@@ -154,6 +158,7 @@ Numa linha, o jogador abre "How it adds up" e vê a conta com nomes e com númer
 1. **Given** um ramo com ⓘ na bancada, **When** ele aparece no app, **Then** tem ⓘ, e o resultado escrito é igual ao valor da linha.
 2. **Given** uma folha com tipo, **When** ela aparece, **Then** mostra o selo e a frase.
 3. **Given** um nó aberto, **When** se somam as partes mostradas, "Small" e o resto, **Then** o total é o do pai, e os membros de "At 0" são os mesmos da bancada.
+4. **Given** um bônus de retorno decrescente com máximo de +40% que hoje dá +24.8%, **When** a linha aparece, **Then** ela mostra "62% reached · max +40%".
 
 ---
 
@@ -307,8 +312,7 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **FR-003**: Todo sistema do catálogo com tela reconhecida pelo catálogo de telas do app MUST ter um painel. Quando essa tela abre no jogo, o companion MUST mostrar o painel dela. Sistemas sem tela reconhecida MUST estar na aba Formulas.
 - **FR-004**: O painel de um sistema MUST mostrar em cima todos os números que o jogo não mostra declarados para ele no catálogo, em grupos que começam fechados (Costs, Caps, Chances, Rates), e embaixo a árvore do sistema. Todo número do painel MUST abrir a própria árvore.
 - **FR-005**: A árvore MUST abrir num painel lateral, alargando a janela, e MUST voltar ao tamanho anterior quando o painel fecha. O painel lateral MUST mudar só quando o jogador toca em outra árvore ou no ✕, nunca porque a tela do jogo mudou.
-- **FR-006**: A árvore MUST expandir no lugar, com vários níveis na mesma tela, na ordem do jogo. Ela MUST trazer a resposta curta antes de qualquer lista, as etapas, as partes, "How it adds up" e "Game details" (design.md, Parte 2). A resposta curta MUST ter duas linhas: a maior parte que soma, com a fatia entre parênteses, e o maior multiplicador. Exemplo: "Largest added bonus: Golden Food (66%). Largest multiplier: Equipment ×31.8." Uma árvore sem soma ou sem multiplicador mostra só a linha que tem. O que vale 0 fica no "At 0 (N)", não na resposta. Cada cartão das etapas MUST mostrar a operação da etapa e o total até ali; o último mostra "Final" com o valor da raiz.
-
+- **FR-006**: A árvore MUST expandir no lugar, com vários níveis na mesma tela, na ordem do jogo. Ela MUST trazer a resposta curta antes de qualquer lista e, logo abaixo, os passos do jogo como primeiro nível da árvore, sem cartões de etapa; depois as partes, "How it adds up" e "Game details" (design.md, Parte 2). Cada linha MUST mostrar só o próprio valor, e cada passo MUST levar o nome do bônus no jogo, nunca um nome genérico como "fixed"; sem nome provado, `no name yet`. A resposta curta MUST ter duas linhas: a maior parte que soma, com a fatia entre parênteses, e o maior multiplicador. Exemplo: "Largest added bonus: Golden Food (66%). Largest multiplier: Equipment ×31.8." Uma árvore sem soma ou sem multiplicador mostra só a linha que tem. O que vale 0 fica no "At 0 (N)", não na resposta.
 **Catálogo e cálculo**
 
 - **FR-007**: O catálogo MUST conter as árvores do levantamento ([catalogo-de-arvores.md](catalogo-de-arvores.md)) menos as "sem bloco". Uma árvore candidata ou gravada sem conta só entra no app depois de gravada e auditada linha a linha na bancada.
@@ -327,16 +331,17 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
   | `fromGame` | `from the game` |
   | `runtime` | `changes while you play` |
   | `truncated` | `stopped here` |
-  | `binding: false` | rótulo em aberto (Open Questions) |
+  | `binding: false` | `over the cap` (o valor que passou do teto) ou `not reached` (o teto que não foi atingido) |
   | `productZero` | `zeroes the total` |
   | `sameAs` | `shown earlier` |
   | `progress` | `repeated step` |
   | `gameBug` | `game bug: counted twice` |
   | `unchecked` | faixa C18 |
 
-- **FR-013**: Toda folha com tipo MUST mostrar o selo do tipo e a frase do tipo.
-- **FR-014**: Cada nó aberto MUST mostrar as partes que mais pesam nele, na ordem do jogo, mais "Small (N)", "At 0 (N)" e "Show all N parts". As partes mostradas, "Small" e o resto MUST somar o pai. Os limites (5 a 10 partes, 90% da parcela) são propostas para o protótipo.
+- **FR-013**: Toda folha com tipo MUST mostrar o selo do tipo e a frase do tipo, com a cor da família do tipo (design.md C4). O `Raw bonus` MUST ficar na família "Set by the game", com a frase "Set by the game: the bonus this source gives."
+- **FR-014**: Cada nó aberto MUST mostrar as partes que mais pesam nele, na ordem do jogo, mais "Small (N)", "At 0 (N)" (partes que somam e valem 0), "At ×1 (N) · no effect yet" (multiplicadores que valem ×1) e "Show all N parts". Os grupos começam fechados. As partes mostradas, "Small" e o resto MUST somar o pai. Os limites (5 a 10 partes, 90% da parcela) são propostas para o protótipo.
 - **FR-015**: Uma parte que já apareceu na árvore MUST virar `shown earlier`, com o valor, e levar à primeira ocorrência.
+- **FR-015a**: Uma linha cuja conta é uma curva de retorno decrescente com máximo (as curvas que a bancada reconhece) MUST mostrar, em texto ao lado do nome, quanto do máximo já foi atingido e o máximo: "62% reached · max +40%". O máximo MUST sair dos parâmetros da própria conta do jogo. Uma curva sem máximo, ou não reconhecida, MUST NOT mostrar a porcentagem.
 - **FR-016**: Um bug conhecido do jogo MUST aparecer como o jogo o calcula, com o selo e a explicação.
 - **FR-017**: Uma falha no cálculo de uma árvore MUST deixá-la `unavailable`, tentar mais uma vez e não afetar a Stats.
 - **FR-018**: As regras de nome e de tipo MUST levar a versão do jogo em que foram conferidas. Com outra versão, a tela MUST avisar e continuar mostrando os valores.
@@ -421,17 +426,18 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | Question | State | Answer |
 | --- | --- | --- |
 | A frase-resposta do topo: três linhas do design (com "At zero for now") ou duas? | resolved | Duas linhas curtas, sem a linha de zeros (FR-006) |
-| Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | resolved | Os dois: a operação e o total até ali (FR-006) |
-| Os multiplicadores ×1: grupo próprio "At ×1 (N)" ou junto do "At 0"? | open | |
+| Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | resolved | Não há cartões: a árvore começa nos passos do jogo, árvore pura (FR-006) |
+| Os multiplicadores ×1: grupo próprio "At ×1 (N)" ou junto do "At 0"? | resolved | Grupo próprio, "At ×1 (N) · no effect yet" (FR-014) |
 | No ⓘ, o termo sem nome aparece como nome genérico ou como código? | open | |
 | Teclado na árvore: o treeview do APG inteiro (uma parada) ou uma parada por linha? | open | |
 | Como entra o teste dos 5 segundos (uma pessoa sem bloquear, cinco iniciantes, ou portão para abrir o app)? | open | |
 | Aviso de outra versão do jogo: faixa no topo ou marca por linha? | open | |
 | Uma folha Condition que vale "no" vai para "At 0"? | open | |
 | O selo de repetição vale também para folhas, ou só para ramos? | open | |
-| Que nome tem a etapa do meio (hoje `Game adjustments`: a conversão do jogo e a parte do LUK)? | open | |
-| Que rótulo leva a parte que não vale num teto, min/max (hoje `limit wins now`)? | open | |
-| Em que família de cor fica o selo `Raw bonus`? | open | |
+| Que nome tem a etapa do meio (hoje `Game adjustments`)? | resolved | Não há etapa do meio: cada passo leva o nome do bônus no jogo, nunca "fixed"; sem nome, `no name yet` (FR-006) |
+| Que rótulo leva a parte que não vale num teto, min/max (hoje `limit wins now`)? | resolved | `over the cap` no valor acima do teto; `not reached` no teto não atingido (FR-012) |
+| Em que família de cor fica o selo `Raw bonus`? | resolved | "Set by the game" (cinza); ter ou equipar fica nas linhas Condition ou Choice (FR-013) |
+| Nos bônus de retorno decrescente, o que a linha mostra? | resolved | "62% reached · max +40%", em texto, com o máximo da própria conta (FR-015a) |
 | O rótulo `At zero for now` ainda existe? | resolved | Não: a resposta curta não tem a linha de zeros (FR-006) |
 | O que o acompanhador de farm mostra (por personagem, por mapa, quais itens) e em que janela de tempo mede? | resolved | O personagem ativo; começa ao entrar num mapa novo que não é cidade, pausa na cidade e continua no mesmo mapa (FR-028) |
 | Onde fica o Pin e quantos números cabem nele? | resolved | Faixa sob a barra de status, até 5, quebrando em duas linhas (FR-026) |
