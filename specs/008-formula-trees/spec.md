@@ -48,6 +48,14 @@ São dois públicos: o jogador com pouca experiência, que precisa entender em s
 - Q: E o personagem? → A: Abre no ativo, com um seletor para os outros. Um inativo leva a faixa "not the active character".
 - Q: Os rótulos? → A: Aprovados: `saved by the game`, `no name yet`, `shown earlier`, só "parts", `repeated step`, `changes while you play`. Ficam como estão o `?` e o `Raw bonus`.
 
+### Session 2026-11-12
+
+- Q: O que o painel de cada sistema mostra em cima, nos números que o jogo não mostra? → A: Todos os "não mostrado" do catálogo daquele sistema, em grupos que começam fechados (Costs, Caps, Chances, Rates), e o jogador abre cada um.
+- Q: O que o acompanhador de farm mede, e em que janela de tempo? → A: Começa a contar quando o personagem entra num mapa novo que não é cidade. Na cidade, a contagem pausa; de volta ao mesmo mapa, continua; outro mapa que não é cidade recomeça.
+- Q: Que forma tem a frase-resposta no topo de cada árvore? → A: Duas linhas curtas: a maior parte que soma, com a fatia entre parênteses ("Largest added bonus: Golden Food (66%).") e o maior multiplicador ("Largest multiplier: Equipment ×31.8."). O que vale 0 fica só no "At 0 (N)" da lista.
+- Q: Onde ficam os números fixados com Pin, e quantos cabem? → A: Numa faixa sob a barra de status, até 5 números, que quebra em duas linhas quando passa de 3. O que acabou de mudar fica destacado, e um toque abre a árvore.
+- Q: Como cada cartão das etapas mostra a conta? → A: A operação da etapa e o total até ali ("+84,384% · Total so far 846x" … "×2,145 · Final 2,797,522x").
+
 ## User Scenarios & Testing *(mandatory)*
 
 Os números de exemplo são do retrato da bancada, e o personagem aparece sempre como "Character N (class)". Nenhum teste escreve esses números à mão: todos vêm do arquivo de base (BASELINE-3.1) ou do jogo falso dos testes.
@@ -206,7 +214,9 @@ Enquanto o jogador farma, o companion mede, a partir do que observa:
 **Acceptance Scenarios**:
 
 1. **Given** o jogador farmando, **When** o XP sobe, **Then** o acompanhador mostra o XP por hora medido.
-2. **Given** o jogo fechado ou o companion reiniciado, **When** o acompanhador volta, **Then** a medição recomeça, porque não guarda histórico em disco.
+2. **Given** o jogador entra num mapa novo que não é cidade, **When** a contagem começa, **Then** ela parte de zero naquele mapa.
+3. **Given** uma contagem em andamento, **When** o jogador vai à cidade e volta ao mesmo mapa, **Then** a contagem pausa na cidade e continua de onde estava.
+4. **Given** o jogo fechado ou o companion reiniciado, **When** o acompanhador volta, **Then** a medição recomeça, porque não guarda histórico em disco.
 
 ---
 
@@ -295,9 +305,9 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **FR-001**: O valor de cada linha da Stats MUST virar botão, e a Stats MUST continuar uma tabela. Os testes da 004 continuam iguais, e um teste novo cobre o botão.
 - **FR-002**: A aba Formulas MUST listar todos os números do catálogo, agrupados por sistema e por skill, sem busca livre. Os 11 da Stats estão entre eles, com o mesmo valor.
 - **FR-003**: Todo sistema do catálogo com tela reconhecida pelo catálogo de telas do app MUST ter um painel. Quando essa tela abre no jogo, o companion MUST mostrar o painel dela. Sistemas sem tela reconhecida MUST estar na aba Formulas.
-- **FR-004**: O painel de um sistema MUST mostrar em cima os números que o jogo não mostra, declarados para ele no catálogo, e embaixo a árvore do sistema. Todo número do painel MUST abrir a própria árvore.
+- **FR-004**: O painel de um sistema MUST mostrar em cima todos os números que o jogo não mostra declarados para ele no catálogo, em grupos que começam fechados (Costs, Caps, Chances, Rates), e embaixo a árvore do sistema. Todo número do painel MUST abrir a própria árvore.
 - **FR-005**: A árvore MUST abrir num painel lateral, alargando a janela, e MUST voltar ao tamanho anterior quando o painel fecha. O painel lateral MUST mudar só quando o jogador toca em outra árvore ou no ✕, nunca porque a tela do jogo mudou.
-- **FR-006**: A árvore MUST expandir no lugar, com vários níveis na mesma tela, na ordem do jogo. Ela MUST trazer a resposta curta antes de qualquer lista, as etapas, as partes, "How it adds up" e "Game details" (design.md, Parte 2).
+- **FR-006**: A árvore MUST expandir no lugar, com vários níveis na mesma tela, na ordem do jogo. Ela MUST trazer a resposta curta antes de qualquer lista, as etapas, as partes, "How it adds up" e "Game details" (design.md, Parte 2). A resposta curta MUST ter duas linhas: a maior parte que soma, com a fatia entre parênteses, e o maior multiplicador. Exemplo: "Largest added bonus: Golden Food (66%). Largest multiplier: Equipment ×31.8." Uma árvore sem soma ou sem multiplicador mostra só a linha que tem. O que vale 0 fica no "At 0 (N)", não na resposta. Cada cartão das etapas MUST mostrar a operação da etapa e o total até ali; o último mostra "Final" com o valor da raiz.
 
 **Catálogo e cálculo**
 
@@ -343,9 +353,9 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 
 - **FR-024**: "Game changed · Refresh" MUST acender só quando muda a raiz ou uma parte de um nó aberto. No Refresh, cada linha que mudou MUST mostrar "was …".
 - **FR-025**: O jogador MUST poder marcar um ponto (Antes/depois), e a árvore MUST mostrar cada diferença entre o estado marcado e o atual.
-- **FR-026**: O jogador MUST poder fixar um número ou uma folha (Pin). O fixado MUST ficar visível na barra e acender quando muda.
+- **FR-026**: O jogador MUST poder fixar até 5 números ou folhas (Pin). Os fixados MUST ficar numa faixa sob a barra de status, que quebra em duas linhas quando passa de 3. Cada um mostra o nome curto e o valor, MUST ficar destacado quando muda e abre a própria árvore com um toque.
 - **FR-027**: Uma peça que alimenta 2 ou mais números do catálogo MUST mostrar uma bolinha com a quantidade. Um toque MUST listar esses números, e cada um abre a sua árvore. Uma peça de 1 número só MUST NOT mostrar a bolinha.
-- **FR-028**: O acompanhador de farm MUST medir o XP, os itens e o gold por hora a partir do que observa no estado do jogo, em memória, durante a sessão. Ele MUST NOT calcular a taxa por fórmula, nem guardar histórico em disco.
+- **FR-028**: O acompanhador de farm MUST medir o XP, os itens e o gold por hora do personagem ativo a partir do que observa no estado do jogo, em memória. A contagem MUST começar quando o personagem entra num mapa novo que não é cidade; na cidade ela MUST pausar, de volta ao mesmo mapa MUST continuar, e noutro mapa que não é cidade MUST recomeçar. Ele MUST NOT calcular a taxa por fórmula, nem guardar histórico em disco.
 - **FR-029**: O radar de patch MUST guardar em disco a forma de cada árvore (nomes de parte e chaves), nunca valores, save ou nome de personagem. Depois de uma atualização do jogo, MUST listar as árvores que mudaram de forma e o que mudou.
 - **FR-030**: Em "Game details", Copy MUST copiar só o nome da linha, a chamada e o número.
 
@@ -410,8 +420,8 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 
 | Question | State | Answer |
 | --- | --- | --- |
-| A frase-resposta do topo: três linhas do design (com "At zero for now") ou duas? | open | |
-| Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | open | |
+| A frase-resposta do topo: três linhas do design (com "At zero for now") ou duas? | resolved | Duas linhas curtas, sem a linha de zeros (FR-006) |
+| Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | resolved | Os dois: a operação e o total até ali (FR-006) |
 | Os multiplicadores ×1: grupo próprio "At ×1 (N)" ou junto do "At 0"? | open | |
 | No ⓘ, o termo sem nome aparece como nome genérico ou como código? | open | |
 | Teclado na árvore: o treeview do APG inteiro (uma parada) ou uma parada por linha? | open | |
@@ -419,11 +429,14 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | Aviso de outra versão do jogo: faixa no topo ou marca por linha? | open | |
 | Uma folha Condition que vale "no" vai para "At 0"? | open | |
 | O selo de repetição vale também para folhas, ou só para ramos? | open | |
-| Os rótulos ainda abertos do design: `limit wins now`, `At zero for now`, `Game adjustments` e a família do `Raw bonus` | open | |
-| O que o acompanhador de farm mostra (por personagem, por mapa, quais itens) e em que janela de tempo mede? | open | |
-| Onde fica o Pin e quantos números cabem nele? | open | |
+| Que nome tem a etapa do meio (hoje `Game adjustments`: a conversão do jogo e a parte do LUK)? | open | |
+| Que rótulo leva a parte que não vale num teto, min/max (hoje `limit wins now`)? | open | |
+| Em que família de cor fica o selo `Raw bonus`? | open | |
+| O rótulo `At zero for now` ainda existe? | resolved | Não: a resposta curta não tem a linha de zeros (FR-006) |
+| O que o acompanhador de farm mostra (por personagem, por mapa, quais itens) e em que janela de tempo mede? | resolved | O personagem ativo; começa ao entrar num mapa novo que não é cidade, pausa na cidade e continua no mesmo mapa (FR-028) |
+| Onde fica o Pin e quantos números cabem nele? | resolved | Faixa sob a barra de status, até 5, quebrando em duas linhas (FR-026) |
 | Antes/depois: quantas marcas, e a marca sobrevive à troca de personagem? | open | |
-| O que o painel de cada sistema mostra em cima: todo "não mostrado" do catálogo daquele sistema, ou uma seleção aprovada sistema a sistema? | open | |
+| O que o painel de cada sistema mostra em cima: todo "não mostrado" do catálogo daquele sistema, ou uma seleção aprovada sistema a sistema? | resolved | Todos, em grupos fechados (Costs, Caps, Chances, Rates) (FR-004) |
 | O worker das árvores, o host novo, o pedido por número e os tetos (lote 4) | to plan | Decidido em 12/11 que vai ao plano; o protótipo mede |
 | O parser do código do jogo (dependência nova, só com o sim do Vinicius) | to plan | Lote 4.4; o protótipo mede |
 | Quantas linhas perdem nome sem o índice da 007 | to plan | O protótipo mede; o Vinicius aprova a lista |
