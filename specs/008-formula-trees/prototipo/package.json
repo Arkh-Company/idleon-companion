@@ -1,0 +1,10 @@
+{
+  "name": "proto-008",
+  "private": true,
+  "description": "Disposable prototype: not product code.",
+  "dependencies": {
+    "acorn": "8.19.0",
+    "espree": "11.2.0"
+  },
+  "type": "module"
+}
