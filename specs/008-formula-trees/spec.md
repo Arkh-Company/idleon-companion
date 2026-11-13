@@ -65,10 +65,16 @@ São dois públicos: o jogador com pouca experiência, que precisa entender em s
 - Q: Quantas marcas o Antes/depois guarda, e a marca sobrevive à troca de personagem? → A: Até 3 marcas com nome, por personagem. A marca é uma foto dos números num momento, que a árvore compara com o agora.
 - Q: As marcas do Antes/depois ficam depois de fechar o app? → A: Sim: ficam salvas mesmo com o app fechado e só apagam quando o jogador dá Clear.
 - Q: Como a árvore avisa que os nomes e selos foram conferidos noutra versão do jogo? → A: Uma faixa só, no topo da árvore: "Names and tags were checked on an older game version. Values are live." Nenhuma marca por linha.
+- Q: Como o teclado anda pela árvore? → A: O padrão de árvore inteiro: a árvore é uma parada de Tab; ↑/↓ andam de linha em linha, → abre o ramo, ← fecha ou sobe um nível, Home/End vão ao início e ao fim, Enter abre a conta da linha.
+- Q: Como entra o teste dos 5 segundos? → A: É feito na máquina do Vinicius, com o app real, num roteiro manual; o resultado fica em `specs/008-formula-trees/teste-5s.md`.
+- Q: Nomes de personagem, da guilda e textos do jogo podem aparecer? → A: Na tela do app, sim, como estão: é a máquina do próprio jogador, e a aba Screen map já mostra o nome do personagem. Fora da tela (log, arquivo salvo, teste, documento, repositório), nunca: ali o personagem é "Character N (class)" ou o seu número.
+- Q: O caminho do retrato usado na paridade pode aparecer no log e no `registro.md`? → A: Sim, com o arquivo do retrato renomeado para não ter nome de personagem; o conteúdo do retrato nunca aparece.
+- Q: Onde aparece o aviso do radar de patch? → A: Numa faixa sob a barra de status, em todas as abas, até o jogador fechá-la.
+- Q: Onde aparece o acompanhador de farm? → A: Numa faixa sempre visível sob a barra de status, em todas as abas, enquanto o personagem farma (por exemplo "Farming 12 min · XP 1.2M/h · Gold 48K/h · Items ▸").
 
 ## User Scenarios & Testing *(mandatory)*
 
-Os números de exemplo são do retrato da bancada, e o personagem aparece sempre como "Character N (class)". Nenhum teste escreve esses números à mão: todos vêm do arquivo de base (BASELINE-3.1) ou do jogo falso dos testes.
+Os números de exemplo são do retrato da bancada. Nos exemplos desta spec, o personagem aparece como "Character N (class)"; na tela do app, aparece pelo nome real (FR-010). Nenhum teste escreve esses números à mão: todos vêm do arquivo de base (BASELINE-3.1) ou do jogo falso dos testes.
 
 ### User Story 1 - Por que meu Drop Rate é X? (Priority: P1)
 
@@ -317,14 +323,16 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **FR-002**: A aba Formulas MUST listar todos os números do catálogo, agrupados por sistema e por skill, sem busca livre. Os 11 da Stats estão entre eles, com o mesmo valor.
 - **FR-003**: Todo sistema do catálogo com tela reconhecida pelo catálogo de telas do app MUST ter um painel. Quando essa tela abre no jogo, o companion MUST mostrar o painel dela. Sistemas sem tela reconhecida MUST estar na aba Formulas.
 - **FR-004**: O painel de um sistema MUST mostrar em cima todos os números que o jogo não mostra declarados para ele no catálogo, em grupos que começam fechados (Costs, Caps, Chances, Rates), e embaixo a árvore do sistema. Todo número do painel MUST abrir a própria árvore.
-- **FR-005**: A árvore MUST abrir num painel lateral, alargando a janela, e MUST voltar ao tamanho anterior quando o painel fecha. O painel lateral MUST mudar só quando o jogador toca em outra árvore ou no ✕, nunca porque a tela do jogo mudou.
+- **FR-005**: A árvore MUST abrir num painel lateral, alargando a janela de 420 para 840 px (o painel lateral tem a mesma largura da janela de hoje), para o lado que tiver espaço na tela (a direita, se couber), e MUST voltar ao tamanho anterior quando o painel fecha. O painel lateral MUST mudar só quando o jogador toca em outra árvore ou no ✕, nunca porque a tela do jogo mudou.
 - **FR-006**: A árvore MUST expandir no lugar, com vários níveis na mesma tela, na ordem do jogo. Ela MUST trazer a resposta curta antes de qualquer lista e, logo abaixo, os passos do jogo como primeiro nível da árvore, sem cartões de etapa; depois as partes, "How it adds up" e "Game details" (design.md, Parte 2). Cada linha MUST mostrar só o próprio valor, e cada passo MUST levar o nome do bônus no jogo, nunca um nome genérico como "fixed"; sem nome provado, `no name yet`. A resposta curta MUST ter duas linhas: a maior parte que soma, com a fatia entre parênteses, e o maior multiplicador. Exemplo: "Largest added bonus: Golden Food (66%). Largest multiplier: Equipment ×31.8." Uma árvore sem soma ou sem multiplicador mostra só a linha que tem. O que vale 0 fica no "At 0 (N)", não na resposta.
 **Catálogo e cálculo**
 
 - **FR-007**: O catálogo MUST conter as árvores do levantamento ([catalogo-de-arvores.md](catalogo-de-arvores.md)) menos as "sem bloco". Uma árvore candidata ou gravada sem conta só entra no app depois de gravada e auditada linha a linha na bancada.
 - **FR-008**: Todo número do catálogo MUST ficar em dia ao vivo enquanto o jogo roda. Se o protótipo mostrar que não cabe, o plano B MUST valer: ao vivo o que está à vista (painel aberto, grupo aberto, painel lateral e Pin), e o resto ao abrir. Em qualquer caso, a Stats MUST seguir abaixo de 1 s, e pedir árvores MUST nunca atrasar nem derrubar a Stats.
 - **FR-009**: A mesma chamada do jogo, com os mesmos argumentos, MUST ser a mesma parte em qualquer árvore e em qualquer gravação.
-- **FR-010**: Do cálculo MUST sair só dado: nomes de parte, argumentos, números, sim/não, operadores e textos de tabelas do jogo. MUST NOT sair trecho do código, literal de string do código nem nome de personagem. O personagem aparece como "Character N (class)".
+- **FR-010**: Do cálculo MUST sair só dado: nomes de parte, argumentos, números, sim/não, operadores e textos de tabelas do jogo. MUST NOT sair trecho do código nem literal de string do código. Nomes de personagem, o nome da guilda e textos livres do estado do jogo podem sair para a tela do app, como estão: a tela é do jogador, na máquina dele.
+- **FR-010a**: Nomes de personagem, da conta e da guilda e textos livres do jogo MUST NOT ir para log, arquivo salvo (marcas, números fixados, formas de árvore), teste, documento ou o repositório. Nesses lugares, o personagem MUST aparecer como "Character N (class)" ou pelo seu número.
+- **FR-010b**: Tudo o que passa do cálculo isolado para a janela MUST ser conferido antes de aparecer (forma, tamanho e valores permitidos pela FR-010). O que falhar na conferência deixa a árvore `unavailable`.
 - **FR-011**: A cópia instrumentada do código do jogo MUST existir só em memória e MUST NOT ser escrita em disco, com teste.
 - **FR-012**: Cada caso que não fecha MUST ter um selo com texto, e o resto da árvore continua. Os ids são os do dado; o texto vem da tabela C7 do design.md:
 
@@ -366,14 +374,26 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - **FR-025**: O jogador MUST poder guardar até 3 marcas com nome por personagem (Antes/depois). Uma marca é a foto dos números num momento. Com uma marca escolhida, a árvore MUST mostrar cada diferença entre a marca e o agora, com o valor da marca e o atual. As marcas MUST ficar salvas na máquina do jogador, mesmo com o app fechado, e só somem quando ele as apaga (Clear). Trocar de personagem não as apaga. O arquivo das marcas MUST NOT ter nome de personagem (o personagem é o seu número) e nunca entra no repositório.
 - **FR-026**: O jogador MUST poder fixar até 5 números ou folhas (Pin). Os fixados MUST ficar numa faixa sob a barra de status, que quebra em duas linhas quando passa de 3. Cada um mostra o nome curto e o valor, MUST ficar destacado quando muda e abre a própria árvore com um toque.
 - **FR-027**: Uma peça que alimenta 2 ou mais números do catálogo MUST mostrar uma bolinha com a quantidade. Um toque MUST listar esses números, e cada um abre a sua árvore. Uma peça de 1 número só MUST NOT mostrar a bolinha.
-- **FR-028**: O acompanhador de farm MUST medir o XP, os itens e o gold por hora do personagem ativo a partir do que observa no estado do jogo, em memória. A contagem MUST começar quando o personagem entra num mapa novo que não é cidade; na cidade ela MUST pausar, de volta ao mesmo mapa MUST continuar, e noutro mapa que não é cidade MUST recomeçar. Ele MUST NOT calcular a taxa por fórmula, nem guardar histórico em disco.
+- **FR-028**: O acompanhador de farm MUST medir o XP, os itens e o gold por hora do personagem ativo a partir do que observa no estado do jogo, em memória. A contagem MUST começar quando o personagem entra num mapa novo que não é cidade; na cidade ela MUST pausar, de volta ao mesmo mapa MUST continuar, e noutro mapa que não é cidade MUST recomeçar. Ele MUST NOT calcular a taxa por fórmula, nem guardar histórico em disco. As taxas MUST aparecer numa faixa sob a barra de status, visível em todas as abas enquanto o personagem farma ("Farming 12 min · XP 1.2M/h · Gold 48K/h · Items ▸"); "Items ▸" abre a lista de itens por hora. Na cidade, a faixa mostra a contagem pausada.
 - **FR-029**: O radar de patch MUST guardar em disco a forma de cada árvore (nomes de parte e chaves), nunca valores, save ou nome de personagem. Depois de uma atualização do jogo, MUST listar as árvores que mudaram de forma e o que mudou.
 - **FR-030**: Em "Game details", Copy MUST copiar só o nome da linha, a chamada e o número.
 
 **Acessibilidade e privacidade**
 
-- **FR-031**: A árvore MUST caber a 210 px CSS (zoom de 200% no painel lateral), com recuo limitado e sem rolagem horizontal. Ela MUST seguir o padrão ARIA de treeview inteiro e ter contraste AA nos dois temas (design.md §3.8). Toda cor de selo MUST vir com texto.
-- **FR-032**: Nada do jogo nem do save MUST entrar no repositório: nem código, nem gravações, nem árvores montadas, nem retratos, nem o índice da 007. A prova de cada regra MUST ser uma referência, nunca uma frase do jogo citada, e um teste falha se uma regra tiver uma string que não seja referência.
+- **FR-031**: A árvore MUST caber a 210 px CSS (zoom de 200% no painel lateral), com recuo limitado e sem rolagem horizontal. A mesma regra MUST valer para o painel principal, a faixa do Pin, a faixa do farm, a faixa do radar e a aba Formulas. Ela MUST seguir o padrão ARIA de treeview inteiro: uma parada de Tab; ↑/↓ andam de linha em linha, → abre o ramo, ← fecha ou sobe um nível, Home/End vão ao início e ao fim, Enter abre a conta da linha. Ela MUST ter contraste AA nos dois temas (design.md §3.8). Toda cor de selo MUST vir com texto.
+- **FR-032**: Nada do jogo nem do save MUST entrar no repositório: nem código, nem gravações, nem árvores montadas, nem retratos, nem o índice da 007. A prova de cada regra MUST ser uma referência, nunca uma frase do jogo citada, e um teste falha se uma regra tiver uma string que não seja referência. O retrato do jogador usado na paridade MUST ser lido por um caminho em variável de ambiente, na máquina do Vinicius. O caminho pode aparecer em log, relatório e `registro.md`, e por isso o arquivo do retrato MUST ter um nome sem nome de personagem (por exemplo `retrato-character-9.json`). O conteúdo do retrato MUST NOT aparecer em nenhum desses lugares.
+
+**Telas, estados e acessibilidade dos extras**
+
+- **FR-033**: Ao sair de uma tela de sistema para uma tela sem painel (mapa, cidade, menu), o companion MUST continuar no último painel de sistema.
+- **FR-034**: Antes da primeira leitura, ou sem personagem escolhido, a aba Formulas, os painéis e o painel lateral MUST mostrar "Waiting for the game", sem número de outro personagem.
+- **FR-035**: Depois de uma atualização do jogo, uma faixa sob a barra de status, visível em todas as abas, MUST dizer quantas árvores mudaram de forma ("Game updated: 3 trees changed · Show"); "Show" lista o que mudou, e a faixa fica até o jogador fechá-la.
+- **FR-036**: Todo número que abre uma árvore MUST ter como ser fixado (Pin), e cada número da faixa MUST ter como ser solto. Um sexto pin MUST ser recusado com "Up to 5 pins: unpin one first." Os números fixados (só quais são, nunca valores) MUST continuar fixados depois de fechar o app.
+- **FR-037**: No topo da árvore, "Mark before" MUST pedir um nome (sugerindo "Mark 1", "Mark 2"…). Um seletor MUST escolher com qual marca a árvore compara, e cada marca MUST ter Clear. Uma quarta marca do mesmo personagem MUST ser recusada com "Up to 3 marks: clear one first."
+- **FR-038**: A aba Formulas MUST ordenar os grupos assim: Character, Account, os mundos de W1 a W7 na ordem do jogo e as skills pela ordem do jogo. Dentro de cada grupo vale a ordem do catálogo.
+- **FR-039**: Quando o painel troca sozinho, o foco do teclado MUST NOT mudar de lugar. Ao abrir o painel lateral, o foco MUST ir para o título dele; ao fechar, MUST voltar para o número que o abriu.
+- **FR-040**: A troca automática de painel MUST ser anunciada uma vez ao leitor de tela, na região viva da página ("Stamps panel"). "Game changed" segue o design.md §3.8. A mudança de um número fixado MUST NOT ser anunciada; ela aparece só na faixa.
+- **FR-041**: Um arquivo salvo (marcas, números fixados, formas de árvore) que não puder ser lido, estiver corrompido ou vier de outra versão do app MUST ser deixado de lado. O app começa vazio naquele item e avisa uma vez ("Saved marks could not be read and were reset"), sem cair.
 
 ### Key Entities
 
@@ -396,12 +416,12 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 
 - **SC-001**: Raiz = Stats: 0 diferenças nos 11 números, num roteiro de 10 trocas de item, e nenhum "Breakdown unavailable" no roteiro.
 - **SC-002**: App = bancada: 0 diferenças linha por linha (valor, tipo, ⓘ, "?") em cada árvore provada do catálogo, sobre o retrato da base congelada. É uma tarefa `[sessão]`, e o resumo entra no `registro.md`.
-- **SC-003**: Nada vaza: o teste da FR-010 passa, nenhum nome de personagem aparece, e a cópia instrumentada nunca toca o disco.
+- **SC-003**: Nada vaza: o teste da FR-010 passa, nenhum nome de personagem, da conta ou da guilda aparece em log, arquivo salvo, teste, documento ou no repositório (FR-010a), e a cópia instrumentada nunca toca o disco.
 - **SC-004**: Tudo segue como antes: os testes de só-leitura da 004 e da 005 passam, e a Stats fica abaixo de 1 s com as árvores ao vivo e o painel lateral aberto.
 - **SC-005**: Tempo: a árvore do Drop Rate abre em até 5 s (proposta, que o protótipo confirma). O painel de um sistema aparece em até 1 s depois de a tela abrir no jogo.
 - **SC-006**: Cobertura: todo sistema do catálogo com tela reconhecida tem painel, e todo número do catálogo abre a sua árvore pela aba Formulas.
 - **SC-007**: Honestidade contada: nenhuma linha fica sem valor ou selo, em nenhuma árvore do catálogo.
-- **SC-008**: Teste dos 5 segundos, num roteiro manual: uma pessoa que joga e nunca viu o app diz o valor do Drop Rate e a maior parte.
+- **SC-008**: Teste dos 5 segundos, num roteiro manual na máquina do Vinicius, com o app real: olhando a árvore do Drop Rate por 5 segundos, quem testa diz o valor e a maior parte. O resultado fica em `specs/008-formula-trees/teste-5s.md`, e o teste não segura o merge.
 - **SC-009**: Efeito no jogo: com tudo ao vivo, o jogo não perde mais quadros que na linha de base da 005.
 
 ## Assumptions
@@ -411,6 +431,7 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 - A bancada grava e audita as candidatas e as gravadas sem conta antes do plano. A sessão da pesquisa é dona dessa auditoria.
 - O catálogo de telas da 003 é a fonte de "qual sistema está aberto". As telas que faltam ficam pela aba Formulas até uma spec de telas as acrescentar.
 - O personagem nos exemplos, testes e documentos é sempre "Character N (class)".
+- Toda a interface e o conteúdo das árvores (nomes, contas, notas e selos) ficam em inglês.
 - A tela segue o design.md. O mockup da bancada é só ilustração, e quando diverge vale o design.md.
 - Os consertos pequenos que vêm antes da primeira fatia têm PR próprio: os companions "+" (`CompanionLVz`), a voz da barra de status, o zoom do texto, o arredondamento do Drop Rate e os padrões novos do `.gitignore`.
 
@@ -435,8 +456,9 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | Cada cartão das etapas mostra a operação, o total até ali, ou os dois? | resolved | Não há cartões: a árvore começa nos passos do jogo, árvore pura (FR-006) |
 | Os multiplicadores ×1: grupo próprio "At ×1 (N)" ou junto do "At 0"? | resolved | Grupo próprio, "At ×1 (N) · no effect yet" (FR-014) |
 | No ⓘ, o termo sem nome aparece como nome genérico ou como código? | resolved | Como código, dentro do "How it adds up"; na lista, nome genérico com `no name yet` (FR-012a) |
-| Teclado na árvore: o treeview do APG inteiro (uma parada) ou uma parada por linha? | open | |
-| Como entra o teste dos 5 segundos (uma pessoa sem bloquear, cinco iniciantes, ou portão para abrir o app)? | open | |
+| Teclado na árvore: o treeview do APG inteiro (uma parada) ou uma parada por linha? | resolved | O treeview inteiro, uma parada de Tab (FR-031) |
+| Como entra o teste dos 5 segundos (uma pessoa sem bloquear, cinco iniciantes, ou portão para abrir o app)? | resolved | Na máquina do Vinicius, com o app real, roteiro manual; resultado em teste-5s.md (SC-008) |
+| O teste dos 5 segundos segura o merge? | resolved | Confirmado pelo Vinicius: não; é um roteiro manual registrado em teste-5s.md, e o portão da 008 são os testes automáticos (SC-008) |
 | Aviso de outra versão do jogo: faixa no topo ou marca por linha? | resolved | Faixa no topo, sem marca por linha (FR-018) |
 | Uma folha Condition que vale "no" vai para "At 0"? | resolved | Não: fica na lista, na ordem do jogo (FR-014) |
 | O selo de repetição vale também para folhas, ou só para ramos? | resolved | Nenhum: uma parte repetida abre do mesmo jeito, ramo ou folha (FR-015) |
@@ -450,6 +472,23 @@ Em "Game details", o jogador vê a chamada do jogo e copia a linha.
 | Antes/depois: quantas marcas, e a marca sobrevive à troca de personagem? | resolved | Até 3 marcas com nome por personagem (FR-025) |
 | As marcas do Antes/depois ficam depois de fechar o app? | resolved | Sim: ficam salvas na máquina até o jogador dar Clear, sem nome de personagem (FR-025) |
 | O que o painel de cada sistema mostra em cima: todo "não mostrado" do catálogo daquele sistema, ou uma seleção aprovada sistema a sistema? | resolved | Todos, em grupos fechados (Costs, Caps, Chances, Rates) (FR-004) |
+| Onde aparece o acompanhador de farm? (ux CHK003) | resolved | Numa faixa sempre visível sob a barra de status, enquanto farma (FR-028) |
+| Em que língua ficam a interface e as árvores? (ux CHK013) | resolved | Inglês, como decidido no brainstorming (Assumptions) |
+| Texto livre do estado e identificadores da conta podem sair do cálculo? (security CHK001) | resolved | Na tela, sim, como estão, inclusive o nome real do personagem; nunca em log, arquivo salvo, teste, documento ou repositório (FR-010, FR-010a) |
+| O retrato do jogador pode aparecer em log, relatório ou registro.md? (security CHK002) | resolved | O caminho pode aparecer, com o arquivo renomeado sem nome de personagem; o conteúdo nunca (FR-032) |
+| O que acontece se um resultado levaria um pedaço de nome de personagem? (security CHK003) | resolved | Na tela, o nome aparece; nunca vai para log, arquivo salvo, teste, documento ou repositório (FR-010a) |
+| O que acontece com um arquivo salvo ilegível, corrompido ou de outra versão? (security CHK005) | resolved | Confirmado pelo Vinicius: é deixado de lado, o item começa vazio e o app avisa uma vez, sem cair (FR-041) |
+| O que sai do cálculo é conferido antes de aparecer? (security CHK015) | resolved | Confirmado pelo Vinicius: sim (forma, tamanho, valores permitidos); falhou, `unavailable` (FR-010b) |
+| O que o companion mostra ao sair de um sistema para uma tela sem painel? (ux CHK001) | resolved | Confirmado pelo Vinicius: continua no último painel de sistema (FR-033) |
+| O que as telas novas mostram antes da primeira leitura ou sem personagem? (ux CHK002) | resolved | Confirmado pelo Vinicius: "Waiting for the game", sem número de outro personagem (FR-034) |
+| Onde e quando aparece o radar de patch? (ux CHK004) | resolved | Faixa sob a barra de status, em todas as abas, "Game updated: 3 trees changed · Show", até o jogador fechar (FR-035) |
+| Como se fixa e se solta um número, e o que acontece no sexto? (ux CHK005) | resolved | Confirmado pelo Vinicius: todo número com árvore pode ser fixado; o sexto é recusado com "Up to 5 pins: unpin one first."; os fixados continuam depois de fechar o app, sem valores (FR-036) |
+| Como se cria, nomeia, escolhe e apaga uma marca, e o que acontece na quarta? (ux CHK006) | resolved | Confirmado pelo Vinicius: "Mark before" pede um nome ("Mark 1"…), um seletor escolhe a marca, cada uma tem Clear; a quarta é recusada com "Up to 3 marks: clear one first." (FR-037) |
+| Em que ordem ficam os grupos da aba Formulas? (ux CHK007) | resolved | Confirmado pelo Vinicius: Character, Account, W1 a W7 e as skills, na ordem do jogo (FR-038) |
+| Quanto a janela alarga, e para que lado? (ux CHK008) | resolved | Confirmado pelo Vinicius: de 420 para 840 px, para o lado com espaço (a direita, se couber) (FR-005) |
+| Para onde vai o foco na troca automática e ao abrir e fechar o painel lateral? (ux CHK015) | resolved | Confirmado pelo Vinicius: a troca não move o foco; abrir põe o foco no título do painel lateral; fechar devolve ao número que o abriu (FR-039) |
+| O que o leitor de tela anuncia na troca automática e na mudança de um pin? (ux CHK016) | resolved | Confirmado pelo Vinicius: a troca é anunciada uma vez ("Stamps panel"); a mudança de um pin não é anunciada (FR-040) |
+| O zoom de 200% vale para o painel principal, as faixas e a aba Formulas? (ux CHK017) | resolved | Confirmado pelo Vinicius: sim, a mesma regra dos 210 px, também para a faixa do radar (FR-031) |
 | O worker das árvores, o host novo, o pedido por número e os tetos (lote 4) | to plan | Decidido em 12/11 que vai ao plano; o protótipo mede |
 | O parser do código do jogo (dependência nova, só com o sim do Vinicius) | to plan | Lote 4.4; o protótipo mede |
 | Quantas linhas perdem nome sem o índice da 007 | to plan | O protótipo mede; o Vinicius aprova a lista |
