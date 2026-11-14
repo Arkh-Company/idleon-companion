@@ -329,6 +329,21 @@ test("a row without a proven name says no name yet, and an unavailable one shows
   expect(item(/^Gone/).getAttribute("aria-label")).toContain("unavailable");
 });
 
+test("a tree of 5,000 rows draws only the root and the first level until a branch opens", () => {
+  const kids = Array.from({ length: 10 }, (_, b) =>
+    node({
+      id: `root/B${String(b)}`,
+      name: `Branch ${String(b)}`,
+      value: 1,
+      kids: Array.from({ length: 499 }, (_, k) =>
+        node({ id: `root/B${String(b)}/K${String(k)}`, name: "Kid", value: 1 }),
+      ),
+    }),
+  );
+  const { container } = draw(node({ kids }));
+  expect(container.querySelectorAll('[role="treeitem"]')).toHaveLength(11);
+});
+
 test("at 210 px CSS nothing scrolls sideways: no inline style, indent capped, rows that wrap (FR-031)", () => {
   let deep = node({ id: "d9", name: "Deep 9", value: 1, leaf: "level" });
   for (let i = 8; i >= 1; i--)
