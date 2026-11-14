@@ -38,6 +38,11 @@ h2 {
   opacity: 0.7;
 }
 
+/* A catalog id has no space: it breaks anywhere rather than scroll sideways at 210 px CSS (FR-031). */
+.formulas th {
+  overflow-wrap: anywhere;
+}
+
 .tabs button {
   margin: 0.5rem 0.5rem 0 0;
 }

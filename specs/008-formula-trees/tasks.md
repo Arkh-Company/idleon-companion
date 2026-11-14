@@ -275,7 +275,7 @@ Verify: `just test-one src/renderer/FormulaTree.test.tsx` - passes; `just check`
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] `src/renderer/FormulasTab.test.tsx`
+- [X] T029 [P] [US2] `src/renderer/FormulasTab.test.tsx`
   - Cases:
     - groups in `TREE_CATALOG` order;
     - groups start closed;
@@ -294,7 +294,7 @@ Verify: `just test-one src/renderer/FormulaTree.test.tsx` - passes; `just check`
 - [X] T031 [US2] The `values` message in the worker and the live-values loop
   - Files: `src/calculator/index.ts`, `src/main/live-values.ts`, `src/main/formula-pipeline.ts`
   - Signature: `liveValues(deps): { setInView(ids: string[]): void; onMosaic(json: string): void }`
-- [ ] T032 [US2] The Formulas tab
+- [X] T032 [US2] The Formulas tab
   - Files: `src/renderer/FormulasTab.tsx`, `src/renderer/App.tsx` (a third tab, "Formulas")
 
 Verify: `just test-one src/renderer/FormulasTab.test.tsx` - passes; `just check` - passes.

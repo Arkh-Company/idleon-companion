@@ -1,15 +1,17 @@
 // The window: only the setup screen while Steam is not set up (FR-005); after it, the status bar, the panels of the
-// modules that match the context, and the settings. A tapped Stats value opens its tree in the side panel, beside the
-// rest, with the window widened (spec 008 FR-005).
+// modules that match the context, and the settings. A tapped Stats or Formulas value opens its tree in the side panel,
+// beside the rest, with the window widened (spec 008 FR-005).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { modulesFor } from "../shared/index.ts";
 import type {
   FormulaTree,
   GameContext,
+  LiveValues,
   Stats,
   Status,
   SteamState,
 } from "../shared/index.ts";
+import { FormulasTab } from "./FormulasTab.tsx";
 import { screenMap } from "./modules/screen-map.ts";
 import { SettingsView, SteamSettings } from "./SettingsView.tsx";
 import { SetupView, steamUnknown } from "./SetupView.tsx";
@@ -23,6 +25,7 @@ const MODULES = [screenMap];
 const TABS = [
   ["map", "Screen map"],
   ["stats", "Stats"],
+  ["formulas", "Formulas"],
 ] as const;
 // ponytail: v1 modules never message the main process; module:<id>:* channels when one needs to.
 const send = () => Promise.resolve();
@@ -34,7 +37,9 @@ export function App() {
   useEffect(() => window.companion.onStatus(setStatus), []);
   const [stats, setStats] = useState<Stats | null>(null);
   useEffect(() => window.companion.onStats(setStats), []);
-  const [tab, setTab] = useState<"map" | "stats">("map");
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>("map");
+  const [live, setLive] = useState<LiveValues | null>(null);
+  useEffect(() => window.companion.onLiveValues(setLive), []);
   const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
   useEffect(() => window.companion.onFormula(setFormula), []);
   const [side, setSide] = useState<Side | null>(null);
@@ -53,14 +58,17 @@ export function App() {
       if (turn.current === mine && window.screenX < before) setLeft(true);
     });
   }
+  function openTree(next: Side, from: HTMLElement): void {
+    opener.current = from;
+    if (!side) widen();
+    setSide(next);
+    if (next.id) void window.companion.requestFormula({ id: next.id });
+  }
   function openSide(row: StatsRow, from: HTMLElement): void {
     const trees = STATS_TREES[row.label];
     if (!trees) return;
-    opener.current = from;
-    if (!side) widen();
     const id = trees.length === 1 ? (trees[0]?.[0] ?? null) : null;
-    setSide({ label: row.label, text: row.text, trees, id });
-    if (id) void window.companion.requestFormula({ id });
+    openTree({ label: row.label, text: row.text, trees, id }, from);
   }
   function closeSide(): void {
     turn.current++;
@@ -135,6 +143,9 @@ export function App() {
               ))}
             </div>
             {tab === "stats" && <StatsPanel stats={stats} onOpen={openSide} />}
+            {tab === "formulas" && (
+              <FormulasTab stats={stats} live={live} onOpen={openTree} />
+            )}
             {tab === "map" &&
               ctx &&
               modulesFor(ctx, MODULES).map(({ id, title, Panel }) => (

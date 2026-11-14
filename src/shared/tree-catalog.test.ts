@@ -14,7 +14,9 @@ test("the catalog holds the bench's audited trees, each id once", () => {
 });
 
 test("the Stats numbers open the catalog, as their own system", () => {
-  expect(ids.slice(0, NUMBER_IDS.length).sort()).toEqual([...NUMBER_IDS].sort());
+  expect(ids.slice(0, NUMBER_IDS.length).sort()).toEqual(
+    [...NUMBER_IDS].sort(),
+  );
   expect(
     TREE_CATALOG.filter((n) => n.system === "Stats").map((n) => n.id),
   ).toEqual(ids.slice(0, NUMBER_IDS.length));
