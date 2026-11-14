@@ -17,7 +17,7 @@ execution:
     - {name: "US1b-2 passos e linhas (T017, T022)", status: done, commits: ddab772..01202fb}
     - {name: "US1 (T025-T028)", status: done, commits: 32ffc1c..27b01a4}
     - {name: US2, status: done, commits: 63b5d1a..b6e9921}
-    - {name: "US3 + US4", status: pending}
+    - {name: "US3 + US4", status: done, commits: 2716cce..2389677}
     - {name: US5, status: pending}
     - {name: US6, status: pending}
     - {name: US7, status: pending}
