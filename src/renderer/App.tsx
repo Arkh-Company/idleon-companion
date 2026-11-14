@@ -41,17 +41,31 @@ export function App() {
   /** The number that opened the panel: ✕ gives the focus back to it (FR-039). */
   const opener = useRef<HTMLElement | null>(null);
 
+  /** The window grew to the left: the panel goes on the left, so the Stats stays under the cursor (FR-005). */
+  const [left, setLeft] = useState(false);
+  /** Each open and close counts: a widening that ends after a close is ignored. */
+  const turn = useRef(0);
+
+  function widen(): void {
+    const before = window.screenX;
+    const mine = ++turn.current;
+    void window.companion.setSidePanel({ open: true }).then(() => {
+      if (turn.current === mine && window.screenX < before) setLeft(true);
+    });
+  }
   function openSide(row: StatsRow, from: HTMLElement): void {
     const trees = STATS_TREES[row.label];
     if (!trees) return;
     opener.current = from;
-    if (!side) void window.companion.setSidePanel({ open: true });
+    if (!side) widen();
     const id = trees.length === 1 ? (trees[0]?.[0] ?? null) : null;
     setSide({ label: row.label, text: row.text, trees, id });
     if (id) void window.companion.requestFormula({ id });
   }
   function closeSide(): void {
+    turn.current++;
     setSide(null);
+    setLeft(false);
     void window.companion.setSidePanel({ open: false });
     void window.companion.closeFormula();
     opener.current?.focus();
@@ -87,7 +101,11 @@ export function App() {
   }, []);
 
   return (
-    <main className={side ? "app with-side" : "app"}>
+    <main
+      className={
+        side ? `app with-side${left ? " with-side--left" : ""}` : "app"
+      }
+    >
       <div className="main-panel">
         <h1>IdleOn Companion</h1>
         {steam && (!steam.configured || setupFinished) && (

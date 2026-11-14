@@ -8,32 +8,30 @@ import {
   leafLabel,
   leafPhrase,
   LeafTag,
+  LevelTag,
   truthTags,
   TruthTags,
+  WIDE_CAP,
 } from "./LeafTag.tsx";
 import {
   formulaLines,
+  GROUP_SUFFIX,
   reachedText,
   shareText,
   spokenValue,
+  valueClass,
   valueText,
 } from "./tree-text.ts";
 import { isGroup, partition } from "./tree-parts.ts";
 
 type Ready = Extract<Tree, { state: "ready" }>;
 
-const GROUP_SUFFIX: Partial<Record<TreeNode["role"], string>> = {
-  atZero: " · not adding anything now",
-  atOne: " · no effect yet",
-};
-
-function valueClass(n: TreeNode): string {
-  const v = n.value;
-  if (typeof v === "number" && (v === 0 || (n.fmt === "x" && v === 1)))
-    return "num num--zero";
-  if (n.fmt === "x") return "num num--mult";
-  return n.fmt === "%" || n.fmt === "+" ? "num num--add" : "num";
-}
+const detail = (term: string, text: string) => (
+  <>
+    <span className="name">{term}</span>
+    <span className="code">{text}</span>
+  </>
+);
 
 interface Visible {
   key: string;
@@ -111,7 +109,7 @@ export function FormulaTree({
         tabIndex={key === active ? 0 : -1}
       >
         <div
-          className={`row lvl-${String(Math.min(level - 1, 6))}`}
+          className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}`}
           onClick={() => {
             setActive(key);
             setFocusKey(key);
@@ -121,6 +119,7 @@ export function FormulaTree({
           <span className="twisty" aria-hidden="true">
             {expandable ? (expanded ? "▾" : "▸") : ""}
           </span>
+          <LevelTag level={level} />
           {line}
         </div>
         {expanded && inside?.()}
@@ -158,17 +157,41 @@ export function FormulaTree({
           n.id,
           label,
           <span className="name">{label}</span>,
-          () => (
-            <section className="how" aria-label="How it adds up">
-              <p>{f.names}</p>
-              <p className="num">{f.numbers}</p>
-            </section>
-          ),
+          () =>
+            lines(`${n.id}::how`, level + 1, [
+              [f.names, <span className="name">{f.names}</span>],
+              [f.numbers, <span className="name num">{f.numbers}</span>],
+            ]),
           true,
         ),
       );
     }
     return out;
+  }
+
+  /** The rows inside an informative row (the two lines of the math, the pairs of Game details): treeitems that do not
+   * open, so the arrows reach them and the reader says their text (design.md §3.8). */
+  function lines(
+    parent: string,
+    level: number,
+    rows: [label: string, line: ReactNode][],
+  ): ReactNode {
+    return (
+      <ul role="group">
+        {rows.map(([label, line], i) =>
+          item(
+            `${parent}::${String(i)}`,
+            level,
+            [i + 1, rows.length],
+            parent,
+            label,
+            line,
+            null,
+            false,
+          ),
+        )}
+      </ul>
+    );
   }
 
   function details(
@@ -183,18 +206,16 @@ export function FormulaTree({
       n.id,
       "Game details",
       <span className="name">Game details</span>,
-      () => (
-        <dl className="details">
-          <dt>Game call</dt>
-          <dd className="code">{n.code}</dd>
-          <dt>Exact value</dt>
-          <dd className="code">
-            {typeof n.value === "number"
-              ? String(Number(n.value.toFixed(6)))
-              : valueText(n)}
-          </dd>
-        </dl>
-      ),
+      () => {
+        const exact =
+          typeof n.value === "number"
+            ? String(Number(n.value.toFixed(6)))
+            : valueText(n);
+        return lines(`${n.id}::details`, level + 1, [
+          [`Game call: ${n.code ?? ""}`, detail("Game call", n.code ?? "")],
+          [`Exact value: ${exact}`, detail("Exact value", exact)],
+        ]);
+      },
       true,
     );
   }

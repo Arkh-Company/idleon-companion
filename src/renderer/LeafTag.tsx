@@ -1,5 +1,5 @@
-// The tags of a tree row (spec 008 FR-012, FR-013; design.md C4, C7): the leaf type with the color of its family and the
-// honesty tags, always in text, never by color alone.
+// The tags of a tree row (spec 008 FR-012, FR-013; design.md C4, C7, C8): the leaf type with the color of its family, the
+// honesty tags, always in text, never by color alone, and the level of a row past the indent's cap.
 import { LEAF_FAMILY } from "../shared/index.ts";
 import type { ConditionKind, LeafKind, TreeNode } from "../shared/index.ts";
 
@@ -123,4 +123,21 @@ export function TruthTags({ tags }: { tags: string[] }) {
       {t}
     </span>
   ));
+}
+
+/** The indent stops growing past these depths: 6 levels, 4 in a narrow panel (styles.css, FR-031). */
+export const WIDE_CAP = 6;
+const NARROW_CAP = 4;
+
+/** Past the indent's cap the row says its level; aria-level says it to the reader (design.md C8). */
+export function LevelTag({ level }: { level: number }) {
+  if (level - 1 <= NARROW_CAP) return null;
+  return (
+    <span
+      className={level - 1 > WIDE_CAP ? "lvl-tag" : "lvl-tag lvl-tag--narrow"}
+      aria-hidden="true"
+    >
+      {`L${String(level)}`}
+    </span>
+  );
 }

@@ -108,3 +108,18 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
     result,
   };
 }
+
+/** The name a group row of the mould adds (FR-014: "At 0 (N)", "At ×1 (N) · no effect yet"). */
+export const GROUP_SUFFIX: Partial<Record<TreeNode["role"], string>> = {
+  atZero: " · not adding anything now",
+  atOne: " · no effect yet",
+};
+
+/** The value's color by its role: adds, multiplies, or 0 and ×1 (design.md §3.2). */
+export function valueClass(n: Pick<TreeNode, "value" | "fmt">): string {
+  const v = n.value;
+  if (typeof v === "number" && (v === 0 || (n.fmt === "x" && v === 1)))
+    return "num num--zero";
+  if (n.fmt === "x") return "num num--mult";
+  return n.fmt === "%" || n.fmt === "+" ? "num num--add" : "num";
+}

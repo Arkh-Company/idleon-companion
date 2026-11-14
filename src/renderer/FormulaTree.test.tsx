@@ -300,9 +300,31 @@ test("How it adds up shows the names and the numbers, with the row's value after
   key("ArrowRight");
   const how = item(/^How it adds up = 62\.5/);
   how.focus();
-  key("Enter");
-  expect(how.textContent).toContain("Points × Bonus");
-  expect(how.textContent).toContain("25 × 2.5 = 62.5");
+  key("ArrowRight");
+  key("ArrowRight");
+  expect(focused()).toBe("Points × Bonus");
+  expect(document.activeElement?.getAttribute("aria-level")).toBe("4");
+  key("ArrowDown");
+  expect(focused()).toBe("25 × 2.5 = 62.5");
+});
+
+test("Game details opens into its rows, each one reached by the arrows", () => {
+  draw(
+    node({
+      kids: [
+        node({ id: "root/G", name: "Call", value: 62.5, code: "Block(1, 2)" }),
+      ],
+    }),
+  );
+  item(/^Call/).focus();
+  key("ArrowRight");
+  key("ArrowRight");
+  expect(focused()).toBe("Game details");
+  key("ArrowRight");
+  key("ArrowRight");
+  expect(focused()).toBe("Game call: Block(1, 2)");
+  key("ArrowDown");
+  expect(focused()).toBe("Exact value: 62.5");
 });
 
 test("a row without a proven name says no name yet, and an unavailable one shows — and says so", () => {
@@ -361,6 +383,14 @@ test("at 210 px CSS nothing scrolls sideways: no inline style, indent capped, ro
   expect(container.querySelector("[style]")).toBe(null);
   const row = item(/^Deep 9/).querySelector(".row");
   expect(row?.className).toMatch(/\blvl-6\b/);
+  // Past the cap the row says its level, hidden from the reader (aria-level says it); past 4, only in a narrow panel.
+  const tag = (name: string) =>
+    item(new RegExp(`^${name},`)).querySelector(":scope > .row > .lvl-tag");
+  expect(tag("Deep 8")?.textContent).toBe("L9");
+  expect(tag("Deep 8")?.getAttribute("aria-hidden")).toBe("true");
+  expect(tag("Deep 8")?.classList.contains("lvl-tag--narrow")).toBe(false);
+  expect(tag("Deep 5")?.classList.contains("lvl-tag--narrow")).toBe(true);
+  expect(tag("Deep 3")).toBe(null);
   const css = readFileSync(join(import.meta.dirname, "styles.css"), "utf8");
   expect(css).toMatch(/@container side \(max-width: 300px\)/);
   expect(css).toMatch(/\.row \{[^}]*flex-wrap: wrap/);

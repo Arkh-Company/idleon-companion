@@ -2,6 +2,8 @@
 // The side panel (spec 008 FR-001, FR-005, FR-006, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the Stats value is a
 // button that opens the tree beside the window, ✕ closes it and gives the focus back, and the short answer has the lines
 // that exist. Every value and name is invented.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   act,
   cleanup,
@@ -77,6 +79,94 @@ test("tapping a value opens the side panel, widens the window and asks its tree;
   expect(companion.requestFormula).toHaveBeenCalledWith({ id: "dropRate" });
   expect(document.activeElement?.tagName).toBe("H2");
   expect(document.activeElement?.textContent).toContain("Drop Rate");
+});
+
+/** The main widens the window: to the left moves its left edge (`screenX`) by as much. */
+function widenTo(screenX: number) {
+  companion.setSidePanel.mockImplementation(({ open }) => {
+    if (open)
+      Object.defineProperty(window, "screenX", {
+        value: screenX,
+        configurable: true,
+      });
+    return Promise.resolve();
+  });
+}
+const main = () => document.querySelector("main");
+
+test.each([
+  [
+    "to the left, the panel goes on the left: the Stats stays under the cursor",
+    580,
+    true,
+  ],
+  ["to the right, the panel stays on the right", 1000, false],
+])("when the window widens %s", async (_side, after, left) => {
+  Object.defineProperty(window, "screenX", { value: 1000, configurable: true });
+  widenTo(after);
+  await statsTab();
+  await act(async () => {
+    fireEvent.click(value("1,234x"));
+    await Promise.resolve();
+  });
+  expect(main()?.classList.contains("with-side--left")).toBe(left);
+  fireEvent.click(screen.getByRole("button", { name: "Close the breakdown" }));
+  expect(main()?.classList.contains("with-side--left")).toBe(false);
+});
+
+async function openDropRate() {
+  await act(async () => {
+    fireEvent.click(value("1,234x"));
+    await Promise.resolve();
+  });
+}
+const closePanel = () => {
+  fireEvent.click(screen.getByRole("button", { name: "Close the breakdown" }));
+};
+
+test("a panel opened on the left and closed opens on the right next time, when the window grows to the right", async () => {
+  Object.defineProperty(window, "screenX", { value: 1000, configurable: true });
+  widenTo(580);
+  await statsTab();
+  await openDropRate();
+  closePanel();
+  Object.defineProperty(window, "screenX", { value: 1000, configurable: true });
+  widenTo(1000);
+  await openDropRate();
+  expect(main()?.classList.contains("with-side--left")).toBe(false);
+});
+
+test("a widening that ends after ✕ does not put the next panel on the left", async () => {
+  Object.defineProperty(window, "screenX", { value: 1000, configurable: true });
+  let finish: () => void = () => undefined;
+  companion.setSidePanel.mockImplementationOnce(
+    () =>
+      new Promise<void>((done) => {
+        finish = () => {
+          Object.defineProperty(window, "screenX", {
+            value: 580,
+            configurable: true,
+          });
+          done();
+        };
+      }),
+  );
+  await statsTab();
+  fireEvent.click(value("1,234x"));
+  closePanel();
+  await act(async () => {
+    finish();
+    await Promise.resolve();
+  });
+  Object.defineProperty(window, "screenX", { value: 1000, configurable: true });
+  widenTo(1000);
+  await openDropRate();
+  expect(main()?.classList.contains("with-side--left")).toBe(false);
+});
+
+test("the panel on the left comes first in the grid", () => {
+  const css = readFileSync(join(import.meta.dirname, "styles.css"), "utf8");
+  expect(css).toMatch(/\.with-side--left \.side-panel \{[^}]*order: -1/);
 });
 
 test("another value while open changes the tree, and the window is widened only once", async () => {
