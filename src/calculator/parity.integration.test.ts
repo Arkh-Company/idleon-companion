@@ -6,16 +6,17 @@
 // - PARITY_BENCH_DIR: a folder with `parity/dropRate.json`, the bench's Drop Rate tree without compaction
 //   (`NO_COMPACT=1 TREE=<recording> OUT=<that file> node screen-proposal/build-v1mold.cjs`), and, when there is one,
 //   `parity/reviewed-names.json`, the paths of the rows whose names wait on the 007 index.
-// It prints counts and the bench's row paths only, never a value nor anything of the snapshot (FR-032).
+// It prints counts and the places of the rows only, never a name, a value nor anything of the snapshot (FR-032).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, test } from "vitest";
-import type { BenchRow, Difference } from "./parity-compare.ts";
+import type { BenchRow } from "./parity-compare.ts";
 import {
   activeCharacter,
   codeValueConflicts,
   compareTrees,
   mosaicOfSnapshot,
+  summary,
 } from "./parity-compare.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { createTreeEngine } from "./tree-engine.ts";
@@ -45,14 +46,6 @@ function expandAll(engine: TreeEngine, n: CalcTreeNode): CalcTreeNode {
       ? built.kids.map((k) => expandAll(engine, k))
       : [],
   };
-}
-
-/** How many differences of each field, and the first paths: what goes to registro.md. */
-function summary(found: Difference[]): string {
-  const counts: Record<string, number> = {};
-  for (const d of found) counts[d.field] = (counts[d.field] ?? 0) + 1;
-  const first = found.slice(0, 20).map((d) => `${d.field}: ${d.path}`);
-  return [JSON.stringify(counts), ...first].join("\n");
 }
 
 describe.skipIf(!READY)("parity of the Drop Rate tree with the bench", () => {
@@ -99,7 +92,8 @@ describe.skipIf(!READY)("parity of the Drop Rate tree with the bench", () => {
   test(
     "no piece shows two values (the bench's code × value check)",
     () => {
-      expect(codeValueConflicts(tree)).toEqual([]);
+      // Only the count: a piece key can carry a state path with a character's name (FR-010a).
+      expect(codeValueConflicts(tree).length).toBe(0);
     },
     BUILD_MS,
   );

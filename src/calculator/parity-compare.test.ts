@@ -8,6 +8,7 @@ import {
   codeValueConflicts,
   compareTrees,
   mosaicOfSnapshot,
+  summary,
 } from "./parity-compare.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 
@@ -122,11 +123,11 @@ test.each<[string, BenchRow, string]>([
     "shape",
   ],
 ])(
-  "%s that differs is one difference, with its path",
+  "%s that differs is one difference, with its place",
   (_name, bench, field) => {
     const found = compareTrees(APP, bench, new Set());
     expect(found.map((d) => d.field)).toEqual([field]);
-    expect(found[0]?.path).toMatch(/^Invented total/);
+    expect(found[0]?.at).toMatch(/^0(\/\d+)*$/);
   },
 );
 
@@ -176,4 +177,17 @@ test("the active character is its place in the game's list, 0 when it cannot be 
     }),
   ).toBe(1);
   expect(activeCharacter({ attrs: {} })).toBe(0);
+});
+
+test("the summary says each difference by its field and its place, never by a name of the bench (FR-010a, FR-032)", () => {
+  // A character's name can be a row's name in the bench's tree: the summary goes to registro.md.
+  const bench: BenchRow = {
+    ...BENCH,
+    kids: [{ name: "Wrenna", v: 3, kind: "Level" }, BENCH.kids?.[1] ?? {}],
+  };
+  const text = summary(compareTrees(APP, bench, new Set()));
+  expect(text).not.toContain("Wrenna");
+  expect(text).not.toContain("Invented total");
+  expect(text).toContain("value: 0/0");
+  expect(text).toContain('{"value":1,"name":1}');
 });

@@ -15,8 +15,9 @@ export interface BenchRow {
 }
 
 export interface Difference {
-  /** The bench's names from the root, joined by " › ". */
-  path: string;
+  /** The row's place: its position under each parent from the root ("0/3/2"), never a name, which can be a
+   * character's (FR-010a). */
+  at: string;
   field: "value" | "type" | "unknown" | "formula" | "name" | "shape";
 }
 
@@ -82,12 +83,19 @@ export function compareTrees(
   reviewedNames: ReadonlySet<string>,
 ): Difference[] {
   const out: Difference[] = [];
-  const walk = (a: CalcTreeNode, b: BenchRow, path: string, root: boolean) => {
+  /** `path` is the bench's names, only to find a reviewed name; `at` is what leaves. */
+  const walk = (
+    a: CalcTreeNode,
+    b: BenchRow,
+    path: string,
+    at: string,
+    root: boolean,
+  ) => {
     if (b.ref !== undefined || b.kind === "shown earlier")
       throw new Error(
         "the bench tree has compaction: build it again with NO_COMPACT=1",
       );
-    const add = (field: Difference["field"]) => out.push({ path, field });
+    const add = (field: Difference["field"]) => out.push({ at, field });
     if (!sameValue(a.value, b.v)) add("value");
     const kind =
       b.kind === undefined ? null : (KIND[b.kind] ?? `bench:${b.kind}`);
@@ -106,11 +114,20 @@ export function compareTrees(
     }
     ak.forEach((k, i) => {
       const bi = bk[i] ?? {};
-      walk(k, bi, `${path} › ${bi.name ?? "?"}`, false);
+      walk(k, bi, `${path} › ${bi.name ?? "?"}`, `${at}/${String(i)}`, false);
     });
   };
-  walk(app, bench, bench.name ?? "?", true);
+  walk(app, bench, bench.name ?? "?", "0", true);
   return out;
+}
+
+/** What goes to registro.md: how many differences of each field, then the first ones by place, never a name nor a
+ * value (FR-032). */
+export function summary(found: readonly Difference[]): string {
+  const counts: Record<string, number> = {};
+  for (const d of found) counts[d.field] = (counts[d.field] ?? 0) + 1;
+  const first = found.slice(0, 20).map((d) => `${d.field}: ${d.at}`);
+  return [JSON.stringify(counts), ...first].join("\n");
 }
 
 /** The bench's code × value check: a piece (block, arguments, character) shows one value wherever it is. */
