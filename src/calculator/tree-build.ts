@@ -30,9 +30,9 @@ import {
 } from "./tree/rows.ts";
 import type { CacheOpen, Row } from "./tree/rows.ts";
 import { makeSteps } from "./tree/steps.ts";
-import type { Expr } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
-import { firstSrc, topOp } from "./tree/expr.ts";
+import { firstSrc, noSource, topOp } from "./tree/expr.ts";
+import { withFormula } from "./tree/formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
 import { rawPasses } from "./tree/raw-passes.ts";
@@ -51,16 +51,12 @@ export interface TreeBuild {
 
 interface Place {
   node: CalcTreeNode;
+  /** The row as it was built, with the game's expressions around it for its ⓘ (tree/formulas.ts). */
+  row: Row;
   open: number | CacheOpen;
   depth: number;
   seen: readonly number[];
 }
-
-/** A step made of numbers only, none of them read (DEEP3-FIX-1, the index of a table cell). */
-const noSource = (x: Expr): boolean =>
-  x.t === "num" ||
-  x.t === "val" ||
-  (x.t === "op" && noSource(x.l) && noSource(x.r));
 
 /**
  * The tree of the recording's first root call, for the character asked (its index, in every piece key); `ops` are
@@ -316,38 +312,55 @@ export function buildTree(
     seen: readonly number[],
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
-    return rows.map(({ node, open, group, seen: own }) => {
+    return rows.map((r) => {
+      const { node, open, group, seen: own } = r;
       const above = own ?? seen;
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);
       const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
       const bug = gameBugOf(bugs, parent.code, node.code);
+      // a branch built already has its ⓘ now; a group's rows are still the call's own
+      const built = group && withFormula(r, group);
       const placed: CalcTreeNode = {
         id,
         ...node,
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
-        // a group's rows are still the call's own
-        ...(group
-          ? { kids: place({ id, code: parent.code }, group, depth, above) }
+        ...(built
+          ? {
+              formula: built.formula,
+              kids: place({ id, code: parent.code }, built.rows, depth, above),
+            }
           : {}),
       };
       if (open !== null)
-        places.set(id, { node: placed, open, depth, seen: above });
+        places.set(id, { node: placed, row: r, open, depth, seen: above });
       return placed;
     });
   }
-  /** The rows under a place; null when the depth limit or a cycle cuts it. */
-  function kidsAt(p: Place): CalcTreeNode[] | null {
+  /** The place's ⓘ and the rows under it; null when the depth limit or a cycle cuts it. */
+  function kidsAt(
+    p: Place,
+  ): { formula: CalcTreeNode["formula"]; kids: CalcTreeNode[] } | null {
     // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
     if (typeof p.open !== "number") {
       const rows = caches.open(p.open, p.depth - 1, new Set(p.seen));
-      return rows && place(p.node, rows, p.depth + 1, p.seen);
+      if (!rows) return null;
+      const w = withFormula(p.row, rows);
+      return {
+        formula: w.formula,
+        kids: place(p.node, w.rows, p.depth + 1, p.seen),
+      };
     }
     const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
+    if (!rows) return null;
+    const w = withFormula(p.row, rows);
     // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
     const from = nodes[p.open];
     const parent = { id: p.node.id, code: from ? callText(from) : null };
-    return rows && place(parent, rows, p.depth + 1, [...p.seen, p.open]);
+    return {
+      formula: w.formula,
+      kids: place(parent, w.rows, p.depth + 1, [...p.seen, p.open]),
+    };
   }
 
   const value = valueOf(top.v);
@@ -358,16 +371,23 @@ export function buildTree(
     role: "root",
   };
   if (value !== null)
-    root.kids = kidsAt({ node: root, open: top.id, depth: 0, seen: [] }) ?? [];
+    root.kids =
+      kidsAt({
+        node: root,
+        row: { node: root, open: top.id },
+        open: top.id,
+        depth: 0,
+        seen: [],
+      })?.kids ?? [];
 
   return {
     root,
     expand(nodeId) {
       const p = places.get(nodeId);
       if (!p) return null;
-      const kids = kidsAt(p);
-      return kids
-        ? { ...p.node, kids }
+      const built = kidsAt(p);
+      return built
+        ? { ...p.node, ...built }
         : { ...p.node, flags: { ...p.node.flags, truncated: true }, kids: [] };
     },
     conflicts: pieces.conflicts,

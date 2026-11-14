@@ -66,3 +66,9 @@ export const adds = (x: Expr): boolean =>
   (x.t === "def" && adds(x.e)) ||
   (x.t === "not" && adds(x.a)) ||
   (x.t === "fn" && x.args.some(adds));
+
+/** A step made of numbers only, none of them read (DEEP3-FIX-1, the index of a table cell). */
+export const noSource = (x: Expr): boolean =>
+  x.t === "num" ||
+  x.t === "val" ||
+  (x.t === "op" && noSource(x.l) && noSource(x.r));

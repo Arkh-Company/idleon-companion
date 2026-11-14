@@ -40,6 +40,13 @@ export interface Row {
   earlier?: boolean;
   /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
   test?: string;
+  /**
+   * The ⓘ before the row's own rows exist (tree/formulas.ts): the game's expression around the row, its parts as tokens
+   * (pieces.cjs `xformula`, and `xweak` when it names the row alone), or its finished pair (`f`, a curve's).
+   */
+  xf?: [names: string, numbers: string];
+  xweak?: [names: string, numbers: string];
+  f?: [names: string, numbers: string];
 }
 
 export const valueOf = (v: RecValue | undefined): number | boolean | null =>
@@ -207,5 +214,6 @@ export function curveRow(
     open: null,
     group: withShares({ name, value: fields.value }, text, [...parts, last])
       .rows,
+    ...(text ? { f: text } : {}),
   };
 }

@@ -3,6 +3,9 @@
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { TreeBuild } from "../tree-build.ts";
+import type { FormulaRow } from "./formulas.ts";
+import { row } from "./rows.ts";
+import type { Row } from "./rows.ts";
 
 type Spec = Partial<RecNode> & Pick<RecNode, "b">;
 
@@ -120,3 +123,62 @@ export function openPath(build: TreeBuild, ...codes: (string | null)[]) {
   }
   return node;
 }
+
+// Rows written by hand, for the forms of a level: a read is unnamed and written by its path (FR-012a).
+export const read = (code: string, value: number | null): Row => ({
+  node: row({ pieceKey: code, value, code }),
+  open: null,
+});
+export const fixed = (name: string, value: number): Row => ({
+  node: row({
+    pieceKey: null,
+    value,
+    code: null,
+    name,
+    leaf: "fixedValue",
+    flags: {},
+  }),
+  open: null,
+});
+export const cond = (
+  test: string,
+  yes: boolean,
+  code: string | null = null,
+): Row => ({
+  node: row({
+    pieceKey: null,
+    value: yes ? 1 : 0,
+    code,
+    leaf: "condition",
+    condition: "owned",
+  }),
+  open: null,
+  test,
+});
+/** A branch with no code of its own (the bench's branch of an expression's parts). */
+export const branch = (value: number, group: Row[] = []): Row => ({
+  node: row({ pieceKey: null, value, code: null }),
+  open: null,
+  group,
+});
+export const ones = (...rows: Row[]): Row => ({
+  node: row({
+    pieceKey: null,
+    value: 1,
+    code: null,
+    name: `At ×1 (${String(rows.length)})`,
+    role: "atOne",
+    flags: { closed: true },
+  }),
+  open: null,
+  group: rows,
+});
+/** The row whose ⓘ is asked: a call, with the game's expressions around it. */
+export const at = (
+  value: number,
+  more: Partial<Pick<FormulaRow, "xf" | "xweak" | "f">> &
+    Partial<Pick<CalcTreeNode, "code">> = {},
+): FormulaRow => ({
+  node: row({ pieceKey: "x", value, code: more.code ?? "Own()" }),
+  ...more,
+});
