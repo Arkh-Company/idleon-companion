@@ -2,6 +2,7 @@
 // from either is used before it passes here. No electron import, so tests can load it.
 import { win32 } from "node:path";
 import { isCatalogId, isObject, toReading } from "../shared/index.ts";
+import { MAX_NODE_ID } from "./tree-check.ts";
 import type {
   GameTables,
   Reading,
@@ -28,7 +29,6 @@ export function settingsPayload(v: unknown): Settings | null {
 export type FormulaRequest =
   { id: string; character: number | null } | { treeId: string; nodeId: string };
 
-const MAX_NODE_ID = 2_000;
 const onlyKeys = (v: Record<string, unknown>, keys: readonly string[]) =>
   Object.keys(v).every((k) => keys.includes(k));
 const isNodeId = (v: unknown): v is string =>

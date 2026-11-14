@@ -3,7 +3,7 @@
 import { expect, test } from "vitest";
 import type { TreeNode } from "../shared/index.ts";
 import { node } from "./formula-fixture.ts";
-import { checkTree } from "./tree-check.ts";
+import { checkTree, MAX_NODE_ID } from "./tree-check.ts";
 
 const MAX = 50;
 
@@ -78,6 +78,43 @@ test.each<[string, unknown]>([
   ["a text too long", node({ name: "x".repeat(201) })],
 ])("%s gives null", (_name, raw) => {
   expect(checkTree(raw, MAX)).toBe(null);
+});
+
+test("a row 17 names deep passes: its id and piece key are as long as a node id may be", () => {
+  const path = Array.from(
+    { length: 17 },
+    (_, i) => `Invented bonus name number ${String(i)}#2`,
+  ).join("/");
+  expect(path.length).toBeGreaterThan(200);
+  const deep = node({ id: path, pieceKey: `[0,"InventedBlock","${path}"]` });
+  expect(checkTree(node({ kids: [deep] }), MAX)).not.toBe(null);
+  expect(checkTree(node({ id: "x".repeat(MAX_NODE_ID) }), MAX)).not.toBe(null);
+  expect(checkTree(node({ id: "x".repeat(MAX_NODE_ID + 1) }), MAX)).toBe(null);
+});
+
+test.each<[string, Partial<TreeNode>]>([
+  ["a why in a player's words", { why: "Owned check: 1 if you have it." }],
+  ["a name with if and new", { name: "Bonus if new card found" }],
+  [
+    "formula names with let and return",
+    {
+      formula: [
+        ["Return rate", "let go"],
+        [1, 2],
+      ],
+    },
+  ],
+])("%s passes", (_name, over) => {
+  expect(checkTree(node(over), MAX)).not.toBe(null);
+});
+
+test.each<[string, Partial<TreeNode>]>([
+  ["a keyword before ( in a why", { why: "if (owned) 1" }],
+  ["a keyword before { in a name", { name: "function{}" }],
+  ["function() in the formula", { formula: [["function(){}"], [1]] }],
+  ["a lone keyword in the code", { code: "return x" }],
+])("%s is still refused", (_name, over) => {
+  expect(checkTree(node(over), MAX)).toBe(null);
 });
 
 test("more nodes than the limit gives null, and the limit itself passes", () => {

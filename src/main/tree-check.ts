@@ -10,13 +10,26 @@ import {
 import type { TreeNode } from "../shared/index.ts";
 
 const MAX_TEXT = 200;
-/** What code looks like and a name, a table text or a game path never does. */
-const CODE =
-  /[{};]|=>|&&|\|\||==|\b(?:function|return|var|let|const|new|if)\b|_customBlock_/;
+/** A node's id is its path of names, with `#n` on repeats: a deep row is long. The window's `nodeId` has the same ceiling. */
+export const MAX_NODE_ID = 2_000;
+/** What code looks like and a name, a table text or a game path never does: a keyword counts only before `(` or `{`,
+ * because a player's sentence may say "1 if you have it". */
+const CODE_SIGNS =
+  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
+/** The `code` field is the game's call or path: there, a keyword alone is code too. */
+const KEYWORD = /\b(?:function|return|var|let|const|new|if)\b/;
 
-const isText = (v: unknown): v is string =>
-  typeof v === "string" && v.length <= MAX_TEXT && !CODE.test(v);
+const textUpTo =
+  (max: number, code: RegExp | null = null) =>
+  (v: unknown): v is string =>
+    typeof v === "string" &&
+    v.length <= max &&
+    !CODE_SIGNS.test(v) &&
+    !(code?.test(v) ?? false);
+const isText = textUpTo(MAX_TEXT);
 const isTextOrNull = (v: unknown) => v === null || isText(v);
+const isNodeText = textUpTo(MAX_NODE_ID);
+const isCode = (v: unknown) => v === null || textUpTo(MAX_TEXT, KEYWORD)(v);
 const isFinite = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v);
 const isValue = (v: unknown) =>
@@ -55,8 +68,8 @@ const fieldsFit = (
 
 /** The fields of a TreeNode but `kids`, each with its check; `kids` is walked apart, without recursion. */
 const NODE: Record<string, (v: unknown) => boolean> = {
-  id: isText,
-  pieceKey: isTextOrNull,
+  id: isNodeText,
+  pieceKey: (v) => v === null || isNodeText(v),
   name: isText,
   value: isValue,
   was: isValue,
@@ -73,7 +86,7 @@ const NODE: Record<string, (v: unknown) => boolean> = {
       Array.isArray(f[1]) &&
       f[1].every(isFinite),
   ),
-  code: isTextOrNull,
+  code: isCode,
   role: oneOf(NODE_ROLES),
   share: orNull(isShare),
   shareMode: orNull(
