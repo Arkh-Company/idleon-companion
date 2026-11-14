@@ -408,7 +408,7 @@ Verify: `just test-one src/renderer/TruthTag.test.tsx` - passes; `just check` - 
 - [X] T041 [US6] The compare function and Game changed · Refresh
   - Files: `src/shared/formula-tree-compare.ts`, `src/main/formula-pipeline.ts`, `src/renderer/ChangeBadge.tsx`
   - Signature: `compareTrees(a: TreeNode, b: TreeNode): { changed: Set<string>; withWas: TreeNode }`
-- [ ] T042 [US6] Marks saved on disk and the Mark before / Compare with UI
+- [X] T042 [US6] Marks saved on disk and the Mark before / Compare with UI
   - Files: `src/main/saved-files.ts`, `src/renderer/MarkBar.tsx`
   - Signature: `savedFiles(dir: string): { marks: { list(n); save(n, name, values); clear(n, name) }; pins: …; shapes: … }`, as [contracts/saved-files.md](contracts/saved-files.md)
 

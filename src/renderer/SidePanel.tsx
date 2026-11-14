@@ -1,11 +1,14 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
-import { useEffect, useRef } from "react";
-import { changes } from "../shared/index.ts";
-import type { FormulaTree as Tree, LiveValues } from "../shared/index.ts";
+// With a mark chosen, each row shows the mark's value beside the current one (FR-025).
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { changes, compareValues } from "../shared/index.ts";
+import type { FormulaTree as Tree, LiveValues, Mark } from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
 import { bandText, ChangeBadge, rootWas } from "./ChangeBadge.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
+import { MarkBar } from "./MarkBar.tsx";
 import { VersionBand } from "./VersionBand.tsx";
 
 /** What the panel shows: the row tapped, its trees (Damage has two) and the one chosen. */
@@ -77,6 +80,27 @@ export function SidePanel({
     onPick(side.id);
   }
 
+  /** The mark the tree compares with, for the character it was chosen on: another character's never applies. */
+  const [chosen, setChosen] = useState<{
+    character: number;
+    mark: Mark;
+  } | null>(null);
+  const mark =
+    tree.state === "ready" && chosen?.character === tree.character
+      ? chosen.mark
+      : null;
+  const compared = useMemo(
+    (): Tree =>
+      tree.state === "ready" && mark
+        ? {
+            ...tree,
+            comparingWith: mark.name,
+            root: compareValues(mark.values, tree.root).withWas,
+          }
+        : tree,
+    [tree, mark],
+  );
+
   const name = side.trees.find(([id]) => id === side.id)?.[1] ?? side.label;
   // A tree of another number (the main has not answered yet) is never shown in place of this one.
   const mine =
@@ -85,7 +109,7 @@ export function SidePanel({
       tree.request.type === "number" &&
       tree.request.id === side.id);
   const shown: Tree | null =
-    side.id === null ? null : mine ? tree : { state: "none" };
+    side.id === null ? null : mine ? compared : { state: "none" };
   const text =
     shown?.state === "ready"
       ? shown.rootText
@@ -132,6 +156,16 @@ export function SidePanel({
           live={live}
           onExpand={onExpand}
           onRefresh={refresh}
+          marks={(character) => (
+            <MarkBar
+              character={character}
+              chosen={mark}
+              onChoose={(m) => {
+                setChosen(m && { character, mark: m });
+              }}
+              announce={announce}
+            />
+          )}
         />
       )}
     </aside>
@@ -143,11 +177,14 @@ function Body({
   live,
   onExpand,
   onRefresh,
+  marks,
 }: {
   tree: Tree;
   live: LiveValues | null;
   onExpand: (nodeId: string) => void;
   onRefresh: () => void;
+  /** The marks bar, for the tree's character. */
+  marks: (character: number) => ReactNode;
 }) {
   switch (tree.state) {
     case "waiting":
@@ -163,6 +200,7 @@ function Body({
         <>
           <ChangeBadge tree={tree} live={live} onRefresh={onRefresh} />
           <AnswerHeader tree={tree} />
+          {marks(tree.character)}
           <FormulaTree
             key={`${tree.request.type === "number" ? tree.request.id : ""}:${String(tree.calculatedAt)}`}
             tree={tree}

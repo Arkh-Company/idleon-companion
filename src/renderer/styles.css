@@ -357,6 +357,29 @@ h2 {
   color: var(--muted);
 }
 
+/* Antes/depois (FR-037): wraps at 210 px CSS, no sideways scroll. */
+.marks,
+.marks form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 0 8px;
+}
+
+.marks button,
+.marks input,
+.marks select {
+  min-height: 24px;
+  max-width: 100%;
+}
+
+.marks .note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+}
+
 /* At 200% zoom the panel is 210 px CSS: smaller steps of indent, capped at 4 (FR-031). */
 @container side (max-width: 300px) {
   .side-panel h2 .num {
