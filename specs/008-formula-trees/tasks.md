@@ -54,7 +54,7 @@ Verify: `just --list` - shows `parity`; `just check` - passes.
 
 **Independent Test**: the invented game produces every case the trees need, and the parser is bundled into `calculator.js` with no dynamic import.
 
-- [ ] T002 Add `acorn@8.19.0` as a devDependency (research R2)
+- [X] T002 Add `acorn@8.19.0` as a devDependency (research R2)
   - Files: `package.json` (`pnpm add -D acorn@8.19.0`, which also updates the lockfile)
   - Tests: `src/calculator/bundle.test.ts` (new, like `no-network.test.ts`) fails on any `import(` in `src/calculator/**` that is not a test.
 - [ ] T003 [P] Extend the invented game with the tree cases
@@ -87,7 +87,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
 
 **Independent Test**: with the invented game, a `number` request for the Drop Rate goes window → main → tree host → tree worker and back as a `ready` tree whose root equals the Stats number of the same mosaic. The Stats keeps answering under 1 s meanwhile.
 
-- [ ] T004 Create the tree contract in `src/shared/formula-tree.ts` and its pinned copy in the calculator
+- [X] T004 Create the tree contract in `src/shared/formula-tree.ts` and its pinned copy in the calculator
   - Files: `src/shared/formula-tree.ts`, `src/shared/index.ts`, `src/calculator/tree-contract.ts`, `src/calculator/tree-contract.test.ts`
   - Types:
     - `TreeNode`, `FormulaTree`, `TreeRequest`;

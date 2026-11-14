@@ -1,6 +1,22 @@
 // Public API of src/shared: other folders import from here, and the keeper and the app the screen catalog from screens/index.ts.
 export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
+export {
+  CONDITION_KINDS,
+  LEAF_FAMILY,
+  LEAF_KINDS,
+  NODE_ROLES,
+} from "./formula-tree.ts";
+export type {
+  ConditionKind,
+  FormulaTree,
+  LeafKind,
+  NodeRole,
+  ShareMode,
+  TreeFlags,
+  TreeNode,
+  TreeRequest,
+} from "./formula-tree.ts";
 export { modulesFor } from "./modules.ts";
 export { toReading } from "./reading.ts";
 export { READ_NULLS } from "./reading-fixture.ts";
