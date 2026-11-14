@@ -577,6 +577,52 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeFillLoop();
     return a.engine.getGameAttribute("DNSM").h.TreeSum.h.v + 1;
   };
+  // The ways a turn adds to a cache (pieces.cjs entryRows): a step with the turn's part, a rounded part beside the
+  // running total, and a last write that multiplies it.
+  Blocks._customBlock_TreeScaleLoop = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeScale = new StringMap();
+    d.TreeScale.h.v = 0;
+    for (var i = 0; i < s.TreeTwins.length; i++)
+      d.TreeScale.h.v = d.TreeScale.h.v + Math.round(s.TreeTwins[i] * 1.5);
+    d.TreeScale.h.v = d.TreeScale.h.v * s.TreeBase;
+    return 0;
+  };
+  Blocks._customBlock_TreeScaleRead = function () {
+    Blocks._customBlock_TreeScaleLoop();
+    return a.engine.getGameAttribute("DNSM").h.TreeScale.h.v;
+  };
+  // A cache the block computed in one of its own steps and reads back (cacheRows, the step that gives it).
+  Blocks._customBlock_TreeOwnStep = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeOwn = new StringMap();
+    d.TreeOwn.h.v = state().TreeBase + 1;
+    return d.TreeOwn.h.v * 2;
+  };
+  // A factor the block set, then multiplied by a call, read back by a call it makes ([T3]).
+  Blocks._customBlock_TreeFacRead = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeFac.h.v * 1;
+  };
+  Blocks._customBlock_TreeFactor = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeFac = new StringMap();
+    d.TreeFac.h.v = state().TreeBase + 1;
+    d.TreeFac.h.v = d.TreeFac.h.v * Blocks._customBlock_TreeArg(1);
+    return Blocks._customBlock_TreeFacRead() + 1;
+  };
+  // A cache the block fills only when it is empty, then reads back ([DEEP-1, fix A]).
+  Blocks._customBlock_TreeFillOnce = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!d.TreeOnce) d.TreeOnce = [];
+    var t = 0;
+    if (d.TreeOnce.length === 0)
+      for (var i = 0; i < 2; i++) {
+        t = t + Blocks._customBlock_TreePart(i);
+        d.TreeOnce[0] = t;
+      }
+    return d.TreeOnce[0] * 1;
+  };
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
     return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);

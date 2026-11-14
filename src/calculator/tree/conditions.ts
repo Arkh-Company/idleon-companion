@@ -12,7 +12,8 @@ import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import type { BlockSteps, Expr } from "./steps.ts";
 import { near, num } from "./math.ts";
-import { firstSrc, hasKids } from "./terms.ts";
+import { firstSrc } from "./expr.ts";
+import { hasKids } from "./terms.ts";
 
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
 const CMP: Readonly<Record<string, string>> = {

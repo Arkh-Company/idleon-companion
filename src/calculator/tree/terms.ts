@@ -1,5 +1,6 @@
-// The rows a block's steps give (spec 008, T022): the port of pieces.cjs `flat`, `firstSrc`, `numRole`, `valPath`,
-// `rowOfTerm`, `exprRow`, `stepRef` and `tidy` from the bench at BASELINE-4. Each term of a step is a row: a number of
+// The rows a block's steps give (spec 008, T022): the port of pieces.cjs `numRole`, `rowOfTerm`, `exprRow`, `stepRef`
+// and `tidy` from the bench at BASELINE-4 (the expression helpers are in expr.ts, `valPath` in val-path.ts, the opening
+// of a cache read in caches.ts). Each term of a step is a row: a number of
 // the code is a fixed value named by its place, a read or a call is the row of that source, a value with no source is
 // the read that holds it, the argument the caller passed or the earlier step that made it. Left out until their own
 // phase: the names (US1c: a row has the generic name), the 007 dictionary (the scratch and literal branches never run
@@ -9,6 +10,7 @@ import type { RecNode, RecValue } from "../recording.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
+import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { valPath } from "./val-path.ts";
@@ -33,24 +35,6 @@ export interface Turn {
 }
 
 const EARLIER_WHY = "a value of a step of the game the recording did not link";
-
-export const topOp = (e: Expr | undefined): "*" | "+" | null =>
-  e?.t === "op" && (e.o === "*" || e.o === "+") ? e.o : null;
-export function flat(e: Expr, op: string, out: Expr[] = []): Expr[] {
-  if (e.t === "op" && e.o === op) {
-    flat(e.l, op, out);
-    flat(e.r, op, out);
-  } else out.push(e);
-  return out;
-}
-export function firstSrc(e: Expr | undefined): Expr | null {
-  if (!e) return null;
-  if (e.t === "def") return firstSrc(e.e);
-  if (e.t === "call" || e.t === "read") return e;
-  if (e.t === "op") return firstSrc(e.l) ?? firstSrc(e.r);
-  if (e.t === "fn") for (const a of e.args) if (firstSrc(a)) return firstSrc(a);
-  return null;
-}
 
 /** The role of a number of the game's code, from where it sits in the expression. */
 function numRole(v: unknown, parent: Expr | null, side: number): string {
@@ -97,52 +81,9 @@ const branch = (v: V, group: Row[]): Row => ({
   open: null,
   group,
 });
+export type Terms = ReturnType<typeof makeTerms>;
 export const hasKids = (r: Row) =>
   r.open !== null || (r.group?.length ?? 0) > 0 || r.node.kids === "lazy";
-
-/** How many sources of the player's state an expression has (a table, a cache or a running total is none). */
-const stateSrc = (x: Expr): number =>
-  x.t === "call"
-    ? 1
-    : x.t === "read"
-      ? /^(DNSM|DummyNumbersStatManager|CustomLists|CustomMaps|ItemDefinitionsGET)\./.test(
-          x.p,
-        )
-        ? 0
-        : 1
-      : x.t === "def"
-        ? stateSrc(x.e)
-        : x.t === "not"
-          ? stateSrc(x.a)
-          : x.t === "fn"
-            ? x.args.reduce((a, y) => a + stateSrc(y), 0)
-            : x.t === "op"
-              ? stateSrc(x.l) + stateSrc(x.r)
-              : 0;
-const readValueIn = (e: Expr, p: string): V => {
-  if (e.t === "read") return e.p === p ? e.v : undefined;
-  const subs =
-    e.t === "op"
-      ? [e.l, e.r]
-      : e.t === "def"
-        ? [e.e]
-        : e.t === "not"
-          ? [e.a]
-          : e.t === "fn"
-            ? e.args
-            : [];
-  for (const x of subs) {
-    const v = readValueIn(x, p);
-    if (v !== undefined) return v;
-  }
-  return undefined;
-};
-const adds = (x: Expr): boolean =>
-  (x.t === "op" && (x.o === "+" || x.o === "-")) ||
-  (x.t === "op" && (adds(x.l) || adds(x.r))) ||
-  (x.t === "def" && adds(x.e)) ||
-  (x.t === "not" && adds(x.a)) ||
-  (x.t === "fn" && x.args.some(adds));
 
 export function makeTerms(ctx: TermContext) {
   const { nodes } = ctx;
@@ -395,6 +336,25 @@ export function makeTerms(ctx: TermContext) {
   }
 
   return {
+    /**
+     * pieces.cjs `stepRowsAt`: the rows of expression `e` taken as step `t.at` of the block, its terms tidied when it is
+     * a sum or a product, else its one row; and its top operator.
+     */
+    rowsAt(
+      t: Turn,
+      e: Expr,
+      reads: Reads,
+    ): { rows: Row[]; op: "*" | "+" | null } {
+      const op = topOp(e);
+      return withTurn(t, () => {
+        if (op) return { rows: tidy(terms(e, op, 1, reads), op, t.args), op };
+        const r = rowOfTerm(e, null, 1, reads);
+        return { rows: r ? [r] : [], op };
+      });
+    },
+    /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms). */
+    term: (e: Expr, op: "*" | "+", reads: Reads) =>
+      withTurn(null, () => rowOfTerm(e, op, 1, reads)),
     /** The rows of the terms of the block's step `at` (its top sum or product). */
     stepTerms(t: Turn, op: "*" | "+", reads: Reads): Row[] {
       const st = t.steps[t.at];

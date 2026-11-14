@@ -9,7 +9,9 @@ import type { Op } from "./instrument.ts";
 import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { curveOf, inputRead } from "./tree/curves.ts";
+import { makeCaches } from "./tree/caches.ts";
 import { makeConditions } from "./tree/conditions.ts";
+import { entriesOf, makeWriters } from "./tree/entries.ts";
 import { GAME_BUGS, gameBugOf } from "./tree/game-bugs.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
@@ -25,12 +27,14 @@ import {
   valueOf,
   withShares,
 } from "./tree/rows.ts";
-import type { Row } from "./tree/rows.ts";
+import type { CacheOpen, Row } from "./tree/rows.ts";
 import { termOf } from "./tree/share.ts";
 import { lastReads, makeSteps } from "./tree/steps.ts";
 import type { Expr } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
-import { hasKids, makeTerms, topOp } from "./tree/terms.ts";
+import { topOp } from "./tree/expr.ts";
+import { hasKids, makeTerms } from "./tree/terms.ts";
+import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
 
 export { GENERIC_NAME } from "./tree/rows.ts";
@@ -44,7 +48,7 @@ export interface TreeBuild {
 
 interface Place {
   node: CalcTreeNode;
-  open: number;
+  open: number | CacheOpen;
   depth: number;
   seen: readonly number[];
 }
@@ -73,8 +77,11 @@ export function buildTree(
   bugs: readonly GameBugRule[] = GAME_BUGS,
 ): TreeBuild {
   const { nodes, writes } = rec;
-  const { links } = linkReads(rec);
+  const linked = linkReads(rec);
+  const { links } = linked;
   const steps = makeSteps(rec, ops);
+  const entries = entriesOf(rec, linked, steps.turn);
+  const writers = makeWriters(nodes, entries);
   const conditions = makeConditions(nodes);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
@@ -82,13 +89,20 @@ export function buildTree(
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
-  /** A state read as a row: a cache with a writer opens into it; one the game had saved says so. */
+  /**
+   * A state read as a row: a cache with a writer (its linked one, else the one whose loop wrote that very value) opens
+   * into what the writer computed for it (tree/caches.ts); one the game had saved says so.
+   */
   function readRow(
     path: string,
     value: number | boolean | null,
     link?: Link,
   ): Row {
-    const writer = link?.[1] ?? null;
+    const w = caches.writerOf(
+      new Map(link?.[1] == null ? [] : [[path, link[1]]]),
+      path,
+      value,
+    );
     const node = row({
       pieceKey: JSON.stringify([character, path]),
       value,
@@ -97,9 +111,12 @@ export function buildTree(
         link?.[2] === "game"
           ? { unnamed: true, fromCache: true }
           : { unnamed: true },
-      kids: writer === null ? [] : "lazy",
+      kids: w ? "lazy" : [],
     });
-    return { node, open: writer };
+    return {
+      node,
+      open: w && { path, value, writer: w.id, ...caches.now() },
+    };
   }
 
   /**
@@ -188,14 +205,20 @@ export function buildTree(
   function dataRows(
     n: RecNode,
     rows: Row[],
-    own: Expr[],
+    stepsRead: Expr[],
     stepNotOpened: boolean,
     linkOf: ReadonlyMap<string, Link>,
   ): Row[] {
     const used = new Set<string>();
-    own.forEach((e) => readsIn(e, used));
+    stepsRead.forEach((e) => readsIn(e, used));
     const terms = new Set(rows.map((r) => termOf(r.node)));
     const last = lastReads(n);
+    // the paths this call writes in a loop (its own working values)
+    const own = new Set(
+      [...writers.writersOf]
+        .filter(([, ids]) => ids.includes(n.id))
+        .map(([p]) => p),
+    );
     const out: Row[] = [];
     for (const [p, v0] of n.r ?? []) {
       // a path the call read with several values shows the last one, the state the call ended with
@@ -213,28 +236,51 @@ export function buildTree(
       const r = readRow(p, v, linkOf.get(p));
       // the block's own result kept in a working value, with nothing under it: not a part of the block
       if (cache && near(v, n.v) && !hasKids(r) && rows.length) continue;
+      // a working value this call writes itself, that opens to nothing, or that changes inside this very call (the
+      // scratch of its loop): not a part; a cache it filled earlier and that opens stays
+      if (own.has(p) && (!hasKids(r) || last.has(p))) continue;
       terms.add(p);
       out.push(r);
     }
     return out;
   }
 
+  const linksOf = (n: RecNode) =>
+    new Map<string, Link>((links.get(n.id) ?? []).map((l) => [l[0], l]));
+  /** The terms of call `n`'s steps; with `seen`, the rows they make open under those calls (a cache's writer). */
+  function termsOf(n: RecNode, seen?: readonly number[]): Terms {
+    const linkOf = linksOf(n);
+    const at = (r: Row): Row => (seen ? { ...r, seen } : r);
+    return makeTerms({
+      nodes,
+      read: (p, v) => at(readRow(p, valueOf(v), linkOf.get(p))),
+      call: (k, v, rs) => at(callRow(k, n, v ?? null, [...rs], false)),
+      finish,
+    });
+  }
+  const caches = makeCaches({
+    nodes,
+    entries,
+    writerByValue: (p, v) => writers.writerByValue(p, v),
+    steps: (id) => steps.of(id).steps,
+    explain: (id, depth, seen) => pieces.explain(id, depth, seen),
+    linksOf: (n) =>
+      new Map(
+        (links.get(n.id) ?? []).flatMap(([p, w]) =>
+          w === null ? [] : [[p, w] as const],
+        ),
+      ),
+    terms: termsOf,
+    finish,
+  });
+
   function raw(id: number): Row[] {
     const n = nodes[id];
     if (!n) return [];
     const own = steps.of(id);
-    const linkOf = new Map<string, Link>(
-      (links.get(n.id) ?? []).map((l) => [l[0], l]),
-    );
-    const readRowOf = (p: string, v: unknown) =>
-      readRow(p, valueOf(v as RecValue), linkOf.get(p));
+    const linkOf = linksOf(n);
     const reads: Reads = new Map((n.r ?? []).map(([p, v]) => [p, v]));
-    const terms = makeTerms({
-      nodes,
-      read: readRowOf,
-      call: (k, v, rs) => callRow(k, n, v ?? null, [...rs], false),
-      finish,
-    });
+    const terms = termsOf(n);
     const last = own.steps.at(-1);
     // DEEP3-FIX-1: the last step is the block's formula only when it is no index of a table cell the block read.
     const indexStep =
@@ -278,7 +324,8 @@ export function buildTree(
     seen: readonly number[],
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
-    return rows.map(({ node, open, group }) => {
+    return rows.map(({ node, open, group, seen: own }) => {
+      const above = own ?? seen;
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);
       const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
@@ -289,15 +336,21 @@ export function buildTree(
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
         // a group's rows are still the call's own
         ...(group
-          ? { kids: place({ id, code: parent.code }, group, depth, seen) }
+          ? { kids: place({ id, code: parent.code }, group, depth, above) }
           : {}),
       };
-      if (open !== null) places.set(id, { node: placed, open, depth, seen });
+      if (open !== null)
+        places.set(id, { node: placed, open, depth, seen: above });
       return placed;
     });
   }
   /** The rows under a place; null when the depth limit or a cycle cuts it. */
   function kidsAt(p: Place): CalcTreeNode[] | null {
+    // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
+    if (typeof p.open !== "number") {
+      const rows = caches.open(p.open, p.depth - 1, new Set(p.seen));
+      return rows && place(p.node, rows, p.depth + 1, p.seen);
+    }
     const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
     // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
     const from = nodes[p.open];

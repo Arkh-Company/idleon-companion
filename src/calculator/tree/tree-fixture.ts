@@ -1,6 +1,8 @@
 // A recording written by hand for the assembly's tests (spec 008, T017): the shape recorder.js gives, with invented
 // blocks and paths. Each node's id is its place in `nodes`, and its children run in the order of `c`.
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import type { CalcTreeNode } from "../tree-contract.ts";
+import type { TreeBuild } from "../tree-build.ts";
 
 type Spec = Partial<RecNode> & Pick<RecNode, "b">;
 
@@ -100,4 +102,21 @@ export function chainOf(depth: number): Recording {
       ...(i < depth ? { c: [i + 1] } : { r: [["Level", 1]] }),
     });
   return recordingOf(specs, [], { root: 0 });
+}
+
+export const kidsOf = (n: CalcTreeNode | null | undefined) =>
+  n && Array.isArray(n.kids) ? n.kids : [];
+/** Each row as [code, value]. */
+export const brief = (n: CalcTreeNode | null | undefined) =>
+  kidsOf(n).map((k) => [k.code, k.value]);
+/** The row reached by opening, from the root, the row with each code in turn (a group opens as it is). */
+export function openPath(build: TreeBuild, ...codes: (string | null)[]) {
+  let node: CalcTreeNode | null = build.root;
+  for (const code of codes) {
+    const next: CalcTreeNode | undefined = kidsOf(node).find(
+      (k) => k.code === code,
+    );
+    node = next?.kids === "lazy" ? build.expand(next.id) : (next ?? null);
+  }
+  return node;
 }

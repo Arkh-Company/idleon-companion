@@ -16,10 +16,25 @@ import { kidShares, termOf } from "./share.ts";
 export const GENERIC_NAME = "Game value";
 
 export type Node = Omit<CalcTreeNode, "id">;
-/** A row before it has its place: `open` is the call whose rows are its children; `group` its rows built already. */
+/**
+ * A cache read that opens into the rows its writer gave it (pieces.cjs `cacheRows`): the writer found for it, and the
+ * loop entry being walked and the bubble entries being opened when the row was made (pieces.cjs ENTRY_P, OPUS4_OPEN).
+ */
+export interface CacheOpen {
+  path: string;
+  value: number | boolean | null;
+  writer: number;
+  entry: string | null;
+  opening: readonly string[];
+}
+/**
+ * A row before it has its place: `open` is the call, or the cache, whose rows are its children; `group` its rows built
+ * already; `seen` the calls above its own rows when they are not its place's (a cache's rows are its writer's).
+ */
 export interface Row {
   node: Node;
-  open: number | null;
+  open: number | CacheOpen | null;
+  seen?: readonly number[];
   group?: Row[];
   /** pieces.cjs "Value from an earlier step": a value of a step the recording did not link. */
   earlier?: boolean;

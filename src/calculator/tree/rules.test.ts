@@ -2,6 +2,12 @@
 // part of a proof names the bench's rule or the game's block ("bench pieces.cjs KIND_PATHS deep-7; N.js RoyalG"), with no
 // quote in it.
 import { expect, test } from "vitest";
+import {
+  LOOP_ENTRY_CACHES,
+  RUN_TOTALS,
+  SKILL_RANKS,
+  TURN_KINDS,
+} from "./loop-parts.ts";
 import { COND_SUBS } from "./conditions.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
@@ -16,6 +22,10 @@ const TABLES = {
   TABLE_READ,
   GAME_TABLE,
   COINCIDENT_READS,
+  LOOP_ENTRY_CACHES,
+  RUN_TOTALS,
+  SKILL_RANKS: [SKILL_RANKS],
+  TURN_KINDS,
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
