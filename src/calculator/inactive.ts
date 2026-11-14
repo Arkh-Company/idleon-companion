@@ -135,6 +135,10 @@ export function inactiveMosaic(
   shape(typeof name === "string", "GetPlayersUsernames");
   if (Array.isArray(attrs.UserInfo) && attrs.UserInfo[0] === name) return null;
   buildInactive(attrs, name);
+  // The target the keeper read is the active one's (state-slice.js); the map's actors are the same for anyone on it.
+  if (isObject(mosaic.actors))
+    for (const key of Object.keys(mosaic.actors))
+      if (key.startsWith("target.")) Reflect.deleteProperty(mosaic.actors, key);
   return JSON.stringify(mosaic);
 }
 

@@ -187,6 +187,29 @@ test("the scene caches are rebuilt with the TotalStats memory cleared before eac
   for (const [text] of run.mock.calls) expect(text).not.toContain(SECOND);
 });
 
+test("on the active one's map, an inactive character has no target: the active one's is not its own (US12)", () => {
+  const map = SAVED[1].$m.CurrentMap;
+  const mosaic = mosaicOf(
+    {
+      CurrentMap: map,
+      MapMonstersList: [{ $x: 1 }],
+      OtherPlayers: { $m: { [FIRST]: { $x: 1 }, [SECOND]: { $x: 1 } } },
+    },
+    {},
+    { map, "map0._MonsterHPtot": 4500, "target._MonsterType": "mobB" },
+  );
+  const context = bootContext(anchored(GAME), PAK, LIMITS);
+  const number = (block: string, json: string) => {
+    context.load(json, lazyDnsmKeys(GAME));
+    return context.number(block, [0, 0, 0]);
+  };
+  expect(number("TreeTarget", mosaic)).toBe(40);
+  const inactive = inactiveMosaic(mosaic, 1) ?? "";
+  expect(number("TreeTarget", inactive)).toBeNull();
+  // The map's first monster is the same for whoever stands on the map.
+  expect(number("TreeMapMonster", inactive)).toBe(4500);
+});
+
 const ROOTS = {
   scene: ["TreeScene", [0, 0, 0]],
   character: ["TreeCharacter", [0, 0, 0]],
