@@ -101,7 +101,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
   - Files: `src/calculator/boot.ts`, `src/calculator/engine.ts`
   - Signature: `bootContext(script: string, pak: Uint8Array, limits: { startMs: number; numberMs: number }): Context`; `lazyDnsmKeys` and `anchored(code)` exported from `boot.ts`.
   - Tests: `engine.test.ts` green before and after, with no assertion changed.
-- [ ] T006 Turn the six isolation tests into one table run on both workers (approved by Vinicius, 13/11)
+- [X] T006 Turn the six isolation tests into one table run on both workers (approved by Vinicius, 13/11)
   - Files: `src/calculator/engine.test.ts`
   - Tests: `describe.each` over two adapters, `(mosaic) => number`: the Stats one (`calculate()[id]`) and the tree one (the root of a `number` request). No assertion leaves (CODING_STANDARDS, "Test tables live once").
 - [ ] T007 Create the catalog of numbers in `src/shared/tree-catalog.ts` and the roots in `src/calculator/tree-roots.ts`
