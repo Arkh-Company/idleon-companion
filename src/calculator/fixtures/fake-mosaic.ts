@@ -32,7 +32,11 @@ export const BASE = {
   Stats: { STR: 11, AGI: 12, WIS: 13, LUK: 14, Drop_Rarity: 2.5 },
   AfkRate: 1.5,
   DNSM: {
-    $m: { CompanionBon: { $m: { b1: 3 } }, ShinyBonusS: { $m: { s1: 4 } } },
+    $m: {
+      CompanionBon: { $m: { b1: 3 } },
+      ShinyBonusS: { $m: { s1: 4 } },
+      GameCache: { $m: { v: 5 } },
+    },
   },
   // The tree cases (fake-game.js, "The cases of the formula trees").
   TreeStats: { $m: { a: 3, b: 5 } },
@@ -42,6 +46,7 @@ export const BASE = {
   TreeLevel: 25,
   TreeOwned: 0,
   TreeLabel: "Plain label",
+  TreeBig: { $m: { k1: 1, k2: 7 } },
   // The active character's own keys, as the game keeps them outside PlayerDATABASE.
   UserInfo: [CHARACTERS[0]],
   CurrentMap: 3,
@@ -131,5 +136,23 @@ export const TREE_CASES: {
     block: "TreeCharacter",
     args: [0, 0, 0],
     value: 6,
+  },
+  {
+    name: "a search of the game",
+    block: "TreeSearch",
+    args: [0, 0, 0],
+    value: 5,
+  },
+  {
+    name: "a cache from the running game",
+    block: "TreeGameCache",
+    args: [0, 0, 0],
+    value: 5,
+  },
+  {
+    name: "a character's key and name",
+    block: "TreePlayer",
+    args: [0, 0, 0],
+    value: 4,
   },
 ];

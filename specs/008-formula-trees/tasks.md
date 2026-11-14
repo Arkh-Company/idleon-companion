@@ -182,7 +182,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
     - each arithmetic operator and each `min max pow floor ceil round abs log sqrt` becomes a step;
     - a block that does not parse keeps its code and its number;
     - nothing is written to disk during instrumentation: `node:fs` spied, no call (FR-011).
-- [ ] T016 [P] [US1] Recorder test in `src/calculator/recorder.test.ts`
+- [X] T016 [P] [US1] Recorder test in `src/calculator/recorder.test.ts`
   - Cases:
     - calls with arguments and children;
     - state reads;
@@ -227,7 +227,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 
 - [X] T020 [US1] Implement the instrumentation in `src/calculator/instrument.ts`
   - Signature: `instrument(source: string): { source: string; ops: Op[] }`. `ops[].fnText` and the AST never leave the worker. It runs on the original `N.js`, after the anchor swap and `lazyDnsmKeys` (`boot.ts`).
-- [ ] T021 [US1] Implement the recorder in `src/calculator/recorder.js` (inside `node:vm`, imported `?raw`)
+- [X] T021 [US1] Implement the recorder in `src/calculator/recorder.js` (inside `node:vm`, imported `?raw`)
   - It is installed before `game.runInContext`, with `__X` off during boot.
   - It records only on request: calls, reads, writes; `RECOMPUTE` and `BUILDERS`; helpers; roots with the game's arity; the builders' pass; `@read`; links. It uses the fixed `Math.random` seed and the companion bridge from the mosaic.
   - It uses no `eval`, `new Function`, `fetch`, `XMLHttpRequest`, `WebSocket` or `sendBeacon`.

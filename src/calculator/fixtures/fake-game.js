@@ -168,6 +168,11 @@ lime.$scripts.N = function (_exports, $global) {
     s.DNSM.h.CompanionLVz = new StringMap();
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
+  // An event of the helper that builds a cache, as the game's own events do.
+  HelperActor.prototype._customEvent_Refill = function () {
+    a.engine.getGameAttribute("DNSM").h.TreeCache.h.total =
+      state().TreeBase * 2;
+  };
   A["scripts.ActorEvents_29"] = HelperActor;
 
   var EveryScene = function () {
@@ -490,6 +495,38 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeCharacter = function () {
     var s = state();
     return s.CurrentMap + s.PrayersActive.length + s.Cards[2].length;
+  };
+  // The game's own search: it reads every entry of the map it searches.
+  A["com.stencyl.utils.Utils"] = {
+    mapContainsValue: function (map, value) {
+      for (var k in map.h) if (map.h[k] === value) return true;
+      return false;
+    },
+  };
+  Blocks._customBlock_TreeSearch = function () {
+    var s = state();
+    var found = A["com.stencyl.utils.Utils"].mapContainsValue(s.TreeBig, 7);
+    return (found ? 1 : 0) + s.TreeBase;
+  };
+  // A cache that came ready from the running game; the game creates it empty when absent.
+  Blocks._customBlock_TreeGameCache = function () {
+    return a.engine.getGameAttribute("DNSM").h.GameCache.h.v || 0;
+  };
+  // How many companions the server bridge says you own (-1 when it answers nothing).
+  Blocks._customBlock_TreeCompanions = function () {
+    var owned = $global.React.createElement("getCompanionInfoMe", []);
+    return owned ? owned.length : -1;
+  };
+  // A key of the active character in PlayerDATABASE, and a block called with the character's name.
+  Blocks._customBlock_TreePlayer = function () {
+    var s = state();
+    var me = s.UserInfo[0];
+    return (
+      s.PlayerDATABASE.h[me].h.CurrentMap + Blocks._customBlock_TreeNamed(me)
+    );
+  };
+  Blocks._customBlock_TreeNamed = function (name) {
+    return name.length > 0 ? 1 : 0;
   };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {

@@ -37,6 +37,8 @@ export function bootContext(
   script: string,
   pak: Uint8Array,
   limits: { startMs: number; numberMs: number },
+  /** Texts run after the context's own and before the game's code (the tree worker's recorder). */
+  preludes: readonly string[] = [],
 ): Context {
   const game = new Script(script, { filename: "game.js" });
   // No prototype, or the game's `this.constructor.constructor` would be the host's Function.
@@ -74,6 +76,7 @@ export function bootContext(
     decompressor(inflateRawSync),
   );
 
+  for (const prelude of preludes) run(prelude, startMs);
   game.runInContext(context, { timeout: startMs });
   const pakCopy = new ContextArray(pak.length);
   Uint8Array.prototype.set.call(pakCopy, pak);
