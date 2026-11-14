@@ -80,6 +80,20 @@ test("the curve block is a branch of its constants by role and its input, with i
   ]);
 });
 
+test("a curve's input read with no name weighs in the curve by its path, the term of its formula", () => {
+  const [curve] = kidsOf(
+    rootOf(
+      [{ b: "ArbitraryCode5Inputs", a: ["decay", 40, 100, 25, 0], v: 8 }],
+      { v: 8, r: [["Invented.level", 25]] },
+    ).root,
+  );
+  expect(kidsOf(curve).map((k) => [k.share, k.shareMode])).toEqual([
+    [0, "mixed"],
+    [0, "mixed"],
+    [1, "mixed"],
+  ]);
+});
+
 test("a curve whose input no read holds uses the level it was given; a curve with no maximum has none", () => {
   const [curve] = kidsOf(
     rootOf([{ b: "ArbitraryCode5Inputs", a: ["add", 3, 0, 7], v: 21 }], {

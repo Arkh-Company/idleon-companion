@@ -10,7 +10,7 @@ import {
 } from "./curves.ts";
 import type { Curve } from "./curves.ts";
 import { formulaAtoms } from "./math.ts";
-import { kidShares } from "./share.ts";
+import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */
 export const GENERIC_NAME = "Game value";
@@ -166,9 +166,7 @@ export function curveRow(
     open: null,
   };
   const name = `Curve: ${curveText(c)}`;
-  // FR-012a: inside the math, a term with no name yet is the game's path.
-  const term = last.node.flags.unnamed ? last.node.code : last.node.name;
-  const text = curveFormula(c, fields.value, term ?? last.node.name);
+  const text = curveFormula(c, fields.value, termOf(last.node));
   const reached = maxReachedOf(c, fields.value);
   return {
     node: row({

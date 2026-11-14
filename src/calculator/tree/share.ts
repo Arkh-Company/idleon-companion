@@ -302,11 +302,17 @@ export function shares(n: ShareNode, sibs: readonly ShareNode[] = []): Shares {
 const numeric = (v: number | boolean | null) =>
   typeof v === "boolean" ? Number(v) : v;
 
+type Termed = Pick<CalcTreeNode, "name" | "value"> &
+  Partial<Pick<CalcTreeNode, "code" | "flags">>;
+/** FR-012a: inside the math, a row with no name yet is written by the game's path. */
+export const termOf = (n: Omit<Termed, "value">): string =>
+  n.flags?.unnamed && n.code ? n.code : n.name;
+
 /** A row of the tree as the share reads it; its own rows are not read (they may not be built yet). */
 export const shareNodeOf = (
-  n: Pick<CalcTreeNode, "name" | "value">,
+  n: Termed,
   formula: ShareNode["formula"] = null,
-): ShareNode => ({ name: n.name, v: numeric(n.value), formula, kids: null });
+): ShareNode => ({ name: termOf(n), v: numeric(n.value), formula, kids: null });
 
 /**
  * The kids of `parent` with their share and the parent's mode. In a min or max, the kid that does not count now is
