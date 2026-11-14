@@ -13,6 +13,7 @@ import type {
 } from "../shared/index.ts";
 import { isWaiting, NumberTable, OpenHint, useInView } from "./FormulasTab.tsx";
 import type { OpenTree } from "./FormulasTab.tsx";
+import { LastReading } from "./StatsPanel.tsx";
 
 const GROUPS = [
   ["cost", "Costs"],
@@ -110,6 +111,7 @@ export function SystemTab({
   }
   return (
     <PanelView.Provider value={{ live, open, toggle, onOpen }}>
+      {live?.stale && <LastReading at={live.calculatedAt} />}
       <OpenHint />
       {modules.map(({ id, title, Panel }) => (
         <section key={id}>

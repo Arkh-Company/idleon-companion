@@ -125,6 +125,32 @@ test("the switch does not move the focus (FR-039)", async () => {
   expect(document.activeElement).toBe(tab("Stats"));
 });
 
+const tabPanel = () => screen.getByRole("tabpanel");
+
+test("a switch that removes the focused number puts the focus on the tab's panel, never on the page (FR-039)", async () => {
+  await app();
+  screen.getByRole("button", { name: "1,234x" }).focus();
+  gameOn("Stamps", "Stamps");
+  expect(document.activeElement).not.toBe(document.body);
+  expect(document.activeElement).toBe(tabPanel());
+  expect(tabPanel().getAttribute("aria-labelledby")).toBe(tab("Panel").id);
+  expect(tab("Panel").getAttribute("aria-controls")).toBe(tabPanel().id);
+
+  screen.getByRole("button", { name: "Chances" }).focus();
+  gameOn("Stamps › Bribes", "Bribes");
+  expect(document.activeElement).not.toBe(document.body);
+  expect(document.activeElement).toBe(tabPanel());
+});
+
+test("✕ after a switch removed the number that opened the tree puts the focus on the tab's panel (FR-039)", async () => {
+  await app();
+  fireEvent.click(screen.getByRole("button", { name: "1,234x" }));
+  gameOn("Stamps", "Stamps");
+  fireEvent.click(screen.getByRole("button", { name: "Close the breakdown" }));
+  expect(document.activeElement).not.toBe(document.body);
+  expect(document.activeElement).toBe(tabPanel());
+});
+
 test("the switch is said once in a polite live region, and again on the next switch (FR-040)", async () => {
   await app();
   expect(announced()?.textContent).toBe("");
@@ -142,14 +168,18 @@ test("the switch is said once in a polite live region, and again on the next swi
 });
 
 // The panel itself (FR-004, FR-034).
-const panelOf = (system: string, stats: Stats | null = STATS) => {
+const panelOf = (
+  system: string,
+  stats: Stats | null = STATS,
+  live: LiveValues = LIVE,
+) => {
   const onOpen = vi.fn();
   render(
     <SystemTab
       modules={SYSTEM_PANELS.filter((m) => m.id === system)}
       ctx={on("Stamps")}
       stats={stats}
-      live={LIVE}
+      live={live}
       onOpen={onOpen}
     />,
   );
@@ -204,4 +234,9 @@ test("before the first reading the panel waits, and asks for no values (FR-034)"
   panelOf("Stamps", null);
   expect(screen.getByText("Waiting for the game")).toBeDefined();
   expect(companion.formulaValues).toHaveBeenLastCalledWith({ ids: [] });
+});
+
+test("with the game closed the panel says when its values were read (FR-022)", () => {
+  panelOf("Stamps", STATS, { ...LIVE, stale: true, calculatedAt: Date.now() });
+  expect(screen.getByText("last reading 0 s ago")).toBeDefined();
 });

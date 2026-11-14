@@ -2,7 +2,13 @@
 // modules that match the context, and the settings. A tapped Stats or Formulas value opens its tree in the side panel,
 // beside the rest, with the window widened (spec 008 FR-005). A system's screen opening in the game switches to its panel
 // (FR-003), says so once (FR-040) and never moves the focus (FR-039); a screen without one keeps the last (FR-033).
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { modulesFor } from "../shared/index.ts";
 import type {
   FormulaTree,
@@ -69,6 +75,18 @@ export function App() {
   const [side, setSide] = useState<Side | null>(null);
   /** The number that opened the panel: ✕ gives the focus back to it (FR-039). */
   const opener = useRef<HTMLElement | null>(null);
+  /** The active tab's content; it takes the focus when a switch removes what had it (FR-039). */
+  const tabPanel = useRef<HTMLDivElement>(null);
+  /** The last element focused inside the tab's content. */
+  const focused = useRef<Element | null>(null);
+  // A switch of the game that removed the focused element would drop the focus on the page: it goes to the tab's panel.
+  useLayoutEffect(() => {
+    const was = focused.current;
+    if (was && !was.isConnected && document.activeElement === document.body) {
+      focused.current = null;
+      tabPanel.current?.focus();
+    }
+  });
 
   /** The window grew to the left: the panel goes on the left, so the Stats stays under the cursor (FR-005). */
   const [left, setLeft] = useState(false);
@@ -100,7 +118,9 @@ export function App() {
     setLeft(false);
     void window.companion.setSidePanel({ open: false });
     void window.companion.closeFormula();
-    opener.current?.focus();
+    // The switch may have removed the number that opened it: then the tab's panel takes the focus.
+    if (opener.current?.isConnected) opener.current.focus();
+    else tabPanel.current?.focus();
   }
   function pick(id: string): void {
     setSide((s) => s && { ...s, id });
@@ -163,6 +183,8 @@ export function App() {
                   key={id}
                   type="button"
                   role="tab"
+                  id={`tab-${id}`}
+                  aria-controls="tab-panel"
                   aria-selected={tab === id}
                   onClick={() => {
                     setTab(id);
@@ -172,27 +194,40 @@ export function App() {
                 </button>
               ))}
             </div>
-            {tab === "stats" && <StatsPanel stats={stats} onOpen={openSide} />}
-            {tab === "formulas" && (
-              <FormulasTab stats={stats} live={live} onOpen={openTree} />
-            )}
-            {tab === "panel" && panelCtx && (
-              <SystemTab
-                modules={modulesFor(panelCtx, SYSTEM_PANELS)}
-                ctx={panelCtx}
-                stats={stats}
-                live={live}
-                onOpen={openTree}
-              />
-            )}
-            {tab === "map" &&
-              ctx &&
-              modulesFor(ctx, MODULES).map(({ id, title, Panel }) => (
-                <section key={id}>
-                  <h2>{title}</h2>
-                  <Panel ctx={ctx} send={send} />
-                </section>
-              ))}
+            <div
+              role="tabpanel"
+              id="tab-panel"
+              aria-labelledby={`tab-${tab}`}
+              tabIndex={-1}
+              ref={tabPanel}
+              onFocus={(e) => {
+                focused.current = e.target;
+              }}
+            >
+              {tab === "stats" && (
+                <StatsPanel stats={stats} onOpen={openSide} />
+              )}
+              {tab === "formulas" && (
+                <FormulasTab stats={stats} live={live} onOpen={openTree} />
+              )}
+              {tab === "panel" && panelCtx && (
+                <SystemTab
+                  modules={modulesFor(panelCtx, SYSTEM_PANELS)}
+                  ctx={panelCtx}
+                  stats={stats}
+                  live={live}
+                  onOpen={openTree}
+                />
+              )}
+              {tab === "map" &&
+                ctx &&
+                modulesFor(ctx, MODULES).map(({ id, title, Panel }) => (
+                  <section key={id}>
+                    <h2>{title}</h2>
+                    <Panel ctx={ctx} send={send} />
+                  </section>
+                ))}
+            </div>
             <SettingsView>
               <SteamSettings onReload={loadSteam} onSteam={showSteam} />
             </SettingsView>
