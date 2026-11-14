@@ -89,12 +89,24 @@ function joined(terms: string[]): string {
     );
 }
 
-/** "How it adds up" in two lines (contracts/tree-worker.md): the names, then each name's number with the result. */
+/**
+ * "How it adds up" in two lines (contracts/tree-worker.md): the names, then each name's number with the result; a rule's
+ * two lines as they come, its result the last number of its line of numbers.
+ */
 export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
   names: string;
   numbers: string;
   result: string;
 } {
+  if (!Array.isArray(formula)) {
+    const [names, numbers] = formula.rule;
+    const last = numbers.match(/-?\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?/gi)?.at(-1);
+    return {
+      names,
+      numbers,
+      result: last === undefined ? "" : plain(Number(last.replace(/,/g, ""))),
+    };
+  }
   const [terms, numbers] = formula;
   let i = 0;
   const filled = terms.map((t) =>

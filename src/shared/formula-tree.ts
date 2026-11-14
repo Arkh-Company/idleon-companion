@@ -98,8 +98,11 @@ export interface TreeNode {
   condition: ConditionKind | null;
   /** Why a `?`, in a player's words. */
   why: string | null;
-  /** "How it adds up": names and numbers only (FR-012a). */
-  formula: [names: string[], numbers: number[]] | null;
+  /** "How it adds up": names and numbers only (FR-012a); a rule ("If …: 35", "yes → 35") as its two lines of text. */
+  formula:
+    | [names: string[], numbers: number[]]
+    | { rule: [names: string, numbers: string] }
+    | null;
   /** Block and arguments or path, only in "Game details". */
   code: string | null;
   role: NodeRole;

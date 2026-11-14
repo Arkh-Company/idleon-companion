@@ -74,7 +74,10 @@ export interface CalcTreeNode {
   leaf: CalcLeafKind | null;
   condition: (typeof CALC_CONDITION_KINDS)[number] | null;
   why: string | null;
-  formula: [names: string[], numbers: number[]] | null;
+  formula:
+    | [names: string[], numbers: number[]]
+    | { rule: [names: string, numbers: string] }
+    | null;
   code: string | null;
   role: (typeof CALC_NODE_ROLES)[number];
   share: number | null;

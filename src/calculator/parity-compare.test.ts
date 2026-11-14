@@ -64,6 +64,18 @@ test("the same tree has no difference, the root's name aside", () => {
   expect(compareTrees(APP, BENCH, new Set())).toEqual([]);
 });
 
+test("a rule's ⓘ is compared by the numbers of its line of numbers", () => {
+  const rule = app({ ...APP, formula: { rule: ["If Alpha: 10", "yes → 10"] } });
+  const bench = (n: number): BenchRow => ({
+    ...BENCH,
+    formula: [`If Alpha: ${String(n)}`, `yes → ${String(n)}`],
+  });
+  expect(compareTrees(rule, bench(10), new Set())).toEqual([]);
+  expect(compareTrees(rule, bench(11), new Set())).toEqual([
+    { at: "0", field: "formula" },
+  ]);
+});
+
 test.each<[string, BenchRow, string]>([
   [
     "a value",

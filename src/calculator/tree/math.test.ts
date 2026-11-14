@@ -1,6 +1,6 @@
 // The formula line's arithmetic, without eval (tree/math.ts).
 import { expect, test } from "vitest";
-import { evaluate, formulaAtoms, isOperator } from "./math.ts";
+import { evaluate, formulaAtoms, formulaOut, isOperator } from "./math.ts";
 
 test.each<[string, number]>([
   ["1 + 2 × 3", 7],
@@ -74,4 +74,19 @@ test("each term that is not an operator has the next number; a math name is an o
   expect(isOperator("floor")).toBe(true);
   expect(terms.filter((t) => !isOperator(t))).toEqual(["1", "Level", "10"]);
   expect(numbers).toEqual([1, 25, 10, 3]);
+});
+
+test.each<[string, [string, string], boolean]>([
+  ["each term's number gives the result", ["Ka × 2", "3 × 2 = 6"], true],
+  ["rounded numbers that give the result", ["Ka ÷ 3", "1 ÷ 3 = 0.333"], true],
+  ["numbers that give another result", ["Ka + Kb", "3 + 4 = 9"], false],
+  ["one number too many", ["Ka (in a dungeon)", "50 = 5"], false],
+  [
+    "a line of numbers with no result",
+    ["0 while Ka ≤ 0", "0 points → 0"],
+    false,
+  ],
+  ["a sign no sum has", ["max(Ka: Kb)", "max(6, 2) = 6"], false],
+])("%s: atoms %s", (_name, pair, atoms) => {
+  expect(formulaOut(pair)).toEqual(atoms ? formulaAtoms(pair) : { rule: pair });
 });

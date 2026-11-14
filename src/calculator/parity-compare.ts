@@ -72,9 +72,8 @@ function sameFormula(
 ): boolean {
   if (!app || !bench) return !app && !bench;
   const b = numbersOf(bench[1]);
-  return (
-    b.length === app[1].length && b.every((x, i) => close(x, app[1][i] ?? NaN))
-  );
+  const a = Array.isArray(app) ? app[1] : numbersOf(app.rule[1]);
+  return b.length === a.length && b.every((x, i) => close(x, a[i] ?? NaN));
 }
 
 export function compareTrees(

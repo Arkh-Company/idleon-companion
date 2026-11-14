@@ -1,6 +1,7 @@
 // The arithmetic of a formula line as the tree writes it ("1 + 4 × 3 ÷ (3 + 200)", "min(5, pow(2, 3))"), evaluated
 // without `Function` or `eval`: the bench's `evalNum` (share.cjs, from audit-e/flat.cjs) and the sum check of
 // formulas.cjs `formulaOf`. Anything else in the line gives NaN, as there.
+import type { CalcTreeNode } from "../tree-contract.ts";
 
 const FNS: Readonly<Record<string, (...x: number[]) => number>> = {
   min: Math.min,
@@ -115,6 +116,29 @@ export function formulaAtoms(
       Number(m[0]),
     ),
   ];
+}
+
+/**
+ * The ⓘ as it leaves the worker (contracts/tree-worker.md): its atoms when each term's number recomputes the line's
+ * result, else a rule's two lines as they are ("If …: 35" / "yes → 35"), so no term is ever matched to another number.
+ */
+export function formulaOut(
+  pair: [string, string],
+  known: readonly string[] = [],
+): CalcTreeNode["formula"] {
+  const [terms, numbers] = formulaAtoms(pair, known);
+  let i = 0;
+  const filled = terms
+    .map((t) => (isOperator(t) ? t : String(numbers[i++])))
+    .join(" ");
+  const result = numbers.at(-1) ?? NaN;
+  const sum =
+    pair[1].includes(" = ") && i + 1 === numbers.length
+      ? evaluate(filled)
+      : NaN;
+  return Math.abs(sum - result) <= 1e-3 * Math.max(1, Math.abs(result))
+    ? [terms, numbers]
+    : { rule: pair };
 }
 
 /** pieces.cjs `near`: equal within 1e-9 of the second number, relative (a yes/no counts as 1 or 0). */

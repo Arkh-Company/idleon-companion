@@ -102,7 +102,10 @@ test("a curve's input path with brackets is one term of its formula", () => {
       r: [[path, 7]],
     }).root,
   );
-  expect(curve?.formula?.[0]).toEqual(["3", "×", path]);
+  expect(curve?.formula).toEqual([
+    ["3", "×", path],
+    [3, 7, 21],
+  ]);
 });
 
 test("a curve whose input no read holds uses the level it was given; a curve with no maximum has none", () => {
@@ -112,7 +115,10 @@ test("a curve whose input no read holds uses the level it was given; a curve wit
     }).root,
   );
   expect(curve?.maxReached).toBeUndefined();
-  expect(curve?.formula?.[0]).toEqual(["3", "×", "Level the curve uses"]);
+  expect(curve?.formula).toEqual([
+    ["3", "×", "Level the curve uses"],
+    [3, 7, 21],
+  ]);
   expect(kidsOf(curve).map((k) => [k.name, k.leaf])).toEqual([
     ["Per-level bonus of the curve", "fixedValue"],
     ["Level the curve uses", "level"],

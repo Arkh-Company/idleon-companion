@@ -308,6 +308,29 @@ test("How it adds up shows the names and the numbers, with the row's value after
   expect(focused()).toBe("25 × 2.5 = 62.5");
 });
 
+test("a rule's How it adds up shows its two lines as they come, with its last number after =", () => {
+  draw(
+    node({
+      kids: [
+        node({
+          id: "root/R",
+          name: "Picked",
+          value: 35,
+          formula: { rule: ["If Owned bonus: 35", "yes → 35"] },
+        }),
+      ],
+    }),
+  );
+  item(/^Picked/).focus();
+  key("ArrowRight");
+  item(/^How it adds up = 35/).focus();
+  key("ArrowRight");
+  key("ArrowRight");
+  expect(focused()).toBe("If Owned bonus: 35");
+  key("ArrowDown");
+  expect(focused()).toBe("yes → 35");
+});
+
 test("Game details opens into its rows, each one reached by the arrows", () => {
   draw(
     node({

@@ -9,7 +9,7 @@
 // the recording does not keep); the renames by shape and the R1 source names (US1c).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
-import { formulaAtoms } from "./math.ts";
+import { formulaOut } from "./math.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -382,7 +382,7 @@ export function withFormula(
   const fm = formulaFor(row, rows);
   if (!fm) return { formula: null, rows };
   return {
-    formula: formulaAtoms(fm, termsOf(rows, row.xf, row.xweak)),
+    formula: formulaOut(fm, termsOf(rows, row.xf, row.xweak)),
     rows: withShares(row.node, fm, rows).rows,
   };
 }

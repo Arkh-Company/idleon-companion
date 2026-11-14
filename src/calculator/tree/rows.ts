@@ -9,7 +9,7 @@ import {
   maxReachedOf,
 } from "./curves.ts";
 import type { Curve } from "./curves.ts";
-import { formulaAtoms } from "./math.ts";
+import { formulaOut } from "./math.ts";
 import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */
@@ -204,7 +204,7 @@ export function curveRow(
       name,
       flags: {},
       formula: text
-        ? formulaAtoms(
+        ? formulaOut(
             text,
             [...parts, last].map((r) => termOf(r.node)),
           )

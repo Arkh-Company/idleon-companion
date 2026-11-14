@@ -76,6 +76,26 @@ test.each<[string, unknown]>([
   ],
   ["a code snippet in the code", node({ code: "if (a && b) return c" })],
   ["a text too long", node({ name: "x".repeat(201) })],
+  [
+    "a rule with a code snippet",
+    node({ formula: { rule: ["If a && b: 35", "yes → 35"] } }),
+  ],
+  [
+    "a rule line too long",
+    node({ formula: { rule: ["x".repeat(201), "yes → 35"] } }),
+  ],
+  [
+    "a rule with three lines",
+    node({ formula: { rule: ["If a: 35", "yes → 35", "x"] } as never }),
+  ],
+  [
+    "a rule with a number for a line",
+    node({ formula: { rule: ["If a: 35", 35] } as never }),
+  ],
+  [
+    "a rule with another field",
+    node({ formula: { rule: ["If a: 35", "yes → 35"], x: 1 } as never }),
+  ],
 ])("%s gives null", (_name, raw) => {
   expect(checkTree(raw, MAX)).toBe(null);
 });
@@ -103,6 +123,10 @@ test.each<[string, Partial<TreeNode>]>([
         [1, 2],
       ],
     },
+  ],
+  [
+    "a rule's two lines",
+    { formula: { rule: ["If Owned bonus: 35", "yes → 35"] } },
   ],
 ])("%s passes", (_name, over) => {
   expect(checkTree(node(over), MAX)).not.toBe(null);

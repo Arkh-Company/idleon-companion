@@ -1,12 +1,31 @@
 // Each shape of the ⓘ a branch gets from its parts (spec 008, T017: formulas.cjs `addFormulas` for one row), over rows
 // written by hand: a read is written by its path (no name yet, FR-012a), a constant of the code by its number.
 import { expect, test } from "vitest";
-import { formulaFor, token } from "./formulas.ts";
+import { checkTree } from "../../main/tree-check.ts";
+import { node } from "../../renderer/formula-fixture.ts";
+import { formulaLines } from "../../renderer/tree-text.ts";
+import { formulaFor, token, withFormula } from "./formulas.ts";
+import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, ones, read } from "./tree-fixture.ts";
 
 const tok = token;
+
+/** The row's ⓘ on its way to the window (the worker's formula, the main's check, "How it adds up"): its two lines. */
+function expectShown(r: FormulaRow, kids: Row[]): void {
+  const fm = formulaFor(r, kids);
+  const tree = checkTree(node({ formula: withFormula(r, kids).formula }), 1);
+  expect(tree).not.toBeNull();
+  const f = tree?.formula;
+  expect(f ? formulaLines(f) : null).toEqual(
+    fm && {
+      names: fm[0],
+      numbers: fm[1],
+      result: expect.not.stringContaining("NaN") as unknown,
+    },
+  );
+}
 
 test.each<[string, number, Row[], [string, string] | null]>([
   [
@@ -70,6 +89,7 @@ test.each<[string, number, Row[], [string, string] | null]>([
   ],
 ])("%s", (_name, v, kids, formula) => {
   expect(formulaFor(at(v), kids)).toEqual(formula);
+  expectShown(at(v), kids);
 });
 
 test("a curve part with the row's value gives its own ⓘ", () => {
@@ -85,6 +105,7 @@ test("a curve part with the row's value gives its own ⓘ", () => {
     f: ["4 + 0 × Stats.lv", "4 + 0 × 10 = 4"],
   };
   expect(formulaFor(at(4), [curve, read("Stats.x", 9)])).toEqual(curve.f);
+  expectShown(at(4), [curve, read("Stats.x", 9)]);
 });
 
 test("a row with its pair keeps it; a group has none", () => {
@@ -161,11 +182,9 @@ test.each<[string, string, Row[], string]>([
     "4 ÷ 100",
   ],
 ])("the game's expression names %s", (_name, token, kids, names) => {
-  const fm = formulaFor(
-    at(0.03, { xf: [`${token} ÷ 100`, "3 ÷ 100 = 0.03"] }),
-    kids,
-  );
-  expect(fm).toEqual([names, "3 ÷ 100 = 0.03"]);
+  const n = at(0.03, { xf: [`${token} ÷ 100`, "3 ÷ 100 = 0.03"] });
+  expect(formulaFor(n, kids)).toEqual([names, "3 ÷ 100 = 0.03"]);
+  expectShown(n, kids);
 });
 
 test("an expression that only repeats the row's own term gives way to its If", () => {
@@ -173,6 +192,7 @@ test("an expression that only repeats the row's own term gives way to its If", (
   expect(
     formulaFor(n, [cond("Stats.f = 1", true), read("Stats.x", 6)]),
   ).toEqual(["If Stats.f = 1: Stats.x", "yes → 6"]);
+  expectShown(n, [cond("Stats.f = 1", true), read("Stats.x", 6)]);
 });
 
 test("a product that closes only by a 0 is no ⓘ: the game's expression is", () => {
@@ -276,6 +296,7 @@ test.each<[string, number, Row[], [string, string] | null, string?]>([
   ],
 ])("If: %s", (_name, v, kids, formula, code) => {
   expect(formulaFor(at(v, code ? { code } : {}), kids)).toEqual(formula);
+  expectShown(at(v, code ? { code } : {}), kids);
 });
 
 test("a sum that counts its yes/no among its terms is said by its expression", () => {
@@ -297,6 +318,8 @@ test("a sum that counts its yes/no among its terms is said by its expression", (
     "If Stats.f = 1: 7",
     "yes → 7",
   ]);
+  expectShown(at(7, { xweak }), kids);
+  expectShown(at(7, { xweak: ["x", "9 × 1 = 7"] }), kids);
 });
 
 test.each<[number, number, number, [string, string]]>([
@@ -337,9 +360,9 @@ test.each<[number, number, number, [string, string]]>([
   "a skill's Rift bonus (deep-2): level %d, rank %d, value %d",
   (lv, rank, v, formula) => {
     const n = at(v, { code: 'RiftStuff("RiftSkillBonus,3", 2)' });
-    expect(
-      formulaFor(n, [read("Rift[0]", lv), read("DNSM.skillLvRanks[3]", rank)]),
-    ).toEqual(formula);
+    const kids = [read("Rift[0]", lv), read("DNSM.skillLvRanks[3]", rank)];
+    expect(formulaFor(n, kids)).toEqual(formula);
+    expectShown(n, kids);
   },
 );
 
@@ -382,4 +405,5 @@ test.each<[string, Row[], number, string]>([
   ],
 ])("%s", (_name, kids, v, names) => {
   expect(formulaFor(at(v), kids)?.[0]).toBe(names);
+  expectShown(at(v), kids);
 });

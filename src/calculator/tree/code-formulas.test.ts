@@ -1,10 +1,15 @@
 // The ⓘ the game's code gives a row (spec 008, T017: pieces.cjs exprFormula, callFormula and familyFormula), over
 // expressions and calls written by hand with invented blocks and paths. A part is a token until the row's parts exist.
 import { expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
+import { node as windowNode } from "../../renderer/formula-fixture.ts";
+import { formulaLines } from "../../renderer/tree-text.ts";
 import type { RecNode } from "../recording.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
-import { token } from "./formulas.ts";
+import { formulaFor, token, withFormula } from "./formulas.ts";
+import type { Pair } from "./formulas.ts";
 import type { Expr, Step } from "./steps.ts";
+import { at, read as readRow } from "./tree-fixture.ts";
 
 const num = (v: number): Expr => ({ t: "num", v });
 const val = (v: number): Expr => ({ t: "val", v });
@@ -34,6 +39,24 @@ const node = (id: number, b: string, more: Partial<RecNode> = {}): RecNode => ({
 });
 const { expr } = makeCodeFormulas([node(0, "Talk", { v: 4 })], () => []);
 const reads = new Map();
+
+/** A row's ⓘ from the code on its way to the window (its parts found, the main's check, "How it adds up"): its two lines. */
+function expectShown(pair: Pair | null): void {
+  if (!pair) return;
+  const r = at(1, { xf: pair });
+  const kids = [readRow("Stats.other", 123456)];
+  const fm = formulaFor(r, kids);
+  const tree = checkTree(
+    windowNode({ formula: withFormula(r, kids).formula }),
+    1,
+  );
+  const f = tree?.formula;
+  expect(f ? formulaLines(f) : null).toEqual({
+    names: fm?.[0],
+    numbers: fm?.[1],
+    result: expect.not.stringContaining("NaN") as unknown,
+  });
+}
 
 test.each<[string, Expr, number, [string, string] | null]>([
   [
@@ -85,6 +108,7 @@ test.each<[string, Expr, number, [string, string] | null]>([
   ["a math name it cannot write", fn("sqrt", [read("Stats.a", 9)], 3), 3, null],
 ])("the expression of %s", (_name, e, v, formula) => {
   expect(expr(e, reads, v)).toEqual(formula);
+  expectShown(formula);
 });
 
 test("an expression of one part is no ⓘ where two are asked", () => {
@@ -105,6 +129,7 @@ test("a talent inside a sum shows its own curve", () => {
     `(4 + 0 × (Points in the talent + All-talent levels)) + ${token("c:Stats.b@1", "Stats.b")}`,
     "(4 + 0 × 10) + 1 = 5",
   ]);
+  expectShown(makeCodeFormulas(nodes, () => []).expr(e, reads, 5));
 });
 
 /** The ⓘ of the first call, among `nodes`; `steps` gives each call's steps by id. */
@@ -260,6 +285,7 @@ test.each<[string, RecNode[], [string, string] | null]>([
   ],
 ])("the family of %s", (_name, nodes, formula) => {
   expect(callOf(nodes)).toEqual(formula);
+  expectShown(formula);
 });
 
 test("a call's last step with its value, else the curve it returns", () => {

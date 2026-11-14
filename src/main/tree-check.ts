@@ -79,12 +79,20 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   why: isTextOrNull,
   formula: orNull(
     (f) =>
-      Array.isArray(f) &&
-      f.length === 2 &&
-      Array.isArray(f[0]) &&
-      f[0].every(isText) &&
-      Array.isArray(f[1]) &&
-      f[1].every(isFinite),
+      (Array.isArray(f) &&
+        f.length === 2 &&
+        Array.isArray(f[0]) &&
+        f[0].every(isText) &&
+        Array.isArray(f[1]) &&
+        f[1].every(isFinite)) ||
+      // a rule: its two lines of text, as they come
+      fieldsFit(
+        f,
+        {
+          rule: (r) => Array.isArray(r) && r.length === 2 && r.every(isText),
+        },
+        ["rule"],
+      ),
   ),
   code: isCode,
   role: oneOf(NODE_ROLES),
