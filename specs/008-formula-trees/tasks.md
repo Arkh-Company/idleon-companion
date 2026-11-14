@@ -39,7 +39,7 @@ Nothing of the game nor of the save enters the repository in any task. Tests use
 
 **Independent Test**: `just --list` shows `parity`, and `just check` still passes with no parity test yet.
 
-- [ ] T001 [sessão] Add the `parity` recipe to `justfile` (approved by Vinicius, 13/11)
+- [X] T001 [sessão] Add the `parity` recipe to `justfile` (approved by Vinicius, 13/11)
   - Files: `justfile`
   - Recipe: `parity:` runs `pnpm exec vitest run src/calculator/parity.integration.test.ts`, outside `check` and CI.
   - With no test file yet, the recipe only lists; `just check` does not call it.

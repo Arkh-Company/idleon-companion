@@ -58,6 +58,11 @@ test-one target *args:
 test-edge $IDLEON_EDGE_TESTS="1":
     pnpm exec vitest run --dir src src/keeper/reader.integration.test.ts
 
+# O teste se pula sozinho sem PARITY_BENCH_DIR, PARITY_SNAPSHOT e PARITY_GAME_DIR no ambiente (veja o .env.example).
+# Paridade App = bancada (spec 008, SC-002): só na máquina com a bancada, fora do check e da CI
+parity:
+    pnpm exec vitest run --dir src --passWithNoTests src/calculator/parity.integration.test.ts
+
 lint:
     pnpm exec eslint .
 
