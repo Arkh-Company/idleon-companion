@@ -43,6 +43,13 @@ function setup(current: Status = RUNNING) {
     },
     formula: { status: vi.fn(), gameFiles: vi.fn(), replay: vi.fn() },
     updates: { replay: vi.fn() },
+    farm: {
+      onState: vi.fn(),
+      onMap: vi.fn(),
+      tables: vi.fn(),
+      reset: vi.fn(),
+      replay: vi.fn(),
+    },
     setStatus: vi.fn((): Promise<void> => Promise.resolve()),
     sendStatus: vi.fn(),
     gameExited: vi.fn(),
@@ -55,6 +62,7 @@ function setup(current: Status = RUNNING) {
     stats: h.stats,
     formula: h.formula,
     updates: h.updates,
+    farm: h.farm,
     status: () => current,
     setStatus: h.setStatus,
     sendStatus: h.sendStatus,
@@ -86,11 +94,65 @@ test("a reading of the wrong shape goes nowhere", () => {
 test("the tables go to the screen tracker, checked", () => {
   const h = setup();
   h.routes.message(bad({ type: "tables", tables: { maps: 1, monsters: {} } }));
-  expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith({
-    maps: null,
-    monsters: {},
-  });
+  const checked = { maps: null, monsters: {}, items: null };
+  expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith(checked);
+  expect(h.farm.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.stats.message).not.toHaveBeenCalled();
+});
+
+test("a reading tells the farm its map and whether it is a town, by the scene's name (FR-028)", () => {
+  const h = setup();
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, map: 50, scene: "zDesertaTown" },
+  });
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, map: 51, scene: "zDesertA" },
+  });
+  expect(h.farm.onMap.mock.calls).toEqual([
+    [50, true],
+    [51, false],
+  ]);
+});
+
+test("a reading with no scene says nothing to the farm, and one with no character resets it", () => {
+  const h = setup();
+  h.routes.message({ type: "reading", reading: { ...READING, scene: null } });
+  expect(h.farm.onMap).not.toHaveBeenCalled();
+  expect(h.farm.reset).not.toHaveBeenCalled();
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, char: null, scene: "PlayerSelect" },
+  });
+  expect(h.farm.onMap).not.toHaveBeenCalled();
+  expect(h.farm.reset).toHaveBeenCalledOnce();
+});
+
+test("a slice goes to the farm, checked; one of the wrong shape does not", () => {
+  const h = setup();
+  h.routes.message({ type: "state", slice: SLICE });
+  h.routes.message(bad({ type: "state", slice: { sentinel: 1 } }));
+  expect(h.farm.onState).toHaveBeenCalledExactlyOnceWith(SLICE);
+});
+
+test.each<[string, Status, number]>([
+  ["a closed game", CLOSED, 1],
+  ["a game not launched", { game: "not-launched", reader: "error" }, 1],
+  ["a running game", RUNNING, 0],
+])(
+  "%s: the farm resets only when the game is not running",
+  (_name, status, times) => {
+    const h = setup();
+    h.routes.message({ type: "status", status });
+    expect(h.farm.reset).toHaveBeenCalledTimes(times);
+  },
+);
+
+test("a dropped link resets the farm", () => {
+  const h = setup();
+  h.routes.connected(false);
+  expect(h.farm.reset).toHaveBeenCalledOnce();
 });
 
 test("a status goes to the Stats, the trees and the app", () => {
@@ -165,9 +227,10 @@ test("a link that comes up changes nothing", () => {
   expect(h.setStatus).not.toHaveBeenCalled();
 });
 
-test("each page load gets the status, the context, the update, the Stats and the tree again", () => {
+test("each page load gets the status, the context, the update, the Stats, the tree and the farm again", () => {
   const h = setup();
   h.load();
+  expect(h.farm.replay).toHaveBeenCalledOnce();
   expect(h.formula.replay).toHaveBeenCalledOnce();
   expect(h.sendStatus).toHaveBeenCalledExactlyOnceWith(RUNNING);
   expect(h.tracker.replay).toHaveBeenCalledOnce();

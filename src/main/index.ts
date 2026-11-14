@@ -16,6 +16,7 @@ import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { calculatorPath } from "./calculator-host.ts";
 import { contextTracker, panelOf } from "./context.ts";
+import { farmTracker } from "./farm.ts";
 import { forgetOldNames } from "./forget-names.ts";
 import { readGameFiles } from "./game-files.ts";
 import {
@@ -190,11 +191,19 @@ function start(): void {
     saved: savedFiles(dataDir),
   });
 
+  // XP, gold and items per hour, measured from the slices and only in memory (FR-028 of 008).
+  const farm = farmTracker({
+    send: (f) => {
+      send(IPC.farmUpdate, f);
+    },
+  });
+
   const routes = routeLink({
     tracker,
     stats,
     formula,
     updates,
+    farm,
     status: () => status,
     setStatus,
     sendStatus: (s) => {
