@@ -21,6 +21,7 @@ import {
   wornTotal,
 } from "./term-passes.ts";
 import type { Reads } from "./val-path.ts";
+import type { CodeFormulas } from "./code-formulas.ts";
 
 type V = Expr["v"];
 
@@ -36,6 +37,8 @@ export interface TermContext {
   block: RecNode;
   /** The cache entry whose loop turn is being walked (the bench's ENTRY_P). */
   entry(): string | null;
+  /** The ⓘ the game's code gives a row before its own rows exist (tree/code-formulas.ts). */
+  formulas: CodeFormulas;
 }
 /** The call whose step is being built: its arguments, and its steps with the one being built. */
 export interface Turn {
@@ -154,7 +157,9 @@ export function makeTerms(ctx: TermContext) {
       } else if (x.t === "not") walk(x.a, x, 0);
     })(e, null, 0);
     // [R1-PATCH] the parts of a sum are no parts at ×1: the group is undone when the expression adds anything
-    return branch(e.v, ctx.finish(e.v, tidy(rows, "*", []), ones));
+    const out = branch(e.v, ctx.finish(e.v, tidy(rows, "*", []), ones));
+    const xf = ctx.formulas.expr(e, reads, e.v);
+    return xf ? { ...out, xf } : out;
   }
 
   /** A value with no source of its own (pieces.cjs rowOfTerm, "val"). */
@@ -294,7 +299,13 @@ export function makeTerms(ctx: TermContext) {
       // [G5B-DEPTH] the branch is the call's row, no extra level
       return exprRow(e, d - 1, reads2, !adds(e));
     }
-    return ctx.call(k, e.v, reads);
+    // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the
+    // value here is the call's); the expression around the call alone only when neither gives one (tree/formulas.ts)
+    const r = ctx.call(k, e.v, reads);
+    const xf = ctx.formulas.expr(e, reads, e.v, 2);
+    if (xf) return { ...r, xf };
+    const weak = ctx.formulas.expr(e, reads, e.v, 1);
+    return weak ? { ...r, xweak: weak } : r;
   }
 
   /**

@@ -114,3 +114,67 @@ test("a curve with the branch's value gives the branch its ⓘ", () => {
     [4, 0, 10, 4],
   ]);
 });
+
+test("a call's ⓘ is its last step, its parts found among its rows", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_Mid = function () { return s.A / 4; };",
+  );
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Top", v: 7, c: [2, 3] },
+      {
+        b: "Mid",
+        v: 2,
+        r: [["A", 8]],
+        rx: [["A", 8, 0]],
+        x: [
+          [1, 8],
+          [0, 2],
+        ],
+      },
+      { b: "Side", v: 5, r: [["Level", 5]] },
+    ],
+    [],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0, ops);
+  const mid = kidsOf(build.root).find((k) => k.code === "Mid()");
+  expect(build.expand(mid?.id ?? "")?.formula).toEqual([
+    ["A", "÷", "4"],
+    [8, 4, 2],
+  ]);
+});
+
+test("the expression around a call with the call's value, when nothing else gives one", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_Top = function () { return Math.max(Blocks._customBlock_Calc(), 1) * s.B; };",
+  );
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "Top",
+        v: 10,
+        c: [2],
+        r: [["B", 2]],
+        rx: [["B", 2, 2]],
+        x: [
+          [2, 5],
+          [1, 5],
+          [3, 2],
+          [0, 10],
+        ],
+      },
+      { b: "Calc", v: 5, r: [["X", 5]] },
+    ],
+    [],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0, ops);
+  const calc = kidsOf(build.root).find((k) => k.code === "Calc()");
+  expect(build.expand(calc?.id ?? "")?.formula).toEqual([
+    ["max", "(", "Calc()", ",", "1", ")"],
+    [5, 1, 5],
+  ]);
+});

@@ -33,6 +33,7 @@ import { makeSteps } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
 import { firstSrc, noSource, topOp } from "./tree/expr.ts";
 import { withFormula } from "./tree/formulas.ts";
+import { makeCodeFormulas } from "./tree/code-formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
 import { rawPasses } from "./tree/raw-passes.ts";
@@ -75,6 +76,7 @@ export function buildTree(
   const entries = entriesOf(rec, linked, steps.turn);
   const writers = makeWriters(nodes, entries);
   const conditions = makeConditions(nodes);
+  const codeFormulas = makeCodeFormulas(nodes, (id) => steps.of(id).steps);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
@@ -171,7 +173,8 @@ export function buildTree(
           }
         : {}),
     });
-    return { node, open: lazy ? k.id : null };
+    const xf = codeFormulas.call(k);
+    return { node, open: lazy ? k.id : null, ...(xf ? { xf } : {}) };
   }
 
   /** A level's rows typed, with their shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0. */
@@ -203,6 +206,7 @@ export function buildTree(
       nodes,
       block: n,
       entry: () => caches.now().entry,
+      formulas: codeFormulas,
       read: (p, v) => at(readRow(p, valueOf(v), linkOf.get(p))),
       call: (k, v, rs) => at(callRow(k, n, v ?? null, [...rs], false)),
       finish,
@@ -374,7 +378,7 @@ export function buildTree(
     root.kids =
       kidsAt({
         node: root,
-        row: { node: root, open: top.id },
+        row: { node: root, open: null },
         open: top.id,
         depth: 0,
         seen: [],

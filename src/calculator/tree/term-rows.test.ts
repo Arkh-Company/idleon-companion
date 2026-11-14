@@ -6,6 +6,8 @@ import { callText, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { makeTerms } from "./terms.ts";
+import { makeCodeFormulas } from "./code-formulas.ts";
+import { token } from "./formulas.ts";
 
 const nodes: RecNode[] = [
   { id: 0, b: "Top", a: [], c: [1, 2], p: null, pxi: 0, v: 9 },
@@ -42,6 +44,7 @@ const termsOf = (block?: RecNode, entry: () => string | null = () => null) =>
     },
     block: block ?? { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0 },
     entry,
+    formulas: makeCodeFormulas(nodes, () => []),
   });
 const terms = termsOf();
 const num = (v: number): Expr => ({ t: "num", v });
@@ -367,4 +370,25 @@ test("[FIX-4] a number of a block that writes its table in its own code is a fix
     leaf: "fixedValue",
   });
   expect(terms.term(val(7), "+", new Map())?.node.leaf).toBe("unknown");
+});
+
+test("the game's expression around a part goes with its row for its ⓘ", () => {
+  const t = token;
+  const [part] = rowsOf([
+    { v: 2, e: op("/", op("+", read("Stats.a", 6), num(2), 8), num(4), 2) },
+  ]);
+  expect(part?.xf).toEqual([
+    `(${t("c:Stats.a@6", "Stats.a")} + 2) ÷ 4`,
+    "(6 + 2) ÷ 4 = 2",
+  ]);
+  const [two] = rowsOf([{ v: 3, e: fn("max", [call(1, 3), val(2)], 3) }]);
+  expect([two?.xf, two?.xweak]).toEqual([
+    [`max(${t("c:B()", "B()")}, ${t("v:2", "2")})`, "max(3, 2) = 3"],
+    undefined,
+  ]);
+  const [one] = rowsOf([{ v: 3, e: fn("max", [call(1, 3), num(1)], 3) }]);
+  expect([one?.xf, one?.xweak]).toEqual([
+    undefined,
+    [`max(${t("c:B()", "B()")}, 1)`, "max(3, 1) = 3"],
+  ]);
 });
