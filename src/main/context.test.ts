@@ -22,8 +22,9 @@ const base: Reading = {
 const tables: GameTables = {
   maps: ["Vale", "Peak"],
   monsters: { w6d3: "Samurai Guardian", Nothing: "" },
+  items: null,
 };
-const UNREAD: GameTables = { maps: null, monsters: null };
+const UNREAD: GameTables = { maps: null, monsters: null, items: null };
 
 test("the world comes from the map", () => {
   expect(toContext({ ...base, map: 264 }, tables).screen.world).toBe(6);

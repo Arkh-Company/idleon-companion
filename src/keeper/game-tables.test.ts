@@ -40,8 +40,12 @@ test("a monster id that is an Object.prototype name is an ordinary key", () => {
   expect(Object.keys(monsters ?? {})).toEqual(["__proto__"]);
 });
 
-test("code with neither table gives null for both", () => {
-  expect(readGameTables("var a=1;")).toEqual({ maps: null, monsters: null });
+test("code with no table gives null for each", () => {
+  expect(readGameTables("var a=1;")).toEqual({
+    maps: null,
+    monsters: null,
+    items: null,
+  });
 });
 
 test.each([
@@ -58,6 +62,7 @@ test.each([
   expect(readGameTables(code + MONSTER)).toEqual({
     maps: null,
     monsters: { a1: "Beast" },
+    items: null,
   });
 });
 
@@ -75,6 +80,42 @@ test.each([
   expect(readGameTables(MAPS + code)).toEqual({
     maps: ["Blue Vale", "Peak"],
     monsters: null,
+    items: null,
+  });
+});
+
+/** An item as the game builds it: its common fields, the display name among them, then the call that adds it by id. */
+const item = (id: string, name: string, kind = "Item") =>
+  `e=new l,(t=new l).h.displayName="${name}",t.h.sellPrice=3,e.h.common=t,N.addNew${kind}("${id}",e),`;
+
+test("items come by id, with a space in place of the underscore and of the line break", () => {
+  expect(
+    readGameTables(
+      item("Ore", "Blue_Ore") +
+        item("Hat", "Old_Hat", "Equip") +
+        item("Pie", "Small|Pie", "Consumable") +
+        item("Note", "A_Note", "Quest"),
+    ).items,
+  ).toEqual({
+    Ore: "Blue Ore",
+    Hat: "Old Hat",
+    Pie: "Small Pie",
+    Note: "A Note",
+  });
+});
+
+test.each([
+  ["no match", ""],
+  [
+    "an item added without a display name",
+    `${item("Ore", "Blue_Ore")}N.addNewItem("Log",e),`,
+  ],
+  ["an empty name", item("Ore", "")],
+])("items with %s are null, and the other tables still read", (_name, code) => {
+  expect(readGameTables(MAPS + MONSTER + code)).toEqual({
+    maps: ["Blue Vale", "Peak"],
+    monsters: { a1: "Beast" },
+    items: null,
   });
 });
 

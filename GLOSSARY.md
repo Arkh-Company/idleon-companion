@@ -90,7 +90,7 @@ name (a photo or a sprite). The rule with the most conditions wins.
 _Avoid_: entry, pattern, match
 
 **Game tables**:
-The names of the maps and monsters that the **Keeper** takes from the text of the installed game code, which it never
+The names of the maps, monsters and items that the **Keeper** takes from the text of the installed game code, which it never
 runs, once per game launch. They stay in the app's memory, and a table it cannot read gives no name.
 _Avoid_: game data, dump
 

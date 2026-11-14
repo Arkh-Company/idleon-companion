@@ -46,7 +46,7 @@ export function contextTracker(send: (c: GameContext) => void): {
   replay(): void;
 } {
   let last: Reading | null = null;
-  let known: GameTables = { maps: null, monsters: null };
+  let known: GameTables = { maps: null, monsters: null, items: null };
   const replay = () => {
     if (last) send(toContext(last, known));
   };

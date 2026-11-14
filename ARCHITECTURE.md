@@ -47,7 +47,7 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   page, so the game's X closes it again; the debugging pipe stays open, and the status becomes `reader: "released"`.
   "Reconnect" (`reconnect`) starts a new reader on that pipe, with one new pause. The two run one after the other, so two
   sessions never exist at once. Neither is offered during `connecting`, a known limit. Once per game launch, right after
-  starting the app, it takes the map and monster names out of the text of the installed game code (`game-tables.ts`,
+  starting the app, it takes the map, monster and item names out of the text of the installed game code (`game-tables.ts`,
   which never runs that text) and sends them to the app as `tables`.
 - **App** (`src/main/`, `src/preload/`, `src/renderer/`, built to `out/main/index.js`, `out/preload/index.cjs` and
   `out/renderer/`). A link client: it turns readings into a `GameContext` with the screen catalog
@@ -125,7 +125,7 @@ message per line.
 | -------------------------------------- | ------------ | --------------------------------------------------------------------------------- |
 | `{ "type": "reading", "reading" }`     | keeper → app | a new `Reading`                                                                   |
 | `{ "type": "status", "status" }`       | keeper → app | `Status`: `game`, `reader`, `message?`, `lastReadingAt?`                          |
-| `{ "type": "tables", "tables" }`       | keeper → app | `GameTables`: map and monster names, `null` for a table not read                  |
+| `{ "type": "tables", "tables" }`       | keeper → app | `GameTables`: map, monster and item names, `null` for a table not read            |
 | `{ "type": "state", "slice" }`         | keeper → app | `StateSlice`: one slice of the state, never logged and never stored by the keeper |
 | `{ "type": "gameFiles", "resources" }` | keeper → app | the `resources` folder of the game launched, once per launch                      |
 | `{ "type": "confirm-attach" }`         | app → keeper | the user clicked "Connect next time"                                              |

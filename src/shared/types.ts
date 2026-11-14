@@ -72,6 +72,8 @@ export interface GameTables {
   maps: string[] | null;
   /** Name by monster id */
   monsters: Record<string, string> | null;
+  /** Name by item id, for the farm's list (spec 008 FR-028) */
+  items: Record<string, string> | null;
 }
 
 /** One reading translated by the screen catalog and the game's tables. */
