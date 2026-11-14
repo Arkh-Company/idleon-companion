@@ -2,7 +2,7 @@
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019). What the worker
 // sends is checked before it reaches the window (FR-010b). The live values of what is in view go over the same pair
 // (FR-008, plan B). No electron import, so tests can load it.
-import { isObject, TREE_CATALOG } from "../shared/index.ts";
+import { isObject, statsNumber, TREE_CATALOG } from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
@@ -12,7 +12,6 @@ import type {
 } from "../shared/index.ts";
 import type { FormulaRequest } from "./payloads.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
-import { statsNumber } from "./stats.ts";
 import { liveValues } from "./live-values.ts";
 import { checkTree } from "./tree-check.ts";
 import type { createTreeHost } from "./tree-host.ts";

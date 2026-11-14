@@ -1,13 +1,9 @@
 // What the Stats tab shows: the format of each number, the check against the game's own list and the tab's state.
 // Every number here is invented.
 import { expect, test, vi } from "vitest";
+import { formatNumber } from "../shared/index.ts";
 import type { CalcNumbers, Stats } from "../shared/index.ts";
-import {
-  formatNumber,
-  statListCheck,
-  statsRows,
-  statsTracker,
-} from "./stats.ts";
+import { statListCheck, statsRows, statsTracker } from "./stats.ts";
 
 const numbers = (over: Partial<CalcNumbers> = {}): CalcNumbers => ({
   damageMax: 9000.2,
