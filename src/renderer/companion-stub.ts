@@ -45,6 +45,25 @@ export function stubCompanion(): CompanionStub {
       Promise.resolve(),
     ),
     onStats: vi.fn<CompanionApi["onStats"]>(() => () => undefined),
+    requestFormula: vi.fn<CompanionApi["requestFormula"]>(() =>
+      Promise.resolve(),
+    ),
+    onFormula: vi.fn<CompanionApi["onFormula"]>(() => () => undefined),
+    closeFormula: vi.fn<CompanionApi["closeFormula"]>(() => Promise.resolve()),
+    formulaValues: vi.fn<CompanionApi["formulaValues"]>(() =>
+      Promise.resolve(),
+    ),
+    onLiveValues: vi.fn<CompanionApi["onLiveValues"]>(() => () => undefined),
+    onPanel: vi.fn<CompanionApi["onPanel"]>(() => () => undefined),
+    listMarks: vi.fn<CompanionApi["listMarks"]>(() => Promise.resolve([])),
+    saveMark: vi.fn<CompanionApi["saveMark"]>(() => Promise.resolve()),
+    clearMark: vi.fn<CompanionApi["clearMark"]>(() => Promise.resolve()),
+    getPins: vi.fn<CompanionApi["getPins"]>(() => Promise.resolve([])),
+    setPins: vi.fn<CompanionApi["setPins"]>(() => Promise.resolve()),
+    onFarm: vi.fn<CompanionApi["onFarm"]>(() => () => undefined),
+    onRadar: vi.fn<CompanionApi["onRadar"]>(() => () => undefined),
+    dismissRadar: vi.fn<CompanionApi["dismissRadar"]>(() => Promise.resolve()),
+    setSidePanel: vi.fn<CompanionApi["setSidePanel"]>(() => Promise.resolve()),
   };
   window.companion = companion;
   return companion;

@@ -22,8 +22,8 @@ import { connectLink } from "./link-client.ts";
 import { routeLink } from "./link-routes.ts";
 import { emptyPayload, settingsPayload } from "./payloads.ts";
 import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
+import { startPipelines } from "./pipelines.ts";
 import { setupStoreIn } from "./setup-store.ts";
-import { startStatsPipeline } from "./stats-pipeline.ts";
 import {
   companionPart,
   steamSetupJob,
@@ -161,22 +161,26 @@ function start(): void {
     { isPackaged: app.isPackaged },
   );
 
-  // The calculator's worker is the app's, never the keeper's: a crash of it cannot reach the game (FR-010, FR-016).
-  const stats = startStatsPipeline({
-    send: (s) => {
-      send(IPC.statsUpdate, s);
-    },
+  // The calculator's workers, the Stats one and the trees one, are the app's, never the keeper's: a crash of one cannot
+  // reach the game (FR-010, FR-016), and the trees never fail the Stats (FR-017 of 008).
+  const { stats, formula, handlers } = startPipelines({
+    send,
     createWorker: (options) =>
       new Worker(
         `${calculatorPath(import.meta.dirname)}/calculator.js`,
         options,
       ),
     readFiles: readGameFiles,
+    // A label and a catalog id only, never a value or a name (FR-019 of 008).
+    log: (entry) => {
+      console.warn(JSON.stringify(entry));
+    },
   });
 
   const routes = routeLink({
     tracker,
     stats,
+    formula,
     updates,
     status: () => status,
     setStatus,
@@ -226,6 +230,8 @@ function start(): void {
       throw new Error("update:install: no body expected");
     return updates.install();
   });
+  // The formula channels of 008 (contracts/ipc.md), checked in pipelines.ts.
+  for (const [channel, f] of Object.entries(handlers)) handle(channel, f);
 
   // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).
   const part = companionPart({

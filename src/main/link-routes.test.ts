@@ -41,6 +41,7 @@ function setup(current: Status = RUNNING) {
       status: vi.fn(),
       replay: vi.fn(),
     },
+    formula: { status: vi.fn(), gameFiles: vi.fn(), replay: vi.fn() },
     updates: { replay: vi.fn() },
     setStatus: vi.fn((): Promise<void> => Promise.resolve()),
     sendStatus: vi.fn(),
@@ -52,6 +53,7 @@ function setup(current: Status = RUNNING) {
   const routes = routeLink({
     tracker: h.tracker,
     stats: h.stats,
+    formula: h.formula,
     updates: h.updates,
     status: () => current,
     setStatus: h.setStatus,
@@ -91,10 +93,11 @@ test("the tables go to the screen tracker, checked", () => {
   expect(h.stats.message).not.toHaveBeenCalled();
 });
 
-test("a status goes to the Stats and to the app", () => {
+test("a status goes to the Stats, the trees and the app", () => {
   const h = setup();
   h.routes.message({ type: "status", status: RUNNING });
   expect(h.stats.status).toHaveBeenCalledExactlyOnceWith(RUNNING);
+  expect(h.formula.status).toHaveBeenCalledExactlyOnceWith(RUNNING);
   expect(h.setStatus).toHaveBeenCalledExactlyOnceWith(RUNNING);
 });
 
@@ -131,10 +134,20 @@ test.each<[string, LinkMessage]>([
   expect(h.stats.message).toHaveBeenCalledExactlyOnceWith(m);
 });
 
-test("a dropped link is a status for the Stats and for the app", () => {
+test("the game's folder goes to the trees too, and a folder of the wrong shape does not", () => {
+  const h = setup();
+  h.routes.message({ type: "gameFiles", resources: "C:\\x\\resources" });
+  h.routes.message({ type: "gameFiles", resources: "C:\\x\\elsewhere" });
+  expect(h.formula.gameFiles).toHaveBeenCalledExactlyOnceWith(
+    "C:\\x\\resources",
+  );
+});
+
+test("a dropped link is a status for the Stats, the trees and the app", () => {
   const h = setup();
   h.routes.connected(false);
   expect(h.stats.status).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
+  expect(h.formula.status).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
   expect(h.setStatus).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
 });
 
@@ -152,9 +165,10 @@ test("a link that comes up changes nothing", () => {
   expect(h.setStatus).not.toHaveBeenCalled();
 });
 
-test("each page load gets the status, the context, the update and the Stats again", () => {
+test("each page load gets the status, the context, the update, the Stats and the tree again", () => {
   const h = setup();
   h.load();
+  expect(h.formula.replay).toHaveBeenCalledOnce();
   expect(h.sendStatus).toHaveBeenCalledExactlyOnceWith(RUNNING);
   expect(h.tracker.replay).toHaveBeenCalledOnce();
   expect(h.updates.replay).toHaveBeenCalledOnce();

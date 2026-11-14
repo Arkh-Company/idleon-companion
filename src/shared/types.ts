@@ -1,5 +1,6 @@
 // Contracts shared by the keeper, the main process, the preload and the window (spec §5 and §6).
 import type { ComponentType } from "react";
+import type { FormulaTree } from "./formula-tree.ts";
 
 /** What the reader takes from the game every second (spec §5.1). */
 export interface Reading {
@@ -147,7 +148,66 @@ export const IPC = {
   updateState: "update:state",
   updateInstall: "update:install",
   statsUpdate: "stats:update",
+  // Spec 008 (specs/008-formula-trees/contracts/ipc.md).
+  formulaRequest: "formula:request",
+  formulaUpdate: "formula:update",
+  formulaClose: "formula:close",
+  formulaValues: "formula:values",
+  formulaLiveValues: "formula:liveValues",
+  panelUpdate: "panel:update",
+  marksList: "marks:list",
+  marksSave: "marks:save",
+  marksClear: "marks:clear",
+  pinsGet: "pins:get",
+  pinsSet: "pins:set",
+  farmUpdate: "farm:update",
+  radarUpdate: "radar:update",
+  radarDismiss: "radar:dismiss",
+  sidePanel: "window:sidePanel",
 } as const;
+
+/** `formula:request`: a catalog number (the active character when `character` is absent), or a branch to open. */
+export type FormulaRequestBody =
+  { id: string; character?: number } | { treeId: string; nodeId: string };
+
+/** `formula:liveValues`: the numbers in view, by catalog id; null = unavailable. */
+export interface LiveValues {
+  values: Record<string, number | null>;
+  calculatedAt: number;
+  stale: boolean;
+}
+
+/** One saved mark of a character (contracts/saved-files.md): values by piece, never a name of a row. */
+export interface Mark {
+  name: string;
+  takenAt: number;
+  values: Record<string, number | boolean>;
+}
+
+/** One pinned number, without its value. */
+export interface Pin {
+  treeId: string;
+  nodeId: string | null;
+}
+
+/** `farm:update`: only measured, for the active character (FR-028). */
+export interface FarmUpdate {
+  state: "idle" | "counting" | "paused";
+  minutes: number;
+  xpPerHour: number;
+  goldPerHour: number;
+  items: { name: string; perHour: number }[];
+}
+
+/** `radar:update`: the trees whose shape changed with a game update (FR-035); null when there is nothing to show. */
+export type RadarUpdate = {
+  changed: {
+    catalogId: string;
+    added: string[];
+    removed: string[];
+    renamed: [before: string, after: string][];
+  }[];
+} | null;
 
 /** What the setup screen shows (data-model.md): read from Steam's files on request, never written. */
 export interface SteamState {
@@ -232,4 +292,20 @@ export interface CompanionApi {
   onUpdate(cb: (u: UpdateState) => void): () => void;
   installUpdate(): Promise<void>;
   onStats(cb: (s: Stats) => void): () => void;
+  // Spec 008 (contracts/ipc.md).
+  requestFormula(r: FormulaRequestBody): Promise<void>;
+  onFormula(cb: (t: FormulaTree) => void): () => void;
+  closeFormula(): Promise<void>;
+  formulaValues(r: { ids: string[] }): Promise<void>;
+  onLiveValues(cb: (v: LiveValues) => void): () => void;
+  onPanel(cb: (p: { system: string | null }) => void): () => void;
+  listMarks(r: { character: number }): Promise<Mark[]>;
+  saveMark(r: { character: number; name: string }): Promise<void>;
+  clearMark(r: { character: number; name: string }): Promise<void>;
+  getPins(): Promise<Pin[]>;
+  setPins(pins: Pin[]): Promise<void>;
+  onFarm(cb: (f: FarmUpdate) => void): () => void;
+  onRadar(cb: (r: RadarUpdate) => void): () => void;
+  dismissRadar(): Promise<void>;
+  setSidePanel(r: { open: boolean }): Promise<void>;
 }

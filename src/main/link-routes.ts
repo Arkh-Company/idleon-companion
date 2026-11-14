@@ -2,8 +2,14 @@
 // can load it.
 import type { LinkMessage, Status } from "../shared/index.ts";
 import type { contextTracker } from "./context.ts";
+import type { startFormulaPipeline } from "./formula-pipeline.ts";
 import { statusOnLinkDrop } from "./lifecycle.ts";
-import { linkReading, linkStatus, linkTables } from "./payloads.ts";
+import {
+  linkGameFiles,
+  linkReading,
+  linkStatus,
+  linkTables,
+} from "./payloads.ts";
 import type { startStatsPipeline } from "./stats-pipeline.ts";
 import { afterGameClosed } from "./updates.ts";
 
@@ -12,6 +18,10 @@ export function routeLink(deps: {
   stats: Pick<
     ReturnType<typeof startStatsPipeline>,
     "message" | "reading" | "status" | "replay"
+  >;
+  formula: Pick<
+    ReturnType<typeof startFormulaPipeline>,
+    "status" | "gameFiles" | "replay"
   >;
   updates: { replay(): void };
   status: () => Status;
@@ -23,12 +33,13 @@ export function routeLink(deps: {
   message: (m: LinkMessage) => void;
   connected: (up: boolean) => void;
 } {
-  const { tracker, stats } = deps;
+  const { tracker, stats, formula } = deps;
   deps.page.on("did-finish-load", () => {
     deps.sendStatus(deps.status());
     tracker.replay();
     deps.updates.replay();
     stats.replay();
+    formula.replay();
   });
   return {
     message: (m) => {
@@ -43,14 +54,22 @@ export function routeLink(deps: {
         const s = linkStatus(m.status);
         if (!s) return;
         stats.status(s);
+        formula.status(s);
         const settled = deps.setStatus(s);
         if (s.game === "closed") void afterGameClosed(settled, deps.gameExited);
-      } else stats.message(m);
+      } else {
+        stats.message(m);
+        if (m.type === "gameFiles") {
+          const resources = linkGameFiles(m.resources);
+          if (resources !== null) formula.gameFiles(resources);
+        }
+      }
     },
     connected: (up) => {
       if (up) return;
       const dropped = statusOnLinkDrop(deps.status());
       stats.status(dropped);
+      formula.status(dropped);
       void deps.setStatus(dropped);
     },
   };

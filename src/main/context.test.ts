@@ -180,8 +180,12 @@ test.each([
     /connectLink\(LINK_PIPE, routes\.message, routes\.connected\)/,
   ],
   [
-    "the stats pipeline to the routes",
-    /const stats = startStatsPipeline\(\{[\s\S]*?routeLink\(\{\s+tracker,\s+stats,/,
+    "the stats and formula pipelines to the routes",
+    /const \{ stats, formula, handlers \} = startPipelines\(\{[\s\S]*?routeLink\(\{\s+tracker,\s+stats,\s+formula,/,
+  ],
+  [
+    "the formula channels to the window's IPC",
+    /for \(const \[channel, f\] of Object\.entries\(handlers\)\) handle\(channel, f\);/,
   ],
 ])("the app wires %s", (_name, wiring) => {
   const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
