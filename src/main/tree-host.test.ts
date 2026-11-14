@@ -30,6 +30,7 @@ function setup(read: () => Promise<GameBytes> = files) {
   const onTree = vi.fn();
   const onValues = vi.fn();
   const onUnavailable = vi.fn();
+  const onShape = vi.fn();
   const host = createTreeHost({
     createWorker: (o) => {
       options.push(o);
@@ -41,9 +42,19 @@ function setup(read: () => Promise<GameBytes> = files) {
     onTree,
     onValues,
     onUnavailable,
+    onShape,
   });
   host.setFiles(RESOURCES);
-  return { host, workers, options, readFiles, onTree, onValues, onUnavailable };
+  return {
+    host,
+    workers,
+    options,
+    readFiles,
+    onTree,
+    onValues,
+    onUnavailable,
+    onShape,
+  };
 }
 
 /** A host whose worker is ready and has request 1 (the Drop Rate over mosaic 1) in flight. */
@@ -332,5 +343,100 @@ test.each([
     expect(t.onValues).toHaveBeenCalledExactlyOnceWith(5, null);
     expect(t.onUnavailable).not.toHaveBeenCalled();
     expect(t.workers).toHaveLength(1);
+  },
+);
+
+// Where this goes (FR-027): the shapes of the catalog are asked in the background, after every tree and value.
+test("a shape waits for the trees and the values, and comes back to onShape", async () => {
+  const t = await running();
+  t.host.shape(7, "hp", mosaic(7));
+  t.host.values(5, ["hp"], mosaic(5));
+  t.host.request(2, HP, mosaic(2));
+  answer(t.worker, 1);
+  t.worker.emit("message", { type: "treeResult", id: 2, tree: {} });
+  t.worker.emit("message", { type: "valuesResult", id: 5, values: {} });
+  expect(t.worker.sent("shape")).toEqual([
+    { type: "shape", id: 7, treeId: "hp", mosaic: mosaic(7) },
+  ]);
+  t.worker.emit("message", { type: "shapeResult", id: 7, shape: [["k", "n"]] });
+  expect(t.onShape).toHaveBeenCalledExactlyOnceWith(7, [["k", "n"]]);
+});
+
+test.each([
+  ["that failed", { failed: true }],
+  ["with no parts", {}],
+])("a shape answer %s is null", async (_name, body) => {
+  const t = await running();
+  answer(t.worker, 1);
+  t.host.shape(7, "hp", mosaic(7));
+  t.worker.emit("message", { type: "shapeResult", id: 7, ...body });
+  expect(t.onShape).toHaveBeenCalledExactlyOnceWith(7, null);
+});
+
+test("a shape over a mosaic with no _vars is null before it reaches the worker", async () => {
+  const t = await running();
+  answer(t.worker, 1);
+  t.host.shape(7, "hp", NO_VARS);
+  expect(t.onShape).toHaveBeenCalledExactlyOnceWith(7, null);
+  expect(t.worker.sent("shape")).toEqual([]);
+});
+
+test("dropCurrent keeps the shapes: the one in flight answers, the one waiting goes next", async () => {
+  const t = await running();
+  answer(t.worker, 1);
+  t.host.shape(7, "hp", mosaic(7));
+  t.host.dropCurrent();
+  t.host.shape(8, "dropRate", mosaic(8));
+  t.host.dropCurrent();
+  t.worker.emit("message", { type: "shapeResult", id: 7, shape: [] });
+  expect(t.onShape).toHaveBeenCalledExactlyOnceWith(7, []);
+  expect(t.worker.sent("shape").map((m) => m.id)).toEqual([7, 8]);
+});
+
+test.each([
+  [
+    "dies",
+    async (t: Awaited<ReturnType<typeof running>>) => {
+      t.worker.emit("exit", 1);
+      await flush();
+    },
+  ],
+  [
+    "runs out of time",
+    async () => {
+      await vi.advanceTimersByTimeAsync(TREE_REQUEST_MS);
+    },
+  ],
+])(
+  "a shape whose worker %s is null, with the waiting one, and neither is tried again",
+  async (_name, end) => {
+    const t = await running();
+    answer(t.worker, 1);
+    t.host.shape(7, "hp", mosaic(7));
+    t.host.shape(8, "hp", mosaic(8));
+    await end(t);
+    expect(t.onShape.mock.calls).toEqual([
+      [7, null],
+      [8, null],
+    ]);
+    expect(t.onUnavailable).not.toHaveBeenCalled();
+    expect(t.workers).toHaveLength(1);
+  },
+);
+
+test.each(["stop", "setFiles"] as const)(
+  "%s drops the waiting shape with no answer",
+  async (end) => {
+    const t = await running();
+    t.host.shape(7, "hp", mosaic(7));
+    if (end === "stop") t.host.stop();
+    else t.host.setFiles(RESOURCES);
+    t.host.request(2, HP, mosaic(2));
+    await flush();
+    const next = nth(t.workers, 1);
+    next.emit("message", { type: "ready" });
+    answer(next, 2);
+    expect(next.sent("shape")).toEqual([]);
+    expect(t.onShape).not.toHaveBeenCalled();
   },
 );

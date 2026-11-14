@@ -25,17 +25,26 @@ type Job =
       mosaic: string | null;
       retried: boolean;
     }
-  | { kind: "values"; id: number; ids: string[]; mosaic: string };
+  | { kind: "values"; id: number; ids: string[]; mosaic: string }
+  | { kind: "shape"; id: number; treeId: string; mosaic: string };
+
+const ANSWER = {
+  tree: "treeResult",
+  values: "valuesResult",
+  shape: "shapeResult",
+} as const;
 
 const messageOf = (job: Job): unknown =>
   job.kind === "values"
     ? { type: "values", id: job.id, ids: job.ids, mosaic: job.mosaic }
-    : {
-        type: "tree",
-        id: job.id,
-        request: job.request,
-        ...(job.mosaic === null ? {} : { mosaic: job.mosaic }),
-      };
+    : job.kind === "shape"
+      ? { type: "shape", id: job.id, treeId: job.treeId, mosaic: job.mosaic }
+      : {
+          type: "tree",
+          id: job.id,
+          request: job.request,
+          ...(job.mosaic === null ? {} : { mosaic: job.mosaic }),
+        };
 
 export function createTreeHost(deps: {
   createWorker: (options: WorkerOptions) => WorkerLike;
@@ -44,12 +53,19 @@ export function createTreeHost(deps: {
   /** The worker's values, or null when they failed: values never reach `onUnavailable`, which is for trees. */
   onValues: (id: number, values: unknown) => void;
   onUnavailable: (id: number) => void;
+  /** The parts of a number's whole tree as the worker sent them, or null when they failed or were lost (FR-027). */
+  onShape: (id: number, shape: unknown) => void;
 }): {
   setFiles(resources: string): void;
   /** A `number` request needs its mosaic; an `expand` goes with null. */
   request(id: number, request: TreeRequest, mosaicJson: string | null): void;
   /** The ids are the caller's own count, apart from the trees'. */
   values(id: number, ids: string[], mosaicJson: string): void;
+  /**
+   * In the background: after every tree and value, and kept by `dropCurrent`. A new one replaces the waiting one;
+   * `stop` and `setFiles` drop it with no answer.
+   */
+  shape(id: number, treeId: string, mosaicJson: string): void;
   /** A character change or a loose reader: the request and its answer no longer matter; the worker stays. */
   dropCurrent(): void;
   /** The game closed: the worker ends. */
@@ -64,6 +80,7 @@ export function createTreeHost(deps: {
   let inFlight: { job: Job; dropped: boolean; priming?: true } | null = null;
   let waitingTree: Job | null = null;
   let waitingValues: Job | null = null;
+  let waitingShape: Job | null = null;
   let last: Job | null = null;
   /**
    * The last number sent: the worker keeps its build for the expands, so a new worker gets it again before an expand
@@ -94,6 +111,11 @@ export function createTreeHost(deps: {
       lost = current.dropped ? null : current.job;
     else waitingTree = null;
     waitingValues = null; // Values come again with the next mosaic.
+    // A shape is never tried again, nor the waiting one: a game whose files fail would start workers with no end.
+    const shape = waitingShape;
+    waitingShape = null;
+    if (lost?.kind === "shape") deps.onShape(lost.id, null);
+    if (shape) deps.onShape(shape.id, null);
     if (lost?.kind === "values") deps.onValues(lost.id, null);
     else if (lost?.kind === "tree") {
       deps.onUnavailable(lost.id);
@@ -125,12 +147,12 @@ export function createTreeHost(deps: {
     const current = inFlight;
     if (!current || m.id !== current.job.id) return;
     const { job, dropped } = current;
-    if (m.type !== (job.kind === "tree" ? "treeResult" : "valuesResult"))
-      return;
+    if (m.type !== ANSWER[job.kind]) return;
     clearTimeout(deadline);
     inFlight = null;
     if (!dropped) {
       if (job.kind === "values") deps.onValues(job.id, m.values);
+      else if (job.kind === "shape") deps.onShape(job.id, m.shape ?? null);
       else if ("tree" in m) deps.onTree(job.id, m.tree);
       else deps.onUnavailable(job.id);
     }
@@ -173,14 +195,13 @@ export function createTreeHost(deps: {
   }
 
   function next(): void {
-    if (resources === null || (!waitingTree && !waitingValues)) return;
+    const job = waitingTree ?? waitingValues ?? waitingShape;
+    if (resources === null || !job) return;
     if (!worker) {
       start(resources);
       return;
     }
     if (!ready || inFlight) return;
-    const job = waitingTree ?? waitingValues;
-    if (!job) return;
     const priming =
       job.kind === "tree" &&
       job.request.type === "expand" &&
@@ -189,7 +210,8 @@ export function createTreeHost(deps: {
     if (priming) inFlight = { job: built ?? job, dropped: true, priming: true };
     else {
       if (job === waitingTree) waitingTree = null;
-      else waitingValues = null;
+      else if (job === waitingValues) waitingValues = null;
+      else waitingShape = null;
       inFlight = { job, dropped: false };
       if (job.kind === "tree") last = job;
     }
@@ -215,6 +237,7 @@ export function createTreeHost(deps: {
   return {
     setFiles(folder) {
       drop();
+      waitingShape = null;
       built = null;
       inFlight = null;
       end();
@@ -245,13 +268,23 @@ export function createTreeHost(deps: {
       waitingValues = { kind: "values", id, ids, mosaic: mosaicJson };
       next();
     },
+    shape(id, treeId, mosaicJson) {
+      if (!hasVars(mosaicJson)) {
+        deps.onShape(id, null);
+        return;
+      }
+      waitingShape = { kind: "shape", id, treeId, mosaic: mosaicJson };
+      next();
+    },
     dropCurrent() {
       drop();
       built = null;
-      if (inFlight) inFlight.dropped = true;
+      // A shape is no character's tree: its answer still counts.
+      if (inFlight && inFlight.job.kind !== "shape") inFlight.dropped = true;
     },
     stop() {
       drop();
+      waitingShape = null;
       inFlight = null;
       end();
     },
