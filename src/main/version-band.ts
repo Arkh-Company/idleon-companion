@@ -12,7 +12,7 @@ export const RULES_GAME_SHA: string | null = null;
 export function versionBand(rulesSha: string | null = RULES_GAME_SHA): {
   /** The game's code, as the tree host read it. */
   read(code: Uint8Array): void;
-  checked(): boolean;
+  checked: () => boolean;
 } {
   let gameSha: string | null = null;
   return {
