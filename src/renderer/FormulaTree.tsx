@@ -13,7 +13,7 @@ import {
   useFeedsLists,
 } from "./FeedsBadge.tsx";
 import { nameOf } from "./FormulasTab.tsx";
-import { gameDetails, useCopy } from "./GameDetails.tsx";
+import { countRows, gameDetails, treeCounts, useCopy } from "./GameDetails.tsx";
 import {
   leafLabel,
   leafPhrase,
@@ -74,6 +74,10 @@ export function FormulaTree({
     () => new Set([tree.root.id]),
   );
   const [showAll, setShowAll] = useState<ReadonlySet<string>>(() => new Set());
+  /** design.md C10: the loop's steps show only when asked, from the root's Game details; with no such row to ask from
+   * (a root without its call), nothing is hidden. */
+  const [repeated, setRepeated] = useState(false);
+  const hideRepeated = tree.root.code !== null && !repeated;
   const [active, setActive] = useState(tree.root.id);
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const asked = useRef(new Set<string>());
@@ -317,6 +321,9 @@ export function FormulaTree({
         const { rows, line } = gameDetails(n, rowName(n));
         const copyKey = `${key}::${String(rows.length)}`;
         const label = copied.label(copyKey);
+        // The root's is the page's last: it adds the whole tree's counts and the repeated steps' switch.
+        const counts = n.id === tree.root.id ? treeCounts(n) : null;
+        const steps = `${repeated ? "Hide" : "Show"} repeated steps (${(counts?.repeated ?? 0).toLocaleString("en-US")})`;
         return lines(key, level + 1, [
           ...rows,
           [
@@ -326,6 +333,18 @@ export function FormulaTree({
               copied.copy(copyKey, line);
             },
           ],
+          ...(counts ? countRows(counts) : []),
+          ...(counts?.repeated
+            ? [
+                [
+                  steps,
+                  <span className="name">{steps}</span>,
+                  () => {
+                    setRepeated((r) => !r);
+                  },
+                ] satisfies [string, ReactNode, () => void],
+              ]
+            : []),
         ]);
       },
       true,
@@ -333,7 +352,10 @@ export function FormulaTree({
   }
 
   function rows(n: TreeNode, level: number): ReactNode {
-    const kids = n.kids;
+    const kids =
+      hideRepeated && n.kids !== "lazy"
+        ? n.kids.filter((k) => !k.flags.progress)
+        : n.kids;
     if (kids === "lazy")
       return (
         <ul role="group" aria-busy="true">
