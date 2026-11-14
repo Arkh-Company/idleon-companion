@@ -104,16 +104,9 @@ test("a curve part with the row's value gives its own ⓘ", () => {
 });
 
 test("a row with its pair keeps it; a group has none", () => {
-  expect(formulaFor(at(7, { f: ["a", "b"] }), [read("Stats.a", 7)])).toEqual([
-    "a",
-    "b",
-  ]);
-  expect(
-    formulaFor(ones(read("Stats.a", 1), read("Stats.b", 1)), [
-      read("Stats.a", 1),
-      read("Stats.b", 1),
-    ]),
-  ).toBeNull();
+  const ab = [read("Stats.a", 1), read("Stats.b", 1)];
+  expect(formulaFor(at(7, { f: ["a", "b"] }), ab)).toEqual(["a", "b"]);
+  expect(formulaFor(ones(...ab), ab)).toBeNull();
 });
 
 test.each<[string, string, Row[], string]>([
@@ -410,4 +403,11 @@ test.each<[string, Row[], number, string]>([
 ])("%s", (_name, kids, v, names) => {
   expect(formulaFor(at(v), kids)?.[0]).toBe(names);
   expectShown(at(v), kids);
+});
+
+test("an If of long checks is no ⓘ, and the tree still passes the main's check", () => {
+  const long = (i: number) => cond(`Stats.${"a".repeat(60)}${String(i)}`, true);
+  const kids = [long(1), long(2), long(3), fixed("Fixed value", 35)];
+  const { formula } = withFormula(at(35), kids);
+  expect(checkTree(node({ formula }), 1)).toEqual(node({ formula: null }));
 });

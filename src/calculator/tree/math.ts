@@ -118,9 +118,12 @@ export function formulaAtoms(
   ];
 }
 
+/** The longest text the main lets through to the window (src/main/tree-check.ts `MAX_TEXT`). */
+const MAX_RULE_LINE = 200;
+
 /**
  * The ⓘ as it leaves the worker (contracts/tree-worker.md): its atoms when each term's number recomputes the line's
- * result, else a rule's two lines as they are ("If …: 35" / "yes → 35"), so no term is ever matched to another number.
+ * result, else a rule's two lines as they are ("If …: 35" / "yes → 35"), so no term is ever matched to another number; null when a rule's line is longer than the window takes.
  */
 export function formulaOut(
   pair: [string, string],
@@ -136,9 +139,10 @@ export function formulaOut(
     pair[1].includes(" = ") && i + 1 === numbers.length
       ? evaluate(filled)
       : NaN;
-  return Math.abs(sum - result) <= 1e-3 * Math.max(1, Math.abs(result))
-    ? [terms, numbers]
-    : { rule: pair };
+  if (Math.abs(sum - result) <= 1e-3 * Math.max(1, Math.abs(result)))
+    return [terms, numbers];
+  // a line longer than the main takes (tree-check.ts MAX_TEXT) would refuse the whole tree: that row has no ⓘ
+  return pair.some((l) => l.length > MAX_RULE_LINE) ? null : { rule: pair };
 }
 
 /** pieces.cjs `near`: equal within 1e-9 of the second number, relative (a yes/no counts as 1 or 0). */

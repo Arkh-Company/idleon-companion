@@ -80,6 +80,7 @@ test.each<[string, [string, string], boolean]>([
   ["each term's number gives the result", ["Ka × 2", "3 × 2 = 6"], true],
   ["rounded numbers that give the result", ["Ka ÷ 3", "1 ÷ 3 = 0.333"], true],
   ["numbers that give another result", ["Ka + Kb", "3 + 4 = 9"], false],
+  ["a result just past the rounding", ["Ka + Kb", "3 + 4 = 7.01"], false],
   ["one number too many", ["Ka (in a dungeon)", "50 = 5"], false],
   [
     "a line of numbers with no result",
@@ -89,4 +90,12 @@ test.each<[string, [string, string], boolean]>([
   ["a sign no sum has", ["max(Ka: Kb)", "max(6, 2) = 6"], false],
 ])("%s: atoms %s", (_name, pair, atoms) => {
   expect(formulaOut(pair)).toEqual(atoms ? formulaAtoms(pair) : { rule: pair });
+});
+
+test("a rule with a line longer than the window takes is no ⓘ", () => {
+  expect(formulaOut(["x".repeat(201), "yes → 1"])).toBeNull();
+  expect(formulaOut(["If Ka: 1", `${"1 ".repeat(100)}→ 1`])).toBeNull();
+  expect(formulaOut(["x".repeat(200), "yes → 1"])).toEqual({
+    rule: ["x".repeat(200), "yes → 1"],
+  });
 });
