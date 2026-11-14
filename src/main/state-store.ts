@@ -117,7 +117,8 @@ export function createStateStore(cb: {
       else if (unsettled.delete(key)) changed = true;
       return isNew;
     }
-    if (group !== null && isNew) changed = true;
+    // The actors piece has no group, and a new read of it is the only way a live-game number moves on (US12).
+    if ((group !== null || path[0] === ACTORS_PIECE) && isNew) changed = true;
     return false;
   }
 

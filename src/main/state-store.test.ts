@@ -65,6 +65,19 @@ test("the map actors' piece lands in actors, beside the vars (US12)", () => {
   expect(h.dues[0]?.attrs).toEqual({});
 });
 
+test("after the first calculation, a new read of the actors piece alone is due, and an equal one is not (US12)", () => {
+  const h = setup();
+  const actors = { map: 5, "map0._MonsterHPtot": 9 };
+  h.add([]);
+  h.add([piece(ACTORS_PIECE, actors)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+  h.add([piece(ACTORS_PIECE, actors)], WHOLE);
+  expect(h.texts).toHaveLength(1);
+  h.add([piece(ACTORS_PIECE, { ...actors, "map0._MonsterHPtot": 8 })], WHOLE);
+  expect(h.texts).toHaveLength(2);
+  expect(h.dues[1]?.actors).toEqual({ map: 5, "map0._MonsterHPtot": 8 });
+});
+
 test.each([[null], [7], ["x"], [[1]]])(
   "an actors piece of %j keeps nothing",
   (v) => {
