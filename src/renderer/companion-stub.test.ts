@@ -18,6 +18,7 @@ test.each([
   "onFarm",
   "onRadar",
   "dismissRadar",
+  "onCharacters",
   "setSidePanel",
 ])("the stub has %s", (method) => {
   const stub = stubCompanion() as unknown as Record<string, unknown>;

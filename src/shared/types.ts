@@ -166,12 +166,19 @@ export const IPC = {
   farmUpdate: "farm:update",
   radarUpdate: "radar:update",
   radarDismiss: "radar:dismiss",
+  formulaCharacters: "formula:characters",
   sidePanel: "window:sidePanel",
 } as const;
 
 /** `formula:request`: a catalog number (the active character when `character` is absent), or a branch to open. */
 export type FormulaRequestBody =
   { id: string; character?: number } | { treeId: string; nodeId: string };
+
+/**
+ * `formula:characters`: the game's characters by place, for the picker (FR-020), and the active one's place; null with
+ * no reading. The names go to the screen only (FR-010, FR-010a).
+ */
+export type Characters = { names: string[]; active: number } | null;
 
 /** `formula:liveValues`: the numbers in view, by catalog id; null = unavailable. */
 export interface LiveValues {
@@ -329,6 +336,7 @@ export interface CompanionApi {
   feedsList(r: { pieceKey: string }): Promise<string[]>;
   onFarm(cb: (f: FarmUpdate) => void): () => void;
   onRadar(cb: (r: RadarUpdate) => void): () => void;
+  onCharacters(cb: (c: Characters) => void): () => void;
   dismissRadar(): Promise<void>;
   setSidePanel(r: { open: boolean }): Promise<void>;
 }

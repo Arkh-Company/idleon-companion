@@ -75,6 +75,7 @@ export function companionApi(ipc: Ipc): CompanionApi {
     feedsList: async (r) => (await ipc.invoke(IPC.feedsList, r)) as string[],
     onFarm: listen(IPC.farmUpdate, true),
     onRadar: listen(IPC.radarUpdate, true),
+    onCharacters: listen(IPC.formulaCharacters, true),
     dismissRadar: call(IPC.radarDismiss),
     setSidePanel: call(IPC.sidePanel),
   };

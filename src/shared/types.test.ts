@@ -31,6 +31,7 @@ test("IPC holds the fixed channel names", () => {
     farmUpdate: "farm:update",
     radarUpdate: "radar:update",
     radarDismiss: "radar:dismiss",
+    formulaCharacters: "formula:characters",
     sidePanel: "window:sidePanel",
   });
 });

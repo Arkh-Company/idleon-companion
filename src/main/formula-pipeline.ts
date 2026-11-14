@@ -18,9 +18,10 @@ import type {
   TreeNode,
   TreeRequest,
 } from "../shared/index.ts";
+import { characterNumber } from "./characters.ts";
 import { feedsIndex, withFeeds } from "./feeds-index.ts";
 import type { FormulaRequest } from "./payloads.ts";
-import { namesOf, players } from "./saved-files.ts";
+import { namesOf } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
@@ -43,14 +44,6 @@ const LIVE_GAME = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
 export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
   | { event: "treeRejected"; id: string };
-
-/** The active character's place in the game's list of characters, read from the mosaic; null when it is not there. */
-export function characterNumber(mosaicJson: string): number | null {
-  const p = players(mosaicJson);
-  const first = p?.info[0];
-  const place = p && typeof first === "string" ? p.names.indexOf(first) : -1;
-  return place >= 0 ? place : null;
-}
 
 /** Walked without recursion: a checked tree can be as deep as it has nodes. */
 function countNodes(root: TreeNode): number {
@@ -168,6 +161,8 @@ export function startFormulaPipeline(deps: {
     if (
       last.state !== "ready" ||
       last.request.type !== "number" ||
+      // The live values are the active character's.
+      last.character !== last.activeCharacter ||
       last.gameChanged ||
       last.stale ||
       v.calculatedAt <= last.calculatedAt
@@ -273,8 +268,7 @@ export function startFormulaPipeline(deps: {
       id: open.id,
       character: open.character ?? active,
     };
-    if (request.character !== active || LIVE_GAME.has(request.id)) {
-      // ponytail: only the active character until the picker (US11) brings the inactive rebuild.
+    if (LIVE_GAME.has(request.id)) {
       show({ state: "unavailable", request });
       return;
     }

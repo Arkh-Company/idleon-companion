@@ -385,6 +385,16 @@ h2 {
   max-width: 100%;
 }
 
+/* The character picker (design.md C19): its band is the same as the version band's. */
+.character-picker select {
+  min-height: 24px;
+  max-width: 100%;
+}
+
+.character-picker .band {
+  margin-top: 8px;
+}
+
 .marks .note {
   flex-basis: 100%;
   margin: 0;

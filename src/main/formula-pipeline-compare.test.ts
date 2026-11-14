@@ -36,6 +36,15 @@ test("the band lights when the open number's text changes in a newer reading", (
   expect(gameChanged(h)).toBe(true);
 });
 
+test("another character's tree never lights it: the live values are the active character's", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: 1 });
+  h.tree(dropTree(CALCULATED.dropRate, 4));
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9 });
+  expect(gameChanged(h)).toBe(false);
+});
+
 test("a counter or timer that moves no number in view does not light it (FR-024)", () => {
   const h = readyDrop();
   // A new mosaic (the kill counter moved) with the same Drop Rate, and a change too small for its text.

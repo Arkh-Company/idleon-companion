@@ -225,6 +225,8 @@ function drawPanel(tree: FormulaTree) {
       pins={[]}
       onPin={vi.fn()}
       onOpenNumber={vi.fn()}
+      characters={null}
+      onCharacter={vi.fn()}
     />,
   );
 }

@@ -25,6 +25,7 @@ test.each<[string, string, boolean]>([
   ["onPanel", IPC.panelUpdate, true],
   ["onFarm", IPC.farmUpdate, true],
   ["onRadar", IPC.radarUpdate, true],
+  ["onCharacters", IPC.formulaCharacters, true],
   ["onStats", IPC.statsUpdate, true],
   ["onSetupProgress", IPC.steamProgress, false],
 ])("%s listens on %s, replaying: %s", (method, name, replay) => {

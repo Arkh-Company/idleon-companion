@@ -63,6 +63,7 @@ export {
   PINS_FULL,
 } from "./types.ts";
 export type {
+  Characters,
   CompanionApi,
   CompanionModule,
   FarmUpdate,

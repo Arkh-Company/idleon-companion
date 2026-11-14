@@ -12,6 +12,7 @@ import {
 } from "react";
 import { modulesFor } from "../shared/index.ts";
 import type {
+  Characters,
   FarmUpdate,
   FormulaTree,
   GameContext,
@@ -89,6 +90,8 @@ export function App() {
       }),
     [],
   );
+  const [characters, setCharacters] = useState<Characters>(null);
+  useEffect(() => window.companion.onCharacters(setCharacters), []);
   const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
   useEffect(() => window.companion.onFormula(setFormula), []);
   const [side, setSide] = useState<Side | null>(null);
@@ -153,6 +156,11 @@ export function App() {
     const name = nameOf(id);
     setSide({ label: name, text: "", trees: [[id, name]], id });
     void window.companion.requestFormula({ id });
+  }
+  /** The open number's tree for another character (FR-020). */
+  function pickCharacter(character: number): void {
+    if (side?.id)
+      void window.companion.requestFormula({ id: side.id, character });
   }
   function expand(nodeId: string): void {
     if (side?.id)
@@ -301,6 +309,8 @@ export function App() {
           pins={pins.pins}
           onPin={pins.toggle}
           onOpenNumber={openNumber}
+          characters={characters}
+          onCharacter={pickCharacter}
         />
       )}
     </main>

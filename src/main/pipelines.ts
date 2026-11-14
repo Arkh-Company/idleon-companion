@@ -4,6 +4,7 @@
 import type { WorkerOptions } from "node:worker_threads";
 import { IPC } from "../shared/index.ts";
 import type { WorkerLike } from "./calculator-host.ts";
+import { characterSender } from "./characters.ts";
 import { startFormulaPipeline } from "./formula-pipeline.ts";
 import type { FormulaLog } from "./formula-pipeline.ts";
 import type { GameBytes } from "./game-files.ts";
@@ -35,8 +36,12 @@ export function startPipelines(deps: {
   handlers: Record<string, (payload: unknown) => unknown>;
 } {
   let formula: ReturnType<typeof startFormulaPipeline> | null = null;
+  const characters = characterSender((c) => {
+    deps.send(IPC.formulaCharacters, c);
+  });
   const tellTrees = (): void => {
     try {
+      characters(stats.pair()?.mosaicJson ?? null);
       formula?.statsChanged();
     } catch {
       // The window cannot get the tree: the Stats goes on (FR-017).

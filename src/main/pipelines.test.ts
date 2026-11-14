@@ -175,12 +175,13 @@ test.each([
   },
 );
 
-test("a character change reaches the open tree through the Stats", async () => {
+test("a character change reaches the open tree and the picker through the Stats", async () => {
   const h = setup();
   await h.showing();
   await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
   h.p.stats.reading(reading(null));
   expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "waiting" });
+  expect(h.on(IPC.formulaCharacters)).toMatchObject([{ active: 1 }, null]);
 });
 
 test("a tree that fails to reach the window never touches the Stats (FR-017)", async () => {

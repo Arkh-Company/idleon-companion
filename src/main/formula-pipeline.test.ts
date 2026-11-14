@@ -7,7 +7,7 @@ import {
   pairOf,
   pipeline as setup,
 } from "./formula-fixture.ts";
-import { characterNumber, MAX_TREE_NODES } from "./formula-pipeline.ts";
+import { MAX_TREE_NODES } from "./formula-pipeline.ts";
 import { formulaRequestPayload } from "./payloads.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
@@ -44,13 +44,6 @@ test.each<[string, unknown]>([
   ["an expand with a long node", { treeId: "t", nodeId: "x".repeat(2_001) }],
 ])("formulaRequestPayload refuses %s", (_name, payload) => {
   expect(formulaRequestPayload(payload)).toBe(null);
-});
-
-test("the character's number is its place in the game's list of characters", () => {
-  expect(characterNumber(mosaicFor("Other"))).toBe(1);
-  expect(characterNumber(mosaicFor("Nobody"))).toBe(null);
-  expect(characterNumber("not json")).toBe(null);
-  expect(characterNumber(JSON.stringify({ attrs: {} }))).toBe(null);
 });
 
 test("a request uses the Stats' pair of result and mosaic, never anything newer", () => {
@@ -219,14 +212,22 @@ test("a new result of the same character leaves the open tree as it is", () => {
   expect(h.host.request).toHaveBeenCalledTimes(1);
 });
 
-test("another character than the active one is unavailable until the picker (US11) exists", () => {
+test("another character's tree is asked over the Stats' mosaic, and stays out of parity (FR-020)", () => {
   const h = setup();
   h.p.request({ id: "dropRate", character: 1 });
-  expect(h.last()).toEqual({
-    state: "unavailable",
-    request: { ...DROP, character: 1 },
+  expect(h.host.request).toHaveBeenCalledExactlyOnceWith(
+    h.asked(),
+    { ...DROP, character: 1 },
+    mosaicFor("Invented"),
+  );
+  // Not the Stats number: the Stats is the active character's.
+  h.tree(node({ value: 999.5 }));
+  expect(h.last()).toMatchObject({
+    state: "ready",
+    character: 1,
+    activeCharacter: 0,
   });
-  expect(h.host.request).not.toHaveBeenCalled();
+  expect(h.log).not.toHaveBeenCalled();
 });
 
 test("the game closed keeps the tree, stale, and ends the worker (FR-022)", () => {

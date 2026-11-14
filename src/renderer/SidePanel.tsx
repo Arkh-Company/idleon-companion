@@ -1,11 +1,13 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
 // With a mark chosen, each row shows the mark's value beside the current one (FR-025). Pin keeps the number in the strip
-// under the status bar (FR-036). A number of a part's "Feeds N numbers" list opens its own tree here (FR-027).
+// under the status bar (FR-036). A number of a part's "Feeds N numbers" list opens its own tree here (FR-027). The
+// character picker asks another character's tree of the same number (FR-020).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { changes, compareValues } from "../shared/index.ts";
 import type {
+  Characters,
   FormulaTree as Tree,
   LiveValues,
   Mark,
@@ -13,6 +15,7 @@ import type {
 } from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
 import { bandText, ChangeBadge, rootWas } from "./ChangeBadge.tsx";
+import { CharacterPicker } from "./CharacterPicker.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
 import { MarkBar } from "./MarkBar.tsx";
 import { VersionBand } from "./VersionBand.tsx";
@@ -47,6 +50,8 @@ export function SidePanel({
   pins,
   onPin,
   onOpenNumber,
+  characters,
+  onCharacter,
 }: {
   side: Side;
   tree: Tree;
@@ -61,6 +66,10 @@ export function SidePanel({
   onPin: (id: string) => void;
   /** Opens another catalog number's tree in this panel (FR-027). */
   onOpenNumber: (id: string) => void;
+  /** The game's characters, for the picker; null before they are known. */
+  characters: Characters;
+  /** Asks the open number's tree for another character (FR-020). */
+  onCharacter: (character: number) => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   // FR-039: opening, or another number, puts the focus on the panel's title.
@@ -72,11 +81,18 @@ export function SidePanel({
   const refreshed = useRef<Tree | null>(null);
   /** The tree whose band was said: once per tree, not at each live value. */
   const bandSaid = useRef<string | null>(null);
+  /** The character picked: its first ready tree is said once (design.md C19). */
+  const picked = useRef<number | null>(null);
   useEffect(() => {
     if (tree.state !== "ready") return;
     if (refreshed.current && refreshed.current !== tree) {
       refreshed.current = null;
       announce(updated(tree));
+      return;
+    }
+    if (picked.current === tree.character) {
+      picked.current = null;
+      announce(`Breakdown for ${characters?.names[tree.character] ?? ""}`);
       return;
     }
     const key = `${tree.title}:${String(tree.calculatedAt)}`;
@@ -85,7 +101,7 @@ export function SidePanel({
       bandSaid.current = key;
       announce(band);
     }
-  }, [tree, live, announce]);
+  }, [tree, live, announce, characters]);
   function refresh(): void {
     if (!side.id) return;
     refreshed.current = tree;
@@ -125,6 +141,11 @@ export function SidePanel({
       tree.request.id === side.id);
   const shown: Tree | null =
     side.id === null ? null : mine ? compared : { state: "none" };
+  /** The character of the tree shown or asked; the active one otherwise. */
+  const character =
+    shown && "request" in shown && shown.request.type === "number"
+      ? shown.request.character
+      : characters?.active;
   const text =
     shown?.state === "ready"
       ? shown.rootText
@@ -158,6 +179,16 @@ export function SidePanel({
         >
           {pins.some((p) => p.treeId === id) ? "Unpin" : "Pin"}
         </button>
+      )}
+      {id !== null && characters && character !== undefined && (
+        <CharacterPicker
+          characters={characters}
+          character={character}
+          onPick={(n) => {
+            picked.current = n;
+            onCharacter(n);
+          }}
+        />
       )}
       {shown === null && (
         <ul className="choices">
