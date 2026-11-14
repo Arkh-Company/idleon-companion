@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 // calculated, its root reaches the window, and nothing of the trees reaches the Stats (FR-017, FR-019). The workers are
 // fakes; every value and name is invented.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { IPC, TREE_CATALOG } from "../shared/index.ts";
+import { IPC, NO_TABLES, TREE_CATALOG } from "../shared/index.ts";
 import { FakeWorker } from "./calculator-host-fixture.ts";
 import { node } from "./formula-fixture.ts";
 import type { GameBytes } from "./game-files.ts";
@@ -40,6 +40,7 @@ afterEach(() => {
 const CHARACTER = [
   piece("UserInfo", ["Invented"]),
   piece("GetPlayersUsernames", ["Someone", "Invented"]),
+  piece("CharacterClass", 1),
 ];
 
 function setup(
@@ -175,15 +176,16 @@ test.each([
   },
 );
 
-test("a character change reaches the open tree and the picker through the Stats; a new page gets the list again", async () => {
+test("a character change reaches the open tree and the picker through the Stats, the classes once read; a new page gets the list again", async () => {
   const h = setup();
   await h.showing();
+  h.p.formula.tables({ ...NO_TABLES, classes: ["0", "Novice"] });
   h.p.formula.replay();
   await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
   h.p.stats.reading(reading(null));
   expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "waiting" });
-  const list = { active: 1 };
-  expect(h.on(IPC.formulaCharacters)).toMatchObject([list, list, null]);
+  const list = { active: 1, classes: [null, "Novice"] };
+  expect(h.on(IPC.formulaCharacters)).toMatchObject([{}, list, list, null]);
 });
 
 test("a tree that fails to reach the window never touches the Stats (FR-017)", async () => {

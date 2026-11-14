@@ -331,16 +331,20 @@ export function savedFiles(dir: string): {
   };
 }
 
-/** The mosaic's active character and list of characters' names; null when it has neither. */
-export function players(
-  mosaicJson: string,
-): { info: unknown[]; names: unknown[] } | null {
+/** The mosaic's active character and list of characters' names, with its attrs; null when it has neither. */
+export function players(mosaicJson: string): {
+  info: unknown[];
+  names: unknown[];
+  attrs: Record<string, unknown>;
+} | null {
   try {
     const parsed: unknown = JSON.parse(mosaicJson);
     const attrs = isObject(parsed) ? parsed.attrs : null;
     if (!isObject(attrs)) return null;
     const { UserInfo: info, GetPlayersUsernames: names } = attrs;
-    return Array.isArray(info) && Array.isArray(names) ? { info, names } : null;
+    return Array.isArray(info) && Array.isArray(names)
+      ? { info, names, attrs }
+      : null;
   } catch {
     return null;
   }

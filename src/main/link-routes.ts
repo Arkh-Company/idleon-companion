@@ -4,7 +4,6 @@ import type { LinkMessage, Status } from "../shared/index.ts";
 import type { contextTracker } from "./context.ts";
 import { isTown } from "./farm.ts";
 import type { farmTracker } from "./farm.ts";
-import type { startFormulaPipeline } from "./formula-pipeline.ts";
 import { statusOnLinkDrop } from "./lifecycle.ts";
 import {
   linkGameFiles,
@@ -13,6 +12,7 @@ import {
   linkStatus,
   linkTables,
 } from "./payloads.ts";
+import type { startPipelines } from "./pipelines.ts";
 import type { startStatsPipeline } from "./stats-pipeline.ts";
 import { afterGameClosed } from "./updates.ts";
 
@@ -23,8 +23,8 @@ export function routeLink(deps: {
     "message" | "reading" | "status" | "replay"
   >;
   formula: Pick<
-    ReturnType<typeof startFormulaPipeline>,
-    "status" | "gameFiles" | "replay"
+    ReturnType<typeof startPipelines>["formula"],
+    "status" | "gameFiles" | "replay" | "tables"
   >;
   updates: { replay(): void };
   farm: Pick<
@@ -66,6 +66,7 @@ export function routeLink(deps: {
         const t = linkTables(m.tables);
         tracker.tables(t);
         farm.tables(t);
+        formula.tables(t);
       } else if (m.type === "status") {
         const s = linkStatus(m.status);
         if (!s) return;

@@ -18,7 +18,7 @@ import { patchRadar } from "./radar.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
 import { marksHandlers, pinsHandlers } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
-import type { Pin } from "../shared/index.ts";
+import type { GameTables, Pin } from "../shared/index.ts";
 import { createTreeHost } from "./tree-host.ts";
 import { versionBand } from "./version-band.ts";
 
@@ -31,7 +31,10 @@ export function startPipelines(deps: {
   saved: ReturnType<typeof savedFiles>;
 }): {
   stats: ReturnType<typeof startStatsPipeline>;
-  formula: ReturnType<typeof startFormulaPipeline>;
+  /** The trees, with the game's class names for the picker. */
+  formula: ReturnType<typeof startFormulaPipeline> & {
+    tables(t: GameTables): void;
+  };
   /** The window → main formula, marks, pins and radar channels, by name, for `ipcMain.handle`. */
   handlers: Record<string, (payload: unknown) => unknown>;
 } {
@@ -98,12 +101,15 @@ export function startPipelines(deps: {
 
   return {
     stats,
-    // A new page gets the picker's list again with the tree (FR-020).
+    // A new page gets the picker's list again with the tree, and the game's class names reach the picker (FR-020).
     formula: {
       ...trees,
       replay() {
         trees.replay();
         characters.replay();
+      },
+      tables(t) {
+        characters.tables(t.classes);
       },
     },
     handlers: {

@@ -41,7 +41,12 @@ function setup(current: Status = RUNNING) {
       status: vi.fn(),
       replay: vi.fn(),
     },
-    formula: { status: vi.fn(), gameFiles: vi.fn(), replay: vi.fn() },
+    formula: {
+      status: vi.fn(),
+      gameFiles: vi.fn(),
+      replay: vi.fn(),
+      tables: vi.fn(),
+    },
     updates: { replay: vi.fn() },
     farm: {
       onState: vi.fn(),
@@ -91,12 +96,13 @@ test("a reading of the wrong shape goes nowhere", () => {
   expect(h.stats.reading).not.toHaveBeenCalled();
 });
 
-test("the tables go to the screen tracker, checked", () => {
+test("the tables go to the screen tracker, the farm and the picker, checked", () => {
   const h = setup();
   h.routes.message(bad({ type: "tables", tables: { maps: 1, monsters: {} } }));
   const checked = { maps: null, monsters: {}, items: null, classes: null };
   expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.farm.tables).toHaveBeenCalledExactlyOnceWith(checked);
+  expect(h.formula.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.stats.message).not.toHaveBeenCalled();
 });
 

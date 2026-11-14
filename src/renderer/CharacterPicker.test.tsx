@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The character picker (spec 008 FR-020; design.md C19): it opens on the active character, another one asks that
 // character's tree, its tree has the band and no parity with the Stats, and the live region says the new breakdown
-// once. The names are invented; on screen a character shows by its name (FR-010).
+// once. The names and classes are invented; on screen a character shows by its name and class (FR-010).
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -23,7 +23,11 @@ const STATS: Stats = {
   state: "ready",
   rows: [{ label: "Drop Rate", text: "1,234x" }],
 };
-const CHARACTERS: Characters = { names: ["Wren", "Wrenna", "Ash"], active: 1 };
+const CHARACTERS: Characters = {
+  names: ["Wren", "Wrenna", "Ash"],
+  classes: ["Novice", "Star Seeker", null],
+  active: 1,
+};
 const BAND =
   "Not the active character. These numbers can't be compared with Stats.";
 
@@ -66,12 +70,12 @@ const treeOf = (character: number) =>
     activeCharacter: 1,
   });
 
-test("the picker opens on the active character, each one by its name", async () => {
+test("the picker opens on the active character, each one by its name and class, when known", async () => {
   await openDropRate();
   expect(picker().value).toBe("1");
   expect([...picker().options].map((o) => o.textContent)).toEqual([
-    "Wren",
-    "Wrenna · active",
+    "Wren (Novice)",
+    "Wrenna (Star Seeker) · active",
     "Ash",
   ]);
   expect(screen.queryByText(BAND)).toBe(null);
