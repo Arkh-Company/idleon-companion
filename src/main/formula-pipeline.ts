@@ -211,7 +211,15 @@ export function startFormulaPipeline(deps: {
     },
     status(s) {
       const closed = s.game === "closed";
-      if (closed) host.stop();
+      if (closed) {
+        host.stop();
+        // The worker ended with the tree in flight: it will never answer (FR-022).
+        if (asked) {
+          const { request } = asked;
+          asked = null;
+          show({ state: "unavailable", request });
+        }
+      }
       if (closed === stale) return;
       stale = closed;
       if (last.state === "ready") show({ ...last, stale });

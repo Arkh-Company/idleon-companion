@@ -289,6 +289,18 @@ test("the game closed keeps the tree, stale, and ends the worker (FR-022)", () =
   expect(h.last()).toMatchObject({ state: "ready", stale: false });
 });
 
+test("the game closes with the tree calculating: unavailable, and a late answer does not show", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  const asked = h.asked();
+  h.p.status({ game: "closed", reader: "error" });
+  expect(h.host.stop).toHaveBeenCalledOnce();
+  expect(h.last()).toEqual({ state: "unavailable", request: DROP });
+  h.sent.length = 0;
+  h.answer(asked, node({ value: CALCULATED.dropRate }));
+  expect(h.sent).toEqual([]);
+});
+
 test("a tree that arrives with the game closed is stale", () => {
   const h = setup();
   h.p.status({ game: "closed", reader: "error" });
