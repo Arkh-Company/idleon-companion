@@ -603,7 +603,7 @@ Verify: `just test-one src/renderer/GameDetails.test.tsx` - passes; `just check`
   - Calculator: now two workers.
 - [ ] T060 [sessão] Run the quickstart with the packaged app on the real game (steps 1–9 of [quickstart.md](quickstart.md)) and write the result in `registro.md`
 - [ ] T061 [sessão] The 5-second test on the Vinicius's machine, with the result in `specs/008-formula-trees/teste-5s.md` (SC-008; it does not hold the merge)
-- [ ] T062 Privacy and repository check
+- [X] T062 Privacy and repository check
   - A test or script run in `just check` fails if a file under `src/` or `specs/008-formula-trees/` holds a game table, a code snippet of the game or a quoted proof.
   - The session runs `privacy.cjs` against the snapshots before the code PR.
 
