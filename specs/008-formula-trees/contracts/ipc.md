@@ -12,6 +12,7 @@ Canais próprios, como o `stats:update` da 004. O contrato de módulo `module:<i
 | `panel:update` | main → janela | `{ system: string \| null }`: o sistema cuja tela está aberta, para a troca automática | Vem do contexto da tela (003); a janela troca de aba e anuncia (FR-040) |
 | `marks:list` / `marks:save` / `marks:clear` | janela → main | Por número de personagem: listar; salvar `{ name }` (a marca leva os valores da árvore aberta); apagar por nome. Durante a implementação: `marks:list` devolve `{ marks, warning }`; `marks:save` e `marks:clear` devolvem `null` ou a frase para o jogador | Nome até 40 caracteres; até 3 por personagem (FR-037); nome repetido recusado |
 | `pins:get` / `pins:set` | janela → main | A lista de números fixados. Durante a implementação: `pins:get` devolve `{ pins, warning }`; `pins:set` devolve `null` ou a frase para o jogador | Até 5 (FR-036) |
+| `feeds:list` | janela → main | Durante a implementação: `{ pieceKey }` → os ids do catálogo que essa peça alimenta (FR-027) | O main valida a chave; a resposta só tem ids do catálogo |
 | `farm:update` | main → janela | `{ state: "idle" \| "counting" \| "paused", minutes, xpPerHour, goldPerHour, items: [{ name, perHour }] }` | Só do personagem ativo (FR-028) |
 | `radar:update` | main → janela | `{ changed: [{ catalogId, added, removed, renamed }] }` ou `null` | Depois de um `gameSha` novo (FR-035) |
 | `radar:dismiss` | janela → main | — | Fecha a faixa até o próximo patch |

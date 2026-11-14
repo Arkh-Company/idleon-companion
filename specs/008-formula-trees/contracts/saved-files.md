@@ -6,7 +6,7 @@ Os três arquivos ficam na pasta de dados do app (`app.getPath("userData")`), ao
 | --- | --- | --- | --- |
 | `marks.json` | `{ version: 1, characters: { "<n>": [{ name, takenAt, values: { "<pieceKey>": number \| boolean } }] } }` | Até 3 marcas por personagem; nome até 40 caracteres; só valores, nunca nomes de linha | `marks:save`, `marks:clear` (FR-025, FR-037) |
 | `pins.json` | `{ version: 1, pins: [{ treeId, nodeId: string \| null }] }` | Até 5; sem valores | `pins:set` (FR-036) |
-| `tree-shapes.json` | `{ version: 1, gameSha, trees: { "<catalogId>": [[pieceKey, name], …] } }` | Só a última versão do jogo vista; sem valores | O main, depois de montar uma árvore numa versão nova (FR-029) |
+| `tree-shapes.json` | `{ version: 1, gameSha, trees: { "<catalogId>": [[pieceKey, name], …] } }` | Só a última versão do jogo vista; sem valores. Durante a implementação: a `pieceKey` é guardada sem o índice do personagem, e partes com nome de personagem nunca entram | O main, depois de montar uma árvore numa versão nova (FR-029); durante a implementação, também pela varredura em segundo plano das 597 árvores, uma de cada vez |
 
 ## Conferência ao ler (FR-041)
 
