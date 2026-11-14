@@ -94,6 +94,17 @@ test("a curve's input read with no name weighs in the curve by its path, the ter
   ]);
 });
 
+test("a curve's input path with brackets is one term of its formula", () => {
+  const path = "Helper[5].get(Event_2).x";
+  const [curve] = kidsOf(
+    rootOf([{ b: "ArbitraryCode5Inputs", a: ["add", 3, 0, 7, 0], v: 21 }], {
+      v: 21,
+      r: [[path, 7]],
+    }).root,
+  );
+  expect(curve?.formula?.[0]).toEqual(["3", "×", path]);
+});
+
 test("a curve whose input no read holds uses the level it was given; a curve with no maximum has none", () => {
   const [curve] = kidsOf(
     rootOf([{ b: "ArbitraryCode5Inputs", a: ["add", 3, 0, 7], v: 21 }], {

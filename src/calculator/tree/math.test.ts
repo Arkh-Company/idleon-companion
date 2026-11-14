@@ -1,6 +1,6 @@
 // The formula line's arithmetic, without eval (tree/math.ts).
 import { expect, test } from "vitest";
-import { evaluate, formulaAtoms } from "./math.ts";
+import { evaluate, formulaAtoms, isOperator } from "./math.ts";
 
 test.each<[string, number]>([
   ["1 + 2 × 3", 7],
@@ -49,4 +49,29 @@ test("a formula leaves the worker as its terms and its numbers, the result last"
     ["min", "(", "Ka", ",", "1e-3", ")"],
     [0.5, 0.001, 0.001],
   ]);
+});
+
+test("a known term stays whole, even with brackets in it", () => {
+  const path = "Helper[5].behaviors.get(Event_2)._Owned.x";
+  expect(formulaAtoms([`2 × ${path}`, "2 × 3 = 6"], [path])).toEqual([
+    ["2", "×", path],
+    [2, 3, 6],
+  ]);
+});
+
+test("a thousands comma is part of its number", () => {
+  expect(formulaAtoms(["Ka + 1,000", "5 + 1,000 = 1,005"])).toEqual([
+    ["Ka", "+", "1000"],
+    [5, 1000, 1005],
+  ]);
+});
+
+test("each term that is not an operator has the next number; a math name is an operator", () => {
+  const [terms, numbers] = formulaAtoms([
+    "1 + floor(Level ÷ 10)",
+    "1 + floor(25 ÷ 10) = 3",
+  ]);
+  expect(isOperator("floor")).toBe(true);
+  expect(terms.filter((t) => !isOperator(t))).toEqual(["1", "Level", "10"]);
+  expect(numbers).toEqual([1, 25, 10, 3]);
 });

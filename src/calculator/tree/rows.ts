@@ -177,7 +177,12 @@ export function curveRow(
       ...fields,
       name,
       flags: {},
-      formula: text ? formulaAtoms(text) : null,
+      formula: text
+        ? formulaAtoms(
+            text,
+            [...parts, last].map((r) => termOf(r.node)),
+          )
+        : null,
       ...(reached ? { maxReached: reached } : {}),
     }),
     open: null,

@@ -81,21 +81,37 @@ export function evaluate(line: string): number {
 
 const TERMS = /(\s*[×÷+−*/(),^:]\s*|\s+-\s+)/;
 const NUMBER = /-?\d*\.?\d+(?:e[+-]?\d+)?/g;
+const THOUSANDS = /,(?=\d{3})/g;
+const SLOT = /\u0001(\d+)\u0002/g;
+
+/** A term of `formula` that takes no number: a sign, a bracket, a comma or a math name (contracts/tree-worker.md). */
+export const isOperator = (t: string): boolean =>
+  /^[×÷+−*/(),^:-]$/.test(t) || t === "log₁₀" || Object.hasOwn(FNS, t);
 
 /**
  * The contract's formula from the bench's two lines (data-model `formula`, FR-010: only atoms): the line with names
  * split into its terms (names, the code's numbers and operators), and every number of the line with numbers, in order,
- * the result last.
+ * the result last. A `known` term (a kid's name or path) stays whole, brackets and all.
  */
-export function formulaAtoms([names, numbers]: [string, string]): [
-  string[],
-  number[],
-] {
+export function formulaAtoms(
+  [names, numbers]: [string, string],
+  known: readonly string[] = [],
+): [string[], number[]] {
+  const whole = [...new Set(known)]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+  let line = names;
+  whole.forEach((t, i) => {
+    line = line.split(t).join(`\u0001${String(i)}\u0002`);
+  });
   return [
-    names
+    line
+      .replace(THOUSANDS, "")
       .split(TERMS)
-      .map((t) => t.trim())
+      .map((t) => t.trim().replace(SLOT, (_, i: string) => whole[+i] ?? ""))
       .filter(Boolean),
-    [...numbers.matchAll(NUMBER)].map((m) => Number(m[0])),
+    [...numbers.replace(THOUSANDS, "").matchAll(NUMBER)].map((m) =>
+      Number(m[0]),
+    ),
   ];
 }
