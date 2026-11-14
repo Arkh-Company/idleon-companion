@@ -23,7 +23,7 @@ export interface Pieces<R> {
 export function makePieces<R>(
   rec: Recording,
   links: ReadonlyMap<number, readonly Link[]>,
-  raw: (id: number) => R[],
+  raw: (id: number, depth: number, seen: ReadonlySet<number>) => R[],
   keyOf: (n: RecNode) => string,
   text: (rows: R[]) => string,
 ): Pieces<R> {
@@ -73,16 +73,16 @@ export function makePieces<R>(
     if (!n || seen.has(id) || depth > MAX_DEPTH) return null;
     const twin = cacheHitTwin(n);
     if (twin && !seen.has(twin.id)) return explain(twin.id, depth, seen);
-    if (!underRoot.has(id)) return raw(id);
+    if (!underRoot.has(id)) return raw(id, depth, seen);
     const key = keyOf(n);
     let rows = built.get(key);
     if (!rows) {
-      rows = raw(firstOf.get(key) ?? id);
+      rows = raw(firstOf.get(key) ?? id, depth, seen);
       built.set(key, rows);
     }
     if (firstOf.get(key) !== id && !checked.has(id)) {
       checked.add(id);
-      if (text(raw(id)) !== text(rows)) conflicts.push(key);
+      if (text(raw(id, depth, seen)) !== text(rows)) conflicts.push(key);
     }
     return rows;
   }

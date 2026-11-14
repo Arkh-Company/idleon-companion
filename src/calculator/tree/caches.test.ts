@@ -180,7 +180,7 @@ test("[deep-2] a skill's rank opens into each character's level of the skill", (
   const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
-      { b: "Top", v: 2, r: [["DNSM.skillLvRanks[0]", 2, 2]] },
+      { b: "Top", v: 9, r: [["DNSM.skillLvRanks[0]", 2, 2]] },
       {
         b: "RiftStuff",
         a: ["skillLvRanks"],

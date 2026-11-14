@@ -3,7 +3,7 @@
 // state is one Condition leaf, yes or no, with its subtype; a yes/no read and the test the block made of it are one
 // leaf. Until US1c names the rows, a side of a comparison is written by its term (the path of a read, the call of a
 // block), and the renames of a Condition's name ("completed", "reached", a test "= 1" named as its read) wait for the
-// names. Left out with the game's own passes: OPUS4-T2 (the outcome row of a lone check) and the ban flag's name.
+// names, as does the ban flag's name. OPUS4-T2 (the outcome row of a lone check) is in once.ts, over the calls `t1` keeps.
 import type { CALC_CONDITION_KINDS } from "../tree-contract.ts";
 import type { RecNode } from "../recording.ts";
 import { classify } from "./kinds.ts";
@@ -118,6 +118,7 @@ function comparisons(e: Expr, out: Cmp[] = []): Cmp[] {
 }
 
 export function makeConditions(nodes: readonly RecNode[]) {
+  const t1 = new Set<number>();
   function condText(e: Expr, n: RecNode, own: BlockSteps): string | null {
     // OPUS4-T1: numbers and the call's own argument only (a block with no step and one check): its number
     if (
@@ -133,7 +134,10 @@ export function makeConditions(nodes: readonly RecNode[]) {
         x.t === "num" ||
         (x.t === "val" && args.includes(x.v as number) && ++vals > 0) ||
         (x.t === "op" && "+-*/".includes(x.o) && pure(x.l) && pure(x.r));
-      if (pure(e) && vals) return num(e.v);
+      if (pure(e) && vals) {
+        t1.add(n.id);
+        return num(e.v);
+      }
     }
     if (e.t === "num") return num(e.v);
     if (e.t === "val") return e.v == null ? null : num(e.v);
@@ -308,5 +312,10 @@ export function makeConditions(nodes: readonly RecNode[]) {
     return [...kept, ...out];
   }
 
-  return { condRows, mergeTests };
+  return {
+    condRows,
+    mergeTests,
+    /** OPUS4-T1: the calls whose check got its number from the call's own argument (T2 opens only those). */
+    t1: t1 as ReadonlySet<number>,
+  };
 }

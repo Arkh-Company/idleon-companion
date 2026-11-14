@@ -352,6 +352,9 @@ export function makeTerms(ctx: TermContext) {
         return { rows: r ? [r] : [], op };
       });
     },
+    /** pieces.cjs `exprRow` with no step around it: the branch of an expression's parts ([F2-TOP]). */
+    branchOf: (e: Expr, reads: Reads) =>
+      withTurn(null, () => exprRow(e, 0, reads)),
     /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms). */
     term: (e: Expr, op: "*" | "+", reads: Reads) =>
       withTurn(null, () => rowOfTerm(e, op, 1, reads)),

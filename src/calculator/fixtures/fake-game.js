@@ -623,6 +623,13 @@ lime.$scripts.N = function (_exports, $global) {
       }
     return d.TreeOnce[0] * 1;
   };
+  // A last step that rounds a cache, with no call and nothing else read ([F2-TOP]): only the root opens it.
+  Blocks._customBlock_TreeTopRound = function () {
+    return Math.round(a.engine.getGameAttribute("DNSM").h.GameCache.h.v * 1.5);
+  };
+  Blocks._customBlock_TreeTopWrap = function () {
+    return Blocks._customBlock_TreeTopRound() + 1;
+  };
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
     return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);

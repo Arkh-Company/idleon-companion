@@ -2,9 +2,10 @@
 // "lazy" branch built when the player opens it, over the same recording. A call's rows follow pieces.cjs
 // `explainOnce0` and `explainRaw`: the terms of the block's last step when it is a sum or a product (tree/terms.ts),
 // else the calls it made (a call that only passes one value on is skipped down to what it passes; the curve block is a
-// branch of its constants); then the state reads its steps do not show (`dataRows`) and its checks, a yes/no read
-// merged into its test (tree/conditions.ts). A cache read opens into the call that wrote it. A piece is built once
-// (tree/pieces.ts). Names come with US1c: until then a row has the generic name and `unnamed` (FR-012a).
+// branch of its constants); then the state reads its steps do not show (tree/data-rows.ts) and its checks, a yes/no read
+// merged into its test (tree/conditions.ts), with the passes of `explainOnce0` (tree/once.ts and [F2-TOP]). A cache read
+// opens into what its writer computed for it (tree/caches.ts, over the loop entries of tree/entries.ts). A piece is
+// built once (tree/pieces.ts). Names come with US1c: until then a row has the generic name and `unnamed` (FR-012a).
 import type { Op } from "./instrument.ts";
 import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
@@ -28,12 +29,13 @@ import {
   withShares,
 } from "./tree/rows.ts";
 import type { CacheOpen, Row } from "./tree/rows.ts";
-import { termOf } from "./tree/share.ts";
-import { lastReads, makeSteps } from "./tree/steps.ts";
+import { makeSteps } from "./tree/steps.ts";
 import type { Expr } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
-import { topOp } from "./tree/expr.ts";
-import { hasKids, makeTerms } from "./tree/terms.ts";
+import { firstSrc, topOp } from "./tree/expr.ts";
+import { checkOutcome, onlyCache } from "./tree/once.ts";
+import { dataRows } from "./tree/data-rows.ts";
+import { makeTerms } from "./tree/terms.ts";
 import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
 
@@ -58,13 +60,6 @@ const noSource = (x: Expr): boolean =>
   x.t === "num" ||
   x.t === "val" ||
   (x.t === "op" && noSource(x.l) && noSource(x.r));
-/** The read paths a block's steps show (pieces.cjs dataRows `used`). */
-function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
-  if (e?.t === "read") out.add(e.p);
-  if (e?.t === "op") [e.l, e.r].forEach((x) => readsIn(x, out));
-  if (e?.t === "fn") e.args.forEach((x) => readsIn(x, out));
-  return out;
-}
 
 /**
  * The tree of the recording's first root call, for the character asked (its index, in every piece key); `ops` are
@@ -201,50 +196,6 @@ export function buildTree(
     );
   }
 
-  /** pieces.cjs `dataRows`: what the block read and did not already show (a table, a length or a text stays out). */
-  function dataRows(
-    n: RecNode,
-    rows: Row[],
-    stepsRead: Expr[],
-    stepNotOpened: boolean,
-    linkOf: ReadonlyMap<string, Link>,
-  ): Row[] {
-    const used = new Set<string>();
-    stepsRead.forEach((e) => readsIn(e, used));
-    const terms = new Set(rows.map((r) => termOf(r.node)));
-    const last = lastReads(n);
-    // the paths this call writes in a loop (its own working values)
-    const own = new Set(
-      [...writers.writersOf]
-        .filter(([, ids]) => ids.includes(n.id))
-        .map(([p]) => p),
-    );
-    const out: Row[] = [];
-    for (const [p, v0] of n.r ?? []) {
-      // a path the call read with several values shows the last one, the state the call ended with
-      const v = last.get(p) ?? v0;
-      const cache = p.startsWith("DNSM.");
-      // [F1-RC1] a state read of a step that did not open is a data row (a cache stays as it was)
-      if (
-        (used.has(p) && !(stepNotOpened && !cache)) ||
-        typeof v !== "number" ||
-        /^Custom(Lists|Maps).|.length$|^DummyNumbers/.test(p) ||
-        rows.some((r) => r.node.code === p) ||
-        terms.has(p)
-      )
-        continue;
-      const r = readRow(p, v, linkOf.get(p));
-      // the block's own result kept in a working value, with nothing under it: not a part of the block
-      if (cache && near(v, n.v) && !hasKids(r) && rows.length) continue;
-      // a working value this call writes itself, that opens to nothing, or that changes inside this very call (the
-      // scratch of its loop): not a part; a cache it filled earlier and that opens stays
-      if (own.has(p) && (!hasKids(r) || last.has(p))) continue;
-      terms.add(p);
-      out.push(r);
-    }
-    return out;
-  }
-
   const linksOf = (n: RecNode) =>
     new Map<string, Link>((links.get(n.id) ?? []).map((l) => [l[0], l]));
   /** The terms of call `n`'s steps; with `seen`, the rows they make open under those calls (a cache's writer). */
@@ -274,7 +225,7 @@ export function buildTree(
     finish,
   });
 
-  function raw(id: number): Row[] {
+  function raw(id: number, depth: number, seen: ReadonlySet<number>): Row[] {
     const n = nodes[id];
     if (!n) return [];
     const own = steps.of(id);
@@ -305,9 +256,41 @@ export function buildTree(
       rows,
       own.steps.map((s) => s.e),
       !op && own.steps.length > 0,
-      linkOf,
+      (p, v) => readRow(p, v, linkOf.get(p)),
+      writers.writersOf,
     );
+    // a block that only returns one cache: its rows are the cache's own computation
+    const cached =
+      rows.length === 0 &&
+      onlyCache(n, data, (o) => caches.open(o, depth, new Set([...seen, id])));
+    if (cached) return cached;
     const conds = conditions.condRows(n, own);
+    // OPUS4-T2: a block with no step and one check returns a table cell or 0: the outcome is a row
+    const outcome =
+      conditions.t1.has(n.id) &&
+      !own.steps.length &&
+      own.checks.length === 1 &&
+      conds.length === 1 &&
+      !rows.length &&
+      checkOutcome(n, conds);
+    if (outcome) conds.push(outcome);
+    // [F2-TOP] the root's own call that would open to nothing and calls nothing, whose last step gives its value from a
+    // source with a top that is no × or +: that step's terms
+    const st = own.steps.at(-1);
+    if (
+      depth === 0 &&
+      !rows.length &&
+      !data.length &&
+      !conds.length &&
+      !n.c.length &&
+      st &&
+      near(st.v, n.v) &&
+      !topOp(st.e) &&
+      firstSrc(st.e)
+    ) {
+      const parts = terms.branchOf(st.e, reads).group ?? [];
+      if (parts.length) return terms.tidy(parts, null, n.a);
+    }
     const all = conditions.mergeTests(n, rows, data, conds, own);
     return finish(n.v, terms.tidy(all, op ?? "*", n.a), true);
   }
