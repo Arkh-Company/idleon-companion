@@ -19,6 +19,10 @@ O worker de árvores é uma segunda instância do `calculator.js` (research R1).
 | worker → host | `{ type: "treeResult", id, tree }`, `{ …, refused: "unknownNumber" }` ou `{ …, failed: true }` | Só átomos (FR-010). A gravação crua nunca sai; ela é serializada dentro do contexto e lida com `JSON.parse` no worker |
 | worker → host | `{ type: "valuesResult", id, values: { [id]: number \| null } }` | Um número por id; nulo = `unavailable` |
 
+Durante a implementação: o `formula` de um nó é `[termos, números]`. Os termos são a linha com nomes partida em nomes, números do código e operadores; um nome ou caminho de filho fica inteiro, mesmo com parênteses. Os operadores são os sinais (`× ÷ + − - * / ^ :`), os parênteses, a vírgula e os nomes de conta (`min`, `max`, `pow`, `floor`, `ceil`, `round`, `abs`, `sqrt`, `log`, `log10`, `log₁₀`). Os números são todos os da linha com números, em ordem, sem a vírgula de milhar, com o resultado por último. Cada termo que não é operador leva o próximo número.
+
+Durante a implementação: o host guarda o último pedido `number` (com o mosaico) e o reenvia, com a resposta descartada, a um worker novo antes de um `expand`; assim um ramo abre depois de uma falha ou do jogo fechado.
+
 ## Limites e vida
 
 | Item | Valor |
