@@ -27,6 +27,7 @@ execution:
     - {name: US11, status: pending}
     - {name: US12, status: pending}
     - {name: US13, status: pending}
+    - {name: "Catálogo + 211 da F5", status: pending}
     - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: pending}
     - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: pending}
     - {name: "US1c nomes (T023)", status: pending}
