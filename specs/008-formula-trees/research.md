@@ -180,3 +180,9 @@ BANCADA = `C:\Users\Vinicius\idleon-companion\research\run\formula-006`; SCRATCH
   - **Durante a implementação:** a cidade é a cena cujo nome contém "Town" (`Reading.scene`, que o keeper já lê por propriedade), a mesma regra do jogo, provada nas leituras capturadas (mapas 0, 50…300). O XP mostrado é o do skill que mais ganhou no período, e só ganhos contam (aceito pelo Vinicius em 14/11). Os nomes dos itens vêm da tabela de itens do jogo instalado, lida pelo keeper como mapas e monstros (aceito pelo Vinicius em 14/11).
 - **Rationale:** a FR-028 pede só medido, sem fórmula; o leitor já traz o mapa, o personagem e as peças de inventário e de XP.
 - **Alternatives considered:** usar a fórmula AFK do jogo (decidido contra no clarify).
+
+## R14. Diferenças deliberadas do porte em relação à bancada (durante a implementação)
+
+- **O ⓘ de um cache aberto** é devolvido por cada abertura, não fica numa variável do módulo (`LAST_WRITER_FORMULA` da bancada). Na bancada, um cache de várias voltas que lê outro cache pode mostrar o ⓘ do cache de dentro na linha de fora, com o "= valor" de uma parte no lugar do total. A paridade (T028) pode mostrar essa diferença; ela é um seguimento na bancada.
+- **O ⓘ tem 3 algarismos significativos** em todo o app (a bancada usa 6 na F3-R1); com números grandes, um ⓘ que não fecha sai como regra.
+- **As leituras da F3-R1 abrem sob a raiz**; na bancada, abrem sem nada acima. Só muda quando a própria raiz escreveu o cache.
