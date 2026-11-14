@@ -128,6 +128,27 @@ test("a sixth pin is refused with its sentence, said once; unpinning one clears 
   );
 });
 
+test("the same refusal twice is said twice: the region changes at each one (§3.8)", async () => {
+  saved = [...FIVE];
+  await app();
+  await openDropRate();
+  const live = liveRegion();
+  if (!live) throw new Error("no live region");
+  const changes: string[] = [];
+  const watch = new MutationObserver(() => {
+    changes.push(live.textContent);
+  });
+  watch.observe(live, { childList: true, characterData: true, subtree: true });
+  for (let i = 0; i < 2; i++) {
+    changes.length = 0;
+    fireEvent.click(screen.getByRole("button", { name: "Pin" }));
+    await settle();
+    expect(changes.length).toBeGreaterThan(0);
+    expect(live.textContent).toBe(PINS_FULL);
+  }
+  watch.disconnect();
+});
+
 test("after a restart the pins are back without values; a change is highlighted with text, never announced (FR-026, FR-040)", async () => {
   saved = [pin("hp")];
   await app();

@@ -200,6 +200,19 @@ test("an unreadable shapes file is said on the band, and once to a screen reader
   expect(band()?.querySelector("[aria-live]")).toBe(null);
 });
 
+test("each update carries the warning, and it is said only at the first (FR-041)", async () => {
+  await app();
+  radar({ changed: [], checking: false, warning: RESET });
+  const live = document.querySelector('.main-panel > [aria-live="polite"]');
+  if (!live) throw new Error("no live region");
+  const watch = new MutationObserver(() => undefined);
+  watch.observe(live, { childList: true, characterData: true, subtree: true });
+  radar({ ...UPDATED, warning: RESET });
+  expect(watch.takeRecords()).toEqual([]);
+  watch.disconnect();
+  expect(said()).toBe(RESET);
+});
+
 test("the count is never announced, and the dot is hidden from a screen reader", async () => {
   await app();
   radar(UPDATED);

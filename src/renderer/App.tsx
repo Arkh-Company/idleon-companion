@@ -64,32 +64,37 @@ export function App() {
   const [stats, setStats] = useState<Stats | null>(null);
   useEffect(() => window.companion.onStats(setStats), []);
   const [tab, setTab] = useState<Tab>("map");
-  /** The polite live region's text: one switch, one sentence; cleared on a screen without a panel. */
-  const [said, setSaid] = useState("");
+  /** The polite live region's sentence, each one a new node: the same sentence again is said again (design.md §3.8). */
+  const [said, setSaid] = useState({ text: "", n: 0 });
+  const announce = useCallback((text: string) => {
+    setSaid((s) => ({ text, n: s.n + 1 }));
+  }, []);
+  // One switch, one sentence; cleared on a screen without a panel.
   useEffect(() => {
     let last: string | null = null;
     return window.companion.onPanel(({ system }) => {
       if (system === last) return;
       last = system;
-      setSaid(system === null ? "" : `${system} panel`);
+      announce(system === null ? "" : `${system} panel`);
       if (system !== null) setTab("panel");
     });
-  }, []);
+  }, [announce]);
   const [live, setLive] = useState<LiveValues | null>(null);
   useEffect(() => window.companion.onLiveValues(setLive), []);
-  const pins = usePins(setSaid);
+  const pins = usePins(announce);
   const [farm, setFarm] = useState<FarmUpdate | null>(null);
   useEffect(() => window.companion.onFarm(setFarm), []);
   const [radar, setRadar] = useState<RadarUpdate>(null);
-  useEffect(
-    () =>
-      window.companion.onRadar((r) => {
-        setRadar(r);
-        // An unreadable shapes file is said once (FR-041); the count of trees is not announced.
-        if (r?.warning) setSaid(r.warning);
-      }),
-    [],
-  );
+  useEffect(() => {
+    let warned: string | null = null;
+    return window.companion.onRadar((r) => {
+      setRadar(r);
+      // An unreadable shapes file is said once (FR-041), though each update carries it; the count of trees is not said.
+      if (!r?.warning || r.warning === warned) return;
+      warned = r.warning;
+      announce(r.warning);
+    });
+  }, [announce]);
   const [characters, setCharacters] = useState<Characters>(null);
   useEffect(() => window.companion.onCharacters(setCharacters), []);
   const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
@@ -197,7 +202,7 @@ export function App() {
       <div className="main-panel">
         <h1>IdleOn Companion</h1>
         <p className="sr-only" aria-live="polite">
-          {said}
+          <span key={said.n}>{said.text}</span>
         </p>
         {steam && (!steam.configured || setupFinished) && (
           <SetupView
@@ -305,7 +310,7 @@ export function App() {
           onClose={closeSide}
           onPick={pick}
           onExpand={expand}
-          announce={setSaid}
+          announce={announce}
           pins={pins.pins}
           onPin={pins.toggle}
           onOpenNumber={openNumber}
