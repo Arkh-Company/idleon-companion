@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { FormulaTree as Tree } from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
+import { VersionBand } from "./VersionBand.tsx";
 
 /** What the panel shows: the row tapped, its trees (Damage has two) and the one chosen. */
 export interface Side {
@@ -12,9 +13,6 @@ export interface Side {
   trees: readonly (readonly [id: string, name: string])[];
   id: string | null;
 }
-
-const VERSION_BAND =
-  "Names and tags were checked on an older game version. Values are live.";
 
 export function SidePanel({
   side,
@@ -63,9 +61,7 @@ export function SidePanel({
       >
         <span aria-hidden="true">✕</span>
       </button>
-      {shown?.state === "ready" && !shown.checkedOnThisGame && (
-        <p className="band">{VERSION_BAND}</p>
-      )}
+      {shown && <VersionBand tree={shown} />}
       <h2 ref={heading} tabIndex={-1}>
         {name} <span className="num">{text}</span>
       </h2>

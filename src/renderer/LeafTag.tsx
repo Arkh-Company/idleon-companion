@@ -1,5 +1,5 @@
-// The tags of a tree row (spec 008 FR-012, FR-013; design.md C4, C7, C8): the leaf type with the color of its family, the
-// honesty tags, always in text, never by color alone, and the level of a row past the indent's cap.
+// The tags of a tree row (spec 008 FR-013; design.md C4, C8): the leaf type with the color of its family, always in
+// text too, and the level of a row past the indent's cap. The honesty tags are in TruthTag.tsx.
 import { LEAF_FAMILY } from "../shared/index.ts";
 import type { ConditionKind, LeafKind, TreeNode } from "../shared/index.ts";
 
@@ -97,32 +97,6 @@ export function LeafTag({ n }: { n: Pick<TreeNode, "leaf" | "condition"> }) {
       )}
     </span>
   );
-}
-
-/** The honesty tags of a row (FR-012), in the order of the table; `unknown` is the "?" of the leaf tag when it has one. */
-export function truthTags(n: TreeNode): string[] {
-  const f = n.flags;
-  const out: string[] = [];
-  if (f.unknown && n.leaf !== "unknown") out.push("?");
-  if (f.unnamed) out.push("no name yet");
-  if (f.unavailable || n.value === null) out.push("unavailable");
-  if (f.fromCache) out.push("saved by the game");
-  if (f.fromGame) out.push("from the game");
-  if (f.runtime) out.push("changes while you play");
-  if (f.truncated) out.push("stopped here");
-  if (n.cap === "overTheCap") out.push("over the cap");
-  if (n.cap === "notReached") out.push("not reached");
-  if (f.progress) out.push("repeated step");
-  if (f.gameBug) out.push("game bug: counted twice");
-  return out;
-}
-
-export function TruthTags({ tags }: { tags: string[] }) {
-  return tags.map((t) => (
-    <span key={t} className="tag tag--truth">
-      {t}
-    </span>
-  ));
 }
 
 /** The indent stops growing past these depths: 6 levels, 4 in a narrow panel (styles.css, FR-031). */

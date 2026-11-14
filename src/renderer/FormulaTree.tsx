@@ -9,8 +9,6 @@ import {
   leafPhrase,
   LeafTag,
   LevelTag,
-  truthTags,
-  TruthTags,
   WIDE_CAP,
 } from "./LeafTag.tsx";
 import {
@@ -23,6 +21,7 @@ import {
   valueText,
 } from "./tree-text.ts";
 import { isGroup, partition } from "./tree-parts.ts";
+import { truthTags, TruthTags } from "./TruthTag.tsx";
 
 type Ready = Extract<Tree, { state: "ready" }>;
 
@@ -32,6 +31,14 @@ const detail = (term: string, text: string) => (
     <span className="code">{text}</span>
   </>
 );
+
+/** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7); a group has none. */
+const phrasesOf = (n: TreeNode): [key: string, phrase: string][] => [
+  ...(n.leaf ? [["type", leafPhrase(n)] as [string, string]] : []),
+  ...(isGroup(n) ? [] : truthTags(n)).flatMap((t, i): [string, string][] =>
+    t.phrase ? [[`truth${String(i)}`, t.phrase]] : [],
+  ),
+];
 
 interface Visible {
   key: string;
@@ -132,20 +139,18 @@ export function FormulaTree({
     level: number,
     at: () => [number, number],
   ): ReactNode[] {
-    const out: ReactNode[] = [];
-    if (n.leaf)
-      out.push(
-        item(
-          `${n.id}::type`,
-          level,
-          at(),
-          n.id,
-          leafPhrase(n),
-          <span className="phrase">{leafPhrase(n)}</span>,
-          null,
-          false,
-        ),
-      );
+    const out = phrasesOf(n).map(([key, phrase]) =>
+      item(
+        `${n.id}::${key}`,
+        level,
+        at(),
+        n.id,
+        phrase,
+        <span className="phrase">{phrase}</span>,
+        null,
+        false,
+      ),
+    );
     if (n.formula) {
       const f = formulaLines(n.formula);
       const label = `How it adds up = ${f.result}`;
@@ -242,7 +247,7 @@ export function FormulaTree({
     const allRow = all || hidden > 0;
     const hasDetails = n.code !== null && !isGroup(n);
     const size =
-      (n.leaf ? 1 : 0) +
+      phrasesOf(n).length +
       (n.formula ? 1 : 0) +
       shown.length +
       (allRow ? 1 : 0) +
@@ -315,7 +320,7 @@ export function FormulaTree({
       share,
       reached,
       leafLabel(n),
-      ...tags,
+      ...tags.map((t) => t.spoken),
       n.formula ? "has a calculation" : "",
     ]
       .filter(Boolean)
@@ -323,7 +328,8 @@ export function FormulaTree({
     const expandable =
       n.kids === "lazy" ||
       n.kids.length > 0 ||
-      (!group && (n.leaf !== null || n.formula !== null || n.code !== null));
+      (!group &&
+        (n.formula !== null || n.code !== null || phrasesOf(n).length > 0));
     const line = (
       <>
         <span className="name">{name}</span>
