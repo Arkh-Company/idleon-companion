@@ -5,7 +5,8 @@
 // branch of its constants); then the state reads its steps do not show (tree/data-rows.ts) and its checks, a yes/no read
 // merged into its test (tree/conditions.ts), with the passes of `explainOnce0` (tree/once.ts and [F2-TOP]). A cache read
 // opens into what its writer computed for it (tree/caches.ts, over the loop entries of tree/entries.ts). A piece is
-// built once (tree/pieces.ts). Names come with US1c: until then a row has the generic name and `unnamed` (FR-012a).
+// built once (tree/pieces.ts). A root of only the reads of its step shows that step (tree/root-step.ts). Names come
+// with US1c: until then a row has the generic name and `unnamed` (FR-012a).
 import type { Op } from "./instrument.ts";
 import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
@@ -30,6 +31,7 @@ import { makeCodeFormulas } from "./tree/code-formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
 import { rawPasses } from "./tree/raw-passes.ts";
+import { rootStep } from "./tree/root-step.ts";
 import { makeTerms } from "./tree/terms.ts";
 import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
@@ -349,15 +351,21 @@ export function buildTree(
     name: "Total",
     role: "root",
   };
-  if (value !== null)
-    root.kids =
-      kidsAt({
-        node: root,
-        row: { node: root, open: null },
-        open: top.id,
-        depth: 0,
-        seen: [],
-      })?.kids ?? [];
+  if (value !== null) {
+    const rows = pieces.explain(top.id, 0, new Set()) ?? [];
+    // [F3-R1] the root is never a silent leaf
+    const own = rootStep(top, steps.of(top.id).steps, rows, root, {
+      read: (p, v) => readRow(p, v, linksOf(top).get(p)),
+      opens: (r) => caches.opens(r, 0, new Set([top.id])),
+    });
+    root.formula = own?.formula ?? null;
+    root.kids = place(
+      { id: root.id, code: callText(top) },
+      own?.rows ?? rows,
+      1,
+      [top.id],
+    );
+  }
 
   return {
     root,
