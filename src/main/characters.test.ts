@@ -26,7 +26,7 @@ test("the characters of the game's list, by place, with the active one; none wit
 
 test("the picker's list is sent when it changes, never again for the same list", () => {
   const send = vi.fn();
-  const tell = characterSender(send);
+  const { tell } = characterSender(send);
   tell(mosaicFor("Invented"));
   tell(mosaicFor("Invented", 2)); // a new mosaic, the same list
   tell(mosaicFor("Other"));
@@ -41,9 +41,22 @@ test("the picker's list is sent when it changes, never again for the same list",
 
 test("the same mosaic is read once: the Stats tells the trees several times per mosaic", () => {
   const read = vi.fn(characterList);
-  const tell = characterSender(vi.fn(), read);
+  const { tell } = characterSender(vi.fn(), read);
   const mosaic = mosaicFor("Invented");
   tell(mosaic);
   tell(mosaic);
   expect(read).toHaveBeenCalledOnce();
+});
+
+test("a new page gets the last list again", () => {
+  const send = vi.fn();
+  const sender = characterSender(send);
+  sender.replay(); // nothing read yet: no list
+  sender.tell(mosaicFor("Other"));
+  sender.replay();
+  expect(send.mock.calls).toEqual([
+    [null],
+    [{ names: ["Invented", "Other"], active: 1 }],
+    [{ names: ["Invented", "Other"], active: 1 }],
+  ]);
 });

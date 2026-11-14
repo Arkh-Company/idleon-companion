@@ -41,7 +41,7 @@ export function startPipelines(deps: {
   });
   const tellTrees = (): void => {
     try {
-      characters(stats.pair()?.mosaicJson ?? null);
+      characters.tell(stats.pair()?.mosaicJson ?? null);
       formula?.statsChanged();
     } catch {
       // The window cannot get the tree: the Stats goes on (FR-017).
@@ -98,7 +98,14 @@ export function startPipelines(deps: {
 
   return {
     stats,
-    formula: trees,
+    // A new page gets the picker's list again with the tree (FR-020).
+    formula: {
+      ...trees,
+      replay() {
+        trees.replay();
+        characters.replay();
+      },
+    },
     handlers: {
       [IPC.formulaRequest]: (payload) => {
         const r = formulaRequestPayload(payload);

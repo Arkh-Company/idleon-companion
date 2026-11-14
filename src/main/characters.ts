@@ -22,19 +22,27 @@ export function characterList(mosaicJson: string): Characters {
 export const characterNumber = (mosaicJson: string): number | null =>
   characterList(mosaicJson)?.active ?? null;
 
-/** The picker's list of each new mosaic, sent only when it changed; the mosaic seen last is not read again. */
+/**
+ * The picker's list of each new mosaic, sent only when it changed; the mosaic seen last is not read again. `replay`
+ * sends the last list again, for a new page.
+ */
 export function characterSender(
   send: (c: Characters) => void,
   read: (mosaicJson: string) => Characters = characterList,
-): (mosaicJson: string | null) => void {
+): { tell: (mosaicJson: string | null) => void; replay: () => void } {
   let seen: string | null = null;
-  let sent = "null";
-  return (mosaicJson) => {
-    if (mosaicJson === seen) return;
-    seen = mosaicJson;
-    const list = mosaicJson === null ? null : read(mosaicJson);
-    const text = JSON.stringify(list);
-    if (text !== sent) send(list);
-    sent = text;
+  let last: Characters = null;
+  return {
+    tell(mosaicJson) {
+      if (mosaicJson === seen) return;
+      seen = mosaicJson;
+      const list = mosaicJson === null ? null : read(mosaicJson);
+      const changed = JSON.stringify(list) !== JSON.stringify(last);
+      last = list;
+      if (changed) send(list);
+    },
+    replay() {
+      send(last);
+    },
   };
 }
