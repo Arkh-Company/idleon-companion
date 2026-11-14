@@ -177,7 +177,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 
 > Write these tests FIRST, ensure they FAIL before implementation.
 
-- [ ] T015 [P] [US1] Instrumentation test in `src/calculator/instrument.test.ts`
+- [X] T015 [P] [US1] Instrumentation test in `src/calculator/instrument.test.ts`
   - Cases:
     - each arithmetic operator and each `min max pow floor ceil round abs log sqrt` becomes a step;
     - a block that does not parse keeps its code and its number;
@@ -225,7 +225,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Implement the instrumentation in `src/calculator/instrument.ts`
+- [X] T020 [US1] Implement the instrumentation in `src/calculator/instrument.ts`
   - Signature: `instrument(source: string): { source: string; ops: Op[] }`. `ops[].fnText` and the AST never leave the worker. It runs on the original `N.js`, after the anchor swap and `lazyDnsmKeys` (`boot.ts`).
 - [ ] T021 [US1] Implement the recorder in `src/calculator/recorder.js` (inside `node:vm`, imported `?raw`)
   - It is installed before `game.runInContext`, with `__X` off during boot.
