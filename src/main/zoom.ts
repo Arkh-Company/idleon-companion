@@ -35,7 +35,12 @@ export function zoomControl(
     if (f === factor) return;
     factor = f;
     page.setZoomFactor(f);
-    save(f);
+    try {
+      save(f);
+    } catch {
+      // A file held by an antivirus or OneDrive, or a full disk: the zoom holds this session; the next change tries
+      // to save again. Thrown out of an input listener, it would be an error dialog and the key would reach the page.
+    }
   };
   return {
     factor: () => factor,

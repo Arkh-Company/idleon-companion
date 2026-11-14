@@ -86,6 +86,16 @@ test.each([
   expect(save).not.toHaveBeenCalled();
 });
 
+test("a save that throws still zooms and still takes the key", () => {
+  const page = { setZoomFactor: vi.fn<(f: number) => void>() };
+  const zoom = zoomControl(1, page, () => {
+    throw new Error("EBUSY");
+  });
+  expect(zoom.key(ctrl("="))).toBe(true);
+  expect(zoom.factor()).toBe(1.1);
+  expect(page.setZoomFactor).toHaveBeenCalledWith(1.1);
+});
+
 test("the saved factor is set on the page when the window opens", () => {
   const { zoom, page, save } = control(1.5);
   zoom.apply();
