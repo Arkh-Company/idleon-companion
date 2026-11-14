@@ -93,6 +93,9 @@ playwright-report/
 N.js
 !src/keeper/mock-game/static/game/N.js
 N.game.js
+retrato-*.json
+tree-*.json
+*.sqlite
 
 # --- Logs, temporários e caches ------------------------------------------------
 *.log
