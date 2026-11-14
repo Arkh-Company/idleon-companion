@@ -3,10 +3,19 @@
 // loop opens into its turns (tree/entries.ts): one part per turn that added to it, a factor for a turn that multiplied
 // it; a cache written once opens into the writer's step that gave the value, or into the whole writer when the writer
 // returned it. The bench builds the whole tree at once; here a cache read is a lazy row whose rows are built when the
-// player opens it, with the loop entry and the bubble entries open when the row was made (ENTRY_P, OPUS4_OPEN).
+// player opens it, with the loop entry and the bubble entries open when the row was made (ENTRY_P, OPUS4_OPEN). The
+// tests that only read the recording (which writes, which turn, which side of a step) are in cache-picks.ts.
 // Left out until their own phase: the names of the parts (US1c: a part has the generic name, and the filters that
 // compare names wait for them) and the cache's ⓘ (LAST_WRITER_FORMULA, US1b-3).
 import type { RecNode } from "../recording.ts";
+import {
+  addedSide,
+  bubbleWrites,
+  factorTurn,
+  filledHere,
+  readsPath,
+  turnRead,
+} from "./cache-picks.ts";
 import type { Entries, Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
@@ -40,8 +49,6 @@ export interface CacheContext {
   finish(v: unknown, rows: Row[], ones: boolean): Row[];
 }
 
-const readsPath = (e: Expr, p: string) =>
-  JSON.stringify(e).includes(`"p":${JSON.stringify(p)}`);
 const stamp = (rows: Row[], seen: readonly number[]) =>
   rows.map((r) => (r.seen ? r : { ...r, seen }));
 
@@ -131,18 +138,7 @@ export function makeCaches(ctx: CacheContext) {
         .find((k) => k && near(k.v, target));
       if (trivial(rows) && call)
         rows = explained(call.id, depth + 1, next) ?? [];
-      // [R1-PATCH, A R2] a game table read as text is the same number
-      const read = call
-        ? undefined
-        : q.r.find(
-            ([rp, rv]) =>
-              (typeof rv === "number" ||
-                (typeof rv === "string" &&
-                  rv.trim() !== "" &&
-                  Number.isFinite(Number(rv)))) &&
-              near(Number(rv), target) &&
-              rp !== p,
-          );
+      const read = call ? undefined : turnRead(q, p, target);
       const turnLinks = new Map([
         ...ctx.linksOf(w),
         ...q.r.flatMap(([rp, , wid]) =>
@@ -161,18 +157,7 @@ export function makeCaches(ctx: CacheContext) {
       if (!rows.length && !r) {
         // a turn that adds a function of its own to the running total: that function's rows
         const at = q.s.findIndex((x) => near(x.v, q.v));
-        const e = q.s[at]?.e;
-        const before = Number(q.v) - target;
-        const isBefore = (x: Expr) =>
-          (x.t === "read" ? x.p === p : x.t === "val") && near(x.v, before);
-        const side =
-          e?.t === "op" && e.o === "+"
-            ? isBefore(e.l)
-              ? e.r
-              : isBefore(e.r)
-                ? e.l
-                : null
-            : null;
+        const side = addedSide(q.s[at]?.e, p, Number(q.v) - target);
         if (side?.t === "fn" && near(side.v, target))
           rows = inEntry(() => stepRowsAt(w, q.s, at, side, seen, q.r));
       }
@@ -252,25 +237,7 @@ export function makeCaches(ctx: CacheContext) {
     const k4 = w && `${String(w.id)}|${p}|${String(p === entryP)}`;
     // OPUS4-4: another bubble of the same loop opens into its own entry
     if (w && deep && any(LOOP_ENTRY_CACHES, p) && k4 && !opening.has(k4)) {
-      // the bubble read in a later write of its own entry: its first write; another bubble: all its writes, when the
-      // last one is the value read
-      const early = p === entryP || (LL.length > 1 && !near(last?.v, value));
-      const i0 = early ? LL.findIndex((q) => near(q.v, value)) : -1;
-      let only: readonly Entry[] | null | undefined = early
-        ? i0 >= 0 && i0 < LL.length - 1
-          ? LL.slice(i0, i0 + 1)
-          : null
-        : undefined;
-      // a total set to 0 and summed again in each loop: the run of writes that ends with the value read (a run ends
-      // where the next write is smaller)
-      if (p !== entryP && any(RUN_TOTALS, p)) {
-        const ends = (i: number) =>
-          i === LL.length - 1 || Number(LL[i + 1]?.v) < Number(LL[i]?.v);
-        const iEnd = LL.findIndex((q, i) => near(q.v, value) && ends(i));
-        let j0 = iEnd;
-        while (j0 > 0 && !ends(j0 - 1)) j0--;
-        only = iEnd >= 0 && iEnd > j0 ? LL.slice(j0, iEnd + 1) : null;
-      }
+      const only = bubbleWrites(LL, value, p === entryP, any(RUN_TOTALS, p));
       if (LL.length && (only || (only === undefined && near(last?.v, value)))) {
         opening.add(k4);
         try {
@@ -299,22 +266,7 @@ export function makeCaches(ctx: CacheContext) {
     // [T3] a cache the call changed once in a turn of its own loop: the turn whose step is a product of an earlier read
     // of the cache and a call
     if (w && deep && p.startsWith("DNSM.") && key && entries.has(key)) {
-      const q = LL.find((x) => {
-        if (!near(x.v, value)) return false;
-        const e = x.s.find((y) => near(y.v, x.v))?.e;
-        if (e?.t !== "op" || e.o !== "*") return false;
-        return [
-          [e.l, e.r],
-          [e.r, e.l],
-        ].some(
-          ([t, o]) =>
-            t?.t === "read" &&
-            t.p === p &&
-            !near(t.v, x.v) &&
-            o?.t === "call" &&
-            near(Number(t.v) * Number(o.v), x.v),
-        );
-      });
+      const q = factorTurn(LL, p, value);
       if (q) {
         const fe = entryRows(w, p, value, depth, seen, [q]);
         if (fe?.length) return fe;
@@ -325,13 +277,7 @@ export function makeCaches(ctx: CacheContext) {
       w &&
       deep &&
       p.startsWith("DNSM.") &&
-      [...seen].pop() === w.id &&
-      (w.r ?? []).some(
-        ([rp, rv]) =>
-          rv === 0 && rp === `${p.replace(/[[.][^[.]*$/, "")}.length`,
-      ) &&
-      typeof last?.v === "number" &&
-      near(last.v, value)
+      filledHere(w, p, seen, last, value)
     ) {
       const fe = entryRows(w, p, value, depth, seen);
       if (fe?.length) return fe;
