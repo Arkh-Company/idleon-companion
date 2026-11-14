@@ -124,23 +124,26 @@ export function maxReachedOf(
 }
 
 /**
- * pieces.cjs `valName` as `curveRow0` uses it: the caller's read that holds the curve's input. Several reads with that
- * value name nothing (null), and the caller's own working values are left out.
+ * pieces.cjs `curveRow0` with `valName`: the caller's read that holds the curve's input. Nothing names it (null) when the
+ * caller's own working value holds it (DEEP3-FIX-1b), or when several of the other reads hold it, counted before
+ * `valName` leaves out the ` contains ` and RANDOlist[53] reads.
  */
 export function inputRead(
   x3: number,
   reads: readonly (readonly [string, unknown, ...unknown[]])[],
   own: ReadonlySet<string>,
 ): string | null {
+  const holds = (x: unknown) =>
+    typeof x === "number" &&
+    Math.abs(x - x3) <= 1e-9 * Math.max(1, Math.abs(x3));
+  if (reads.some(([p, x]) => own.has(p) && holds(x))) return null;
   const hits = reads.filter(
-    ([p, x]) =>
-      !own.has(p) &&
-      typeof x === "number" &&
-      Math.abs(x - x3) < 1e-9 &&
-      !p.endsWith(".length") &&
-      !p.includes(" contains ") &&
-      !/^(CustomLists\.)?RANDOlist\[53\]/.test(p),
+    ([p, x]) => !own.has(p) && holds(x) && !p.endsWith(".length"),
   );
-  if (hits.length !== 1) return null;
-  return hits[0]?.[0] ?? null;
+  if (hits.length > 1) return null;
+  const pick = hits.find(
+    ([p]) =>
+      !p.includes(" contains ") && !/^(CustomLists\.)?RANDOlist\[53\]/.test(p),
+  );
+  return pick?.[0] ?? null;
 }

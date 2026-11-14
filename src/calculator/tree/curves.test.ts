@@ -115,3 +115,32 @@ test("the input is the caller's one read with the curve's value, not its own wor
   expect(inputRead(25, [...reads, ["Other.level", 25]], new Set())).toBeNull();
   expect(inputRead(99, reads, new Set())).toBeNull();
 });
+
+test.each<[string, [string, unknown][], string[]]>([
+  [
+    "the caller's own working value holds it (DEEP3-FIX-1b)",
+    [
+      ["Invented.level", 25],
+      ["Work.left", 25],
+    ],
+    ["Work.left"],
+  ],
+  [
+    "a contains read also holds it",
+    [
+      ["Invented.level", 25],
+      ["Bag contains 7", 25],
+    ],
+    [],
+  ],
+  [
+    "a RANDOlist[53] read also holds it",
+    [
+      ["Invented.level", 25],
+      ["CustomLists.RANDOlist[53][2]", 25],
+    ],
+    [],
+  ],
+])("no read names the input when %s", (_name, reads, own) => {
+  expect(inputRead(25, reads, new Set(own))).toBeNull();
+});
