@@ -515,7 +515,7 @@ Verify: `just test-one src/main/radar.test.ts` - passes; `just check` - passes.
 
 ### Tests for User Story 11
 
-- [ ] T051 [P] [US11] `src/calculator/inactive.test.ts` and `src/renderer/CharacterPicker.test.tsx`
+- [X] T051 [P] [US11] `src/calculator/inactive.test.ts` and `src/renderer/CharacterPicker.test.tsx`
   - Cases:
     - the active character is written back to `PlayerDATABASE` first;
     - the swap moves the same-name keys and numbers, only one index of `ObolEquippedOrder`, `ObolEquippedMap` and `PostOfficeInfo[3]`, and the other-name keys (`Cards[2]` ← `CardEquip`, `Cards[3]` ← `CSetEq`, `PrayersActive` ← `Prayers`, `PlacedTraps` ← `PldTraps`, `TimeAway.Player` ← `PlayerAwayTime`);
@@ -526,7 +526,7 @@ Verify: `just test-one src/main/radar.test.ts` - passes; `just check` - passes.
 
 ### Implementation for User Story 11
 
-- [ ] T052 [US11] Port the inactive rebuild and the picker
+- [X] T052 [US11] Port the inactive rebuild and the picker
   - Files: `src/calculator/inactive.ts` (from the bench's `inactive.cjs` `buildInactive`, research R5), `src/calculator/index.ts`, `src/renderer/CharacterPicker.tsx`
 - [ ] T053 [US11] [sessão] Check inactive characters on the real game
   - Enter with two or three characters and compare the app's inactive numbers (Stats and a sample of the catalog) with the same character made active: 0 differences expected.
