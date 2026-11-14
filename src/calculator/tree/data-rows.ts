@@ -7,7 +7,6 @@ import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { lastReads } from "./steps.ts";
 import type { Expr } from "./steps.ts";
-import { hasKids } from "./terms.ts";
 
 /** The read paths a block's steps show (pieces.cjs dataRows `used`). */
 function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
@@ -19,7 +18,8 @@ function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
 
 /**
  * pieces.cjs `dataRows`: what the block read and did not already show (a table, a length or a text stays out); `readRow`
- * makes a read's row, `writersOf` the calls that wrote each cache path in loop turns.
+ * makes a read's row, `writersOf` the calls that wrote each cache path in loop turns, and `opens` tells whether a row
+ * opens into rows (a cache row is opened now, as the bench builds it at once).
  */
 export function dataRows(
   n: RecNode,
@@ -28,6 +28,7 @@ export function dataRows(
   stepNotOpened: boolean,
   readRow: (path: string, value: number) => Row,
   writersOf: ReadonlyMap<string, readonly number[]>,
+  opens: (r: Row) => boolean,
 ): Row[] {
   const used = new Set<string>();
   stepsRead.forEach((e) => readsIn(e, used));
@@ -53,10 +54,10 @@ export function dataRows(
       continue;
     const r = readRow(p, v);
     // the block's own result kept in a working value, with nothing under it: not a part of the block
-    if (cache && near(v, n.v) && !hasKids(r) && rows.length) continue;
+    if (cache && near(v, n.v) && rows.length && !opens(r)) continue;
     // a working value this call writes itself, that opens to nothing, or that changes inside this very call (the
     // scratch of its loop): not a part; a cache it filled earlier and that opens stays
-    if (own.has(p) && (!hasKids(r) || last.has(p))) continue;
+    if (own.has(p) && (last.has(p) || !opens(r))) continue;
     terms.add(p);
     out.push(r);
   }

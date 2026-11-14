@@ -207,3 +207,29 @@ test("[deep-2] a skill's rank opens into each character's level of the skill", (
     ["PlayerDATABASE[1].Lv0[1]", 120, "level"],
   ]);
 });
+
+test("a cache the block fills in its own loop and reads outside its steps opens to nothing there: it is no part", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "Fill",
+        v: 2,
+        x: [
+          [0, 1],
+          [0, 1],
+        ],
+        r: [
+          ["DNSM.Own.v", 5, 2],
+          ["Lv", 2],
+        ],
+      },
+    ],
+    [
+      { path: "DNSM.Own.v", node: 1, v: 3, seq: 1, xi: 1 },
+      { path: "DNSM.Own.v", node: 1, v: 5, seq: 2, xi: 2 },
+    ],
+    { root: 0 },
+  );
+  expect(brief(buildTree(rec, 0).root)).toEqual([["Lv", 2]]);
+});

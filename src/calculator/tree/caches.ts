@@ -101,6 +101,8 @@ export function makeCaches(ctx: CacheContext) {
     const L = only ?? entries.get(`${String(w.id)}|${p}`);
     if (!L) return null;
     const next = new Set(seen).add(w.id);
+    // a turn's rows open where the bench built their kids: one level down, under the writer
+    const kids = (x: Row) => opens(x, depth + 1, next);
     const trivial = (rows: Row[]) =>
       !rows.length ||
       (rows.every(
@@ -110,7 +112,7 @@ export function makeCaches(ctx: CacheContext) {
           near(x.node.value, 1) ||
           near(x.node.value, 0),
       ) &&
-        !rows.some(hasKids));
+        !rows.some(kids));
     const inEntry = <T>(fn: () => T): T => {
       const before = entryP;
       entryP = p;
@@ -147,7 +149,7 @@ export function makeCaches(ctx: CacheContext) {
           wid === undefined ? [] : [[rp, wid] as const],
         ),
       ]);
-      if (read && !rows.some(hasKids))
+      if (read && !rows.some(kids))
         rows =
           cache(
             read[0],
@@ -371,27 +373,44 @@ export function makeCaches(ctx: CacheContext) {
     return st ? stepRowsAt(w, wsteps, at, st.e, seen, []) : [];
   }
 
+  /** The rows of an opened cache row, as they were when the row was made; null when cut. */
+  function open(
+    o: CacheOpen,
+    depth: number,
+    seen: ReadonlySet<number>,
+  ): Row[] | null {
+    const before = [entryP, opening] as const;
+    entryP = o.entry;
+    opening = new Set(o.opening);
+    try {
+      return cache(
+        o.path,
+        Number(o.value),
+        nodes[o.writer] ?? null,
+        depth,
+        seen,
+      );
+    } finally {
+      [entryP, opening] = before;
+    }
+  }
+  /**
+   * pieces.cjs `kids.length`: whether a row opens into rows. The bench builds a cache's rows at once, so a cache row is
+   * opened now (under the calls above its own rows, else `seen`): one whose writer gives nothing, or that a cycle cuts,
+   * opens into nothing.
+   */
+  function opens(r: Row, depth: number, seen: ReadonlySet<number>): boolean {
+    return r.open !== null && typeof r.open === "object"
+      ? !!open(r.open, depth, r.seen ? new Set(r.seen) : seen)?.length
+      : hasKids(r);
+  }
+
   return {
     /** The writer a cache read opens into: its linked writer, else the one whose loop wrote that very value. */
     writerOf,
     /** What the tree is walking now, kept on a cache row made now. */
     now: () => ({ entry: entryP, opening: [...opening] }),
-    /** The rows of an opened cache row, as they were when the row was made; null when cut. */
-    open(o: CacheOpen, depth: number, seen: ReadonlySet<number>): Row[] | null {
-      const before = [entryP, opening] as const;
-      entryP = o.entry;
-      opening = new Set(o.opening);
-      try {
-        return cache(
-          o.path,
-          Number(o.value),
-          nodes[o.writer] ?? null,
-          depth,
-          seen,
-        );
-      } finally {
-        [entryP, opening] = before;
-      }
-    },
+    open,
+    opens,
   };
 }

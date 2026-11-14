@@ -265,6 +265,8 @@ export function buildTree(
       !op && !special && own.steps.length > 0,
       (p, v) => readRow(p, v, linkOf.get(p)),
       writers.writersOf,
+      // the bench opens a data row's cache under this call, at its depth
+      (r) => caches.opens(r, depth, new Set([...seen, id])),
     );
     // a block that only returns one cache: its rows are the cache's own computation
     const cached =
