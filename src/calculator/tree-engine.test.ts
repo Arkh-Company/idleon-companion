@@ -1,11 +1,11 @@
 // The tree engine over the invented game: a `number` request gives the root, equal to the Stats number of the same
 // mosaic (FR-019), and nothing outside the catalog is calculated.
-import { beforeAll, expect, test } from "vitest";
+import { beforeAll, expect, test, vi } from "vitest";
 import { createEngine } from "./engine.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import { TARGETS } from "./targets.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
-import { createTreeEngine } from "./tree-engine.ts";
+import { createTreeEngine, shapeOf } from "./tree-engine.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
 
 let trees: ReturnType<typeof createTreeEngine>;
@@ -168,3 +168,61 @@ test.each(["dropRate", "notANumber"])(
     ).toThrow();
   },
 );
+
+// Where this goes (FR-027): the shape of a number is every part of its tree, its branches opened, each piece once.
+test("a shape lists every part of the tree with its branches opened, each piece once", () => {
+  const shape = trees.shape("sources", mosaicOf());
+  expect(shape).not.toBe("unknownNumber");
+  if (shape === "unknownNumber") return;
+  expect(shape.map(([key]) => key)).toEqual([
+    '[0,"TreeMaxOf",0,0,0]',
+    '[0,"TreeReads"]',
+    '[0,"TreeStats.a"]', // inside the lazy branch of TreeReads
+    '[0,"TreeStats.b"]',
+    '[0,"TreeLoop"]',
+    '[0,"TreeList[0]"]',
+    '[0,"TreeList[1]"]',
+    '[0,"TreeList[2]"]',
+    '[0,"TreeBase"]',
+  ]);
+  for (const [, name] of shape) expect(typeof name).toBe("string");
+});
+
+test("a piece that repeats opens once in a shape", () => {
+  const lazy = (id: string): CalcTreeNode =>
+    ({ id, pieceKey: "piece", name: "Part", kids: "lazy" }) as CalcTreeNode;
+  const expand = vi.fn((id: string) => ({
+    ...lazy(id),
+    kids: [{ ...lazy(`${id}/leaf`), pieceKey: "leaf", kids: [] }],
+  }));
+  const root = {
+    ...lazy("root"),
+    pieceKey: "root",
+    kids: [lazy("a"), lazy("b")],
+  };
+  expect(shapeOf({ root, expand, conflicts: [] })).toEqual([
+    ["root", "Part"],
+    ["piece", "Part"],
+    ["leaf", "Part"],
+  ]);
+  expect(expand).toHaveBeenCalledOnce();
+});
+
+test("a shape records nothing that the last tree's branches need", () => {
+  const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
+  trees.shape("dropRate", mosaicOf());
+  expect(
+    trees.tree(expand("sources", reads?.id ?? ""), undefined),
+  ).toMatchObject({ id: reads?.id, value: 8 });
+});
+
+test.each(["notANumber", "__proto__"])("the shape of %s is refused", (id) => {
+  expect(trees.shape(id, mosaicOf())).toBe("unknownNumber");
+});
+
+test.each([
+  ["an id that is no text", 7, mosaicOf()],
+  ["a mosaic that is not text", "sources", { attrs: {} }],
+])("a shape with %s throws", (_name, id, mosaic) => {
+  expect(() => trees.shape(id, mosaic)).toThrow();
+});

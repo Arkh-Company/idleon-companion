@@ -1,5 +1,5 @@
 // The worker's entry: `init` starts the engine once, and each `calc` is one calculation (contracts/calculator.md). An
-// `init` with `mode: "tree"` makes this worker the tree worker, answering `tree` and `values` (spec 008,
+// `init` with `mode: "tree"` makes this worker the tree worker, answering `tree`, `values` and `shape` (spec 008,
 // contracts/tree-worker.md).
 import { parentPort } from "node:worker_threads";
 import { createEngine } from "./engine.ts";
@@ -14,7 +14,15 @@ interface Port {
 type Engine = ReturnType<typeof createEngine>;
 type Message = Partial<
   Record<
-    "type" | "mode" | "code" | "pak" | "mosaic" | "id" | "request" | "ids",
+    | "type"
+    | "mode"
+    | "code"
+    | "pak"
+    | "mosaic"
+    | "id"
+    | "request"
+    | "ids"
+    | "treeId",
     unknown
   >
 >;
@@ -69,6 +77,21 @@ function valuesResult(
   }
 }
 
+/** The parts of a number's whole tree (FR-027); a refusal or a failure is only `failed: true`. */
+function shapeResult(
+  engine: TreeEngine | undefined,
+  { id, treeId, mosaic }: Message,
+): unknown {
+  try {
+    if (!engine) throw new Error("no tree engine");
+    const shape = engine.shape(treeId, mosaic);
+    if (shape === "unknownNumber") throw new Error("unknown number");
+    return { type: "shapeResult", id, shape };
+  } catch {
+    return { type: "shapeResult", id, failed: true };
+  }
+}
+
 export function handleMessage(
   m: unknown,
   port: Port,
@@ -101,6 +124,8 @@ export function handleMessage(
     port.postMessage(treeResult(trees.get(port), message));
   } else if (type === "values") {
     port.postMessage(valuesResult(trees.get(port), message));
+  } else if (type === "shape") {
+    port.postMessage(shapeResult(trees.get(port), message));
   }
 }
 
