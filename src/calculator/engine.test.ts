@@ -110,6 +110,22 @@ describe("numbers", () => {
     expect(next?.numbers.hp).toBe(500);
   }, 20_000);
 
+  test("the live game's actors are the trees' alone: the Stats give the same numbers with them as without (US12)", () => {
+    const attrs = {
+      Scenario: "liveActors",
+      MapMonstersList: [{ $x: 1 }],
+    };
+    const actors = {
+      map: BASE.CurrentMap,
+      "H0._GenINFO[3]": 11,
+      "map0._MonsterType": "mobA",
+      "map0._MonsterHPtot": 4500,
+    };
+    const without = engine.calculate(mosaicOf(attrs));
+    expect(without.accuracy).toBe(7);
+    expect(engine.calculate(mosaicOf(attrs, {}, actors))).toEqual(without);
+  });
+
   test("finishing the helpers in an endless loop fails the calculation within 8 s", () => {
     const started = performance.now();
     expect(() => scenario("endlessFinish")).toThrow();

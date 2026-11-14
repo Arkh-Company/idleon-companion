@@ -81,6 +81,8 @@
   var vars = {};
   /** The map actors' fields the keeper read on the running game (spec 008 US12), keyed as state-slice.js gives them. */
   var actors = {};
+  /** False in the Stats worker: the live game's actors are read by the trees only. */
+  var useActors = true;
   var mosaicAttrs = {};
   var primitives = {};
   var steps = [];
@@ -389,11 +391,16 @@
       };
     },
 
+    // The Stats worker's: its numbers never read the live game's actors, whatever the mosaic carries.
+    ignoreActors: () => {
+      useActors = false;
+    },
+
     // Rebuilt inside the context, so that Array and Object are its own; remembers what the helpers rewrite (FR-012).
     loadMosaic: () => {
       var m = JSON.parse(G.__mosaic);
       vars = m.vars || {};
-      actors = m.actors || {};
+      actors = (useActors && m.actors) || {};
       mosaicAttrs = m.attrs;
       primitives = {};
       var live = {};

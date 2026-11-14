@@ -303,6 +303,11 @@ lime.$scripts.N = function (_exports, $global) {
     helper: function (s) {
       return 1 + Number(s.HelperRan[0]) + s.EverySceneRan.length;
     },
+    // A helper's field and the map's first monster, which the live game's actors would change (spec 008 US12).
+    liveActors: function (s) {
+      var first = s.MapMonstersList && s.MapMonstersList[0];
+      return helper()._GenINFO[3] + (first ? 1000 : 0);
+    },
     vars: function () {
       return (
         bridge("getServerVarLoad", "TomePct") +

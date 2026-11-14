@@ -14,6 +14,8 @@ export function createEngine(
   pak: Uint8Array,
 ): { calculate(mosaicJson: string): CalcNumbers } {
   const context = bootContext(anchored(code), pak, LIMITS);
+  // The live game's actors are the trees' alone (spec 008 US12): the Stats stay as they were.
+  context.run("__calc.ignoreActors()", START_MS);
   const lazyDnsm = lazyDnsmKeys(code);
 
   return {
