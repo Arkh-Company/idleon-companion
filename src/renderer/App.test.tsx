@@ -131,10 +131,13 @@ test("before steamState answers neither the setup screen nor the 001 window show
   expect(screen.queryByRole("button", { name: SET_UP })).toBeNull();
 });
 
+/** Under the load of a whole run, a page's first answers can take longer than findBy's 1 s (it failed 3 times so). */
+const SLOW = { timeout: 5_000 };
+
 test("a done progress switches to the 001 window and keeps the final line", async () => {
   companion.steamState.mockResolvedValue(notSetUp);
   render(<App />);
-  await screen.findByRole("button", { name: SET_UP });
+  await screen.findByRole("button", { name: SET_UP }, SLOW);
 
   act(() => {
     emit("done");
@@ -142,12 +145,12 @@ test("a done progress switches to the 001 window and keeps the final line", asyn
 
   expect(screen.getByText("Reader attached")).toBeDefined();
   expect(screen.getByRole("heading", { name: "Screen map" })).toBeDefined();
-  expect(await screen.findByLabelText("Always on top")).toBeDefined();
+  expect(await screen.findByLabelText("Always on top", {}, SLOW)).toBeDefined();
   expect(
     screen.getByText("All set. Press Play in Steam as usual."),
   ).toBeDefined();
   expect(screen.queryByRole("button", { name: SET_UP })).toBeNull();
-});
+}, 15_000);
 
 test("Steam not reopening also switches to the 001 window, with its line", async () => {
   companion.steamState.mockResolvedValue(notSetUp);
