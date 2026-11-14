@@ -589,7 +589,7 @@ Verify: `just test-one src/renderer/GameDetails.test.tsx` - passes; `just check`
 
 **Independent Test**: `/zelador` finds nothing; the quickstart script passes on the Vinicius's machine.
 
-- [ ] T058 [P] Update `ARCHITECTURE.md`
+- [X] T058 [P] Update `ARCHITECTURE.md`
   - Contents:
     - the diagram;
     - the Calculator section (two workers, 2 GB tree worker, recorder, inactive rebuild);
@@ -598,7 +598,7 @@ Verify: `just test-one src/renderer/GameDetails.test.tsx` - passes; `just check`
     - the IPC table (`formula:*`, `panel:update`, `marks:*`, `pins:*`, `farm:update`, `radar:*`, `window:sidePanel`);
     - the saved files;
     - the module contract `module:<id>:*` of spec 001, still reserved and unused.
-- [ ] T059 [P] Update `GLOSSARY.md`
+- [X] T059 [P] Update `GLOSSARY.md`
   - New terms, each with `_Avoid_`: Formula tree, Tree piece, Leaf, Leaf type, How it adds up, System panel, Mark, Pin, Side panel.
   - Calculator: now two workers.
 - [ ] T060 [sessão] Run the quickstart with the packaged app on the real game (steps 1–9 of [quickstart.md](quickstart.md)) and write the result in `registro.md`

@@ -60,7 +60,7 @@ _Avoid_: equipment slice, priority slice
 
 **Mosaic**:
 The app's copy of the state, in memory only and never saved or logged, with the newest value of each piece that the
-**Slices** brought.
+**Slices** brought, and the fields of the map's actors (the `actors` part), which only the tree worker applies.
 _Avoid_: snapshot, retrato, cache
 
 **Sentinel**:
@@ -69,8 +69,10 @@ whole pass of the **Fast reading** before the next calculation.
 _Avoid_: marker, version
 
 **Calculator**:
-The isolated worker of the app that runs the game's code over the **Mosaic** to give the numbers of the Stats tab, with no
-network and no access to the app; when it cannot, the tab says "unavailable".
+The isolated workers of the app that run the game's code over the **Mosaic**, with no network and no access to the app;
+two of them: the Stats worker gives the numbers of the Stats tab, and the tree worker, with a heap of its own, records
+and builds each **Formula tree** and the live values in view. When one cannot, what it serves says "unavailable", and
+the tree worker never fails the Stats.
 _Avoid_: engine, simulator, sandbox
 
 **Update watch**:
@@ -90,13 +92,99 @@ name (a photo or a sprite). The rule with the most conditions wins.
 _Avoid_: entry, pattern, match
 
 **Game tables**:
-The names of the maps, monsters and items that the **Keeper** takes from the text of the installed game code, which it never
-runs, once per game launch. They stay in the app's memory, and a table it cannot read gives no name.
+The names of the maps, monsters, items and classes that the **Keeper** takes from the text of the installed game code,
+which it never runs, once per game launch. They stay in the app's memory, and a table it cannot read gives no name.
 _Avoid_: game data, dump
 
 **Unknown screen**:
 What the window shows when no **Screen rule** holds or two tie: a name without proof never appears.
 _Avoid_: unnamed, deduced
+
+## Formula trees
+
+**Formula tree**:
+How one number of the game is calculated, as rows opened in place like folders, built by the tree worker of the
+**Calculator** from one recording of the game's own code; its root is the number the Stats shows, checked against it.
+_Avoid_: formula graph, dependency tree, explanation
+
+**Tree piece**:
+One call of the game with its arguments, or one read of the state, with the character's number: the same piece is the same
+part in any tree and any recording. Its key is what marks, **Where this goes** and the **Patch radar** compare.
+_Avoid_: node, block, term
+
+**Leaf**:
+A row of a **Formula tree** with nothing below it but its own detail: a value the player raises or picks, or one the game
+sets.
+_Avoid_: input, terminal, end node
+
+**Leaf type**:
+What a **Leaf** is in the math, one of nine: Level, Quantity, Invested points, Tier and Record (the player raises them),
+Condition and Choice (the player unlocks or picks them), Fixed value and Raw bonus (the game sets them); `?` while it is not
+known. Each has its tag in text, its family's color and its phrase.
+_Avoid_: category, kind, class
+
+**How it adds up**:
+A row's calculation in two lines, its names and its numbers, or a rule as its two lines of text: names and numbers only,
+never the game's code. The bench and the counts of Game details call it ⓘ.
+_Avoid_: formula, equation, ⓘ on screen
+
+**System panel**:
+The panel of one game system in the Panel tab, shown when that system's screen opens in the game and said once to a screen
+reader; a screen without one keeps the last.
+_Avoid_: system tab, module
+
+**Side panel**:
+The panel beside the window where a tapped number's **Formula tree** opens, the window widened toward the side with room;
+it changes only when the player taps another number or ✕, never with the game's screen.
+_Avoid_: drawer, popup, sidebar
+
+**Mark**:
+The values of the open tree saved under a name ("Mark before"), up to 3 per character, to compare the tree with later; kept
+on the player's machine by the character's number until Clear, never with a character's name.
+_Avoid_: snapshot, bookmark, save
+
+**Pin**:
+A number of the catalog kept live in the strip under the status bar, up to 5, on every tab; only which numbers are saved,
+never their values.
+_Avoid_: favorite, watch
+
+**Where this goes**:
+The count on a part that 2 or more numbers of the catalog use ("Feeds N numbers"), whose list opens each of those trees;
+filled in the background from the saved tree shapes.
+_Avoid_: usages, references, feeds index
+
+**Patch radar**:
+The band under the status bar after a game update, which says how many trees changed their shape and lists what changed,
+until the player closes it; it keeps only shapes, never values.
+_Avoid_: changelog, diff, update notes
+
+**Farm tracker**:
+The XP, gold and items per hour of the active character, measured only from what changes between **Slices** and only in
+memory, never by a formula: it counts on a map that is not a town, pauses in a town and starts over on another map.
+_Avoid_: farm calculator, income estimate
+
+**Version band**:
+The one band over a **Formula tree** when its names and tags were checked on another version of the game's code: the values
+stay live, and no row is marked.
+_Avoid_: outdated warning, version tag
+
+**Inactive character**:
+A character of the account other than the one in play: its tree is built from the **Mosaic** as the game builds that
+character when it switches to it, and it stays outside the check against the Stats.
+_Avoid_: offline character, other player, alt
+
+**Character picker**:
+The choice, at the top of the **Side panel**, of whose tree is shown, by name and class; it opens on the active character,
+and the names appear only on screen.
+_Avoid_: account switcher, character select
+
+**Last reading**:
+What the Stats, the trees and the panels keep when the game closes, with "last reading N s ago".
+_Avoid_: cache, offline values, saved values
+
+**Stale**:
+A value or a tree that is the **Last reading** and no longer follows the game, because the game is closed.
+_Avoid_: old, expired, outdated
 
 ## Steam and install
 
