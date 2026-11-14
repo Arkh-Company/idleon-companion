@@ -136,13 +136,14 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
         ? r
         : { ...r, node: { ...r.node, ...classify(r.node) } },
     );
-    // The block has no formula of its own: its calls are its factors (op "*"), and its parts at ×1 are grouped.
+    // The block has no formula of its own: its shape comes from its rows; then a product's parts at ×1 and a sum's
+    // parts at 0 are grouped.
     const { rows, mode } = withShares(
       { name: n.b, value: valueOf(n.v) },
       null,
-      timesOne(typed),
+      typed,
     );
-    return atZero(rows, mode);
+    return atZero(timesOne(rows, mode), mode);
   }
   const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
     JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),

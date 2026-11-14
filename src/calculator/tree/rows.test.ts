@@ -129,6 +129,24 @@ test("in a product, two or more parts at ×1 go under one closed row at the end"
   ]);
 });
 
+test("in a sum, parts at 1 each add 1 and stay in the list", () => {
+  const kids = kidsOf(
+    rootOf(
+      [
+        { b: "One", a: [1], v: 1, x: [[0, 1]] },
+        { b: "Big", v: 6, x: [[0, 6]] },
+        { b: "One", a: [2], v: 1, x: [[0, 1]] },
+      ],
+      { v: 8 },
+    ).root,
+  );
+  expect(kids.map((k) => [k.code, k.role, k.shareMode])).toEqual([
+    ["One(1)", "piece", "sum"],
+    ["Big()", "piece", "sum"],
+    ["One(2)", "piece", "sum"],
+  ]);
+});
+
 test("one part at ×1 stays in the list", () => {
   const kids = kidsOf(
     rootOf(

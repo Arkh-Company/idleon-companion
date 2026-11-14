@@ -103,18 +103,22 @@ function group(
   };
 }
 
-/** pieces.cjs `tidy`, for a product: the parts at ×1 go under one closed row, at the end, when there are two or more. */
-export function timesOne(rows: Row[]): Row[] {
+/**
+ * pieces.cjs `tidy`, in a product (FR-014: multipliers at ×1): the parts at ×1 go under one closed row, at the end, when
+ * there are two or more; the row weighs what they weighed in the parent.
+ */
+export function timesOne(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
+  if (mode !== "product" && mode !== "productZero") return rows;
   const one = rows.filter((r) => {
     const v = number(r.node.value);
     return v !== null && Math.abs(v - 1) < 1e-9;
   });
   if (one.length < 2) return rows;
   const shared = withShares({ name: "", value: 1 }, null, one).rows;
-  return [
-    ...rows.filter((r) => !one.includes(r)),
-    group("atOne", `At ×1 (${String(one.length)})`, 1, shared),
-  ];
+  const g = group("atOne", `At ×1 (${String(one.length)})`, 1, shared);
+  g.node.share = one.reduce((s, r) => s + (r.node.share ?? 0), 0);
+  g.node.shareMode = mode;
+  return [...rows.filter((r) => !one.includes(r)), g];
 }
 
 /** FR-014: in a sum, the parts at 0 go under one closed row at the end; a Condition that is "no" stays in the list. */
