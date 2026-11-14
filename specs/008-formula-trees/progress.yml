@@ -21,7 +21,7 @@ execution:
     - {name: US5, status: done, commits: 5fc6b79..3de65ab}
     - {name: US6, status: done, commits: eba44f3..a28432f}
     - {name: US7, status: done, commits: 3354486..970ce65}
-    - {name: US8, status: pending}
+    - {name: US8, status: done, commits: b6feead..06dee06}
     - {name: US9, status: pending}
     - {name: US10, status: pending}
     - {name: US11, status: pending}
