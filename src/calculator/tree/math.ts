@@ -82,7 +82,8 @@ export function evaluate(line: string): number {
 const TERMS = /(\s*[×÷+−*/(),^:]\s*|\s+-\s+)/;
 const NUMBER = /-?\d*\.?\d+(?:e[+-]?\d+)?/g;
 const THOUSANDS = /,(?=\d{3})/g;
-const SLOT = /\u0001(\d+)\u0002/g;
+// A known term's place while the line is split: two private-use characters no formula has.
+const SLOT = /(\d+)/g;
 
 /** A term of `formula` that takes no number: a sign, a bracket, a comma or a math name (contracts/tree-worker.md). */
 export const isOperator = (t: string): boolean =>
@@ -102,7 +103,7 @@ export function formulaAtoms(
     .sort((a, b) => b.length - a.length);
   let line = names;
   whole.forEach((t, i) => {
-    line = line.split(t).join(`\u0001${String(i)}\u0002`);
+    line = line.split(t).join(`${String(i)}`);
   });
   return [
     line
