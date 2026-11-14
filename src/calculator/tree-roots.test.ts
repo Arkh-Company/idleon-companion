@@ -21,8 +21,18 @@ test("the Stats numbers have the Stats' block and first argument", () => {
 test("a root is a block name and simple arguments, never a phrase of the game", () => {
   for (const [block, args] of Object.values(TREE_ROOTS)) {
     expect(block).toMatch(/^\w+$/);
+    // A "|" joins two indexes in one argument (`"0|0"`); a space never appears.
     for (const arg of args)
-      if (typeof arg === "string") expect(arg).toMatch(/^[\w-]+$/);
+      if (typeof arg === "string") expect(arg).toMatch(/^[\w|-]+$/);
       else expect(Number.isInteger(arg)).toBe(true);
   }
+});
+
+test("the roots keep the game's arity and kind of each argument", () => {
+  expect(TREE_ROOTS.playerReach).toEqual(["PlayerReach", [0]]);
+  expect(TREE_ROOTS.talentCalc_m2).toEqual(["TalentCalc", [-2]]);
+  // "49" is text in the game's call, not the number 49 (trap 14 of the handoff).
+  expect(
+    TREE_ROOTS.runCodeOfTypeXforThingYTalentBannedforAllLV_s49?.[1],
+  ).toEqual(["TalentBannedforAllLV", "49"]);
 });

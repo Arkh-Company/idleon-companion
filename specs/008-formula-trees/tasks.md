@@ -104,7 +104,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
 - [X] T006 Turn the six isolation tests into one table run on both workers (approved by Vinicius, 13/11)
   - Files: `src/calculator/engine.test.ts`
   - Tests: `describe.each` over two adapters, `(mosaic) => number`: the Stats one (`calculate()[id]`) and the tree one (the root of a `number` request). No assertion leaves (CODING_STANDARDS, "Test tables live once").
-- [ ] T007 Create the catalog of numbers in `src/shared/tree-catalog.ts` and the roots in `src/calculator/tree-roots.ts`
+- [X] T007 Create the catalog of numbers in `src/shared/tree-catalog.ts` and the roots in `src/calculator/tree-roots.ts`
   - Files: `src/shared/tree-catalog.ts`, `src/calculator/tree-roots.ts`, `src/calculator/tree-roots.test.ts`
   - Data:
     - `TREE_CATALOG: { id; system; screen: string | null; notShown: null | "cost" | "cap" | "chance" | "rate"; live: boolean }[]`, only the trees `ok` in the bench's `CATALOGO-008-status.json` (BASELINE-4), in the game's order: Character, Account, W1…W7, skills (FR-038);

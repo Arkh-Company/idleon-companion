@@ -1,0 +1,4181 @@
+[
+  {
+    "id": "damageMax",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "damageMin",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "hp",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mp",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "accuracy",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "str",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "agi",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "wis",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "luk",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dropRate",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "afkGains",
+    "system": "Stats",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesSuperTalentPTSLVgiven",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesSuperTalentPTSunlockedstatus",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s49",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s227",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesExtraInventory",
+    "system": "Equipment",
+    "screen": "Items › Equipment",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesExtraStorage",
+    "system": "Equipment",
+    "screen": "Items › Equipment",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesFilterslots",
+    "system": "Equipment",
+    "screen": "Items › Equipment",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "playerReach",
+    "system": "Character stats",
+    "screen": null,
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "arbitraryCodeHitChancePCT",
+    "system": "Combat",
+    "screen": "Items",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYAllTalentLV",
+    "system": "Combat",
+    "screen": "Items",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYAllTalentLVz_s0_0",
+    "system": "Combat",
+    "screen": "Items",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "hourlyKillRateFighting",
+    "system": "AFK",
+    "screen": "AFK Gains",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "hourlyKillRateSurvivabilityPCT",
+    "system": "AFK",
+    "screen": "AFK Gains",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "afkfoodsTimeReduxFighting",
+    "system": "AFK",
+    "screen": "AFK Gains",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "talentCalc_146",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_616",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_620",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_645",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_650",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m2",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m3",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m4",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m6",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m7",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "talentCalc_m9",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebani",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebanj",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebank",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebanl",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebanm",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebano",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesHavebonf",
+    "system": "Gem Shop",
+    "screen": "Menu › Gem Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "familyBonsuesREAL_16_0_2019",
+    "system": "Family Bonuses",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "familyBonsuesREAL_16_1_2019",
+    "system": "Family Bonuses",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningEventShopOwned_33",
+    "system": "Event Shop",
+    "screen": "Event Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffGildedStampChance",
+    "system": "Stamps",
+    "screen": "Stamps",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "windwalkerStampDoubler",
+    "system": "Stamps",
+    "screen": "Stamps",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYBuyPrice_Copper",
+    "system": "Bribes",
+    "screen": "Stamps › Bribes",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "arbitraryCodeStatueExpReq0",
+    "system": "Statues",
+    "screen": "Statues",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "tower2StatsStatueGoldCost_0_1",
+    "system": "Statues",
+    "screen": "Statues",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "arbitraryCodeStatueOnyxOwned",
+    "system": "Statues",
+    "screen": "Statues",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arbitraryCodeStatueZenithOwned",
+    "system": "Statues",
+    "screen": "Statues",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffEnabledStarSigns",
+    "system": "Star Signs",
+    "screen": "Star Signs",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "anvilProduceStatsCosts1",
+    "system": "Anvil and Forge",
+    "screen": "Anvil › Produce",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "anvilProduceStatsCosts2",
+    "system": "Anvil and Forge",
+    "screen": "Anvil › Produce",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "forgeEtcDetailsBarsMade",
+    "system": "Anvil and Forge",
+    "screen": "Anvil › Produce",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "forgeEtcDetailsCardChanceBONUS",
+    "system": "Anvil and Forge",
+    "screen": "Anvil › Produce",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYObolRerollCostMoney_ObolBronzeDamage",
+    "system": "Obols",
+    "screen": "Obols",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2OwlFeatherRate",
+    "system": "Owl",
+    "screen": "Orion",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "summoningOwlCost",
+    "system": "Owl",
+    "screen": "Orion",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRooCatchRateS",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "summoningRooTarOwned",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningRooCostT",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRooCost",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cauldronStatsBubbleBonus",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronStatsNumBubblesUnlocked",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronStatsCauldronLvsBrewBonus",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronStatsCauldronLvsBrewREQ",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cauldronp2wbonusesCauldronBonus",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronp2wbonusesCauldronCosts",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "atomColliderAtomBubbleUpgCost_10_1000000000000",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "thingiesKrukBubblesDaily",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "stuff2PrimeKillroyTOT",
+    "system": "Killroy",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYKillroyRoom",
+    "system": "Killroy",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatArcadeSecPerBall",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatArcadeMaxClaimTime",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "dungeonStatArcadeBallBonus",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningArcadeGballsExtraPCT",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffOmegaArcBallChance",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcArcadeCost",
+    "system": "Arcade",
+    "screen": "Arcade",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "postOfficeINFOBonusAmount",
+    "system": "Post Office",
+    "screen": "Post Office",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "postOfficeINFOAvailablePoints",
+    "system": "Post Office",
+    "screen": "Post Office",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesDailyPOboxes",
+    "system": "Post Office",
+    "screen": "Post Office",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "summoningRooCatchREQS",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRooCatchREQT",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRooCatchREQ",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRooShinyLuck",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningRooRESETbon",
+    "system": "Kangaroo",
+    "screen": "Poppy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "weeklyBossBossHPmax",
+    "system": "Weekly Boss",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "weeklyBossBonusBuffAll",
+    "system": "Weekly Boss",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "weeklyBossBonusDmgAll",
+    "system": "Weekly Boss",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "weeklyBossBonusDmgATTACK",
+    "system": "Weekly Boss",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffBubbaCheapener",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffOrionCheapener",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffPoppyCheapener",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "bubbastuffMeatsliceRate",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "bubbastuffHappinessBonus",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "bubbastuffHappinessLoss",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "bubbastuffDiceMulti",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "bubbastuffSmokeMeatMulti",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "bubbastuffSpareCoinsFindChance",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "bubbastuffUpgCost",
+    "system": "Bubba",
+    "screen": "Bubba",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "workbenchStuffTotalGildedBoostio",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffFlagReq_10",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "workbenchStuffCogBuildClaims",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffCogBuildReq_0_5",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "workbenchStuffTowerBuildReq",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "workbenchStuffTowerMatCost",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "workbenchStuffTowerSaltCost",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "refineryCapMulti",
+    "system": "Refinery",
+    "screen": "Refinery",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "refineryCostsMulti_10",
+    "system": "Refinery",
+    "screen": "Refinery",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "refineryFuelCalc",
+    "system": "Refinery",
+    "screen": "Refinery",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "refineryRewardPct_50",
+    "system": "Refinery",
+    "screen": "Refinery",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffShrineHrREQ_10",
+    "system": "Shrines",
+    "screen": "Shrines",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "atomColliderAtomCost",
+    "system": "Atom Collider",
+    "screen": "Atom Collider",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "atomColliderAtomMaxLv",
+    "system": "Atom Collider",
+    "screen": "Atom Collider",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "atomColliderAtomsAvailableAtAll",
+    "system": "Atom Collider",
+    "screen": "Atom Collider",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffPrayerCost",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "worshipStuffSoulRewards_10",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffWaveMultiplier_10",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffNewTowerCost",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "towerStatsAtkcd_0_10",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "towerStatsCost_0_10",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "towerStatsRange_0_10",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffSkullCurrency",
+    "system": "Worship",
+    "screen": "Prayers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "skillstats2TrappingMinigame",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dreamstuffBarFillReq",
+    "system": "Equinox",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "dreamstuffBarFillRate",
+    "system": "Equinox",
+    "screen": null,
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "dreamstuffUpgMaxLV_3",
+    "system": "Equinox",
+    "screen": null,
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "dreamstuffUpgUnlocked",
+    "system": "Equinox",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatCardChance",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatDungeonPassesUsedAtOnce",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatHP",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatMP",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatSPEED",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatWeaponPower",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonStatBossHPAdjust",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "dungeonStatDropRateAdjust",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "rate",
+    "live": true
+  },
+  {
+    "id": "dungeonStatTimeToEndOfNextHappyHour",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcPassiveStatCost",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcPassiveStatCost2",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcDungeonCreditBonus",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonCalcDungeonKeychainFragBonus",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "dungeonCalcEnhanceDRcost_3",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcRngUpgCost",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "dungeonCalcTraitLvReq",
+    "system": "Dungeons",
+    "screen": null,
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgBONUS",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgBONUS_s0_2",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgBONUS_s0_4",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_1",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_2",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_3",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_4",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_5",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_7",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_8",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_9",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_10",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_11",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingPetUpgMaxLV_s0_12",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "breedingSpecialzOverLVL",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingCrystalmobDropMulti_mushG",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingTotPetsFound",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "petStuffBlockChance",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "chance",
+    "live": true
+  },
+  {
+    "id": "petStuffCritChance",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": "chance",
+    "live": true
+  },
+  {
+    "id": "petStuffTotalDMG",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "petStuffTotalDMG_Basic",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "petStuffTotalHP",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "summoning2RankREQcook",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2RankREQcook_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2RankREQcook_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2RankREQcook_3",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2RankREQcook_4",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoning2BonusMultiCook",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2BonusMultiCook_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2BonusMultiCook_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2BonusMultiCook_3",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2BonusMultiCook_4",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2IsMasteryUnlocked",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cookingRRibbonsMaxLV",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_0_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_0_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_1_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_1_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_2_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_2_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_3",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_3_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_3_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_4",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_4_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_4_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_5",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_5_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_5_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_6",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_6_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_6_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_7",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_7_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_7_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_8",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_8_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_8_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_9",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_9_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingUpgSpiceCostType_9_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_3",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_4",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_5",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_6",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_7",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_8",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingNewKitchenCoinCost_9",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingFireREQlvMULTI",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingReqToCook",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingReqToCook_1",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingReqToCook_2",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingReqToCook_10",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "cookingRCookingReqToCook_30",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "labbBonusLineWidth_s0_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBonusLineWidth_s0_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBonusLineWidth_s0_3",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBonusLineWidth_s0_4",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbPlayer_X",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicGreen",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicGreen_s0_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicGreen_s0_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicGreen_s0_3",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicGreen_s0_4",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicPurple",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicPurple_s0_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicPurple_s0_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicPurple_s0_3",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBubonicPurple_s0_4",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_Cost",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_Cost_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_Cost_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_QTYowned",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_QTYowned_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoCHIP_QTYowned_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_Cost",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_Cost_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_Cost_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_QTYowned",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_QTYowned_1",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbChipRepoJEWEL_QTYowned_2",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffMob",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffRiftBonus",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffRiftBonus_1",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffRiftBonus_2",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffRiftBonus_3",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffRiftBonus_4",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "riftStuffMobRespBase",
+    "system": "Rift",
+    "screen": null,
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainBonTOT",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesOpalsOwnedToInvest",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "holesBuildCost_1",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Engineer",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesBuildCost_2",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Engineer",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesBuildCost_3",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Engineer",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesBuildCost_4",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Engineer",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesCosmoUpgCoded",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesCosmoUpgCoded_1",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesCosmoUpgCoded_2",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesEnhanceMaxLV",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesEnhanceMaxLV_1",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesEnhanceMaxLV_2",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_1",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_5",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_8",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_11",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_12",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_13",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementMulti_14",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_0_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_1_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_2_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_3_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_5_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_6_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_7_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_8_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_9_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_10_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_11_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_12_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_13_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMeasurementQTYfound_14_99",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers › Measurements",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesBucketsOwned",
+    "system": "The Hole",
+    "screen": "The Well",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesBraveryBlueChestChanceDEC",
+    "system": "The Hole",
+    "screen": "Bravery",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "holesJusticeBlueChestChanceDEC",
+    "system": "The Hole",
+    "screen": "Justice",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "holesBraverySwordsOwned",
+    "system": "The Hole",
+    "screen": "Bravery",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesMaxRerolls",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesMaxRevisions",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesBraveryMonsterHP",
+    "system": "The Hole",
+    "screen": "Bravery",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "holesWattempts",
+    "system": "The Hole",
+    "screen": "Wisdom",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "holesWinstamatches",
+    "system": "The Hole",
+    "screen": "Wisdom",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "holesWtimePerMatch",
+    "system": "The Hole",
+    "screen": "Wisdom",
+    "notShown": "rate",
+    "live": true
+  },
+  {
+    "id": "holesHarpPOWperHR",
+    "system": "The Hole",
+    "screen": "The Harp",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "holesHarpNoteProduced",
+    "system": "The Hole",
+    "screen": "The Harp",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "holesHarpOpalOdds",
+    "system": "The Hole",
+    "screen": "The Harp",
+    "notShown": "chance",
+    "live": true
+  },
+  {
+    "id": "holesLampWishCost_1",
+    "system": "The Hole",
+    "screen": "The Lamp",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesLampWishCost_2",
+    "system": "The Hole",
+    "screen": "The Lamp",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesMonarchHP",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesTempleTorchCost",
+    "system": "The Hole",
+    "screen": "Temple",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_0_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_0_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_1_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_1_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_2_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holesFountMarbleizeCost_2_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_0_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_0_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_1_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_1_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_2_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainMarbleBonNEXT_2_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2FountainBarSpeed_1",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "holes2FountainBarSpeed_2",
+    "system": "The Hole",
+    "screen": "Fountain",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "holes2CglunkoAFKgains",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "holes2CglunkoMKtier",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holes2CglunkoRespawn",
+    "system": "The Hole",
+    "screen": "The Hole › Villagers",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_1",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_2",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_3",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_4",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_5",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_6",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStoneMAX_7",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "holesAmpStonesOwned",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesAmpDebuff_2",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesAmpDebuff_5",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesAmpDebuff_6",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesAmpDebuff_7",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "holesFearMAX",
+    "system": "Amps",
+    "screen": "The Den",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq_1",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq_2",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq_3",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq_4",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityStyleLvReq_5",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "divinityDivMulti_1",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "divinityDivMulti_3",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "divinityDivMulti_4",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingArtifactChance",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "sailingArtifactChance_1",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "sailingRareTreasureChance",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_0_1",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_1",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_1_1",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_2",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_3",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBoatUpgCostType_4",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingBuyCaptainCostType",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sailingIslandDistance",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingIslandDistance_1",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingIslandDistance_2",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingIslandDistance_3",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingIslandDistance_4",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeBoxCost_1",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeBoxCost_2",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSuperbitCost_1",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSuperbitCost_3",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSuperbitCost_4",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeExtraLuckFromEvo",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeExtraLuckFromEvo_1",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeExtraLuckFromEvo_2",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeRatBitMulti",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeRatShopBonuses",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeRatShopCost",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeMaxSnailLV",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeImportItemBonus",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeImportItemBonus_3",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeImportItemBonus_4",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsNextCropChanceDENOM",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsLandRank5thColumnMaxLV",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsPCTofExoticPurchasesFREE",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsExoticLVQTY",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsExoticOrganicsLEFT",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsMarketCostType",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsMarketMaxLV",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsCropsFound",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaEmporiumBonus",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaAvailableEmporiumPurchases",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneCRITDMG",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneMASTERY",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeRingDropQuality",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeTenteyeclePCT",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeWepDropQuality",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneAttackSpdPCT",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneCRITPCT",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneDMG",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneMapMulti",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeRingDropChance",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "arcaneTypeWepDropChance",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneTachyonQTYbase",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneTachyonType",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeKillsReq",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "arcaneTypeTimeLeft",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassDustQTYbase",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassDustType",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerTempestWeaponXtraPowerChance",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "windwalkerPortalCostQTY",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "windwalkerPortalCostType",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "windwalkerInitializeTitanHP",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerMobWeakness",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerTitanKillReqTown",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireCRITDMG",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireDEF",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireMASTERY",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireACC",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireCRITPCT",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireHP",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireBoneQTYbase",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireBoneType",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesMaxEmperorAttemptStack",
+    "system": "Emperor",
+    "screen": "Emperor Showdown",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "thingiesDailyEmperorTries",
+    "system": "Emperor",
+    "screen": "Emperor Showdown",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "royalGSFmaxLV",
+    "system": "Royal Armory",
+    "screen": "Royal Armory",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "royalGParchmentDouble",
+    "system": "Royal Armory",
+    "screen": "Royal Armory",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "royalGParchmentRecycle",
+    "system": "Royal Armory",
+    "screen": "Royal Armory",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "royalGRatDMG",
+    "system": "Royal Armory",
+    "screen": "Royal Armory",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "royalGRatResp",
+    "system": "Royal Armory",
+    "screen": "Royal Armory",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesLegendPTSspent",
+    "system": "Legend Talents",
+    "screen": "Legend Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkMiscDropChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "spelunkGrandDiscoveriesTotal",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkTollExitTax",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkOverstimBonus2",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkElixirMaxDupes",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "spelunkElixirSlotsOwned",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkRockAmber",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "spelunkRockHP",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "spelunkRockPOWreq",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "cost",
+    "live": true
+  },
+  {
+    "id": "spelunkBigFishCost",
+    "system": "Big Fish",
+    "screen": "Spelunking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "spelunkIsBigFishUpgUnlocked",
+    "system": "Big Fish",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffGridPTSspent_m1",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffMagnifiersPerSlot",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesClamPromochance",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "thingiesClamzHP_1",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesClamBlackPearlValue",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesClamPearl10x",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesClamCost_9",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "thingiesClamMobs",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2MeritocBonusz_9",
+    "system": "Meritocracy",
+    "screen": "Multi Meritocracy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2MeritocCanVote",
+    "system": "Meritocracy",
+    "screen": "Multi Meritocracy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesLegendPTSbonus",
+    "system": "Legend Talents",
+    "screen": "Legend Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesZenithMarketBonus",
+    "system": "Zenith Market",
+    "screen": "Zenith Market",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesOrbletMarketBonus",
+    "system": "Orblet Market",
+    "screen": "Lil Orblet Shop",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadMinesOpp",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadDailyTries",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "mineheadCurrentOutgoingDMG",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "sushiStuffCurrencyPerTier_20",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sushiStuffFuelCost",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "sushiStuffUpgLvREQ",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "jellyOperationBossAtkCD",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "jellyOperationDailyTries",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffCost",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_2",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_6",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_13",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_18",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_25",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_26",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_27",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_28",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMissionProg_29",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffJellyOpDoublersLEFT",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffMineheadDoublersLEFT",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffSushiDoublersLEFT",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffOrganicLabelOwned",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesDancingCoralCOST",
+    "system": "Coral Reef",
+    "screen": "Coral Reef",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "thingiesCoralKidUpgCost_1",
+    "system": "Coral Kid",
+    "screen": "Coral Kid",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "hourlyKillRateMining",
+    "system": "Mining",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Mining",
+    "system": "Mining",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "anvilProduceStatsProdSpdBonus",
+    "system": "Smithing",
+    "screen": "Anvil › Produce",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "anvilProduceStatsProdSpdBonusFromAGI",
+    "system": "Smithing",
+    "screen": "Anvil › Produce",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "forgeStats_2",
+    "system": "Smithing",
+    "screen": "Anvil › Produce",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "forgeStats_5",
+    "system": "Smithing",
+    "screen": "Anvil › Produce",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "hourlyKillRateChoppin",
+    "system": "Choppin",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Choppin",
+    "system": "Choppin",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Fishing",
+    "system": "Fishing",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "fishingToolkitEXP",
+    "system": "Fishing",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "fishingToolkitPOW",
+    "system": "Fishing",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "fishingToolkitSPEED",
+    "system": "Fishing",
+    "screen": "Items › Skills",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronStatsCauldronLvsBrewBonus_0_2",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "cauldronStatsMaxCauldronQTY",
+    "system": "Alchemy",
+    "screen": "Alchemy",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "hourlyKillRateCatching",
+    "system": "Catching",
+    "screen": "Items › Skills › Catching",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Catching",
+    "system": "Catching",
+    "screen": "Items › Skills › Catching",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "trappingStuffsNumOfTrapsPlaceable",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsBaseQTY_1",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsCollectAllPCT",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsCollectAllPCTexp",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsEfficiencyBonusQTY",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsRareBonusOnOpen",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "trappingStuffsRareBonusOnOpenMULTI",
+    "system": "Trapping",
+    "screen": "Trapping",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffExtraBuildSPDmulti",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffExtraConEXPmulti",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffExtraFlaggyRatemulti",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_1",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_2",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_3",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_4",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_5",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffConstMasteryBonus_6",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffAdditionExtraPrinting",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffExtraPrinting",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffPrinterBigSlots",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffPrinterSampleSlots",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffCogSlots",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffTowerBuildSlots",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffMinBookLv",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "workbenchStuffExtraMaxLvAtom_50",
+    "system": "Construction",
+    "screen": "Construction",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffSoulRewards",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffExpRewards",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffWaveMultiplier",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffTotemHPtotal",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffEfficiencyBonusQTY",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "worshipStuffSkullCurrency_10",
+    "system": "Worship",
+    "screen": "Worship Totem",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Cooking",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "cookingRCookingMealBonusMultioo",
+    "system": "Cooking",
+    "screen": "Cooking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingPetQTYonBreed",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingCrystalmobDropMulti_Crystal0",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingGeneticsPerTrashPet",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingFenceYardSlots",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "breedingPetBattleSlots",
+    "system": "Breeding",
+    "screen": "Breeding",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Laboratory",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "labbDist_Player",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "labbBonusLineWidth",
+    "system": "Laboratory",
+    "screen": "Lab",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingAncientChances",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingAncientChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingEldritchChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingOmnipotentChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingSovereignChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingTranscendentChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingVerisimilitudeChances_5",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingBoatArtiMulti",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingBoatValue",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sailingCloudDiscoverBonus",
+    "system": "Sailing",
+    "screen": "Sailing",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "divinityDivMulti",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "divinityBlessingMaxLV",
+    "system": "Divinity",
+    "screen": "Divinity",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSproutCapacity",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSproutGrowthCHANCE_m1",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSproutGrowthCHANCEperMUT",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSproutValueTOTAL",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeSproutMaxEvo",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeLVupChance",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeNewMutantChanceDEC",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypePaletteLuck",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "gamingStatTypeLogGameMulti",
+    "system": "Gaming",
+    "screen": "Gaming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsNextOGchance",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsOGmulti",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsCropsBonusValue_0_69420",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsPlotRankGain",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsStickerOdds",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsStickerOddsMulti",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaDoor",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaGloveSPD",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaUntie",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningManaStart",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningUnitDODGE",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningSpikePlacementDMG",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "hourlyKillRateSpelunking",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "runCodeOfTypeXforThingYChanceToHarvest_Spelunking",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "spelunkPOWbase",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkPOWmulti",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkBonusDMG",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkOverstimFillRate",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkStaminaCostMulti",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "spelunkAmberDailyHaul",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkAmberDropChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkAmberDropChance2nd",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkNovaBlastHitChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkShadowStrikeChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkExaltDropChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkPrismaDropChance",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffAFKgainsRatePCT",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffResearchEXPrateObj",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffObservationInsightExpRate",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffMaxRoll",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffMinRoll",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffRollsPerDay",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffKaleiMultiTot",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  }
+]

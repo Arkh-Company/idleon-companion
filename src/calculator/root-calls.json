@@ -1,0 +1,995 @@
+{
+  "damageMax": ["DamageDealed", ["Max", 0, 0]],
+  "damageMin": ["DamageDealed", ["Min", 0, 0]],
+  "hp": ["PlayerHPmax", [0, 0, 0]],
+  "mp": ["PlayerMPmax", [0, 0, 0]],
+  "accuracy": ["PlayerAccTot", [0, 0, 0]],
+  "str": ["TotalStats", ["STR", 0, 0]],
+  "agi": ["TotalStats", ["AGI", 0, 0]],
+  "wis": ["TotalStats", ["WIS", 0, 0]],
+  "luk": ["TotalStats", ["LUK", 0, 0]],
+  "dropRate": ["TotalStats", ["Drop_Rarity", 0, 0]],
+  "afkGains": ["AFKgainrates", ["Fighting", 0, 0]],
+  "thingiesSuperTalentPTSLVgiven": [
+    "Thingies",
+    ["SuperTalentPTS_LVgiven", 0, 0]
+  ],
+  "thingiesSuperTalentPTSunlockedstatus": [
+    "Thingies",
+    ["SuperTalentPTS_unlockedstatus", 0, 0]
+  ],
+  "runCodeOfTypeXforThingYTalentBannedforAllLV_s49": [
+    "RunCodeOfTypeXforThingY",
+    ["TalentBannedforAllLV", "49"]
+  ],
+  "runCodeOfTypeXforThingYTalentBannedforAllLV_s227": [
+    "RunCodeOfTypeXforThingY",
+    ["TalentBannedforAllLV", "227"]
+  ],
+  "thingiesExtraInventory": ["Thingies", ["ExtraInventory", 0, 0]],
+  "thingiesExtraStorage": ["Thingies", ["ExtraStorage", 0, 0]],
+  "thingiesFilterslots": ["Thingies", ["Filterslots", 0, 0]],
+  "playerReach": ["PlayerReach", [0]],
+  "arbitraryCodeHitChancePCT": ["ArbitraryCode", ["HitChancePCT"]],
+  "runCodeOfTypeXforThingYAllTalentLV": [
+    "RunCodeOfTypeXforThingY",
+    ["AllTalentLV", "0"]
+  ],
+  "runCodeOfTypeXforThingYAllTalentLVz_s0_0": [
+    "RunCodeOfTypeXforThingY",
+    ["AllTalentLVz", "0|0"]
+  ],
+  "hourlyKillRateFighting": ["HourlyKillRate", ["Fighting"]],
+  "hourlyKillRateSurvivabilityPCT": ["HourlyKillRate", ["SurvivabilityPCT"]],
+  "afkfoodsTimeReduxFighting": ["AFKfoodsTimeRedux", ["Fighting"]],
+  "talentCalc_146": ["TalentCalc", [146]],
+  "talentCalc_616": ["TalentCalc", [616]],
+  "talentCalc_620": ["TalentCalc", [620]],
+  "talentCalc_645": ["TalentCalc", [645]],
+  "talentCalc_650": ["TalentCalc", [650]],
+  "talentCalc_m2": ["TalentCalc", [-2]],
+  "talentCalc_m3": ["TalentCalc", [-3]],
+  "talentCalc_m4": ["TalentCalc", [-4]],
+  "talentCalc_m6": ["TalentCalc", [-6]],
+  "talentCalc_m7": ["TalentCalc", [-7]],
+  "talentCalc_m9": ["TalentCalc", [-9]],
+  "thingiesHavebani": ["Thingies", ["Have_ban_i", 0, 0]],
+  "thingiesHavebanj": ["Thingies", ["Have_ban_j", 0, 0]],
+  "thingiesHavebank": ["Thingies", ["Have_ban_k", 0, 0]],
+  "thingiesHavebanl": ["Thingies", ["Have_ban_l", 0, 0]],
+  "thingiesHavebanm": ["Thingies", ["Have_ban_m", 0, 0]],
+  "thingiesHavebano": ["Thingies", ["Have_ban_o", 0, 0]],
+  "thingiesHavebonf": ["Thingies", ["Have_bon_f", 0, 0]],
+  "familyBonsuesREAL_16_0_2019": ["FamilyBonsuesREAL", [16, 0, 2019]],
+  "familyBonsuesREAL_16_1_2019": ["FamilyBonsuesREAL", [16, 1, 2019]],
+  "summoningEventShopOwned_33": ["Summoning", ["EventShopOwned", 33, 0]],
+  "riftStuffGildedStampChance": ["RiftStuff", ["gildedStampChance", 0]],
+  "windwalkerStampDoubler": ["Windwalker", ["StampDoubler", 0, 0]],
+  "runCodeOfTypeXforThingYBuyPrice_Copper": [
+    "RunCodeOfTypeXforThingY",
+    ["BuyPrice", "Copper"]
+  ],
+  "arbitraryCodeStatueExpReq0": ["ArbitraryCode", ["StatueExpReq0"]],
+  "tower2StatsStatueGoldCost_0_1": ["Tower2Stats", ["StatueGoldCost", 0, 1]],
+  "arbitraryCodeStatueOnyxOwned": ["ArbitraryCode", ["StatueOnyxOwned"]],
+  "arbitraryCodeStatueZenithOwned": ["ArbitraryCode", ["StatueZenithOwned"]],
+  "riftStuffEnabledStarSigns": ["RiftStuff", ["enabledStarSigns", 0]],
+  "anvilProduceStatsCosts1": ["AnvilProduceStats", ["Costs1"]],
+  "anvilProduceStatsCosts2": ["AnvilProduceStats", ["Costs2"]],
+  "forgeEtcDetailsBarsMade": ["ForgeEtcDetails", ["BarsMade", 0]],
+  "forgeEtcDetailsCardChanceBONUS": ["ForgeEtcDetails", ["CardChanceBONUS", 0]],
+  "runCodeOfTypeXforThingYObolRerollCostMoney_ObolBronzeDamage": [
+    "RunCodeOfTypeXforThingY",
+    ["ObolRerollCostMoney", "ObolBronzeDamage"]
+  ],
+  "summoning2OwlFeatherRate": ["Summoning2", ["OwlFeatherRate", 0, 0]],
+  "summoningOwlCost": ["Summoning", ["OwlCost", 0, 0]],
+  "summoningRooCatchRateS": ["Summoning", ["RooCatchRate_S", 0, 0]],
+  "summoningRooTarOwned": ["Summoning", ["RooTarOwned", 0, 0]],
+  "summoningRooCostT": ["Summoning", ["RooCost_T", 0, 0]],
+  "summoningRooCost": ["Summoning", ["RooCost", 0, 0]],
+  "cauldronStatsBubbleBonus": ["CauldronStats", ["BubbleBonus", 0, 0, 0]],
+  "cauldronStatsNumBubblesUnlocked": [
+    "CauldronStats",
+    ["NumBubblesUnlocked", 0, 0, 0]
+  ],
+  "cauldronStatsCauldronLvsBrewBonus": [
+    "CauldronStats",
+    ["CauldronLvsBrewBonus", 0, 0, 0]
+  ],
+  "cauldronStatsCauldronLvsBrewREQ": [
+    "CauldronStats",
+    ["CauldronLvsBrewREQ", 0, 0, 0]
+  ],
+  "cauldronp2wbonusesCauldronBonus": [
+    "cauldronp2wbonuses",
+    ["CauldronBonus", 0, 0, 0]
+  ],
+  "cauldronp2wbonusesCauldronCosts": [
+    "cauldronp2wbonuses",
+    ["CauldronCosts", 0, 0, 0]
+  ],
+  "atomColliderAtomBubbleUpgCost_10_1000000000000": [
+    "AtomCollider",
+    ["AtomBubbleUpgCost", 10, 1000000000000]
+  ],
+  "thingiesKrukBubblesDaily": ["Thingies", ["KrukBubblesDaily", 0, 0]],
+  "stuff2PrimeKillroyTOT": ["Stuff2", ["PrimeKillroyTOT", 0, 0]],
+  "runCodeOfTypeXforThingYKillroyRoom": [
+    "RunCodeOfTypeXforThingY",
+    ["KillroyRoom", 0]
+  ],
+  "dungeonStatArcadeSecPerBall": ["DungeonStat", ["Arcade_SecPerBall"]],
+  "dungeonStatArcadeMaxClaimTime": ["DungeonStat", ["Arcade_MaxClaimTime"]],
+  "dungeonStatArcadeBallBonus": ["DungeonStat", ["Arcade_BallBonus"]],
+  "summoningArcadeGballsExtraPCT": [
+    "Summoning",
+    ["ArcadeGballsExtraPCT", 0, 0]
+  ],
+  "menagerieStuffOmegaArcBallChance": [
+    "MenagerieStuff",
+    ["OmegaArcBallChance", 0, 0]
+  ],
+  "dungeonCalcArcadeCost": ["DungeonCalc", ["ArcadeCost", 0]],
+  "postOfficeINFOBonusAmount": ["PostOfficeINFO", ["BonusAmount", 0, 0]],
+  "postOfficeINFOAvailablePoints": [
+    "PostOfficeINFO",
+    ["AvailablePoints", 0, 0]
+  ],
+  "thingiesDailyPOboxes": ["Thingies", ["DailyPOboxes", 0, 0]],
+  "summoningRooCatchREQS": ["Summoning", ["RooCatchREQ_S", 0, 0]],
+  "summoningRooCatchREQT": ["Summoning", ["RooCatchREQ_T", 0, 0]],
+  "summoningRooCatchREQ": ["Summoning", ["RooCatchREQ", 0, 0]],
+  "summoningRooShinyLuck": ["Summoning", ["RooShinyLuck", 0, 0]],
+  "summoningRooRESETbon": ["Summoning", ["RooRESETbon", 0, 0]],
+  "weeklyBossBossHPmax": ["WeeklyBoss", ["BossHPmax", 0]],
+  "weeklyBossBonusBuffAll": ["WeeklyBoss", ["BonusBuffAll", 0]],
+  "weeklyBossBonusDmgAll": ["WeeklyBoss", ["BonusDmgAll", 0]],
+  "weeklyBossBonusDmgATTACK": ["WeeklyBoss", ["BonusDmgATTACK", 0]],
+  "menagerieStuffBubbaCheapener": ["MenagerieStuff", ["BubbaCheapener", 0, 0]],
+  "menagerieStuffOrionCheapener": ["MenagerieStuff", ["OrionCheapener", 0, 0]],
+  "menagerieStuffPoppyCheapener": ["MenagerieStuff", ["PoppyCheapener", 0, 0]],
+  "bubbastuffMeatsliceRate": ["Bubbastuff", ["MeatsliceRate", 0, 0]],
+  "bubbastuffHappinessBonus": ["Bubbastuff", ["HappinessBonus", 0, 0]],
+  "bubbastuffHappinessLoss": ["Bubbastuff", ["HappinessLoss", 0, 0]],
+  "bubbastuffDiceMulti": ["Bubbastuff", ["Dice_Multi", 0, 0]],
+  "bubbastuffSmokeMeatMulti": ["Bubbastuff", ["SmokeMeat_Multi", 0, 0]],
+  "bubbastuffSpareCoinsFindChance": [
+    "Bubbastuff",
+    ["SpareCoins_FindChance", 0, 0]
+  ],
+  "bubbastuffUpgCost": ["Bubbastuff", ["UpgCost", 0, 0]],
+  "workbenchStuffTotalGildedBoostio": [
+    "WorkbenchStuff",
+    ["TotalGildedBoostio", 0, 0]
+  ],
+  "workbenchStuffFlagReq_10": ["WorkbenchStuff", ["FlagReq", 10, 0]],
+  "workbenchStuffCogBuildClaims": ["WorkbenchStuff", ["CogBuildClaims", 0, 0]],
+  "workbenchStuffCogBuildReq_0_5": ["WorkbenchStuff", ["CogBuildReq", 0, 5]],
+  "workbenchStuffTowerBuildReq": ["WorkbenchStuff", ["TowerBuildReq", 0, 0]],
+  "workbenchStuffTowerMatCost": ["WorkbenchStuff", ["TowerMatCost", 0, 0]],
+  "workbenchStuffTowerSaltCost": ["WorkbenchStuff", ["TowerSaltCost", 0, 0]],
+  "refineryCapMulti": ["Refinery", ["CapMulti", 0]],
+  "refineryCostsMulti_10": ["Refinery", ["CostsMulti", 10]],
+  "refineryFuelCalc": ["Refinery", ["FuelCalc", 0]],
+  "refineryRewardPct_50": ["Refinery", ["RewardPct", 50]],
+  "workbenchStuffShrineHrREQ_10": ["WorkbenchStuff", ["ShrineHrREQ", 10, 0]],
+  "atomColliderAtomCost": ["AtomCollider", ["AtomCost", 0, 0]],
+  "atomColliderAtomMaxLv": ["AtomCollider", ["AtomMaxLv", 0, 0]],
+  "atomColliderAtomsAvailableAtAll": [
+    "AtomCollider",
+    ["AtomsAvailableAtAll", 0, 0]
+  ],
+  "worshipStuffPrayerCost": ["WorshipStuff", ["PrayerCost", 0]],
+  "worshipStuffSoulRewards_10": ["WorshipStuff", ["SoulRewards", 10]],
+  "worshipStuffWaveMultiplier_10": ["WorshipStuff", ["WaveMultiplier", 10]],
+  "worshipStuffNewTowerCost": ["WorshipStuff", ["NewTowerCost", 0]],
+  "towerStatsAtkcd_0_10": ["TowerStats", ["atkcd", 0, 10]],
+  "towerStatsCost_0_10": ["TowerStats", ["cost", 0, 10]],
+  "towerStatsRange_0_10": ["TowerStats", ["range", 0, 10]],
+  "worshipStuffSkullCurrency": ["WorshipStuff", ["SkullCurrency", 0]],
+  "skillstats2TrappingMinigame": ["skillstats2", ["TrappingMinigame"]],
+  "dreamstuffBarFillReq": ["Dreamstuff", ["BarFillReq", 0]],
+  "dreamstuffBarFillRate": ["Dreamstuff", ["BarFillRate", 0]],
+  "dreamstuffUpgMaxLV_3": ["Dreamstuff", ["UpgMaxLV", 3]],
+  "dreamstuffUpgUnlocked": ["Dreamstuff", ["UpgUnlocked", 0]],
+  "dungeonStatCardChance": ["DungeonStat", ["CardChance"]],
+  "dungeonStatDungeonPassesUsedAtOnce": [
+    "DungeonStat",
+    ["DungeonPassesUsedAtOnce"]
+  ],
+  "dungeonStatHP": ["DungeonStat", ["HP"]],
+  "dungeonStatMP": ["DungeonStat", ["MP"]],
+  "dungeonStatSPEED": ["DungeonStat", ["SPEED"]],
+  "dungeonStatWeaponPower": ["DungeonStat", ["Weapon_Power"]],
+  "dungeonStatBossHPAdjust": ["DungeonStat", ["BossHP_Adjust"]],
+  "dungeonStatDropRateAdjust": ["DungeonStat", ["DropRate_Adjust"]],
+  "dungeonStatTimeToEndOfNextHappyHour": [
+    "DungeonStat",
+    ["TimeToEndOfNextHappyHour"]
+  ],
+  "dungeonCalcPassiveStatCost": ["DungeonCalc", ["PassiveStatCost", 0]],
+  "dungeonCalcPassiveStatCost2": ["DungeonCalc", ["PassiveStatCost2", 0]],
+  "dungeonCalcDungeonCreditBonus": ["DungeonCalc", ["DungeonCredit_Bonus", 0]],
+  "dungeonCalcDungeonKeychainFragBonus": [
+    "DungeonCalc",
+    ["DungeonKeychainFrag_Bonus", 0]
+  ],
+  "dungeonCalcEnhanceDRcost_3": ["DungeonCalc", ["Enhance_DRcost", 3]],
+  "dungeonCalcRngUpgCost": ["DungeonCalc", ["RngUpgCost", 0]],
+  "dungeonCalcTraitLvReq": ["DungeonCalc", ["TraitLvReq", 0]],
+  "breedingPetUpgBONUS": ["Breeding", ["PetUpgBONUS", "0", 0, 0]],
+  "breedingPetUpgBONUS_s0_2": ["Breeding", ["PetUpgBONUS", "0", 2, 0]],
+  "breedingPetUpgBONUS_s0_4": ["Breeding", ["PetUpgBONUS", "0", 4, 0]],
+  "breedingPetUpgMaxLV": ["Breeding", ["PetUpgMaxLV", "0", 0, 0]],
+  "breedingPetUpgMaxLV_s0_1": ["Breeding", ["PetUpgMaxLV", "0", 1, 0]],
+  "breedingPetUpgMaxLV_s0_2": ["Breeding", ["PetUpgMaxLV", "0", 2, 0]],
+  "breedingPetUpgMaxLV_s0_3": ["Breeding", ["PetUpgMaxLV", "0", 3, 0]],
+  "breedingPetUpgMaxLV_s0_4": ["Breeding", ["PetUpgMaxLV", "0", 4, 0]],
+  "breedingPetUpgMaxLV_s0_5": ["Breeding", ["PetUpgMaxLV", "0", 5, 0]],
+  "breedingPetUpgMaxLV_s0_7": ["Breeding", ["PetUpgMaxLV", "0", 7, 0]],
+  "breedingPetUpgMaxLV_s0_8": ["Breeding", ["PetUpgMaxLV", "0", 8, 0]],
+  "breedingPetUpgMaxLV_s0_9": ["Breeding", ["PetUpgMaxLV", "0", 9, 0]],
+  "breedingPetUpgMaxLV_s0_10": ["Breeding", ["PetUpgMaxLV", "0", 10, 0]],
+  "breedingPetUpgMaxLV_s0_11": ["Breeding", ["PetUpgMaxLV", "0", 11, 0]],
+  "breedingPetUpgMaxLV_s0_12": ["Breeding", ["PetUpgMaxLV", "0", 12, 0]],
+  "breedingSpecialzOverLVL": ["Breeding", ["SpecialzOverLVL", "0", 0, 0]],
+  "breedingCrystalmobDropMulti_mushG": [
+    "Breeding",
+    ["crystalmob_DropMulti", "mushG", 0, 0]
+  ],
+  "breedingTotPetsFound": ["Breeding", ["TotPetsFound", "0", 0, 0]],
+  "petStuffBlockChance": ["PetStuff", ["BlockChance", "0", 0, 0]],
+  "petStuffCritChance": ["PetStuff", ["CritChance", "0", 0, 0]],
+  "petStuffTotalDMG": ["PetStuff", ["TotalDMG", "0", 0, 0]],
+  "petStuffTotalDMG_Basic": ["PetStuff", ["TotalDMG", "Basic", 0, 0]],
+  "petStuffTotalHP": ["PetStuff", ["TotalHP", "0", 0, 0]],
+  "summoning2RankREQcook": ["Summoning2", ["RankREQcook", 0, 0]],
+  "summoning2RankREQcook_1": ["Summoning2", ["RankREQcook", 1, 0]],
+  "summoning2RankREQcook_2": ["Summoning2", ["RankREQcook", 2, 0]],
+  "summoning2RankREQcook_3": ["Summoning2", ["RankREQcook", 3, 0]],
+  "summoning2RankREQcook_4": ["Summoning2", ["RankREQcook", 4, 0]],
+  "summoning2BonusMultiCook": ["Summoning2", ["BonusMultiCook", 0, 0]],
+  "summoning2BonusMultiCook_1": ["Summoning2", ["BonusMultiCook", 1, 0]],
+  "summoning2BonusMultiCook_2": ["Summoning2", ["BonusMultiCook", 2, 0]],
+  "summoning2BonusMultiCook_3": ["Summoning2", ["BonusMultiCook", 3, 0]],
+  "summoning2BonusMultiCook_4": ["Summoning2", ["BonusMultiCook", 4, 0]],
+  "summoning2IsMasteryUnlocked": ["Summoning2", ["isMasteryUnlocked", 0, 0]],
+  "cookingRRibbonsMaxLV": ["CookingR", ["RibbonsMaxLV", 0, 0]],
+  "cookingRCookingUpgSpiceCostType": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 0, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_0_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 0, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_0_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 0, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 1, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_1_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 1, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_1_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 1, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 2, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_2_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 2, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_2_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 2, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_3": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 3, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_3_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 3, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_3_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 3, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_4": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 4, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_4_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 4, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_4_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 4, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_5": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 5, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_5_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 5, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_5_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 5, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_6": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 6, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_6_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 6, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_6_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 6, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_7": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 7, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_7_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 7, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_7_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 7, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_8": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 8, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_8_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 8, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_8_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 8, 2]
+  ],
+  "cookingRCookingUpgSpiceCostType_9": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 9, 0]
+  ],
+  "cookingRCookingUpgSpiceCostType_9_1": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 9, 1]
+  ],
+  "cookingRCookingUpgSpiceCostType_9_2": [
+    "CookingR",
+    ["CookingUpgSpiceCostType", 9, 2]
+  ],
+  "cookingRCookingNewKitchenCoinCost": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 0, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_1": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 1, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_2": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 2, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_3": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 3, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_4": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 4, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_5": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 5, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_6": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 6, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_7": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 7, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_8": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 8, 0]
+  ],
+  "cookingRCookingNewKitchenCoinCost_9": [
+    "CookingR",
+    ["CookingNewKitchenCoinCost", 9, 0]
+  ],
+  "cookingRCookingFireREQlvMULTI": [
+    "CookingR",
+    ["CookingFireREQlvMULTI", 0, 0]
+  ],
+  "cookingRCookingReqToCook": ["CookingR", ["CookingReqToCook", 0, 0]],
+  "cookingRCookingReqToCook_1": ["CookingR", ["CookingReqToCook", 1, 0]],
+  "cookingRCookingReqToCook_2": ["CookingR", ["CookingReqToCook", 2, 0]],
+  "cookingRCookingReqToCook_10": ["CookingR", ["CookingReqToCook", 10, 0]],
+  "cookingRCookingReqToCook_30": ["CookingR", ["CookingReqToCook", 30, 0]],
+  "labbBonusLineWidth_s0_1": ["Labb", ["BonusLineWidth", "0", 1, 0]],
+  "labbBonusLineWidth_s0_2": ["Labb", ["BonusLineWidth", "0", 2, 0]],
+  "labbBonusLineWidth_s0_3": ["Labb", ["BonusLineWidth", "0", 3, 0]],
+  "labbBonusLineWidth_s0_4": ["Labb", ["BonusLineWidth", "0", 4, 0]],
+  "labbPlayer_X": ["Labb", ["Player", "X", 0, 0]],
+  "labbBubonicGreen": ["Labb", ["BubonicGreen", "0", 0, 0]],
+  "labbBubonicGreen_s0_1": ["Labb", ["BubonicGreen", "0", 1, 0]],
+  "labbBubonicGreen_s0_2": ["Labb", ["BubonicGreen", "0", 2, 0]],
+  "labbBubonicGreen_s0_3": ["Labb", ["BubonicGreen", "0", 3, 0]],
+  "labbBubonicGreen_s0_4": ["Labb", ["BubonicGreen", "0", 4, 0]],
+  "labbBubonicPurple": ["Labb", ["BubonicPurple", "0", 0, 0]],
+  "labbBubonicPurple_s0_1": ["Labb", ["BubonicPurple", "0", 1, 0]],
+  "labbBubonicPurple_s0_2": ["Labb", ["BubonicPurple", "0", 2, 0]],
+  "labbBubonicPurple_s0_3": ["Labb", ["BubonicPurple", "0", 3, 0]],
+  "labbBubonicPurple_s0_4": ["Labb", ["BubonicPurple", "0", 4, 0]],
+  "labbChipRepoCHIP_Cost": ["Labb", ["ChipRepoCHIP", "Cost", 0, 0]],
+  "labbChipRepoCHIP_Cost_1": ["Labb", ["ChipRepoCHIP", "Cost", 1, 0]],
+  "labbChipRepoCHIP_Cost_2": ["Labb", ["ChipRepoCHIP", "Cost", 2, 0]],
+  "labbChipRepoCHIP_QTYowned": ["Labb", ["ChipRepoCHIP", "QTYowned", 0, 0]],
+  "labbChipRepoCHIP_QTYowned_1": ["Labb", ["ChipRepoCHIP", "QTYowned", 1, 0]],
+  "labbChipRepoCHIP_QTYowned_2": ["Labb", ["ChipRepoCHIP", "QTYowned", 2, 0]],
+  "labbChipRepoJEWEL_Cost": ["Labb", ["ChipRepoJEWEL", "Cost", 0, 0]],
+  "labbChipRepoJEWEL_Cost_1": ["Labb", ["ChipRepoJEWEL", "Cost", 1, 0]],
+  "labbChipRepoJEWEL_Cost_2": ["Labb", ["ChipRepoJEWEL", "Cost", 2, 0]],
+  "labbChipRepoJEWEL_QTYowned": ["Labb", ["ChipRepoJEWEL", "QTYowned", 0, 0]],
+  "labbChipRepoJEWEL_QTYowned_1": ["Labb", ["ChipRepoJEWEL", "QTYowned", 1, 0]],
+  "labbChipRepoJEWEL_QTYowned_2": ["Labb", ["ChipRepoJEWEL", "QTYowned", 2, 0]],
+  "riftStuffMob": ["RiftStuff", ["Mob", 0]],
+  "riftStuffRiftBonus": ["RiftStuff", ["riftBonus", 0]],
+  "riftStuffRiftBonus_1": ["RiftStuff", ["riftBonus", 1]],
+  "riftStuffRiftBonus_2": ["RiftStuff", ["riftBonus", 2]],
+  "riftStuffRiftBonus_3": ["RiftStuff", ["riftBonus", 3]],
+  "riftStuffRiftBonus_4": ["RiftStuff", ["riftBonus", 4]],
+  "riftStuffMobRespBase": ["RiftStuff", ["mobRespBase", 0]],
+  "holes2FountainBonTOT": ["Holes2", ["Fountain_BonTOT", 0, 0]],
+  "holesOpalsOwnedToInvest": ["Holes", ["OpalsOwnedToInvest", 0, 0]],
+  "holesBuildCost_1": ["Holes", ["BuildCost", 1, 0]],
+  "holesBuildCost_2": ["Holes", ["BuildCost", 2, 0]],
+  "holesBuildCost_3": ["Holes", ["BuildCost", 3, 0]],
+  "holesBuildCost_4": ["Holes", ["BuildCost", 4, 0]],
+  "holesCosmoUpgCoded": ["Holes", ["CosmoUpgCoded", 0, 0]],
+  "holesCosmoUpgCoded_1": ["Holes", ["CosmoUpgCoded", 1, 0]],
+  "holesCosmoUpgCoded_2": ["Holes", ["CosmoUpgCoded", 2, 0]],
+  "holesEnhanceMaxLV": ["Holes", ["EnhanceMaxLV", 0, 0]],
+  "holesEnhanceMaxLV_1": ["Holes", ["EnhanceMaxLV", 1, 0]],
+  "holesEnhanceMaxLV_2": ["Holes", ["EnhanceMaxLV", 2, 0]],
+  "holesMeasurementMulti_1": ["Holes", ["MeasurementMulti", 1, 0]],
+  "holesMeasurementMulti_5": ["Holes", ["MeasurementMulti", 5, 0]],
+  "holesMeasurementMulti_8": ["Holes", ["MeasurementMulti", 8, 0]],
+  "holesMeasurementMulti_11": ["Holes", ["MeasurementMulti", 11, 0]],
+  "holesMeasurementMulti_12": ["Holes", ["MeasurementMulti", 12, 0]],
+  "holesMeasurementMulti_13": ["Holes", ["MeasurementMulti", 13, 0]],
+  "holesMeasurementMulti_14": ["Holes", ["MeasurementMulti", 14, 0]],
+  "holesMeasurementQTYfound_0_99": ["Holes", ["MeasurementQTYfound", 0, 99]],
+  "holesMeasurementQTYfound_1_99": ["Holes", ["MeasurementQTYfound", 1, 99]],
+  "holesMeasurementQTYfound_2_99": ["Holes", ["MeasurementQTYfound", 2, 99]],
+  "holesMeasurementQTYfound_3_99": ["Holes", ["MeasurementQTYfound", 3, 99]],
+  "holesMeasurementQTYfound_5_99": ["Holes", ["MeasurementQTYfound", 5, 99]],
+  "holesMeasurementQTYfound_6_99": ["Holes", ["MeasurementQTYfound", 6, 99]],
+  "holesMeasurementQTYfound_7_99": ["Holes", ["MeasurementQTYfound", 7, 99]],
+  "holesMeasurementQTYfound_8_99": ["Holes", ["MeasurementQTYfound", 8, 99]],
+  "holesMeasurementQTYfound_9_99": ["Holes", ["MeasurementQTYfound", 9, 99]],
+  "holesMeasurementQTYfound_10_99": ["Holes", ["MeasurementQTYfound", 10, 99]],
+  "holesMeasurementQTYfound_11_99": ["Holes", ["MeasurementQTYfound", 11, 99]],
+  "holesMeasurementQTYfound_12_99": ["Holes", ["MeasurementQTYfound", 12, 99]],
+  "holesMeasurementQTYfound_13_99": ["Holes", ["MeasurementQTYfound", 13, 99]],
+  "holesMeasurementQTYfound_14_99": ["Holes", ["MeasurementQTYfound", 14, 99]],
+  "holesBucketsOwned": ["Holes", ["BucketsOwned", 0, 0]],
+  "holesBraveryBlueChestChanceDEC": [
+    "Holes",
+    ["Bravery_BlueChestChanceDEC", 0, 0]
+  ],
+  "holesJusticeBlueChestChanceDEC": [
+    "Holes",
+    ["Justice_BlueChestChanceDEC", 0, 0]
+  ],
+  "holesBraverySwordsOwned": ["Holes", ["Bravery_SwordsOwned", 0, 0]],
+  "holesMaxRerolls": ["Holes", ["MaxRerolls", 0, 0]],
+  "holesMaxRevisions": ["Holes", ["MaxRevisions", 0, 0]],
+  "holesBraveryMonsterHP": ["Holes", ["Bravery_MonsterHP", 0, 0]],
+  "holesWattempts": ["Holes", ["W_attempts", 0, 0]],
+  "holesWinstamatches": ["Holes", ["W_instamatches", 0, 0]],
+  "holesWtimePerMatch": ["Holes", ["W_timePerMatch", 0, 0]],
+  "holesHarpPOWperHR": ["Holes", ["HarpPOWperHR", 0, 0]],
+  "holesHarpNoteProduced": ["Holes", ["HarpNoteProduced", 0, 0]],
+  "holesHarpOpalOdds": ["Holes", ["HarpOpalOdds", 0, 0]],
+  "holesLampWishCost_1": ["Holes", ["LampWishCost", 1, 0]],
+  "holesLampWishCost_2": ["Holes", ["LampWishCost", 2, 0]],
+  "holesMonarchHP": ["Holes", ["MonarchHP", 0, 0]],
+  "holesTempleTorchCost": ["Holes", ["TempleTorchCost", 0, 0]],
+  "holesFountMarbleizeCost": ["Holes", ["Fount_MarbleizeCost", 0, 0]],
+  "holesFountMarbleizeCost_0_1": ["Holes", ["Fount_MarbleizeCost", 0, 1]],
+  "holesFountMarbleizeCost_0_2": ["Holes", ["Fount_MarbleizeCost", 0, 2]],
+  "holesFountMarbleizeCost_1": ["Holes", ["Fount_MarbleizeCost", 1, 0]],
+  "holesFountMarbleizeCost_1_1": ["Holes", ["Fount_MarbleizeCost", 1, 1]],
+  "holesFountMarbleizeCost_1_2": ["Holes", ["Fount_MarbleizeCost", 1, 2]],
+  "holesFountMarbleizeCost_2": ["Holes", ["Fount_MarbleizeCost", 2, 0]],
+  "holesFountMarbleizeCost_2_1": ["Holes", ["Fount_MarbleizeCost", 2, 1]],
+  "holesFountMarbleizeCost_2_2": ["Holes", ["Fount_MarbleizeCost", 2, 2]],
+  "holes2FountainMarbleBonNEXT": ["Holes2", ["Fountain_MarbleBonNEXT", 0, 0]],
+  "holes2FountainMarbleBonNEXT_0_1": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 0, 1]
+  ],
+  "holes2FountainMarbleBonNEXT_0_2": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 0, 2]
+  ],
+  "holes2FountainMarbleBonNEXT_1": ["Holes2", ["Fountain_MarbleBonNEXT", 1, 0]],
+  "holes2FountainMarbleBonNEXT_1_1": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 1, 1]
+  ],
+  "holes2FountainMarbleBonNEXT_1_2": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 1, 2]
+  ],
+  "holes2FountainMarbleBonNEXT_2": ["Holes2", ["Fountain_MarbleBonNEXT", 2, 0]],
+  "holes2FountainMarbleBonNEXT_2_1": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 2, 1]
+  ],
+  "holes2FountainMarbleBonNEXT_2_2": [
+    "Holes2",
+    ["Fountain_MarbleBonNEXT", 2, 2]
+  ],
+  "holes2FountainBarSpeed_1": ["Holes2", ["FountainBar_Speed", 1, 0]],
+  "holes2FountainBarSpeed_2": ["Holes2", ["FountainBar_Speed", 2, 0]],
+  "holes2CglunkoAFKgains": ["Holes2", ["Cglunko_AFKgains", 0, 0]],
+  "holes2CglunkoMKtier": ["Holes2", ["Cglunko_MKtier", 0, 0]],
+  "holes2CglunkoRespawn": ["Holes2", ["Cglunko_Respawn", 0, 0]],
+  "holesAmpStoneMAX": ["Holes", ["AmpStoneMAX", 0, 0]],
+  "holesAmpStoneMAX_1": ["Holes", ["AmpStoneMAX", 1, 0]],
+  "holesAmpStoneMAX_2": ["Holes", ["AmpStoneMAX", 2, 0]],
+  "holesAmpStoneMAX_3": ["Holes", ["AmpStoneMAX", 3, 0]],
+  "holesAmpStoneMAX_4": ["Holes", ["AmpStoneMAX", 4, 0]],
+  "holesAmpStoneMAX_5": ["Holes", ["AmpStoneMAX", 5, 0]],
+  "holesAmpStoneMAX_6": ["Holes", ["AmpStoneMAX", 6, 0]],
+  "holesAmpStoneMAX_7": ["Holes", ["AmpStoneMAX", 7, 0]],
+  "holesAmpStonesOwned": ["Holes", ["AmpStonesOwned", 0, 0]],
+  "holesAmpDebuff_2": ["Holes", ["AmpDebuff", 2, 0]],
+  "holesAmpDebuff_5": ["Holes", ["AmpDebuff", 5, 0]],
+  "holesAmpDebuff_6": ["Holes", ["AmpDebuff", 6, 0]],
+  "holesAmpDebuff_7": ["Holes", ["AmpDebuff", 7, 0]],
+  "holesFearMAX": ["Holes", ["FearMAX", 0, 0]],
+  "divinityStyleLvReq": ["Divinity", ["StyleLvReq", 0, 0]],
+  "divinityStyleLvReq_1": ["Divinity", ["StyleLvReq", 1, 0]],
+  "divinityStyleLvReq_2": ["Divinity", ["StyleLvReq", 2, 0]],
+  "divinityStyleLvReq_3": ["Divinity", ["StyleLvReq", 3, 0]],
+  "divinityStyleLvReq_4": ["Divinity", ["StyleLvReq", 4, 0]],
+  "divinityStyleLvReq_5": ["Divinity", ["StyleLvReq", 5, 0]],
+  "divinityDivMulti_1": ["Divinity", ["DivMulti", 1, 0]],
+  "divinityDivMulti_3": ["Divinity", ["DivMulti", 3, 0]],
+  "divinityDivMulti_4": ["Divinity", ["DivMulti", 4, 0]],
+  "sailingArtifactChance": ["Sailing", ["ArtifactChance", 0, 0]],
+  "sailingArtifactChance_1": ["Sailing", ["ArtifactChance", 1, 0]],
+  "sailingRareTreasureChance": ["Sailing", ["RareTreasureChance", 0, 0]],
+  "sailingBoatUpgCostType": ["Sailing", ["BoatUpgCostType", 0, 0]],
+  "sailingBoatUpgCostType_0_1": ["Sailing", ["BoatUpgCostType", 0, 1]],
+  "sailingBoatUpgCostType_1": ["Sailing", ["BoatUpgCostType", 1, 0]],
+  "sailingBoatUpgCostType_1_1": ["Sailing", ["BoatUpgCostType", 1, 1]],
+  "sailingBoatUpgCostType_2": ["Sailing", ["BoatUpgCostType", 2, 0]],
+  "sailingBoatUpgCostType_3": ["Sailing", ["BoatUpgCostType", 3, 0]],
+  "sailingBoatUpgCostType_4": ["Sailing", ["BoatUpgCostType", 4, 0]],
+  "sailingBuyCaptainCostType": ["Sailing", ["BuyCaptainCostType", 0, 0]],
+  "sailingIslandDistance": ["Sailing", ["IslandDistance", 0, 0]],
+  "sailingIslandDistance_1": ["Sailing", ["IslandDistance", 1, 0]],
+  "sailingIslandDistance_2": ["Sailing", ["IslandDistance", 2, 0]],
+  "sailingIslandDistance_3": ["Sailing", ["IslandDistance", 3, 0]],
+  "sailingIslandDistance_4": ["Sailing", ["IslandDistance", 4, 0]],
+  "gamingStatTypeBoxCost_1": ["GamingStatType", ["BoxCost", 1, 0]],
+  "gamingStatTypeBoxCost_2": ["GamingStatType", ["BoxCost", 2, 0]],
+  "gamingStatTypeSuperbitCost_1": ["GamingStatType", ["SuperbitCost", 1, 0]],
+  "gamingStatTypeSuperbitCost_3": ["GamingStatType", ["SuperbitCost", 3, 0]],
+  "gamingStatTypeSuperbitCost_4": ["GamingStatType", ["SuperbitCost", 4, 0]],
+  "gamingStatTypeExtraLuckFromEvo": [
+    "GamingStatType",
+    ["ExtraLuckFromEvo", 0, 0]
+  ],
+  "gamingStatTypeExtraLuckFromEvo_1": [
+    "GamingStatType",
+    ["ExtraLuckFromEvo", 1, 0]
+  ],
+  "gamingStatTypeExtraLuckFromEvo_2": [
+    "GamingStatType",
+    ["ExtraLuckFromEvo", 2, 0]
+  ],
+  "gamingStatTypeRatBitMulti": ["GamingStatType", ["RatBitMulti", 0, 0]],
+  "gamingStatTypeRatShopBonuses": ["GamingStatType", ["RatShopBonuses", 0, 0]],
+  "gamingStatTypeRatShopCost": ["GamingStatType", ["RatShopCost", 0, 0]],
+  "gamingStatTypeMaxSnailLV": ["GamingStatType", ["MaxSnailLV", 0, 0]],
+  "gamingStatTypeImportItemBonus": [
+    "GamingStatType",
+    ["ImportItemBonus", 0, 0]
+  ],
+  "gamingStatTypeImportItemBonus_3": [
+    "GamingStatType",
+    ["ImportItemBonus", 3, 0]
+  ],
+  "gamingStatTypeImportItemBonus_4": [
+    "GamingStatType",
+    ["ImportItemBonus", 4, 0]
+  ],
+  "farmingStuffsNextCropChanceDENOM": [
+    "FarmingStuffs",
+    ["NextCropChanceDENOM", 0, 0]
+  ],
+  "farmingStuffsLandRank5thColumnMaxLV": [
+    "FarmingStuffs",
+    ["LandRank5thColumnMaxLV", 0, 0]
+  ],
+  "farmingStuffsPCTofExoticPurchasesFREE": [
+    "FarmingStuffs",
+    ["PCTofExoticPurchasesFREE", 0, 0]
+  ],
+  "farmingStuffsExoticLVQTY": ["FarmingStuffs", ["ExoticLVQTY", 0, 0]],
+  "farmingStuffsExoticOrganicsLEFT": [
+    "FarmingStuffs",
+    ["ExoticOrganicsLEFT", 0, 0]
+  ],
+  "farmingStuffsMarketCostType": ["FarmingStuffs", ["MarketCostType", 0, 0]],
+  "farmingStuffsMarketMaxLV": ["FarmingStuffs", ["MarketMaxLV", 0, 0]],
+  "farmingStuffsCropsFound": ["FarmingStuffs", ["CropsFound", 0, 0]],
+  "ninjaEmporiumBonus": ["Ninja", ["EmporiumBonus", 0, 0]],
+  "ninjaAvailableEmporiumPurchases": [
+    "Ninja",
+    ["AvailableEmporiumPurchases", 0, 0]
+  ],
+  "arcaneTypeArcaneCRITDMG": ["ArcaneType", ["Arcane_CRITDMG", 0, 0]],
+  "arcaneTypeArcaneMASTERY": ["ArcaneType", ["Arcane_MASTERY", 0, 0]],
+  "arcaneTypeRingDropQuality": ["ArcaneType", ["RingDropQuality", 0, 0]],
+  "arcaneTypeTenteyeclePCT": ["ArcaneType", ["TenteyeclePCT", 0, 0]],
+  "arcaneTypeWepDropQuality": ["ArcaneType", ["WepDropQuality", 0, 0]],
+  "arcaneTypeArcaneAttackSpdPCT": ["ArcaneType", ["Arcane_AttackSpdPCT", 0, 0]],
+  "arcaneTypeArcaneCRITPCT": ["ArcaneType", ["Arcane_CRITPCT", 0, 0]],
+  "arcaneTypeArcaneDMG": ["ArcaneType", ["Arcane_DMG", 0, 0]],
+  "arcaneTypeArcaneMapMulti": ["ArcaneType", ["ArcaneMapMulti", 0, 0]],
+  "arcaneTypeRingDropChance": ["ArcaneType", ["RingDropChance", 0, 0]],
+  "arcaneTypeWepDropChance": ["ArcaneType", ["WepDropChance", 0, 0]],
+  "arcaneTypeArcaneTachyonQTYbase": [
+    "ArcaneType",
+    ["ArcaneTachyonQTYbase", 0, 0]
+  ],
+  "arcaneTypeArcaneTachyonType": ["ArcaneType", ["ArcaneTachyonType", 0, 0]],
+  "arcaneTypeKillsReq": ["ArcaneType", ["KillsReq", 0, 0]],
+  "arcaneTypeTimeLeft": ["ArcaneType", ["TimeLeft", 0, 0]],
+  "windwalkerCompassDustQTYbase": ["Windwalker", ["CompassDustQTYbase", 0, 0]],
+  "windwalkerCompassDustType": ["Windwalker", ["CompassDustType", 0, 0]],
+  "windwalkerTempestWeaponXtraPowerChance": [
+    "Windwalker",
+    ["TempestWeaponXtraPowerChance", 0, 0]
+  ],
+  "windwalkerPortalCostQTY": ["Windwalker", ["PortalCostQTY", 0, 0]],
+  "windwalkerPortalCostType": ["Windwalker", ["PortalCostType", 0, 0]],
+  "windwalkerInitializeTitanHP": ["Windwalker", ["InitializeTitanHP", 0, 0]],
+  "windwalkerMobWeakness": ["Windwalker", ["MobWeakness", 0, 0]],
+  "windwalkerTitanKillReqTown": ["Windwalker", ["TitanKillReqTown", 0, 0]],
+  "summoningGrimoireCRITDMG": ["Summoning", ["Grimoire_CRITDMG", 0, 0]],
+  "summoningGrimoireDEF": ["Summoning", ["Grimoire_DEF", 0, 0]],
+  "summoningGrimoireMASTERY": ["Summoning", ["Grimoire_MASTERY", 0, 0]],
+  "summoningGrimoireACC": ["Summoning", ["Grimoire_ACC", 0, 0]],
+  "summoningGrimoireCRITPCT": ["Summoning", ["Grimoire_CRITPCT", 0, 0]],
+  "summoningGrimoireHP": ["Summoning", ["Grimoire_HP", 0, 0]],
+  "summoningGrimoireBoneQTYbase": ["Summoning", ["GrimoireBoneQTYbase", 0, 0]],
+  "summoningGrimoireBoneType": ["Summoning", ["GrimoireBoneType", 0, 0]],
+  "thingiesMaxEmperorAttemptStack": [
+    "Thingies",
+    ["MaxEmperorAttemptStack", 0, 0]
+  ],
+  "thingiesDailyEmperorTries": ["Thingies", ["DailyEmperorTries", 0, 0]],
+  "royalGSFmaxLV": ["RoyalG", ["SF_maxLV", 0, 0]],
+  "royalGParchmentDouble": ["RoyalG", ["ParchmentDouble", 0, 0]],
+  "royalGParchmentRecycle": ["RoyalG", ["ParchmentRecycle", 0, 0]],
+  "royalGRatDMG": ["RoyalG", ["RatDMG", 0, 0]],
+  "royalGRatResp": ["RoyalG", ["RatResp", 0, 0]],
+  "thingiesLegendPTSspent": ["Thingies", ["LegendPTS_spent", 0, 0]],
+  "spelunkMiscDropChance": ["Spelunk", ["MiscDropChance", 0, 0]],
+  "spelunkGrandDiscoveriesTotal": ["Spelunk", ["GrandDiscoveries_Total", 0, 0]],
+  "spelunkTollExitTax": ["Spelunk", ["TollExitTax", 0, 0]],
+  "spelunkOverstimBonus2": ["Spelunk", ["OverstimBonus2", 0, 0]],
+  "spelunkElixirMaxDupes": ["Spelunk", ["ElixirMaxDupes", 0, 0]],
+  "spelunkElixirSlotsOwned": ["Spelunk", ["ElixirSlotsOwned", 0, 0]],
+  "spelunkRockAmber": ["Spelunk", ["RockAmber", 0, 0]],
+  "spelunkRockHP": ["Spelunk", ["RockHP", 0, 0]],
+  "spelunkRockPOWreq": ["Spelunk", ["RockPOWreq", 0, 0]],
+  "spelunkBigFishCost": ["Spelunk", ["BigFishCost", 0, 0]],
+  "spelunkIsBigFishUpgUnlocked": ["Spelunk", ["isBigFishUpgUnlocked", 0, 0]],
+  "researchStuffGridPTSspent_m1": ["ResearchStuff", ["Grid_PTSspent", -1, 0]],
+  "researchStuffMagnifiersPerSlot": [
+    "ResearchStuff",
+    ["MagnifiersPerSlot", 0, 0]
+  ],
+  "thingiesClamPromochance": ["Thingies", ["ClamPromochance", 0, 0]],
+  "thingiesClamzHP_1": ["Thingies", ["Clamz_HP", 1, 0]],
+  "thingiesClamBlackPearlValue": ["Thingies", ["Clam_BlackPearlValue", 0, 0]],
+  "thingiesClamPearl10x": ["Thingies", ["ClamPearl10x", 0, 0]],
+  "thingiesClamCost_9": ["Thingies", ["Clam_Cost", 9, 0]],
+  "thingiesClamMobs": ["Thingies", ["Clam_Mobs", 0, 0]],
+  "summoning2MeritocBonusz_9": ["Summoning2", ["MeritocBonusz", 9, 0]],
+  "summoning2MeritocCanVote": ["Summoning2", ["MeritocCanVote", 0, 0]],
+  "thingiesLegendPTSbonus": ["Thingies", ["LegendPTS_bonus", 0, 0]],
+  "thingiesZenithMarketBonus": ["Thingies", ["ZenithMarketBonus", 0, 0]],
+  "thingiesOrbletMarketBonus": ["Thingies", ["OrbletMarketBonus", 0, 0]],
+  "mineheadMinesOpp": ["Minehead", ["Mines_Opp", 0, 0]],
+  "mineheadDailyTries": ["Minehead", ["DailyTries", 0, 0]],
+  "mineheadCurrentOutgoingDMG": ["Minehead", ["CurrentOutgoingDMG", 0, 0]],
+  "sushiStuffCurrencyPerTier_20": ["SushiStuff", ["CurrencyPerTier", 20, 0]],
+  "sushiStuffFuelCost": ["SushiStuff", ["FuelCost", 0, 0]],
+  "sushiStuffUpgLvREQ": ["SushiStuff", ["UpgLvREQ", 0, 0]],
+  "jellyOperationBossAtkCD": ["JellyOperation", ["BossAtkCD", 0, 0]],
+  "jellyOperationDailyTries": ["JellyOperation", ["DailyTries", 0, 0]],
+  "menagerieStuffCost": ["MenagerieStuff", ["Cost", 0, 0]],
+  "menagerieStuffMissionProg_2": ["MenagerieStuff", ["MissionProg", 2, 0]],
+  "menagerieStuffMissionProg_6": ["MenagerieStuff", ["MissionProg", 6, 0]],
+  "menagerieStuffMissionProg_13": ["MenagerieStuff", ["MissionProg", 13, 0]],
+  "menagerieStuffMissionProg_18": ["MenagerieStuff", ["MissionProg", 18, 0]],
+  "menagerieStuffMissionProg_25": ["MenagerieStuff", ["MissionProg", 25, 0]],
+  "menagerieStuffMissionProg_26": ["MenagerieStuff", ["MissionProg", 26, 0]],
+  "menagerieStuffMissionProg_27": ["MenagerieStuff", ["MissionProg", 27, 0]],
+  "menagerieStuffMissionProg_28": ["MenagerieStuff", ["MissionProg", 28, 0]],
+  "menagerieStuffMissionProg_29": ["MenagerieStuff", ["MissionProg", 29, 0]],
+  "menagerieStuffJellyOpDoublersLEFT": [
+    "MenagerieStuff",
+    ["JellyOpDoublersLEFT", 0, 0]
+  ],
+  "menagerieStuffMineheadDoublersLEFT": [
+    "MenagerieStuff",
+    ["MineheadDoublersLEFT", 0, 0]
+  ],
+  "menagerieStuffSushiDoublersLEFT": [
+    "MenagerieStuff",
+    ["SushiDoublersLEFT", 0, 0]
+  ],
+  "menagerieStuffOrganicLabelOwned": [
+    "MenagerieStuff",
+    ["OrganicLabelOwned", 0, 0]
+  ],
+  "thingiesDancingCoralCOST": ["Thingies", ["DancingCoralCOST", 0, 0]],
+  "thingiesCoralKidUpgCost_1": ["Thingies", ["CoralKidUpgCost", 1, 0]],
+  "hourlyKillRateMining": ["HourlyKillRate", ["Mining"]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Mining": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Mining"]
+  ],
+  "anvilProduceStatsProdSpdBonus": ["AnvilProduceStats", ["ProdSpdBonus"]],
+  "anvilProduceStatsProdSpdBonusFromAGI": [
+    "AnvilProduceStats",
+    ["ProdSpdBonusFromAGI"]
+  ],
+  "forgeStats_2": ["ForgeStats", [2]],
+  "forgeStats_5": ["ForgeStats", [5]],
+  "hourlyKillRateChoppin": ["HourlyKillRate", ["Choppin"]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Choppin": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Choppin"]
+  ],
+  "runCodeOfTypeXforThingYChanceToHarvest_Fishing": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Fishing"]
+  ],
+  "fishingToolkitEXP": ["FishingToolkit", ["EXP"]],
+  "fishingToolkitPOW": ["FishingToolkit", ["POW"]],
+  "fishingToolkitSPEED": ["FishingToolkit", ["SPEED"]],
+  "cauldronStatsCauldronLvsBrewBonus_0_2": [
+    "CauldronStats",
+    ["CauldronLvsBrewBonus", 0, 2, 0]
+  ],
+  "cauldronStatsMaxCauldronQTY": ["CauldronStats", ["MaxCauldronQTY", 0, 0, 0]],
+  "hourlyKillRateCatching": ["HourlyKillRate", ["Catching"]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Catching": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Catching"]
+  ],
+  "trappingStuffsNumOfTrapsPlaceable": [
+    "TrappingStuffs",
+    ["NumOfTrapsPlaceable", 0]
+  ],
+  "trappingStuffsBaseQTY_1": ["TrappingStuffs", ["BaseQTY", 1]],
+  "trappingStuffsCollectAllPCT": ["TrappingStuffs", ["CollectAllPCT", 0]],
+  "trappingStuffsCollectAllPCTexp": ["TrappingStuffs", ["CollectAllPCTexp", 0]],
+  "trappingStuffsEfficiencyBonusQTY": [
+    "TrappingStuffs",
+    ["EfficiencyBonusQTY", 0]
+  ],
+  "trappingStuffsRareBonusOnOpen": ["TrappingStuffs", ["RareBonusOnOpen", 0]],
+  "trappingStuffsRareBonusOnOpenMULTI": [
+    "TrappingStuffs",
+    ["RareBonusOnOpenMULTI", 0]
+  ],
+  "workbenchStuffExtraBuildSPDmulti": [
+    "WorkbenchStuff",
+    ["ExtraBuildSPDmulti", 0, 0]
+  ],
+  "workbenchStuffExtraConEXPmulti": [
+    "WorkbenchStuff",
+    ["ExtraConEXPmulti", 0, 0]
+  ],
+  "workbenchStuffExtraFlaggyRatemulti": [
+    "WorkbenchStuff",
+    ["ExtraFlaggyRatemulti", 0, 0]
+  ],
+  "workbenchStuffConstMasteryBonus": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 0, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_1": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 1, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_2": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 2, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_3": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 3, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_4": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 4, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_5": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 5, 0]
+  ],
+  "workbenchStuffConstMasteryBonus_6": [
+    "WorkbenchStuff",
+    ["ConstMasteryBonus", 6, 0]
+  ],
+  "workbenchStuffAdditionExtraPrinting": [
+    "WorkbenchStuff",
+    ["AdditionExtraPrinting", 0, 0]
+  ],
+  "workbenchStuffExtraPrinting": ["WorkbenchStuff", ["ExtraPrinting", 0, 0]],
+  "workbenchStuffPrinterBigSlots": [
+    "WorkbenchStuff",
+    ["PrinterBigSlots", 0, 0]
+  ],
+  "workbenchStuffPrinterSampleSlots": [
+    "WorkbenchStuff",
+    ["PrinterSampleSlots", 0, 0]
+  ],
+  "workbenchStuffCogSlots": ["WorkbenchStuff", ["CogSlots", 0, 0]],
+  "workbenchStuffTowerBuildSlots": [
+    "WorkbenchStuff",
+    ["TowerBuildSlots", 0, 0]
+  ],
+  "workbenchStuffMinBookLv": ["WorkbenchStuff", ["minBookLv", 0, 0]],
+  "workbenchStuffExtraMaxLvAtom_50": [
+    "WorkbenchStuff",
+    ["ExtraMaxLvAtom", 50, 0]
+  ],
+  "worshipStuffSoulRewards": ["WorshipStuff", ["SoulRewards", 0]],
+  "worshipStuffExpRewards": ["WorshipStuff", ["ExpRewards", 0]],
+  "worshipStuffWaveMultiplier": ["WorshipStuff", ["WaveMultiplier", 0]],
+  "worshipStuffTotemHPtotal": ["WorshipStuff", ["TotemHPtotal", 0]],
+  "worshipStuffEfficiencyBonusQTY": ["WorshipStuff", ["EfficiencyBonusQTY", 0]],
+  "worshipStuffSkullCurrency_10": ["WorshipStuff", ["SkullCurrency", 10]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Cooking": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Cooking"]
+  ],
+  "cookingRCookingMealBonusMultioo": [
+    "CookingR",
+    ["CookingMealBonusMultioo", 0, 0]
+  ],
+  "breedingPetQTYonBreed": ["Breeding", ["PetQTYonBreed", "0", 0, 0]],
+  "breedingCrystalmobDropMulti_Crystal0": [
+    "Breeding",
+    ["crystalmob_DropMulti", "Crystal0", 0, 0]
+  ],
+  "breedingGeneticsPerTrashPet": [
+    "Breeding",
+    ["GeneticsPerTrashPet", "0", 0, 0]
+  ],
+  "breedingFenceYardSlots": ["Breeding", ["FenceYardSlots", "0", 0, 0]],
+  "breedingPetBattleSlots": ["Breeding", ["PetBattleSlots", "0", 0, 0]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Laboratory": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Laboratory"]
+  ],
+  "labbDist_Player": ["Labb", ["Dist", "Player", 0, 0]],
+  "labbBonusLineWidth": ["Labb", ["BonusLineWidth", "0", 0, 0]],
+  "sailingAncientChances": ["Sailing", ["AncientChances", 0, 0]],
+  "sailingAncientChances_5": ["Sailing", ["AncientChances", 5, 0]],
+  "sailingEldritchChances_5": ["Sailing", ["EldritchChances", 5, 0]],
+  "sailingOmnipotentChances_5": ["Sailing", ["OmnipotentChances", 5, 0]],
+  "sailingSovereignChances_5": ["Sailing", ["SovereignChances", 5, 0]],
+  "sailingTranscendentChances_5": ["Sailing", ["TranscendentChances", 5, 0]],
+  "sailingVerisimilitudeChances_5": [
+    "Sailing",
+    ["VerisimilitudeChances", 5, 0]
+  ],
+  "sailingBoatArtiMulti": ["Sailing", ["BoatArtiMulti", 0, 0]],
+  "sailingBoatValue": ["Sailing", ["BoatValue", 0, 0]],
+  "sailingCloudDiscoverBonus": ["Sailing", ["CloudDiscoverBonus", 0, 0]],
+  "divinityDivMulti": ["Divinity", ["DivMulti", 0, 0]],
+  "divinityBlessingMaxLV": ["Divinity", ["BlessingMaxLV", 0, 0]],
+  "gamingStatTypeSproutCapacity": ["GamingStatType", ["SproutCapacity", 0, 0]],
+  "gamingStatTypeSproutGrowthCHANCE_m1": [
+    "GamingStatType",
+    ["SproutGrowthCHANCE", -1, 0]
+  ],
+  "gamingStatTypeSproutGrowthCHANCEperMUT": [
+    "GamingStatType",
+    ["SproutGrowthCHANCEperMUT", 0, 0]
+  ],
+  "gamingStatTypeSproutValueTOTAL": [
+    "GamingStatType",
+    ["SproutValueTOTAL", 0, 0]
+  ],
+  "gamingStatTypeSproutMaxEvo": ["GamingStatType", ["SproutMaxEvo", 0, 0]],
+  "gamingStatTypeLVupChance": ["GamingStatType", ["LVupChance", 0, 0]],
+  "gamingStatTypeNewMutantChanceDEC": [
+    "GamingStatType",
+    ["NewMutantChanceDEC", 0, 0]
+  ],
+  "gamingStatTypePaletteLuck": ["GamingStatType", ["PaletteLuck", 0, 0]],
+  "gamingStatTypeLogGameMulti": ["GamingStatType", ["LogGameMulti", 0, 0]],
+  "farmingStuffsNextOGchance": ["FarmingStuffs", ["NextOGchance", 0, 0]],
+  "farmingStuffsOGmulti": ["FarmingStuffs", ["OGmulti", 0, 0]],
+  "farmingStuffsCropsBonusValue_0_69420": [
+    "FarmingStuffs",
+    ["CropsBonusValue", 0, 69420]
+  ],
+  "farmingStuffsPlotRankGain": ["FarmingStuffs", ["PlotRankGain", 0, 0]],
+  "farmingStuffsStickerOdds": ["FarmingStuffs", ["StickerOdds", 0, 0]],
+  "farmingStuffsStickerOddsMulti": [
+    "FarmingStuffs",
+    ["StickerOddsMulti", 0, 0]
+  ],
+  "ninjaDoor": ["Ninja", ["door", 0, 0]],
+  "ninjaGloveSPD": ["Ninja", ["gloveSPD", 0, 0]],
+  "ninjaUntie": ["Ninja", ["untie", 0, 0]],
+  "summoningManaStart": ["Summoning", ["ManaStart", 0, 0]],
+  "summoningUnitDODGE": ["Summoning", ["UnitDODGE", 0, 0]],
+  "summoningSpikePlacementDMG": ["Summoning", ["SpikePlacementDMG", 0, 0]],
+  "hourlyKillRateSpelunking": ["HourlyKillRate", ["Spelunking"]],
+  "runCodeOfTypeXforThingYChanceToHarvest_Spelunking": [
+    "RunCodeOfTypeXforThingY",
+    ["ChanceToHarvest", "Spelunking"]
+  ],
+  "spelunkPOWbase": ["Spelunk", ["POW_base", 0, 0]],
+  "spelunkPOWmulti": ["Spelunk", ["POW_multi", 0, 0]],
+  "spelunkBonusDMG": ["Spelunk", ["BonusDMG", 0, 0]],
+  "spelunkOverstimFillRate": ["Spelunk", ["OverstimFillRate", 0, 0]],
+  "spelunkStaminaCostMulti": ["Spelunk", ["StaminaCostMulti", 0, 0]],
+  "spelunkAmberDailyHaul": ["Spelunk", ["AmberDailyHaul", 0, 0]],
+  "spelunkAmberDropChance": ["Spelunk", ["AmberDropChance", 0, 0]],
+  "spelunkAmberDropChance2nd": ["Spelunk", ["AmberDropChance2nd", 0, 0]],
+  "spelunkNovaBlastHitChance": ["Spelunk", ["NovaBlastHitChance", 0, 0]],
+  "spelunkShadowStrikeChance": ["Spelunk", ["ShadowStrikeChance", 0, 0]],
+  "spelunkExaltDropChance": ["Spelunk", ["ExaltDropChance", 0, 0]],
+  "spelunkPrismaDropChance": ["Spelunk", ["PrismaDropChance", 0, 0]],
+  "researchStuffAFKgainsRatePCT": ["ResearchStuff", ["AFKgainsRatePCT", 0, 0]],
+  "researchStuffResearchEXPrateObj": [
+    "ResearchStuff",
+    ["ResearchEXPrateObj", 0, 0]
+  ],
+  "researchStuffObservationInsightExpRate": [
+    "ResearchStuff",
+    ["ObservationInsightExpRate", 0, 0]
+  ],
+  "researchStuffMaxRoll": ["ResearchStuff", ["MaxRoll", 0, 0]],
+  "researchStuffMinRoll": ["ResearchStuff", ["MinRoll", 0, 0]],
+  "researchStuffRollsPerDay": ["ResearchStuff", ["RollsPerDay", 0, 0]],
+  "researchStuffKaleiMultiTot": ["ResearchStuff", ["Kalei_MultiTot", 0, 0]]
+}
