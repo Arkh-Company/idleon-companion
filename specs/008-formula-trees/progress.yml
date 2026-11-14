@@ -27,7 +27,7 @@ execution:
     - {name: US11, status: done, commits: 8adca82..063e5e6}
     - {name: "Catálogo + 211 da F5", status: done, commits: ca3135c..6b76766}
     - {name: US12, status: done, commits: dae801c..fd81565}
-    - {name: US13, status: pending}
+    - {name: US13, status: done, commits: 07e5b25..5c41166}
     - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: pending}
     - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: pending}
     - {name: "US1c nomes (T023)", status: pending}
