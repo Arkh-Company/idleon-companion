@@ -3,9 +3,11 @@
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { TreeBuild } from "../tree-build.ts";
+import { makeCodeFormulas } from "./code-formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
+import type { Step } from "./steps.ts";
 
 type Spec = Partial<RecNode> & Pick<RecNode, "b">;
 
@@ -182,3 +184,15 @@ export const at = (
   node: row({ pieceKey: "x", value, code: more.code ?? "Own()" }),
   ...more,
 });
+
+/** One recorded call written by hand, with no parent. */
+export const recNode = (
+  id: number,
+  b: string,
+  more: Partial<RecNode> = {},
+): RecNode => ({ id, b, a: [], c: [], p: null, pxi: 0, ...more });
+/** The ⓘ of the first call, among `nodes` (code-formulas.ts `call`); `steps` gives each call's steps by id. */
+export const callOf = (nodes: RecNode[], steps: Record<number, Step[]> = {}) =>
+  makeCodeFormulas(nodes, (id) => steps[id] ?? []).call(
+    nodes[0] ?? recNode(0, "None"),
+  );

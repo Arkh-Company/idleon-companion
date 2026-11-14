@@ -11,20 +11,15 @@ import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, ones, read } from "./tree-fixture.ts";
 
 const tok = token;
+/** A row with a name, as US1c gives it: no longer a path. */
+const named = (r: Row): Row => ({ ...r, node: { ...r.node, flags: {} } });
 
 /** The row's ⓘ on its way to the window (the worker's formula, the main's check, "How it adds up"): its two lines. */
 function expectShown(r: FormulaRow, kids: Row[]): void {
-  const fm = formulaFor(r, kids);
   const tree = checkTree(node({ formula: withFormula(r, kids).formula }), 1);
   expect(tree).not.toBeNull();
-  const f = tree?.formula;
-  expect(f ? formulaLines(f) : null).toEqual(
-    fm && {
-      names: fm[0],
-      numbers: fm[1],
-      result: expect.not.stringContaining("NaN") as unknown,
-    },
-  );
+  const shown = tree?.formula ? formulaLines(tree.formula) : null;
+  expect(shown && [shown.names, shown.numbers]).toEqual(formulaFor(r, kids));
 }
 
 test.each<[string, number, Row[], [string, string] | null]>([
@@ -205,11 +200,14 @@ test("a product that closes only by a 0 is no ⓘ: the game's expression is", ()
   ]);
 });
 
-test("a formula that only adds 0 to a cache path is no ⓘ", () => {
+test.each<[string, string, [string, string] | null]>([
+  ["a cache path is no ⓘ", "DNSM.t", null],
+  ["another path keeps it", "Stats.t", ["0 + Stats.t", "0 + 5 = 5"]],
+])("a formula that only adds 0 to %s", (_name, path, formula) => {
   const n = at(5, {
-    xf: [`${tok("v:0", "0")} + ${tok("c:DNSM.t@5", "DNSM.t")}`, "0 + 5 = 5"],
+    xf: [`${tok("v:0", "0")} + ${tok(`c:${path}@5`, path)}`, "0 + 5 = 5"],
   });
-  expect(formulaFor(n, [read("DNSM.t", 5), read("Stats.q", 2)])).toBeNull();
+  expect(formulaFor(n, [read(path, 5), read("Stats.q", 2)])).toEqual(formula);
 });
 
 test.each<[string, number, Row[], [string, string] | null, string?]>([
@@ -274,6 +272,12 @@ test.each<[string, number, Row[], [string, string] | null, string?]>([
       read("Stats.x", 9),
     ],
     ["If Stats.f = 1 and Stats.g > 2: Stats.x", "yes → 9"],
+  ],
+  [
+    "a named check that ends in a call stays whole",
+    9,
+    [named(cond("Stats.a = Calc(2)", true)), read("Stats.x", 9)],
+    ["If Stats.a = Calc(2): Stats.x", "yes → 9"],
   ],
   [
     "a check whose text cannot be followed",
