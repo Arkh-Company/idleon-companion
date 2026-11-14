@@ -3,7 +3,15 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
-import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  nativeImage,
+  screen,
+  Tray,
+} from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { calculatorPath } from "./calculator-host.ts";
@@ -24,6 +32,7 @@ import { emptyPayload, settingsPayload } from "./payloads.ts";
 import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
 import { startPipelines } from "./pipelines.ts";
 import { setupStoreIn } from "./setup-store.ts";
+import { sidePanelControl, sidePanelHandler } from "./side-panel.ts";
 import {
   companionPart,
   steamSetupJob,
@@ -232,6 +241,16 @@ function start(): void {
   });
   // The formula channels of 008 (contracts/ipc.md), checked in pipelines.ts.
   for (const [channel, f] of Object.entries(handlers)) handle(channel, f);
+  // The side panel widens the window toward the side with room on its screen (FR-005 of 008).
+  handle(
+    IPC.sidePanel,
+    sidePanelHandler(
+      sidePanelControl(
+        win,
+        () => screen.getDisplayMatching(win.getBounds()).workArea,
+      ),
+    ),
+  );
 
   // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).
   const part = companionPart({

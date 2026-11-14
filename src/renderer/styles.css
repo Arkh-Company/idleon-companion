@@ -81,3 +81,265 @@ h2 {
 .steam-settings button {
   margin: 0.5rem 0.5rem 0 0;
 }
+
+/* Spec 008: the side panel and the formula tree (design.md §3.2, C1, C2, C4, C7, C8). */
+:root {
+  --surface: #f4f4f5;
+  --line: #e4e4e7;
+  --control: #6b6b73;
+  --muted: #52525b;
+  --zero: #6b6b73;
+  --add: #047857;
+  --mult: #b45309;
+  --focus: #1d4ed8;
+  --danger: #b91c1c;
+  --grow-fg: #1e40af;
+  --grow-bg: #dbeafe;
+  --pick-fg: #5b21b6;
+  --pick-bg: #ede9fe;
+  --set-fg: #3f3f46;
+  --set-bg: #e4e4e7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #1f1f23;
+    --line: #2e2e33;
+    --control: #8b8b94;
+    --muted: #a1a1aa;
+    --zero: #8b8b94;
+    --add: #6ee7b7;
+    --mult: #fcd34d;
+    --focus: #93c5fd;
+    --danger: #fca5a5;
+    --grow-fg: #bfdbfe;
+    --grow-bg: #1e3a8a;
+    --pick-fg: #ddd6fe;
+    --pick-bg: #4c1d95;
+    --set-fg: #d4d4d8;
+    --set-bg: #2a2a2f;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The window at 840 px: the panels side by side, each as wide as the window was (FR-005). */
+.app.with-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.value-button {
+  font: inherit;
+  text-align: left;
+  min-height: 24px;
+}
+
+.side-panel {
+  container: side / inline-size;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.side-panel .close {
+  float: right;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.side-panel h2 {
+  font-size: 16px;
+}
+
+.side-panel h2 .num {
+  display: block;
+  font-size: 28px;
+}
+
+.answer,
+.band {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 0 8px;
+}
+
+.band {
+  border: 1px solid var(--control);
+  font-size: 12px;
+}
+
+.answer p {
+  margin: 0 0 4px;
+}
+
+.answer .trust {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.formula-tree,
+.formula-tree [role="group"] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.formula-tree [role="treeitem"]:focus-visible {
+  outline: none;
+}
+
+.formula-tree [role="treeitem"]:focus-visible > .row {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  cursor: default;
+}
+
+.row .name {
+  flex: 1 1 8em;
+  min-width: 0;
+}
+
+.row .twisty {
+  width: 1em;
+}
+
+.row meter {
+  width: 56px;
+}
+
+.lvl-1 {
+  padding-left: 20px;
+}
+.lvl-2 {
+  padding-left: 32px;
+}
+.lvl-3 {
+  padding-left: 44px;
+}
+.lvl-4 {
+  padding-left: 56px;
+}
+.lvl-5 {
+  padding-left: 68px;
+}
+.lvl-6 {
+  padding-left: 80px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.num--add {
+  color: var(--add);
+}
+.num--mult {
+  color: var(--mult);
+}
+.num--zero {
+  color: var(--zero);
+}
+
+.reached,
+.share,
+.busy,
+.phrase {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.busy {
+  padding: 4px 8px 4px 32px;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.tag--grows {
+  color: var(--grow-fg);
+  background: var(--grow-bg);
+}
+.tag--pick {
+  color: var(--pick-fg);
+  background: var(--pick-bg);
+}
+.tag--set {
+  color: var(--set-fg);
+  background: var(--set-bg);
+}
+.tag--unknown {
+  color: var(--muted);
+  border-style: dashed;
+}
+.tag--truth {
+  border-color: var(--control);
+}
+
+.how p,
+.details {
+  margin: 4px 8px 4px 32px;
+  font-size: 13px;
+}
+
+.details dd {
+  margin: 0 0 4px 8px;
+}
+
+.code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* At 200% zoom the panel is 210 px CSS: smaller steps of indent, capped at 4 (FR-031). */
+@container side (max-width: 300px) {
+  .side-panel h2 .num {
+    font-size: 22px;
+  }
+  .lvl-1 {
+    padding-left: 16px;
+  }
+  .lvl-2 {
+    padding-left: 24px;
+  }
+  .lvl-3,
+  .lvl-4,
+  .lvl-5,
+  .lvl-6 {
+    padding-left: 32px;
+  }
+  .row meter {
+    display: none;
+  }
+}

@@ -52,6 +52,13 @@ export function formulaRequestPayload(v: unknown): FormulaRequest | null {
   return null;
 }
 
+/** `window:sidePanel` (contracts/ipc.md): only `{ open }`, a yes or no. */
+export function sidePanelPayload(v: unknown): { open: boolean } | null {
+  if (!isObject(v) || !onlyKeys(v, ["open"]) || typeof v.open !== "boolean")
+    return null;
+  return { open: v.open };
+}
+
 /** A channel without a body (`settings:get`, `reader:confirm-attach`, `steam:state`, `steam:setup`,
  * `reader:release`, `reader:reconnect`, `update:install`): only a missing body or an empty object passes. */
 export function emptyPayload(v: unknown): boolean {

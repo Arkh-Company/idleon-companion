@@ -1,0 +1,261 @@
+// @vitest-environment jsdom
+// The side panel (spec 008 FR-001, FR-005, FR-006, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the Stats value is a
+// button that opens the tree beside the window, ✕ closes it and gives the focus back, and the short answer has the lines
+// that exist. Every value and name is invented.
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { TREE_CATALOG } from "../shared/index.ts";
+import type { FormulaTree, Stats } from "../shared/index.ts";
+import { App } from "./App.tsx";
+import { stubCompanion } from "./companion-stub.ts";
+import type { CompanionStub } from "./companion-stub.ts";
+import { node, ready } from "./formula-fixture.ts";
+import { SidePanel } from "./SidePanel.tsx";
+import { STATS_TREES } from "./StatsPanel.tsx";
+
+const STATS: Stats = {
+  state: "ready",
+  rows: [
+    { label: "Drop Rate", text: "1,234x" },
+    { label: "Damage", text: "10 – 20" },
+    { label: "HP", text: "500" },
+  ],
+};
+
+let companion: CompanionStub;
+let sendTree: (t: FormulaTree) => void = () => undefined;
+beforeEach(() => {
+  companion = stubCompanion();
+  companion.onStats.mockImplementation((cb) => {
+    cb(STATS);
+    return () => undefined;
+  });
+  companion.onFormula.mockImplementation((cb) => {
+    sendTree = cb;
+    return () => undefined;
+  });
+});
+afterEach(cleanup);
+
+async function statsTab() {
+  render(<App />);
+  fireEvent.click(await screen.findByRole("tab", { name: "Stats" }));
+}
+const value = (name: string) => screen.getByRole("button", { name });
+const panel = () => screen.queryByRole("complementary", { name: /breakdown/ });
+
+test("each Stats row keeps its header and row, and its value is a button inside the cell (FR-001)", async () => {
+  await statsTab();
+  expect(screen.getAllByRole("rowheader").map((h) => h.textContent)).toEqual([
+    "Drop Rate",
+    "Damage",
+    "HP",
+  ]);
+  expect(screen.getByRole("row", { name: "Drop Rate 1,234x" })).toBeDefined();
+  const button = value("1,234x");
+  expect(button.closest("td")).not.toBe(null);
+  expect(button.getAttribute("aria-describedby")).not.toBe(null);
+});
+
+test("every Stats tree is a number of the catalog", () => {
+  const ids = new Set(TREE_CATALOG.map((n) => n.id));
+  for (const [, trees] of Object.entries(STATS_TREES))
+    for (const [id] of trees) expect(ids.has(id)).toBe(true);
+});
+
+test("tapping a value opens the side panel, widens the window and asks its tree; the focus goes to the title", async () => {
+  await statsTab();
+  fireEvent.click(value("1,234x"));
+  expect(panel()).not.toBe(null);
+  expect(companion.setSidePanel).toHaveBeenCalledWith({ open: true });
+  expect(companion.requestFormula).toHaveBeenCalledWith({ id: "dropRate" });
+  expect(document.activeElement?.tagName).toBe("H2");
+  expect(document.activeElement?.textContent).toContain("Drop Rate");
+});
+
+test("another value while open changes the tree, and the window is widened only once", async () => {
+  await statsTab();
+  fireEvent.click(value("1,234x"));
+  fireEvent.click(value("500"));
+  expect(companion.requestFormula).toHaveBeenLastCalledWith({ id: "hp" });
+  expect(companion.setSidePanel).toHaveBeenCalledTimes(1);
+});
+
+test("✕ closes the panel, the window and the tree, and gives the focus back to the number (FR-039)", async () => {
+  await statsTab();
+  fireEvent.click(value("1,234x"));
+  fireEvent.click(screen.getByRole("button", { name: "Close the breakdown" }));
+  expect(panel()).toBe(null);
+  expect(companion.setSidePanel).toHaveBeenLastCalledWith({ open: false });
+  expect(companion.closeFormula).toHaveBeenCalled();
+  expect(document.activeElement).toBe(value("1,234x"));
+});
+
+test("Damage opens a choice of its two trees, and a choice asks that tree", async () => {
+  await statsTab();
+  fireEvent.click(value("10 – 20"));
+  expect(companion.requestFormula).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Max damage" }));
+  expect(companion.requestFormula).toHaveBeenCalledWith({ id: "damageMax" });
+});
+
+test("the tree the main sends shows in the panel", async () => {
+  await statsTab();
+  fireEvent.click(value("1,234x"));
+  act(() => {
+    sendTree(ready(node({ kids: [node({ id: "root/A", name: "Alpha" })] })));
+  });
+  expect(
+    screen.getByRole("tree", { name: "Drop Rate breakdown" }),
+  ).toBeDefined();
+});
+
+const SIDE = {
+  label: "Drop Rate",
+  text: "1,234x",
+  trees: [["dropRate", "Drop Rate"]] as const,
+  id: "dropRate",
+};
+function drawPanel(tree: FormulaTree) {
+  render(
+    <SidePanel
+      side={SIDE}
+      tree={tree}
+      onClose={vi.fn()}
+      onPick={vi.fn()}
+      onExpand={vi.fn()}
+    />,
+  );
+}
+const lines = () =>
+  [...document.querySelectorAll(".answer .short")].map((p) => p.textContent);
+
+const adds = node({
+  id: "root/Adds",
+  name: "Adds",
+  value: 100,
+  kids: [
+    node({
+      id: "root/Adds/Golden",
+      name: "Golden",
+      value: 66,
+      fmt: "%",
+      share: 0.66,
+      shareMode: "sum",
+    }),
+    node({
+      id: "root/Adds/Other",
+      name: "Other",
+      value: 34,
+      fmt: "%",
+      share: 0.34,
+      shareMode: "sum",
+    }),
+  ],
+});
+const mults = node({
+  id: "root/Mults",
+  name: "Mults",
+  value: 38.16,
+  kids: [
+    node({
+      id: "root/Mults/Equip",
+      name: "Equip",
+      value: 31.8,
+      fmt: "x",
+      share: 0.9,
+      shareMode: "product",
+    }),
+    node({
+      id: "root/Mults/Small",
+      name: "Little",
+      value: 1.2,
+      fmt: "x",
+      share: 0.1,
+      shareMode: "product",
+    }),
+  ],
+});
+
+test("the short answer has two lines: the largest part that adds, with its share, and the largest multiplier (FR-006)", () => {
+  drawPanel(ready(node({ kids: [adds, mults] })));
+  expect(lines()).toEqual([
+    "Largest added bonus: Golden (66%).",
+    "Largest multiplier: Equip ×31.8.",
+  ]);
+  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+    "Drop Rate 1,234x",
+  );
+});
+
+test.each([
+  ["no multiplier", [adds], ["Largest added bonus: Golden (66%)."]],
+  ["no sum", [mults], ["Largest multiplier: Equip ×31.8."]],
+  ["neither", [node({ id: "root/X", name: "X" })], []],
+])("a tree with %s shows only the line it has", (_name, kids, expected) => {
+  drawPanel(ready(node({ kids })));
+  expect(lines()).toEqual(expected);
+});
+
+test.each<[string, FormulaTree, string]>([
+  ["waiting", { state: "waiting" }, "Waiting for the game"],
+  [
+    "calculating",
+    { state: "calculating", request: SIDE_REQUEST() },
+    "Calculating the breakdown…",
+  ],
+  [
+    "unavailable",
+    { state: "unavailable", request: SIDE_REQUEST() },
+    "Calculator unavailable. The formulas can't be calculated now.",
+  ],
+  [
+    "diverged",
+    { state: "diverged", request: SIDE_REQUEST(), statsText: "1,234x" },
+    "Breakdown unavailable",
+  ],
+])(
+  "%s says so, with the Stats number on top and no tree",
+  (_name, tree, text) => {
+    drawPanel(tree);
+    expect(screen.getByText(text)).toBeDefined();
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+      "Drop Rate 1,234x",
+    );
+    expect(screen.queryByRole("tree")).toBe(null);
+  },
+);
+
+function SIDE_REQUEST() {
+  return { type: "number" as const, id: "dropRate", character: 1 };
+}
+
+test("a tree of another number is not shown: the panel waits for its own", () => {
+  drawPanel(
+    ready(node(), { request: { type: "number", id: "hp", character: 1 } }),
+  );
+  expect(screen.queryByRole("tree")).toBe(null);
+  expect(screen.getByText("Calculating the breakdown…")).toBeDefined();
+});
+
+test("with the game closed the tree says it is the last reading, and an older game version gets one band", () => {
+  drawPanel(ready(node(), { stale: true, checkedOnThisGame: false }));
+  expect(screen.getByText(/^Game closed · last reading/)).toBeDefined();
+  expect(
+    screen.getByText(
+      "Names and tags were checked on an older game version. Values are live.",
+    ),
+  ).toBeDefined();
+  expect(screen.queryByText(/Same as Stats/)).toBe(null);
+});
+
+test("the active character's tree says it is the same as the Stats", () => {
+  drawPanel(ready(node()));
+  expect(screen.getByText(/Same as Stats/)).toBeDefined();
+});

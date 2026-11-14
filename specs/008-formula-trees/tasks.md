@@ -211,7 +211,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
     - the root is never a silent leaf (bench rule 147).
 - [X] T018 [P] [US1] Atoms-only test in `src/calculator/tree-atoms.test.ts`
   - Case: the `treeResult` JSON of the invented game with a text value, two invented character names (one a prefix of the other) and a string literal in the code contains no code literal and no code snippet. The names are allowed only in `name` fields shown on screen (FR-010) and are absent from logs.
-- [ ] T019 [P] [US1] Side panel and tree view tests in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx`
+- [X] T019 [P] [US1] Side panel and tree view tests in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx`
   - Cases:
     - tapping the Stats value (a `<button>` inside the `<td>`; the 004 `rowheader`/`row` tests stay as they are) opens the panel and asks `window:sidePanel` open;
     - ✕ closes it, asks it closed and gives the focus back to the number;
@@ -245,7 +245,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
   - Signatures: `buildTree(recording, request): TreeNode` with unopened branches as `kids: "lazy"`; `expandBranch(recording, nodeId): TreeNode`.
   - The recording is kept for the same mosaic until the next request.
   - Tests: an `expand` does not rebuild the state; `calculatedAt` does not change.
-- [ ] T025 [US1] The window: Stats value as button, side panel, tree view, tags, groups and states
+- [X] T025 [US1] The window: Stats value as button, side panel, tree view, tags, groups and states
   - Files: `src/renderer/StatsPanel.tsx`, `src/renderer/SidePanel.tsx`, `src/renderer/FormulaTree.tsx`, `src/renderer/AnswerHeader.tsx`, `src/renderer/LeafTag.tsx`, `src/renderer/styles.css`, `src/main/window-options.ts`, `src/main/side-panel.ts`
   - The window widens from 420 to 840 px toward the side with room on screen and returns on close (FR-005), in a tested `side-panel.ts`.
   - The tokens, components and accessibility come from `design.md`; on any conflict, the spec wins (stage cards are out, "shown earlier" is out).
