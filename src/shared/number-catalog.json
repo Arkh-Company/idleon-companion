@@ -96,6 +96,14 @@
     "live": false
   },
   {
+    "id": "thingiesSuperTalentPTSlefttospend",
+    "group": "Character",
+    "system": "Talents",
+    "screen": "Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "thingiesSuperTalentPTSunlockedstatus",
     "group": "Character",
     "system": "Talents",
@@ -3112,6 +3120,110 @@
     "live": false
   },
   {
+    "id": "summoningUnitCost",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningRerollCost_1",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": "cost",
+    "live": true
+  },
+  {
+    "id": "summoning2UnitTypeDraw",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoning2EnemyDMG_1",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "summoning2EnemyHP_1",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "summoning2EnemySpd_1",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": "rate",
+    "live": true
+  },
+  {
+    "id": "summoning2OpponentDifficulty",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "summoningEndlessModifierID",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "summoningEndlessUnlocked",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningSummVictories",
+    "group": "W6",
+    "system": "Summoning",
+    "screen": "Summoning Upgrades",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "farmingStuffsGrowthReq",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsCropsBonusValue",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "farmingStuffsCropsOnVine",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "farmingStuffsNextCropChanceDENOM",
     "group": "W6",
     "system": "Farming",
@@ -3120,11 +3232,43 @@
     "live": false
   },
   {
+    "id": "farmingStuffsLankRankEXPreq",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsLankRankPTSleft",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "farmingStuffsLandRank5thColumnMaxLV",
     "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsLandRankUpgBonusTOTAL",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "farmingStuffsExoticPurchasesAllowed",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
     "live": false
   },
   {
@@ -3152,6 +3296,14 @@
     "live": false
   },
   {
+    "id": "farmingStuffsMarketCostQTY",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "farmingStuffsMarketCostType",
     "group": "W6",
     "system": "Farming",
@@ -3165,6 +3317,14 @@
     "system": "Farming",
     "screen": "Farming",
     "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "farmingStuffsBasketUpgQTY",
+    "group": "W6",
+    "system": "Farming",
+    "screen": "Farming",
+    "notShown": null,
     "live": false
   },
   {
@@ -3184,6 +3344,22 @@
     "live": false
   },
   {
+    "id": "ninjaFloorsUnlocked",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "ninjaEmporiumCost",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "ninjaAvailableEmporiumPurchases",
     "group": "W6",
     "system": "Sneaking",
@@ -3192,7 +3368,55 @@
     "live": false
   },
   {
+    "id": "ninjaEmporiumOptions",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "ninjaGemstoneBonus",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "ninjaNLbonuses",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesSneakSymbolBon",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesSneakSymbolChanceBase",
+    "group": "W6",
+    "system": "Sneaking",
+    "screen": "Sneaking",
+    "notShown": "chance",
+    "live": false
+  },
+  {
     "id": "arcaneTypeArcaneCRITDMG",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneDEF",
     "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
@@ -3232,6 +3456,14 @@
     "live": false
   },
   {
+    "id": "arcaneTypeArcaneACC",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "arcaneTypeArcaneAttackSpdPCT",
     "group": "W6",
     "system": "Tesseract",
@@ -3256,11 +3488,43 @@
     "live": false
   },
   {
+    "id": "arcaneTypeArcaneUpgCost",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "arcaneTypeArcaneMapMultibonMAX",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "cap",
+    "live": false
+  },
+  {
     "id": "arcaneTypeArcaneMapMulti",
     "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypePrismaBonusMult",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "arcaneTypeCrystalChargeReq",
+    "group": "W6",
+    "system": "Tesseract",
+    "screen": "Tesseract",
+    "notShown": "cost",
     "live": false
   },
   {
@@ -3312,6 +3576,102 @@
     "live": false
   },
   {
+    "id": "windwalkerCompassCRITDMG",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassDEF",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassMASTERY",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassRange",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassACC",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassAttackSpdPCT",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassCRITPCT",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassDMG",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassHP",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassInvulnSec",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassMoveSpeed",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCompassUpgCost",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "windwalkerCompassDustQTYbase",
     "group": "W6",
     "system": "Compass",
@@ -3328,11 +3688,43 @@
     "live": false
   },
   {
+    "id": "windwalkerExtraDust",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "windwalkerTempestNovadustChance",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": "chance",
+    "live": false
+  },
+  {
     "id": "windwalkerTempestWeaponXtraPowerChance",
     "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "windwalkerTempestAllDropBonus",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerCanWeEnterPortal",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
     "live": false
   },
   {
@@ -3376,6 +3768,22 @@
     "live": false
   },
   {
+    "id": "windwalkerEffectAmount",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "windwalkerStampDoublersLeft",
+    "group": "W6",
+    "system": "Compass",
+    "screen": "Compass",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "summoningGrimoireCRITDMG",
     "group": "W6",
     "system": "Grimoire",
@@ -3416,11 +3824,27 @@
     "live": false
   },
   {
+    "id": "summoningGrimoireDMG",
+    "group": "W6",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "summoningGrimoireHP",
     "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningGrimoireUpgCost",
+    "group": "W6",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": "cost",
     "live": false
   },
   {
@@ -3440,6 +3864,30 @@
     "live": false
   },
   {
+    "id": "summoningAllMasterclassDropz",
+    "group": "W6",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "summoningAllMasterclassCostRedux",
+    "group": "W6",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "summoningFirst3MCCostRedux",
+    "group": "W6",
+    "system": "Grimoire",
+    "screen": "Grimoire",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "thingiesMaxEmperorAttemptStack",
     "group": "W6",
     "system": "Emperor",
@@ -3453,6 +3901,14 @@
     "system": "Emperor",
     "screen": "Emperor Showdown",
     "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "thingiesBoss6HP_1",
+    "group": "W6",
+    "system": "Emperor",
+    "screen": "Emperor Showdown",
+    "notShown": null,
     "live": false
   },
   {
@@ -3504,6 +3960,14 @@
     "live": false
   },
   {
+    "id": "spelunkShopUpgMaxLV",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "cap",
+    "live": false
+  },
+  {
     "id": "spelunkMiscDropChance",
     "group": "W7",
     "system": "Spelunking",
@@ -3520,7 +3984,23 @@
     "live": false
   },
   {
+    "id": "spelunkHolesToNextFloor",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
     "id": "spelunkTollExitTax",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkOverstimBonus",
     "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
@@ -3533,6 +4013,14 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkOverstimQtyREQ",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "cost",
     "live": false
   },
   {
@@ -3549,6 +4037,22 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
+    "live": false
+  },
+  {
+    "id": "spelunkShadowStrikeQTY",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "spelunkMaxDailyPageReads",
+    "group": "W7",
+    "system": "Spelunking",
+    "screen": "Spelunking",
+    "notShown": "cap",
     "live": false
   },
   {
@@ -3584,10 +4088,34 @@
     "live": false
   },
   {
+    "id": "spelunkBigFishUpgLVREQ",
+    "group": "W7",
+    "system": "Big Fish",
+    "screen": "Spelunking",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "spelunkIsBigFishUpgUnlocked",
     "group": "W7",
     "system": "Big Fish",
     "screen": "Spelunking",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffGridPTSavailable",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffGridPTSearned",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
     "notShown": null,
     "live": false
   },
@@ -3600,7 +4128,111 @@
     "live": false
   },
   {
+    "id": "researchStuffOccurrencesToBeFound",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffMagnifiersOwned",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "researchStuffMagnifiersPerSlot",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffKaleiMultiBase",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffTinyCogsPerDay",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "researchStuffFarmingStickersUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffGreenSigilsUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffKingRatUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffRefineryTab3Unlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffSmallCogSlotsUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffTheMawIslandUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffTinyCogsUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffTranscendentArtifactsUnlocked",
+    "group": "W7",
+    "system": "Research",
+    "screen": "Research",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "researchStuffZuperBitsUnlocked",
     "group": "W7",
     "system": "Research",
     "screen": "Research",
@@ -3656,6 +4288,30 @@
     "live": false
   },
   {
+    "id": "menagerieStuffScurgeEXPReq",
+    "group": "W7",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffScurgeEXPgain",
+    "group": "W7",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffScurgePTSLeft",
+    "group": "W7",
+    "system": "Clam Work",
+    "screen": "The Clamworks",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "summoning2MeritocBonusz_9",
     "group": "W7",
     "system": "Meritocracy",
@@ -3672,7 +4328,39 @@
     "live": false
   },
   {
+    "id": "galleryPodiumsOwned",
+    "group": "W7",
+    "system": "Gallery",
+    "screen": "The Gallery",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "thingiesLegendPTSbonus",
+    "group": "W7",
+    "system": "Legend Talents",
+    "screen": "Legend Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesLegendPTSowned",
+    "group": "W7",
+    "system": "Legend Talents",
+    "screen": "Legend Talents",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesLegendTalentMaxLV",
+    "group": "W7",
+    "system": "Legend Talents",
+    "screen": "Legend Talents",
+    "notShown": "cap",
+    "live": false
+  },
+  {
+    "id": "thingiesSuperTalentPTStotaltospend",
     "group": "W7",
     "system": "Legend Talents",
     "screen": "Legend Talents",
@@ -3688,11 +4376,35 @@
     "live": false
   },
   {
+    "id": "thingiesZenithMarketCost",
+    "group": "W7",
+    "system": "Zenith Market",
+    "screen": "Zenith Market",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "thingiesOrbletMarketBonus",
     "group": "W7",
     "system": "Orblet Market",
     "screen": "Lil Orblet Shop",
     "notShown": null,
+    "live": false
+  },
+  {
+    "id": "thingiesOrbletMarketCost",
+    "group": "W7",
+    "system": "Orblet Market",
+    "screen": "Lil Orblet Shop",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "mineheadUpgCost",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": "cost",
     "live": false
   },
   {
@@ -3712,6 +4424,70 @@
     "live": false
   },
   {
+    "id": "mineheadMaxHPYou",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadUpgLvREQ",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "mineheadBonusDMGperTilePCT",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadBluecrownMulti",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadJackpotOdds",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": "chance",
+    "live": false
+  },
+  {
+    "id": "mineheadFlagsTotal",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadGoldTilesTotal",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "mineheadInstaRevealsTotal",
+    "group": "W7",
+    "system": "Minehead",
+    "screen": "Mr. Minehead's Depth Charge",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "mineheadCurrentOutgoingDMG",
     "group": "W7",
     "system": "Minehead",
@@ -3720,7 +4496,39 @@
     "live": true
   },
   {
+    "id": "mineheadGlimboCanAfford",
+    "group": "W7",
+    "system": "Glimbo's Swap Meet",
+    "screen": "Glimbo's Swap Meet",
+    "notShown": null,
+    "live": true
+  },
+  {
+    "id": "mineheadGlimboCost",
+    "group": "W7",
+    "system": "Glimbo's Swap Meet",
+    "screen": "Glimbo's Swap Meet",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "mineheadButtonTask",
+    "group": "W7",
+    "system": "The Button",
+    "screen": "The Button",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "sushiStuffCurrencyPerTier_20",
+    "group": "W7",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sushiStuffSaffronHRS",
     "group": "W7",
     "system": "Sushi Station",
     "screen": "Sushi Station",
@@ -3744,7 +4552,39 @@
     "live": false
   },
   {
+    "id": "sushiStuffUpgradeQTY",
+    "group": "W7",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sushiStuffKnowledgeXPbase",
+    "group": "W7",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "sushiStuffMaxCookTier",
+    "group": "W7",
+    "system": "Sushi Station",
+    "screen": "Sushi Station",
+    "notShown": "cap",
+    "live": false
+  },
+  {
     "id": "jellyOperationBossAtkCD",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "jellyOperationBossTime",
     "group": "W7",
     "system": "Jelly Operator",
     "screen": "Jelly Operator",
@@ -3757,6 +4597,54 @@
     "system": "Jelly Operator",
     "screen": "Jelly Operator",
     "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "jellyOperationBloodcellDaily",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "jellyOperationUpgLvREQ",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "jellyOperationUpgradeQTY",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "jellyOperationRoidMulti",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "jellyOperationRevivesTotal",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "jellyOperationVirusesAllowed",
+    "group": "W7",
+    "system": "Jelly Operator",
+    "screen": "Jelly Operator",
+    "notShown": null,
     "live": false
   },
   {
@@ -3864,6 +4752,14 @@
     "live": false
   },
   {
+    "id": "menagerieStuffBlackStarsOwned",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
     "id": "menagerieStuffOrganicLabelOwned",
     "group": "W7",
     "system": "Luminous Menagerie",
@@ -3872,11 +4768,67 @@
     "live": false
   },
   {
+    "id": "menagerieStuffPinkJellyCosts",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffSumCostReduxMena",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffOmniJadeDailyLVs",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": "rate",
+    "live": false
+  },
+  {
+    "id": "menagerieStuffOmniJadeLeft",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffConstBuildBONUSES",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": null,
+    "live": false
+  },
+  {
+    "id": "menagerieStuffConstBuildREQ",
+    "group": "W7",
+    "system": "Luminous Menagerie",
+    "screen": "Luminous Menagerie",
+    "notShown": "cost",
+    "live": false
+  },
+  {
     "id": "thingiesDancingCoralCOST",
     "group": "W7",
     "system": "Coral Reef",
     "screen": "Coral Reef",
     "notShown": "cost",
+    "live": false
+  },
+  {
+    "id": "thingiesGrindTimeDaily",
+    "group": "W7",
+    "system": "Coral Reef",
+    "screen": "Coral Reef",
+    "notShown": "rate",
     "live": false
   },
   {
@@ -4605,7 +5557,7 @@
     "system": "Summoning",
     "screen": "Summoning Upgrades",
     "notShown": null,
-    "live": false
+    "live": true
   },
   {
     "id": "hourlyKillRateSpelunking",
@@ -4685,7 +5637,7 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
-    "live": false
+    "live": true
   },
   {
     "id": "spelunkNovaBlastHitChance",
@@ -4701,7 +5653,7 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
-    "live": false
+    "live": true
   },
   {
     "id": "spelunkExaltDropChance",
@@ -4709,7 +5661,7 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
-    "live": false
+    "live": true
   },
   {
     "id": "spelunkPrismaDropChance",
@@ -4717,7 +5669,7 @@
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
-    "live": false
+    "live": true
   },
   {
     "id": "researchStuffAFKgainsRatePCT",

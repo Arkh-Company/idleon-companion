@@ -9,7 +9,7 @@ import { FR038_GROUPS } from "./tree-catalog-fixture.ts";
 const ids = TREE_CATALOG.map((n) => n.id);
 
 test("the catalog holds the bench's audited trees, each id once", () => {
-  expect(TREE_CATALOG.length).toBe(597);
+  expect(TREE_CATALOG.length).toBe(716);
   expect(new Set(ids).size).toBe(ids.length);
   for (const id of ids) expect(id).toMatch(/^[A-Za-z0-9_]+$/);
 });
@@ -43,7 +43,19 @@ test("each field has one of its allowed values", () => {
 });
 
 test("the live-game numbers are in the catalog, marked live", () => {
-  expect(TREE_CATALOG.filter((n) => n.live).length).toBe(35);
+  expect(TREE_CATALOG.filter((n) => n.live).length).toBe(54);
+});
+
+test("the trees whose recording reads an actor field outside the contract are live", () => {
+  const live = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
+  for (const id of [
+    "summoningSpikePlacementDMG",
+    "spelunkAmberDropChance2nd",
+    "spelunkShadowStrikeChance",
+    "spelunkExaltDropChance",
+    "spelunkPrismaDropChance",
+  ])
+    expect(live).toContain(id);
 });
 
 test("isCatalogId takes only an own id of the catalog", () => {
