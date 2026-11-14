@@ -28,7 +28,7 @@ O tipo é recursivo; se o teste não acusar a mudança, a comparação passa a s
 | `leaf` | um de `LEAF_KINDS`, ou nulo | Só nas folhas (FR-013) |
 | `condition` | um de `CONDITION_KINDS`, ou nulo | Só nas folhas `condition` |
 | `why` | texto ou nulo | Motivo de um `?`, frase de jogador |
-| `formula` | `[nomes, números]` ou nulo | "How it adds up". Só átomos; um termo sem nome aparece como o caminho do jogo (FR-012a); 3 algarismos significativos |
+| `formula` | `[nomes, números]`, `{ rule: [linha de nomes, linha de números] }` (durante a implementação: um ⓘ de regra, ver contracts/tree-worker.md; uma regra com linha acima de 200 caracteres fica sem ⓘ) ou nulo | "How it adds up". Só átomos; um termo sem nome aparece como o caminho do jogo (FR-012a); 3 algarismos significativos |
 | `code` | texto ou nulo | Bloco e argumentos ou caminho, só em "Game details" |
 | `role` | um de `NODE_ROLES` | |
 | `share` | 0..1 ou nulo | Peso no pai (Share S); nulo em condição e em `unknown` |
