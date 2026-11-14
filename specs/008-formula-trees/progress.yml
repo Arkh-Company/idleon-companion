@@ -12,7 +12,7 @@ execution:
   phases:
     - {name: "Done gate", status: done, commits: bbfb73b..a1ec493}
     - {name: "Setup + Foundational", status: done, commits: 1f5ba1b..265be8b}
-    - {name: "US1a gravador e raiz (T015-T016, T018, T020-T021, T024)", status: pending}
+    - {name: "US1a gravador e raiz (T015-T016, T018, T020-T021, T024)", status: done, commits: 567173f..797fd04}
     - {name: "US1b montagem fiel (T017, T022)", status: pending}
     - {name: "US1c nomes (T023)", status: pending}
     - {name: "US1 (T025-T028)", status: pending}
