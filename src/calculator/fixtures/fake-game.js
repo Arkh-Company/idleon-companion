@@ -149,6 +149,8 @@ lime.$scripts.N = function (_exports, $global) {
   HelperActor.prototype.init = function () {
     var s = state();
     counts.initPasses++;
+    // What the running game changes later, as a screen's state: the trees of the live game read it (spec 008 US12).
+    this._GenINFO = [0, 0, 0, 7];
     if (s.Scenario === "helperThrows" || s.Scenario === "otherHelpers")
       throw new Error("this helper is broken");
     // The values of the mosaic are written back after the helpers: this one never finishes being written.
@@ -555,6 +557,33 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
     return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);
+  };
+  // The live game's actors (spec 008 US12): a helper's field, the map's first monster, of the game's own class, and the
+  // player's target, or AFKtarget with none. A missing field reads as 0 or as text, as the game's code turns it.
+  var helper = function () {
+    return state().PixelHelperActor[0].behaviors.getBehavior("ActorEvents_29");
+  };
+  Blocks._customBlock_TreeHelperField = function () {
+    return helper()._GenINFO[3];
+  };
+  Blocks._customBlock_TreeHelperProto = function () {
+    return "polluted" in helper() ? 1 : 0;
+  };
+  Blocks._customBlock_TreeHelperWhole = function () {
+    return helper()._Owned.h.k;
+  };
+  Blocks._customBlock_TreeMapMonster = function () {
+    var b = state().MapMonstersList[0].behaviors.getBehavior("ActorEvents_1");
+    return b instanceof Blocks ? b._MonsterHPtot || 0 : -1;
+  };
+  Blocks._customBlock_TreeTarget = function () {
+    var s = state();
+    var me = s.OtherPlayers.h[s.UserInfo[0]];
+    var t = me.behaviors.getBehavior("ActorEvents_20")._TargetEnemy;
+    if (t === null) return s.AFKtarget.length;
+    return (
+      String(t.behaviors.getBehavior("ActorEvents_1")._MonsterType).length * 10
+    );
   };
   Blocks._customBlock_TreeCharacter = function () {
     var s = state();

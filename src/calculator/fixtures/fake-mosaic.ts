@@ -93,8 +93,12 @@ export const BASE = {
   },
 };
 
-export const mosaicOf = (attrs: object = {}, vars: object = {}): string =>
-  JSON.stringify({ attrs: { ...BASE, ...attrs }, vars, skipped: [] });
+export const mosaicOf = (
+  attrs: object = {},
+  vars: object = {},
+  actors: object = {},
+): string =>
+  JSON.stringify({ attrs: { ...BASE, ...attrs }, vars, actors, skipped: [] });
 
 /** Each tree case of the invented game: its block, its exact arguments and the value it gives over `mosaicOf()`. */
 export const TREE_CASES: {

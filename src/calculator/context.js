@@ -79,6 +79,8 @@
   var owner = {};
   var tables = {};
   var vars = {};
+  /** The map actors' fields the keeper read on the running game (spec 008 US12), keyed as state-slice.js gives them. */
+  var actors = {};
   var mosaicAttrs = {};
   var primitives = {};
   var steps = [];
@@ -180,7 +182,58 @@
     return map;
   }
 
+  var HELPER_FIELD = /^H(\d+)\.(_[A-Za-z]\w*)(?:\[(\d+)\])?$/;
+  var MONSTER_FIELD = /^map0\.(_[A-Za-z]\w*)$/;
+
+  // The helpers' fields of the running game, over what their init wrote: a field whole, or one place of a list.
+  function liveHelperFields() {
+    Object.keys(actors).forEach((key) => {
+      var m = HELPER_FIELD.exec(key);
+      var pair = m && HELPER_ACTORS.find((p) => p[0] === Number(m[1]));
+      var inst = pair && insts["ActorEvents_" + pair[1]];
+      if (!inst) return;
+      var value = rev(actors[key]);
+      var field = inst[m[2]];
+      if (m[3] === undefined) inst[m[2]] = value;
+      else if (field && typeof field === "object") field[Number(m[3])] = value;
+    });
+  }
+
+  // An actor with one behavior of the game's own class (the game casts it), holding `fields`.
+  function actorWith(id, fields) {
+    var name = "ActorEvents_" + id;
+    var C = hx["scripts." + name];
+    var behavior = Object.assign(
+      Object.create(C ? C.prototype : Object.prototype),
+      fields,
+    );
+    return {
+      behaviors: { getBehavior: (n) => (n === name ? behavior : null) },
+    };
+  }
+
+  // The map's first monster and the player's target, read on this map only: an inactive character's map is another one.
+  // Without them their places stay empty, and the numbers that read them are unavailable.
+  function placeMapActors(live) {
+    if (actors.map !== live.CurrentMap) return;
+    var monster = {};
+    Object.keys(actors).forEach((key) => {
+      var m = MONSTER_FIELD.exec(key);
+      if (m) monster[m[1]] = rev(actors[key]);
+    });
+    if (Object.keys(monster).length && Array.isArray(live.MapMonstersList))
+      live.MapMonstersList[0] = actorWith(1, monster);
+    var me = Array.isArray(live.UserInfo) ? live.UserInfo[0] : null;
+    var players = live.OtherPlayers && live.OtherPlayers.h;
+    if (!hasOwn(actors, "target._MonsterType") || !players) return;
+    var type = rev(actors["target._MonsterType"]);
+    players[me] = actorWith(20, {
+      _TargetEnemy: type === null ? null : actorWith(1, { _MonsterType: type }),
+    });
+  }
+
   function reapply() {
+    liveHelperFields();
     var a = eng.gameAttributes.h;
     Object.assign(a, primitives);
     var live = mosaicAttrs.DNSM && mosaicAttrs.DNSM.$m;
@@ -340,6 +393,7 @@
     loadMosaic: () => {
       var m = JSON.parse(G.__mosaic);
       vars = m.vars || {};
+      actors = m.actors || {};
       mosaicAttrs = m.attrs;
       primitives = {};
       var live = {};
@@ -352,6 +406,7 @@
         live[k] = tables[k];
       });
       live.PixelHelperActor = [];
+      placeMapActors(live);
       eng.gameAttributes.h = live;
     },
 
