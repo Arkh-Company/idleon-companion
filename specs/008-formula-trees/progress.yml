@@ -14,10 +14,7 @@ execution:
     - {name: "Setup + Foundational", status: done, commits: 1f5ba1b..265be8b}
     - {name: "US1a gravador e raiz (T015-T016, T018, T020-T021, T024)", status: done, commits: 567173f..797fd04}
     - {name: "US1b-1 peças, expand, share, tipos e curvas (T017, T022, T024)", status: done, commits: c6311f5..a2342c9}
-    - {name: "US1b-2 passos e linhas (T017, T022)", status: pending}
-    - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: pending}
-    - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: pending}
-    - {name: "US1c nomes (T023)", status: pending}
+    - {name: "US1b-2 passos e linhas (T017, T022)", status: done, commits: ddab772..01202fb}
     - {name: "US1 (T025-T028)", status: pending}
     - {name: US2, status: pending}
     - {name: US3, status: pending}
@@ -31,6 +28,9 @@ execution:
     - {name: US11, status: pending}
     - {name: US12, status: pending}
     - {name: US13, status: pending}
+    - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: pending}
+    - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: pending}
+    - {name: "US1c nomes (T023)", status: pending}
     - {name: Polish, status: pending}
   feature_review: pending
   code_pr: null
