@@ -185,7 +185,7 @@
     Object.assign(a, primitives);
     var live = mosaicAttrs.DNSM && mosaicAttrs.DNSM.$m;
     if (!live || !a.DNSM) return;
-    ["CompanionBon", "ShinyBonusS"].forEach((k) => {
+    ["CompanionBon", "ShinyBonusS", "CompanionLVz"].forEach((k) => {
       if (live[k]) a.DNSM.h[k] = rev(live[k]);
     });
   }

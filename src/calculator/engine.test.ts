@@ -198,6 +198,13 @@ describe("state", () => {
     expect(scenario("bonus").accuracy).toBe(7);
   });
 
+  test("CompanionLVz of the mosaic wins over the helper that empties it", () => {
+    const DNSM = {
+      $m: { ...BASE.DNSM.$m, CompanionLVz: { $m: { 5: 1, 6: 0 } } },
+    };
+    expect(scenario("companionLevels", { DNSM }).accuracy).toBe(1);
+  });
+
   test("the maps the game creates lazily exist, except those it fills itself", () => {
     expect(scenario("lazyDnsm").accuracy).toBe(1);
   });

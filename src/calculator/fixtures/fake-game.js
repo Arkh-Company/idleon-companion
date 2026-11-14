@@ -165,6 +165,7 @@ lime.$scripts.N = function (_exports, $global) {
     s.AFKtarget = "rewritten by a helper";
     s.DNSM.h.CompanionBon.h.b1 = 999;
     s.DNSM.h.ShinyBonusS = new StringMap();
+    s.DNSM.h.CompanionLVz = new StringMap();
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
   A["scripts.ActorEvents_29"] = HelperActor;
@@ -270,6 +271,9 @@ lime.$scripts.N = function (_exports, $global) {
     },
     bonus: function (s) {
       return s.DNSM.h.CompanionBon.h.b1 + s.DNSM.h.ShinyBonusS.h.s1;
+    },
+    companionLevels: function () {
+      return Blocks._customBlock_CompLV2(5) + Blocks._customBlock_CompLV2(6);
     },
     otherHelpers: function (s) {
       return s.EverySceneRan.length;
@@ -410,6 +414,11 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_AFKgainrates = function () {
     return state().AfkRate;
+  };
+  // 1 when the companion has its "+": its level is at least 1.
+  Blocks._customBlock_CompLV2 = function (n) {
+    var level = state().DNSM.h.CompanionLVz.h[n];
+    return level >= 1 ? 1 : 0;
   };
   Blocks._customBlock_CloudSAVE = function () {
     state().SavedBy = "CloudSAVE";

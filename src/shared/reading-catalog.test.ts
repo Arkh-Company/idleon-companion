@@ -24,8 +24,8 @@ test("every row has every column filled", () => {
   }
 });
 
-test("the fast reading has 97 rows, 13 of them in the actions group", () => {
-  expect(fast).toHaveLength(97);
+test("the fast reading has 98 rows, 13 of them in the actions group", () => {
+  expect(fast).toHaveLength(98);
   expect(CATALOG.filter((r) => r.group === ACTIONS_GROUP)).toHaveLength(13);
   expect(fast.filter((r) => r.group === ACTIONS_GROUP)).toHaveLength(13);
 });
