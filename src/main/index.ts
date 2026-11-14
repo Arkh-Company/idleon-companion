@@ -21,7 +21,7 @@ import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
 import { routeLink } from "./link-routes.ts";
 import { emptyPayload, settingsPayload } from "./payloads.ts";
-import { loadSettings, saveSettings } from "./settings.ts";
+import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
 import {
@@ -36,6 +36,7 @@ import {
   isAllowedNavigation,
   windowOptions,
 } from "./window-options.ts";
+import { zoomControl } from "./zoom.ts";
 
 function start(): void {
   const dataDir = join(app.getPath("appData"), "IdleOn Companion");
@@ -82,6 +83,17 @@ function start(): void {
     if (!shouldReload(details.reason, !win.isDestroyed(), reloads, now)) return;
     reloads.push(now);
     win.webContents.reload();
+  });
+  // Text zoom (FR-031): the menu is gone, so its keys and Ctrl+wheel come here; each load gets the saved factor.
+  const zoom = zoomControl(loadZoom(settingsFile), win.webContents, (f) => {
+    saveZoom(settingsFile, f);
+  });
+  win.webContents.on("did-finish-load", zoom.apply);
+  win.webContents.on("before-input-event", (e, input) => {
+    if (zoom.key(input)) e.preventDefault();
+  });
+  win.webContents.on("zoom-changed", (_e, direction) => {
+    zoom.wheel(direction);
   });
   // The page loads by the same URL the navigation and IPC checks compare against.
   void win.loadURL(ownUrl);

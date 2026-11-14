@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { DEFAULT_SETTINGS } from "../shared/index.ts";
-import { loadSettings, saveSettings } from "./settings.ts";
+import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
 
 function fileWith(content?: string): string {
   const file = join(mkdtempSync(join(tmpdir(), "settings-")), "settings.json");
@@ -36,6 +36,30 @@ test.each([
   ["null", "null"],
 ])("%s gives the defaults", (_name, content) => {
   expect(loadSettings(fileWith(content))).toEqual(DEFAULT_SETTINGS);
+});
+
+test("the zoom is saved and loaded with the settings, and neither save loses the other", () => {
+  const file = fileWith();
+  const s = {
+    showWindowOnGameStart: false,
+    closeWithGame: true,
+    alwaysOnTop: true,
+  };
+  saveSettings(file, s);
+  saveZoom(file, 1.5);
+  expect(loadZoom(file)).toBe(1.5);
+  expect(loadSettings(file)).toEqual(s);
+  saveSettings(file, { ...s, alwaysOnTop: false });
+  expect(loadZoom(file)).toBe(1.5);
+});
+
+test.each([
+  ["a missing file", undefined],
+  ["invalid JSON", "{"],
+  ["a zoom out of range", '{"zoom":3}'],
+  ["a zoom that is not a number", '{"zoom":"2"}'],
+])("%s loads the zoom as 1.0", (_name, content) => {
+  expect(loadZoom(fileWith(content))).toBe(1);
 });
 
 test("save then load gives the same settings, also in a folder that did not exist", () => {
