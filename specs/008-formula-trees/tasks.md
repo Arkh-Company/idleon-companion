@@ -336,17 +336,22 @@ Verify: `just test-one src/renderer/SystemPanel.test.tsx` - passes; `just check`
 
 ### Tests for User Story 4
 
-- [ ] T035 [P] [US4] `src/renderer/SystemPanel.test.tsx` (not-shown groups) and `src/calculator/tree-build.test.ts` (list cost)
+- [X] T035 [P] [US4] `src/renderer/SystemPanel.test.tsx` (not-shown groups) and `src/calculator/tree-build.test.ts` (list cost)
   - Cases:
     - four groups start closed;
     - only the open group's ids go live;
     - a list result `[material, quantity]` shows both, and its tree explains the quantity;
     - a stored value without math gets `fromGame` and no tree.
+  - Done in this phase: the first two cases. Left for the bench (Open Questions of spec.md, decided during the implementation): the list-result case and the stored-value case, including the `tree-build.test.ts` list case. They come back when the bench brings audited numbers that return a list or a stored value.
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Not-shown groups in the panel and the list-result root in the worker
+- [X] T036 [US4] Not-shown groups in the panel and the list-result root in the worker
   - Files: `src/renderer/SystemPanel.tsx`, `src/calculator/tree-build.ts`, `src/calculator/tree-roots.ts` (the Stamps ids of the BASELINE-4: next level cost, capacity cap, over level, gilded chance, exalted)
+  - Done in this phase: the not-shown groups in `SystemPanel.tsx`, over the catalog as it is, where the gilded chance is Stamps' only not-shown number. Left for the bench (Open Questions of spec.md):
+    - the list-result root in `tree-build.ts`;
+    - the stored-value root (`fromGame`);
+    - the Stamps ids in `tree-roots.ts` (next level cost, capacity cap, over level, exalted), still candidates (FR-007).
 
 Verify: `just test-one src/renderer/SystemPanel.test.tsx` - passes; `just check` - passes.
 
