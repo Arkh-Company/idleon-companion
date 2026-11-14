@@ -41,7 +41,8 @@ export const pairOf = (char = "Invented", n = 1): StatsPair => ({
   calculatedAt: 1_000 * n,
 });
 
-export function pipeline(start: StatsPair | null = pairOf()) {
+/** `checked`: whether the game's code is the one the rules were checked on (the version band, FR-018). */
+export function pipeline(start: StatsPair | null = pairOf(), checked = true) {
   let pair = start;
   const sent: FormulaTree[] = [];
   const liveSent: LiveValues[] = [];
@@ -69,6 +70,7 @@ export function pipeline(start: StatsPair | null = pairOf()) {
       return host;
     },
     statsPair: () => pair,
+    checkedOnThisGame: () => checked,
     log,
   });
   return {

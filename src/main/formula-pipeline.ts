@@ -97,6 +97,8 @@ export function startFormulaPipeline(deps: {
     onValues(id: number, values: unknown): void;
   }) => TreeHost;
   statsPair: () => StatsPair | null;
+  /** Whether the game's code is the one the name and type rules were checked on (the version band, FR-018). */
+  checkedOnThisGame: () => boolean;
   log: (entry: FormulaLog) => void;
 }): {
   /** A request the main already checked (`formulaRequestPayload`). */
@@ -248,7 +250,7 @@ export function startFormulaPipeline(deps: {
       activeCharacter: active,
       calculatedAt: pair.calculatedAt,
       gameChanged: false,
-      checkedOnThisGame: true,
+      checkedOnThisGame: deps.checkedOnThisGame(),
       stale,
       comparingWith: null,
       counts: { nodes: countNodes(root) },

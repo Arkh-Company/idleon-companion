@@ -126,6 +126,25 @@ test("a tree request goes with the Stats' mosaic and its root reaches the window
   });
 });
 
+test("the tree's version band comes from the game code the tree host read (FR-018)", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  // The invented code is not the one the rules were checked on.
+  expect(h.on(IPC.formulaUpdate).at(-1)).toMatchObject({
+    state: "ready",
+    checkedOnThisGame: false,
+  });
+});
+
 test("a character change reaches the open tree through the Stats", async () => {
   const h = setup();
   await h.showing();

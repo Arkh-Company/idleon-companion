@@ -14,6 +14,7 @@ import {
 } from "./payloads.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
 import { createTreeHost } from "./tree-host.ts";
+import { versionBand } from "./version-band.ts";
 
 export function startPipelines(deps: {
   send: (channel: string, value: unknown) => void;
@@ -44,6 +45,7 @@ export function startPipelines(deps: {
     // A new mosaic whose 11 texts did not change sends nothing to the tab, and the live values still follow it.
     onPair: tellTrees,
   });
+  const band = versionBand();
   formula = startFormulaPipeline({
     send: (t) => {
       deps.send(IPC.formulaUpdate, t);
@@ -54,10 +56,16 @@ export function startPipelines(deps: {
     treeHost: (on) =>
       createTreeHost({
         createWorker: deps.createWorker,
-        readFiles: deps.readFiles,
+        // The code is hashed before the host transfers its bytes to the worker.
+        readFiles: async (resources) => {
+          const files = await deps.readFiles(resources);
+          band.read(files.code);
+          return files;
+        },
         ...on,
       }),
     statsPair: () => stats.pair(),
+    checkedOnThisGame: band.checked,
     log: deps.log,
   });
   const trees = formula;

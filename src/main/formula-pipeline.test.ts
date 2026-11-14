@@ -88,6 +88,19 @@ test("a root equal to the Stats is a ready tree, with the Stats' text and time",
   expect(h.log).not.toHaveBeenCalled();
 });
 
+test("a tree on a game code the rules were not checked on is ready with the band, and its values stay (FR-018)", () => {
+  const h = setup(pairOf(), false);
+  h.p.request({ id: "dropRate", character: null });
+  const root = node({ value: CALCULATED.dropRate });
+  h.tree(root);
+  expect(h.last()).toMatchObject({
+    state: "ready",
+    rootText: "6x",
+    checkedOnThisGame: false,
+    root,
+  });
+});
+
 test("a root that differs from the Stats is diverged, with a log of label and id only (FR-019)", () => {
   const h = setup();
   h.p.request({ id: "dropRate", character: null });
