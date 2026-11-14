@@ -3,6 +3,7 @@
 import { anchored, bootContext, lazyDnsmKeys } from "./boot.ts";
 import type { Context } from "./boot.ts";
 import { instrument } from "./instrument.ts";
+import type { Op } from "./instrument.ts";
 import recorderPassSource from "./recorder-pass.js?raw";
 import recorderSource from "./recorder.js?raw";
 import type { Recipe, Recording } from "./recording.ts";
@@ -21,6 +22,8 @@ export function bootRecorder(
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
 ): {
   context: Context;
+  /** The instrumentation's steps, by the id the recording's `x` gives them (they never leave the worker). */
+  ops: readonly Op[];
   /** One recording over the mosaic; throws when a step runs out of time or the recording is not text. */
   record(
     mosaicJson: string,
@@ -28,7 +31,8 @@ export function bootRecorder(
     recipe: Recipe,
   ): Recording;
 } {
-  const context = bootContext(instrument(anchored(code)).source, pak, limits, [
+  const { source, ops } = instrument(anchored(code));
+  const context = bootContext(source, pak, limits, [
     recorderSource,
     recorderPassSource,
   ]);
@@ -41,6 +45,7 @@ export function bootRecorder(
 
   return {
     context,
+    ops,
     record(mosaicJson, roots, recipe) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);

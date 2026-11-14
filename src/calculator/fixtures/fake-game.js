@@ -493,6 +493,23 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
   };
+  // The steps of a block (build-tree.cjs 8d): a variable set by an earlier step, a variable changed by `*=`, and two
+  // reads with the same value told apart by the code's own path.
+  Blocks._customBlock_TreeDef = function () {
+    var s = state();
+    var part = s.TreeBase * 2;
+    return part + 1;
+  };
+  Blocks._customBlock_TreeAssign = function () {
+    var s = state();
+    var t = s.TreeBase;
+    t *= 3;
+    return t + 1;
+  };
+  Blocks._customBlock_TreeTwins = function () {
+    var s = state();
+    return s.TreeTwins[0] + s.TreeTwins[1] * 2;
+  };
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
     return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);
