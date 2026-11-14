@@ -57,7 +57,7 @@ export function startPipelines(deps: {
     send: (r) => {
       deps.send(IPC.radarUpdate, r);
     },
-    warning: deps.saved.shapes.warning(),
+    shapes: deps.saved.shapes,
   });
   formula = startFormulaPipeline({
     send: (t) => {

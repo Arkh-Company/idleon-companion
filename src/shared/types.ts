@@ -206,17 +206,21 @@ export interface FarmUpdate {
   items: { name: string; perHour: number }[];
 }
 
+/** What a game update changed in one tree's shape: names of parts new, gone and renamed (FR-029). */
+export interface RadarChange {
+  catalogId: string;
+  added: string[];
+  removed: string[];
+  renamed: [before: string, after: string][];
+}
+
 /**
- * `radar:update`: the trees whose shape changed with a game update (FR-035), and the warning of a shapes file that could
- * not be read (FR-041); null when there is nothing to show.
+ * `radar:update`: the trees whose shape changed with a game update (FR-035), `checking` while old trees are still to be
+ * compared, and the warning of a shapes file that could not be read (FR-041); null when there is nothing to show.
  */
 export type RadarUpdate = {
-  changed: {
-    catalogId: string;
-    added: string[];
-    removed: string[];
-    renamed: [before: string, after: string][];
-  }[];
+  changed: RadarChange[];
+  checking: boolean;
   warning: string | null;
 } | null;
 

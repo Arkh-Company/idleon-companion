@@ -11,7 +11,7 @@ import {
   MAX_PINS,
   PINS_FULL,
 } from "../shared/index.ts";
-import type { Mark, Pin } from "../shared/index.ts";
+import type { Mark, Pin, RadarChange } from "../shared/index.ts";
 import {
   emptyPayload,
   MAX_MARK_NAME,
@@ -32,10 +32,24 @@ export const SHAPES_RESET =
   "Saved tree shapes could not be read and were reset";
 const SHAPES_UNSAVED = "The tree shapes could not be saved on this computer.";
 
+type Trees = Map<string, [key: string, name: string][]>;
+
+/**
+ * A game update still open (FR-029, FR-035): the old version's trees not compared yet, the changes found, and how many
+ * of them the player had seen when they closed the band.
+ */
+export interface ShapesPatch {
+  previous: { gameSha: string; trees: Trees };
+  changed: RadarChange[];
+  dismissed: number;
+}
+
 /** The parts of each catalog tree, [pieceKey, name], for one game version (its N.js's sha256); never a value. */
 export interface TreeShapes {
   gameSha: string | null;
-  trees: Map<string, [key: string, name: string][]>;
+  trees: Trees;
+  /** Only while a game update is open. */
+  patch?: ShapesPatch;
 }
 
 type Values = Mark["values"];
@@ -87,22 +101,68 @@ const isPart = (p: unknown): p is [string, string] =>
   typeof p[0] === "string" &&
   typeof p[1] === "string";
 
-/** The shapes of `tree-shapes.json`, or null when its shape is wrong. A number no longer in the catalog is dropped. */
-function shapesOf(v: unknown): TreeShapes | null {
-  if (
-    !isObject(v) ||
-    v.version !== 1 ||
-    typeof v.gameSha !== "string" ||
-    !/^[0-9a-f]{64}$/.test(v.gameSha) ||
-    !isObject(v.trees)
-  )
-    return null;
-  const trees = new Map<string, [string, string][]>();
-  for (const [id, parts] of Object.entries(v.trees)) {
+const isSha = (v: unknown): v is string =>
+  typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
+const isNames = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((n) => typeof n === "string");
+
+/** The trees of a shapes object, or null when wrong. A number no longer in the catalog is dropped. */
+function treesOf(v: unknown): Trees | null {
+  if (!isObject(v)) return null;
+  const trees: Trees = new Map();
+  for (const [id, parts] of Object.entries(v)) {
     if (!Array.isArray(parts) || !parts.every(isPart)) return null;
     if (isCatalogId(id)) trees.set(id, parts);
   }
-  return { gameSha: v.gameSha, trees };
+  return trees;
+}
+
+/** Whether the value is one change of the radar. */
+const isChange = (v: unknown): v is RadarChange =>
+  isObject(v) &&
+  typeof v.catalogId === "string" &&
+  isNames(v.added) &&
+  isNames(v.removed) &&
+  Array.isArray(v.renamed) &&
+  v.renamed.every(isPart);
+
+/** The open game update of the file, undefined when it has none, null when it is wrong. */
+function patchOf(v: Record<string, unknown>): ShapesPatch | undefined | null {
+  const { previous, changed, dismissed } = v;
+  if (
+    previous === undefined &&
+    changed === undefined &&
+    dismissed === undefined
+  )
+    return undefined;
+  if (
+    !isObject(previous) ||
+    !isSha(previous.gameSha) ||
+    !Array.isArray(changed) ||
+    !changed.every(isChange) ||
+    typeof dismissed !== "number" ||
+    !Number.isInteger(dismissed) ||
+    dismissed < 0
+  )
+    return null;
+  const trees = treesOf(previous.trees);
+  if (!trees) return null;
+  return {
+    previous: { gameSha: previous.gameSha, trees },
+    changed: changed.filter((c) => isCatalogId(c.catalogId)),
+    dismissed,
+  };
+}
+
+/** The shapes of `tree-shapes.json`, or null when its shape is wrong. */
+function shapesOf(v: unknown): TreeShapes | null {
+  if (!isObject(v) || v.version !== 1 || !isSha(v.gameSha)) return null;
+  const trees = treesOf(v.trees);
+  const patch = patchOf(v);
+  if (!trees || patch === null) return null;
+  return patch
+    ? { gameSha: v.gameSha, trees, patch }
+    : { gameSha: v.gameSha, trees };
 }
 
 /**
@@ -221,10 +281,18 @@ export function savedFiles(dir: string): {
     join(dir, "tree-shapes.json"),
     shapesOf,
     (): TreeShapes => ({ gameSha: null, trees: new Map() }),
-    ({ gameSha, trees }) => ({
+    ({ gameSha, trees, patch }) => ({
       version: 1,
       gameSha,
       trees: Object.fromEntries(trees),
+      ...(patch && {
+        previous: {
+          gameSha: patch.previous.gameSha,
+          trees: Object.fromEntries(patch.previous.trees),
+        },
+        changed: patch.changed,
+        dismissed: patch.dismissed,
+      }),
     }),
     { reset: SHAPES_RESET, unsaved: SHAPES_UNSAVED },
   );

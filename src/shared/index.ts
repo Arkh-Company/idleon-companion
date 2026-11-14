@@ -72,6 +72,7 @@ export type {
   LiveValues,
   Mark,
   Pin,
+  RadarChange,
   RadarUpdate,
   Reading,
   ScreenCatalog,

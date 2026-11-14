@@ -409,6 +409,7 @@ test("a new game version lights the patch radar with the trees whose shape chang
     changed: [
       { catalogId: first, added: ["Shield"], removed: [], renamed: [] },
     ],
+    checking: false,
     warning: null,
   };
   expect(h.on(IPC.radarUpdate)).toEqual([lit]);
@@ -429,6 +430,6 @@ test("an unreadable shapes file is said on the patch radar to a new page (FR-041
   const h = setup(CHECKED_CODE, savedFiles(dir));
   h.p.formula.replay();
   expect(h.on(IPC.radarUpdate)).toEqual([
-    { changed: [], warning: SHAPES_RESET },
+    { changed: [], checking: false, warning: SHAPES_RESET },
   ]);
 });

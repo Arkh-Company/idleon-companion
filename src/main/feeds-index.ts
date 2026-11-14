@@ -95,7 +95,9 @@ export function feedsIndex(deps: {
   /** The counts changed: the open tree's badges follow. */
   changed: () => void;
   /** The patch radar: the last version's shapes before they go, and each new shape (FR-029). */
-  radar?: Pick<ReturnType<typeof patchRadar>, "patched" | "shaped"> | undefined;
+  radar?:
+    | Pick<ReturnType<typeof patchRadar>, "patched" | "shaped" | "done">
+    | undefined;
 }): {
   /** How many catalog numbers use the piece. */
   count: (pieceKey: string) => number;
@@ -144,6 +146,7 @@ export function feedsIndex(deps: {
     if (failures >= MAX_FAILURES) return;
     const id = ASKED.find((n) => !saved.trees.has(n) && !skipped.has(n));
     if (id === undefined) {
+      deps.radar?.done();
       if (unsaved > 0) save();
       return;
     }
@@ -162,7 +165,8 @@ export function feedsIndex(deps: {
       if (saved.gameSha !== sha) {
         // The old version's shapes go; the patch radar compares them first.
         const had = saved.trees.size > 0;
-        if (had) deps.radar?.patched(saved.trees);
+        // Trees are only saved under a version: `had` means a version.
+        if (had && saved.gameSha !== null) deps.radar?.patched(saved.gameSha);
         saved.gameSha = sha;
         saved.trees.clear();
         byPiece.clear();

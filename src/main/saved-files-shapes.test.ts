@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { savedFiles, SHAPES_RESET } from "./saved-files.ts";
+import type { RadarChange } from "../shared/index.ts";
 import type { TreeShapes } from "./saved-files.ts";
 
 const SHA = "a".repeat(64);
@@ -98,5 +99,86 @@ test.each([
     expect(readFileSync(join(dir, "tree-shapes.json.bad"), "utf8")).toBe(
       content,
     );
+  },
+);
+
+const OLD_SHA = "b".repeat(64);
+const CHANGE: RadarChange = {
+  catalogId: "hp",
+  added: ["Shield"],
+  removed: [],
+  renamed: [["Card", "Card bonus"]],
+};
+
+test("an open game update is saved with the shapes and read back after a restart (FR-029, FR-035)", () => {
+  const dir = folder();
+  const open: TreeShapes = {
+    ...SHAPES,
+    patch: {
+      previous: {
+        gameSha: OLD_SHA,
+        trees: new Map([["str", [['["Card"]', "Card"]]]]),
+      },
+      changed: [CHANGE],
+      dismissed: 1,
+    },
+  };
+  expect(savedFiles(dir).shapes.save(open)).toBe(null);
+  expect(onDisk(dir)).toMatchObject({
+    gameSha: SHA,
+    previous: { gameSha: OLD_SHA, trees: { str: [['["Card"]', "Card"]] } },
+    changed: [CHANGE],
+    dismissed: 1,
+  });
+  expect(savedFiles(dir).shapes.get()).toEqual(open);
+});
+
+test("a change of a number no longer in the catalog is dropped on reading, with no warning", () => {
+  const dir = folder(
+    JSON.stringify({
+      version: 1,
+      gameSha: SHA,
+      trees: {},
+      previous: { gameSha: OLD_SHA, trees: {} },
+      changed: [CHANGE, { ...CHANGE, catalogId: "gone" }],
+      dismissed: 0,
+    }),
+  );
+  const { shapes } = savedFiles(dir);
+  expect(shapes.get().patch?.changed).toEqual([CHANGE]);
+  expect(shapes.warning()).toBe(null);
+});
+
+const PATCH = {
+  version: 1,
+  gameSha: SHA,
+  trees: {},
+  previous: { gameSha: OLD_SHA, trees: {} },
+  changed: [CHANGE],
+  dismissed: 0,
+};
+test.each([
+  ["changes without the old trees", { ...PATCH, previous: undefined }],
+  ["old trees of no version", { ...PATCH, previous: { trees: {} } }],
+  [
+    "old trees that are no list",
+    { ...PATCH, previous: { gameSha: OLD_SHA, trees: { hp: 1 } } },
+  ],
+  ["changes that are no list", { ...PATCH, changed: {} }],
+  ["a change with a value", { ...PATCH, changed: [{ ...CHANGE, added: [3] }] }],
+  [
+    "a rename that is no pair",
+    { ...PATCH, changed: [{ ...CHANGE, renamed: [["a"]] }] },
+  ],
+  ["no count of closed changes", { ...PATCH, dismissed: undefined }],
+  ["a count that is no whole number", { ...PATCH, dismissed: 0.5 }],
+  ["a negative count", { ...PATCH, dismissed: -1 }],
+])(
+  "an open update with %s is renamed .bad, starts empty and warns once (FR-041)",
+  (_name, content) => {
+    const dir = folder(JSON.stringify(content));
+    const { shapes } = savedFiles(dir);
+    expect(shapes.get()).toEqual({ gameSha: null, trees: new Map() });
+    expect(shapes.warning()).toBe(SHAPES_RESET);
   },
 );

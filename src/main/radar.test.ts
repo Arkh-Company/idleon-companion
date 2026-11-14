@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { expect, test, vi } from "vitest";
 import { TREE_CATALOG } from "../shared/index.ts";
 import type { RadarUpdate } from "../shared/index.ts";
-import { feedsIndex } from "./feeds-index.ts";
+import { feedsIndex, SAVE_EVERY } from "./feeds-index.ts";
 import { patchRadar, shapeChange } from "./radar.ts";
 import { savedFiles, SHAPES_RESET } from "./saved-files.ts";
 import type { TreeShapes } from "./saved-files.ts";
@@ -59,10 +59,11 @@ test("a tree's change is by piece key: parts new, parts gone and names changed, 
     ),
   ).toBe(null);
 });
-
-/** The radar over the feeds index and the real files, as pipelines.ts joins them. */
-function setup(saved?: TreeShapes | string) {
-  const dir = mkdtempSync(join(tmpdir(), "radar-"));
+/** The radar over the feeds index and the real files, as pipelines.ts joins them; the same `dir` again is a restart. */
+function setup(
+  saved?: TreeShapes | string,
+  dir = mkdtempSync(join(tmpdir(), "radar-")),
+) {
   const file = join(dir, "tree-shapes.json");
   if (typeof saved === "string") writeFileSync(file, saved);
   else if (saved) savedFiles(dir).shapes.save(saved);
@@ -72,24 +73,32 @@ function setup(saved?: TreeShapes | string) {
     send: (r) => {
       sent.push(r);
     },
-    warning: shapes.warning(),
+    shapes,
   });
   const ask = vi.fn<(seq: number, id: string, mosaicJson: string) => void>();
   const index = feedsIndex({ shapes, ask, changed: vi.fn(), radar });
   index.mosaic(named(["Qwynn"]));
   return {
+    dir,
     radar,
     index,
     sent,
     last: () => sent.at(-1),
     /** The worker's answer to the last ask, the tree asked. */
-    answer(parts: [string, string][]) {
+    answer(parts: [string, string][] | null) {
       const [seq = 0, id = ""] = ask.mock.lastCall ?? [];
       index.received(seq, parts);
       return id;
     },
-    file: (): unknown => JSON.parse(readFileSync(file, "utf8")),
+    file: (): Record<string, unknown> =>
+      JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>,
   };
+}
+/** The app started again over the same files, on the same game version. */
+function restart(dir: string) {
+  const t = setup(undefined, dir);
+  t.index.game(NEW_SHA);
+  return t;
 }
 
 const OLD: TreeShapes = {
@@ -106,23 +115,59 @@ const OLD: TreeShapes = {
     [THIRD, [['["Talent"]', "Talent"]]],
   ]),
 };
+const SHIELD = {
+  catalogId: FIRST,
+  added: ["Shield"],
+  removed: [],
+  renamed: [],
+};
+const WITH_SHIELD: [string, string][] = [
+  ['[0,"Sword"]', "Sword"],
+  ['[0,"Owned"]', "Owned"],
+  ['[0,"Shield"]', "Shield"],
+];
 
-test("a new game version compares each tree's new shape with the old one and lights the band (FR-035)", () => {
+test("a new game version compares each tree's new shape with the old one and lights the band, still checking until the last old tree (FR-035)", () => {
   const t = setup(OLD);
   t.index.game(NEW_SHA);
   expect(t.sent).toEqual([]);
-  expect(t.answer([['[0,"Sword"]', "Sword"], ['[0,"Owned"]', "Owned"], ['[0,"Shield"]', "Shield"]])).toBe(FIRST); // prettier-ignore
+  expect(t.answer(WITH_SHIELD)).toBe(FIRST);
   expect(t.last()).toEqual({
-    changed: [
-      { catalogId: FIRST, added: ["Shield"], removed: [], renamed: [] },
-    ],
+    changed: [SHIELD],
+    checking: true,
     warning: null,
   });
   // The same shape: nothing new to say.
   expect(t.answer([['[0,"Card"]', "Card"]])).toBe(SECOND);
   expect(t.sent).toHaveLength(1);
+  // The last old tree: the count is final.
   t.answer([['[0,"Talent"]', "Talent bonus"]]);
-  expect(t.last()?.changed.map((c) => c.catalogId)).toEqual([FIRST, THIRD]);
+  expect(t.last()).toEqual({
+    changed: [
+      SHIELD,
+      {
+        catalogId: THIRD,
+        added: [],
+        removed: [],
+        renamed: [["Talent", "Talent bonus"]],
+      },
+    ],
+    checking: false,
+    warning: null,
+  });
+});
+
+test("an old tree that cannot be compared stops the checking when the asks end", () => {
+  const t = setup(OLD);
+  t.index.game(NEW_SHA);
+  t.answer(WITH_SHIELD);
+  t.answer(null); // SECOND fails and is skipped
+  for (let i = 2; i < ASKED.length; i++) t.answer([['[0,"Talent"]', "Talent"]]);
+  expect(t.last()).toEqual({
+    changed: [SHIELD],
+    checking: false,
+    warning: null,
+  });
 });
 
 test("the same game version, or no shape saved before, lights nothing", () => {
@@ -150,7 +195,7 @@ test("the shapes file of the new version keeps parts and names only: no value, n
   for (let i = 1; i < ASKED.length; i++) t.answer([]);
   const file = t.file();
   expect(file).toMatchObject({ version: 1, gameSha: NEW_SHA });
-  expect((file as { trees: Record<string, unknown> }).trees[FIRST]).toEqual([
+  expect((file.trees as Record<string, unknown>)[FIRST]).toEqual([
     ['["Sword"]', "Sword"],
   ]);
   const text = JSON.stringify(file);
@@ -160,33 +205,128 @@ test("the shapes file of the new version keeps parts and names only: no value, n
   expect(JSON.stringify(t.sent).toLowerCase()).not.toContain("qwynn");
 });
 
-test("Close puts the band out until the next patch, and a new page gets what is shown", () => {
+test("Close puts the band out; a new change of the same patch lights it again, and a new page gets what is shown", () => {
   const t = setup(OLD);
   t.index.game(NEW_SHA);
-  t.answer([['[0,"Shield"]', "Shield"]]);
+  t.answer(WITH_SHIELD);
   t.radar.replay();
-  expect(t.last()?.changed).toHaveLength(1);
+  expect(t.last()?.changed).toEqual([SHIELD]);
   t.radar.dismiss();
   expect(t.last()).toBe(null);
-  // More trees of the same patch: the band stays out.
-  t.answer([['[0,"Card"]', "Card"], ['[0,"Ring"]', "Ring"]]); // prettier-ignore
-  expect(t.last()).toBe(null);
   t.radar.replay();
   expect(t.last()).toBe(null);
-  // The next patch lights it again, against the shapes of this one: new game files, then their version.
+  // The same shape: still out.
+  t.answer([['[0,"Card"]', "Card"]]);
+  expect(t.last()).toBe(null);
+  // A new change of the same patch: the band comes back with every change.
+  t.answer([
+    ['[0,"Talent"]', "Talent"],
+    ['[0,"Ring"]', "Ring"],
+  ]);
+  expect(t.last()?.changed.map((c) => c.catalogId)).toEqual([FIRST, THIRD]);
+  // The next patch starts over, against the shapes of this one: new game files, then their version.
+  t.radar.dismiss();
   t.index.reset();
   t.index.game(NEWER_SHA);
-  t.answer([['[0,"Shield"]', "Shield"], ['[0,"Axe"]', "Axe"]]); // prettier-ignore
+  t.answer([...WITH_SHIELD, ['[0,"Axe"]', "Axe"]]);
   expect(t.last()).toEqual({
     changed: [{ catalogId: FIRST, added: ["Axe"], removed: [], renamed: [] }],
+    checking: true,
     warning: null,
   });
+});
+
+/** Old shapes of more trees than one write of the index: a restart comes between writes. */
+const MANY: TreeShapes = {
+  gameSha: OLD_SHA,
+  trees: new Map(
+    ASKED.slice(0, SAVE_EVERY + 3).map((id) => [id, [['["Card"]', "Card"]]]),
+  ),
+};
+const CARD: [string, string][] = [['[0,"Card"]', "Card"]];
+const RING: [string, string][] = [...CARD, ['[0,"Ring"]', "Ring"]];
+const ringOf = (catalogId: string) => ({
+  catalogId,
+  added: ["Ring"],
+  removed: [],
+  renamed: [],
+});
+
+test("a restart in the middle of the asks goes on comparing the old trees not compared yet (FR-029)", () => {
+  const t = setup(MANY);
+  t.index.game(NEW_SHA);
+  t.answer(RING);
+  for (let i = 1; i < SAVE_EVERY; i++) t.answer(CARD);
+  // Written: the new version's first trees, and the old trees not compared yet.
+  expect(t.file()).toMatchObject({ gameSha: NEW_SHA, dismissed: 0 });
+  expect(Object.keys(t.file().previous as object)).toEqual([
+    "gameSha",
+    "trees",
+  ]);
+  expect(
+    Object.keys((t.file().previous as { trees: object }).trees),
+  ).toHaveLength(3);
+  t.answer(RING); // asked after the write: compared again after the restart
+
+  const again = restart(t.dir);
+  again.radar.replay();
+  expect(again.last()).toEqual({
+    changed: [ringOf(FIRST)],
+    checking: true,
+    warning: null,
+  });
+  expect(again.answer(RING)).toBe(ASKED[SAVE_EVERY]);
+  again.answer(CARD);
+  again.answer(CARD);
+  expect(again.last()).toEqual({
+    changed: [ringOf(FIRST), ringOf(ASKED[SAVE_EVERY] ?? "")],
+    checking: false,
+    warning: null,
+  });
+});
+
+test("a restart with the band open shows it; after Close, it does not, and the file keeps no patch once all is compared", () => {
+  const t = setup(OLD);
+  t.index.game(NEW_SHA);
+  t.answer(WITH_SHIELD);
+  t.radar.dismiss(); // the file is written at Close
+  expect(t.file()).toMatchObject({ changed: [SHIELD], dismissed: 1 });
+
+  const closed = restart(t.dir);
+  closed.radar.replay();
+  expect(closed.last()).toBe(null);
+
+  // Open again by a new change, then a restart: the band is back.
+  closed.answer([
+    ['[0,"Card"]', "Card"],
+    ['[0,"Ring"]', "Ring"],
+  ]);
+  for (let i = 2; i < ASKED.length; i++) closed.answer([]);
+  const open = restart(t.dir);
+  open.radar.replay();
+  expect(open.last()?.changed).toHaveLength(3);
+  expect(open.last()?.checking).toBe(false);
+
+  // Closed with everything compared: the patch leaves the file.
+  open.radar.dismiss();
+  const file = open.file();
+  expect(file.gameSha).toBe(NEW_SHA);
+  expect(file).not.toHaveProperty("previous");
+  expect(file).not.toHaveProperty("changed");
+  expect(file).not.toHaveProperty("dismissed");
+  const last = restart(t.dir);
+  last.radar.replay();
+  expect(last.last()).toBe(null);
 });
 
 test("an unreadable shapes file is said once on the band, which Close puts out (FR-041)", () => {
   const t = setup("{");
   t.radar.replay();
-  expect(t.last()).toEqual({ changed: [], warning: SHAPES_RESET });
+  expect(t.last()).toEqual({
+    changed: [],
+    checking: false,
+    warning: SHAPES_RESET,
+  });
   t.radar.dismiss();
   t.radar.replay();
   expect(t.last()).toBe(null);
