@@ -23,35 +23,65 @@ export function formatNumber(
   return separated(round(n));
 }
 
+/** Each number as its Stats row writes it: the tree's root uses the same text (FR-019 of 008). */
+const NUMBERS: Record<
+  keyof CalcNumbers,
+  { label: string; text: (v: number) => string }
+> = {
+  // The game cuts it: 2,797,522.9 shows as 2,797,522x.
+  dropRate: {
+    label: "Drop Rate",
+    text: (v) => `${formatNumber(v, Math.trunc)}x`,
+  },
+  damageMin: { label: "Damage (min)", text: (v) => formatNumber(v) },
+  damageMax: { label: "Damage (max)", text: (v) => formatNumber(v) },
+  hp: { label: "HP", text: (v) => formatNumber(v) },
+  mp: { label: "MP", text: (v) => formatNumber(v) },
+  str: { label: "STR", text: (v) => formatNumber(v) },
+  agi: { label: "AGI", text: (v) => formatNumber(v) },
+  wis: { label: "WIS", text: (v) => formatNumber(v) },
+  luk: { label: "LUK", text: (v) => formatNumber(v) },
+  accuracy: { label: "Accuracy", text: (v) => eNotation(v) },
+  afkGains: {
+    label: "AFK Gains",
+    // toFixed: 1.1 * 100 is 110.00000000000001, which would round up to 111.
+    text: (v) => `${formatNumber(Number((v * 100).toFixed(6)))}%`,
+  },
+};
+
+/** The label and the text of one Stats number; null for an id that is not one of them. */
+export function statsNumber(
+  id: string,
+): { label: string; text: (v: number) => string } | null {
+  return Object.hasOwn(NUMBERS, id) ? NUMBERS[id as keyof CalcNumbers] : null;
+}
+
+const one = (id: keyof CalcNumbers) => ({
+  label: NUMBERS[id].label,
+  ids: [id],
+  text: NUMBERS[id].text,
+});
+
 const ROWS: {
   label: string;
   ids: (keyof CalcNumbers)[];
   text: (...values: number[]) => string;
 }[] = [
-  {
-    label: "Drop Rate",
-    ids: ["dropRate"],
-    // The game cuts it: 2,797,522.9 shows as 2,797,522x.
-    text: (v) => `${formatNumber(v, Math.trunc)}x`,
-  },
+  one("dropRate"),
   {
     label: "Damage",
     ids: ["damageMin", "damageMax"],
-    text: (min, max) => `${formatNumber(min)} – ${formatNumber(max)}`,
+    text: (min, max) =>
+      `${NUMBERS.damageMin.text(min)} – ${NUMBERS.damageMax.text(max)}`,
   },
-  { label: "HP", ids: ["hp"], text: (v) => formatNumber(v) },
-  { label: "MP", ids: ["mp"], text: (v) => formatNumber(v) },
-  { label: "STR", ids: ["str"], text: (v) => formatNumber(v) },
-  { label: "AGI", ids: ["agi"], text: (v) => formatNumber(v) },
-  { label: "WIS", ids: ["wis"], text: (v) => formatNumber(v) },
-  { label: "LUK", ids: ["luk"], text: (v) => formatNumber(v) },
-  { label: "Accuracy", ids: ["accuracy"], text: (v) => eNotation(v) },
-  {
-    label: "AFK Gains",
-    ids: ["afkGains"],
-    // toFixed: 1.1 * 100 is 110.00000000000001, which would round up to 111.
-    text: (v) => `${formatNumber(Number((v * 100).toFixed(6)))}%`,
-  },
+  one("hp"),
+  one("mp"),
+  one("str"),
+  one("agi"),
+  one("wis"),
+  one("luk"),
+  one("accuracy"),
+  one("afkGains"),
 ];
 
 export function statsRows(

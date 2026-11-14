@@ -142,7 +142,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
   - Tests:
     - the changed tests still check the game-closed case, with the new answer;
     - a character change still clears (no number of another character).
-- [ ] T012 Create the formula pipeline in `src/main/formula-pipeline.ts`
+- [X] T012 Create the formula pipeline in `src/main/formula-pipeline.ts`
   - Files: `src/main/formula-pipeline.ts`, `src/main/formula-pipeline.test.ts`, `src/main/payloads.ts` (`formulaRequestPayload`), `src/main/link-routes.ts` (replay)
   - Signature: `startFormulaPipeline(deps: { send(tree: FormulaTree); sendValues(...); treeHost; statsPair(): { numbers; mosaicJson } | null; log })`
   - Behavior:
@@ -152,7 +152,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
     - no reading or no character gives `waiting` (FR-034);
     - the game closed gives `stale: true` (FR-022).
   - Tests: each case above; `formulaRequestPayload` refuses an id outside `TREE_CATALOG`, a non-number character and a `__proto__` key.
-- [ ] T013 Check what leaves the tree worker before it reaches the window (FR-010b)
+- [X] T013 Check what leaves the tree worker before it reaches the window (FR-010b)
   - Files: `src/main/tree-check.ts`, `src/main/tree-check.test.ts`
   - Signature: `checkTree(raw: unknown, maxNodes: number): TreeNode | null`
   - Tests:

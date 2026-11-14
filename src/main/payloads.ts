@@ -1,7 +1,7 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
 import { win32 } from "node:path";
-import { isObject, toReading } from "../shared/index.ts";
+import { isCatalogId, isObject, toReading } from "../shared/index.ts";
 import type {
   GameTables,
   Reading,
@@ -22,6 +22,34 @@ export function settingsPayload(v: unknown): Settings | null {
   )
     return null;
   return { showWindowOnGameStart, closeWithGame, alwaysOnTop };
+}
+
+/** `formula:request` (contracts/ipc.md): a catalog number, for the active character (null) or one by its number. */
+export type FormulaRequest =
+  { id: string; character: number | null } | { treeId: string; nodeId: string };
+
+const MAX_NODE_ID = 2_000;
+const onlyKeys = (v: Record<string, unknown>, keys: readonly string[]) =>
+  Object.keys(v).every((k) => keys.includes(k));
+const isNodeId = (v: unknown): v is string =>
+  typeof v === "string" && v.length > 0 && v.length <= MAX_NODE_ID;
+
+/** `formula:request`: the id is checked against the catalog before anything reaches a worker (CHK015). */
+export function formulaRequestPayload(v: unknown): FormulaRequest | null {
+  if (!isObject(v)) return null;
+  if (onlyKeys(v, ["id", "character"])) {
+    const { id, character } = v;
+    if (!isCatalogId(id)) return null;
+    if (character === undefined) return { id, character: null };
+    return Number.isInteger(character) && (character as number) >= 0
+      ? { id, character: character as number }
+      : null;
+  }
+  if (onlyKeys(v, ["treeId", "nodeId"])) {
+    const { treeId, nodeId } = v;
+    return isNodeId(treeId) && isNodeId(nodeId) ? { treeId, nodeId } : null;
+  }
+  return null;
 }
 
 /** A channel without a body (`settings:get`, `reader:confirm-attach`, `steam:state`, `steam:setup`,
