@@ -27,17 +27,22 @@ export function startPipelines(deps: {
   handlers: Record<string, (payload: unknown) => unknown>;
 } {
   let formula: ReturnType<typeof startFormulaPipeline> | null = null;
+  const tellTrees = (): void => {
+    try {
+      formula?.statsChanged();
+    } catch {
+      // The window cannot get the tree: the Stats goes on (FR-017).
+    }
+  };
   const stats = startStatsPipeline({
     send: (s) => {
       deps.send(IPC.statsUpdate, s);
-      try {
-        formula?.statsChanged();
-      } catch {
-        // The window cannot get the tree: the Stats goes on (FR-017).
-      }
+      tellTrees();
     },
     createWorker: deps.createWorker,
     readFiles: deps.readFiles,
+    // A new mosaic whose 11 texts did not change sends nothing to the tab, and the live values still follow it.
+    onPair: tellTrees,
   });
   formula = startFormulaPipeline({
     send: (t) => {

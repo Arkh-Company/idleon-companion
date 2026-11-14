@@ -47,6 +47,8 @@ export function startStatsPipeline(deps: {
   send: (s: Stats) => void;
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
+  /** Each new pair of result and mosaic, also when the tab's texts stay the same (the live values follow it). */
+  onPair?: () => void;
 }): {
   message(m: LinkMessage): void;
   reading(r: Reading): void;
@@ -94,6 +96,7 @@ export function startStatsPipeline(deps: {
     onResult: guarded((n, mosaicJson) => {
       pair = { numbers: n, mosaicJson, calculatedAt: Date.now() };
       tracker.result(statsRows(n, check(n, statList)));
+      deps.onPair?.();
     }),
     onUnavailable: fail,
   });

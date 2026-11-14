@@ -202,3 +202,29 @@ test("formula:values with an id outside the catalog is refused before any worker
     ),
   ).rejects.toThrow("formula:values: invalid ids");
 });
+
+test("each new Stats pair asks the live values again, even when the Stats texts stay the same (FR-008)", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaValues]?.({ ids: ["str"] });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [first] = h.trees().sent("values");
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: first?.id,
+    values: { str: 4 },
+  });
+  // Another mosaic of the same character, with the same 11 numbers: the Stats tab has nothing new to show.
+  h.slice(2, [piece("Cards", 2)]);
+  await vi.advanceTimersByTimeAsync(100); // the Stats host's gap between two calculations
+  h.stats().emit("message", { type: "result", numbers: CALCULATED });
+  const calcs = h.stats().calcs();
+  expect(calcs).toHaveLength(2);
+  expect(
+    h
+      .trees()
+      .sent("values")
+      .map((m) => m.mosaic),
+  ).toEqual(calcs);
+});
