@@ -1,12 +1,15 @@
 // A tree from a recording, one level at a time (spec 008, T024, research R4): the root with its first level, and each
-// "lazy" branch built when the player opens it, over the same recording. A call's rows follow pieces.cjs `explainRaw`
-// when the block has no formula of its own: the calls it made (a call that only passes one value on is skipped down
-// to what it passes; the curve block is a branch of its constants), then its state reads that are numbers or yes/no
-// (`dataRows`); a cache read opens into the call that wrote it. A piece is built once (tree/pieces.ts). Names come
-// with US1c: until then a row has the generic name and `unnamed` (FR-012a).
-import type { RecNode, Recording } from "./recording.ts";
+// "lazy" branch built when the player opens it, over the same recording. A call's rows follow pieces.cjs
+// `explainOnce0` and `explainRaw`: the terms of the block's last step when it is a sum or a product (tree/terms.ts),
+// else the calls it made (a call that only passes one value on is skipped down to what it passes; the curve block is a
+// branch of its constants); then the state reads its steps do not show (`dataRows`) and its checks, a yes/no read
+// merged into its test (tree/conditions.ts). A cache read opens into the call that wrote it. A piece is built once
+// (tree/pieces.ts). Names come with US1c: until then a row has the generic name and `unnamed` (FR-012a).
+import type { Op } from "./instrument.ts";
+import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { curveOf, inputRead } from "./tree/curves.ts";
+import { makeConditions } from "./tree/conditions.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
@@ -21,6 +24,11 @@ import {
   withShares,
 } from "./tree/rows.ts";
 import type { Row } from "./tree/rows.ts";
+import { termOf } from "./tree/share.ts";
+import { lastReads, makeSteps } from "./tree/steps.ts";
+import type { Expr } from "./tree/steps.ts";
+import { hasKids, makeTerms, near, topOp } from "./tree/terms.ts";
+import type { Reads } from "./tree/terms.ts";
 
 export { GENERIC_NAME } from "./tree/rows.ts";
 
@@ -38,10 +46,32 @@ interface Place {
   seen: readonly number[];
 }
 
-/** The tree of the recording's first root call, for the character asked (its index, in every piece key). */
-export function buildTree(rec: Recording, character: number): TreeBuild {
+/** A step made of numbers only, none of them read (DEEP3-FIX-1, the index of a table cell). */
+const noSource = (x: Expr): boolean =>
+  x.t === "num" ||
+  x.t === "val" ||
+  (x.t === "op" && noSource(x.l) && noSource(x.r));
+/** The read paths a block's steps show (pieces.cjs dataRows `used`). */
+function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
+  if (e?.t === "read") out.add(e.p);
+  if (e?.t === "op") [e.l, e.r].forEach((x) => readsIn(x, out));
+  if (e?.t === "fn") e.args.forEach((x) => readsIn(x, out));
+  return out;
+}
+
+/**
+ * The tree of the recording's first root call, for the character asked (its index, in every piece key); `ops` are
+ * the instrumentation's steps the recording's `x` refers to.
+ */
+export function buildTree(
+  rec: Recording,
+  character: number,
+  ops: readonly Op[] = [],
+): TreeBuild {
   const { nodes, writes } = rec;
   const { links } = linkReads(rec);
+  const steps = makeSteps(rec, ops);
+  const conditions = makeConditions(nodes);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
@@ -49,7 +79,11 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
   /** A state read as a row: a cache with a writer opens into it; one the game had saved says so. */
-  function readRow(path: string, value: number | boolean, link?: Link): Row {
+  function readRow(
+    path: string,
+    value: number | boolean | null,
+    link?: Link,
+  ): Row {
     const writer = link?.[1] ?? null;
     const node = row({
       pieceKey: JSON.stringify([character, path]),
@@ -64,25 +98,35 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     return { node, open: writer };
   }
 
-  /** One call the block made, as a row (pieces.cjs explainRaw, its last case). */
-  function callRow(kid: RecNode, caller: RecNode): Row {
+  /**
+   * One call the block made, as a row (pieces.cjs explainRaw, its last case; or rowOfTerm, a call of a step, with the
+   * value the step took and no skip). A curve finds its input among `reads`.
+   */
+  function callRow(
+    kid: RecNode,
+    caller: RecNode,
+    v: RecValue | undefined = kid.v,
+    reads: readonly (readonly [string, unknown, ...unknown[]])[] = caller.r ??
+      [],
+    skip = true,
+  ): Row {
     let k = kid;
     // A call that only passes one value on is skipped down to what it passes.
     for (
       let only = nodes[k.c[0] ?? -1];
-      k.c.length === 1 && only;
+      skip && k.c.length === 1 && only;
       only = nodes[k.c[0] ?? -1]
     ) {
       if (Math.abs((Number(only.v) || 0) - (Number(k.v) || 0)) > 1e-9) break;
       k = only;
     }
-    const value = valueOf(kid.v);
+    const value = valueOf(v);
     const curve = curveOf(k.b, k.a);
     if (curve && typeof value === "number") {
       const own = new Set(
         writes.filter((w) => w.node === caller.id).map((w) => w.path),
       );
-      const path = inputRead(curve[3], caller.r ?? [], own);
+      const path = inputRead(curve[3], reads, own);
       const input = path === null ? null : readRow(path, curve[3]);
       const typed = input && {
         ...input,
@@ -97,6 +141,7 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     const lazy = opens(k);
     // [F1-RC3] a call with no step, no read, no child, no cache link and no check returns a literal of the game's code.
     const constant =
+      skip &&
       !lazy &&
       !(k.x?.length ?? 0) &&
       !(k.q?.length ?? 0) &&
@@ -116,34 +161,105 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     return { node, open: lazy ? k.id : null };
   }
 
-  function raw(id: number): Row[] {
-    const n = nodes[id];
-    if (!n) return [];
-    const calls = n.c.flatMap((c) => {
-      const kid = nodes[c];
-      return kid ? [callRow(kid, n)] : [];
-    });
-    const linkOf = new Map<string, Link>(
-      (links.get(n.id) ?? []).map((l) => [l[0], l]),
-    );
-    const reads = (n.r ?? []).flatMap(([path, v]): Row[] => {
-      const value = valueOf(v);
-      return value === null ? [] : [readRow(path, value, linkOf.get(path))];
-    });
+  /** A level's rows typed, with their shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0. */
+  function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
     // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
-    const typed = [...calls, ...reads].map((r) =>
+    const typed = rows.map((r) =>
       r.node.kids === "lazy" || r.node.leaf || r.group
         ? r
         : { ...r, node: { ...r.node, ...classify(r.node) } },
     );
-    // The block has no formula of its own: its shape comes from its rows; then a product's parts at ×1 and a sum's
-    // parts at 0 are grouped.
-    const { rows, mode } = withShares(
-      { name: n.b, value: valueOf(n.v) },
+    const shared = withShares(
+      { name: "", value: valueOf(v as RecValue) },
       null,
       typed,
     );
-    return atZero(timesOne(rows, mode), mode);
+    return atZero(
+      ones ? timesOne(shared.rows, shared.mode) : shared.rows,
+      shared.mode,
+    );
+  }
+
+  /** pieces.cjs `dataRows`: what the block read and did not already show (a table, a length or a text stays out). */
+  function dataRows(
+    n: RecNode,
+    rows: Row[],
+    own: Expr[],
+    stepNotOpened: boolean,
+    linkOf: ReadonlyMap<string, Link>,
+  ): Row[] {
+    const used = new Set<string>();
+    own.forEach((e) => readsIn(e, used));
+    const terms = new Set(rows.map((r) => termOf(r.node)));
+    const last = lastReads(n);
+    const out: Row[] = [];
+    for (const [p, v0] of n.r ?? []) {
+      // a path the call read with several values shows the last one, the state the call ended with
+      const v = last.get(p) ?? v0;
+      const cache = p.startsWith("DNSM.");
+      // [F1-RC1] a state read of a step that did not open is a data row (a cache stays as it was)
+      if (
+        (used.has(p) && !(stepNotOpened && !cache)) ||
+        typeof v !== "number" ||
+        /^Custom(Lists|Maps).|.length$|^DummyNumbers/.test(p) ||
+        rows.some((r) => r.node.code === p) ||
+        terms.has(p)
+      )
+        continue;
+      const r = readRow(p, v, linkOf.get(p));
+      // the block's own result kept in a working value, with nothing under it: not a part of the block
+      if (cache && near(v, n.v) && !hasKids(r) && rows.length) continue;
+      terms.add(p);
+      out.push(r);
+    }
+    return out;
+  }
+
+  function raw(id: number): Row[] {
+    const n = nodes[id];
+    if (!n) return [];
+    const own = steps.of(id);
+    const linkOf = new Map<string, Link>(
+      (links.get(n.id) ?? []).map((l) => [l[0], l]),
+    );
+    const readRowOf = (p: string, v: unknown) =>
+      readRow(p, valueOf(v as RecValue), linkOf.get(p));
+    const reads: Reads = new Map((n.r ?? []).map(([p, v]) => [p, v]));
+    const terms = makeTerms({
+      nodes,
+      read: readRowOf,
+      call: (k, v, rs) => callRow(k, n, v ?? null, [...rs], false),
+      finish,
+    });
+    const last = own.steps.at(-1);
+    // DEEP3-FIX-1: the last step is the block's formula only when it is no index of a table cell the block read.
+    const indexStep =
+      !!last &&
+      !near(last.v, n.v) &&
+      Number.isInteger(last.v) &&
+      noSource(last.e) &&
+      (n.r ?? []).some(([p]) => p.endsWith(`[${String(last.v)}]`));
+    const op = indexStep ? null : topOp(last?.e);
+    const rows = op
+      ? terms.stepTerms(
+          { args: n.a, steps: own.steps, at: own.steps.length - 1 },
+          op,
+          reads,
+        )
+      : n.c.flatMap((c) => {
+          const kid = nodes[c];
+          return kid ? [callRow(kid, n)] : [];
+        });
+    const data = dataRows(
+      n,
+      rows,
+      own.steps.map((s) => s.e),
+      !op && own.steps.length > 0,
+      linkOf,
+    );
+    const conds = conditions.condRows(n, own);
+    const all = conditions.mergeTests(n, rows, data, conds, own);
+    return finish(n.v, terms.tidy(all, op ?? "*", n.a), true);
   }
   const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
     JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),

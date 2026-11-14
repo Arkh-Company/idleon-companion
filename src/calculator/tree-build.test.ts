@@ -13,8 +13,11 @@ beforeAll(() => {
 
 const NONE = { recompute: [], builders: [] };
 const treeOf = (block: string, mosaic = mosaicOf(), character = 0) =>
-  buildTree(recorder.record(mosaic, [[block, [0, 0, 0]]], NONE), character)
-    .root;
+  buildTree(
+    recorder.record(mosaic, [[block, [0, 0, 0]]], NONE),
+    character,
+    recorder.ops,
+  ).root;
 const kidsOf = (n: CalcTreeNode) => (n.kids === "lazy" ? [] : n.kids);
 const rows = (n: CalcTreeNode) =>
   kidsOf(n).map((k) => [
@@ -36,8 +39,8 @@ test("the root is the root call, with the call's value", () => {
   });
 });
 
-test("the first level is the root's calls, in order, then its state reads", () => {
-  expect(rows(treeOf("TreeSources"))).toEqual([
+test("a root whose last step is no sum or product: its calls, in order, then its state reads", () => {
+  expect(rows(treeOf("TreeMaxOf"))).toEqual([
     ["TreeReads()", 8, "lazy"],
     ["TreeLoop()", 6, "lazy"],
     ["TreeBase", 4, 0],
@@ -45,7 +48,7 @@ test("the first level is the root's calls, in order, then its state reads", () =
 });
 
 test("a call row carries its piece key and its call with the game's arity, and the generic name", () => {
-  const [reads] = kidsOf(treeOf("TreeSources"));
+  const [reads] = kidsOf(treeOf("TreeMaxOf"));
   expect(reads).toEqual({
     id: "root/Game value",
     pieceKey: '[0,"TreeReads"]',
@@ -58,15 +61,16 @@ test("a call row carries its piece key and its call with the game's arity, and t
     formula: null,
     code: "TreeReads()",
     role: "piece",
-    share: null,
-    shareMode: "unknown",
+    // share.ts with no ⓘ yet: the max equals this part alone, the subset scan's product
+    share: 1,
+    shareMode: "product",
     flags: { unnamed: true },
     kids: "lazy",
   });
 });
 
 test("a state read is a leaf of unknown kind, keyed by its path", () => {
-  const leaf = kidsOf(treeOf("TreeSources")).at(-1);
+  const leaf = kidsOf(treeOf("TreeMaxOf")).at(-1);
   expect(leaf).toMatchObject({
     id: "root/Game value#3",
     name: "Game value",
@@ -100,8 +104,8 @@ test("a cache read written by a call opens under it; one from the game is saved 
 });
 
 test("the piece keys carry the requested character", () => {
-  const root = treeOf("TreeSources", mosaicOf(), 1);
-  expect(root.pieceKey).toBe('[1,"TreeSources",0,0,0]');
+  const root = treeOf("TreeMaxOf", mosaicOf(), 1);
+  expect(root.pieceKey).toBe('[1,"TreeMaxOf",0,0,0]');
   expect(kidsOf(root)[0]?.pieceKey).toBe('[1,"TreeReads"]');
 });
 
@@ -121,7 +125,10 @@ test("a root that fails is unavailable, with nothing under it", () => {
   });
 });
 
-test("a text read is no row: its value is not a number", () => {
-  const names = kidsOf(treeOf("TreeTextValue")).map((k) => k.code);
-  expect(names).toEqual([]);
+test("a text read is no row: its value is not a number; the lengths of the step are values with no source", () => {
+  const rows = kidsOf(treeOf("TreeTextValue")).map((k) => [k.code, k.leaf]);
+  expect(rows).toEqual([
+    [null, "unknown"],
+    [null, "unknown"],
+  ]);
 });

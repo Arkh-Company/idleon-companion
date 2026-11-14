@@ -47,6 +47,7 @@ export const BASE = {
   TreeOwned: 0,
   TreeLabel: "Plain label",
   TreeTwins: [3, 3],
+  TreeFlagOn: 1,
   TreeBig: { $m: { k1: 1, k2: 7 } },
   // The active character's own keys, as the game keeps them outside PlayerDATABASE.
   UserInfo: [CHARACTERS[0]],

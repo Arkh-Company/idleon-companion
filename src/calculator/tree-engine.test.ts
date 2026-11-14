@@ -12,7 +12,7 @@ let trees: ReturnType<typeof createTreeEngine>;
 beforeAll(() => {
   trees = createTreeEngine(GAME, PAK, {
     ...TREE_ROOTS,
-    sources: ["TreeSources", [0, 0, 0]],
+    sources: ["TreeMaxOf", [0, 0, 0]],
   });
 });
 

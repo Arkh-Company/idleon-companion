@@ -59,7 +59,7 @@ export function createTreeEngine(
       const recording = recorder.record(mosaicJson, [root], recipe);
       last = {
         treeId: request.id,
-        build: buildTree(recording, request.character),
+        build: buildTree(recording, request.character, recorder.ops),
       };
       return last.build.root;
     },

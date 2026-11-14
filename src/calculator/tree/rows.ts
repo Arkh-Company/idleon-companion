@@ -21,6 +21,10 @@ export interface Row {
   node: Node;
   open: number | null;
   group?: Row[];
+  /** pieces.cjs "Value from an earlier step": a value of a step the recording did not link. */
+  earlier?: boolean;
+  /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
+  test?: string;
 }
 
 export const valueOf = (v: RecValue | undefined): number | boolean | null =>

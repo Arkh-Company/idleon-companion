@@ -477,6 +477,14 @@ lime.$scripts.N = function (_exports, $global) {
       state().TreeBase
     );
   };
+  // A last step that is no sum or product: the block's rows are its calls, then its reads.
+  Blocks._customBlock_TreeMaxOf = function () {
+    return Math.max(
+      Blocks._customBlock_TreeReads(),
+      Blocks._customBlock_TreeLoop(),
+      state().TreeBase,
+    );
+  };
   Blocks._customBlock_TreeMinCap = function () {
     return Math.min(state().TreeCapped, 50);
   };
@@ -509,6 +517,29 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTwins = function () {
     var s = state();
     return s.TreeTwins[0] + s.TreeTwins[1] * 2;
+  };
+  // The rows of a block's steps (pieces.cjs explainRaw): a yes/no read tested for 1, an argument of the caller, the
+  // entry asked of the call, and a value from an earlier step of the same block.
+  Blocks._customBlock_TreeFlag = function () {
+    var s = state();
+    return s.TreeBase * (s.TreeFlagOn == 1 ? 2 : 1);
+  };
+  Blocks._customBlock_TreeArg = function (t) {
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeEntry = function (m, t) {
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeStepRef = function () {
+    var s = state();
+    var a = s.TreeBase * 3;
+    var b = a;
+    return b + s.TreeLevel;
+  };
+  // A last step that is the index of the table cell the block returns, not its value.
+  Blocks._customBlock_TreeIndex = function () {
+    var s = state();
+    return s.TreeList[1 + 1];
   };
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
