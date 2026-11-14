@@ -141,6 +141,44 @@ test("`x *= y` is what x was before, times y", () => {
   ]);
 });
 
+test("`+=`, `-=`, `/=` and `++` each open into what the variable was before", () => {
+  const was = (e: object, v: number) => ({ t: "def", e, v });
+  const added = {
+    t: "op",
+    o: "+",
+    l: { t: "read", p: "TreeBase", v: 4 },
+    r: { t: "num", v: 6 },
+    v: 10,
+  };
+  const less = {
+    t: "op",
+    o: "-",
+    l: was(added, 10),
+    r: { t: "num", v: 2 },
+    v: 8,
+  };
+  const split = {
+    t: "op",
+    o: "/",
+    l: was(less, 8),
+    r: { t: "num", v: 4 },
+    v: 2,
+  };
+  const plusOne = {
+    t: "op",
+    o: "+",
+    l: was(split, 2),
+    r: { t: "val", v: 1 },
+    v: 3,
+  };
+  expect(blockOf("TreeAssignAll").steps).toEqual([
+    {
+      v: 15,
+      e: { t: "op", o: "*", l: was(plusOne, 3), r: { t: "num", v: 5 }, v: 15 },
+    },
+  ]);
+});
+
 test("two reads with the same value: the one the code's own path names", () => {
   const [step] = blockOf("TreeTwins").steps;
   expect(step?.e).toMatchObject({

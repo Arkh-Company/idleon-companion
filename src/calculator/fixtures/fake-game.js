@@ -514,6 +514,16 @@ lime.$scripts.N = function (_exports, $global) {
     t *= 3;
     return t + 1;
   };
+  // Each other way to change a variable, one after the other, before a step that reads it.
+  Blocks._customBlock_TreeAssignAll = function () {
+    var s = state();
+    var t = s.TreeBase;
+    t += 6;
+    t -= 2;
+    t /= 4;
+    t++;
+    return t * 5;
+  };
   Blocks._customBlock_TreeTwins = function () {
     var s = state();
     return s.TreeTwins[0] + s.TreeTwins[1] * 2;
