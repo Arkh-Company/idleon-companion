@@ -6,6 +6,7 @@ import { node } from "../../renderer/formula-fixture.ts";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
+import { formulaOut } from "./math.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, ones, read } from "./tree-fixture.ts";
@@ -405,9 +406,13 @@ test.each<[string, Row[], number, string]>([
   expectShown(at(v), kids);
 });
 
-test("an If of long checks is no ⓘ, and the tree still passes the main's check", () => {
+test("an If of long checks is no ⓘ, and the tree still passes the main's check: the worker's longest line is the main's", () => {
   const long = (i: number) => cond(`Stats.${"a".repeat(60)}${String(i)}`, true);
   const kids = [long(1), long(2), long(3), fixed("Fixed value", 35)];
   const { formula } = withFormula(at(35), kids);
   expect(checkTree(node({ formula }), 1)).toEqual(node({ formula: null }));
+  for (const n of [200, 201])
+    expect(
+      checkTree(node({ formula: formulaOut(["x".repeat(n), "yes → 1"]) }), 1),
+    ).not.toBeNull();
 });
