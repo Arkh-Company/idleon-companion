@@ -134,3 +134,54 @@ test("a read of the block's own steps is no data row of a pass's rows", () => {
   const codes = kidsOf(buildTree(rec, 0, ops).root).map((k) => k.code);
   expect(codes).not.toContain("Q");
 });
+
+test("[GetTalentNumber] a talent with points keeps its own rows: the pass is only for one with no points", () => {
+  expect(
+    rowsOf({
+      b: "GetTalentNumber",
+      a: [1, 5],
+      v: 5,
+      r: [["SkillLevels[5]", 3]],
+    }).map(([code, value]) => [code, value]),
+  ).toEqual([["SkillLevels[5]", 3]]);
+});
+
+test("[GetTalentNumber] a talent whose call opens into another keeps that call's rows", () => {
+  expect(
+    rowsOf(
+      { b: "GetTalentNumber", a: [1, 5], v: 0, c: [2] },
+      { b: "Curve", v: 2 },
+    ).map(([code]) => code),
+  ).toEqual(["Curve()"]);
+});
+
+test("[GetTalentNumber] points with a value of 0: the check passes", () => {
+  expect(
+    rowsOf({
+      b: "GetTalentNumber",
+      a: [1, 5],
+      v: 0,
+      r: [["SkillLevels[5]", 3]],
+    })[0],
+  ).toEqual([null, 1, "condition", "limit"]);
+});
+
+test("[Companions] a companion whose call opens into another keeps that call's rows", () => {
+  expect(
+    rowsOf(
+      { b: "Companions", a: ["c1"], v: 3, c: [2] },
+      { b: "Bonus", v: 3 },
+    ).map(([code]) => code),
+  ).toEqual(["Bonus()"]);
+});
+
+test("[Breeding] another value of the shiny pets keeps its own rows", () => {
+  expect(
+    rowsOf({
+      b: "Breeding",
+      a: ["SpecialPassives", "Other", 2],
+      v: 500,
+      r: [["Breeding[1][2]", 500]],
+    }).map(([code, value]) => [code, value]),
+  ).toEqual([["Breeding[1][2]", 500]]);
+});
