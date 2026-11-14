@@ -116,6 +116,58 @@ test("an expand goes with no mosaic", async () => {
   });
 });
 
+const EXPAND = { type: "expand", treeId: "t", nodeId: "n" } as const;
+
+test.each([
+  [
+    "a worker that died",
+    (t: Awaited<ReturnType<typeof running>>) => {
+      t.worker.emit("exit", 1);
+    },
+  ],
+  [
+    "the game closed",
+    (t: Awaited<ReturnType<typeof running>>) => {
+      t.host.stop();
+    },
+  ],
+])(
+  "after %s, a new worker gets the last number again, its answer dropped, before an expand",
+  async (_name, end) => {
+    const t = await running();
+    answer(t.worker, 1);
+    end(t);
+    t.host.request(2, EXPAND, null);
+    await flush();
+    const second = nth(t.workers, 1);
+    second.emit("message", { type: "ready" });
+    expect(second.sent("tree")).toEqual([
+      { type: "tree", id: 1, request: DROP, mosaic: mosaic(1) },
+    ]);
+    answer(second, 1);
+    expect(second.sent("tree").map((m) => m.id)).toEqual([1, 2]);
+    answer(second, 2, { id: "n" });
+    expect(t.onTree.mock.calls).toEqual([
+      [1, { id: "root" }],
+      [2, { id: "n" }],
+    ]);
+    expect(t.onUnavailable).not.toHaveBeenCalled();
+  },
+);
+
+test("an expand whose new worker cannot build the number again is unavailable, with no endless restart", async () => {
+  const t = await running();
+  answer(t.worker, 1);
+  t.host.stop();
+  t.host.request(2, EXPAND, null);
+  await flush();
+  nth(t.workers, 1).emit("message", { type: "ready" });
+  await vi.advanceTimersByTimeAsync(TREE_REQUEST_MS);
+  expect(t.onUnavailable).toHaveBeenCalledExactlyOnceWith(2);
+  await flush();
+  expect(t.workers).toHaveLength(2);
+});
+
 test("a mosaic with no _vars is unavailable before it reaches the worker (FR-015 of 005)", async () => {
   const t = await running();
   answer(t.worker, 1);

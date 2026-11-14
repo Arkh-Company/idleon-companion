@@ -58,16 +58,24 @@ export function createTreeHost(deps: {
   let resources: string | null = null;
   let worker: WorkerLike | null = null;
   let ready = false;
-  /** The job the worker has; `dropped` when its answer no longer matters. */
-  let inFlight: { job: Job; dropped: boolean } | null = null;
+  /** The job the worker has; `dropped` when its answer no longer matters, `priming` when it rebuilds the stored tree. */
+  let inFlight: { job: Job; dropped: boolean; priming?: true } | null = null;
   let waitingTree: Job | null = null;
   let waitingValues: Job | null = null;
   let last: Job | null = null;
+  /**
+   * The last number sent: the worker keeps its build for the expands, so a new worker gets it again before an expand
+   * (a failure or the game closing ended the old one). It outlives `stop`; a new tree or new files drop it.
+   */
+  let built: Job | null = null;
+  /** Whether the current worker has had a number. */
+  let primed = false;
   let deadline: ReturnType<typeof setTimeout> | undefined;
 
   function end(): void {
     clearTimeout(deadline);
     ready = false;
+    primed = false;
     const old = worker;
     worker = null; // First, so the `exit` of a terminated worker is not taken for a failure.
     old?.terminate();
@@ -79,7 +87,9 @@ export function createTreeHost(deps: {
     inFlight = null;
     end();
     let lost: Job | null = waitingTree;
-    if (current) lost = current.dropped ? null : current.job;
+    // A failed priming loses the expand that waited for it.
+    if (current && !current.priming)
+      lost = current.dropped ? null : current.job;
     else waitingTree = null;
     waitingValues = null; // Values come again with the next mosaic.
     if (lost?.kind === "tree") {
@@ -168,13 +178,26 @@ export function createTreeHost(deps: {
     if (!ready || inFlight) return;
     const job = waitingTree ?? waitingValues;
     if (!job) return;
-    if (job === waitingTree) waitingTree = null;
-    else waitingValues = null;
-    inFlight = { job, dropped: false };
-    if (job.kind === "tree") last = job;
+    const priming =
+      job.kind === "tree" &&
+      job.request.type === "expand" &&
+      !primed &&
+      built !== null;
+    if (priming) inFlight = { job: built ?? job, dropped: true, priming: true };
+    else {
+      if (job === waitingTree) waitingTree = null;
+      else waitingValues = null;
+      inFlight = { job, dropped: false };
+      if (job.kind === "tree") last = job;
+    }
+    const sent = inFlight.job;
+    if (sent.kind === "tree" && sent.request.type === "number") {
+      built = sent;
+      primed = true;
+    }
     limit(TREE_REQUEST_MS);
     try {
-      worker.postMessage(messageOf(job));
+      worker.postMessage(messageOf(sent));
     } catch {
       fail(false);
     }
@@ -189,6 +212,7 @@ export function createTreeHost(deps: {
   return {
     setFiles(folder) {
       drop();
+      built = null;
       inFlight = null;
       end();
       resources = folder;
@@ -220,6 +244,7 @@ export function createTreeHost(deps: {
     },
     dropCurrent() {
       drop();
+      built = null;
       if (inFlight) inFlight.dropped = true;
     },
     stop() {
