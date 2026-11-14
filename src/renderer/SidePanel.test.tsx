@@ -222,6 +222,8 @@ function drawPanel(tree: FormulaTree) {
       onPick={vi.fn()}
       onExpand={vi.fn()}
       announce={vi.fn()}
+      pins={[]}
+      onPin={vi.fn()}
     />,
   );
 }

@@ -424,7 +424,7 @@ Verify: `just test-one src/main/saved-files.test.ts` - passes; `just check` - pa
 
 ### Tests for User Story 7
 
-- [ ] T043 [P] [US7] `src/renderer/PinStrip.test.tsx` and `src/main/saved-files.test.ts` (pins part)
+- [X] T043 [P] [US7] `src/renderer/PinStrip.test.tsx` and `src/main/saved-files.test.ts` (pins part)
   - Cases:
     - pin from any number with a tree, unpin from the strip;
     - a sixth refused with "Up to 5 pins: unpin one first." (FR-036);
@@ -436,7 +436,7 @@ Verify: `just test-one src/main/saved-files.test.ts` - passes; `just check` - pa
 
 ### Implementation for User Story 7
 
-- [ ] T044 [US7] The pin strip and its file
+- [X] T044 [US7] The pin strip and its file
   - Files: `src/renderer/PinStrip.tsx`, `src/main/saved-files.ts`, `src/main/live-values.ts` (pins are in view)
 
 Verify: `just test-one src/renderer/PinStrip.test.tsx` - passes; `just check` - passes.

@@ -1,7 +1,8 @@
 // The window: only the setup screen while Steam is not set up (FR-005); after it, the status bar, the panels of the
 // modules that match the context, and the settings. A tapped Stats or Formulas value opens its tree in the side panel,
 // beside the rest, with the window widened (spec 008 FR-005). A system's screen opening in the game switches to its panel
-// (FR-003), says so once (FR-040) and never moves the focus (FR-039); a screen without one keeps the last (FR-033).
+// (FR-003), says so once (FR-040) and never moves the focus (FR-039); a screen without one keeps the last (FR-033). The
+// pinned numbers sit under the status bar (FR-026).
 import {
   useCallback,
   useEffect,
@@ -22,6 +23,7 @@ import { FormulasTab } from "./FormulasTab.tsx";
 import { screenMap } from "./modules/screen-map.ts";
 import { SYSTEM_PANELS } from "./modules/system-panels.ts";
 import { SettingsView, SteamSettings } from "./SettingsView.tsx";
+import { PinStrip, usePins } from "./PinStrip.tsx";
 import { SetupView, steamUnknown } from "./SetupView.tsx";
 import { SidePanel } from "./SidePanel.tsx";
 import type { Side } from "./SidePanel.tsx";
@@ -70,6 +72,7 @@ export function App() {
   }, []);
   const [live, setLive] = useState<LiveValues | null>(null);
   useEffect(() => window.companion.onLiveValues(setLive), []);
+  const pins = usePins(setSaid);
   const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
   useEffect(() => window.companion.onFormula(setFormula), []);
   const [side, setSide] = useState<Side | null>(null);
@@ -79,6 +82,9 @@ export function App() {
   const tabPanel = useRef<HTMLDivElement>(null);
   /** The last element focused inside the tab's content. */
   const focused = useRef<Element | null>(null);
+  const focusTabPanel = useCallback(() => {
+    tabPanel.current?.focus();
+  }, []);
   // A switch of the game that removed the focused element would drop the focus on the page: it goes to the tab's panel.
   useLayoutEffect(() => {
     const was = focused.current;
@@ -120,7 +126,7 @@ export function App() {
     void window.companion.closeFormula();
     // The switch may have removed the number that opened it: then the tab's panel takes the focus.
     if (opener.current?.isConnected) opener.current.focus();
-    else tabPanel.current?.focus();
+    else focusTabPanel();
   }
   function pick(id: string): void {
     setSide((s) => s && { ...s, id });
@@ -174,6 +180,14 @@ export function App() {
         {steam && (steam.configured || setupFinished) && (
           <>
             {status && <StatusBar status={status} />}
+            <PinStrip
+              pins={pins.pins}
+              note={pins.note}
+              live={live}
+              onOpen={openTree}
+              onUnpin={pins.toggle}
+              onEmpty={focusTabPanel}
+            />
             <div role="tablist" className="tabs">
               {[
                 ...TABS,
@@ -244,6 +258,8 @@ export function App() {
           onPick={pick}
           onExpand={expand}
           announce={setSaid}
+          pins={pins.pins}
+          onPin={pins.toggle}
         />
       )}
     </main>

@@ -21,9 +21,9 @@ const GROUPS = [
 /** The Stats numbers by the names their trees have in the Stats (design.md C9: Damage is Max and Min damage). */
 const STATS_NAMES = new Map(Object.values(STATS_TREES).flat());
 // ponytail: a catalog id is the name until the names table (US1c) names the trees.
-const nameOf = (id: string) => STATS_NAMES.get(id) ?? id;
+export const nameOf = (id: string) => STATS_NAMES.get(id) ?? id;
 
-function valueText(id: string, v: number | null | undefined): string {
+export function valueText(id: string, v: number | null | undefined): string {
   if (v === undefined) return "calculating";
   if (v === null) return "unavailable";
   return statsNumber(id)?.text(v) ?? plain(v);

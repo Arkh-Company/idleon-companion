@@ -1,10 +1,16 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
-// With a mark chosen, each row shows the mark's value beside the current one (FR-025).
+// With a mark chosen, each row shows the mark's value beside the current one (FR-025). Pin keeps the number in the strip
+// under the status bar (FR-036).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { changes, compareValues } from "../shared/index.ts";
-import type { FormulaTree as Tree, LiveValues, Mark } from "../shared/index.ts";
+import type {
+  FormulaTree as Tree,
+  LiveValues,
+  Mark,
+  Pin,
+} from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
 import { bandText, ChangeBadge, rootWas } from "./ChangeBadge.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
@@ -38,6 +44,8 @@ export function SidePanel({
   onPick,
   onExpand,
   announce,
+  pins,
+  onPin,
 }: {
   side: Side;
   tree: Tree;
@@ -47,6 +55,9 @@ export function SidePanel({
   onExpand: (nodeId: string) => void;
   /** One sentence for the page's live region (design.md §3.8). */
   announce: (text: string) => void;
+  pins: readonly Pin[];
+  /** Pins the open number, or unpins it (FR-036). */
+  onPin: (id: string) => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   // FR-039: opening, or another number, puts the focus on the panel's title.
@@ -101,7 +112,8 @@ export function SidePanel({
     [tree, mark],
   );
 
-  const name = side.trees.find(([id]) => id === side.id)?.[1] ?? side.label;
+  const { id } = side;
+  const name = side.trees.find(([t]) => t === id)?.[1] ?? side.label;
   // A tree of another number (the main has not answered yet) is never shown in place of this one.
   const mine =
     tree.state === "waiting" ||
@@ -133,6 +145,17 @@ export function SidePanel({
       <h2 ref={heading} tabIndex={-1}>
         {name} <span className="num">{text}</span>
       </h2>
+      {id !== null && (
+        <button
+          type="button"
+          className="pin-toggle"
+          onClick={() => {
+            onPin(id);
+          }}
+        >
+          {pins.some((p) => p.treeId === id) ? "Unpin" : "Pin"}
+        </button>
+      )}
       {shown === null && (
         <ul className="choices">
           {side.trees.map(([id, treeName]) => (
