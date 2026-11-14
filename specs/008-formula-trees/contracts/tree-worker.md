@@ -29,7 +29,7 @@ Durante a implementação: o host guarda o último pedido `number` (com o mosaic
 | --- | --- |
 | Heap do worker | 2 GB (`resourceLimits.maxOldGenerationSizeMb`) |
 | Prazo de um pedido de árvore | Medido na fase 2 sobre o `calculator.js` compilado (o protótipo deu 12,3 s a frio na bancada; a meta é 5 s com o contexto quente) |
-| Vida | Até o jogo fechar ou um `gameFiles` novo. A troca de personagem e o leitor solto só descartam o pedido e a árvore guardada |
+| Vida | Até o jogo fechar ou um `gameFiles` novo; com o jogo fechado, um `expand` o sobe de novo com o último `number`. A troca de personagem e o leitor solto só descartam o pedido e a árvore guardada |
 | Falha | Prazo estourado ou falha nativa: aquele pedido fica `unavailable`, uma nova tentativa sobe outro worker, e a Stats não é tocada (FR-017) |
 | Em voo | Um pedido por vez; um novo substitui o que esperava |
 
