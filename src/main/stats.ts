@@ -13,10 +13,14 @@ function eNotation(n: number): string {
   return `${whole ?? ""}.${decimals.padEnd(2, "0").slice(0, 2)}E${String(Number(exponent))}`;
 }
 
-export function formatNumber(n: number): string {
+/** Rounds up by default; `round` is for the numbers the game cuts instead (Drop Rate). */
+export function formatNumber(
+  n: number,
+  round: (x: number) => number = Math.ceil,
+): string {
   if (n >= E_FROM) return eNotation(n);
-  if (n >= TRILLION) return `${separated(Math.ceil(n / TRILLION))}T`;
-  return separated(Math.ceil(n));
+  if (n >= TRILLION) return `${separated(round(n / TRILLION))}T`;
+  return separated(round(n));
 }
 
 const ROWS: {
@@ -27,7 +31,8 @@ const ROWS: {
   {
     label: "Drop Rate",
     ids: ["dropRate"],
-    text: (v) => `${formatNumber(v)}x`,
+    // The game cuts it: 2,797,522.9 shows as 2,797,522x.
+    text: (v) => `${formatNumber(v, Math.trunc)}x`,
   },
   {
     label: "Damage",
