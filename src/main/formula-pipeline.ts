@@ -2,7 +2,13 @@
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019). What the worker
 // sends is checked before it reaches the window (FR-010b). The live values of what is in view go over the same pair
 // (FR-008, plan B). No electron import, so tests can load it.
-import { isObject, statsNumber, TREE_CATALOG } from "../shared/index.ts";
+import {
+  compareTrees,
+  isObject,
+  rootText,
+  statsNumber,
+  TREE_CATALOG,
+} from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
@@ -122,7 +128,11 @@ export function startFormulaPipeline(deps: {
     request: Extract<TreeRequest, { type: "number" }>;
     pair: StatsPair;
     active: number;
+    /** The tree on screen before a Refresh: the new one shows "was …" against it (FR-024). */
+    before: TreeNode | null;
   } | null = null;
+  /** Set by a Refresh, taken by the next ask. */
+  let refreshFrom: TreeNode | null = null;
   /** The lazy branch asked of the worker; a newer one replaces it, as in the host. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
   let seq = 0;
@@ -134,8 +144,29 @@ export function startFormulaPipeline(deps: {
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
     },
-    send: deps.sendValues,
+    send: (v) => {
+      deps.sendValues(v);
+      changedInGame(v);
+    },
   });
+
+  /** "Game changed · Refresh": the open number's text, in a reading newer than the tree's, is not the tree's (FR-024). */
+  function changedInGame(v: LiveValues): void {
+    if (
+      last.state !== "ready" ||
+      last.request.type !== "number" ||
+      last.gameChanged ||
+      last.stale ||
+      v.calculatedAt <= last.calculatedAt
+    )
+      return;
+    const now = v.values[last.request.id];
+    if (
+      typeof now === "number" &&
+      rootText(last.request.id, now) !== last.rootText
+    )
+      show({ ...last, gameChanged: true });
+  }
 
   /** The live values follow the Stats' pair: its mosaic, or none without a reading or a character. */
   function follow(): void {
@@ -202,6 +233,8 @@ export function startFormulaPipeline(deps: {
       return;
     }
     const { pair, active } = now;
+    const before = refreshFrom;
+    refreshFrom = null;
     openFor = active;
     const request = {
       type: "number" as const,
@@ -214,17 +247,17 @@ export function startFormulaPipeline(deps: {
       return;
     }
     seq++;
-    asked = { seq, request, pair, active };
+    asked = { seq, request, pair, active, before };
     show({ state: "calculating", request });
     host.request(seq, request, pair.mosaicJson);
   }
 
   function received(id: number, raw: unknown): void {
     if (asked?.seq !== id) return;
-    const { request, pair, active } = asked;
+    const { request, pair, active, before } = asked;
     asked = null;
-    const root = checkTree(raw, MAX_TREE_NODES);
-    if (!root) {
+    const checked = checkTree(raw, MAX_TREE_NODES);
+    if (!checked) {
       deps.log({ event: "treeRejected", id: request.id });
       show({ state: "unavailable", request });
       return;
@@ -234,12 +267,13 @@ export function startFormulaPipeline(deps: {
       ? pair.numbers[request.id as keyof StatsPair["numbers"]]
       : null;
     const textOf = (v: unknown) =>
-      typeof v === "number" ? (stats?.text(v) ?? String(v)) : "unavailable";
-    if (stats && request.character === active && root.value !== statsValue) {
+      typeof v === "number" ? rootText(request.id, v) : "unavailable";
+    if (stats && request.character === active && checked.value !== statsValue) {
       deps.log({ event: "treeDiverged", label: stats.label, id: request.id });
       show({ state: "diverged", request, statsText: textOf(statsValue) });
       return;
     }
+    const root = before ? compareTrees(before, checked).withWas : checked;
     show({
       state: "ready",
       request,
@@ -281,6 +315,14 @@ export function startFormulaPipeline(deps: {
         expand(r);
         return;
       }
+      // The same number again over its tree is a Refresh: the new tree is compared with this one.
+      refreshFrom =
+        last.state === "ready" &&
+        last.request.type === "number" &&
+        last.request.id === r.id &&
+        (r.character ?? last.activeCharacter) === last.character
+          ? last.root
+          : null;
       drop();
       open = { id: r.id, character: r.character };
       view();

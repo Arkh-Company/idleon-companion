@@ -17,6 +17,12 @@ export type {
   TreeNode,
   TreeRequest,
 } from "./formula-tree.ts";
+export {
+  changes,
+  compareTrees,
+  compareValues,
+  pieceValues,
+} from "./formula-tree-compare.ts";
 export { modulesFor } from "./modules.ts";
 export { toReading } from "./reading.ts";
 export { READ_NULLS } from "./reading-fixture.ts";
@@ -35,7 +41,12 @@ export type {
   StatePath,
   StateSlice,
 } from "./state.ts";
-export { formatNumber, STATS_NUMBERS, statsNumber } from "./stats-text.ts";
+export {
+  formatNumber,
+  rootText,
+  STATS_NUMBERS,
+  statsNumber,
+} from "./stats-text.ts";
 export {
   isCatalogId,
   PANEL_SCREENS,

@@ -57,3 +57,8 @@ export function statsNumber(
     ? STATS_NUMBERS[id as keyof CalcNumbers]
     : null;
 }
+
+/** A catalog number as its tree's root writes it: the Stats row's text, or the number itself (FR-019 of 008). */
+export function rootText(id: string, v: number): string {
+  return statsNumber(id)?.text(v) ?? String(v);
+}
