@@ -476,3 +476,23 @@ h2 {
     display: none;
   }
 }
+
+/* The farm strip (FR-028): two short lines; at 210 px CSS the text breaks, nothing scrolls sideways. */
+.farm {
+  margin: 0 0 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.farm p,
+.farm ul {
+  margin: 0;
+}
+
+.farm ul {
+  padding-left: 16px;
+}
+
+.farm button {
+  min-height: 24px;
+}

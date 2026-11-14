@@ -474,12 +474,12 @@ Verify: `just test-one src/main/feeds-index.test.ts` - passes; `just check` - pa
 
 ### Tests for User Story 9
 
-- [ ] T047 [P] [US9] `src/main/farm.test.ts` and `src/renderer/FarmStrip.test.tsx`
+- [X] T047 [P] [US9] `src/main/farm.test.ts` and `src/renderer/FarmStrip.test.tsx`
   - Cases: every transition of the farm table in [data-model.md](data-model.md) (`idle`, `counting(map)`, `paused(map)`); rates from differences only (no formula); town maps from the game's map table with the rule proven by reference; the strip text "Farming 12 min · XP 1.2M/h · Gold 48K/h · Items ▸"; nothing on disk.
 
 ### Implementation for User Story 9
 
-- [ ] T048 [US9] The farm measure and strip
+- [X] T048 [US9] The farm measure and strip
   - Files: `src/main/farm.ts`, `src/renderer/FarmStrip.tsx`
   - Signature: `farmTracker(): { onState(slice); onMap(map, isTown); snapshot(): FarmUpdate }`
 
