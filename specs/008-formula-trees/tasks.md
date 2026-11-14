@@ -132,7 +132,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
     - the host reads the game files again (`readGameFiles`), because the Stats worker transferred its bytes;
     - never two requests in flight: a new one replaces the waiting one;
     - a worker that dies once leaves `unavailable`, tries once more, and never touches the Stats (FR-017).
-- [ ] T010 Make the Stats host say which mosaic a result came from
+- [X] T010 Make the Stats host say which mosaic a result came from
   - Files: `src/main/calculator-host.ts`, `src/main/calculator-host.test.ts`
   - Signature: `onResult(numbers: CalcNumbers, mosaicJson: string)`, with the mosaic captured in `next()`.
   - Tests: two `onDue` during one calculation; the pair result + mosaic is never mixed.

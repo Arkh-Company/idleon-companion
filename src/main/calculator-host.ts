@@ -55,7 +55,8 @@ export function hasVars(mosaicJson: string): boolean {
 export function createCalculatorHost(deps: {
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
-  onResult: (n: CalcNumbers) => void;
+  /** The numbers and the mosaic they came from: the pair a tree request uses (FR-019). */
+  onResult: (n: CalcNumbers, mosaicJson: string) => void;
   onUnavailable: () => void;
 }): {
   calculate(mosaicJson: string): void;
@@ -68,6 +69,8 @@ export function createCalculatorHost(deps: {
   let calculating = false;
   let unavailable = false;
   let waiting: string | null = null;
+  /** The mosaic of the calculation in flight. */
+  let sent = "";
   let deadline: ReturnType<typeof setTimeout> | undefined;
   let gap: ReturnType<typeof setTimeout> | undefined;
 
@@ -107,7 +110,7 @@ export function createCalculatorHost(deps: {
         gap = undefined;
         next();
       }, CALC_GAP_MS);
-      deps.onResult(numbersOf(m.numbers));
+      deps.onResult(numbersOf(m.numbers), sent);
     }
   }
 
@@ -151,6 +154,7 @@ export function createCalculatorHost(deps: {
     if (!ready || calculating || gap !== undefined) return;
     const mosaic = waiting;
     waiting = null;
+    sent = mosaic;
     calculating = true;
     limit(SET_MS);
     try {
