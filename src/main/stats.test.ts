@@ -19,7 +19,7 @@ const numbers = (over: Partial<CalcNumbers> = {}): CalcNumbers => ({
   agi: 22,
   wis: 33,
   luk: 44,
-  dropRate: 2797521.5,
+  dropRate: 2797522.9,
   afkGains: 1605.06,
   ...over,
 });
@@ -59,6 +59,18 @@ test("the ten rows come in the order of the game's Player Info", () => {
     { label: "Accuracy", text: "1.49E33" },
     { label: "AFK Gains", text: "160,506%" },
   ]);
+});
+
+test("Drop Rate is cut, not rounded up, as the game shows it", () => {
+  expect(
+    textOf(statsRows(numbers({ dropRate: 2797522.9 }), new Set()), "Drop Rate"),
+  ).toBe("2,797,522x");
+});
+
+test("the other numbers still round up", () => {
+  expect(textOf(statsRows(numbers({ hp: 2797522.1 }), new Set()), "HP")).toBe(
+    "2,797,523",
+  );
 });
 
 test("Accuracy is in E notation even when it is small", () => {
