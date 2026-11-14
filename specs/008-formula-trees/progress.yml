@@ -30,8 +30,8 @@ execution:
     - {name: US13, status: done, commits: 07e5b25..5c41166}
     - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: done, commits: 97b8599..8e1f57b}
     - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: done, commits: 8bc3995..5c5419d}
-    - {name: "US1b-3b ⓘ dos caches e raiz nunca folha muda (T017, T022)", status: pending}
-    - {name: "US1c nomes e molde do Drop Rate (T023)", status: pending}
+    - {name: "US1b-3b ⓘ dos caches e raiz nunca folha muda (T017, T022)", status: done, commits: a5cb58d..8aa0a80}
     - {name: Polish, status: pending}
+    - {name: "US1c nomes e molde do Drop Rate (T023)", status: pending}
   feature_review: pending
   code_pr: null
