@@ -104,6 +104,8 @@ h2 {
   --pick-bg: #ede9fe;
   --set-fg: #3f3f46;
   --set-bg: #e4e4e7;
+  --changed: #fef9c3;
+  --fade: 2400ms;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -123,6 +125,7 @@ h2 {
     --pick-bg: #4c1d95;
     --set-fg: #d4d4d8;
     --set-bg: #2a2a2f;
+    --changed: #26230a;
   }
 }
 
@@ -327,6 +330,29 @@ h2 {
 
 .code {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* A row that changed on Refresh (design.md C11): its background fades; "was …" says it without color. */
+.row.changed {
+  animation: changed var(--fade) ease-out;
+}
+
+@keyframes changed {
+  from {
+    background: var(--changed);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row.changed {
+    animation: none;
+    background: var(--changed);
+  }
+}
+
+.was {
   font-size: 12px;
   color: var(--muted);
 }

@@ -48,6 +48,8 @@ export function shortAnswer(root: TreeNode): string[] {
 export function AnswerHeader({ tree }: { tree: Ready }) {
   const same =
     !tree.stale &&
+    // The band says the game shows another number now (C11).
+    !tree.gameChanged &&
     tree.character === tree.activeCharacter &&
     tree.statsValue !== null;
   return (

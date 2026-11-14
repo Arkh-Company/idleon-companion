@@ -389,7 +389,7 @@ Verify: `just test-one src/renderer/TruthTag.test.tsx` - passes; `just check` - 
 
 ### Tests for User Story 6
 
-- [ ] T039 [P] [US6] `src/shared/formula-tree-compare.test.ts`
+- [X] T039 [P] [US6] `src/shared/formula-tree-compare.test.ts`
   - Cases:
     - diff by `pieceKey` fills `was`;
     - only order changed counts as no change;
@@ -405,7 +405,7 @@ Verify: `just test-one src/renderer/TruthTag.test.tsx` - passes; `just check` - 
 
 ### Implementation for User Story 6
 
-- [ ] T041 [US6] The compare function and Game changed · Refresh
+- [X] T041 [US6] The compare function and Game changed · Refresh
   - Files: `src/shared/formula-tree-compare.ts`, `src/main/formula-pipeline.ts`, `src/renderer/ChangeBadge.tsx`
   - Signature: `compareTrees(a: TreeNode, b: TreeNode): { changed: Set<string>; withWas: TreeNode }`
 - [ ] T042 [US6] Marks saved on disk and the Mark before / Compare with UI

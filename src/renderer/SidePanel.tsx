@@ -1,8 +1,10 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
 import { useEffect, useRef } from "react";
-import type { FormulaTree as Tree } from "../shared/index.ts";
+import { changes } from "../shared/index.ts";
+import type { FormulaTree as Tree, LiveValues } from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
+import { bandText, ChangeBadge, rootWas } from "./ChangeBadge.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
 import { VersionBand } from "./VersionBand.tsx";
 
@@ -14,24 +16,66 @@ export interface Side {
   id: string | null;
 }
 
+type Ready = Extract<Tree, { state: "ready" }>;
+
+/** The sentence after a Refresh (design.md C11): the new number, how much it moved and how many parts changed. */
+function updated(tree: Ready): string {
+  const change = rootWas(tree)?.change;
+  const parts = [...changes(tree.root).ids].filter(
+    (id) => id !== tree.root.id,
+  ).length;
+  return `${tree.title} updated: ${tree.rootText}${change ? `, ${change}` : ""}. ${String(parts)} ${parts === 1 ? "part" : "parts"} changed.`;
+}
+
 export function SidePanel({
   side,
   tree,
+  live,
   onClose,
   onPick,
   onExpand,
+  announce,
 }: {
   side: Side;
   tree: Tree;
+  live: LiveValues | null;
   onClose: () => void;
   onPick: (id: string) => void;
   onExpand: (nodeId: string) => void;
+  /** One sentence for the page's live region (design.md §3.8). */
+  announce: (text: string) => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   // FR-039: opening, or another number, puts the focus on the panel's title.
   useEffect(() => {
     heading.current?.focus();
   }, [side.label, side.id]);
+
+  /** The tree on screen when Refresh now was tapped: the next ready one is its answer. */
+  const refreshed = useRef<Tree | null>(null);
+  /** The tree whose band was said: once per tree, not at each live value. */
+  const bandSaid = useRef<string | null>(null);
+  useEffect(() => {
+    if (tree.state !== "ready") return;
+    if (refreshed.current && refreshed.current !== tree) {
+      refreshed.current = null;
+      announce(updated(tree));
+      return;
+    }
+    const key = `${tree.title}:${String(tree.calculatedAt)}`;
+    const band = bandText(tree, live);
+    if (band && bandSaid.current !== key) {
+      bandSaid.current = key;
+      announce(band);
+    }
+  }, [tree, live, announce]);
+  function refresh(): void {
+    if (!side.id) return;
+    refreshed.current = tree;
+    // The band and its button go: the focus goes to the title (design.md C11).
+    heading.current?.focus();
+    onPick(side.id);
+  }
 
   const name = side.trees.find(([id]) => id === side.id)?.[1] ?? side.label;
   // A tree of another number (the main has not answered yet) is never shown in place of this one.
@@ -82,17 +126,28 @@ export function SidePanel({
           ))}
         </ul>
       )}
-      {shown && <Body tree={shown} onExpand={onExpand} />}
+      {shown && (
+        <Body
+          tree={shown}
+          live={live}
+          onExpand={onExpand}
+          onRefresh={refresh}
+        />
+      )}
     </aside>
   );
 }
 
 function Body({
   tree,
+  live,
   onExpand,
+  onRefresh,
 }: {
   tree: Tree;
+  live: LiveValues | null;
   onExpand: (nodeId: string) => void;
+  onRefresh: () => void;
 }) {
   switch (tree.state) {
     case "waiting":
@@ -106,6 +161,7 @@ function Body({
     case "ready":
       return (
         <>
+          <ChangeBadge tree={tree} live={live} onRefresh={onRefresh} />
           <AnswerHeader tree={tree} />
           <FormulaTree
             key={`${tree.request.type === "number" ? tree.request.id : ""}:${String(tree.calculatedAt)}`}

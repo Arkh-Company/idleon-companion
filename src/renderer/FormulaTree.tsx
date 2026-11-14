@@ -1,8 +1,9 @@
 // The tree of one number, opened in place like folders (spec 008 FR-006, FR-014, FR-031; design.md C2, C5, C6, C8, C10,
 // C15, §3.8): the APG treeview whole, one Tab stop with a roving tabindex, ↑ ↓ → ← Home End Enter. A lazy branch asks
 // its rows when it opens and says "calculating this part…" until they come.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
+import { changes } from "../shared/index.ts";
 import type { FormulaTree as Tree, TreeNode } from "../shared/index.ts";
 import {
   leafLabel,
@@ -15,12 +16,13 @@ import {
   formulaLines,
   GROUP_SUFFIX,
   reachedText,
+  rowChange,
   shareText,
   spokenValue,
   valueClass,
   valueText,
 } from "./tree-text.ts";
-import { isGroup, partition } from "./tree-parts.ts";
+import { flip, isGroup, partition } from "./tree-parts.ts";
 import { truthTags, TruthTags } from "./TruthTag.tsx";
 
 type Ready = Extract<Tree, { state: "ready" }>;
@@ -62,6 +64,8 @@ export function FormulaTree({
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const asked = useRef(new Set<string>());
   const ref = useRef<HTMLUListElement>(null);
+  /** The rows with a change below them: closed, they say `changed inside` (design.md C11). */
+  const changedInside = useMemo(() => changes(tree.root).inside, [tree.root]);
 
   useEffect(() => {
     if (focusKey === null) return;
@@ -98,6 +102,7 @@ export function FormulaTree({
     /** Drawn only when open: the rows inside are visible only then. */
     inside: (() => ReactNode) | null,
     expandable: boolean,
+    changed = false,
   ): ReactNode {
     const expanded =
       expandable &&
@@ -116,7 +121,7 @@ export function FormulaTree({
         tabIndex={key === active ? 0 : -1}
       >
         <div
-          className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}`}
+          className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}${changed ? " changed" : ""}`}
           onClick={() => {
             setActive(key);
             setFocusKey(key);
@@ -310,6 +315,9 @@ export function FormulaTree({
     const tags = group ? [] : truthTags(n);
     const share = group ? null : shareText(n);
     const reached = reachedText(n);
+    // The root's `was` is in the header, written as the Stats writes it.
+    const closed = !open.has(n.id) && changedInside.has(n.id);
+    const change = rowChange(root ? undefined : n.was, n.fmt, closed);
     const label = [
       name,
       group
@@ -318,6 +326,7 @@ export function FormulaTree({
           ? tree.rootText.replace(/x$/, " times")
           : spokenValue(n),
       share,
+      change?.spoken,
       reached,
       leafLabel(n),
       ...tags.map((t) => t.spoken),
@@ -337,6 +346,7 @@ export function FormulaTree({
         <LeafTag n={n} />
         <TruthTags tags={tags} />
         {!group && <span className={valueClass(n)}>{value}</span>}
+        {change && <span className="was">{change.text}</span>}
         {share && <span className="share">{share}</span>}
         {share &&
           n.share !== null &&
@@ -354,6 +364,7 @@ export function FormulaTree({
       line,
       () => rows(n, level + 1),
       expandable,
+      change?.was,
     );
   }
 
@@ -414,11 +425,4 @@ export function FormulaTree({
       {body}
     </ul>
   );
-}
-
-function flip(s: ReadonlySet<string>, key: string): Set<string> {
-  const next = new Set(s);
-  if (next.has(key)) next.delete(key);
-  else next.add(key);
-  return next;
 }

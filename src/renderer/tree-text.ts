@@ -123,3 +123,30 @@ export function valueClass(n: Pick<TreeNode, "value" | "fmt">): string {
   if (n.fmt === "x") return "num num--mult";
   return n.fmt === "%" || n.fmt === "+" ? "num num--add" : "num";
 }
+
+/** How much a number moved since `was` (design.md C11): "up 0.27%" or "down 1.2%"; null when it did not or from 0. */
+export function changeText(was: number, now: number): string | null {
+  if (was === 0 || was === now) return null;
+  const pct = ((now - was) / Math.abs(was)) * 100;
+  return `${pct > 0 ? "up" : "down"} ${plain(Math.abs(pct))}%`;
+}
+
+/** A row's change since the tree before or the mark (C11): `was …` written and read aloud, or `changed inside` on a
+ * closed branch with a change below it; never by color alone. */
+export function rowChange(
+  was: TreeNode["was"],
+  fmt: TreeNode["fmt"],
+  changedInside: boolean,
+): { text: string; spoken: string; was: boolean } | null {
+  if (was !== undefined) {
+    const v = { value: was, fmt };
+    return {
+      text: `was ${valueText(v)}`,
+      spoken: `was ${spokenValue(v)}`,
+      was: true,
+    };
+  }
+  return changedInside
+    ? { text: "changed inside", spoken: "changed inside", was: false }
+    : null;
+}

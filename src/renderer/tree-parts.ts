@@ -63,3 +63,11 @@ export function partition(kids: TreeNode[]): {
     groups,
   };
 }
+
+/** The set with `key` added, or removed when it was there. */
+export function flip(s: ReadonlySet<string>, key: string): Set<string> {
+  const next = new Set(s);
+  if (next.has(key)) next.delete(key);
+  else next.add(key);
+  return next;
+}
