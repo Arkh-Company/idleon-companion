@@ -113,7 +113,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
     - every catalog id has one root, and vice versa;
     - the 11 Stats ids have the same block and first argument as `TARGETS`;
     - no root text is a phrase of the game (only block names and simple arguments).
-- [ ] T008 Add the `init` in tree mode and the `tree` message to the worker entry
+- [X] T008 Add the `init` in tree mode and the `tree` message to the worker entry
   - Files: `src/calculator/index.ts`, `src/calculator/index.test.ts`
   - Messages: as [contracts/tree-worker.md](contracts/tree-worker.md). An `init` without `mode` and the `calc` message answer exactly as today.
   - Tests (new cases only; the current cases stay intact):
