@@ -309,7 +309,7 @@ Verify: `just test-one src/renderer/FormulasTab.test.tsx` - passes; `just check`
 
 ### Tests for User Story 3
 
-- [ ] T033 [P] [US3] `src/renderer/modules/system-panels.test.ts` and `src/renderer/SystemPanel.test.tsx`
+- [X] T033 [P] [US3] `src/renderer/modules/system-panels.test.ts` and `src/renderer/SystemPanel.test.tsx`
   - Cases:
     - one `CompanionModule` per catalog system with a `screen`;
     - `matches(ctx)` is true for that screen's label (and its tabs);
@@ -321,7 +321,7 @@ Verify: `just test-one src/renderer/FormulasTab.test.tsx` - passes; `just check`
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Generate the system modules from the catalog and switch on `panel:update`
+- [X] T034 [US3] Generate the system modules from the catalog and switch on `panel:update`
   - Files: `src/renderer/modules/system-panels.ts`, `src/renderer/SystemPanel.tsx`, `src/renderer/App.tsx`, `src/main/context.ts` (sends `panel:update` from the identified screen)
 
 Verify: `just test-one src/renderer/SystemPanel.test.tsx` - passes; `just check` - passes.

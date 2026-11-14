@@ -1,5 +1,5 @@
 // A reading translated by the screen catalog and the game's tables into the one context every module sees.
-import { identifyScreen } from "../shared/index.ts";
+import { identifyScreen, panelSystems } from "../shared/index.ts";
 import type { GameContext, GameTables, Reading } from "../shared/index.ts";
 import { SCREEN_CATALOG } from "../shared/screens/index.ts";
 
@@ -33,6 +33,11 @@ export function toContext(r: Reading, tables: GameTables): GameContext {
     updatedAt: r.t,
   };
 }
+
+/** `panel:update` (contracts/ipc.md): the system whose screen is open, the first when several share it, or null. */
+export const panelOf = (c: GameContext): { system: string | null } => ({
+  system: panelSystems(c.screen.label)[0] ?? null,
+});
 
 /** Keeps the last reading and tables: each new one sends the context again, and a reading must exist to send anything. */
 export function contextTracker(send: (c: GameContext) => void): {

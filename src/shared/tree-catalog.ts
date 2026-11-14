@@ -23,6 +23,32 @@ export const TREE_CATALOG = numbers as readonly CatalogNumber[];
 
 const CATALOG_IDS: ReadonlySet<string> = new Set(TREE_CATALOG.map((n) => n.id));
 
+/** Each system with a panel (FR-003), in the catalog's order, with the screens that show it. */
+export const PANEL_SCREENS: ReadonlyMap<string, readonly string[]> =
+  TREE_CATALOG.reduce((all, { system, screen }) => {
+    const screens = all.get(system) ?? [];
+    if (screen !== null && !screens.includes(screen))
+      all.set(system, [...screens, screen]);
+    return all;
+  }, new Map<string, string[]>());
+
+/**
+ * The systems whose panel a screen shows: the catalog's screen that is the label, or the deepest one the label is a
+ * tab of ("Stamps › Bribes" is Bribes, "Stamps › Combat" is Stamps). Systems that share that screen are all shown.
+ */
+export function panelSystems(label: string): string[] {
+  let depth = -1;
+  let systems: string[] = [];
+  for (const [system, screens] of PANEL_SCREENS)
+    for (const s of screens) {
+      if (label !== s && !label.startsWith(`${s} › `)) continue;
+      // Two screens that both open the label are one a tab of the other: the longer is the deeper.
+      if (s.length > depth) [depth, systems] = [s.length, []];
+      if (s.length === depth && !systems.includes(system)) systems.push(system);
+    }
+  return systems;
+}
+
 /** The id is a number of the catalog. */
 export const isCatalogId = (id: unknown): id is string =>
   typeof id === "string" && CATALOG_IDS.has(id);

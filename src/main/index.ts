@@ -15,7 +15,7 @@ import {
 import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { calculatorPath } from "./calculator-host.ts";
-import { contextTracker } from "./context.ts";
+import { contextTracker, panelOf } from "./context.ts";
 import { forgetOldNames } from "./forget-names.ts";
 import { readGameFiles } from "./game-files.ts";
 import {
@@ -72,6 +72,7 @@ function start(): void {
   };
   const tracker = contextTracker((c) => {
     send(IPC.contextUpdate, c);
+    send(IPC.panelUpdate, panelOf(c));
   });
   const setStatus = (s: Status) => {
     status = s;

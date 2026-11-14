@@ -36,7 +36,12 @@ export type {
   StateSlice,
 } from "./state.ts";
 export { formatNumber, STATS_NUMBERS, statsNumber } from "./stats-text.ts";
-export { isCatalogId, TREE_CATALOG } from "./tree-catalog.ts";
+export {
+  isCatalogId,
+  PANEL_SCREENS,
+  panelSystems,
+  TREE_CATALOG,
+} from "./tree-catalog.ts";
 export type { CatalogNumber } from "./tree-catalog.ts";
 export { DEFAULT_SETTINGS, GAME_UPDATED, IPC, moduleChannel } from "./types.ts";
 export type {
