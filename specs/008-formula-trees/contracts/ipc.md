@@ -16,5 +16,5 @@ Canais próprios, como o `stats:update` da 004. O contrato de módulo `module:<i
 | `farm:update` | main → janela | `{ state: "idle" \| "counting" \| "paused", minutes, xpPerHour, goldPerHour, items: [{ name, perHour }] }` | Só do personagem ativo (FR-028) |
 | `radar:update` | main → janela | `{ changed: [{ catalogId, added, removed, renamed }] }` ou `null`; durante a implementação: `{ changed, checking, warning }`, com `checking` verdadeiro enquanto a varredura ainda compara, e o aviso de `tree-shapes.json` ilegível (FR-041) | Depois de um `gameSha` novo (FR-035) |
 | `radar:dismiss` | janela → main | — | Fecha a faixa até o próximo patch; durante a implementação: uma mudança nova do mesmo patch reacende a faixa |
-| `formula:characters` | main → janela | Durante a implementação: os nomes dos personagens e o lugar do ativo, para o seletor (FR-010: o nome real só na tela) | Só quando a lista muda; replay da última |
+| `formula:characters` | main → janela | Durante a implementação: `{ names, classes, active }` — os nomes dos personagens, a classe de cada um (`null` quando não é conhecida) e o lugar do ativo, para o seletor (FR-010: o nome real só na tela) | Só quando a lista muda; replay da última |
 | `window:sidePanel` | janela → main | `{ open: boolean }` | Alarga ou volta a janela (FR-005), para o lado com espaço |
