@@ -184,7 +184,7 @@ export function App() {
                   type="button"
                   role="tab"
                   id={`tab-${id}`}
-                  aria-controls="tab-panel"
+                  aria-controls="tab-content"
                   aria-selected={tab === id}
                   onClick={() => {
                     setTab(id);
@@ -196,7 +196,8 @@ export function App() {
             </div>
             <div
               role="tabpanel"
-              id="tab-panel"
+              // No tab's id: the tabs are `tab-<id>`, and one of them is `panel`.
+              id="tab-content"
               aria-labelledby={`tab-${tab}`}
               tabIndex={-1}
               ref={tabPanel}

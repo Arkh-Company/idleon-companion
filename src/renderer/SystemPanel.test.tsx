@@ -133,8 +133,13 @@ test("a switch that removes the focused number puts the focus on the tab's panel
   gameOn("Stamps", "Stamps");
   expect(document.activeElement).not.toBe(document.body);
   expect(document.activeElement).toBe(tabPanel());
-  expect(tabPanel().getAttribute("aria-labelledby")).toBe(tab("Panel").id);
-  expect(tab("Panel").getAttribute("aria-controls")).toBe(tabPanel().id);
+  // The ids resolve: each points to the other element, and no id is shared.
+  const byId = (id: string | null) => document.getElementById(id ?? "");
+  expect(byId(tabPanel().getAttribute("aria-labelledby"))).toBe(tab("Panel"));
+  for (const t of screen.getAllByRole("tab"))
+    expect(byId(t.getAttribute("aria-controls"))).toBe(tabPanel());
+  const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
+  expect(new Set(ids).size).toBe(ids.length);
 
   screen.getByRole("button", { name: "Chances" }).focus();
   gameOn("Stamps › Bribes", "Bribes");
