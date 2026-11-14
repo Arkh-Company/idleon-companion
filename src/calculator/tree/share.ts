@@ -1,6 +1,8 @@
 // The weight of each row inside its parent (spec 008, data-model `share` and `shareMode`): the port of the bench's
-// Share S (SCRATCH share-s/share.cjs `template`, `evaluator`, `contextShares` and `shares`, accepted as the app's spec on
-// 12/11 with SPEC-share.txt). The marginal gain (+1 level) is left out: the contract has no field for it.
+// Share S (SCRATCH share-s/share.cjs `template`, `evaluator` and `shares`, accepted as the app's spec on 12/11 with
+// SPEC-share.txt). The marginal gain (+1 level) is left out: the contract has no field for it. So is `contextShares`
+// (a kid that feeds a sibling by name weighs through it): a level is built before its siblings' rows are, so a context
+// kid keeps a null share where the bench gave it one.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { evaluate } from "./math.ts";
 
@@ -30,10 +32,9 @@ export interface Shares {
 }
 
 interface Evaluator {
-  fn: (vals: number[], sibs?: number[]) => number;
+  fn: (vals: number[]) => number;
   mode: "sum" | "product" | "cap" | "mixed";
   pureProduct?: boolean;
-  hasSib?: boolean;
   context?: boolean[];
 }
 
@@ -50,7 +51,7 @@ const prod = (v: number[]) => v.reduce((a, b) => a * b, 1);
 const sumOf = (v: number[]) => v.reduce((a, b) => a + b, 0);
 
 /** The ⓘ formula with each kid's name as a slot, checked against the row's value; null when it cannot be recomputed. */
-function template(n: ShareNode, sibs: readonly ShareNode[]): Evaluator | null {
+function template(n: ShareNode): Evaluator | null {
   const kids = n.kids ?? [];
   const v = n.v;
   if (!n.formula?.[1] || !kids.length || CHECK.test(n.formula[0])) return null;
@@ -61,11 +62,6 @@ function template(n: ShareNode, sibs: readonly ShareNode[]): Evaluator | null {
       [k.name, i],
       [k.name.replace(/ \([^()]*\)$/, ""), i],
     ])
-    .concat(
-      sibs.flatMap((k, j): [string, number][] =>
-        k === n ? [] : [[k.name, kids.length + j]],
-      ),
-    )
     .filter(([nm]) => nm && !/^[\d.]+$/.test(nm))
     .sort((a, b) => b[0].length - a[0].length);
   let s = n.formula[0];
@@ -101,26 +97,18 @@ function template(n: ShareNode, sibs: readonly ShareNode[]): Evaluator | null {
       parts.push(by.length === 1 ? { slot: by[0] ?? 0 } : y.replace(/,/g, ""));
     } else return null;
   }
-  const sib0 = sibs.map((k) => k.v ?? NaN);
-  const hasSib = parts.some(
-    (p) => typeof p !== "string" && p.slot >= kids.length,
-  );
-  const raw = (vals: number[], sv: number[] = sib0) =>
+  const raw = (vals: number[]) =>
     evaluate(
       parts
-        .map((p) =>
-          typeof p === "string"
-            ? p
-            : `(${String(p.slot < kids.length ? vals[p.slot] : sv[p.slot - kids.length])})`,
-        )
+        .map((p) => (typeof p === "string" ? p : `(${String(vals[p.slot])})`))
         .join(""),
     );
   const r0 = raw(kv);
   if (!num(r0) || Math.abs(r0 - v) > 2e-3 * Math.max(1, Math.abs(v)))
     return null;
   // The ratio form: the display's rounding cancels.
-  const fn = (vals: number[], sv?: number[]) => {
-    const r = raw(vals, sv);
+  const fn = (vals: number[]) => {
+    const r = raw(vals);
     return r0 === 0 ? r : (v * r) / r0;
   };
   const ops = parts.map((p) => (typeof p === "string" ? p : "K")).join("");
@@ -135,7 +123,6 @@ function template(n: ShareNode, sibs: readonly ShareNode[]): Evaluator | null {
         : "mixed";
   return {
     fn,
-    hasSib,
     mode,
     pureProduct:
       mode === "product" &&
@@ -145,13 +132,10 @@ function template(n: ShareNode, sibs: readonly ShareNode[]): Evaluator | null {
 }
 
 /** How a branch comes from its kids: its formula, or a plain sum or product when it has none. */
-function evaluator(
-  n: ShareNode,
-  sibs: readonly ShareNode[] = [],
-): Evaluator | null {
+function evaluator(n: ShareNode): Evaluator | null {
   const kids = n.kids ?? [];
   if (!kids.length || !num(n.v)) return null;
-  const t = template(n, sibs);
+  const t = template(n);
   if (t) return t;
   if (n.formula && CHECK.test(n.formula[0])) return null; // a condition: no guessing
   const v = n.v;
@@ -190,48 +174,15 @@ function evaluator(
   return null;
 }
 
-/** A kid that is context feeds a sibling by name: its weight there, times the sibling's own share. */
-function contextShares(
-  n: ShareNode,
-  ev: Evaluator,
-  sh: number[],
-): (number | null)[] {
-  const kids = n.kids ?? [];
-  const context = ev.context ?? [];
-  const out: (number | null)[] = kids.map(() => null);
-  kids.forEach((kj, j) => {
-    if (context[j] || !kj.kids?.length) return;
-    const e = evaluator(kj, kids);
-    if (!e?.hasSib) return;
-    const own = kj.kids.map((k) => k.v ?? NaN);
-    const sv = kids.map((k) => k.v ?? NaN);
-    const lw = (v1: number) =>
-      num(v1) && v1 && kj.v ? Math.abs(Math.log(Math.abs(kj.v / v1))) : 0;
-    const drop = (arr: number[], i: number) =>
-      arr.map((x, k) => (k === i ? 0 : x));
-    const wOwn = own.map((_, i) => lw(e.fn(drop(own, i), sv)));
-    const wSib = kids.map((_, i) =>
-      context[i] ? lw(e.fn(own, drop(sv, i))) : 0,
-    );
-    const tot = sumOf(wOwn) + sumOf(wSib);
-    if (tot > 0)
-      wSib.forEach((w, i) => {
-        if (context[i] && w > 0)
-          out[i] = (out[i] ?? 0) + (sh[j] ?? 0) * (w / tot);
-      });
-  });
-  return out;
-}
-
 const nrm = (w: number[]) => {
   const t = sumOf(w);
   return w.map((x) => (t > 0 ? x / t : 0));
 };
 
-/** The shares of n's kids; `sibs` are n's own siblings, which its formula may name. */
-export function shares(n: ShareNode, sibs: readonly ShareNode[] = []): Shares {
+/** The shares of n's kids. */
+export function shares(n: ShareNode): Shares {
   const kids = n.kids ?? [];
-  const ev = evaluator(n, sibs);
+  const ev = evaluator(n);
   if (!ev || !num(n.v))
     return {
       mode: n.formula && CHECK.test(n.formula[0]) ? "condition" : "unknown",
@@ -257,10 +208,9 @@ export function shares(n: ShareNode, sibs: readonly ShareNode[] = []): Shares {
     const own = nrm(
       vals.map((x, i) => (ctx(i) ? 0 : Math.abs(Math.log(Math.abs(x))))),
     );
-    const via = ev.context ? contextShares(n, ev, own) : [];
     return {
       mode: "product",
-      shares: own.map((x, i) => (ctx(i) ? (via[i] ?? null) : x)),
+      shares: own.map((x, i) => (ctx(i) ? null : x)),
     };
   }
   // cap / mixed / a product with constants: does a ±1% nudge move the parent (binding), then the log effect of
@@ -322,12 +272,11 @@ export function kidShares(
   parent: Pick<CalcTreeNode, "name" | "value">,
   formula: ShareNode["formula"],
   kids: CalcTreeNode[],
-  sibs: readonly ShareNode[] = [],
 ): CalcTreeNode[] {
-  const s = shares(
-    { ...shareNodeOf(parent, formula), kids: kids.map((k) => shareNodeOf(k)) },
-    sibs,
-  );
+  const s = shares({
+    ...shareNodeOf(parent, formula),
+    kids: kids.map((k) => shareNodeOf(k)),
+  });
   return kids.map((k, i) => {
     const out: CalcTreeNode = {
       ...k,

@@ -95,30 +95,6 @@ test.each<[string, ShareNode, string]>([
   expect([s.mode, s.shares]).toEqual([mode, [null, null]]);
 });
 
-test("a part that feeds a sibling by name weighs through that sibling", () => {
-  const ka: ShareNode = { name: "Ka", v: 3, formula: null, kids: null };
-  const kb: ShareNode = {
-    name: "Kb",
-    v: 8,
-    formula: ["Kx + Ka", "5 + 3 = 8"],
-    kids: [{ name: "Kx", v: 5, formula: null, kids: null }],
-  };
-  const s = shares({ name: "Parent", v: 8, formula: null, kids: [ka, kb] });
-  expect(s.mode).toBe("product");
-  expect(s.shares[0]).toBeCloseTo(0.324, 3);
-  expect(s.shares[1]).toBe(1);
-});
-
-test("a formula that names a sibling recomputes with it", () => {
-  const sibling: ShareNode = { name: "Scale", v: 2, formula: null, kids: null };
-  const n = {
-    ...parent([3], 8, "Ka + Scale + 3"),
-    formula: ["Ka + Scale + 3", "3 + 2 + 3 = 8"] as [string, string],
-  };
-  const s = shares(n, [sibling, n]);
-  expect([s.mode, rounded(s.shares)]).toEqual(["sum", [0.375]]);
-});
-
 const row = (
   name: string,
   value: number | boolean | null,
