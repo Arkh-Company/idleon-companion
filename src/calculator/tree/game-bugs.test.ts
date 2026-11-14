@@ -8,6 +8,35 @@ import { recordingOf } from "./tree-fixture.ts";
 const kidsOf = (n: CalcTreeNode | undefined) =>
   n && Array.isArray(n.kids) ? n.kids : [];
 
+test("the rule tests the call the rows come from, also behind a call that only passes its value on", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Total", v: 6, c: [2] },
+      { b: "Pass", v: 6, c: [3] },
+      { b: "Twice", v: 6, c: [4, 5] },
+      { b: "Source", v: 3, x: [[0, 3]] },
+      { b: "Source", v: 3, x: [[0, 3]] },
+    ],
+    [],
+    { root: 0 },
+  );
+  const rule = {
+    id: "inventedTwice",
+    in: /^Twice\(/,
+    test: /^Source\(\)$/,
+    proof: "N.js Twice",
+  };
+  const build = buildTree(rec, 0, [], [rule]);
+  const [pass] = kidsOf(build.root);
+  expect(pass?.code).toBe("Pass()");
+  const rows = kidsOf(build.expand(pass?.id ?? "") ?? undefined);
+  expect(rows.map((k) => [k.code, k.value, k.flags.gameBug])).toEqual([
+    ["Source()", 3, "inventedTwice"],
+    ["Source()", 3, "inventedTwice"],
+  ]);
+});
+
 test("a source counted twice at 0 is tagged inside the At 0 group", () => {
   const rec = recordingOf(
     [

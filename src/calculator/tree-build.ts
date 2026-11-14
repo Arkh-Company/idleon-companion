@@ -298,7 +298,10 @@ export function buildTree(
   /** The rows under a place; null when the depth limit or a cycle cuts it. */
   function kidsAt(p: Place): CalcTreeNode[] | null {
     const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
-    return rows && place(p.node, rows, p.depth + 1, [...p.seen, p.open]);
+    // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
+    const from = nodes[p.open];
+    const parent = { id: p.node.id, code: from ? callText(from) : null };
+    return rows && place(parent, rows, p.depth + 1, [...p.seen, p.open]);
   }
 
   const value = valueOf(top.v);
