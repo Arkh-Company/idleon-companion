@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.6.1...v0.7.0) (2026-11-14)
+
+
+### Features
+
+* **main:** text zoom from 100% to 200% ([#30](https://github.com/Arkh-Company/idleon-companion/issues/30)) ([bae8f8c](https://github.com/Arkh-Company/idleon-companion/commit/bae8f8c181795cf721fefa39478487fea327aa7c))
+
+
+### Bug Fixes
+
+* **stats:** cut the Drop Rate instead of rounding it up ([#31](https://github.com/Arkh-Company/idleon-companion/issues/31)) ([c4dad82](https://github.com/Arkh-Company/idleon-companion/commit/c4dad8297435ad30f7761c04eccbbcead81207e6))
+* status bar live region ([#29](https://github.com/Arkh-Company/idleon-companion/issues/29)) ([67cbeb2](https://github.com/Arkh-Company/idleon-companion/commit/67cbeb234e09fb5a316d00594fa98d6c972a5804))
+
 ## [0.6.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.6.0...v0.6.1) (2026-11-14)
 
 
