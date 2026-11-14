@@ -40,6 +40,66 @@ interface Cmp {
   o: string;
 }
 
+/**
+ * The rules of pieces.cjs `condSub`, in the bench's order (the first that holds wins, else equalsValue): each tests the
+ * compared sides (`paths`), the sides with the check's text (`text`) or the comparison itself (`cmp`); `big` asks for a
+ * number of 50 or more on the right, `eq` for an equality.
+ */
+export const COND_SUBS: readonly {
+  test: RegExp;
+  on: "paths" | "text" | "cmp";
+  big?: true;
+  eq?: true;
+  condition: Condition;
+  proof: string;
+}[] = [
+  {
+    test: /AchieveReg|WeeklyBoss|QuestComplete|KillsLeft2Advance|"Tasks/,
+    on: "paths",
+    condition: "done",
+    proof: "bench pieces.cjs condSub done",
+  },
+  {
+    test: /BundlesReceived|Ninja[107]|Bribe|Menagerie|owned|unlock|built|bought/i,
+    on: "text",
+    condition: "owned",
+    proof: "bench pieces.cjs condSub owned",
+  },
+  {
+    test: /level|Upg|Lv/i,
+    on: "text",
+    big: true,
+    eq: true,
+    condition: "max",
+    proof: "bench pieces.cjs condSub max, equality",
+  },
+  {
+    test: /PrayersActive|CompanionLVz|Prisma|equipped|active/i,
+    on: "text",
+    condition: "active",
+    proof: "bench pieces.cjs condSub active",
+  },
+  {
+    test: /^(>|<|>=|<=)$/,
+    on: "cmp",
+    condition: "limit",
+    proof: "bench pieces.cjs condSub limit",
+  },
+  {
+    test: /OptionsListAccount|_GenINFO|CurrentMap|vote/i,
+    on: "text",
+    condition: "equalsValue",
+    proof: "bench pieces.cjs condSub equal to a value",
+  },
+  {
+    test: /level|Upg|Lv/i,
+    on: "text",
+    big: true,
+    condition: "max",
+    proof: "bench pieces.cjs condSub max",
+  },
+];
+
 /** The comparisons of a check that compare two known things, the named side first ("level ≤ 0", not "0 ≥ level"). */
 function comparisons(e: Expr, out: Cmp[] = []): Cmp[] {
   if (e.t === "op" && (e.o === "||" || e.o === "&&")) {
@@ -110,23 +170,14 @@ export function makeConditions(nodes: readonly RecNode[]) {
   function condSub(c: Cmp, txt: string): Condition {
     const j = JSON.stringify(c.l) + JSON.stringify(c.r);
     const big = c.r.t === "num" && Number(c.r.v) >= 50;
-    if (/AchieveReg|WeeklyBoss|QuestComplete|KillsLeft2Advance|"Tasks/.test(j))
-      return "done";
-    if (
-      /BundlesReceived|Ninja[107]|Bribe|Menagerie|owned|unlock|built|bought/i.test(
-        j + txt,
-      )
-    )
-      return "owned";
-    if (/level|Upg|Lv/i.test(j + txt) && big && /^={2,3}$/.test(c.o))
-      return "max";
-    if (/PrayersActive|CompanionLVz|Prisma|equipped|active/i.test(j + txt))
-      return "active";
-    if (/^(>|<|>=|<=)$/.test(c.o)) return "limit";
-    if (/OptionsListAccount|_GenINFO|CurrentMap|vote/i.test(j + txt))
-      return "equalsValue";
-    if (/level|Upg|Lv/i.test(j + txt) && big) return "max";
-    return "equalsValue";
+    const on = { paths: j, text: j + txt, cmp: c.o };
+    const r = COND_SUBS.find(
+      (x) =>
+        x.test.test(on[x.on]) &&
+        (!x.big || big) &&
+        (!x.eq || /^={2,3}$/.test(c.o)),
+    );
+    return r?.condition ?? "equalsValue";
   }
 
   /** pieces.cjs `condRows`: one Condition leaf per check on the player's state, yes (1) or no (0). */

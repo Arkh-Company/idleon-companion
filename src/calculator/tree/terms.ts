@@ -37,8 +37,22 @@ const num = (v: unknown) =>
     ? String(Number(v))
     : String(+Number(v).toPrecision(4));
 const EARLIER_WHY = "a value of a step of the game the recording did not link";
-const TABLE_READ =
-  /^(CustomLists|CustomMaps|ItemDefinitionsGET|RANDOlist|NinjaInfo|GuildBonuses|SigilDesc|ChipDesc|JewelDesc|GodsInfo|LabMainBonus|ArcaneUpg|GrimoireUpg|UpgradeVault|ArmoryUpg|SpelunkUpg|ResGridSquares|MarketExoticInfo|ShrineInfo|TalentDescriptions)/;
+/** The game's tables: a value is named by one only when no read of the account's state has it. */
+export const TABLE_READ: readonly { test: RegExp; proof: string }[] = [
+  {
+    test: /^(CustomLists|CustomMaps|ItemDefinitionsGET|RANDOlist|NinjaInfo|GuildBonuses|SigilDesc|ChipDesc|JewelDesc|GodsInfo|LabMainBonus|ArcaneUpg|GrimoireUpg|UpgradeVault|ArmoryUpg|SpelunkUpg|ResGridSquares|MarketExoticInfo|ShrineInfo|TalentDescriptions)/,
+    proof: "bench pieces.cjs TABLE_READ",
+  },
+];
+/** Reads that never name a value: the Arena's wave list took a card's per-star value by coincidence. */
+export const COINCIDENT_READS: readonly { test: RegExp; proof: string }[] = [
+  {
+    test: /^(CustomLists\.)?RANDOlist\[53\]/,
+    proof: "bench pieces.cjs valPath; N.js TalentCalc",
+  },
+];
+const any = (rules: readonly { test: RegExp }[], p: string) =>
+  rules.some((r) => r.test.test(p));
 
 export const topOp = (e: Expr | undefined): "*" | "+" | null =>
   e?.t === "op" && (e.o === "*" || e.o === "+") ? e.o : null;
@@ -113,10 +127,10 @@ export function valPath(v: unknown, reads: Reads): string | null {
       Math.abs(Number(x) - Number(v)) < 1e-9 &&
       !p.endsWith(".length") &&
       !p.includes(" contains ") &&
-      !/^(CustomLists\.)?RANDOlist\[53\]/.test(p),
+      !any(COINCIDENT_READS, p),
   );
   const pick =
-    hits.find(([p]) => !TABLE_READ.test(p.replace(/^CustomLists\./, ""))) ??
+    hits.find(([p]) => !any(TABLE_READ, p.replace(/^CustomLists\./, ""))) ??
     hits[0];
   return pick ? pick[0] : null;
 }

@@ -45,8 +45,12 @@ const MATH = new Set([
   "sqrt",
 ]);
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
-const GAME_TABLE =
-  /^(CustomLists|CustomMaps|ItemDefinitionsGET|MonsterDefinitionsGET|DialogueDefGET)\b/;
+export const GAME_TABLE: readonly { test: RegExp; proof: string }[] = [
+  {
+    test: /^(CustomLists|CustomMaps|ItemDefinitionsGET|MonsterDefinitionsGET|DialogueDefGET)\b/,
+    proof: "bench build-tree.cjs GAME_TABLE",
+  },
+];
 const CUSTOM = "_customBlock_";
 
 /** The name of a call's method (`a.b(…)` → "b"), or null when the callee is no member. */
@@ -208,7 +212,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       }
       const same = pool.filter(
         ([p, val]) =>
-          val === v && !GAME_TABLE.test(p) && !p.endsWith(".length"),
+          val === v &&
+          !GAME_TABLE.some((r) => r.test.test(p)) &&
+          !p.endsWith(".length"),
       );
       if (same.length === 1 && same[0] && !usedR.has(same[0][0])) {
         usedR.add(same[0][0]);
