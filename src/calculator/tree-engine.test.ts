@@ -42,7 +42,25 @@ test("the root of the Drop Rate", () => {
     share: null,
     shareMode: null,
     flags: { unnamed: true },
-    kids: [],
+    kids: [
+      {
+        id: "root/Stats.Drop_Rarity",
+        pieceKey: '[0,"Stats.Drop_Rarity"]',
+        name: "Stats.Drop_Rarity",
+        value: 2.5,
+        fmt: null,
+        leaf: "unknown",
+        condition: null,
+        why: null,
+        formula: null,
+        code: "Stats.Drop_Rarity",
+        role: "piece",
+        share: null,
+        shareMode: null,
+        flags: { unnamed: true },
+        kids: [],
+      },
+    ],
   });
 });
 

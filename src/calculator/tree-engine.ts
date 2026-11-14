@@ -1,9 +1,13 @@
-// The tree worker's engine (research R1): the same boot as the Stats, and the root of a catalog number called with the
-// game's arity. The recorder and the assembly (US1) build the branches under it; until then the root has no children.
-import { anchored, bootContext, lazyDnsmKeys } from "./boot.ts";
-import { LIMITS } from "./engine.ts";
+// The tree worker's engine (research R1, R4): the game instrumented in memory with the recorder, one recording per
+// `number` request with the root called at the game's arity, and the root with its first level built from it. Opening
+// a branch (`expand`) comes with the assembly's port (US1b).
+import { buildTree } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
+import { bootRecorder } from "./tree-record.ts";
+import { TREE_RECIPE } from "./tree-recipe.ts";
+import type { Recipe } from "./recording.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
+import type { TreeRoot } from "./tree-roots.ts";
 
 export interface TreeEngine {
   /** The root of a `number` request, or "unknownNumber"; throws on any other request or a failure. */
@@ -13,9 +17,13 @@ export interface TreeEngine {
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
 
-export function createTreeEngine(code: string, pak: Uint8Array): TreeEngine {
-  const context = bootContext(anchored(code), pak, LIMITS);
-  const lazyDnsm = lazyDnsmKeys(code);
+export function createTreeEngine(
+  code: string,
+  pak: Uint8Array,
+  roots: Readonly<Record<string, TreeRoot>> = TREE_ROOTS,
+  recipe: Recipe = TREE_RECIPE,
+): TreeEngine {
+  const recorder = bootRecorder(code, pak);
 
   return {
     tree(request, mosaicJson) {
@@ -27,30 +35,12 @@ export function createTreeEngine(code: string, pak: Uint8Array): TreeEngine {
       )
         throw new Error("not a number request");
       if (typeof mosaicJson !== "string") throw new Error("no mosaic");
-      if (!Object.hasOwn(TREE_ROOTS, request.id)) return "unknownNumber";
-      const [block, args] = TREE_ROOTS[request.id] ?? ["", []];
-      context.load(mosaicJson, lazyDnsm);
-      const value = context.number(block, args);
-      return {
-        id: "root",
-        pieceKey: JSON.stringify([request.character, block, ...args]),
-        name: "Total",
-        value,
-        fmt: null,
-        leaf: null,
-        condition: null,
-        why: null,
-        formula: null,
-        code: `${block}(${args.map((a) => JSON.stringify(a)).join(", ")})`,
-        role: "root",
-        share: null,
-        shareMode: null,
-        flags:
-          value === null
-            ? { unnamed: true, unavailable: true }
-            : { unnamed: true },
-        kids: [],
-      };
+      const root = Object.hasOwn(roots, request.id)
+        ? roots[request.id]
+        : undefined;
+      if (!root) return "unknownNumber";
+      const recording = recorder.record(mosaicJson, [root], recipe);
+      return buildTree(recording, request.character);
     },
   };
 }

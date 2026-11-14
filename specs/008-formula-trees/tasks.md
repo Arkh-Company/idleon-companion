@@ -209,7 +209,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
     - a value of 0 goes to `atZero`;
     - a term without a name inside the math is the game's path (FR-012a);
     - the root is never a silent leaf (bench rule 147).
-- [ ] T018 [P] [US1] Atoms-only test in `src/calculator/tree-atoms.test.ts`
+- [X] T018 [P] [US1] Atoms-only test in `src/calculator/tree-atoms.test.ts`
   - Case: the `treeResult` JSON of the invented game with a text value, two invented character names (one a prefix of the other) and a string literal in the code contains no code literal and no code snippet. The names are allowed only in `name` fields shown on screen (FR-010) and are absent from logs.
 - [ ] T019 [P] [US1] Side panel and tree view tests in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx`
   - Cases:
