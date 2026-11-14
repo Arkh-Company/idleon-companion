@@ -14,6 +14,11 @@ import type { TreeShapes } from "./saved-files.ts";
 const SHA = "a".repeat(64);
 const OTHER_SHA = "b".repeat(64);
 const MOSAIC = '{"invented":1}';
+/** A mosaic with these characters' names, "Character 0" active. */
+const named = (names: string[]) =>
+  JSON.stringify({
+    attrs: { UserInfo: [names[0]], GetPlayersUsernames: names },
+  });
 /** Live trees need a map actor (FR-023): they are never asked. */
 const ASKED = TREE_CATALOG.filter((n) => !n.live).map((n) => n.id);
 const [FIRST = "", SECOND = "", THIRD = ""] = ASKED;
@@ -45,7 +50,7 @@ function setup(saved?: TreeShapes) {
 /** The index running over the invented game, the game's version known. */
 function running(saved?: TreeShapes) {
   const t = setup(saved);
-  t.index.mosaic(MOSAIC, []);
+  t.index.mosaic(MOSAIC);
   t.index.game(SHA);
   return t;
 }
@@ -122,10 +127,10 @@ test("the shapes are asked one tree at a time, in the catalog's order, only once
   const t = setup();
   t.index.game(SHA);
   expect(t.ask).not.toHaveBeenCalled();
-  t.index.mosaic(MOSAIC, []);
+  t.index.mosaic(MOSAIC);
   expect(t.ask).toHaveBeenCalledOnce();
   expect(t.asked().id).toBe(FIRST);
-  t.index.mosaic('{"invented":2}', []);
+  t.index.mosaic('{"invented":2}');
   expect(t.ask).toHaveBeenCalledOnce();
   t.answer([part('[0,"Sword"]')]);
   expect(t.asked().id).toBe(SECOND);
@@ -164,7 +169,7 @@ test("the file is written every few trees and at the end, never at each tree, an
 test("the file keeps the parts without the character and never a character's name (FR-010a)", () => {
   const t = setup();
   // Two invented names, one a prefix of the other.
-  t.index.mosaic(MOSAIC, ["Qwynn", "Qwyn"]);
+  t.index.mosaic(named(["Qwynn", "Qwyn"]));
   t.index.game(SHA);
   t.answer([
     part('[0,"Sword"]'),
@@ -176,6 +181,19 @@ test("the file keeps the parts without the character and never a character's nam
   expect(saved).toContain('[\\"Sword\\"]');
   expect(saved.toLowerCase()).not.toContain("qwyn");
   expect(saved).not.toContain("[0,");
+});
+
+test("a shape in flight when the reading goes still keeps out the names of the reading it was asked on (FR-010a)", () => {
+  const t = setup();
+  t.index.mosaic(named(["Qwynn"]));
+  t.index.game(SHA);
+  t.index.mosaic(null);
+  t.answer([part('[0,"Sword"]'), part('[0,"Bonus","qwynn"]')]);
+  t.index.mosaic(MOSAIC);
+  for (let i = 1; i < SAVE_EVERY; i++) t.answer([]);
+  const saved = JSON.stringify(t.file());
+  expect(saved).toContain('[\\"Sword\\"]');
+  expect(saved.toLowerCase()).not.toContain("qwynn");
 });
 
 test.each([
@@ -243,7 +261,7 @@ test("the game closed pauses the asks; open again, the tree in flight is asked a
 
 test("no reading or no character stops the asks", () => {
   const t = running();
-  t.index.mosaic(null, []);
+  t.index.mosaic(null);
   t.answer([part('[0,"Sword"]')]);
   expect(t.ask).toHaveBeenCalledOnce();
 });

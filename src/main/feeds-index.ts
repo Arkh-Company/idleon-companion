@@ -5,7 +5,7 @@
 // tests can load it.
 import { TREE_CATALOG } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
-import { holdsName } from "./saved-files.ts";
+import { holdsName, namesOf } from "./saved-files.ts";
 import type { savedFiles, TreeShapes } from "./saved-files.ts";
 import { MAX_NODE_ID } from "./tree-check.ts";
 
@@ -100,8 +100,8 @@ export function feedsIndex(deps: {
   list: (pieceKey: string) => string[];
   /** The sha256 of the game's code, once the tree host read it. */
   game: (sha: string) => void;
-  /** The Stats pair's mosaic and the characters' names; null with no reading or no character. */
-  mosaic(json: string | null, names: readonly string[]): void;
+  /** The Stats pair's mosaic; null with no reading or no character. */
+  mosaic(json: string | null): void;
   /** The tree host's answer to an ask; null when it failed or was lost. */
   received(seq: number, raw: unknown): void;
   /** The game closed: the host ended the worker, with the shape in flight. */
@@ -113,8 +113,8 @@ export function feedsIndex(deps: {
   const byPiece = new Map<string, Set<string>>();
   let gameSha: string | null = null;
   let mosaic: string | null = null;
-  let names: readonly string[] = [];
-  let pending: { seq: number; id: string } | null = null;
+  /** The ask in flight, with the characters' names of the mosaic it went with: its answer keeps them out. */
+  let pending: { seq: number; id: string; names: string[] } | null = null;
   let seq = 0;
   let closed = false;
   let failures = 0;
@@ -144,7 +144,7 @@ export function feedsIndex(deps: {
       if (unsaved > 0) save();
       return;
     }
-    pending = { seq: ++seq, id };
+    pending = { seq: ++seq, id, names: namesOf(mosaic) };
     deps.ask(seq, id, mosaic);
   }
 
@@ -166,14 +166,13 @@ export function feedsIndex(deps: {
       }
       next();
     },
-    mosaic(json, characterNames) {
+    mosaic(json) {
       mosaic = json;
-      names = characterNames;
       next();
     },
     received(answer, raw) {
       if (pending?.seq !== answer) return;
-      const { id } = pending;
+      const { id, names } = pending;
       pending = null;
       const parts = partsOf(raw, names);
       if (parts) {

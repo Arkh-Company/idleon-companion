@@ -5,7 +5,6 @@
 // (FR-027). No electron import, so tests can load it.
 import {
   compareTrees,
-  isObject,
   pieceValues,
   rootText,
   statsNumber,
@@ -21,6 +20,7 @@ import type {
 } from "../shared/index.ts";
 import { feedsIndex, withFeeds } from "./feeds-index.ts";
 import type { FormulaRequest } from "./payloads.ts";
+import { namesOf, players } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
@@ -42,27 +42,6 @@ const LIVE_GAME = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
 export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
   | { event: "treeRejected"; id: string };
-
-/** The mosaic's active character and list of characters' names; null when it has neither. */
-function players(
-  mosaicJson: string,
-): { info: unknown[]; names: unknown[] } | null {
-  try {
-    const parsed: unknown = JSON.parse(mosaicJson);
-    const attrs = isObject(parsed) ? parsed.attrs : null;
-    if (!isObject(attrs)) return null;
-    const { UserInfo: info, GetPlayersUsernames: names } = attrs;
-    return Array.isArray(info) && Array.isArray(names) ? { info, names } : null;
-  } catch {
-    return null;
-  }
-}
-
-/** The characters' names of the mosaic: what a saved file must never get (FR-010a). */
-const namesOf = (mosaicJson: string): string[] =>
-  (players(mosaicJson)?.names ?? []).filter(
-    (n): n is string => typeof n === "string",
-  );
 
 /** The active character's place in the game's list of characters, read from the mosaic; null when it is not there. */
 export function characterNumber(mosaicJson: string): number | null {
@@ -218,7 +197,7 @@ export function startFormulaPipeline(deps: {
     const pair = deps.statsPair();
     live.onMosaic(pair?.mosaicJson ?? null, pair?.calculatedAt);
     const mosaic = current()?.pair.mosaicJson ?? null;
-    index.mosaic(mosaic, mosaic === null ? [] : namesOf(mosaic));
+    index.mosaic(mosaic);
   }
 
   function view(): void {

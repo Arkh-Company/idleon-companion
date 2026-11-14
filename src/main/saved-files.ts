@@ -263,6 +263,27 @@ export function savedFiles(dir: string): {
   };
 }
 
+/** The mosaic's active character and list of characters' names; null when it has neither. */
+export function players(
+  mosaicJson: string,
+): { info: unknown[]; names: unknown[] } | null {
+  try {
+    const parsed: unknown = JSON.parse(mosaicJson);
+    const attrs = isObject(parsed) ? parsed.attrs : null;
+    if (!isObject(attrs)) return null;
+    const { UserInfo: info, GetPlayersUsernames: names } = attrs;
+    return Array.isArray(info) && Array.isArray(names) ? { info, names } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The characters' names of the mosaic: what a saved file must never get (FR-010a). */
+export const namesOf = (mosaicJson: string): string[] =>
+  (players(mosaicJson)?.names ?? []).filter(
+    (n): n is string => typeof n === "string",
+  );
+
 /** Whether `text` holds a character's name anywhere, any case: what a saved file must never get (FR-010a). */
 export const holdsName = (text: string, names: readonly string[]) => {
   const lower = text.toLowerCase();
