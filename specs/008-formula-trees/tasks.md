@@ -193,7 +193,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
     - the recording leaves the context only as JSON text;
     - the record switch is off again in `finally`;
     - the same call with the same arguments is the same piece in two recordings in a different order (FR-009, the lego).
-- [ ] T017 [P] [US1] Assembly tests in `src/calculator/tree/*.test.ts`, with a written recorded fixture `src/calculator/tree/tree-fixture.ts` (invented names)
+- [X] T017 [P] [US1] Assembly tests in `src/calculator/tree/*.test.ts`, with a written recorded fixture `src/calculator/tree/tree-fixture.ts` (invented names)
   - Cases:
     - "built once" (`UNDER_ROOT`), and a conflict is counted;
     - each name and type rule, in order (the first rule that matches wins), with the type test next to the name test;
@@ -209,6 +209,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
     - a value of 0 goes to `atZero`;
     - a term without a name inside the math is the game's path (FR-012a);
     - the root is never a silent leaf (bench rule 147).
+  - Left for US1c, with the names (T023) and the Drop Rate mould: the name rules and their order; "a step never named fixed" (the mould's steps by bonus name); the cases of the passes that only name rows (Golden Food, NR-G 2 and its `OPEN_XF`, F5B-PASS, the part names of a loop turn and the filters that compare names).
 - [X] T018 [P] [US1] Atoms-only test in `src/calculator/tree-atoms.test.ts`
   - Case: the `treeResult` JSON of the invented game with a text value, two invented character names (one a prefix of the other) and a string literal in the code contains no code literal and no code snippet. The names are allowed only in `name` fields shown on screen (FR-010) and are absent from logs.
 - [X] T019 [P] [US1] Side panel and tree view tests in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx`
@@ -232,11 +233,12 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
   - It records only on request: calls, reads, writes; `RECOMPUTE` and `BUILDERS`; helpers; roots with the game's arity; the builders' pass; `@read`; links. It uses the fixed `Math.random` seed and the companion bridge from the mosaic.
   - It uses no `eval`, `new Function`, `fetch`, `XMLHttpRequest`, `WebSocket` or `sendBeacon`.
   - Keep it under 400 lines by hand: the lint does not count `.js`.
-- [ ] T022 [US1] Port the assembly into `src/calculator/tree/` (modules up to 400 lines each)
+- [X] T022 [US1] Port the assembly into `src/calculator/tree/` (modules up to 400 lines each)
   - Files: `pieces.ts` (built once, conflicts), `kinds.ts` (`KIND_PATHS` before `RULES`), `names.ts` (the name rules with proof by reference; Names 2 before Names 1), `formulas.ts` (shapes and curves, 3 significant digits, constants named by role), `share.ts` (Share S), `mould.ts` (the Drop Rate mould: the game's steps by bonus name), `game-bugs.ts` (rules with proof)
   - Source: bench at BASELINE-4 (`99d1772`), cited by function and branch, never by line number.
   - The bench's `formulaOf` leaks method names and string literals; the port keeps only the closed `MATH` list and numbers.
   - Every rule row has a `proof` that is a reference, never quoted game text. `src/calculator/tree/rules.test.ts` fails on a rule without proof or with a quoted proof (FR-032).
+  - Left for US1c, with the names (T023): `names.ts` (Names 2 before Names 1, the renames by shape, the R1 source names, `pathName`), `mould.ts` in the shape of FR-006, and the passes that depend on names: Golden Food (`goldFood`), NR-G 2 and its `OPEN_XF`, F5B-PASS (`tree-of.cjs`), the names of a loop turn's parts and the filters that compare names (`entryRows`, `cacheStepRows`, `tidy`, `mergeTests`), `EARLIER_NAMES`.
 - [ ] T023 [US1] Add the names table in `src/calculator/tree/names-table.ts` (research R3)
   - Data: `{ [pieceKey]: { name: string; proof: string } }`, generated from the bench's names export redone on the BASELINE-4 and reviewed by Vinicius before this phase closes.
   - Tests: a call named by the table; a call no rule nor the table names gives a generic name and `flags.unnamed`.
