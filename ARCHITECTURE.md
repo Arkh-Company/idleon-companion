@@ -30,7 +30,7 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   ├─ worker_threads ──▶ calculator, Stats worker (src/calculator/, no network, no app APIs): the game's code over the mosaic
   ├─ worker_threads ──▶ calculator, tree worker (the same calculator.js, 2 GB heap): an instrumented copy in memory,
   │                       the recorder, the trees built from one recording, the live values of what is in view
-  └─ the user data folder: settings.json, marks.json, pins.json, tree-shapes.json (written through .tmp, .bad when unreadable)
+  └─ the user data folder: settings.json; marks.json, pins.json, tree-shapes.json (written through .tmp, .bad when unreadable)
 ```
 
 - **One executable** (`src/start/`, built to `out/main/start.js`, the `main` of `package.json`). The per-user NSIS
@@ -317,7 +317,9 @@ stays in the calculator; acorn, the parser of the in-memory copy, is imported on
   decoder skips junk lines and checks the message type; the main process checks a link `reading` (`toReading`),
   `status` and `tables` (`linkTables`: a table out of shape counts as not read), a `state` slice (`linkState`) and a
   `gameFiles` folder (`linkGameFiles`) before use, and each IPC payload
-  (`settings:set`: the three booleans; the other window → main channels take no body); a payload of the wrong shape is
+  (`settings:set`: the three booleans; the requests of spec 008 (catalog id, character number, ids, piece key, mark
+  name, pins, `{ open }`), see [contracts/ipc.md](specs/008-formula-trees/contracts/ipc.md); the other window → main
+  channels take no body); a payload of the wrong shape is
   refused.
 - **The updater is the only network access** (see [Updates](#updates)): the link is a local named pipe, the debugging
   channel is a pipe, and the window's CSP allows only its own files. `src/main/no-network.test.ts` scans the source for
