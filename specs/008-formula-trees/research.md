@@ -177,5 +177,6 @@ BANCADA = `C:\Users\Vinicius\idleon-companion\research\run\formula-006`; SCRATCH
     - pausada na cidade;
     - recomeçando em outro mapa que não é cidade.
   - **"Cidade":** os mapas-cidade vêm da tabela de mapas do jogo, lida pelo keeper (`game-tables.ts`), com a regra provada por referência.
+  - **Durante a implementação:** a cidade é a cena cujo nome contém "Town" (`Reading.scene`, que o keeper já lê por propriedade), a mesma regra do jogo, provada nas leituras capturadas (mapas 0, 50…300). O XP mostrado é o do skill que mais ganhou no período, e só ganhos contam (aceito pelo Vinicius em 14/11). Os nomes dos itens vêm da tabela de itens do jogo instalado, lida pelo keeper como mapas e monstros (aceito pelo Vinicius em 14/11).
 - **Rationale:** a FR-028 pede só medido, sem fórmula; o leitor já traz o mapa, o personagem e as peças de inventário e de XP.
 - **Alternatives considered:** usar a fórmula AFK do jogo (decidido contra no clarify).
