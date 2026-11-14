@@ -65,7 +65,7 @@ export const PIECES = recordingOf(
         ["Extra", 0],
       ],
     },
-    { b: "Wrap", v: 5, c: [7] },
+    { b: "Wrap", v: 6, c: [7] },
     { b: "Hit", a: [2], v: 5, r: [["Level", 5]] },
     { b: "Hit", a: [2], v: 5, r: [["DNSM.Twin.v", 5, 1]] },
     { b: "Part", a: [1], v: 99, r: [["Level", 99]] },
@@ -84,7 +84,7 @@ export function chainOf(depth: number): Recording {
   for (let i = 1; i <= depth; i++)
     specs.push({
       b: `Step${String(i)}`,
-      v: 1,
+      v: i,
       ...(i < depth ? { c: [i + 1] } : { r: [["Level", 1]] }),
     });
   return recordingOf(specs, [], { root: 0 });

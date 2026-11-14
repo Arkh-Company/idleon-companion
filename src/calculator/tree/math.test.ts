@@ -1,6 +1,6 @@
 // The formula line's arithmetic, without eval (tree/math.ts).
 import { expect, test } from "vitest";
-import { evaluate } from "./math.ts";
+import { evaluate, formulaAtoms } from "./math.ts";
 
 test.each<[string, number]>([
   ["1 + 2 × 3", 7],
@@ -33,4 +33,20 @@ test.each([
   "1 ; 2",
 ])("%s is not arithmetic", (line) => {
   expect(evaluate(line)).toBeNaN();
+});
+
+test("a formula leaves the worker as its terms and its numbers, the result last", () => {
+  expect(
+    formulaAtoms([
+      "40 × Invented.level ÷ (Invented.level + 100)",
+      "40 × 25 ÷ (25 + 100) = 8",
+    ]),
+  ).toEqual([
+    ["40", "×", "Invented.level", "÷", "(", "Invented.level", "+", "100", ")"],
+    [40, 25, 25, 100, 8],
+  ]);
+  expect(formulaAtoms(["min(Ka, 1e-3)", "min(0.5, 0.001) = 0.001"])).toEqual([
+    ["min", "(", "Ka", ",", "1e-3", ")"],
+    [0.5, 0.001, 0.001],
+  ]);
 });

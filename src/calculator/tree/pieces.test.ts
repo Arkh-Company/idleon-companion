@@ -28,7 +28,7 @@ test("the root's rows are its calls, then its readings that are numbers", () => 
   expect(brief(buildTree(PIECES, 0).root)).toEqual([
     ["Part(1)", 3],
     ["Part(1)", 3],
-    ["Wrap()", 5],
+    ["Wrap()", 6],
     ["Hit(2)", 5],
     ["Stats.base", 4],
     ["DNSM.Pool.total", 9],
@@ -141,13 +141,16 @@ test("every leaf gets its type and its reason; a branch has none", () => {
       {
         b: "Total",
         v: 5,
-        c: [2, 3],
+        c: [2, 3, 4, 5, 6],
         r: [
           ["StampLevel[0][1]", 3],
           ["DNSM.Ready.v", 2],
         ],
       },
-      { b: "Flat", a: [1], v: 4 },
+      { b: "Flat", a: [1], v: 4, x: [[0, 4]] },
+      { b: "Const", a: [2], v: 9 },
+      { b: "Label", v: "(text)" },
+      { b: "Gate", v: 0, q: [["Invented.flag", true]] },
       { b: "Deep", v: 1, r: [["Level", 1]] },
     ],
     [],
@@ -160,6 +163,13 @@ test("every leaf gets its type and its reason; a branch has none", () => {
   ]);
   expect(kinds).toEqual([
     ["Flat(1)", "rawBonus", null],
+    [
+      "Const(2)",
+      "fixedValue",
+      "a constant of the game: Const returns this number for this case (no read, no step)",
+    ],
+    ["Label()", "rawBonus", null],
+    ["Gate()", "rawBonus", null],
     ["Deep()", null, null],
     ["StampLevel[0][1]", "level", null],
     ["DNSM.Ready.v", "unknown", "a cache that comes ready from the game"],

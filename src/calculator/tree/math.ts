@@ -78,3 +78,24 @@ export function evaluate(line: string): number {
   const v = sum();
   return peek() === undefined ? v : NaN;
 }
+
+const TERMS = /(\s*[×÷+−*/(),^:]\s*|\s+-\s+)/;
+const NUMBER = /-?\d*\.?\d+(?:e[+-]?\d+)?/g;
+
+/**
+ * The contract's formula from the bench's two lines (data-model `formula`, FR-010: only atoms): the line with names
+ * split into its terms (names, the code's numbers and operators), and every number of the line with numbers, in order,
+ * the result last.
+ */
+export function formulaAtoms([names, numbers]: [string, string]): [
+  string[],
+  number[],
+] {
+  return [
+    names
+      .split(TERMS)
+      .map((t) => t.trim())
+      .filter(Boolean),
+    [...numbers.matchAll(NUMBER)].map((m) => Number(m[0])),
+  ];
+}
