@@ -21,12 +21,15 @@ export interface CatalogNumber {
 
 export const TREE_CATALOG = numbers as readonly CatalogNumber[];
 
-const LIVE_IDS: ReadonlySet<string> = new Set(
-  TREE_CATALOG.filter((n) => n.live).map((n) => n.id),
-);
+/** The numbers that need a map actor's field (FR-023), in the catalog's order. */
+export const LIVE_IDS: readonly string[] = TREE_CATALOG.filter(
+  (n) => n.live,
+).map((n) => n.id);
+
+const LIVE_SET: ReadonlySet<string> = new Set(LIVE_IDS);
 
 /** The number needs a map actor's field (FR-023). */
-export const isLiveNumber = (id: string): boolean => LIVE_IDS.has(id);
+export const isLiveNumber = (id: string): boolean => LIVE_SET.has(id);
 
 /** Why a live-game number has no value (FR-023): the map actor it reads is not on the map the player is in. */
 export const LIVE_MAP_TEXT =
