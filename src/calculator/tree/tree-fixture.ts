@@ -78,6 +78,18 @@ export const PIECES = recordingOf(
   { setup: 0, root: 2 },
 );
 
+/** `Part(1)` called twice under the root with the same reads: the second place gives the piece's rows. */
+export const SAME_TWICE = recordingOf(
+  [
+    { b: "(root)", c: [1] },
+    { b: "Total", v: 9, c: [2, 3] },
+    { b: "Part", a: [1], v: 3, r: [["Level", 3]] },
+    { b: "Part", a: [1], v: 3, r: [["Level", 3]] },
+  ],
+  [],
+  { root: 0 },
+);
+
 /** A chain of `depth` calls under the root, each calling the next, with a read at the bottom. */
 export function chainOf(depth: number): Recording {
   const specs: Spec[] = [{ b: "(root)", c: [1] }];

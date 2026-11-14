@@ -4,7 +4,7 @@
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
-import { chainOf, PIECES, recordingOf } from "./tree-fixture.ts";
+import { chainOf, PIECES, recordingOf, SAME_TWICE } from "./tree-fixture.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 
 const kidsOf = (n: CalcTreeNode | null | undefined) =>
@@ -46,9 +46,11 @@ test("a piece called twice opens with the first call's rows, and the other place
   expect(build.conflicts).toEqual(['[0,"Part",1]']);
 });
 
-test("a place that gives the same rows is no conflict, opened again", () => {
-  const { build } = open("Part(1)");
-  build.expand(kidsOf(build.root)[0]?.id ?? "");
+test("a second place that gives the same rows is no conflict", () => {
+  const build = buildTree(SAME_TWICE, 0);
+  const second = kidsOf(build.root)[1];
+  expect(second?.code).toBe("Part(1)");
+  expect(brief(build.expand(second?.id ?? ""))).toEqual([["Level", 3]]);
   expect(build.conflicts).toEqual([]);
 });
 
