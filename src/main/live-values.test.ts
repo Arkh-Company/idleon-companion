@@ -51,15 +51,37 @@ test("a new view asks at once over the last mosaic; the same ids in another orde
   expect(t.ask.mock.calls.map((c) => c[1])).toEqual([["hp"], ["hp", "str"]]);
 });
 
-test("the answer of an older ask is dropped", () => {
+test("an earlier ask's answer still shows while a later one is in flight: the host answers in order", () => {
+  const t = setup();
+  t.lv.setInView(["hp"]);
+  t.lv.onMosaic(M1, 1_000);
+  t.lv.onMosaic(M2, 2_000); // a batch slower than the mosaics
+  t.lv.received(1, { hp: 3 });
+  expect(t.last()).toEqual({
+    values: { hp: 3 },
+    calculatedAt: 1_000,
+    stale: false,
+  });
+  t.lv.received(2, { hp: 4 });
+  expect(t.last()).toEqual({
+    values: { hp: 4 },
+    calculatedAt: 2_000,
+    stale: false,
+  });
+  t.lv.received(1, { hp: 9 }); // already answered
+  expect(t.send).toHaveBeenCalledTimes(2);
+});
+
+test("an ask the host replaced before answering is forgotten once a later one answers", () => {
   const t = setup();
   t.lv.onMosaic(M1, 1_000);
   t.lv.setInView(["hp"]);
   t.lv.setInView(["str"]);
-  t.lv.received(1, { hp: 3 });
-  expect(t.send).not.toHaveBeenCalled();
+  t.lv.setInView(["luk"]);
+  t.lv.received(3, { luk: 5 });
   t.lv.received(2, { str: 4 });
-  expect(t.last()).toMatchObject({ values: { str: 4 } });
+  expect(t.send).toHaveBeenCalledOnce();
+  expect(t.last()).toMatchObject({ values: { luk: 5 } });
 });
 
 test("values that failed, or that are no finite number, are unavailable; ids not asked are ignored", () => {

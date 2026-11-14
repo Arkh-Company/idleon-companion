@@ -22,15 +22,22 @@ export function liveValues(deps: {
 } {
   let inView: string[] = [];
   let mosaic: string | null = null;
+  /** The time of the current mosaic, and of the values shown (an answer can be of an earlier mosaic). */
   let calculatedAt = 0;
+  let shownAt = 0;
   let stale = false;
   const values = new Map<string, number | null>();
-  let asked: { id: number; ids: string[] } | null = null;
+  /** Every ask not answered yet, since the last clear: the host answers in order, so a slow batch still shows. */
+  const asked = new Map<number, { ids: string[]; at: number }>();
   let seq = 0;
   let last: LiveValues | null = null;
 
   function show(): void {
-    last = { values: Object.fromEntries(values), calculatedAt, stale };
+    last = {
+      values: Object.fromEntries(values),
+      calculatedAt: shownAt,
+      stale,
+    };
     deps.send(last);
   }
 
@@ -40,10 +47,13 @@ export function liveValues(deps: {
       (id) => LIVE_GAME.has(id) && values.get(id) !== null,
     );
     for (const id of offline) values.set(id, null);
-    if (offline.length > 0) show();
+    if (offline.length > 0) {
+      shownAt = calculatedAt;
+      show();
+    }
     const ids = inView.filter((id) => !LIVE_GAME.has(id));
     if (ids.length === 0) return;
-    asked = { id: ++seq, ids };
+    asked.set(++seq, { ids, at: calculatedAt });
     deps.ask(seq, ids, mosaic);
   }
 
@@ -60,18 +70,21 @@ export function liveValues(deps: {
       calculatedAt = json === null ? 0 : at;
       if (json === null) {
         // Another character's numbers never stay (FR-034).
-        asked = null;
+        asked.clear();
         values.clear();
+        shownAt = 0;
         show();
         return;
       }
       ask();
     },
     received(id, raw) {
-      const ids = asked?.id === id ? asked.ids : null;
-      if (!ids) return;
-      asked = null;
-      for (const key of ids) {
+      const ask = asked.get(id);
+      if (!ask) return;
+      // The asks before this one were replaced in the host and will never be answered.
+      for (const k of asked.keys()) if (k <= id) asked.delete(k);
+      shownAt = ask.at;
+      for (const key of ask.ids) {
         const v = isObject(raw) && Object.hasOwn(raw, key) ? raw[key] : null;
         values.set(key, typeof v === "number" && Number.isFinite(v) ? v : null);
       }
