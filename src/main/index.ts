@@ -31,6 +31,7 @@ import { routeLink } from "./link-routes.ts";
 import { emptyPayload, settingsPayload } from "./payloads.ts";
 import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
 import { startPipelines } from "./pipelines.ts";
+import { savedFiles } from "./saved-files.ts";
 import { setupStoreIn } from "./setup-store.ts";
 import { sidePanelControl, sidePanelHandler } from "./side-panel.ts";
 import {
@@ -185,6 +186,8 @@ function start(): void {
     log: (entry) => {
       console.warn(JSON.stringify(entry));
     },
+    // marks.json beside settings.json (contracts/saved-files.md).
+    marks: savedFiles(dataDir).marks,
   });
 
   const routes = routeLink({
@@ -240,7 +243,7 @@ function start(): void {
       throw new Error("update:install: no body expected");
     return updates.install();
   });
-  // The formula channels of 008 (contracts/ipc.md), checked in pipelines.ts.
+  // The formula and marks channels of 008 (contracts/ipc.md), checked in pipelines.ts and saved-files.ts.
   for (const [channel, f] of Object.entries(handlers)) handle(channel, f);
   // The side panel widens the window toward the side with room on its screen (FR-005 of 008).
   handle(

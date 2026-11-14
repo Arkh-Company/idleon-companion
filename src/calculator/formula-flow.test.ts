@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 // The Independent Test of the 008's foundation: with the invented game, a `number` request for the Drop Rate goes window
 // → main → tree host → tree worker and back as a `ready` tree whose root equals the Stats number of the same mosaic. The
 // main's pipelines are the real ones and both workers run the real calculator entry, in a microtask instead of a thread.
@@ -7,6 +9,7 @@ import { IPC, READ_NULLS } from "../shared/index.ts";
 import type { FormulaTree, StateSlice, Stats } from "../shared/index.ts";
 import { BASE, CHARACTERS, GAME, PAK } from "./fixtures/fake-mosaic.ts";
 import { handleMessage } from "./index.ts";
+import { savedFiles } from "../main/saved-files.ts";
 
 /** A worker thread stand-in: the calculator's entry answers each message a microtask later, on a port of its own. */
 class InlineWorker {
@@ -61,6 +64,8 @@ test("a Drop Rate request comes back as a ready tree whose root is the Stats num
         pak: Uint8Array.from(PAK),
       }),
     log: () => undefined,
+    // No mark is read or written here.
+    marks: savedFiles(join(tmpdir(), "no-marks")).marks,
   });
 
   const [active] = CHARACTERS;

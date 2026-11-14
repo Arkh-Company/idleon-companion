@@ -39,6 +39,10 @@ const onlyKeys = (v: Record<string, unknown>, keys: readonly string[]) =>
 const isNodeId = (v: unknown): v is string =>
   typeof v === "string" && v.length > 0 && v.length <= MAX_NODE_ID;
 
+/** A character's number: whole, not negative, and written whole as a key of a saved file. */
+const isCharacter = (v: unknown): v is number =>
+  Number.isSafeInteger(v) && (v as number) >= 0;
+
 /** `formula:request`: the id is checked against the catalog before anything reaches a worker (CHK015). */
 export function formulaRequestPayload(v: unknown): FormulaRequest | null {
   if (!isObject(v)) return null;
@@ -46,9 +50,7 @@ export function formulaRequestPayload(v: unknown): FormulaRequest | null {
     const { id, character } = v;
     if (!isCatalogId(id)) return null;
     if (character === undefined) return { id, character: null };
-    return Number.isInteger(character) && (character as number) >= 0
-      ? { id, character: character as number }
-      : null;
+    return isCharacter(character) ? { id, character } : null;
   }
   if (onlyKeys(v, ["treeId", "nodeId"])) {
     const { treeId, nodeId } = v;
@@ -66,6 +68,29 @@ export function formulaValuesPayload(v: unknown): { ids: string[] } | null {
     new Set(ids).size === ids.length &&
     ids.every(isCatalogId)
     ? { ids }
+    : null;
+}
+
+/** The longest name of a mark (FR-037). */
+export const MAX_MARK_NAME = 40;
+
+/** `marks:list`: only `{ character }`. */
+export function marksListPayload(v: unknown): { character: number } | null {
+  return isObject(v) && onlyKeys(v, ["character"]) && isCharacter(v.character)
+    ? { character: v.character }
+    : null;
+}
+
+/** `marks:save` and `marks:clear` (contracts/ipc.md): a character's number and a name of 1 to 40 characters, trimmed. */
+export function markPayload(
+  v: unknown,
+): { character: number; name: string } | null {
+  if (!isObject(v) || !onlyKeys(v, ["character", "name"])) return null;
+  const { character, name } = v;
+  if (!isCharacter(character) || typeof name !== "string") return null;
+  const trimmed = name.trim();
+  return trimmed.length > 0 && trimmed.length <= MAX_MARK_NAME
+    ? { character, name: trimmed }
     : null;
 }
 

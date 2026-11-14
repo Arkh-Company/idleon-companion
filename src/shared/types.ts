@@ -299,9 +299,13 @@ export interface CompanionApi {
   formulaValues(r: { ids: string[] }): Promise<void>;
   onLiveValues(cb: (v: LiveValues) => void): () => void;
   onPanel(cb: (p: { system: string | null }) => void): () => void;
-  listMarks(r: { character: number }): Promise<Mark[]>;
-  saveMark(r: { character: number; name: string }): Promise<void>;
-  clearMark(r: { character: number; name: string }): Promise<void>;
+  /** The character's marks, and once the warning of a file that could not be read (FR-041). */
+  listMarks(r: {
+    character: number;
+  }): Promise<{ marks: Mark[]; warning: string | null }>;
+  /** Null when done; else the sentence for the player (FR-037). */
+  saveMark(r: { character: number; name: string }): Promise<string | null>;
+  clearMark(r: { character: number; name: string }): Promise<string | null>;
   getPins(): Promise<Pin[]>;
   setPins(pins: Pin[]): Promise<void>;
   onFarm(cb: (f: FarmUpdate) => void): () => void;

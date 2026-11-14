@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 // The Stats and the trees joined as the app runs them (src/main/index.ts): a tree request uses the mosaic the Stats
 // calculated, its root reaches the window, and nothing of the trees reaches the Stats (FR-017, FR-019). The workers are
 // fakes; every value and name is invented.
@@ -16,6 +18,7 @@ import {
   RESOURCES,
   vars,
 } from "./stats-pipeline-fixture.ts";
+import { savedFiles } from "./saved-files.ts";
 
 /** The game code of the fixture: the rules count as checked on these bytes (FR-018). */
 const CHECKED_CODE = vi.hoisted(() => Uint8Array.from([1]));
@@ -65,6 +68,8 @@ function setup(code: Uint8Array<ArrayBuffer> = CHECKED_CODE) {
         pak: Uint8Array.from([2]),
       }),
     log,
+    // No mark is read or written here.
+    marks: savedFiles(join(tmpdir(), "no-marks")).marks,
   });
   const workerOf = (heap: number) => {
     const w = workers.find((x) => x.heap === heap)?.worker;

@@ -56,9 +56,15 @@ export function companionApi(ipc: Ipc): CompanionApi {
     formulaValues: call(IPC.formulaValues),
     onLiveValues: listen(IPC.formulaLiveValues, true),
     onPanel: listen(IPC.panelUpdate, true),
-    listMarks: async (r) => (await ipc.invoke(IPC.marksList, r)) as Mark[],
-    saveMark: call(IPC.marksSave),
-    clearMark: call(IPC.marksClear),
+    listMarks: async (r) =>
+      (await ipc.invoke(IPC.marksList, r)) as {
+        marks: Mark[];
+        warning: string | null;
+      },
+    saveMark: async (r) =>
+      (await ipc.invoke(IPC.marksSave, r)) as string | null,
+    clearMark: async (r) =>
+      (await ipc.invoke(IPC.marksClear, r)) as string | null,
     getPins: async () => (await ipc.invoke(IPC.pinsGet)) as Pin[],
     setPins: call(IPC.pinsSet),
     onFarm: listen(IPC.farmUpdate, true),

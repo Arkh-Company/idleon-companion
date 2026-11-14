@@ -5,6 +5,7 @@
 import {
   compareTrees,
   isObject,
+  pieceValues,
   rootText,
   statsNumber,
   TREE_CATALOG,
@@ -12,6 +13,7 @@ import {
 import type {
   FormulaTree,
   LiveValues,
+  Mark,
   Status,
   TreeNode,
   TreeRequest,
@@ -38,19 +40,27 @@ export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
   | { event: "treeRejected"; id: string };
 
-/** The active character's place in the game's list of characters, read from the mosaic; null when it is not there. */
-export function characterNumber(mosaicJson: string): number | null {
+/** The mosaic's active character and list of characters' names; null when it has neither. */
+function players(
+  mosaicJson: string,
+): { info: unknown[]; names: unknown[] } | null {
   try {
     const parsed: unknown = JSON.parse(mosaicJson);
     const attrs = isObject(parsed) ? parsed.attrs : null;
     if (!isObject(attrs)) return null;
     const { UserInfo: info, GetPlayersUsernames: names } = attrs;
-    if (!Array.isArray(info) || !Array.isArray(names)) return null;
-    const place = typeof info[0] === "string" ? names.indexOf(info[0]) : -1;
-    return place >= 0 ? place : null;
+    return Array.isArray(info) && Array.isArray(names) ? { info, names } : null;
   } catch {
     return null;
   }
+}
+
+/** The active character's place in the game's list of characters, read from the mosaic; null when it is not there. */
+export function characterNumber(mosaicJson: string): number | null {
+  const p = players(mosaicJson);
+  const first = p?.info[0];
+  const place = p && typeof first === "string" ? p.names.indexOf(first) : -1;
+  return place >= 0 ? place : null;
 }
 
 /** Walked without recursion: a checked tree can be as deep as it has nodes. */
@@ -118,6 +128,8 @@ export function startFormulaPipeline(deps: {
   status(s: Status): void;
   gameFiles(resources: string): void;
   replay(): void;
+  /** What a mark of `character` takes: the open tree's values by piece, and the names the file must never get. */
+  markOf(character: number): { values: Mark["values"]; names: string[] } | null;
 } {
   /** The number the window has open; `character` null is the active one. */
   let open: { id: string; character: number | null } | null = null;
@@ -383,6 +395,14 @@ export function startFormulaPipeline(deps: {
     replay() {
       deps.send(last);
       live.replay();
+    },
+    markOf(character) {
+      if (last.state !== "ready" || last.character !== character) return null;
+      const names = players(deps.statsPair()?.mosaicJson ?? "")?.names ?? [];
+      return {
+        values: pieceValues(last.root),
+        names: names.filter((n): n is string => typeof n === "string"),
+      };
     },
   };
 }

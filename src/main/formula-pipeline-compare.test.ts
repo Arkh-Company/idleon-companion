@@ -103,3 +103,18 @@ test("another number, or the same after a character change, has no `was`", () =>
     t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[0]?.was,
   ).toBe(undefined);
 });
+
+test("a mark takes the open tree's values by piece, with the characters' names to keep out (FR-025, FR-010a)", () => {
+  const h = readyDrop();
+  expect(h.p.markOf(0)).toEqual({
+    values: {
+      '[0,"InventedBlock","sub",0,0]': CALCULATED.dropRate,
+      '[0,"Sword"]': 4,
+      '[0,"Ring"]': 2,
+    },
+    names: ["Invented", "Other"],
+  });
+  expect(h.p.markOf(1)).toBe(null);
+  h.p.close();
+  expect(h.p.markOf(0)).toBe(null);
+});

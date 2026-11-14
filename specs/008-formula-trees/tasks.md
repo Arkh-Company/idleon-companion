@@ -394,7 +394,7 @@ Verify: `just test-one src/renderer/TruthTag.test.tsx` - passes; `just check` - 
     - diff by `pieceKey` fills `was`;
     - only order changed counts as no change;
     - a counter or timer change outside open nodes does not set `gameChanged` (FR-024).
-- [ ] T040 [P] [US6] `src/main/saved-files.test.ts` (marks part)
+- [X] T040 [P] [US6] `src/main/saved-files.test.ts` (marks part)
   - Cases:
     - save with a name up to 40 characters;
     - a fourth mark refused with "Up to 3 marks: clear one first." (FR-037);
