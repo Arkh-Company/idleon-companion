@@ -54,7 +54,14 @@ export {
   TREE_CATALOG,
 } from "./tree-catalog.ts";
 export type { CatalogNumber } from "./tree-catalog.ts";
-export { DEFAULT_SETTINGS, GAME_UPDATED, IPC, moduleChannel } from "./types.ts";
+export {
+  DEFAULT_SETTINGS,
+  GAME_UPDATED,
+  IPC,
+  MAX_PINS,
+  moduleChannel,
+  PINS_FULL,
+} from "./types.ts";
 export type {
   CompanionApi,
   CompanionModule,

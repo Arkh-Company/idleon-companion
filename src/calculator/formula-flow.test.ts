@@ -64,8 +64,8 @@ test("a Drop Rate request comes back as a ready tree whose root is the Stats num
         pak: Uint8Array.from(PAK),
       }),
     log: () => undefined,
-    // No mark is read or written here.
-    marks: savedFiles(join(tmpdir(), "no-marks")).marks,
+    // No mark or pin is read or written here.
+    saved: savedFiles(join(tmpdir(), "no-marks")),
   });
 
   const [active] = CHARACTERS;

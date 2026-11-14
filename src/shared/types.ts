@@ -190,6 +190,10 @@ export interface Pin {
   nodeId: string | null;
 }
 
+/** How many numbers the Pin strip holds, and the sentence of one more (FR-036). */
+export const MAX_PINS = 5;
+export const PINS_FULL = "Up to 5 pins: unpin one first.";
+
 /** `farm:update`: only measured, for the active character (FR-028). */
 export interface FarmUpdate {
   state: "idle" | "counting" | "paused";
@@ -306,8 +310,10 @@ export interface CompanionApi {
   /** Null when done; else the sentence for the player (FR-037). */
   saveMark(r: { character: number; name: string }): Promise<string | null>;
   clearMark(r: { character: number; name: string }): Promise<string | null>;
-  getPins(): Promise<Pin[]>;
-  setPins(pins: Pin[]): Promise<void>;
+  /** The pinned numbers, and once the warning of a file that could not be read (FR-041). */
+  getPins(): Promise<{ pins: Pin[]; warning: string | null }>;
+  /** Null when saved; else the sentence for the player. */
+  setPins(pins: Pin[]): Promise<string | null>;
   onFarm(cb: (f: FarmUpdate) => void): () => void;
   onRadar(cb: (r: RadarUpdate) => void): () => void;
   dismissRadar(): Promise<void>;

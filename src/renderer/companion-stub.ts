@@ -60,8 +60,10 @@ export function stubCompanion(): CompanionStub {
     ),
     saveMark: vi.fn<CompanionApi["saveMark"]>(() => Promise.resolve(null)),
     clearMark: vi.fn<CompanionApi["clearMark"]>(() => Promise.resolve(null)),
-    getPins: vi.fn<CompanionApi["getPins"]>(() => Promise.resolve([])),
-    setPins: vi.fn<CompanionApi["setPins"]>(() => Promise.resolve()),
+    getPins: vi.fn<CompanionApi["getPins"]>(() =>
+      Promise.resolve({ pins: [], warning: null }),
+    ),
+    setPins: vi.fn<CompanionApi["setPins"]>(() => Promise.resolve(null)),
     onFarm: vi.fn<CompanionApi["onFarm"]>(() => () => undefined),
     onRadar: vi.fn<CompanionApi["onRadar"]>(() => () => undefined),
     dismissRadar: vi.fn<CompanionApi["dismissRadar"]>(() => Promise.resolve()),

@@ -186,8 +186,8 @@ function start(): void {
     log: (entry) => {
       console.warn(JSON.stringify(entry));
     },
-    // marks.json beside settings.json (contracts/saved-files.md).
-    marks: savedFiles(dataDir).marks,
+    // marks.json and pins.json beside settings.json (contracts/saved-files.md).
+    saved: savedFiles(dataDir),
   });
 
   const routes = routeLink({
@@ -243,7 +243,7 @@ function start(): void {
       throw new Error("update:install: no body expected");
     return updates.install();
   });
-  // The formula and marks channels of 008 (contracts/ipc.md), checked in pipelines.ts and saved-files.ts.
+  // The formula, marks and pins channels of 008 (contracts/ipc.md), checked in pipelines.ts and saved-files.ts.
   for (const [channel, f] of Object.entries(handlers)) handle(channel, f);
   // The side panel widens the window toward the side with room on its screen (FR-005 of 008).
   handle(

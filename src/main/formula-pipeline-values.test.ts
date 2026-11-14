@@ -22,6 +22,19 @@ test("the window's view and the open tree are calculated over the Stats' mosaic"
   expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["str"]);
 });
 
+test("the pinned numbers stay in view whatever the window shows (FR-026)", () => {
+  const h = setup();
+  h.p.pinned(["hp"]);
+  expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["hp"]);
+  h.p.values(["str"]);
+  expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["hp", "str"]);
+  h.p.values([]);
+  expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["hp"]);
+  h.p.pinned([]);
+  h.p.values(["str"]);
+  expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["str"]);
+});
+
 test("each new pair of the Stats asks again, and the answer reaches the window", () => {
   const h = setup();
   h.p.values(["str"]);

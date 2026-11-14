@@ -4,12 +4,14 @@ import { win32 } from "node:path";
 import {
   isCatalogId,
   isObject,
+  MAX_PINS,
   toReading,
   TREE_CATALOG,
 } from "../shared/index.ts";
 import { MAX_NODE_ID } from "./tree-check.ts";
 import type {
   GameTables,
+  Pin,
   Reading,
   Settings,
   StatePath,
@@ -92,6 +94,27 @@ export function markPayload(
   return trimmed.length > 0 && trimmed.length <= MAX_MARK_NAME
     ? { character, name: trimmed }
     : null;
+}
+
+/**
+ * `pins:set` (contracts/ipc.md), and each pin read from `pins.json`: up to 5 catalog numbers, each once, nothing else in
+ * a pin (never a value).
+ */
+export function pinsPayload(v: unknown): Pin[] | null {
+  if (!Array.isArray(v) || v.length > MAX_PINS) return null;
+  const pins: Pin[] = [];
+  for (const p of v) {
+    // ponytail: numbers only; a leaf's `nodeId` once the tree has a Pin per row (FR-026).
+    if (
+      !isObject(p) ||
+      !onlyKeys(p, ["treeId", "nodeId"]) ||
+      !isCatalogId(p.treeId) ||
+      p.nodeId !== null
+    )
+      return null;
+    pins.push({ treeId: p.treeId, nodeId: null });
+  }
+  return new Set(pins.map((p) => p.treeId)).size === pins.length ? pins : null;
 }
 
 /** `window:sidePanel` (contracts/ipc.md): only `{ open }`, a yes or no. */

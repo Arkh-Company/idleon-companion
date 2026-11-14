@@ -13,8 +13,9 @@ import {
   formulaValuesPayload,
 } from "./payloads.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
-import { marksHandlers } from "./saved-files.ts";
+import { marksHandlers, pinsHandlers } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
+import type { Pin } from "../shared/index.ts";
 import { createTreeHost } from "./tree-host.ts";
 import { versionBand } from "./version-band.ts";
 
@@ -23,11 +24,12 @@ export function startPipelines(deps: {
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
   log: (entry: FormulaLog) => void;
-  marks: ReturnType<typeof savedFiles>["marks"];
+  /** The marks and pins saved on this computer. */
+  saved: ReturnType<typeof savedFiles>;
 }): {
   stats: ReturnType<typeof startStatsPipeline>;
   formula: ReturnType<typeof startFormulaPipeline>;
-  /** The window → main formula and marks channels, by name, for `ipcMain.handle`. */
+  /** The window → main formula, marks and pins channels, by name, for `ipcMain.handle`. */
   handlers: Record<string, (payload: unknown) => unknown>;
 } {
   let formula: ReturnType<typeof startFormulaPipeline> | null = null;
@@ -72,6 +74,11 @@ export function startPipelines(deps: {
     log: deps.log,
   });
   const trees = formula;
+  // The pinned numbers are live whatever the window shows, from the start (FR-026).
+  const pinned = (pins: Pin[]): void => {
+    trees.pinned(pins.map((p) => p.treeId));
+  };
+  pinned(deps.saved.pins.get());
 
   return {
     stats,
@@ -92,7 +99,8 @@ export function startPipelines(deps: {
         if (!r) throw new Error("formula:values: invalid ids");
         trees.values(r.ids);
       },
-      ...marksHandlers(deps.marks, (n) => trees.markOf(n)),
+      ...marksHandlers(deps.saved.marks, (n) => trees.markOf(n)),
+      ...pinsHandlers(deps.saved.pins, pinned),
     },
   };
 }

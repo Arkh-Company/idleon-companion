@@ -1,3 +1,4 @@
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 // The Stats and the trees joined as the app runs them (src/main/index.ts): a tree request uses the mosaic the Stats
@@ -41,7 +42,11 @@ const CHARACTER = [
   piece("GetPlayersUsernames", ["Someone", "Invented"]),
 ];
 
-function setup(code: Uint8Array<ArrayBuffer> = CHECKED_CODE) {
+function setup(
+  code: Uint8Array<ArrayBuffer> = CHECKED_CODE,
+  // No mark or pin is read or written here unless a test gives a folder.
+  saved = savedFiles(join(tmpdir(), "no-marks")),
+) {
   const workers: { worker: FakeWorker; heap: number }[] = [];
   const sent: { channel: string; value: unknown }[] = [];
   /** The window gone for the trees only. */
@@ -68,8 +73,7 @@ function setup(code: Uint8Array<ArrayBuffer> = CHECKED_CODE) {
         pak: Uint8Array.from([2]),
       }),
     log,
-    // No mark is read or written here.
-    marks: savedFiles(join(tmpdir(), "no-marks")).marks,
+    saved,
   });
   const workerOf = (heap: number) => {
     const w = workers.find((x) => x.heap === heap)?.worker;
@@ -229,6 +233,37 @@ test("formula:values asks the tree worker with the Stats' mosaic, never the Stat
   expect(h.on(IPC.formulaLiveValues).at(-1)).toMatchObject({
     values: { hp: 3, str: 4 },
     stale: false,
+  });
+});
+
+test("the saved pins are in view from the start, and pins:set changes what is in view (FR-026, FR-036)", async () => {
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "pins-")));
+  saved.pins.set([{ treeId: "hp", nodeId: null }]);
+  const h = setup(CHECKED_CODE, saved);
+  await h.showing();
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [first] = h.trees().sent("values");
+  expect(first).toMatchObject({ ids: ["hp"] });
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: first?.id,
+    values: { hp: 3 },
+  });
+  expect(h.on(IPC.formulaLiveValues).at(-1)).toMatchObject({
+    values: { hp: 3 },
+  });
+  await h.p.handlers[IPC.pinsSet]?.([
+    { treeId: "hp", nodeId: null },
+    { treeId: "str", nodeId: null },
+  ]);
+  expect(h.trees().sent("values").at(-1)).toMatchObject({ ids: ["hp", "str"] });
+  expect(await h.p.handlers[IPC.pinsGet]?.(undefined)).toEqual({
+    pins: [
+      { treeId: "hp", nodeId: null },
+      { treeId: "str", nodeId: null },
+    ],
+    warning: null,
   });
 });
 

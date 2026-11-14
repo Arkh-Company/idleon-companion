@@ -65,8 +65,13 @@ export function companionApi(ipc: Ipc): CompanionApi {
       (await ipc.invoke(IPC.marksSave, r)) as string | null,
     clearMark: async (r) =>
       (await ipc.invoke(IPC.marksClear, r)) as string | null,
-    getPins: async () => (await ipc.invoke(IPC.pinsGet)) as Pin[],
-    setPins: call(IPC.pinsSet),
+    getPins: async () =>
+      (await ipc.invoke(IPC.pinsGet)) as {
+        pins: Pin[];
+        warning: string | null;
+      },
+    setPins: async (pins) =>
+      (await ipc.invoke(IPC.pinsSet, pins)) as string | null,
     onFarm: listen(IPC.farmUpdate, true),
     onRadar: listen(IPC.radarUpdate, true),
     dismissRadar: call(IPC.radarDismiss),

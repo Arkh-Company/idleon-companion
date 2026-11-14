@@ -1,12 +1,18 @@
-// The files the app saves on the player's machine (spec 008 FR-010a, FR-025, FR-037, FR-041; contracts/saved-files.md):
-// read, checked, written whole, as settings.ts does. A file that cannot be read is set aside as `.bad`, the item starts
-// empty and the window is told once; nothing here ever throws to the app. A character is its number, never its name.
-// No electron import, so tests can load it.
+// The files the app saves on the player's machine (spec 008 FR-010a, FR-025, FR-036, FR-037, FR-041;
+// contracts/saved-files.md): read, checked, written whole, as settings.ts does. A file that cannot be read is set aside
+// as `.bad`, the item starts empty and the window is told once; nothing here ever throws to the app. A character is its
+// number, never its name. No electron import, so tests can load it.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { IPC, isObject } from "../shared/index.ts";
-import type { Mark } from "../shared/index.ts";
-import { MAX_MARK_NAME, markPayload, marksListPayload } from "./payloads.ts";
+import { dirname, join } from "node:path";
+import { IPC, isObject, MAX_PINS, PINS_FULL } from "../shared/index.ts";
+import type { Mark, Pin } from "../shared/index.ts";
+import {
+  emptyPayload,
+  MAX_MARK_NAME,
+  markPayload,
+  marksListPayload,
+  pinsPayload,
+} from "./payloads.ts";
 
 export const MAX_MARKS = 3;
 export const MARKS_FULL = "Up to 3 marks: clear one first.";
@@ -14,6 +20,8 @@ export const MARKS_RESET = "Saved marks could not be read and were reset";
 export const MARKS_UNSAVED = "The marks could not be saved on this computer.";
 export const MARK_WITH_NAME = "A mark's name can't have a character's name.";
 export const MARK_TAKEN = "A mark with this name already exists.";
+export const PINS_RESET = "Saved pins could not be read and were reset";
+export const PINS_UNSAVED = "The pins could not be saved on this computer.";
 
 type Values = Mark["values"];
 
@@ -52,28 +60,40 @@ function marksOf(v: unknown): Map<string, Mark[]> | null {
   return out;
 }
 
-export function savedFiles(dir: string): {
-  marks: {
-    list(n: number): Mark[];
-    /** Null when saved; else the sentence for the player. */
-    save(n: number, name: string, values: Values): string | null;
-    clear(n: number, name: string): string | null;
-    /** The warning of a file that could not be read, given once (FR-041). */
-    warning(): string | null;
-  };
+/** The pins of `pins.json`, or null when its shape is wrong. Over 5, the excess is dropped. */
+function pinsOf(v: unknown): Pin[] | null {
+  if (!isObject(v) || v.version !== 1 || !Array.isArray(v.pins)) return null;
+  return pinsPayload(v.pins.slice(0, MAX_PINS));
+}
+
+/**
+ * One JSON file of the app's data folder: read and checked once, set aside as `.bad` with a warning when its shape is
+ * wrong, and written whole.
+ */
+function jsonFile<T>(
+  file: string,
+  shape: (v: unknown) => T | null,
+  empty: () => T,
+  toFile: (data: T) => unknown,
+  sentences: { reset: string; unsaved: string },
+): {
+  load: () => T;
+  /** Null when written; else the sentence of a failed write. The data stays in memory either way. */
+  save: (data: T) => string | null;
+  /** The warning of a file that could not be read, given once (FR-041). */
+  warning: () => string | null;
 } {
-  const file = join(dir, "marks.json");
-  let data: Map<string, Mark[]> | null = null;
+  let data: T | null = null;
   let warning: string | null = null;
 
-  function load(): Map<string, Mark[]> {
-    if (data) return data;
+  function load(): T {
+    if (data !== null) return data;
     let text: string;
     try {
       text = readFileSync(file, "utf8");
     } catch {
-      // No file yet (or none readable): no mark.
-      data = new Map();
+      // No file yet (or none readable): nothing saved.
+      data = empty();
       return data;
     }
     let parsed: unknown = null;
@@ -82,10 +102,10 @@ export function savedFiles(dir: string): {
     } catch {
       // Read below as a wrong shape.
     }
-    data = marksOf(parsed);
-    if (!data) {
-      data = new Map();
-      warning = MARKS_RESET;
+    data = shape(parsed);
+    if (data === null) {
+      data = empty();
+      warning = sentences.reset;
       try {
         renameSync(file, `${file}.bad`);
       } catch {
@@ -95,48 +115,91 @@ export function savedFiles(dir: string): {
     return data;
   }
 
-  /**
-   * The whole file, written to `.tmp` and renamed over it (as setup-store.ts), so a failed write never leaves half a
-   * file; or the sentence of a failed write. The marks stay in memory either way.
-   */
-  function write(): string | null {
-    try {
-      mkdirSync(dir, { recursive: true });
-      const characters = Object.fromEntries(load());
-      const tmp = `${file}.tmp`;
-      writeFileSync(tmp, JSON.stringify({ version: 1, characters }));
-      renameSync(tmp, file);
-      return null;
-    } catch {
-      return MARKS_UNSAVED;
-    }
-  }
+  return {
+    load,
+    save(next) {
+      data = next;
+      // Written to `.tmp` and renamed over the file (as setup-store.ts), so a failed write never leaves half a file.
+      try {
+        mkdirSync(dirname(file), { recursive: true });
+        const tmp = `${file}.tmp`;
+        writeFileSync(tmp, JSON.stringify(toFile(next)));
+        renameSync(tmp, file);
+        return null;
+      } catch {
+        return sentences.unsaved;
+      }
+    },
+    warning() {
+      load();
+      const w = warning;
+      warning = null;
+      return w;
+    },
+  };
+}
+
+export function savedFiles(dir: string): {
+  marks: {
+    list(n: number): Mark[];
+    /** Null when saved; else the sentence for the player. */
+    save(n: number, name: string, values: Values): string | null;
+    clear(n: number, name: string): string | null;
+    /** The warning of a file that could not be read, given once (FR-041). */
+    warning(): string | null;
+  };
+  pins: {
+    get(): Pin[];
+    /** Null when saved; else the sentence for the player. */
+    set(pins: Pin[]): string | null;
+    /** The warning of a file that could not be read, given once (FR-041). */
+    warning(): string | null;
+  };
+} {
+  const marks = jsonFile(
+    join(dir, "marks.json"),
+    marksOf,
+    () => new Map<string, Mark[]>(),
+    (all) => ({ version: 1, characters: Object.fromEntries(all) }),
+    { reset: MARKS_RESET, unsaved: MARKS_UNSAVED },
+  );
+  const pins = jsonFile(
+    join(dir, "pins.json"),
+    pinsOf,
+    (): Pin[] => [],
+    (list) => ({ version: 1, pins: list }),
+    { reset: PINS_RESET, unsaved: PINS_UNSAVED },
+  );
 
   return {
     marks: {
-      list: (n) => load().get(String(n)) ?? [],
+      list: (n) => marks.load().get(String(n)) ?? [],
       save(n, name, values) {
-        const list = load().get(String(n)) ?? [];
+        const all = marks.load();
+        const list = all.get(String(n)) ?? [];
         // A mark goes only with Clear (FR-025).
         if (list.some((m) => m.name === name)) return MARK_TAKEN;
         if (list.length >= MAX_MARKS) return MARKS_FULL;
-        load().set(String(n), [...list, { name, takenAt: Date.now(), values }]);
-        return write();
+        all.set(String(n), [...list, { name, takenAt: Date.now(), values }]);
+        return marks.save(all);
       },
       clear(n, name) {
-        const left = (load().get(String(n)) ?? []).filter(
-          (m) => m.name !== name,
-        );
-        if (left.length > 0) load().set(String(n), left);
-        else load().delete(String(n));
-        return write();
+        const all = marks.load();
+        const left = (all.get(String(n)) ?? []).filter((m) => m.name !== name);
+        if (left.length > 0) all.set(String(n), left);
+        else all.delete(String(n));
+        return marks.save(all);
       },
-      warning() {
-        load();
-        const w = warning;
-        warning = null;
-        return w;
-      },
+      warning: marks.warning,
+    },
+    pins: {
+      get: pins.load,
+      // Only which numbers, never a value (FR-036).
+      set: (list) =>
+        list.length > MAX_PINS
+          ? PINS_FULL
+          : pins.save(list.map(({ treeId, nodeId }) => ({ treeId, nodeId }))),
+      warning: pins.warning,
     },
   };
 }
@@ -179,6 +242,26 @@ export function marksHandlers(
       const r = markPayload(payload);
       if (!r) throw new Error("marks:clear: invalid mark");
       return marks.clear(r.character, r.name);
+    },
+  };
+}
+
+/** The pins channels (contracts/ipc.md), each payload checked first; `pinned` hears each list kept. */
+export function pinsHandlers(
+  pins: ReturnType<typeof savedFiles>["pins"],
+  pinned: (list: Pin[]) => void,
+): Record<string, (payload: unknown) => unknown> {
+  return {
+    [IPC.pinsGet]: (payload) => {
+      if (!emptyPayload(payload)) throw new Error("pins:get: invalid request");
+      return { pins: pins.get(), warning: pins.warning() };
+    },
+    [IPC.pinsSet]: (payload) => {
+      const list = pinsPayload(payload);
+      if (!list) throw new Error("pins:set: invalid pins");
+      const refused = pins.set(list);
+      pinned(pins.get());
+      return refused;
     },
   };
 }

@@ -123,6 +123,8 @@ export function startFormulaPipeline(deps: {
   close(): void;
   /** `formula:values`: what the window has in view, already checked (`formulaValuesPayload`). */
   values(ids: string[]): void;
+  /** The pinned numbers: in view whatever the window shows (FR-026). */
+  pinned(ids: string[]): void;
   /** The Stats sent something: maybe a new pair, maybe none (a character change). */
   statsChanged(): void;
   status(s: Status): void;
@@ -150,8 +152,9 @@ export function startFormulaPipeline(deps: {
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
-  /** What the window has in view; the open tree is in view too. */
+  /** What the window has in view; the pins and the open tree are in view too. */
   let windowIds: string[] = [];
+  let pinIds: string[] = [];
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -188,7 +191,7 @@ export function startFormulaPipeline(deps: {
 
   function view(): void {
     follow();
-    live.setInView(open ? [...windowIds, open.id] : windowIds);
+    live.setInView([...windowIds, ...pinIds, ...(open ? [open.id] : [])]);
   }
 
   function show(tree: FormulaTree): void {
@@ -349,6 +352,10 @@ export function startFormulaPipeline(deps: {
     },
     values(ids) {
       windowIds = ids;
+      view();
+    },
+    pinned(ids) {
+      pinIds = ids;
       view();
     },
     statsChanged() {

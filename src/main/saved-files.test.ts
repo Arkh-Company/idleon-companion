@@ -1,6 +1,7 @@
-// The marks saved on the player's machine (spec 008 FR-010a, FR-025, FR-037, FR-041; contracts/saved-files.md, T040): up
-// to 3 named marks per character number, kept until Clear, across a character change and a restart; an unreadable file
-// set aside as `.bad`, with one warning. Every value and name is invented.
+// The marks and pins saved on the player's machine (spec 008 FR-010a, FR-025, FR-036, FR-037, FR-041;
+// contracts/saved-files.md, T040, T043): up to 3 named marks per character number, kept until Clear, across a character
+// change and a restart; up to 5 pins without values; an unreadable file set aside as `.bad`, with one warning. Every
+// value and name is invented.
 import {
   existsSync,
   mkdirSync,
@@ -11,13 +12,16 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
-import { IPC } from "../shared/index.ts";
+import { IPC, PINS_FULL } from "../shared/index.ts";
 import {
   MARKS_FULL,
   MARKS_RESET,
   MARKS_UNSAVED,
   MARK_TAKEN,
   marksHandlers,
+  PINS_RESET,
+  PINS_UNSAVED,
+  pinsHandlers,
   savedFiles,
 } from "./saved-files.ts";
 
@@ -247,4 +251,141 @@ test.each<[string, string, unknown]>([
   await expect(call(h, channel, payload)).rejects.toThrow(
     `${channel}: invalid`,
   );
+});
+
+// The pins (spec 008 FR-036, FR-041; T043): up to 5 numbers, which ones only, kept after the app closes.
+const HP = { treeId: "hp", nodeId: null };
+const STR = { treeId: "str", nodeId: null };
+
+function pinsFolder(pinsJson: string): string {
+  const dir = folder();
+  writeFileSync(join(dir, "pins.json"), pinsJson);
+  return dir;
+}
+
+test("a missing pins file is no pin, with no warning", () => {
+  const { pins } = savedFiles(folder());
+  expect(pins.get()).toEqual([]);
+  expect(pins.warning()).toBe(null);
+});
+
+test("the pins are saved without values and stay after the app closes (FR-036)", () => {
+  const dir = folder();
+  expect(savedFiles(dir).pins.set([HP, STR])).toBe(null);
+  expect(JSON.parse(readFileSync(join(dir, "pins.json"), "utf8"))).toEqual({
+    version: 1,
+    pins: [HP, STR],
+  });
+  expect(savedFiles(dir).pins.get()).toEqual([HP, STR]);
+});
+
+test("a sixth pin is refused and nothing changes (FR-036)", () => {
+  const dir = folder();
+  const { pins } = savedFiles(dir);
+  const five = ["hp", "str", "agi", "wis", "luk"].map((treeId) => ({
+    treeId,
+    nodeId: null,
+  }));
+  expect(pins.set(five)).toBe(null);
+  expect(pins.set([...five, { treeId: "dropRate", nodeId: null }])).toBe(
+    PINS_FULL,
+  );
+  expect(PINS_FULL).toBe("Up to 5 pins: unpin one first.");
+  expect(savedFiles(dir).pins.get()).toEqual(five);
+});
+
+test("a pins write that fails is a message, never a crash; the pins stay for this session", () => {
+  const dir = folder();
+  mkdirSync(join(dir, "pins.json"));
+  const { pins } = savedFiles(dir);
+  expect(pins.set([HP])).toBe(PINS_UNSAVED);
+  expect(PINS_UNSAVED).toBe("The pins could not be saved on this computer.");
+  expect(pins.get()).toEqual([HP]);
+});
+
+test.each([
+  ["invalid JSON", "["],
+  ["another version", '{"version":2,"pins":[]}'],
+  ["no list", '{"version":1}'],
+  [
+    "a number outside the catalog",
+    '{"version":1,"pins":[{"treeId":"nope","nodeId":null}]}',
+  ],
+  [
+    "a pin with a value",
+    '{"version":1,"pins":[{"treeId":"hp","nodeId":null,"value":3}]}',
+  ],
+  [
+    "the same pin twice",
+    '{"version":1,"pins":[{"treeId":"hp","nodeId":null},{"treeId":"hp","nodeId":null}]}',
+  ],
+])(
+  "a pins file with %s is renamed .bad, starts empty and warns once (FR-041)",
+  (_name, content) => {
+    const dir = pinsFolder(content);
+    const { pins } = savedFiles(dir);
+    expect(pins.get()).toEqual([]);
+    expect(pins.warning()).toBe(PINS_RESET);
+    expect(PINS_RESET).toBe("Saved pins could not be read and were reset");
+    expect(pins.warning()).toBe(null);
+    expect(readFileSync(join(dir, "pins.json.bad"), "utf8")).toBe(content);
+    expect(pins.set([HP])).toBe(null);
+    expect(savedFiles(dir).pins.get()).toEqual([HP]);
+  },
+);
+
+test("more than 5 pins on disk: the excess is dropped on reading, with no warning", () => {
+  const ids = ["hp", "str", "agi", "wis", "luk", "dropRate"];
+  const dir = pinsFolder(
+    JSON.stringify({
+      version: 1,
+      pins: ids.map((treeId) => ({ treeId, nodeId: null })),
+    }),
+  );
+  const { pins } = savedFiles(dir);
+  expect(pins.get().map((p) => p.treeId)).toEqual(ids.slice(0, 5));
+  expect(pins.warning()).toBe(null);
+});
+
+test("pins:get gives the pins and the warning once; pins:set saves and tells what is pinned", async () => {
+  const dir = pinsFolder("{");
+  const files = savedFiles(dir);
+  const pinned = vi.fn();
+  const h = pinsHandlers(files.pins, pinned);
+  expect(await call(h, IPC.pinsGet, undefined)).toEqual({
+    pins: [],
+    warning: PINS_RESET,
+  });
+  expect(await call(h, IPC.pinsSet, [HP])).toBe(null);
+  expect(pinned).toHaveBeenLastCalledWith([HP]);
+  expect(await call(h, IPC.pinsGet, {})).toEqual({ pins: [HP], warning: null });
+});
+
+test.each<[string, string, unknown]>([
+  ["get with a body", IPC.pinsGet, { pins: [] }],
+  ["set without a list", IPC.pinsSet, { pins: [] }],
+  [
+    "six pins",
+    IPC.pinsSet,
+    ["hp", "str", "agi", "wis", "luk", "dropRate"].map((treeId) => ({
+      treeId,
+      nodeId: null,
+    })),
+  ],
+  [
+    "a number outside the catalog",
+    IPC.pinsSet,
+    [{ treeId: "nope", nodeId: null }],
+  ],
+  ["a pin with a value", IPC.pinsSet, [{ ...HP, value: 3 }]],
+  ["a pin without nodeId", IPC.pinsSet, [{ treeId: "hp" }]],
+  ["a leaf pin", IPC.pinsSet, [{ treeId: "hp", nodeId: "root/Sword" }]],
+  ["the same pin twice", IPC.pinsSet, [HP, HP]],
+])("the pins channels refuse %s", async (_name, channel, payload) => {
+  const pinned = vi.fn();
+  const h = pinsHandlers(savedFiles(folder()).pins, pinned);
+  await expect(call(h, channel, payload)).rejects.toThrow(
+    `${channel}: invalid`,
+  );
+  expect(pinned).not.toHaveBeenCalled();
 });
