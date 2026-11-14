@@ -100,9 +100,8 @@ test("a key that is no helper's field of the contract is left out, and the rest 
 });
 
 test("a mosaic with no actors at all calculates as before", () => {
-  const { actors: _none, ...before } = JSON.parse(mosaicOf(SCENE)) as {
-    actors: unknown;
-  };
+  const before = JSON.parse(mosaicOf(SCENE)) as Record<string, unknown>;
+  delete before.actors;
   context.load(JSON.stringify(before), lazyDnsmKeys(GAME));
   expect(context.number("TreeHelperField", [0, 0, 0])).toBe(7);
   expect(context.number("TreeMapMonster", [0, 0, 0])).toBeNull();

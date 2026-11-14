@@ -1,11 +1,8 @@
 // The live values of what is in view (spec 008 FR-008, plan B; research R4): the open groups, panels, pins and the open
 // tree, recalculated over each new mosaic of the Stats with the tree worker's `values`, never a recording. No electron
 // import, so tests can load it.
-import { isObject, TREE_CATALOG } from "../shared/index.ts";
+import { isObject } from "../shared/index.ts";
 import type { LiveValues } from "../shared/index.ts";
-
-/** Numbers that need a map actor's field: unavailable until the actor is read (US12, FR-023). */
-const LIVE_GAME = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
 
 export function liveValues(deps: {
   /** The tree host's `values`, with this loop's own count of ids. */
@@ -42,19 +39,9 @@ export function liveValues(deps: {
   }
 
   function ask(): void {
-    if (mosaic === null) return;
-    const offline = inView.filter(
-      (id) => LIVE_GAME.has(id) && values.get(id) !== null,
-    );
-    for (const id of offline) values.set(id, null);
-    if (offline.length > 0) {
-      shownAt = calculatedAt;
-      show();
-    }
-    const ids = inView.filter((id) => !LIVE_GAME.has(id));
-    if (ids.length === 0) return;
-    asked.set(++seq, { ids, at: calculatedAt });
-    deps.ask(seq, ids, mosaic);
+    if (mosaic === null || inView.length === 0) return;
+    asked.set(++seq, { ids: inView, at: calculatedAt });
+    deps.ask(seq, inView, mosaic);
   }
 
   return {

@@ -55,6 +55,8 @@ export {
 } from "./stats-text.ts";
 export {
   isCatalogId,
+  isLiveNumber,
+  LIVE_MAP_TEXT,
   PANEL_SCREENS,
   panelSystems,
   TREE_CATALOG,

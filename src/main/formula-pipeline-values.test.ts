@@ -3,7 +3,12 @@
 // and name is invented.
 import { expect, test } from "vitest";
 import { TREE_CATALOG } from "../shared/index.ts";
-import { mosaicFor, pairOf, pipeline as setup } from "./formula-fixture.ts";
+import {
+  mosaicFor,
+  node,
+  pairOf,
+  pipeline as setup,
+} from "./formula-fixture.ts";
 import { formulaValuesPayload } from "./payloads.ts";
 
 const LIVE_ID = TREE_CATALOG.find((n) => n.live)?.id ?? "";
@@ -84,14 +89,29 @@ test("replay sends the last live values again", () => {
   expect(h.liveSent[1]).toEqual(h.liveSent[0]);
 });
 
-test("a live-game number's tree is unavailable until the map actor is read (US12)", () => {
+test("a live-game number's tree is asked like any other, and comes ready when its actor was read (US12)", () => {
   const h = setup();
   h.p.request({ id: LIVE_ID, character: null });
+  expect(h.last()).toMatchObject({ state: "calculating" });
+  h.tree(node({ value: 4 }));
+  expect(h.last()).toMatchObject({ state: "ready", rootText: "4" });
+});
+
+test("a live-game number whose root came with no value is unavailable: its actor is not on the map (US12)", () => {
+  const h = setup();
+  h.p.request({ id: LIVE_ID, character: null });
+  h.tree(node({ value: null }));
   expect(h.last()).toEqual({
     state: "unavailable",
     request: { type: "number", id: LIVE_ID, character: 0 },
   });
-  expect(h.host.request).not.toHaveBeenCalled();
+});
+
+test("another number whose root came with no value still shows its tree", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: 1 });
+  h.tree(node({ value: null }));
+  expect(h.last()).toMatchObject({ state: "ready", rootText: "unavailable" });
 });
 
 test.each<[string, unknown, unknown]>([

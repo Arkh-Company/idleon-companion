@@ -5,10 +5,10 @@
 // (FR-027). No electron import, so tests can load it.
 import {
   compareTrees,
+  isLiveNumber,
   pieceValues,
   rootText,
   statsNumber,
-  TREE_CATALOG,
 } from "../shared/index.ts";
 import type {
   FormulaTree,
@@ -36,9 +36,6 @@ type TreeHost = Pick<
   ReturnType<typeof createTreeHost>,
   "request" | "values" | "dropCurrent" | "setFiles" | "stop" | "shape"
 >;
-
-/** Numbers that need a map actor's field: their tree is unavailable until the actor is read (US12, FR-023). */
-const LIVE_GAME = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
 
 /** A structured log entry: a label and a catalog id, never a value of the math or a name (FR-019, FR-010a). */
 export type FormulaLog =
@@ -268,10 +265,6 @@ export function startFormulaPipeline(deps: {
       id: open.id,
       character: open.character ?? active,
     };
-    if (LIVE_GAME.has(request.id)) {
-      show({ state: "unavailable", request });
-      return;
-    }
     seq++;
     asked = { seq, request, pair, active, before };
     show({ state: "calculating", request });
@@ -285,6 +278,11 @@ export function startFormulaPipeline(deps: {
     const checked = checkTree(raw, MAX_TREE_NODES);
     if (!checked) {
       deps.log({ event: "treeRejected", id: request.id });
+      show({ state: "unavailable", request });
+      return;
+    }
+    // A live-game number with no value at its root: the actor it reads was not on the map (US12, FR-023).
+    if (isLiveNumber(request.id) && checked.value === null) {
       show({ state: "unavailable", request });
       return;
     }

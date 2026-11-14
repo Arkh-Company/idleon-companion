@@ -12,13 +12,14 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { TREE_CATALOG } from "../shared/index.ts";
+import { LIVE_MAP_TEXT, TREE_CATALOG } from "../shared/index.ts";
 import type { FormulaTree, Stats } from "../shared/index.ts";
 import { App } from "./App.tsx";
 import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
 import { node, ready } from "./formula-fixture.ts";
 import { SidePanel } from "./SidePanel.tsx";
+import type { Side } from "./SidePanel.tsx";
 import { STATS_TREES } from "./StatsPanel.tsx";
 
 const STATS: Stats = {
@@ -212,10 +213,10 @@ const SIDE = {
   trees: [["dropRate", "Drop Rate"]] as const,
   id: "dropRate",
 };
-function drawPanel(tree: FormulaTree) {
+function drawPanel(tree: FormulaTree, side: Side = SIDE) {
   render(
     <SidePanel
-      side={SIDE}
+      side={side}
       tree={tree}
       live={null}
       onClose={vi.fn()}
@@ -332,6 +333,16 @@ test.each<[string, FormulaTree, string]>([
 function SIDE_REQUEST() {
   return { type: "number" as const, id: "dropRate", character: 1 };
 }
+
+test("a live-game number that is unavailable says why, in the player's words (US12)", () => {
+  const id = TREE_CATALOG.find((n) => n.live)?.id ?? "";
+  drawPanel(
+    { state: "unavailable", request: { type: "number", id, character: 1 } },
+    { label: id, text: "", trees: [[id, id]], id },
+  );
+  expect(screen.getByText(LIVE_MAP_TEXT)).toBeDefined();
+  expect(screen.queryByText(/Calculator unavailable/)).toBe(null);
+});
 
 test("a tree of another number is not shown: the panel waits for its own", () => {
   drawPanel(

@@ -100,12 +100,11 @@ test("values that failed, or that are no finite number, are unavailable; ids not
   });
 });
 
-test("a live-game number is unavailable without asking the worker (until US12)", () => {
+test("a live-game number is asked of the worker like any other (US12)", () => {
   const t = setup();
   t.lv.onMosaic(M1, 1_000);
   t.lv.setInView([LIVE_ID, "hp"]);
-  expect(t.ask).toHaveBeenCalledExactlyOnceWith(1, ["hp"], M1);
-  expect(t.last()).toMatchObject({ values: { [LIVE_ID]: null } });
+  expect(t.ask).toHaveBeenCalledExactlyOnceWith(1, [LIVE_ID, "hp"].sort(), M1);
 });
 
 test("no reading or another character clears the values, and a late answer is dropped", () => {

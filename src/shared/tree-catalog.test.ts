@@ -3,7 +3,7 @@
 import { expect, test } from "vitest";
 import { SCREEN_CATALOG } from "./screens/index.ts";
 import { NUMBER_IDS } from "./state.ts";
-import { isCatalogId, TREE_CATALOG } from "./tree-catalog.ts";
+import { isCatalogId, isLiveNumber, TREE_CATALOG } from "./tree-catalog.ts";
 import { FR038_GROUPS } from "./tree-catalog-fixture.ts";
 
 const ids = TREE_CATALOG.map((n) => n.id);
@@ -54,8 +54,27 @@ test("the trees whose recording reads an actor field outside the contract are li
     "spelunkShadowStrikeChance",
     "spelunkExaltDropChance",
     "spelunkPrismaDropChance",
+    "summoningRerollCost_1",
+    "summoning2EnemyDMG_1",
+    "summoning2EnemyHP_1",
+    "summoning2EnemySpd_1",
+    "summoning2OpponentDifficulty",
+    "summoningEndlessModifierID",
+    "summoningSummVictories",
+    "farmingStuffsCropsBonusValue",
+    "ninjaFloorsUnlocked",
+    "ninjaEmporiumOptions",
+    "windwalkerExtraDust",
+    "spelunkHolesToNextFloor",
+    "spelunkShadowStrikeQTY",
+    "mineheadGlimboCanAfford",
   ])
     expect(live).toContain(id);
+});
+
+test("isLiveNumber answers the live flag of each catalog number", () => {
+  for (const n of TREE_CATALOG) expect(isLiveNumber(n.id)).toBe(n.live);
+  expect(isLiveNumber("notInTheCatalog")).toBe(false);
 });
 
 test("isCatalogId takes only an own id of the catalog", () => {
