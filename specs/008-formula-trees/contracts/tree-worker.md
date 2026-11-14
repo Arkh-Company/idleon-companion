@@ -21,6 +21,8 @@ O worker de árvores é uma segunda instância do `calculator.js` (research R1).
 
 Durante a implementação: o `formula` de um nó é `[termos, números]`. Os termos são a linha com nomes partida em nomes, números do código e operadores; um nome ou caminho de filho fica inteiro, mesmo com parênteses. Os operadores são os sinais (`× ÷ + − - * / ^ :`), os parênteses, a vírgula e os nomes de conta (`min`, `max`, `pow`, `floor`, `ceil`, `round`, `abs`, `sqrt`, `log`, `log10`, `log₁₀`). Os números são todos os da linha com números, em ordem, sem a vírgula de milhar, com o resultado por último. Cada termo que não é operador leva o próximo número.
 
+Durante a implementação (decidido pela sessão em 14/11): um ⓘ de regra — as formas "If …", as checagens, as famílias e outras cuja linha de números não é a conta da linha de nomes ("yes → 35", "buff on → 7", "slots: 1 → 0") — vai numa segunda forma, `{ rule: [linha de nomes, linha de números] }`, duas linhas de texto que a janela mostra como vêm, sem casar termo com número. O worker nunca manda um `[termos, números]` cuja contagem não feche (termos que não são operadores + 1 ≠ números); um ⓘ assim vai como regra.
+
 Durante a implementação: o host guarda o último pedido `number` (com o mosaico) e o reenvia, com a resposta descartada, a um worker novo antes de um `expand`; assim um ramo abre depois de uma falha ou do jogo fechado.
 
 ## Limites e vida
