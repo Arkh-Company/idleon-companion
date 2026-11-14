@@ -420,6 +420,7 @@ lime.$scripts.N = function (_exports, $global) {
     return s.Base.h.acc;
   };
   Blocks._customBlock_TotalStats = function (sub) {
+    if (sub === "calcEtcBonuses") return calcEtcBonuses();
     return state().Stats[sub];
   };
   Blocks._customBlock_AFKgainrates = function () {
@@ -640,6 +641,41 @@ lime.$scripts.N = function (_exports, $global) {
     dnsm().TreeScratch.h.w = state().TreeBase + t;
     if (t === -1) dnsm().TreeCache.h.total = state().TreeBase * 2;
     return a.engine.getGameAttribute("DNSM").h.TreeScratch.h.w;
+  };
+  // The scene caches the game rebuilds when a character's scene loads (inactive.ts): the Lab's event needs its trigger
+  // text, TalentCalc(-7) builds from what the event left, and every TalentCalc leaves a working value in the TotalStats
+  // memory, which calcEtcBonuses reads when it is there.
+  var LabHelper = function () {};
+  LabHelper.prototype.init = function () {};
+  LabHelper.prototype._customEvent_Lab = function () {
+    if (this._TRIGGEREDtext === "d*") dnsm().LabLinks = state().CurrentMap;
+  };
+  A["scripts.ActorEvents_548"] = LabHelper;
+  Blocks._customBlock_TalentCalc = function (t) {
+    if (t === -7) {
+      dnsm().LabMFbonuses = new StringMap();
+      dnsm().LabMFbonuses.h.v = (dnsm().LabLinks || 0) * 2;
+    }
+    if (!dnsm().TotStatMAP) dnsm().TotStatMAP = new StringMap();
+    dnsm().TotStatMAP.h.STR = 999;
+    return 0;
+  };
+  var calcEtcBonuses = function () {
+    var memo = dnsm().TotStatMAP;
+    var str =
+      memo && memo.h.STR !== undefined ? memo.h.STR : state().CurrentMap;
+    dnsm().TotalStatsETCmap = new StringMap();
+    dnsm().TotalStatsETCmap.h.drop = str * 10;
+    return 0;
+  };
+  Blocks._customBlock_TreeScene = function () {
+    var d = dnsm();
+    return d.TotalStatsETCmap.h.drop + d.LabMFbonuses.h.v;
+  };
+  // How many entries the TotalStats memory holds; -1 without one.
+  Blocks._customBlock_TreeMemo = function () {
+    var memo = dnsm().TotStatMAP;
+    return memo ? Object.keys(memo.h).length : -1;
   };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {

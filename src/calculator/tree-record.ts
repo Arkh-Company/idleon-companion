@@ -2,6 +2,7 @@
 // game runs, and one recording per request (spec 008, T021, research R1). The recording crosses as JSON text only.
 import { anchored, bootContext, lazyDnsmKeys } from "./boot.ts";
 import type { Context } from "./boot.ts";
+import { rebuildScene } from "./inactive.ts";
 import { instrument } from "./instrument.ts";
 import type { Op } from "./instrument.ts";
 import recorderPassSource from "./recorder-pass.js?raw";
@@ -24,11 +25,15 @@ export function bootRecorder(
   context: Context;
   /** The instrumentation's steps, by the id the recording's `x` gives them (they never leave the worker). */
   ops: readonly Op[];
-  /** One recording over the mosaic; throws when a step runs out of time or the recording is not text. */
+  /**
+   * One recording over the mosaic, with `scene` an inactive character's scene caches rebuilt after the helpers; throws
+   * when a step runs out of time or the recording is not text.
+   */
   record(
     mosaicJson: string,
     roots: readonly RootCall[],
     recipe: Recipe,
+    scene?: boolean,
   ): Recording;
 } {
   const { source, ops } = instrument(anchored(code));
@@ -46,7 +51,7 @@ export function bootRecorder(
   return {
     context,
     ops,
-    record(mosaicJson, roots, recipe) {
+    record(mosaicJson, roots, recipe, scene = false) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);
       try {
@@ -55,6 +60,7 @@ export function bootRecorder(
         run(`__calc.helperPlan(${lazyDnsm})`, startMs);
         run("__calc.helperSteps()", startMs);
         run("__rec.afterHelpers()", startMs);
+        if (scene) rebuildScene((text) => run(text, startMs));
         run(`__rec.roots(${JSON.stringify(roots)})`, numberMs);
         run("__rec.startBuilders()", startMs);
         recipe.builders.forEach((_, i) => {

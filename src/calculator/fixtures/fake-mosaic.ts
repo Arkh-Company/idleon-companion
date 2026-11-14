@@ -17,6 +17,12 @@ const player = (map: number, card: string, prayer: number) => ({
   $m: {
     CurrentMap: map,
     AFKtarget: "mushA",
+    SkillLevels: [map, map + 1],
+    // Long enough for the defaults the game puts in places 11 and 13 when they are missing.
+    OptionsList: Array.from({ length: 14 }, (_, i) => (i === 0 ? map : 1)),
+    ObolEquippedOrder: [`obol${String(map)}`],
+    ObolEquippedMap: [{ slot: map }],
+    PostOfficeInfo: [[map, 0]],
     CardEquip: [card],
     CSetEq: ["setA"],
     Prayers: [prayer, prayer + 1],
@@ -25,19 +31,49 @@ const player = (map: number, card: string, prayer: number) => ({
   },
 });
 
+/** Each character's saved keys, in the order of `CHARACTERS`. */
+export const SAVED = [player(3, "cardA", 1), player(7, "cardB", 4)] as const;
+
+const DNSM = {
+  CompanionBon: { $m: { b1: 3 } },
+  ShinyBonusS: { $m: { s1: 4 } },
+  GameCache: { $m: { v: 5 } },
+};
+
+/**
+ * The state with character `i` active: its own keys at the top, as the game keeps the active one's, the other places
+ * of the account's lists, and the scene caches the running game built for it (fake-game.js, TreeScene).
+ */
+export function activeAs(i: 0 | 1) {
+  const p = SAVED[i].$m;
+  return {
+    UserInfo: [CHARACTERS[i]],
+    CurrentMap: p.CurrentMap,
+    AFKtarget: p.AFKtarget,
+    SkillLevels: p.SkillLevels,
+    OptionsList: p.OptionsList,
+    ObolEquippedOrder: [p.ObolEquippedOrder, ["family"], ["family"], ["bench"]],
+    ObolEquippedMap: [p.ObolEquippedMap, [], [], []],
+    PostOfficeInfo: [["asked"], ["given"], ["sent"], p.PostOfficeInfo],
+    Cards: [[], [], p.CardEquip, p.CSetEq],
+    PrayersActive: p.Prayers,
+    PlacedTraps: p.PldTraps,
+    TimeAway: { $m: { Player: p.PlayerAwayTime } },
+    DNSM: {
+      $m: {
+        ...DNSM,
+        TotalStatsETCmap: { $m: { drop: p.CurrentMap * 10 } },
+        LabMFbonuses: { $m: { v: p.CurrentMap * 2 } },
+      },
+    },
+  };
+}
+
 export const BASE = {
-  AFKtarget: "mushA",
   Base: { $m: { hp: 500, acc: 7 }, $c: "haxe.ds.StringMap" },
   Damage: [120, 80],
   Stats: { STR: 11, AGI: 12, WIS: 13, LUK: 14, Drop_Rarity: 2.5 },
   AfkRate: 1.5,
-  DNSM: {
-    $m: {
-      CompanionBon: { $m: { b1: 3 } },
-      ShinyBonusS: { $m: { s1: 4 } },
-      GameCache: { $m: { v: 5 } },
-    },
-  },
   // The tree cases (fake-game.js, "The cases of the formula trees").
   TreeStats: { $m: { a: 3, b: 5 } },
   TreeBase: 4,
@@ -49,19 +85,11 @@ export const BASE = {
   TreeTwins: [3, 3],
   TreeFlagOn: 1,
   TreeBig: { $m: { k1: 1, k2: 7 } },
-  // The active character's own keys, as the game keeps them outside PlayerDATABASE.
-  UserInfo: [CHARACTERS[0]],
-  CurrentMap: 3,
-  Cards: [[], [], ["cardA"], ["setA"]],
-  PrayersActive: [1, 2],
-  PlacedTraps: [[3, 0]],
-  TimeAway: { Player: 103 },
-  ObolEquippedOrder: [["obolA"], ["obolB"]],
+  // The first character active: its own keys, as the game keeps them outside PlayerDATABASE.
+  ...activeAs(0),
+  GetPlayersUsernames: [...CHARACTERS],
   PlayerDATABASE: {
-    $m: {
-      [CHARACTERS[0]]: player(3, "cardA", 1),
-      [CHARACTERS[1]]: player(7, "cardB", 4),
-    },
+    $m: { [CHARACTERS[0]]: SAVED[0], [CHARACTERS[1]]: SAVED[1] },
   },
 };
 

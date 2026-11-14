@@ -4,6 +4,7 @@
 // calculates the numbers in view, with the recorder off (research R4). `shape` lists every part of a number's tree, its
 // branches opened, for Where this goes (FR-027), and leaves the last `number` request's build in place.
 import { lazyDnsmKeys } from "./boot.ts";
+import { inactiveMosaic } from "./inactive.ts";
 import { buildTree } from "./tree-build.ts";
 import type { TreeBuild } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
@@ -86,7 +87,14 @@ export function createTreeEngine(
       if (typeof mosaicJson !== "string") throw new Error("no mosaic");
       const root = rootOf(request.id);
       if (!root) return "unknownNumber";
-      const recording = recorder.record(mosaicJson, [root], recipe);
+      // Another character than the active one is rebuilt as the game loads it (research R5).
+      const inactive = inactiveMosaic(mosaicJson, request.character);
+      const recording = recorder.record(
+        inactive ?? mosaicJson,
+        [root],
+        recipe,
+        inactive !== null,
+      );
       last = {
         treeId: request.id,
         build: buildTree(recording, request.character, recorder.ops),
