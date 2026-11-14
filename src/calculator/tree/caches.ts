@@ -10,7 +10,7 @@ import type { RecNode } from "../recording.ts";
 import type { Entries, Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
-import { callText, row, valueOf } from "./rows.ts";
+import { callText, row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { flat } from "./expr.ts";
@@ -18,7 +18,7 @@ import {
   LOOP_ENTRY_CACHES,
   partsOf,
   RUN_TOTALS,
-  SKILL_RANKS,
+  skillRankRows,
   TURN_KINDS,
 } from "./loop-parts.ts";
 import { hasKids } from "./terms.ts";
@@ -284,31 +284,8 @@ export function makeCaches(ctx: CacheContext) {
       }
     }
     // deep-2: a skill's rank opens into the levels the builder pass recorded in the entry of this path
-    const mr = SKILL_RANKS.test.exec(p);
-    if (mr && w?.b === SKILL_RANKS.block && w.a[0] === SKILL_RANKS.mode) {
-      const E = LL[0];
-      const lv = (E?.r ?? []).filter(
-        ([q, v]) => /\.Lv0\[\d+\]$/.test(q) && typeof v === "number",
-      );
-      const tot = lv.reduce((a, [, v]) => a + Number(v), 0);
-      if (
-        lv.length &&
-        E?.r.some(([q, v]) => q === SKILL_RANKS.total && v === tot)
-      )
-        return ctx.finish(
-          value,
-          lv.map(([, v], i) => ({
-            node: row({
-              pieceKey: null,
-              value: valueOf(v),
-              code: `PlayerDATABASE[${String(i)}].Lv0[${String(Number(mr[1]) + 1)}]`,
-              leaf: "level",
-            }),
-            open: null,
-          })),
-          false,
-        );
-    }
+    const ranks = skillRankRows(p, w, LL[0]);
+    if (ranks) return ctx.finish(value, ranks, false);
     const wsteps = w ? ctx.steps(w.id) : [];
     // a cache the call being built computed in one of its own steps, not one that reads the cache itself: that step
     if (w && deep && p.startsWith("DNSM.")) {

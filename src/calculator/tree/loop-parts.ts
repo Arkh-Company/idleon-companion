@@ -2,9 +2,12 @@
 // game's own caches, and the part each loop turn adds (`entryRows`, its loop over the entries), from the bench at
 // BASELINE-4. A write that adds to what was there is a part; one that multiplies it is a factor; any other write
 // replaces the value, and the parts start again from it.
+import type { RecNode } from "../recording.ts";
 import type { Entry } from "./entries.ts";
 import { flat } from "./expr.ts";
 import { near } from "./math.ts";
+import { row, valueOf } from "./rows.ts";
+import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 
 interface Rule {
@@ -34,6 +37,37 @@ export const SKILL_RANKS = {
   total: "DNSM.skillLvRanksDN",
   proof: "bench pieces.cjs cacheRows deep-2; N.js RiftStuff",
 };
+/**
+ * deep-2: the rows of skill rank `p` written by `w`, one level per character from the first entry the builder pass
+ * recorded, when those levels add up to the total it read; else null.
+ */
+export function skillRankRows(
+  p: string,
+  w: RecNode | null,
+  first: Entry | undefined,
+): Row[] | null {
+  const mr = SKILL_RANKS.test.exec(p);
+  if (!mr || w?.b !== SKILL_RANKS.block || w.a[0] !== SKILL_RANKS.mode)
+    return null;
+  const lv = (first?.r ?? []).filter(
+    ([q, v]) => /\.Lv0\[\d+\]$/.test(q) && typeof v === "number",
+  );
+  const tot = lv.reduce((a, [, v]) => a + Number(v), 0);
+  if (
+    !lv.length ||
+    !first?.r.some(([q, v]) => q === SKILL_RANKS.total && v === tot)
+  )
+    return null;
+  return lv.map(([, v], i) => ({
+    node: row({
+      pieceKey: null,
+      value: valueOf(v),
+      code: `PlayerDATABASE[${String(i)}].Lv0[${String(Number(mr[1]) + 1)}]`,
+      leaf: "level",
+    }),
+    open: null,
+  }));
+}
 /** The kind of a loop turn's part, from what the turn read (pieces.cjs entryRows, OPUS3-F3b and the item turn). */
 export const TURN_KINDS: readonly (Rule & {
   found?: true;
