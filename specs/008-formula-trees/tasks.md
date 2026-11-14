@@ -253,7 +253,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
   - Run the packaged worker on the installed game with the snapshot copy: Drop Rate root + first level time, heap peak, branch expand time.
   - Set the request timeout constants of T009 from these numbers.
   - Write the result in `registro.md`.
-- [ ] T027 [US1] Parity test with the bench in `src/calculator/parity.integration.test.ts` (run by `just parity`)
+- [X] T027 [US1] Parity test with the bench in `src/calculator/parity.integration.test.ts` (run by `just parity`)
   - It skips by itself when `PARITY_BENCH_DIR`, `PARITY_SNAPSHOT` or `PARITY_GAME_DIR` is missing or a path does not exist (model: `reader.integration.test.ts`). Every test has an explicit timeout.
   - It converts the snapshot into the app's mosaic and compares every row of the Drop Rate tree with the bench's tree without compaction: value, type, ⓘ and "?", plus the names outside the reviewed list.
   - It also runs the bench's code × value check as a test.
