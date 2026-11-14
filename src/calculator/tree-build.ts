@@ -19,15 +19,7 @@ import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
 import { makePieces } from "./tree/pieces.ts";
-import {
-  atZero,
-  callText,
-  curveRow,
-  row,
-  timesOne,
-  valueOf,
-  withShares,
-} from "./tree/rows.ts";
+import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
 import type { CacheOpen, Row } from "./tree/rows.ts";
 import { makeSteps } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
@@ -175,25 +167,6 @@ export function buildTree(
     });
     const xf = codeFormulas.call(k);
     return { node, open: lazy ? k.id : null, ...(xf ? { xf } : {}) };
-  }
-
-  /** A level's rows typed, with their shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0. */
-  function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
-    // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
-    const typed = rows.map((r) =>
-      r.node.kids === "lazy" || r.node.leaf || r.group
-        ? r
-        : { ...r, node: { ...r.node, ...classify(r.node) } },
-    );
-    const shared = withShares(
-      { name: "", value: valueOf(v as RecValue) },
-      null,
-      typed,
-    );
-    return atZero(
-      ones ? timesOne(shared.rows, shared.mode) : shared.rows,
-      shared.mode,
-    );
   }
 
   const linksOf = (n: RecNode) =>
