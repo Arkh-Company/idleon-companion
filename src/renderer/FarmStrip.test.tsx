@@ -74,11 +74,13 @@ test("rates read as the game shows big numbers, per hour", () => {
   expect(perHour(0)).toBe("0");
 });
 
-test("no strip while idle; counting shows two short lines (FR-028)", async () => {
+test("the strip is always there: idle, one short line of waiting; counting, two short lines (FR-028)", async () => {
   await app();
-  expect(strip()).toBe(null);
+  expect(lines()).toEqual(["Farm: waiting for a map"]);
   farm({ ...FARMING, state: "idle" });
-  expect(strip()).toBe(null);
+  expect(lines()).toEqual(["Farm: waiting for a map"]);
+  expect(inStrip().queryByRole("button")).toBe(null);
+  expect(strip()?.querySelector("[aria-live]")).toBe(null);
   farm(FARMING);
   expect(lines()).toEqual([
     "Farming 12 min",
@@ -141,12 +143,12 @@ test("a rate reads as words, and its numbers are never announced (FR-040)", asyn
   ).toBe("");
 });
 
-test("the strip going away with the focus on it gives the focus to the tab's content (FR-039)", async () => {
+test("Items going away with the focus on it gives the focus to the tab's content (FR-039)", async () => {
   await app();
   farm(FARMING);
   inStrip().getByRole("button", { name: "Items" }).focus();
   farm({ ...FARMING, state: "idle" });
-  expect(strip()).toBe(null);
+  expect(inStrip().queryByRole("button", { name: "Items" })).toBe(null);
   expect(document.activeElement?.id).toBe("tab-content");
 });
 

@@ -1,6 +1,6 @@
-// The farm strip (spec 008 FR-028, FR-031, FR-040): two short lines under the status bar, on every tab, while the
-// character farms or the count is paused in a town; "Items" opens the items per hour. Only what the main measured. The
-// numbers change with each update, so nothing here is a live region.
+// The farm strip (spec 008 FR-028, FR-031, FR-040): always under the status bar, on every tab. Idle, one short line of
+// waiting; while the character farms or the count is paused in a town, two short lines, and "Items" opens the items per
+// hour. Only what the main measured. The numbers change with each update, so nothing here is a live region.
 import { useState } from "react";
 import type { FarmUpdate } from "../shared/index.ts";
 
@@ -25,11 +25,16 @@ export function FarmStrip({
   onFocus,
 }: {
   farm: FarmUpdate | null;
-  /** Where the focus is, for the window to give it somewhere else when the strip goes (FR-039). */
+  /** Where the focus is, for the window to give it somewhere else when Items goes (FR-039). */
   onFocus: (e: React.FocusEvent) => void;
 }) {
   const [open, setOpen] = useState(false);
-  if (!farm || farm.state === "idle") return null;
+  if (!farm || farm.state === "idle")
+    return (
+      <section className="farm" aria-label="Farm">
+        <p>Farm: waiting for a map</p>
+      </section>
+    );
   return (
     <section className="farm" aria-label="Farm" onFocus={onFocus}>
       <p>
