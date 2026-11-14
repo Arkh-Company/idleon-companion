@@ -17,6 +17,15 @@ import {
   vars,
 } from "./stats-pipeline-fixture.ts";
 
+/** The game code of the fixture: the rules count as checked on these bytes (FR-018). */
+const CHECKED_CODE = vi.hoisted(() => Uint8Array.from([1]));
+vi.mock("./version-band.ts", async (importOriginal) => {
+  const real = await importOriginal<typeof import("./version-band.ts")>();
+  const { createHash } = await import("node:crypto");
+  const sha = createHash("sha256").update(CHECKED_CODE).digest("hex");
+  return { ...real, versionBand: () => real.versionBand(sha) };
+});
+
 beforeEach(() => {
   vi.useFakeTimers();
 });
@@ -29,7 +38,7 @@ const CHARACTER = [
   piece("GetPlayersUsernames", ["Someone", "Invented"]),
 ];
 
-function setup() {
+function setup(code: Uint8Array<ArrayBuffer> = CHECKED_CODE) {
   const workers: { worker: FakeWorker; heap: number }[] = [];
   const sent: { channel: string; value: unknown }[] = [];
   /** The window gone for the trees only. */
@@ -52,7 +61,7 @@ function setup() {
     },
     readFiles: (): Promise<GameBytes> =>
       Promise.resolve({
-        code: Uint8Array.from([1]),
+        code,
         pak: Uint8Array.from([2]),
       }),
     log,
@@ -126,24 +135,29 @@ test("a tree request goes with the Stats' mosaic and its root reaches the window
   });
 });
 
-test("the tree's version band comes from the game code the tree host read (FR-018)", async () => {
-  const h = setup();
-  await h.showing();
-  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
-  await flush();
-  h.trees().emit("message", { type: "ready" });
-  const [asked] = h.trees().sent("tree");
-  h.trees().emit("message", {
-    type: "treeResult",
-    id: asked?.id,
-    tree: node({ value: CALCULATED.dropRate }),
-  });
-  // The invented code is not the one the rules were checked on.
-  expect(h.on(IPC.formulaUpdate).at(-1)).toMatchObject({
-    state: "ready",
-    checkedOnThisGame: false,
-  });
-});
+test.each([
+  ["the code the rules were checked on has no band", CHECKED_CODE, true],
+  ["another game code has the band", Uint8Array.from([9]), false],
+])(
+  "the tree's version band comes from the game code the tree host read: %s (FR-018)",
+  async (_name, code, checked) => {
+    const h = setup(code);
+    await h.showing();
+    await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+    await flush();
+    h.trees().emit("message", { type: "ready" });
+    const [asked] = h.trees().sent("tree");
+    h.trees().emit("message", {
+      type: "treeResult",
+      id: asked?.id,
+      tree: node({ value: CALCULATED.dropRate }),
+    });
+    expect(h.on(IPC.formulaUpdate).at(-1)).toMatchObject({
+      state: "ready",
+      checkedOnThisGame: checked,
+    });
+  },
+);
 
 test("a character change reaches the open tree through the Stats", async () => {
   const h = setup();
