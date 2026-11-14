@@ -495,12 +495,12 @@ Verify: `just test-one src/main/farm.test.ts` - passes; `just check` - passes.
 
 ### Tests for User Story 10
 
-- [ ] T049 [P] [US10] `src/main/radar.test.ts` and `src/renderer/PatchBand.test.tsx`
+- [X] T049 [P] [US10] `src/main/radar.test.ts` and `src/renderer/PatchBand.test.tsx`
   - Cases: shapes saved per `gameSha` (names of parts and keys only); a new sha compares and lights the band "Game updated: 3 trees changed · Show"; dismiss until the next patch; corrupted file gives the FR-041 behavior.
 
 ### Implementation for User Story 10
 
-- [ ] T050 [US10] The radar and its band
+- [X] T050 [US10] The radar and its band
   - Files: `src/main/radar.ts`, `src/main/saved-files.ts` (shapes), `src/renderer/PatchBand.tsx`
 
 Verify: `just test-one src/main/radar.test.ts` - passes; `just check` - passes.
