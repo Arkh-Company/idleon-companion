@@ -11,7 +11,7 @@ execution:
   branch: feat/008-formula-trees
   phases:
     - {name: "Done gate", status: done, commits: bbfb73b..a1ec493}
-    - {name: "Setup + Foundational", status: pending}
+    - {name: "Setup + Foundational", status: done, commits: 1f5ba1b..265be8b}
     - {name: "US1 (T015-T024)", status: pending}
     - {name: "US1 (T025-T028)", status: pending}
     - {name: US2, status: pending}
