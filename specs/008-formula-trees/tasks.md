@@ -568,12 +568,12 @@ Verify: `just test-one src/calculator/live-actor.test.ts` - passes; `just check`
 
 ### Tests for User Story 13
 
-- [ ] T056 [P] [US13] `src/renderer/GameDetails.test.tsx`
+- [X] T056 [P] [US13] `src/renderer/GameDetails.test.tsx`
   - Cases: name, call and raw number (no thousands separator); "Copied" for 2 s through the page's polite region; no character name in the call (index only).
 
 ### Implementation for User Story 13
 
-- [ ] T057 [US13] Game details and Copy
+- [X] T057 [US13] Game details and Copy
   - Files: `src/renderer/GameDetails.tsx`
 
 Verify: `just test-one src/renderer/GameDetails.test.tsx` - passes; `just check` - passes.

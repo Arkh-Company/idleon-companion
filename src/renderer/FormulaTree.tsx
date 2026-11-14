@@ -13,6 +13,7 @@ import {
   useFeedsLists,
 } from "./FeedsBadge.tsx";
 import { nameOf } from "./FormulasTab.tsx";
+import { gameDetails, useCopy } from "./GameDetails.tsx";
 import {
   leafLabel,
   leafPhrase,
@@ -34,13 +35,6 @@ import { flip, isGroup, partition } from "./tree-parts.ts";
 import { truthTags, TruthTags } from "./TruthTag.tsx";
 
 type Ready = Extract<Tree, { state: "ready" }>;
-
-const detail = (term: string, text: string) => (
-  <>
-    <span className="name">{term}</span>
-    <span className="code">{text}</span>
-  </>
-);
 
 /** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7); a group has none. */
 const phrasesOf = (n: TreeNode): [key: string, phrase: string][] => [
@@ -65,13 +59,17 @@ export function FormulaTree({
   tree,
   onExpand,
   onOpenNumber,
+  announce,
 }: {
   tree: Ready;
   onExpand: (nodeId: string) => void;
   /** Opens another number's tree in the side panel (FR-027). */
   onOpenNumber?: (id: string) => void;
+  /** One sentence for the page's live region (design.md §3.8): the Copy of Game details. */
+  announce?: (text: string) => void;
 }) {
   const feeds = useFeedsLists();
+  const copied = useCopy(announce);
   const [open, setOpen] = useState<ReadonlySet<string>>(
     () => new Set([tree.root.id]),
   );
@@ -89,6 +87,12 @@ export function FormulaTree({
       ref.current?.querySelectorAll<HTMLElement>('[role="treeitem"]') ?? [];
     [...items].find((i) => i.dataset.key === focusKey)?.focus();
   }, [focusKey]);
+
+  /** A row's name on screen: the root's is the number's title. */
+  const rowName = (n: TreeNode) =>
+    n.id === tree.root.id
+      ? tree.title
+      : `${n.name}${GROUP_SUFFIX[n.role] ?? ""}`;
 
   // Walked during the render: the visible rows in order, for the keys.
   const visible: Visible[] = [];
@@ -269,16 +273,16 @@ export function FormulaTree({
     setFocusKey(to);
   }
 
-  /** The rows inside an informative row (the two lines of the math, the pairs of Game details): treeitems that do not
-   * open, so the arrows reach them and the reader says their text (design.md §3.8). */
+  /** The rows inside an informative row (the two lines of the math, the pairs of Game details and its Copy): treeitems
+   * that do not open, so the arrows reach them and the reader says their text (design.md §3.8); Enter does `activate`. */
   function lines(
     parent: string,
     level: number,
-    rows: [label: string, line: ReactNode][],
+    rows: [label: string, line: ReactNode, activate?: () => void][],
   ): ReactNode {
     return (
       <ul role="group">
-        {rows.map(([label, line], i) =>
+        {rows.map(([label, line, activate], i) =>
           item(
             `${parent}::${String(i)}`,
             level,
@@ -288,6 +292,8 @@ export function FormulaTree({
             line,
             null,
             false,
+            false,
+            activate,
           ),
         )}
       </ul>
@@ -299,21 +305,27 @@ export function FormulaTree({
     level: number,
     pos: [number, number],
   ): ReactNode {
+    const key = `${n.id}::details`;
     return item(
-      `${n.id}::details`,
+      key,
       level,
       pos,
       n.id,
       "Game details",
       <span className="name">Game details</span>,
       () => {
-        const exact =
-          typeof n.value === "number"
-            ? String(Number(n.value.toFixed(6)))
-            : valueText(n);
-        return lines(`${n.id}::details`, level + 1, [
-          [`Game call: ${n.code ?? ""}`, detail("Game call", n.code ?? "")],
-          [`Exact value: ${exact}`, detail("Exact value", exact)],
+        const { rows, line } = gameDetails(n, rowName(n));
+        const copyKey = `${key}::${String(rows.length)}`;
+        const label = copied.label(copyKey);
+        return lines(key, level + 1, [
+          ...rows,
+          [
+            label,
+            <span className="name">{label}</span>,
+            () => {
+              copied.copy(copyKey, line);
+            },
+          ],
         ]);
       },
       true,
@@ -401,7 +413,7 @@ export function FormulaTree({
     nodes.set(n.id, n);
     const root = n.id === tree.root.id;
     const group = isGroup(n);
-    const name = root ? tree.title : `${n.name}${GROUP_SUFFIX[n.role] ?? ""}`;
+    const name = rowName(n);
     const value = root ? tree.rootText : valueText(n);
     const tags = group ? [] : truthTags(n);
     const share = group ? null : shareText(n);

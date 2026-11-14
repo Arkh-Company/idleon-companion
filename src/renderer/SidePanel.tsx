@@ -219,6 +219,7 @@ export function SidePanel({
           onExpand={onExpand}
           onOpenNumber={onOpenNumber}
           onRefresh={refresh}
+          announce={announce}
           marks={(character) => (
             <MarkBar
               character={character}
@@ -242,12 +243,14 @@ function Body({
   onOpenNumber,
   onRefresh,
   marks,
+  announce,
 }: {
   tree: Tree;
   live: LiveValues | null;
   onExpand: (nodeId: string) => void;
   onOpenNumber: (id: string) => void;
   onRefresh: () => void;
+  announce: (text: string) => void;
   /** The marks bar, for the tree's character. */
   marks: (character: number) => ReactNode;
 }) {
@@ -273,6 +276,7 @@ function Body({
             tree={tree}
             onExpand={onExpand}
             onOpenNumber={onOpenNumber}
+            announce={announce}
           />
         </>
       );
