@@ -14,6 +14,6 @@ Canais próprios, como o `stats:update` da 004. O contrato de módulo `module:<i
 | `pins:get` / `pins:set` | janela → main | A lista de números fixados. Durante a implementação: `pins:get` devolve `{ pins, warning }`; `pins:set` devolve `null` ou a frase para o jogador | Até 5 (FR-036) |
 | `feeds:list` | janela → main | Durante a implementação: `{ pieceKey }` → os ids do catálogo que essa peça alimenta (FR-027) | O main valida a chave; a resposta só tem ids do catálogo |
 | `farm:update` | main → janela | `{ state: "idle" \| "counting" \| "paused", minutes, xpPerHour, goldPerHour, items: [{ name, perHour }] }` | Só do personagem ativo (FR-028) |
-| `radar:update` | main → janela | `{ changed: [{ catalogId, added, removed, renamed }] }` ou `null`; durante a implementação: `{ changed, warning }`, com o aviso de `tree-shapes.json` ilegível (FR-041) | Depois de um `gameSha` novo (FR-035) |
+| `radar:update` | main → janela | `{ changed: [{ catalogId, added, removed, renamed }] }` ou `null`; durante a implementação: `{ changed, checking, warning }`, com `checking` verdadeiro enquanto a varredura ainda compara, e o aviso de `tree-shapes.json` ilegível (FR-041) | Depois de um `gameSha` novo (FR-035) |
 | `radar:dismiss` | janela → main | — | Fecha a faixa até o próximo patch |
 | `window:sidePanel` | janela → main | `{ open: boolean }` | Alarga ou volta a janela (FR-005), para o lado com espaço |
