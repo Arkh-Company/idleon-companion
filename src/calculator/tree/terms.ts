@@ -14,6 +14,12 @@ import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { valPath } from "./val-path.ts";
+import {
+  codeTable,
+  earlierTotal,
+  listCount,
+  wornTotal,
+} from "./term-passes.ts";
 import type { Reads } from "./val-path.ts";
 
 type V = Expr["v"];
@@ -26,6 +32,10 @@ export interface TermContext {
   call(k: RecNode, v: V, reads: Reads): Row;
   /** A level's rows with their shares and their groups of 0 and, when `ones`, of ×1, under a parent of value `v`. */
   finish(v: V, rows: Row[], ones: boolean): Row[];
+  /** The call whose terms these are (the bench's CUR_BLOCK). */
+  block: RecNode;
+  /** The cache entry whose loop turn is being walked (the bench's ENTRY_P). */
+  entry(): string | null;
 }
 /** The call whose step is being built: its arguments, and its steps with the one being built. */
 export interface Turn {
@@ -150,7 +160,11 @@ export function makeTerms(ctx: TermContext) {
   /** A value with no source of its own (pieces.cjs rowOfTerm, "val"). */
   function valRow(v: V, d: number, reads: Reads): Row {
     const vp = valPath(v, reads);
+    const total = earlierTotal(ctx.entry(), v, reads, vp !== null);
+    if (total) return total;
     if (vp) return ctx.read(vp, v);
+    const count = listCount(v, reads);
+    if (count) return count;
     let own: Row | null = null;
     if (typeof v === "number") {
       // DEEP3-FIX-3: the first numeric argument after the mode is the entry asked of the call (never a 0: rule 30)
@@ -172,8 +186,9 @@ export function makeTerms(ctx: TermContext) {
           }),
           open: null,
         };
-      // DEEP3-FIX-4: a number the block cut out of a text it read is a constant of the game's table
-      else if (Math.abs(v) > 1)
+      // DEEP3-FIX-4: a table the block writes in its own code; a number it cut out of a text it read
+      else own = codeTable(ctx.block, v);
+      if (!own && ai !== 1 && Math.abs(v) > 1)
         for (const [, x] of reads)
           if (
             typeof x === "string" &&
@@ -226,7 +241,8 @@ export function makeTerms(ctx: TermContext) {
             : `Fixed value ${num(e.v)}`,
         e.v,
       );
-    if (e.t === "read") return ctx.read(e.p, e.v);
+    if (e.t === "read")
+      return wornTotal(e.p, e.v, turn?.steps[turn.at]?.e) ?? ctx.read(e.p, e.v);
     if (e.t === "val") return valRow(e.v, d, reads);
     if (e.t === "call") {
       const k = nodes[e.id];

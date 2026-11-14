@@ -9,6 +9,13 @@ import {
   TURN_KINDS,
 } from "./loop-parts.ts";
 import { COND_SUBS } from "./conditions.ts";
+import { RAW_PASSES } from "./raw-passes.ts";
+import {
+  CODE_TABLES,
+  EARLIER_TOTALS,
+  LIST_COUNTS,
+  WORN_TOTAL,
+} from "./term-passes.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
 import { GAME_TABLE } from "./steps.ts";
@@ -26,6 +33,11 @@ const TABLES = {
   RUN_TOTALS,
   SKILL_RANKS: [SKILL_RANKS],
   TURN_KINDS,
+  RAW_PASSES,
+  EARLIER_TOTALS,
+  WORN_TOTAL: [WORN_TOTAL],
+  LIST_COUNTS,
+  CODE_TABLES,
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

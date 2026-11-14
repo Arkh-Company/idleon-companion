@@ -1,0 +1,136 @@
+// The game's own passes of pieces.cjs explainRaw at BASELINE-4, over recordings written by hand: each block's rows are
+// the ones the bench writes from the game's code, in its order, with their types.
+import { expect, test } from "vitest";
+import { instrument } from "../instrument.ts";
+import type { RecNode } from "../recording.ts";
+import { buildTree } from "../tree-build.ts";
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
+
+type Spec = Partial<RecNode> & Pick<RecNode, "b">;
+/** The root's rows when the root call is `top`, with `more` calls after it, as [code, value, leaf, condition]. */
+const rowsOf = (top: Spec, ...more: Spec[]) =>
+  kidsOf(
+    buildTree(
+      recordingOf([{ b: "(root)", c: [1] }, top, ...more], [], { root: 0 }),
+      0,
+    ).root,
+  ).map((k) => [k.code, k.value, k.leaf, k.condition]);
+
+test("[Companions] an owned companion is a yes with its bonus; one not owned is a no", () => {
+  expect(
+    rowsOf({
+      b: "Companions",
+      a: ["c1"],
+      v: 3,
+      r: [["DNSM.CompanionBon[c1]", 3]],
+    }),
+  ).toEqual([
+    [null, 1, "condition", "owned"],
+    ["DNSM.CompanionBon[c1]", 3, "rawBonus", null],
+  ]);
+  expect(rowsOf({ b: "Companions", a: ["c2"], v: 0 })).toEqual([
+    [null, 0, "condition", "owned"],
+  ]);
+});
+
+test("[GetTalentNumber] a talent with no points stops before its curve: the check and the points", () => {
+  const root = buildTree(
+    recordingOf(
+      [
+        { b: "(root)", c: [1] },
+        { b: "GetTalentNumber", a: [1, 5], v: 0, r: [["SkillLevels[5]", 0]] },
+      ],
+      [],
+      { root: 0 },
+    ),
+    0,
+  ).root;
+  const [check, zero] = kidsOf(root);
+  expect([check?.value, check?.leaf, check?.condition]).toEqual([
+    0,
+    "condition",
+    "limit",
+  ]);
+  // the points are 0: they sit in the group of the parts at 0
+  expect(kidsOf(zero).map((k) => [k.code, k.value, k.leaf])).toEqual([
+    ["SkillLevels[5]", 0, "investedPoints"],
+  ]);
+});
+
+test("[Breeding] a shiny pet's level: its EXP, the base levels, the Menagerie's unlock and the requirement's exponent", () => {
+  expect(
+    rowsOf(
+      {
+        b: "Breeding",
+        a: ["SpecialPassives", "Lv", 2],
+        v: 9,
+        c: [2],
+        r: [["Breeding[1][2]", 500]],
+      },
+      { b: "MenagerieStuff", v: 1 },
+    ),
+  ).toEqual([
+    ["Breeding[1][2]", 500, "quantity", null],
+    [null, 19, "fixedValue", null],
+    [null, 1, "condition", "owned"],
+    [null, 1.6, "fixedValue", null],
+  ]);
+});
+
+test("[CardLv] a card's stars: the cards collected, the base stars and the two unlocks of a star more", () => {
+  expect(
+    rowsOf(
+      {
+        b: "RunCodeOfTypeXforThingY",
+        a: ["CardLv", "cardZ"],
+        v: 5,
+        c: [2, 3],
+        r: [["Cards[0].cardZ", 12]],
+      },
+      { b: "RiftStuff", v: 1 },
+      { b: "Spelunk", v: 0 },
+    ),
+  ).toEqual([
+    ["Cards[0].cardZ", 12, "quantity", null],
+    [null, 4, "fixedValue", null],
+    [null, 1, "condition", "owned"],
+    [null, 0, "condition", "owned"],
+  ]);
+});
+
+test("a block of another mode keeps its own rows", () => {
+  expect(
+    rowsOf({
+      b: "RunCodeOfTypeXforThingY",
+      a: ["Other", "cardZ"],
+      v: 12,
+      r: [["Cards[0].cardZ", 12]],
+    }),
+  ).toEqual([["Cards[0].cardZ", 12, "quantity", null]]);
+});
+
+test("a read of the block's own steps is no data row of a pass's rows", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_RunCodeOfTypeXforThingY = function () { return s.Q * 2; };",
+  );
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "RunCodeOfTypeXforThingY",
+        a: ["CardLv", "cardZ"],
+        v: 14,
+        r: [["Q", 7]],
+        rx: [["Q", 7, 0]],
+        x: [
+          [ops.findIndex((o) => o.kind === "leaf"), 7],
+          [ops.findIndex((o) => o.kind === "op"), 14],
+        ],
+      },
+    ],
+    [],
+    { root: 0 },
+  );
+  const codes = kidsOf(buildTree(rec, 0, ops).root).map((k) => k.code);
+  expect(codes).not.toContain("Q");
+});

@@ -35,6 +35,7 @@ import { near } from "./tree/math.ts";
 import { firstSrc, topOp } from "./tree/expr.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
+import { rawPasses } from "./tree/raw-passes.ts";
 import { makeTerms } from "./tree/terms.ts";
 import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
@@ -204,6 +205,8 @@ export function buildTree(
     const at = (r: Row): Row => (seen ? { ...r, seen } : r);
     return makeTerms({
       nodes,
+      block: n,
+      entry: () => caches.now().entry,
       read: (p, v) => at(readRow(p, valueOf(v), linkOf.get(p))),
       call: (k, v, rs) => at(callRow(k, n, v ?? null, [...rs], false)),
       finish,
@@ -240,22 +243,26 @@ export function buildTree(
       Number.isInteger(last.v) &&
       noSource(last.e) &&
       (n.r ?? []).some(([p]) => p.endsWith(`[${String(last.v)}]`));
-    const op = indexStep ? null : topOp(last?.e);
-    const rows = op
-      ? terms.stepTerms(
-          { args: n.a, steps: own.steps, at: own.steps.length - 1 },
-          op,
-          reads,
-        )
-      : n.c.flatMap((c) => {
-          const kid = nodes[c];
-          return kid ? [callRow(kid, n)] : [];
-        });
+    // a block the game's own passes rewrite (tree/raw-passes.ts) has those rows, before its steps
+    const special = rawPasses(n, nodes, reads);
+    const op = indexStep || special ? null : topOp(last?.e);
+    const rows =
+      special ??
+      (op
+        ? terms.stepTerms(
+            { args: n.a, steps: own.steps, at: own.steps.length - 1 },
+            op,
+            reads,
+          )
+        : n.c.flatMap((c) => {
+            const kid = nodes[c];
+            return kid ? [callRow(kid, n)] : [];
+          }));
     const data = dataRows(
       n,
       rows,
       own.steps.map((s) => s.e),
-      !op && own.steps.length > 0,
+      !op && !special && own.steps.length > 0,
       (p, v) => readRow(p, v, linkOf.get(p)),
       writers.writersOf,
     );

@@ -14,27 +14,36 @@ const nodes: RecNode[] = [
   { id: 3, b: "ArbitraryCode5Inputs", a: [], c: [], p: 0, pxi: 0, v: 8 },
 ];
 const finished: boolean[] = [];
-const terms = makeTerms({
-  nodes,
-  // a read of a cache "DNSM.W…" has a writer to open into; any other read has none
-  read: (p, v) => ({
-    node: row({
-      pieceKey: p,
-      value: valueOf(v ?? null),
-      code: p,
-      kids: p.startsWith("DNSM.W") ? "lazy" : [],
+/** The terms of `block`'s steps (the first node by default), in the loop entry `entry` gives. */
+const termsOf = (block?: RecNode, entry: () => string | null = () => null) =>
+  makeTerms({
+    nodes,
+    // a read of a cache "DNSM.W…" has a writer to open into; any other read has none
+    read: (p, v) => ({
+      node: row({
+        pieceKey: p,
+        value: valueOf(v ?? null),
+        code: p,
+        kids: p.startsWith("DNSM.W") ? "lazy" : [],
+      }),
+      open: p.startsWith("DNSM.W") ? 9 : null,
     }),
-    open: p.startsWith("DNSM.W") ? 9 : null,
-  }),
-  call: (k, v) => ({
-    node: row({ pieceKey: k.b, value: valueOf(v ?? null), code: callText(k) }),
-    open: null,
-  }),
-  finish: (_v, rows, ones) => {
-    finished.push(ones);
-    return rows;
-  },
-});
+    call: (k, v) => ({
+      node: row({
+        pieceKey: k.b,
+        value: valueOf(v ?? null),
+        code: callText(k),
+      }),
+      open: null,
+    }),
+    finish: (_v, rows, ones) => {
+      finished.push(ones);
+      return rows;
+    },
+    block: block ?? { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0 },
+    entry,
+  });
+const terms = termsOf();
 const num = (v: number): Expr => ({ t: "num", v });
 const val = (v: number): Expr => ({ t: "val", v });
 const read = (p: string, v: number): Expr => ({ t: "read", p, v });
@@ -279,4 +288,83 @@ test("a curve with its own value is the curve's row, even beside another source"
     8,
     [],
   ]);
+});
+
+test("[D9-7] the other loop's total read as 0 in a step of the worn items' loop is the stat's total", () => {
+  const e = op(
+    "+",
+    read("DummyNumbersStatManager.TotalStatsDN", 0),
+    read("DNSM.TotalStatsDM.UQ1val", 5),
+    5,
+  );
+  const [total] = terms.stepTerms(
+    { args: [], steps: [{ v: 5, e }], at: 0 },
+    "+",
+    new Map(),
+  );
+  expect(total?.node).toMatchObject({
+    code: "DNSM.TotalStatsETCmap",
+    value: 0,
+    leaf: "unknown",
+    why: "the total of the earlier turns of the game's loop, before this one adds to it",
+  });
+});
+
+test("[W3] in a turn of a loop's entry, a bare 0 is the total of the earlier turns when other entries were undefined", () => {
+  const reads = new Map<string, number | string>([
+    ["Z", 0],
+    ["DNSM.CardBonusS.b", "(undefined)"],
+  ]);
+  const inEntry = termsOf(undefined, () => "DNSM.CardBonusS.a");
+  expect(inEntry.term(val(0), "+", reads)?.node).toMatchObject({
+    code: "DNSM.CardBonusS.a",
+    leaf: "unknown",
+  });
+  // outside the loop the same 0 is the read that holds it, and so it is when the other entries had a value
+  expect(terms.term(val(0), "+", reads)?.node.code).toBe("Z");
+  reads.set("DNSM.CardBonusS.b", 3);
+  expect(inEntry.term(val(0), "+", reads)?.node.code).toBe("Z");
+});
+
+test.each<[string, [string, number][], string | null, string]>([
+  [
+    "one counted list",
+    [["Research[11].length", 4]],
+    "Research[11].length",
+    "quantity",
+  ],
+  [
+    "two counted lists with the value",
+    [
+      ["Research[11].length", 4],
+      ["Spelunk[6].length", 4],
+    ],
+    null,
+    "unknown",
+  ],
+  ["the items found", [["Cards[1].length", 4]], "Cards[1].length", "quantity"],
+])(
+  "[OPUS4-8, OPUS1-P5] a value that is the length of %s",
+  (_name, reads, code, leaf) => {
+    expect(terms.term(val(4), "+", new Map(reads))?.node).toMatchObject({
+      code,
+      leaf,
+    });
+  },
+);
+
+test("[FIX-4] a number of a block that writes its table in its own code is a fixed value", () => {
+  const holes = {
+    id: 9,
+    b: "Holes",
+    a: ["LampBonuses"],
+    c: [],
+    p: null,
+    pxi: 0,
+  };
+  expect(termsOf(holes).term(val(7), "+", new Map())?.node).toMatchObject({
+    code: null,
+    leaf: "fixedValue",
+  });
+  expect(terms.term(val(7), "+", new Map())?.node.leaf).toBe("unknown");
 });
