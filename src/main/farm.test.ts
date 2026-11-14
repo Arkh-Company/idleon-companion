@@ -195,6 +195,19 @@ test("time stops when the readings stop: a gap longer than a few seconds is not 
   expect(snap().minutes).toBe(1);
 });
 
+test("what changed across a gap with no reading is no gain: the slice after it is the new start", () => {
+  state({ Money: 0 });
+  farm.onMap(3, false);
+  wait(60 * MIN, { Money: 100 });
+  expect(snap().goldPerHour).toBe(100);
+  t += 60 * MIN;
+  state({ Money: 5000 });
+  expect(snap().goldPerHour).toBe(100);
+  // From there, the gains count again.
+  wait(1000, { Money: 5100 });
+  expect(snap().goldPerHour).toBeGreaterThan(100);
+});
+
 test("sends at once on a change of state, else at most every 10 s", () => {
   farm.onMap(3, false);
   expect(sent).toHaveLength(1);

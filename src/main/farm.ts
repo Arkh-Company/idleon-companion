@@ -119,11 +119,11 @@ export function farmTracker(deps: {
     deps.send(snapshot());
   }
 
-  /** Counts the time since the last event, while counting and only up to a gap. */
+  /** Counts the time since the last event, while counting; a gap counts nothing. */
   function clock(): void {
     const t = now();
-    if (state === "counting" && tick !== null)
-      counted += Math.min(t - tick, GAP_MS);
+    if (state === "counting" && tick !== null && t - tick <= GAP_MS)
+      counted += t - tick;
     tick = t;
   }
 
@@ -150,9 +150,9 @@ export function farmTracker(deps: {
     if (was !== "idle") send(true);
   }
 
-  function measure(s: StateSlice): void {
+  /** Reads a slice into `last`; the differences are gains only when `counting`. */
+  function measure(s: StateSlice, counting: boolean): void {
     const p = piecesOf(s);
-    const counting = state === "counting";
     if (p.xp) {
       const before = last.xp;
       if (counting && before)
@@ -190,8 +190,10 @@ export function farmTracker(deps: {
       if (char !== undefined && s.sentinel.char !== char) reset();
       char = s.sentinel.char;
       if (char === null) return;
+      // After a gap with no reading the time is not counted, so neither is what changed in it: this slice starts again.
+      const gap = tick !== null && now() - tick > GAP_MS;
       clock();
-      measure(s);
+      measure(s, state === "counting" && !gap);
       if (state === "counting") send(false);
     },
     onMap(m, town) {
