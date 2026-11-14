@@ -104,12 +104,11 @@ export function loadPlayerInfo(attrs: Json, name: string): void {
   }
   entriesOf(attrs.TimeAway, "TimeAway").Player = m.PlayerAwayTime;
   for (const [top, key] of RENAMED) attrs[top] = m[key];
-  // The defaults LoadPlayerInfo puts in when these are missing.
+  // The default LoadPlayerInfo puts in when this one is missing.
   const options = attrs.OptionsList;
   shape(Array.isArray(options), "OptionsList");
   if (options[11] == null || options[11] === 0) options[11] = [710, 10];
-  if (options[13] == null || options[13] === 0)
-    options[13] = [1, 1, "Scripticus2", 0];
+  // ponytail: place 13 stays as it came from the saved character; the game's default there is game text (FR-032).
   shape(Array.isArray(attrs.UserInfo), "UserInfo");
   attrs.UserInfo[0] = name;
 }

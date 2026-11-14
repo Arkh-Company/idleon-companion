@@ -83,7 +83,7 @@ test("the options the game fills when missing get its defaults", () => {
   buildInactive(a, SECOND);
   const options = a.OptionsList as unknown[];
   expect(options[11]).toEqual([710, 10]);
-  expect(options[13]).toEqual([1, 1, "Scripticus2", 0]);
+  expect(options[13]).toBe(undefined); // as the saved character has it
 });
 
 const badLists: [string, (a: Attrs) => void][] = [
