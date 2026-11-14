@@ -64,7 +64,7 @@ test.each(Object.entries(TABLES))(
   },
 );
 
-// Empty until the bench's audited rules come (US1b-3); each one then needs its proof and an id with no free text.
+// Empty while the bench has no audited rule (game-bugs.ts); each one then needs its proof and an id with no free text.
 test("every game-bug rule has a proof by reference and an id of one word", () => {
   for (const r of GAME_BUGS)
     expect([r.id, r.proof]).toEqual([

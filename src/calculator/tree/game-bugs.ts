@@ -12,7 +12,11 @@ export interface GameBugRule {
   proof: string;
 }
 
-/** Empty until the bench's audited rules are ported (US1b-3). */
+/**
+ * Empty: the bench at BASELINE-4 has no audited game-bug rule (no rule table and no pass in its scripts). Its only
+ * trace is a note of bench systems/DECISOES-loop.md, round Opus 3, on the Defence tree, with no block, argument nor
+ * place in the game's code: a rule enters when the bench proves one.
+ */
 export const GAME_BUGS: readonly GameBugRule[] = [];
 
 /** The id of the rule a row matches, inside the call `parentCode`; null when none does. */
