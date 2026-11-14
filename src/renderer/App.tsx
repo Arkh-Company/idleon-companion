@@ -202,16 +202,18 @@ export function App() {
         {steam && (steam.configured || setupFinished) && (
           <>
             {status && <StatusBar status={status} />}
-            <PatchBand
-              radar={radar}
-              onClose={() => {
-                setRadar(null);
-                void window.companion.dismissRadar();
-              }}
-              onFocus={(e) => {
-                focused.current = e.target;
-              }}
-            />
+            {radar && (
+              <PatchBand
+                radar={radar}
+                onClose={() => {
+                  setRadar(null);
+                  void window.companion.dismissRadar();
+                }}
+                onFocus={(e) => {
+                  focused.current = e.target;
+                }}
+              />
+            )}
             <PinStrip
               pins={pins.pins}
               note={pins.note}

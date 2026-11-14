@@ -1,21 +1,19 @@
 // The patch radar's band (spec 008 FR-029, FR-031, FR-035, FR-041): at the top, under the status bar, on every tab, after
-// a game update changed the shape of some trees. "Show" lists each of them with up to 5 named changes; Close puts the
-// band out until the next patch. It also carries the warning of a shapes file that could not be read. Plain text, no
+// a game update changed the shape of some trees, "so far" while old trees are still compared. "Show" lists each of them
+// with up to 5 named changes; Close puts the band out until a new change. It also carries the warning of a shapes file that could not be read. Plain text, no
 // live region: the window says the warning once.
 import { useState } from "react";
-import type { RadarUpdate } from "../shared/index.ts";
+import type { RadarChange, RadarUpdate } from "../shared/index.ts";
 import { nameOf } from "./FormulasTab.tsx";
 
 /** How many named changes each tree shows; the rest is a count. */
 const SHOWN = 5;
 
-type Change = NonNullable<RadarUpdate>["changed"][number];
-
 const plural = (n: number, one: string, many: string) =>
   `${String(n)} ${n === 1 ? one : many}`;
 
 /** Each change of a tree as words: parts new, parts gone, then names changed. */
-const changesOf = (c: Change): string[] => [
+const changesOf = (c: RadarChange): string[] => [
   ...c.added.map((n) => `New: ${n}`),
   ...c.removed.map((n) => `Gone: ${n}`),
   ...c.renamed.map(([was, now]) => `Renamed: ${was}, now ${now}`),
@@ -26,21 +24,21 @@ export function PatchBand({
   onClose,
   onFocus,
 }: {
-  radar: RadarUpdate;
+  /** The window shows the band only with an update: a band that comes back starts closed. */
+  radar: NonNullable<RadarUpdate>;
   onClose: () => void;
   /** Where the focus is, for the window to give it somewhere else when the band goes (FR-039). */
   onFocus: (e: React.FocusEvent) => void;
 }) {
   const [open, setOpen] = useState(false);
-  if (!radar) return null;
   const trees = radar.changed.length;
   return (
     <section className="band patch" aria-label="Game update" onFocus={onFocus}>
       {radar.warning && <p>{radar.warning}</p>}
       {trees > 0 && (
         <p>
-          Game updated: {plural(trees, "tree", "trees")} changed{" "}
-          <span aria-hidden="true">·</span>{" "}
+          Game updated: {plural(trees, "tree", "trees")} changed
+          {radar.checking && " so far"} <span aria-hidden="true">·</span>{" "}
           <button
             type="button"
             aria-expanded={open}

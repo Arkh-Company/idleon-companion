@@ -32,6 +32,7 @@ const UPDATED: NonNullable<RadarUpdate> = {
     { catalogId: B, added: [], removed: ["Talent"], renamed: [] },
     { catalogId: C, added: ["Star"], removed: [], renamed: [] },
   ],
+  checking: false,
   warning: null,
 };
 
@@ -85,6 +86,28 @@ test("no update, no band; a game update says how many trees changed (FR-035)", a
   );
   radar(null);
   expect(band()).toBe(null);
+});
+
+test("while old trees are still compared, the count says so far (FR-035)", async () => {
+  await app();
+  radar({ ...UPDATED, checking: true });
+  expect(shown(band()?.querySelector("p") ?? document.body)).toBe(
+    "Game updated: 3 trees changed so far · Show",
+  );
+});
+
+test("a band that comes back starts with its list closed", async () => {
+  await app();
+  radar(UPDATED);
+  fireEvent.click(inBand().getByRole("button", { name: "Show what changed" }));
+  radar(null);
+  radar(UPDATED);
+  expect(
+    inBand()
+      .getByRole("button", { name: "Show what changed" })
+      .getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(inBand().queryByRole("list")).toBe(null);
 });
 
 test("the band is at the top, before the pins and the farm, and stays on every tab", async () => {
@@ -143,6 +166,7 @@ test("a renamed part reads as words", async () => {
         renamed: [["Card", "Card bonus"]],
       },
     ],
+    checking: false,
     warning: null,
   });
   fireEvent.click(inBand().getByRole("button", { name: "Show what changed" }));
@@ -167,7 +191,7 @@ test("Close tells the main, puts the band out and gives the focus to the tab's c
 
 test("an unreadable shapes file is said on the band, and once to a screen reader (FR-041)", async () => {
   await app();
-  radar({ changed: [], warning: RESET });
+  radar({ changed: [], checking: false, warning: RESET });
   expect(
     [...(band()?.querySelectorAll("p") ?? [])].map((p) => shown(p)),
   ).toEqual([RESET]);
