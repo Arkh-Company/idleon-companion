@@ -365,7 +365,7 @@ Verify: `just test-one src/renderer/SystemPanel.test.tsx` - passes; `just check`
 
 ### Tests for User Story 5
 
-- [ ] T037 [P] [US5] `src/renderer/TruthTag.test.tsx` and `src/main/version-band.test.ts`
+- [X] T037 [P] [US5] `src/renderer/TruthTag.test.tsx` and `src/main/version-band.test.ts`
   - Cases:
     - one per id of the FR-012 table (`?`, `no name yet`, `unavailable`, `saved by the game`, `from the game`, `changes while you play`, `stopped here`, `over the cap`/`not reached`, `zeroes the total`, `repeated step`, `game bug: counted twice`);
     - the band "Names and tags were checked on an older game version. Values are live." with no mark per row (FR-018);
@@ -373,7 +373,7 @@ Verify: `just test-one src/renderer/SystemPanel.test.tsx` - passes; `just check`
 
 ### Implementation for User Story 5
 
-- [ ] T038 [US5] Honesty tags, game-bug rule and version band
+- [X] T038 [US5] Honesty tags, game-bug rule and version band
   - Files: `src/renderer/TruthTag.tsx`, `src/renderer/VersionBand.tsx`, `src/main/version-band.ts`
   - The rules' sha256 is the keeper's hash (`update-watch.ts`) carried in `gameFiles`, or the same hash computed in the tree worker with `node:crypto`.
 
