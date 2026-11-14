@@ -196,9 +196,10 @@ export function makeTerms(ctx: TermContext) {
       // a step that is one term of the same value is that term
       const [only] = rows;
       if (only && rows.length === 1 && near(only.node.value, v)) return only;
+      // pieces.cjs stepRef tidies with no caller ({ id: -1 }): no argument names an earlier value here
       return branch(
         v,
-        op ? ctx.finish(v, tidy(rows, op, t.args), op === "*") : rows,
+        op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows,
       );
     }
     return null;

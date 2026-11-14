@@ -46,15 +46,16 @@ const op = (o: string, l: Expr, r: Expr, v: number): Expr => ({
   r,
   v,
 });
-/** The rows of the last step, a sum, with the reads given. */
+/** The rows of the last step, a sum unless `op` says otherwise, with the reads given. */
 function rowsOf(
   steps: Step[],
   reads: [string, number | string][] = [],
   args: number[] = [],
+  top: "*" | "+" = "+",
 ): Row[] {
   return terms.stepTerms(
     { args, steps, at: steps.length - 1 },
-    "+",
+    top,
     new Map(reads),
   );
 }
@@ -82,6 +83,95 @@ test("a number of an expression is named by its role: the cap of a min", () => {
       ["Cap 50", null, 50, []],
     ],
   ]);
+});
+
+const fn = (name: string, args: Expr[], v: number): Expr => ({
+  t: "fn",
+  name,
+  args,
+  v,
+});
+test.each<[string, Expr, string[]]>([
+  [
+    "the minimum of a max",
+    fn("max", [read("A", 2), num(5)], 5),
+    ["Game value", "Minimum 5"],
+  ],
+  [
+    "the exponent of a pow",
+    fn("pow", [read("A", 2), num(3)], 8),
+    ["Game value", "Exponent 3"],
+  ],
+  [
+    "the base of a pow",
+    fn("pow", [num(2), read("A", 3)], 8),
+    ["Base 2", "Game value"],
+  ],
+  [
+    "a number under no operation",
+    fn("round", [read("A", 2), num(7)], 2),
+    ["Game value", "Fixed value 7"],
+  ],
+  [
+    "what a difference takes away",
+    op("-", read("A", 9), num(4), 5),
+    ["Game value", "Minus 4"],
+  ],
+  [
+    "what a difference starts from",
+    op("-", num(10), read("A", 4), 6),
+    ["Fixed value 10", "Game value"],
+  ],
+  [
+    "a divisor that is no 100",
+    op("/", read("A", 8), num(4), 2),
+    ["Game value", "Divided by 4"],
+  ],
+  [
+    "what a quotient divides",
+    op("/", num(10), read("A", 5), 2),
+    ["Fixed value 10", "Game value"],
+  ],
+])("a number of an expression is named by its role: %s", (_name, e, names) => {
+  const [parts] = rowsOf([
+    { v: Number(e.v) + 1, e: op("+", e, num(1), Number(e.v) + 1) },
+  ]);
+  expect(parts?.group?.map((r) => r.node.name)).toEqual(names);
+});
+
+test("a number that is a term of the step is fixed by the step's operation", () => {
+  const [, plus] = rowsOf([{ v: 7, e: op("+", read("A", 4), num(3), 7) }]);
+  const [, times] = rowsOf(
+    [{ v: 12, e: op("*", read("A", 4), num(3), 12) }],
+    [],
+    [],
+    "*",
+  );
+  // a step that is one number, reached from a later step: no operation around it
+  const [alone] = rowsOf([
+    { v: 7, e: num(7) },
+    { v: 8, e: op("+", val(7), num(1), 8) },
+  ]);
+  expect([plus, times, alone].map((r) => r?.node.name)).toEqual([
+    "Fixed +3",
+    "Fixed ×3",
+    "Fixed value 7",
+  ]);
+});
+
+test("inside an earlier step, a value equal to the caller's argument stays a value from an earlier step", () => {
+  const [ref] = rowsOf(
+    [
+      { v: 5, e: op("+", val(3), num(2), 5) },
+      { v: 6, e: op("+", val(5), num(1), 6) },
+    ],
+    [],
+    [3],
+  );
+  // (pieces.cjs stepRef tidies with no caller: only the block's own level turns it into the caller's argument)
+  const [first] = ref?.group ?? [];
+  expect(first?.earlier).toBe(true);
+  expect(first?.node).toMatchObject({ value: 3, leaf: "unknown" });
 });
 
 test("a variable that changed a call's value is a branch over the call", () => {
