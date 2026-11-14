@@ -31,6 +31,34 @@ test("each Stats root equals the Stats number of the same mosaic", () => {
   }
 });
 
+test("values gives each Stats number of the same mosaic, and null outside the roots", () => {
+  const mosaic = mosaicOf({ Stats: { STR: 7, Drop_Rarity: 3.5 } });
+  const stats = createEngine(GAME, PAK).calculate(mosaic);
+  const ids = [...TARGETS.map(([id]) => id), "notANumber", "__proto__"];
+  expect(trees.values(ids, mosaic)).toEqual(
+    Object.fromEntries([
+      ...TARGETS.map(([id]) => [id, stats[id]]),
+      ["notANumber", null],
+      ["__proto__", null],
+    ]),
+  );
+});
+
+test("values records nothing: the last tree's branches still open", () => {
+  const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
+  trees.values(["hp"], mosaicOf({ Stats: { STR: 2 } }));
+  expect(
+    trees.tree(expand("sources", reads?.id ?? ""), undefined),
+  ).toMatchObject({ id: reads?.id, value: 8 });
+});
+
+test.each([
+  ["ids that are no list", "hp", mosaicOf()],
+  ["a mosaic that is not text", ["hp"], { attrs: {} }],
+])("values with %s throws", (_name, ids, mosaic) => {
+  expect(() => trees.values(ids, mosaic)).toThrow();
+});
+
 test("the root of the Drop Rate", () => {
   expect(trees.tree(number("dropRate"), mosaicOf())).toEqual({
     id: "root",

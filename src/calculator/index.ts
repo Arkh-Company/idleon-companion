@@ -1,5 +1,6 @@
 // The worker's entry: `init` starts the engine once, and each `calc` is one calculation (contracts/calculator.md). An
-// `init` with `mode: "tree"` makes this worker the tree worker, answering `tree` (spec 008, contracts/tree-worker.md).
+// `init` with `mode: "tree"` makes this worker the tree worker, answering `tree` and `values` (spec 008,
+// contracts/tree-worker.md).
 import { parentPort } from "node:worker_threads";
 import { createEngine } from "./engine.ts";
 import { TARGETS } from "./targets.ts";
@@ -13,7 +14,7 @@ interface Port {
 type Engine = ReturnType<typeof createEngine>;
 type Message = Partial<
   Record<
-    "type" | "mode" | "code" | "pak" | "mosaic" | "id" | "request",
+    "type" | "mode" | "code" | "pak" | "mosaic" | "id" | "request" | "ids",
     unknown
   >
 >;
@@ -48,6 +49,26 @@ function treeResult(
   }
 }
 
+/** One number per id asked; a failure is every id unavailable, with nothing of the game's text. */
+function valuesResult(
+  engine: TreeEngine | undefined,
+  { id, ids, mosaic }: Message,
+): unknown {
+  try {
+    if (!engine) throw new Error("no tree engine");
+    return { type: "valuesResult", id, values: engine.values(ids, mosaic) };
+  } catch {
+    const asked = Array.isArray(ids)
+      ? ids.filter((x): x is string => typeof x === "string")
+      : [];
+    return {
+      type: "valuesResult",
+      id,
+      values: Object.fromEntries(asked.map((x) => [x, null])),
+    };
+  }
+}
+
 export function handleMessage(
   m: unknown,
   port: Port,
@@ -78,6 +99,8 @@ export function handleMessage(
     });
   } else if (type === "tree") {
     port.postMessage(treeResult(trees.get(port), message));
+  } else if (type === "values") {
+    port.postMessage(valuesResult(trees.get(port), message));
   }
 }
 

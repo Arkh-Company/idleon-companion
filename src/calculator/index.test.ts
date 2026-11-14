@@ -109,7 +109,10 @@ describe("tree mode (contracts/tree-worker.md)", () => {
   const TREE_INIT = { ...INIT, mode: "tree" };
   const REQUEST = { type: "number", id: "dropRate", character: 0 };
   const TREE = { id: "root", value: 2.5 } as unknown as CalcTreeNode;
-  const treeEngineThat = (tree: TreeEngine["tree"]) => vi.fn(() => ({ tree }));
+  const treeEngineThat = (
+    tree: TreeEngine["tree"],
+    values: TreeEngine["values"] = () => ({}),
+  ) => vi.fn(() => ({ tree, values }));
 
   test("init with mode tree builds the tree engine, not the Stats one, and answers ready", () => {
     const port = fakePort();
@@ -200,6 +203,62 @@ describe("tree mode (contracts/tree-worker.md)", () => {
       failed: true,
     });
   });
+
+  test("values answers valuesResult with one number per id, for the ids and the mosaic", () => {
+    const port = fakePort();
+    const values = vi.fn(() => ({ hp: 3, other: null }));
+    const makeTree = treeEngineThat(() => TREE, values);
+    handleMessage(TREE_INIT, port, vi.fn(), makeTree);
+    handleMessage(
+      { type: "values", id: 4, ids: ["hp", "other"], mosaic: '{"a":1}' },
+      port,
+      vi.fn(),
+      makeTree,
+    );
+    expect(values).toHaveBeenCalledExactlyOnceWith(["hp", "other"], '{"a":1}');
+    expect(posted(port)[1]).toEqual({
+      type: "valuesResult",
+      id: 4,
+      values: { hp: 3, other: null },
+    });
+  });
+
+  test.each<[string, TreeEngine["values"] | null]>([
+    [
+      "fail",
+      () => {
+        throw new Error("GAME-TEXT at line 1");
+      },
+    ],
+    ["come before a tree init", null],
+  ])(
+    "values that %s answer every id unavailable, with no game text",
+    (_name, values) => {
+      const port = fakePort();
+      const makeTree = treeEngineThat(() => TREE, values ?? undefined);
+      handleMessage(
+        values ? TREE_INIT : INIT,
+        port,
+        engineThat(() => NUMBERS),
+        makeTree,
+      );
+      handleMessage(
+        { type: "values", id: 5, ids: ["hp", 7, "__proto__"], mosaic: "{}" },
+        port,
+        vi.fn(),
+        makeTree,
+      );
+      expect(posted(port)[1]).toEqual({
+        type: "valuesResult",
+        id: 5,
+        values: Object.fromEntries([
+          ["hp", null],
+          ["__proto__", null],
+        ]),
+      });
+      expect(JSON.stringify(posted(port))).not.toContain("GAME-TEXT");
+    },
+  );
 });
 
 test.each([[null], ["text"], [{ type: "other" }], [{}]])(
