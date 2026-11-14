@@ -120,7 +120,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
     - `init` with `mode: "tree"` answers `ready`;
     - `tree` answers `treeResult` with `tree`, `refused: "unknownNumber"` or `failed`;
     - a failure carries no game text.
-- [ ] T009 Create the tree host in `src/main/tree-host.ts`
+- [X] T009 Create the tree host in `src/main/tree-host.ts`
   - Files: `src/main/tree-host.ts`, `src/main/tree-host.test.ts` (style of `calculator-host.test.ts`)
   - Signature: `createTreeHost(deps: { createWorker; readFiles; onTree(id, result); onValues(id, values); onUnavailable(id) }): { setFiles; request; values; dropCurrent; stop; replay }`
   - Limits: heap 2 GB (`resourceLimits.maxOldGenerationSizeMb: 2048`); start and request timeouts as constants, measured again in T026.

@@ -8,7 +8,7 @@ export const RESOURCES = "C:\\invented\\resources";
 
 type Message = Record<string, unknown>;
 
-class FakeWorker implements WorkerLike {
+export class FakeWorker implements WorkerLike {
   posted: { message: Message; transfer: unknown }[] = [];
   terminated = 0;
   throwOnPost = false;
@@ -31,6 +31,12 @@ class FakeWorker implements WorkerLike {
     return this.posted
       .filter((p) => p.message.type === "calc")
       .map((p) => p.message.mosaic);
+  }
+  /** The messages of one type the worker got. */
+  sent(type: string): Message[] {
+    return this.posted
+      .filter((p) => p.message.type === type)
+      .map((p) => p.message);
   }
 }
 

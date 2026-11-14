@@ -39,7 +39,7 @@ function numbersOf(v: unknown): CalcNumbers {
 }
 
 /** Without the `_vars` the numbers would be silently wrong, so none is calculated (FR-015). */
-function hasVars(mosaicJson: string): boolean {
+export function hasVars(mosaicJson: string): boolean {
   try {
     const parsed: unknown = JSON.parse(mosaicJson);
     return (
