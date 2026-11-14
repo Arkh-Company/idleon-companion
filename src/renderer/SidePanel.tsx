@@ -1,7 +1,7 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
 // With a mark chosen, each row shows the mark's value beside the current one (FR-025). Pin keeps the number in the strip
-// under the status bar (FR-036).
+// under the status bar (FR-036). A number of a part's "Feeds N numbers" list opens its own tree here (FR-027).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { changes, compareValues } from "../shared/index.ts";
@@ -46,6 +46,7 @@ export function SidePanel({
   announce,
   pins,
   onPin,
+  onOpenNumber,
 }: {
   side: Side;
   tree: Tree;
@@ -58,6 +59,8 @@ export function SidePanel({
   pins: readonly Pin[];
   /** Pins the open number, or unpins it (FR-036). */
   onPin: (id: string) => void;
+  /** Opens another catalog number's tree in this panel (FR-027). */
+  onOpenNumber: (id: string) => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   // FR-039: opening, or another number, puts the focus on the panel's title.
@@ -178,6 +181,7 @@ export function SidePanel({
           tree={shown}
           live={live}
           onExpand={onExpand}
+          onOpenNumber={onOpenNumber}
           onRefresh={refresh}
           marks={(character) => (
             <MarkBar
@@ -199,12 +203,14 @@ function Body({
   tree,
   live,
   onExpand,
+  onOpenNumber,
   onRefresh,
   marks,
 }: {
   tree: Tree;
   live: LiveValues | null;
   onExpand: (nodeId: string) => void;
+  onOpenNumber: (id: string) => void;
   onRefresh: () => void;
   /** The marks bar, for the tree's character. */
   marks: (character: number) => ReactNode;
@@ -228,6 +234,7 @@ function Body({
             key={`${tree.request.type === "number" ? tree.request.id : ""}:${String(tree.calculatedAt)}`}
             tree={tree}
             onExpand={onExpand}
+            onOpenNumber={onOpenNumber}
           />
         </>
       );

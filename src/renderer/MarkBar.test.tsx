@@ -69,6 +69,7 @@ async function draw(announce = vi.fn()) {
         announce={announce}
         pins={[]}
         onPin={vi.fn()}
+        onOpenNumber={vi.fn()}
       />,
     );
     await Promise.resolve();

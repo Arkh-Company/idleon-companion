@@ -19,7 +19,7 @@ import type {
   Status,
   SteamState,
 } from "../shared/index.ts";
-import { FormulasTab } from "./FormulasTab.tsx";
+import { FormulasTab, nameOf } from "./FormulasTab.tsx";
 import { screenMap } from "./modules/screen-map.ts";
 import { SYSTEM_PANELS } from "./modules/system-panels.ts";
 import { SettingsView, SteamSettings } from "./SettingsView.tsx";
@@ -130,6 +130,12 @@ export function App() {
   }
   function pick(id: string): void {
     setSide((s) => s && { ...s, id });
+    void window.companion.requestFormula({ id });
+  }
+  /** A number of a part's list (FR-027): its tree in the same panel; ✕ still gives the focus back to the first opener. */
+  function openNumber(id: string): void {
+    const name = nameOf(id);
+    setSide({ label: name, text: "", trees: [[id, name]], id });
     void window.companion.requestFormula({ id });
   }
   function expand(nodeId: string): void {
@@ -260,6 +266,7 @@ export function App() {
           announce={setSaid}
           pins={pins.pins}
           onPin={pins.toggle}
+          onOpenNumber={openNumber}
         />
       )}
     </main>

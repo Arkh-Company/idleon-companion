@@ -1,10 +1,18 @@
 // The tree of one number, opened in place like folders (spec 008 FR-006, FR-014, FR-031; design.md C2, C5, C6, C8, C10,
 // C15, §3.8): the APG treeview whole, one Tab stop with a roving tabindex, ↑ ↓ → ← Home End Enter. A lazy branch asks
-// its rows when it opens and says "calculating this part…" until they come.
+// its rows when it opens and says "calculating this part…" until they come. A part that 2 or more numbers use shows how
+// many, and its "Feeds N numbers" row lists them, each one opening its tree (FR-027).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { changes } from "../shared/index.ts";
 import type { FormulaTree as Tree, TreeNode } from "../shared/index.ts";
+import {
+  FEEDS_LOADING,
+  FeedsBadge,
+  feedsText,
+  useFeedsLists,
+} from "./FeedsBadge.tsx";
+import { nameOf } from "./FormulasTab.tsx";
 import {
   leafLabel,
   leafPhrase,
@@ -47,15 +55,23 @@ interface Visible {
   parent: string | null;
   expandable: boolean;
   expanded: boolean;
+  /** What Enter or a tap does on a row that opens nothing (a number of a part's list). */
+  activate: (() => void) | undefined;
 }
+
+const FEEDS = "::feeds";
 
 export function FormulaTree({
   tree,
   onExpand,
+  onOpenNumber,
 }: {
   tree: Ready;
   onExpand: (nodeId: string) => void;
+  /** Opens another number's tree in the side panel (FR-027). */
+  onOpenNumber?: (id: string) => void;
 }) {
+  const feeds = useFeedsLists();
   const [open, setOpen] = useState<ReadonlySet<string>>(
     () => new Set([tree.root.id]),
   );
@@ -84,6 +100,10 @@ export function FormulaTree({
       setShowAll((s) => flip(s, id));
       return;
     }
+    if (key.endsWith(FEEDS)) {
+      const piece = nodes.get(key.slice(0, -FEEDS.length))?.pieceKey;
+      if (piece) feeds.load(piece);
+    }
     const n = nodes.get(key);
     if (n?.kids === "lazy" && !open.has(key) && !asked.current.has(key)) {
       asked.current.add(key);
@@ -103,11 +123,12 @@ export function FormulaTree({
     inside: (() => ReactNode) | null,
     expandable: boolean,
     changed = false,
+    activate?: () => void,
   ): ReactNode {
     const expanded =
       expandable &&
       (key.endsWith("::all") ? showAll.has(key.slice(0, -5)) : open.has(key));
-    visible.push({ key, parent, expandable, expanded });
+    visible.push({ key, parent, expandable, expanded, activate });
     return (
       <li
         key={key}
@@ -125,7 +146,8 @@ export function FormulaTree({
           onClick={() => {
             setActive(key);
             setFocusKey(key);
-            if (expandable) toggle(key);
+            if (activate) activate();
+            else if (expandable) toggle(key);
           }}
         >
           <span className="twisty" aria-hidden="true">
@@ -176,7 +198,75 @@ export function FormulaTree({
         ),
       );
     }
+    const { feeds: count, pieceKey } = n;
+    if (count !== undefined && pieceKey !== null) {
+      const label = `Feeds ${String(count)} numbers`;
+      const key = `${n.id}${FEEDS}`;
+      out.push(
+        item(
+          key,
+          level,
+          at(),
+          n.id,
+          label,
+          <span className="name">{label}</span>,
+          () => numbers(key, level + 1, pieceKey),
+          true,
+        ),
+      );
+    }
     return out;
+  }
+
+  /** The numbers a part feeds, by name; each one opens its tree, but the tree on screen. */
+  function numbers(parent: string, level: number, pieceKey: string): ReactNode {
+    const ids = feeds.of(pieceKey);
+    if (!ids)
+      return (
+        <ul role="group" aria-busy="true">
+          <li role="none" className="busy">
+            {FEEDS_LOADING}
+          </li>
+        </ul>
+      );
+    const here = tree.request.type === "number" ? tree.request.id : null;
+    return (
+      <ul role="group">
+        {ids.map((id, i) => {
+          const name = nameOf(id);
+          const mine = id === here;
+          return item(
+            `${parent}::${id}`,
+            level,
+            [i + 1, ids.length],
+            parent,
+            mine ? `${name}, this number` : `Open ${name}`,
+            <>
+              <span className="name">{name}</span>
+              {mine && <span className="phrase">this number</span>}
+            </>,
+            null,
+            false,
+            false,
+            mine
+              ? undefined
+              : () => {
+                  onOpenNumber?.(id);
+                },
+          );
+        })}
+      </ul>
+    );
+  }
+
+  /** A tap on a part's badge: the part opens with its list, which takes the focus once the part's rows are there. */
+  function tapFeeds(n: TreeNode): void {
+    const key = `${n.id}${FEEDS}`;
+    if (!open.has(n.id)) toggle(n.id);
+    if (!open.has(key)) toggle(key);
+    const to = n.kids === "lazy" ? n.id : key;
+    setActive(to);
+    setFocusKey(to);
   }
 
   /** The rows inside an informative row (the two lines of the math, the pairs of Game details): treeitems that do not
@@ -254,6 +344,7 @@ export function FormulaTree({
     const size =
       phrasesOf(n).length +
       (n.formula ? 1 : 0) +
+      (n.feeds !== undefined && n.pieceKey !== null ? 1 : 0) +
       shown.length +
       (allRow ? 1 : 0) +
       (small.length ? 1 : 0) +
@@ -328,6 +419,7 @@ export function FormulaTree({
       share,
       change?.spoken,
       reached,
+      n.feeds === undefined ? "" : feedsText(n.feeds),
       leafLabel(n),
       ...tags.map((t) => t.spoken),
       n.formula ? "has a calculation" : "",
@@ -338,13 +430,24 @@ export function FormulaTree({
       n.kids === "lazy" ||
       n.kids.length > 0 ||
       (!group &&
-        (n.formula !== null || n.code !== null || phrasesOf(n).length > 0));
+        (n.formula !== null ||
+          n.code !== null ||
+          n.feeds !== undefined ||
+          phrasesOf(n).length > 0));
     const line = (
       <>
         <span className="name">{name}</span>
         {reached && <span className="reached">{reached}</span>}
         <LeafTag n={n} />
         <TruthTags tags={tags} />
+        {n.feeds !== undefined && (
+          <FeedsBadge
+            count={n.feeds}
+            onTap={() => {
+              tapFeeds(n);
+            }}
+          />
+        )}
         {!group && <span className={valueClass(n)}>{value}</span>}
         {change && <span className="was">{change.text}</span>}
         {share && <span className="share">{share}</span>}
@@ -405,7 +508,8 @@ export function FormulaTree({
         else go(visible.find((v) => v.key === here.parent));
       },
       Enter: () => {
-        if (here.expandable) toggle(here.key);
+        if (here.activate) here.activate();
+        else if (here.expandable) toggle(here.key);
       },
     };
     const move = moves[e.key];

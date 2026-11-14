@@ -292,6 +292,17 @@ h2 {
   padding: 4px 8px 4px 32px;
 }
 
+/* Where this goes (FR-027): the count of numbers a part feeds, a round badge; its words are in the row's name. */
+.feeds {
+  min-width: 1.5em;
+  padding: 0 6px;
+  border: 1px solid var(--control);
+  border-radius: 999px;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .tag {
   font-size: 12px;
   padding: 0 4px;
