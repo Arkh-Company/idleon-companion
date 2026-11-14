@@ -7,11 +7,11 @@ Canais próprios, como o `stats:update` da 004. O contrato de módulo `module:<i
 | `formula:request` | janela → main (`invoke`) | `{ id, character? }` ou `{ treeId, nodeId }` (expand) | O `id` existe no catálogo; `character` é um número de personagem lido; responde na hora com `void`, ou rejeita com `formula:request: invalid request` |
 | `formula:update` | main → janela | `FormulaTree` ([data-model.md](../data-model.md)) | Replay da última no preload, como o `stats:update`; `{ state: "none" }` na troca de personagem ativo e num `gameFiles` novo |
 | `formula:close` | janela → main | — | Solta a árvore guardada e o replay |
-| `formula:values` | janela → main | `{ ids: string[] }`: o que está à vista agora (painel, grupo, pins) | Ids do catálogo, até um teto por pedido |
+| `formula:values` | janela → main | `{ ids: string[] }`: o que está à vista agora (painel, grupo); durante a implementação: os pins o main mantém à vista sozinho | Ids do catálogo, até um teto por pedido |
 | `formula:liveValues` | main → janela | `{ values: { [id]: number \| null }, calculatedAt, stale }` | Replay da última |
 | `panel:update` | main → janela | `{ system: string \| null }`: o sistema cuja tela está aberta, para a troca automática | Vem do contexto da tela (003); a janela troca de aba e anuncia (FR-040) |
-| `marks:list` / `marks:save` / `marks:clear` | janela → main | Por número de personagem: listar; salvar `{ name }` (a marca leva os valores da árvore aberta); apagar por nome | Nome até 40 caracteres; até 3 por personagem (FR-037) |
-| `pins:get` / `pins:set` | janela → main | A lista de números fixados | Até 5 (FR-036) |
+| `marks:list` / `marks:save` / `marks:clear` | janela → main | Por número de personagem: listar; salvar `{ name }` (a marca leva os valores da árvore aberta); apagar por nome. Durante a implementação:  devolve ;  e  devolvem  ou a frase para o jogador | Nome até 40 caracteres; até 3 por personagem (FR-037); nome repetido recusado |
+| `pins:get` / `pins:set` | janela → main | A lista de números fixados. Durante a implementação:  devolve ;  devolve  ou a frase para o jogador | Até 5 (FR-036) |
 | `farm:update` | main → janela | `{ state: "idle" \| "counting" \| "paused", minutes, xpPerHour, goldPerHour, items: [{ name, perHour }] }` | Só do personagem ativo (FR-028) |
 | `radar:update` | main → janela | `{ changed: [{ catalogId, added, removed, renamed }] }` ou `null` | Depois de um `gameSha` novo (FR-035) |
 | `radar:dismiss` | janela → main | — | Fecha a faixa até o próximo patch |
