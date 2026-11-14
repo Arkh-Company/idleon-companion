@@ -124,7 +124,7 @@ test.each<[string, string | null, string, string]>([
     "nothing that proves it",
     "Invented[1]",
     "Game value",
-    "nothing proves what this is: Invented[1]",
+    "nothing proves what this is yet",
   ],
 ])("%s is unknown, with the reason", (_name, code, name, why) => {
   expect(of(code, name)).toEqual({ leaf: "unknown", condition: null, why });

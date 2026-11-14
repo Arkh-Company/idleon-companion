@@ -109,7 +109,7 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
       ...(constant
         ? {
             leaf: "fixedValue" as const,
-            why: `a constant of the game: ${k.b} returns this number for this case (no read, no step)`,
+            why: "a constant of the game for this case (no read, no step)",
           }
         : {}),
     });

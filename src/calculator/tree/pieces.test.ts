@@ -166,7 +166,7 @@ test("every leaf gets its type and its reason; a branch has none", () => {
     [
       "Const(2)",
       "fixedValue",
-      "a constant of the game: Const returns this number for this case (no read, no step)",
+      "a constant of the game for this case (no read, no step)",
     ],
     ["Label()", "rawBonus", null],
     ["Gate()", "rawBonus", null],

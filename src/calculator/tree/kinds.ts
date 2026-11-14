@@ -336,5 +336,6 @@ export function classify(n: {
     return kind("unknown", null, "a cache that comes ready from the game");
   // A block the game called that returns a value with no parts of its own: a raw bonus.
   if (/^[A-Za-z_0-9]+\(/.test(code)) return kind("rawBonus");
-  return kind("unknown", null, `nothing proves what this is: ${code || name}`);
+  // FR-012a: the path is in `code`; the reason is a sentence for the player.
+  return kind("unknown", null, "nothing proves what this is yet");
 }
