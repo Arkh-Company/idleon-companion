@@ -4,6 +4,7 @@ import { expect, test } from "vitest";
 import { SCREEN_CATALOG } from "./screens/index.ts";
 import { NUMBER_IDS } from "./state.ts";
 import { isCatalogId, TREE_CATALOG } from "./tree-catalog.ts";
+import { FR038_GROUPS } from "./tree-catalog-fixture.ts";
 
 const ids = TREE_CATALOG.map((n) => n.id);
 
@@ -20,6 +21,13 @@ test("the Stats numbers open the catalog, as their own system", () => {
   expect(
     TREE_CATALOG.filter((n) => n.system === "Stats").map((n) => n.id),
   ).toEqual(ids.slice(0, NUMBER_IDS.length));
+});
+
+test("the groups come in the order of FR-038, each in one run", () => {
+  const runs = TREE_CATALOG.map((n) => n.group).filter(
+    (g, i, all) => g !== all[i - 1],
+  );
+  expect(runs).toEqual(FR038_GROUPS);
 });
 
 test("each field has one of its allowed values", () => {

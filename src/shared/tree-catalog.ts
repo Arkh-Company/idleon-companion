@@ -7,7 +7,9 @@ import numbers from "./number-catalog.json" with { type: "json" };
 export interface CatalogNumber {
   /** Unique and stable. */
   id: string;
-  /** The system or skill: the group of the Formulas tab, in the game's order (FR-038). */
+  /** The group of the Formulas tab, in the order of FR-038: Character, Account, W1…W7, then the skills. */
+  group: string;
+  /** The system or skill, inside the group (the second level of the Formulas tab). */
   system: string;
   /** The screen's name in the screen catalog (003), or null: only in the Formulas tab. */
   screen: string | null;

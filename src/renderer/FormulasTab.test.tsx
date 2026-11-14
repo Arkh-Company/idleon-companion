@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-// The Formulas tab (spec 008 FR-002, FR-008, FR-034, FR-038): every catalog number in closed groups, in the catalog's
-// order; an open group asks the main for its live values only, and a tapped value opens the same tree as the Stats.
+// The Formulas tab (spec 008 FR-002, FR-008, FR-034, FR-038): every catalog number in closed groups, in the order of
+// FR-038, with its systems inside; an open group asks the main for its live values only, and a tapped value opens the
+// same tree as the Stats.
 // Every value is invented.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -11,13 +12,14 @@ import type { LiveValues, Stats } from "../shared/index.ts";
 import { App } from "./App.tsx";
 import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
+import { FR038_GROUPS } from "../shared/tree-catalog-fixture.ts";
 import { FormulasTab } from "./FormulasTab.tsx";
 
 const STATS: Stats = { state: "ready", rows: [{ label: "HP", text: "500" }] };
-const SYSTEMS = [...new Set(TREE_CATALOG.map((n) => n.system))];
-const idsOf = (system: string) =>
-  TREE_CATALOG.filter((n) => n.system === system).map((n) => n.id);
-const OTHER = SYSTEMS[1] ?? "";
+const idsOf = (group: string) =>
+  TREE_CATALOG.filter((n) => n.group === group).map((n) => n.id);
+/** A world with several systems, one of them (Construction) also a skill group of its own. */
+const OTHER = "W3";
 const LIVE: LiveValues = {
   values: { dropRate: 6.5, hp: 1_234.2, damageMax: null },
   calculatedAt: 1,
@@ -34,17 +36,20 @@ const group = (name: string) => screen.getByRole("button", { name });
 const tab = (live: LiveValues | null = LIVE, stats: Stats | null = STATS) =>
   render(<FormulasTab stats={stats} live={live} onOpen={() => undefined} />);
 
-test("the groups follow the catalog's order, all closed", () => {
+test("the groups follow the order of FR-038, all closed", () => {
   tab();
   const groups = screen.getAllByRole("button", { expanded: false });
-  expect(groups.map((b) => b.textContent)).toEqual(SYSTEMS);
+  expect(groups.map((b) => b.textContent)).toEqual(FR038_GROUPS);
   expect(screen.queryAllByRole("rowheader")).toEqual([]);
 });
 
-test("opening a group asks for its live values only; closing it asks for none", () => {
+test("opening a group shows its systems and asks for the values of all of them; closing it asks for none", () => {
   tab();
   fireEvent.click(group(OTHER));
   expect(group(OTHER).getAttribute("aria-expanded")).toBe("true");
+  const systems = screen.getAllByRole("heading", { level: 4 });
+  expect(systems.map((h) => h.textContent)).toContain("Bubba");
+  expect(systems.map((h) => h.textContent)).toContain("Construction");
   expect(companion.formulaValues).toHaveBeenLastCalledWith({
     ids: idsOf(OTHER),
   });
@@ -62,7 +67,7 @@ test("leaving the tab asks for no values", () => {
 
 test("the Stats numbers show the Stats' text; one unavailable or not calculated yet says so", () => {
   tab();
-  fireEvent.click(group("Stats"));
+  fireEvent.click(group("Character"));
   expect(screen.getByRole("row", { name: "Drop Rate 6x" })).toBeDefined();
   expect(screen.getByRole("row", { name: "HP 1,235" })).toBeDefined();
   expect(
@@ -101,7 +106,7 @@ test("the Formulas tab opens a value's tree in the side panel, as the Stats does
   });
   render(<App />);
   fireEvent.click(await screen.findByRole("tab", { name: "Formulas" }));
-  fireEvent.click(group("Stats"));
+  fireEvent.click(group("Character"));
   fireEvent.click(screen.getByRole("button", { name: "6x" }));
   expect(companion.requestFormula).toHaveBeenCalledExactlyOnceWith({
     id: "dropRate",

@@ -1,6 +1,7 @@
 [
   {
     "id": "damageMax",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -8,6 +9,7 @@
   },
   {
     "id": "damageMin",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -15,6 +17,7 @@
   },
   {
     "id": "hp",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -22,6 +25,7 @@
   },
   {
     "id": "mp",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -29,6 +33,7 @@
   },
   {
     "id": "accuracy",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -36,6 +41,7 @@
   },
   {
     "id": "str",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -43,6 +49,7 @@
   },
   {
     "id": "agi",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -50,6 +57,7 @@
   },
   {
     "id": "wis",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -57,6 +65,7 @@
   },
   {
     "id": "luk",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -64,6 +73,7 @@
   },
   {
     "id": "dropRate",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -71,6 +81,7 @@
   },
   {
     "id": "afkGains",
+    "group": "Character",
     "system": "Stats",
     "screen": null,
     "notShown": null,
@@ -78,6 +89,7 @@
   },
   {
     "id": "thingiesSuperTalentPTSLVgiven",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -85,6 +97,7 @@
   },
   {
     "id": "thingiesSuperTalentPTSunlockedstatus",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -92,6 +105,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s49",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -99,6 +113,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s227",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -106,6 +121,7 @@
   },
   {
     "id": "thingiesExtraInventory",
+    "group": "Character",
     "system": "Equipment",
     "screen": "Items › Equipment",
     "notShown": null,
@@ -113,6 +129,7 @@
   },
   {
     "id": "thingiesExtraStorage",
+    "group": "Character",
     "system": "Equipment",
     "screen": "Items › Equipment",
     "notShown": null,
@@ -120,6 +137,7 @@
   },
   {
     "id": "thingiesFilterslots",
+    "group": "Character",
     "system": "Equipment",
     "screen": "Items › Equipment",
     "notShown": null,
@@ -127,6 +145,7 @@
   },
   {
     "id": "playerReach",
+    "group": "Character",
     "system": "Character stats",
     "screen": null,
     "notShown": null,
@@ -134,6 +153,7 @@
   },
   {
     "id": "arbitraryCodeHitChancePCT",
+    "group": "Character",
     "system": "Combat",
     "screen": "Items",
     "notShown": null,
@@ -141,6 +161,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYAllTalentLV",
+    "group": "Character",
     "system": "Combat",
     "screen": "Items",
     "notShown": null,
@@ -148,6 +169,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYAllTalentLVz_s0_0",
+    "group": "Character",
     "system": "Combat",
     "screen": "Items",
     "notShown": null,
@@ -155,6 +177,7 @@
   },
   {
     "id": "hourlyKillRateFighting",
+    "group": "Character",
     "system": "AFK",
     "screen": "AFK Gains",
     "notShown": null,
@@ -162,6 +185,7 @@
   },
   {
     "id": "hourlyKillRateSurvivabilityPCT",
+    "group": "Character",
     "system": "AFK",
     "screen": "AFK Gains",
     "notShown": null,
@@ -169,6 +193,7 @@
   },
   {
     "id": "afkfoodsTimeReduxFighting",
+    "group": "Character",
     "system": "AFK",
     "screen": "AFK Gains",
     "notShown": null,
@@ -176,6 +201,7 @@
   },
   {
     "id": "talentCalc_146",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -183,6 +209,7 @@
   },
   {
     "id": "talentCalc_616",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -190,6 +217,7 @@
   },
   {
     "id": "talentCalc_620",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -197,6 +225,7 @@
   },
   {
     "id": "talentCalc_645",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -204,6 +233,7 @@
   },
   {
     "id": "talentCalc_650",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -211,6 +241,7 @@
   },
   {
     "id": "talentCalc_m2",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -218,6 +249,7 @@
   },
   {
     "id": "talentCalc_m3",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -225,6 +257,7 @@
   },
   {
     "id": "talentCalc_m4",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -232,6 +265,7 @@
   },
   {
     "id": "talentCalc_m6",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -239,6 +273,7 @@
   },
   {
     "id": "talentCalc_m7",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -246,6 +281,7 @@
   },
   {
     "id": "talentCalc_m9",
+    "group": "Character",
     "system": "Talents",
     "screen": "Talents",
     "notShown": null,
@@ -253,6 +289,7 @@
   },
   {
     "id": "thingiesHavebani",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -260,6 +297,7 @@
   },
   {
     "id": "thingiesHavebanj",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -267,6 +305,7 @@
   },
   {
     "id": "thingiesHavebank",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -274,6 +313,7 @@
   },
   {
     "id": "thingiesHavebanl",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -281,6 +321,7 @@
   },
   {
     "id": "thingiesHavebanm",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -288,6 +329,7 @@
   },
   {
     "id": "thingiesHavebano",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -295,6 +337,7 @@
   },
   {
     "id": "thingiesHavebonf",
+    "group": "Account",
     "system": "Gem Shop",
     "screen": "Menu › Gem Shop",
     "notShown": null,
@@ -302,6 +345,7 @@
   },
   {
     "id": "familyBonsuesREAL_16_0_2019",
+    "group": "Account",
     "system": "Family Bonuses",
     "screen": null,
     "notShown": null,
@@ -309,6 +353,7 @@
   },
   {
     "id": "familyBonsuesREAL_16_1_2019",
+    "group": "Account",
     "system": "Family Bonuses",
     "screen": null,
     "notShown": null,
@@ -316,6 +361,7 @@
   },
   {
     "id": "summoningEventShopOwned_33",
+    "group": "Account",
     "system": "Event Shop",
     "screen": "Event Shop",
     "notShown": null,
@@ -323,6 +369,7 @@
   },
   {
     "id": "riftStuffGildedStampChance",
+    "group": "W1",
     "system": "Stamps",
     "screen": "Stamps",
     "notShown": "chance",
@@ -330,6 +377,7 @@
   },
   {
     "id": "windwalkerStampDoubler",
+    "group": "W1",
     "system": "Stamps",
     "screen": "Stamps",
     "notShown": null,
@@ -337,6 +385,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYBuyPrice_Copper",
+    "group": "W1",
     "system": "Bribes",
     "screen": "Stamps › Bribes",
     "notShown": "cost",
@@ -344,6 +393,7 @@
   },
   {
     "id": "arbitraryCodeStatueExpReq0",
+    "group": "W1",
     "system": "Statues",
     "screen": "Statues",
     "notShown": "cost",
@@ -351,6 +401,7 @@
   },
   {
     "id": "tower2StatsStatueGoldCost_0_1",
+    "group": "W1",
     "system": "Statues",
     "screen": "Statues",
     "notShown": "cost",
@@ -358,6 +409,7 @@
   },
   {
     "id": "arbitraryCodeStatueOnyxOwned",
+    "group": "W1",
     "system": "Statues",
     "screen": "Statues",
     "notShown": null,
@@ -365,6 +417,7 @@
   },
   {
     "id": "arbitraryCodeStatueZenithOwned",
+    "group": "W1",
     "system": "Statues",
     "screen": "Statues",
     "notShown": null,
@@ -372,6 +425,7 @@
   },
   {
     "id": "riftStuffEnabledStarSigns",
+    "group": "W1",
     "system": "Star Signs",
     "screen": "Star Signs",
     "notShown": null,
@@ -379,6 +433,7 @@
   },
   {
     "id": "anvilProduceStatsCosts1",
+    "group": "W1",
     "system": "Anvil and Forge",
     "screen": "Anvil › Produce",
     "notShown": "cost",
@@ -386,6 +441,7 @@
   },
   {
     "id": "anvilProduceStatsCosts2",
+    "group": "W1",
     "system": "Anvil and Forge",
     "screen": "Anvil › Produce",
     "notShown": "cost",
@@ -393,6 +449,7 @@
   },
   {
     "id": "forgeEtcDetailsBarsMade",
+    "group": "W1",
     "system": "Anvil and Forge",
     "screen": "Anvil › Produce",
     "notShown": null,
@@ -400,6 +457,7 @@
   },
   {
     "id": "forgeEtcDetailsCardChanceBONUS",
+    "group": "W1",
     "system": "Anvil and Forge",
     "screen": "Anvil › Produce",
     "notShown": "chance",
@@ -407,6 +465,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYObolRerollCostMoney_ObolBronzeDamage",
+    "group": "W1",
     "system": "Obols",
     "screen": "Obols",
     "notShown": "cost",
@@ -414,6 +473,7 @@
   },
   {
     "id": "summoning2OwlFeatherRate",
+    "group": "W1",
     "system": "Owl",
     "screen": "Orion",
     "notShown": "rate",
@@ -421,6 +481,7 @@
   },
   {
     "id": "summoningOwlCost",
+    "group": "W1",
     "system": "Owl",
     "screen": "Orion",
     "notShown": "cost",
@@ -428,6 +489,7 @@
   },
   {
     "id": "summoningRooCatchRateS",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "rate",
@@ -435,6 +497,7 @@
   },
   {
     "id": "summoningRooTarOwned",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": null,
@@ -442,6 +505,7 @@
   },
   {
     "id": "summoningRooCostT",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "cost",
@@ -449,6 +513,7 @@
   },
   {
     "id": "summoningRooCost",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "cost",
@@ -456,6 +521,7 @@
   },
   {
     "id": "cauldronStatsBubbleBonus",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -463,6 +529,7 @@
   },
   {
     "id": "cauldronStatsNumBubblesUnlocked",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -470,6 +537,7 @@
   },
   {
     "id": "cauldronStatsCauldronLvsBrewBonus",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -477,6 +545,7 @@
   },
   {
     "id": "cauldronStatsCauldronLvsBrewREQ",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": "cost",
@@ -484,6 +553,7 @@
   },
   {
     "id": "cauldronp2wbonusesCauldronBonus",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -491,6 +561,7 @@
   },
   {
     "id": "cauldronp2wbonusesCauldronCosts",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": "cost",
@@ -498,6 +569,7 @@
   },
   {
     "id": "atomColliderAtomBubbleUpgCost_10_1000000000000",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": "cost",
@@ -505,6 +577,7 @@
   },
   {
     "id": "thingiesKrukBubblesDaily",
+    "group": "W2",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": "rate",
@@ -512,6 +585,7 @@
   },
   {
     "id": "stuff2PrimeKillroyTOT",
+    "group": "W2",
     "system": "Killroy",
     "screen": null,
     "notShown": null,
@@ -519,6 +593,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYKillroyRoom",
+    "group": "W2",
     "system": "Killroy",
     "screen": null,
     "notShown": null,
@@ -526,6 +601,7 @@
   },
   {
     "id": "dungeonStatArcadeSecPerBall",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": null,
@@ -533,6 +609,7 @@
   },
   {
     "id": "dungeonStatArcadeMaxClaimTime",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": "cap",
@@ -540,6 +617,7 @@
   },
   {
     "id": "dungeonStatArcadeBallBonus",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": null,
@@ -547,6 +625,7 @@
   },
   {
     "id": "summoningArcadeGballsExtraPCT",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": null,
@@ -554,6 +633,7 @@
   },
   {
     "id": "menagerieStuffOmegaArcBallChance",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": "chance",
@@ -561,6 +641,7 @@
   },
   {
     "id": "dungeonCalcArcadeCost",
+    "group": "W2",
     "system": "Arcade",
     "screen": "Arcade",
     "notShown": "cost",
@@ -568,6 +649,7 @@
   },
   {
     "id": "postOfficeINFOBonusAmount",
+    "group": "W2",
     "system": "Post Office",
     "screen": "Post Office",
     "notShown": null,
@@ -575,6 +657,7 @@
   },
   {
     "id": "postOfficeINFOAvailablePoints",
+    "group": "W2",
     "system": "Post Office",
     "screen": "Post Office",
     "notShown": null,
@@ -582,6 +665,7 @@
   },
   {
     "id": "thingiesDailyPOboxes",
+    "group": "W2",
     "system": "Post Office",
     "screen": "Post Office",
     "notShown": "rate",
@@ -589,6 +673,7 @@
   },
   {
     "id": "summoningRooCatchREQS",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "cost",
@@ -596,6 +681,7 @@
   },
   {
     "id": "summoningRooCatchREQT",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "cost",
@@ -603,6 +689,7 @@
   },
   {
     "id": "summoningRooCatchREQ",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": "cost",
@@ -610,6 +697,7 @@
   },
   {
     "id": "summoningRooShinyLuck",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": null,
@@ -617,6 +705,7 @@
   },
   {
     "id": "summoningRooRESETbon",
+    "group": "W2",
     "system": "Kangaroo",
     "screen": "Poppy",
     "notShown": null,
@@ -624,6 +713,7 @@
   },
   {
     "id": "weeklyBossBossHPmax",
+    "group": "W2",
     "system": "Weekly Boss",
     "screen": null,
     "notShown": null,
@@ -631,6 +721,7 @@
   },
   {
     "id": "weeklyBossBonusBuffAll",
+    "group": "W2",
     "system": "Weekly Boss",
     "screen": null,
     "notShown": null,
@@ -638,6 +729,7 @@
   },
   {
     "id": "weeklyBossBonusDmgAll",
+    "group": "W2",
     "system": "Weekly Boss",
     "screen": null,
     "notShown": null,
@@ -645,6 +737,7 @@
   },
   {
     "id": "weeklyBossBonusDmgATTACK",
+    "group": "W2",
     "system": "Weekly Boss",
     "screen": null,
     "notShown": null,
@@ -652,6 +745,7 @@
   },
   {
     "id": "menagerieStuffBubbaCheapener",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -659,6 +753,7 @@
   },
   {
     "id": "menagerieStuffOrionCheapener",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -666,6 +761,7 @@
   },
   {
     "id": "menagerieStuffPoppyCheapener",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -673,6 +769,7 @@
   },
   {
     "id": "bubbastuffMeatsliceRate",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": "rate",
@@ -680,6 +777,7 @@
   },
   {
     "id": "bubbastuffHappinessBonus",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -687,6 +785,7 @@
   },
   {
     "id": "bubbastuffHappinessLoss",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -694,6 +793,7 @@
   },
   {
     "id": "bubbastuffDiceMulti",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -701,6 +801,7 @@
   },
   {
     "id": "bubbastuffSmokeMeatMulti",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": null,
@@ -708,6 +809,7 @@
   },
   {
     "id": "bubbastuffSpareCoinsFindChance",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": "chance",
@@ -715,6 +817,7 @@
   },
   {
     "id": "bubbastuffUpgCost",
+    "group": "W3",
     "system": "Bubba",
     "screen": "Bubba",
     "notShown": "cost",
@@ -722,6 +825,7 @@
   },
   {
     "id": "workbenchStuffTotalGildedBoostio",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -729,6 +833,7 @@
   },
   {
     "id": "workbenchStuffFlagReq_10",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": "cost",
@@ -736,6 +841,7 @@
   },
   {
     "id": "workbenchStuffCogBuildClaims",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -743,6 +849,7 @@
   },
   {
     "id": "workbenchStuffCogBuildReq_0_5",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": "cost",
@@ -750,6 +857,7 @@
   },
   {
     "id": "workbenchStuffTowerBuildReq",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": "cost",
@@ -757,6 +865,7 @@
   },
   {
     "id": "workbenchStuffTowerMatCost",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": "cost",
@@ -764,6 +873,7 @@
   },
   {
     "id": "workbenchStuffTowerSaltCost",
+    "group": "W3",
     "system": "Construction",
     "screen": "Construction",
     "notShown": "cost",
@@ -771,6 +881,7 @@
   },
   {
     "id": "refineryCapMulti",
+    "group": "W3",
     "system": "Refinery",
     "screen": "Refinery",
     "notShown": null,
@@ -778,6 +889,7 @@
   },
   {
     "id": "refineryCostsMulti_10",
+    "group": "W3",
     "system": "Refinery",
     "screen": "Refinery",
     "notShown": "cost",
@@ -785,6 +897,7 @@
   },
   {
     "id": "refineryFuelCalc",
+    "group": "W3",
     "system": "Refinery",
     "screen": "Refinery",
     "notShown": null,
@@ -792,6 +905,7 @@
   },
   {
     "id": "refineryRewardPct_50",
+    "group": "W3",
     "system": "Refinery",
     "screen": "Refinery",
     "notShown": null,
@@ -799,6 +913,7 @@
   },
   {
     "id": "workbenchStuffShrineHrREQ_10",
+    "group": "W3",
     "system": "Shrines",
     "screen": "Shrines",
     "notShown": "cost",
@@ -806,6 +921,7 @@
   },
   {
     "id": "atomColliderAtomCost",
+    "group": "W3",
     "system": "Atom Collider",
     "screen": "Atom Collider",
     "notShown": "cost",
@@ -813,6 +929,7 @@
   },
   {
     "id": "atomColliderAtomMaxLv",
+    "group": "W3",
     "system": "Atom Collider",
     "screen": "Atom Collider",
     "notShown": "cap",
@@ -820,6 +937,7 @@
   },
   {
     "id": "atomColliderAtomsAvailableAtAll",
+    "group": "W3",
     "system": "Atom Collider",
     "screen": "Atom Collider",
     "notShown": null,
@@ -827,6 +945,7 @@
   },
   {
     "id": "worshipStuffPrayerCost",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": "cost",
@@ -834,6 +953,7 @@
   },
   {
     "id": "worshipStuffSoulRewards_10",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": null,
@@ -841,6 +961,7 @@
   },
   {
     "id": "worshipStuffWaveMultiplier_10",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": null,
@@ -848,6 +969,7 @@
   },
   {
     "id": "worshipStuffNewTowerCost",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": "cost",
@@ -855,6 +977,7 @@
   },
   {
     "id": "towerStatsAtkcd_0_10",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": "rate",
@@ -862,6 +985,7 @@
   },
   {
     "id": "towerStatsCost_0_10",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": "cost",
@@ -869,6 +993,7 @@
   },
   {
     "id": "towerStatsRange_0_10",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": null,
@@ -876,6 +1001,7 @@
   },
   {
     "id": "worshipStuffSkullCurrency",
+    "group": "W3",
     "system": "Worship",
     "screen": "Prayers",
     "notShown": null,
@@ -883,6 +1009,7 @@
   },
   {
     "id": "skillstats2TrappingMinigame",
+    "group": "W3",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -890,6 +1017,7 @@
   },
   {
     "id": "dreamstuffBarFillReq",
+    "group": "W3",
     "system": "Equinox",
     "screen": null,
     "notShown": "cost",
@@ -897,6 +1025,7 @@
   },
   {
     "id": "dreamstuffBarFillRate",
+    "group": "W3",
     "system": "Equinox",
     "screen": null,
     "notShown": "rate",
@@ -904,6 +1033,7 @@
   },
   {
     "id": "dreamstuffUpgMaxLV_3",
+    "group": "W3",
     "system": "Equinox",
     "screen": null,
     "notShown": "cap",
@@ -911,6 +1041,7 @@
   },
   {
     "id": "dreamstuffUpgUnlocked",
+    "group": "W3",
     "system": "Equinox",
     "screen": null,
     "notShown": null,
@@ -918,6 +1049,7 @@
   },
   {
     "id": "dungeonStatCardChance",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -925,6 +1057,7 @@
   },
   {
     "id": "dungeonStatDungeonPassesUsedAtOnce",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -932,6 +1065,7 @@
   },
   {
     "id": "dungeonStatHP",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -939,6 +1073,7 @@
   },
   {
     "id": "dungeonStatMP",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -946,6 +1081,7 @@
   },
   {
     "id": "dungeonStatSPEED",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -953,6 +1089,7 @@
   },
   {
     "id": "dungeonStatWeaponPower",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -960,6 +1097,7 @@
   },
   {
     "id": "dungeonStatBossHPAdjust",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -967,6 +1105,7 @@
   },
   {
     "id": "dungeonStatDropRateAdjust",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "rate",
@@ -974,6 +1113,7 @@
   },
   {
     "id": "dungeonStatTimeToEndOfNextHappyHour",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "rate",
@@ -981,6 +1121,7 @@
   },
   {
     "id": "dungeonCalcPassiveStatCost",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "cost",
@@ -988,6 +1129,7 @@
   },
   {
     "id": "dungeonCalcPassiveStatCost2",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "cost",
@@ -995,6 +1137,7 @@
   },
   {
     "id": "dungeonCalcDungeonCreditBonus",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -1002,6 +1145,7 @@
   },
   {
     "id": "dungeonCalcDungeonKeychainFragBonus",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": null,
@@ -1009,6 +1153,7 @@
   },
   {
     "id": "dungeonCalcEnhanceDRcost_3",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "cost",
@@ -1016,6 +1161,7 @@
   },
   {
     "id": "dungeonCalcRngUpgCost",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "cost",
@@ -1023,6 +1169,7 @@
   },
   {
     "id": "dungeonCalcTraitLvReq",
+    "group": "W3",
     "system": "Dungeons",
     "screen": null,
     "notShown": "cost",
@@ -1030,6 +1177,7 @@
   },
   {
     "id": "breedingPetUpgBONUS",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1037,6 +1185,7 @@
   },
   {
     "id": "breedingPetUpgBONUS_s0_2",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1044,6 +1193,7 @@
   },
   {
     "id": "breedingPetUpgBONUS_s0_4",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1051,6 +1201,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1058,6 +1209,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_1",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1065,6 +1217,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_2",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1072,6 +1225,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_3",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1079,6 +1233,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_4",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1086,6 +1241,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_5",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1093,6 +1249,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_7",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1100,6 +1257,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_8",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1107,6 +1265,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_9",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1114,6 +1273,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_10",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1121,6 +1281,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_11",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1128,6 +1289,7 @@
   },
   {
     "id": "breedingPetUpgMaxLV_s0_12",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "cap",
@@ -1135,6 +1297,7 @@
   },
   {
     "id": "breedingSpecialzOverLVL",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1142,6 +1305,7 @@
   },
   {
     "id": "breedingCrystalmobDropMulti_mushG",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1149,6 +1313,7 @@
   },
   {
     "id": "breedingTotPetsFound",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1156,6 +1321,7 @@
   },
   {
     "id": "petStuffBlockChance",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "chance",
@@ -1163,6 +1329,7 @@
   },
   {
     "id": "petStuffCritChance",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": "chance",
@@ -1170,6 +1337,7 @@
   },
   {
     "id": "petStuffTotalDMG",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1177,6 +1345,7 @@
   },
   {
     "id": "petStuffTotalDMG_Basic",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1184,6 +1353,7 @@
   },
   {
     "id": "petStuffTotalHP",
+    "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -1191,6 +1361,7 @@
   },
   {
     "id": "summoning2RankREQcook",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1198,6 +1369,7 @@
   },
   {
     "id": "summoning2RankREQcook_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1205,6 +1377,7 @@
   },
   {
     "id": "summoning2RankREQcook_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1212,6 +1385,7 @@
   },
   {
     "id": "summoning2RankREQcook_3",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1219,6 +1393,7 @@
   },
   {
     "id": "summoning2RankREQcook_4",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1226,6 +1401,7 @@
   },
   {
     "id": "summoning2BonusMultiCook",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1233,6 +1409,7 @@
   },
   {
     "id": "summoning2BonusMultiCook_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1240,6 +1417,7 @@
   },
   {
     "id": "summoning2BonusMultiCook_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1247,6 +1425,7 @@
   },
   {
     "id": "summoning2BonusMultiCook_3",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1254,6 +1433,7 @@
   },
   {
     "id": "summoning2BonusMultiCook_4",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1261,6 +1441,7 @@
   },
   {
     "id": "summoning2IsMasteryUnlocked",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -1268,6 +1449,7 @@
   },
   {
     "id": "cookingRRibbonsMaxLV",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cap",
@@ -1275,6 +1457,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1282,6 +1465,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_0_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1289,6 +1473,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_0_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1296,6 +1481,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1303,6 +1489,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_1_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1310,6 +1497,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_1_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1317,6 +1505,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1324,6 +1513,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_2_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1331,6 +1521,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_2_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1338,6 +1529,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_3",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1345,6 +1537,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_3_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1352,6 +1545,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_3_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1359,6 +1553,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_4",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1366,6 +1561,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_4_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1373,6 +1569,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_4_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1380,6 +1577,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_5",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1387,6 +1585,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_5_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1394,6 +1593,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_5_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1401,6 +1601,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_6",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1408,6 +1609,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_6_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1415,6 +1617,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_6_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1422,6 +1625,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_7",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1429,6 +1633,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_7_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1436,6 +1641,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_7_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1443,6 +1649,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_8",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1450,6 +1657,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_8_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1457,6 +1665,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_8_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1464,6 +1673,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_9",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1471,6 +1681,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_9_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1478,6 +1689,7 @@
   },
   {
     "id": "cookingRCookingUpgSpiceCostType_9_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1485,6 +1697,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1492,6 +1705,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1499,6 +1713,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1506,6 +1721,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_3",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1513,6 +1729,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_4",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1520,6 +1737,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_5",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1527,6 +1745,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_6",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1534,6 +1753,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_7",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1541,6 +1761,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_8",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1548,6 +1769,7 @@
   },
   {
     "id": "cookingRCookingNewKitchenCoinCost_9",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1555,6 +1777,7 @@
   },
   {
     "id": "cookingRCookingFireREQlvMULTI",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1562,6 +1785,7 @@
   },
   {
     "id": "cookingRCookingReqToCook",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1569,6 +1793,7 @@
   },
   {
     "id": "cookingRCookingReqToCook_1",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1576,6 +1801,7 @@
   },
   {
     "id": "cookingRCookingReqToCook_2",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1583,6 +1809,7 @@
   },
   {
     "id": "cookingRCookingReqToCook_10",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1590,6 +1817,7 @@
   },
   {
     "id": "cookingRCookingReqToCook_30",
+    "group": "W4",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": "cost",
@@ -1597,6 +1825,7 @@
   },
   {
     "id": "labbBonusLineWidth_s0_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1604,6 +1833,7 @@
   },
   {
     "id": "labbBonusLineWidth_s0_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1611,6 +1841,7 @@
   },
   {
     "id": "labbBonusLineWidth_s0_3",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1618,6 +1849,7 @@
   },
   {
     "id": "labbBonusLineWidth_s0_4",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1625,6 +1857,7 @@
   },
   {
     "id": "labbPlayer_X",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1632,6 +1865,7 @@
   },
   {
     "id": "labbBubonicGreen",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1639,6 +1873,7 @@
   },
   {
     "id": "labbBubonicGreen_s0_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1646,6 +1881,7 @@
   },
   {
     "id": "labbBubonicGreen_s0_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1653,6 +1889,7 @@
   },
   {
     "id": "labbBubonicGreen_s0_3",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1660,6 +1897,7 @@
   },
   {
     "id": "labbBubonicGreen_s0_4",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1667,6 +1905,7 @@
   },
   {
     "id": "labbBubonicPurple",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1674,6 +1913,7 @@
   },
   {
     "id": "labbBubonicPurple_s0_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1681,6 +1921,7 @@
   },
   {
     "id": "labbBubonicPurple_s0_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1688,6 +1929,7 @@
   },
   {
     "id": "labbBubonicPurple_s0_3",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1695,6 +1937,7 @@
   },
   {
     "id": "labbBubonicPurple_s0_4",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1702,6 +1945,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1709,6 +1953,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1716,6 +1961,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1723,6 +1969,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1730,6 +1977,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1737,6 +1985,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1744,6 +1993,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1751,6 +2001,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1758,6 +2009,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1765,6 +2017,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1772,6 +2025,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned_1",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1779,6 +2033,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned_2",
+    "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -1786,6 +2041,7 @@
   },
   {
     "id": "riftStuffMob",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1793,6 +2049,7 @@
   },
   {
     "id": "riftStuffRiftBonus",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1800,6 +2057,7 @@
   },
   {
     "id": "riftStuffRiftBonus_1",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1807,6 +2065,7 @@
   },
   {
     "id": "riftStuffRiftBonus_2",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1814,6 +2073,7 @@
   },
   {
     "id": "riftStuffRiftBonus_3",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1821,6 +2081,7 @@
   },
   {
     "id": "riftStuffRiftBonus_4",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1828,6 +2089,7 @@
   },
   {
     "id": "riftStuffMobRespBase",
+    "group": "W4",
     "system": "Rift",
     "screen": null,
     "notShown": null,
@@ -1835,6 +2097,7 @@
   },
   {
     "id": "holes2FountainBonTOT",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -1842,6 +2105,7 @@
   },
   {
     "id": "holesOpalsOwnedToInvest",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -1849,6 +2113,7 @@
   },
   {
     "id": "holesBuildCost_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Engineer",
     "notShown": "cost",
@@ -1856,6 +2121,7 @@
   },
   {
     "id": "holesBuildCost_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Engineer",
     "notShown": "cost",
@@ -1863,6 +2129,7 @@
   },
   {
     "id": "holesBuildCost_3",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Engineer",
     "notShown": "cost",
@@ -1870,6 +2137,7 @@
   },
   {
     "id": "holesBuildCost_4",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Engineer",
     "notShown": "cost",
@@ -1877,6 +2145,7 @@
   },
   {
     "id": "holesCosmoUpgCoded",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -1884,6 +2153,7 @@
   },
   {
     "id": "holesCosmoUpgCoded_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -1891,6 +2161,7 @@
   },
   {
     "id": "holesCosmoUpgCoded_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -1898,6 +2169,7 @@
   },
   {
     "id": "holesEnhanceMaxLV",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "cap",
@@ -1905,6 +2177,7 @@
   },
   {
     "id": "holesEnhanceMaxLV_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "cap",
@@ -1912,6 +2185,7 @@
   },
   {
     "id": "holesEnhanceMaxLV_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "cap",
@@ -1919,6 +2193,7 @@
   },
   {
     "id": "holesMeasurementMulti_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1926,6 +2201,7 @@
   },
   {
     "id": "holesMeasurementMulti_5",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1933,6 +2209,7 @@
   },
   {
     "id": "holesMeasurementMulti_8",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1940,6 +2217,7 @@
   },
   {
     "id": "holesMeasurementMulti_11",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1947,6 +2225,7 @@
   },
   {
     "id": "holesMeasurementMulti_12",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1954,6 +2233,7 @@
   },
   {
     "id": "holesMeasurementMulti_13",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1961,6 +2241,7 @@
   },
   {
     "id": "holesMeasurementMulti_14",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1968,6 +2249,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_0_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1975,6 +2257,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_1_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1982,6 +2265,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_2_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1989,6 +2273,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_3_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -1996,6 +2281,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_5_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2003,6 +2289,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_6_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2010,6 +2297,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_7_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2017,6 +2305,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_8_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2024,6 +2313,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_9_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2031,6 +2321,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_10_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2038,6 +2329,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_11_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2045,6 +2337,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_12_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2052,6 +2345,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_13_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2059,6 +2353,7 @@
   },
   {
     "id": "holesMeasurementQTYfound_14_99",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers › Measurements",
     "notShown": null,
@@ -2066,6 +2361,7 @@
   },
   {
     "id": "holesBucketsOwned",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Well",
     "notShown": null,
@@ -2073,6 +2369,7 @@
   },
   {
     "id": "holesBraveryBlueChestChanceDEC",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Bravery",
     "notShown": "chance",
@@ -2080,6 +2377,7 @@
   },
   {
     "id": "holesJusticeBlueChestChanceDEC",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Justice",
     "notShown": "chance",
@@ -2087,6 +2385,7 @@
   },
   {
     "id": "holesBraverySwordsOwned",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Bravery",
     "notShown": null,
@@ -2094,6 +2393,7 @@
   },
   {
     "id": "holesMaxRerolls",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "cap",
@@ -2101,6 +2401,7 @@
   },
   {
     "id": "holesMaxRevisions",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "cap",
@@ -2108,6 +2409,7 @@
   },
   {
     "id": "holesBraveryMonsterHP",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Bravery",
     "notShown": null,
@@ -2115,6 +2417,7 @@
   },
   {
     "id": "holesWattempts",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Wisdom",
     "notShown": null,
@@ -2122,6 +2425,7 @@
   },
   {
     "id": "holesWinstamatches",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Wisdom",
     "notShown": null,
@@ -2129,6 +2433,7 @@
   },
   {
     "id": "holesWtimePerMatch",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Wisdom",
     "notShown": "rate",
@@ -2136,6 +2441,7 @@
   },
   {
     "id": "holesHarpPOWperHR",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Harp",
     "notShown": "rate",
@@ -2143,6 +2449,7 @@
   },
   {
     "id": "holesHarpNoteProduced",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Harp",
     "notShown": null,
@@ -2150,6 +2457,7 @@
   },
   {
     "id": "holesHarpOpalOdds",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Harp",
     "notShown": "chance",
@@ -2157,6 +2465,7 @@
   },
   {
     "id": "holesLampWishCost_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Lamp",
     "notShown": "cost",
@@ -2164,6 +2473,7 @@
   },
   {
     "id": "holesLampWishCost_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Lamp",
     "notShown": "cost",
@@ -2171,6 +2481,7 @@
   },
   {
     "id": "holesMonarchHP",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -2178,6 +2489,7 @@
   },
   {
     "id": "holesTempleTorchCost",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Temple",
     "notShown": "cost",
@@ -2185,6 +2497,7 @@
   },
   {
     "id": "holesFountMarbleizeCost",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2192,6 +2505,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_0_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2199,6 +2513,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_0_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2206,6 +2521,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2213,6 +2529,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_1_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2220,6 +2537,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_1_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2227,6 +2545,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2234,6 +2553,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_2_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2241,6 +2561,7 @@
   },
   {
     "id": "holesFountMarbleizeCost_2_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "cost",
@@ -2248,6 +2569,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2255,6 +2577,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_0_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2262,6 +2585,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_0_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2269,6 +2593,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2276,6 +2601,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_1_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2283,6 +2609,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_1_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2290,6 +2617,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2297,6 +2625,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_2_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2304,6 +2633,7 @@
   },
   {
     "id": "holes2FountainMarbleBonNEXT_2_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": null,
@@ -2311,6 +2641,7 @@
   },
   {
     "id": "holes2FountainBarSpeed_1",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "rate",
@@ -2318,6 +2649,7 @@
   },
   {
     "id": "holes2FountainBarSpeed_2",
+    "group": "W5",
     "system": "The Hole",
     "screen": "Fountain",
     "notShown": "rate",
@@ -2325,6 +2657,7 @@
   },
   {
     "id": "holes2CglunkoAFKgains",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": "rate",
@@ -2332,6 +2665,7 @@
   },
   {
     "id": "holes2CglunkoMKtier",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -2339,6 +2673,7 @@
   },
   {
     "id": "holes2CglunkoRespawn",
+    "group": "W5",
     "system": "The Hole",
     "screen": "The Hole › Villagers",
     "notShown": null,
@@ -2346,6 +2681,7 @@
   },
   {
     "id": "holesAmpStoneMAX",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2353,6 +2689,7 @@
   },
   {
     "id": "holesAmpStoneMAX_1",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2360,6 +2697,7 @@
   },
   {
     "id": "holesAmpStoneMAX_2",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2367,6 +2705,7 @@
   },
   {
     "id": "holesAmpStoneMAX_3",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2374,6 +2713,7 @@
   },
   {
     "id": "holesAmpStoneMAX_4",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2381,6 +2721,7 @@
   },
   {
     "id": "holesAmpStoneMAX_5",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2388,6 +2729,7 @@
   },
   {
     "id": "holesAmpStoneMAX_6",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2395,6 +2737,7 @@
   },
   {
     "id": "holesAmpStoneMAX_7",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2402,6 +2745,7 @@
   },
   {
     "id": "holesAmpStonesOwned",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": null,
@@ -2409,6 +2753,7 @@
   },
   {
     "id": "holesAmpDebuff_2",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": null,
@@ -2416,6 +2761,7 @@
   },
   {
     "id": "holesAmpDebuff_5",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": null,
@@ -2423,6 +2769,7 @@
   },
   {
     "id": "holesAmpDebuff_6",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": null,
@@ -2430,6 +2777,7 @@
   },
   {
     "id": "holesAmpDebuff_7",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": null,
@@ -2437,6 +2785,7 @@
   },
   {
     "id": "holesFearMAX",
+    "group": "W5",
     "system": "Amps",
     "screen": "The Den",
     "notShown": "cap",
@@ -2444,6 +2793,7 @@
   },
   {
     "id": "divinityStyleLvReq",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2451,6 +2801,7 @@
   },
   {
     "id": "divinityStyleLvReq_1",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2458,6 +2809,7 @@
   },
   {
     "id": "divinityStyleLvReq_2",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2465,6 +2817,7 @@
   },
   {
     "id": "divinityStyleLvReq_3",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2472,6 +2825,7 @@
   },
   {
     "id": "divinityStyleLvReq_4",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2479,6 +2833,7 @@
   },
   {
     "id": "divinityStyleLvReq_5",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": "cost",
@@ -2486,6 +2841,7 @@
   },
   {
     "id": "divinityDivMulti_1",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": null,
@@ -2493,6 +2849,7 @@
   },
   {
     "id": "divinityDivMulti_3",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": null,
@@ -2500,6 +2857,7 @@
   },
   {
     "id": "divinityDivMulti_4",
+    "group": "W5",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": null,
@@ -2507,6 +2865,7 @@
   },
   {
     "id": "sailingArtifactChance",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "chance",
@@ -2514,6 +2873,7 @@
   },
   {
     "id": "sailingArtifactChance_1",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "chance",
@@ -2521,6 +2881,7 @@
   },
   {
     "id": "sailingRareTreasureChance",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "chance",
@@ -2528,6 +2889,7 @@
   },
   {
     "id": "sailingBoatUpgCostType",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2535,6 +2897,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_0_1",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2542,6 +2905,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_1",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2549,6 +2913,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_1_1",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2556,6 +2921,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_2",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2563,6 +2929,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_3",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2570,6 +2937,7 @@
   },
   {
     "id": "sailingBoatUpgCostType_4",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2577,6 +2945,7 @@
   },
   {
     "id": "sailingBuyCaptainCostType",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": "cost",
@@ -2584,6 +2953,7 @@
   },
   {
     "id": "sailingIslandDistance",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -2591,6 +2961,7 @@
   },
   {
     "id": "sailingIslandDistance_1",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -2598,6 +2969,7 @@
   },
   {
     "id": "sailingIslandDistance_2",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -2605,6 +2977,7 @@
   },
   {
     "id": "sailingIslandDistance_3",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -2612,6 +2985,7 @@
   },
   {
     "id": "sailingIslandDistance_4",
+    "group": "W5",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -2619,6 +2993,7 @@
   },
   {
     "id": "gamingStatTypeBoxCost_1",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2626,6 +3001,7 @@
   },
   {
     "id": "gamingStatTypeBoxCost_2",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2633,6 +3009,7 @@
   },
   {
     "id": "gamingStatTypeSuperbitCost_1",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2640,6 +3017,7 @@
   },
   {
     "id": "gamingStatTypeSuperbitCost_3",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2647,6 +3025,7 @@
   },
   {
     "id": "gamingStatTypeSuperbitCost_4",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2654,6 +3033,7 @@
   },
   {
     "id": "gamingStatTypeExtraLuckFromEvo",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2661,6 +3041,7 @@
   },
   {
     "id": "gamingStatTypeExtraLuckFromEvo_1",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2668,6 +3049,7 @@
   },
   {
     "id": "gamingStatTypeExtraLuckFromEvo_2",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2675,6 +3057,7 @@
   },
   {
     "id": "gamingStatTypeRatBitMulti",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2682,6 +3065,7 @@
   },
   {
     "id": "gamingStatTypeRatShopBonuses",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2689,6 +3073,7 @@
   },
   {
     "id": "gamingStatTypeRatShopCost",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cost",
@@ -2696,6 +3081,7 @@
   },
   {
     "id": "gamingStatTypeMaxSnailLV",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": "cap",
@@ -2703,6 +3089,7 @@
   },
   {
     "id": "gamingStatTypeImportItemBonus",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2710,6 +3097,7 @@
   },
   {
     "id": "gamingStatTypeImportItemBonus_3",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2717,6 +3105,7 @@
   },
   {
     "id": "gamingStatTypeImportItemBonus_4",
+    "group": "W5",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -2724,6 +3113,7 @@
   },
   {
     "id": "farmingStuffsNextCropChanceDENOM",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": "chance",
@@ -2731,6 +3121,7 @@
   },
   {
     "id": "farmingStuffsLandRank5thColumnMaxLV",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": "cap",
@@ -2738,6 +3129,7 @@
   },
   {
     "id": "farmingStuffsPCTofExoticPurchasesFREE",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -2745,6 +3137,7 @@
   },
   {
     "id": "farmingStuffsExoticLVQTY",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -2752,6 +3145,7 @@
   },
   {
     "id": "farmingStuffsExoticOrganicsLEFT",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -2759,6 +3153,7 @@
   },
   {
     "id": "farmingStuffsMarketCostType",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": "cost",
@@ -2766,6 +3161,7 @@
   },
   {
     "id": "farmingStuffsMarketMaxLV",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": "cap",
@@ -2773,6 +3169,7 @@
   },
   {
     "id": "farmingStuffsCropsFound",
+    "group": "W6",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -2780,6 +3177,7 @@
   },
   {
     "id": "ninjaEmporiumBonus",
+    "group": "W6",
     "system": "Sneaking",
     "screen": "Sneaking",
     "notShown": null,
@@ -2787,6 +3185,7 @@
   },
   {
     "id": "ninjaAvailableEmporiumPurchases",
+    "group": "W6",
     "system": "Sneaking",
     "screen": "Sneaking",
     "notShown": null,
@@ -2794,6 +3193,7 @@
   },
   {
     "id": "arcaneTypeArcaneCRITDMG",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2801,6 +3201,7 @@
   },
   {
     "id": "arcaneTypeArcaneMASTERY",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2808,6 +3209,7 @@
   },
   {
     "id": "arcaneTypeRingDropQuality",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2815,6 +3217,7 @@
   },
   {
     "id": "arcaneTypeTenteyeclePCT",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2822,6 +3225,7 @@
   },
   {
     "id": "arcaneTypeWepDropQuality",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2829,6 +3233,7 @@
   },
   {
     "id": "arcaneTypeArcaneAttackSpdPCT",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2836,6 +3241,7 @@
   },
   {
     "id": "arcaneTypeArcaneCRITPCT",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2843,6 +3249,7 @@
   },
   {
     "id": "arcaneTypeArcaneDMG",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2850,6 +3257,7 @@
   },
   {
     "id": "arcaneTypeArcaneMapMulti",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2857,6 +3265,7 @@
   },
   {
     "id": "arcaneTypeRingDropChance",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": "chance",
@@ -2864,6 +3273,7 @@
   },
   {
     "id": "arcaneTypeWepDropChance",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": "chance",
@@ -2871,6 +3281,7 @@
   },
   {
     "id": "arcaneTypeArcaneTachyonQTYbase",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2878,6 +3289,7 @@
   },
   {
     "id": "arcaneTypeArcaneTachyonType",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": null,
@@ -2885,6 +3297,7 @@
   },
   {
     "id": "arcaneTypeKillsReq",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": "cost",
@@ -2892,6 +3305,7 @@
   },
   {
     "id": "arcaneTypeTimeLeft",
+    "group": "W6",
     "system": "Tesseract",
     "screen": "Tesseract",
     "notShown": "rate",
@@ -2899,6 +3313,7 @@
   },
   {
     "id": "windwalkerCompassDustQTYbase",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": null,
@@ -2906,6 +3321,7 @@
   },
   {
     "id": "windwalkerCompassDustType",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": null,
@@ -2913,6 +3329,7 @@
   },
   {
     "id": "windwalkerTempestWeaponXtraPowerChance",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": "chance",
@@ -2920,6 +3337,7 @@
   },
   {
     "id": "windwalkerPortalCostQTY",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": "cost",
@@ -2927,6 +3345,7 @@
   },
   {
     "id": "windwalkerPortalCostType",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": "cost",
@@ -2934,6 +3353,7 @@
   },
   {
     "id": "windwalkerInitializeTitanHP",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": null,
@@ -2941,6 +3361,7 @@
   },
   {
     "id": "windwalkerMobWeakness",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": null,
@@ -2948,6 +3369,7 @@
   },
   {
     "id": "windwalkerTitanKillReqTown",
+    "group": "W6",
     "system": "Compass",
     "screen": "Compass",
     "notShown": "cost",
@@ -2955,6 +3377,7 @@
   },
   {
     "id": "summoningGrimoireCRITDMG",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2962,6 +3385,7 @@
   },
   {
     "id": "summoningGrimoireDEF",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2969,6 +3393,7 @@
   },
   {
     "id": "summoningGrimoireMASTERY",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2976,6 +3401,7 @@
   },
   {
     "id": "summoningGrimoireACC",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2983,6 +3409,7 @@
   },
   {
     "id": "summoningGrimoireCRITPCT",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2990,6 +3417,7 @@
   },
   {
     "id": "summoningGrimoireHP",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -2997,6 +3425,7 @@
   },
   {
     "id": "summoningGrimoireBoneQTYbase",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -3004,6 +3433,7 @@
   },
   {
     "id": "summoningGrimoireBoneType",
+    "group": "W6",
     "system": "Grimoire",
     "screen": "Grimoire",
     "notShown": null,
@@ -3011,6 +3441,7 @@
   },
   {
     "id": "thingiesMaxEmperorAttemptStack",
+    "group": "W6",
     "system": "Emperor",
     "screen": "Emperor Showdown",
     "notShown": "cap",
@@ -3018,6 +3449,7 @@
   },
   {
     "id": "thingiesDailyEmperorTries",
+    "group": "W6",
     "system": "Emperor",
     "screen": "Emperor Showdown",
     "notShown": "rate",
@@ -3025,6 +3457,7 @@
   },
   {
     "id": "royalGSFmaxLV",
+    "group": "W7",
     "system": "Royal Armory",
     "screen": "Royal Armory",
     "notShown": "cap",
@@ -3032,6 +3465,7 @@
   },
   {
     "id": "royalGParchmentDouble",
+    "group": "W7",
     "system": "Royal Armory",
     "screen": "Royal Armory",
     "notShown": null,
@@ -3039,6 +3473,7 @@
   },
   {
     "id": "royalGParchmentRecycle",
+    "group": "W7",
     "system": "Royal Armory",
     "screen": "Royal Armory",
     "notShown": null,
@@ -3046,6 +3481,7 @@
   },
   {
     "id": "royalGRatDMG",
+    "group": "W7",
     "system": "Royal Armory",
     "screen": "Royal Armory",
     "notShown": null,
@@ -3053,6 +3489,7 @@
   },
   {
     "id": "royalGRatResp",
+    "group": "W7",
     "system": "Royal Armory",
     "screen": "Royal Armory",
     "notShown": null,
@@ -3060,6 +3497,7 @@
   },
   {
     "id": "thingiesLegendPTSspent",
+    "group": "W7",
     "system": "Legend Talents",
     "screen": "Legend Talents",
     "notShown": null,
@@ -3067,6 +3505,7 @@
   },
   {
     "id": "spelunkMiscDropChance",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": "chance",
@@ -3074,6 +3513,7 @@
   },
   {
     "id": "spelunkGrandDiscoveriesTotal",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3081,6 +3521,7 @@
   },
   {
     "id": "spelunkTollExitTax",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3088,6 +3529,7 @@
   },
   {
     "id": "spelunkOverstimBonus2",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3095,6 +3537,7 @@
   },
   {
     "id": "spelunkElixirMaxDupes",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": "cap",
@@ -3102,6 +3545,7 @@
   },
   {
     "id": "spelunkElixirSlotsOwned",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3109,6 +3553,7 @@
   },
   {
     "id": "spelunkRockAmber",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3116,6 +3561,7 @@
   },
   {
     "id": "spelunkRockHP",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -3123,6 +3569,7 @@
   },
   {
     "id": "spelunkRockPOWreq",
+    "group": "W7",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": "cost",
@@ -3130,6 +3577,7 @@
   },
   {
     "id": "spelunkBigFishCost",
+    "group": "W7",
     "system": "Big Fish",
     "screen": "Spelunking",
     "notShown": "cost",
@@ -3137,6 +3585,7 @@
   },
   {
     "id": "spelunkIsBigFishUpgUnlocked",
+    "group": "W7",
     "system": "Big Fish",
     "screen": "Spelunking",
     "notShown": null,
@@ -3144,6 +3593,7 @@
   },
   {
     "id": "researchStuffGridPTSspent_m1",
+    "group": "W7",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -3151,6 +3601,7 @@
   },
   {
     "id": "researchStuffMagnifiersPerSlot",
+    "group": "W7",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -3158,6 +3609,7 @@
   },
   {
     "id": "thingiesClamPromochance",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": "chance",
@@ -3165,6 +3617,7 @@
   },
   {
     "id": "thingiesClamzHP_1",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": null,
@@ -3172,6 +3625,7 @@
   },
   {
     "id": "thingiesClamBlackPearlValue",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": null,
@@ -3179,6 +3633,7 @@
   },
   {
     "id": "thingiesClamPearl10x",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": null,
@@ -3186,6 +3641,7 @@
   },
   {
     "id": "thingiesClamCost_9",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": "cost",
@@ -3193,6 +3649,7 @@
   },
   {
     "id": "thingiesClamMobs",
+    "group": "W7",
     "system": "Clam Work",
     "screen": "The Clamworks",
     "notShown": null,
@@ -3200,6 +3657,7 @@
   },
   {
     "id": "summoning2MeritocBonusz_9",
+    "group": "W7",
     "system": "Meritocracy",
     "screen": "Multi Meritocracy",
     "notShown": null,
@@ -3207,6 +3665,7 @@
   },
   {
     "id": "summoning2MeritocCanVote",
+    "group": "W7",
     "system": "Meritocracy",
     "screen": "Multi Meritocracy",
     "notShown": null,
@@ -3214,6 +3673,7 @@
   },
   {
     "id": "thingiesLegendPTSbonus",
+    "group": "W7",
     "system": "Legend Talents",
     "screen": "Legend Talents",
     "notShown": null,
@@ -3221,6 +3681,7 @@
   },
   {
     "id": "thingiesZenithMarketBonus",
+    "group": "W7",
     "system": "Zenith Market",
     "screen": "Zenith Market",
     "notShown": null,
@@ -3228,6 +3689,7 @@
   },
   {
     "id": "thingiesOrbletMarketBonus",
+    "group": "W7",
     "system": "Orblet Market",
     "screen": "Lil Orblet Shop",
     "notShown": null,
@@ -3235,6 +3697,7 @@
   },
   {
     "id": "mineheadMinesOpp",
+    "group": "W7",
     "system": "Minehead",
     "screen": "Mr. Minehead's Depth Charge",
     "notShown": null,
@@ -3242,6 +3705,7 @@
   },
   {
     "id": "mineheadDailyTries",
+    "group": "W7",
     "system": "Minehead",
     "screen": "Mr. Minehead's Depth Charge",
     "notShown": "rate",
@@ -3249,6 +3713,7 @@
   },
   {
     "id": "mineheadCurrentOutgoingDMG",
+    "group": "W7",
     "system": "Minehead",
     "screen": "Mr. Minehead's Depth Charge",
     "notShown": null,
@@ -3256,6 +3721,7 @@
   },
   {
     "id": "sushiStuffCurrencyPerTier_20",
+    "group": "W7",
     "system": "Sushi Station",
     "screen": "Sushi Station",
     "notShown": null,
@@ -3263,6 +3729,7 @@
   },
   {
     "id": "sushiStuffFuelCost",
+    "group": "W7",
     "system": "Sushi Station",
     "screen": "Sushi Station",
     "notShown": "cost",
@@ -3270,6 +3737,7 @@
   },
   {
     "id": "sushiStuffUpgLvREQ",
+    "group": "W7",
     "system": "Sushi Station",
     "screen": "Sushi Station",
     "notShown": "cost",
@@ -3277,6 +3745,7 @@
   },
   {
     "id": "jellyOperationBossAtkCD",
+    "group": "W7",
     "system": "Jelly Operator",
     "screen": "Jelly Operator",
     "notShown": "rate",
@@ -3284,6 +3753,7 @@
   },
   {
     "id": "jellyOperationDailyTries",
+    "group": "W7",
     "system": "Jelly Operator",
     "screen": "Jelly Operator",
     "notShown": "rate",
@@ -3291,6 +3761,7 @@
   },
   {
     "id": "menagerieStuffCost",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": "cost",
@@ -3298,6 +3769,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_2",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3305,6 +3777,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_6",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3312,6 +3785,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_13",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3319,6 +3793,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_18",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3326,6 +3801,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_25",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3333,6 +3809,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_26",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3340,6 +3817,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_27",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3347,6 +3825,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_28",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3354,6 +3833,7 @@
   },
   {
     "id": "menagerieStuffMissionProg_29",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3361,6 +3841,7 @@
   },
   {
     "id": "menagerieStuffJellyOpDoublersLEFT",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3368,6 +3849,7 @@
   },
   {
     "id": "menagerieStuffMineheadDoublersLEFT",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3375,6 +3857,7 @@
   },
   {
     "id": "menagerieStuffSushiDoublersLEFT",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3382,6 +3865,7 @@
   },
   {
     "id": "menagerieStuffOrganicLabelOwned",
+    "group": "W7",
     "system": "Luminous Menagerie",
     "screen": "Luminous Menagerie",
     "notShown": null,
@@ -3389,6 +3873,7 @@
   },
   {
     "id": "thingiesDancingCoralCOST",
+    "group": "W7",
     "system": "Coral Reef",
     "screen": "Coral Reef",
     "notShown": "cost",
@@ -3396,6 +3881,7 @@
   },
   {
     "id": "thingiesCoralKidUpgCost_1",
+    "group": "W7",
     "system": "Coral Kid",
     "screen": "Coral Kid",
     "notShown": "cost",
@@ -3403,6 +3889,7 @@
   },
   {
     "id": "hourlyKillRateMining",
+    "group": "Mining",
     "system": "Mining",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3410,6 +3897,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Mining",
+    "group": "Mining",
     "system": "Mining",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3417,6 +3905,7 @@
   },
   {
     "id": "anvilProduceStatsProdSpdBonus",
+    "group": "Smithing",
     "system": "Smithing",
     "screen": "Anvil › Produce",
     "notShown": null,
@@ -3424,6 +3913,7 @@
   },
   {
     "id": "anvilProduceStatsProdSpdBonusFromAGI",
+    "group": "Smithing",
     "system": "Smithing",
     "screen": "Anvil › Produce",
     "notShown": null,
@@ -3431,6 +3921,7 @@
   },
   {
     "id": "forgeStats_2",
+    "group": "Smithing",
     "system": "Smithing",
     "screen": "Anvil › Produce",
     "notShown": null,
@@ -3438,6 +3929,7 @@
   },
   {
     "id": "forgeStats_5",
+    "group": "Smithing",
     "system": "Smithing",
     "screen": "Anvil › Produce",
     "notShown": null,
@@ -3445,6 +3937,7 @@
   },
   {
     "id": "hourlyKillRateChoppin",
+    "group": "Choppin",
     "system": "Choppin",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3452,6 +3945,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Choppin",
+    "group": "Choppin",
     "system": "Choppin",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3459,6 +3953,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Fishing",
+    "group": "Fishing",
     "system": "Fishing",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3466,6 +3961,7 @@
   },
   {
     "id": "fishingToolkitEXP",
+    "group": "Fishing",
     "system": "Fishing",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3473,6 +3969,7 @@
   },
   {
     "id": "fishingToolkitPOW",
+    "group": "Fishing",
     "system": "Fishing",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3480,6 +3977,7 @@
   },
   {
     "id": "fishingToolkitSPEED",
+    "group": "Fishing",
     "system": "Fishing",
     "screen": "Items › Skills",
     "notShown": null,
@@ -3487,6 +3985,7 @@
   },
   {
     "id": "cauldronStatsCauldronLvsBrewBonus_0_2",
+    "group": "Alchemy",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -3494,6 +3993,7 @@
   },
   {
     "id": "cauldronStatsMaxCauldronQTY",
+    "group": "Alchemy",
     "system": "Alchemy",
     "screen": "Alchemy",
     "notShown": null,
@@ -3501,6 +4001,7 @@
   },
   {
     "id": "hourlyKillRateCatching",
+    "group": "Catching",
     "system": "Catching",
     "screen": "Items › Skills › Catching",
     "notShown": null,
@@ -3508,6 +4009,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Catching",
+    "group": "Catching",
     "system": "Catching",
     "screen": "Items › Skills › Catching",
     "notShown": null,
@@ -3515,6 +4017,7 @@
   },
   {
     "id": "trappingStuffsNumOfTrapsPlaceable",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3522,6 +4025,7 @@
   },
   {
     "id": "trappingStuffsBaseQTY_1",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3529,6 +4033,7 @@
   },
   {
     "id": "trappingStuffsCollectAllPCT",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3536,6 +4041,7 @@
   },
   {
     "id": "trappingStuffsCollectAllPCTexp",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3543,6 +4049,7 @@
   },
   {
     "id": "trappingStuffsEfficiencyBonusQTY",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3550,6 +4057,7 @@
   },
   {
     "id": "trappingStuffsRareBonusOnOpen",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3557,6 +4065,7 @@
   },
   {
     "id": "trappingStuffsRareBonusOnOpenMULTI",
+    "group": "Trapping",
     "system": "Trapping",
     "screen": "Trapping",
     "notShown": null,
@@ -3564,6 +4073,7 @@
   },
   {
     "id": "workbenchStuffExtraBuildSPDmulti",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3571,6 +4081,7 @@
   },
   {
     "id": "workbenchStuffExtraConEXPmulti",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3578,6 +4089,7 @@
   },
   {
     "id": "workbenchStuffExtraFlaggyRatemulti",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3585,6 +4097,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3592,6 +4105,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_1",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3599,6 +4113,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_2",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3606,6 +4121,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_3",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3613,6 +4129,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_4",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3620,6 +4137,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_5",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3627,6 +4145,7 @@
   },
   {
     "id": "workbenchStuffConstMasteryBonus_6",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3634,6 +4153,7 @@
   },
   {
     "id": "workbenchStuffAdditionExtraPrinting",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3641,6 +4161,7 @@
   },
   {
     "id": "workbenchStuffExtraPrinting",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3648,6 +4169,7 @@
   },
   {
     "id": "workbenchStuffPrinterBigSlots",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3655,6 +4177,7 @@
   },
   {
     "id": "workbenchStuffPrinterSampleSlots",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3662,6 +4185,7 @@
   },
   {
     "id": "workbenchStuffCogSlots",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3669,6 +4193,7 @@
   },
   {
     "id": "workbenchStuffTowerBuildSlots",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3676,6 +4201,7 @@
   },
   {
     "id": "workbenchStuffMinBookLv",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3683,6 +4209,7 @@
   },
   {
     "id": "workbenchStuffExtraMaxLvAtom_50",
+    "group": "Construction",
     "system": "Construction",
     "screen": "Construction",
     "notShown": null,
@@ -3690,6 +4217,7 @@
   },
   {
     "id": "worshipStuffSoulRewards",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3697,6 +4225,7 @@
   },
   {
     "id": "worshipStuffExpRewards",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3704,6 +4233,7 @@
   },
   {
     "id": "worshipStuffWaveMultiplier",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3711,6 +4241,7 @@
   },
   {
     "id": "worshipStuffTotemHPtotal",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3718,6 +4249,7 @@
   },
   {
     "id": "worshipStuffEfficiencyBonusQTY",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3725,6 +4257,7 @@
   },
   {
     "id": "worshipStuffSkullCurrency_10",
+    "group": "Worship",
     "system": "Worship",
     "screen": "Worship Totem",
     "notShown": null,
@@ -3732,6 +4265,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Cooking",
+    "group": "Cooking",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -3739,6 +4273,7 @@
   },
   {
     "id": "cookingRCookingMealBonusMultioo",
+    "group": "Cooking",
     "system": "Cooking",
     "screen": "Cooking",
     "notShown": null,
@@ -3746,6 +4281,7 @@
   },
   {
     "id": "breedingPetQTYonBreed",
+    "group": "Breeding",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -3753,6 +4289,7 @@
   },
   {
     "id": "breedingCrystalmobDropMulti_Crystal0",
+    "group": "Breeding",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -3760,6 +4297,7 @@
   },
   {
     "id": "breedingGeneticsPerTrashPet",
+    "group": "Breeding",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -3767,6 +4305,7 @@
   },
   {
     "id": "breedingFenceYardSlots",
+    "group": "Breeding",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -3774,6 +4313,7 @@
   },
   {
     "id": "breedingPetBattleSlots",
+    "group": "Breeding",
     "system": "Breeding",
     "screen": "Breeding",
     "notShown": null,
@@ -3781,6 +4321,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Laboratory",
+    "group": "Laboratory",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -3788,6 +4329,7 @@
   },
   {
     "id": "labbDist_Player",
+    "group": "Laboratory",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -3795,6 +4337,7 @@
   },
   {
     "id": "labbBonusLineWidth",
+    "group": "Laboratory",
     "system": "Laboratory",
     "screen": "Lab",
     "notShown": null,
@@ -3802,6 +4345,7 @@
   },
   {
     "id": "sailingAncientChances",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3809,6 +4353,7 @@
   },
   {
     "id": "sailingAncientChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3816,6 +4361,7 @@
   },
   {
     "id": "sailingEldritchChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3823,6 +4369,7 @@
   },
   {
     "id": "sailingOmnipotentChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3830,6 +4377,7 @@
   },
   {
     "id": "sailingSovereignChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3837,6 +4385,7 @@
   },
   {
     "id": "sailingTranscendentChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3844,6 +4393,7 @@
   },
   {
     "id": "sailingVerisimilitudeChances_5",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3851,6 +4401,7 @@
   },
   {
     "id": "sailingBoatArtiMulti",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3858,6 +4409,7 @@
   },
   {
     "id": "sailingBoatValue",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3865,6 +4417,7 @@
   },
   {
     "id": "sailingCloudDiscoverBonus",
+    "group": "Sailing",
     "system": "Sailing",
     "screen": "Sailing",
     "notShown": null,
@@ -3872,6 +4425,7 @@
   },
   {
     "id": "divinityDivMulti",
+    "group": "Divinity",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": null,
@@ -3879,6 +4433,7 @@
   },
   {
     "id": "divinityBlessingMaxLV",
+    "group": "Divinity",
     "system": "Divinity",
     "screen": "Divinity",
     "notShown": null,
@@ -3886,6 +4441,7 @@
   },
   {
     "id": "gamingStatTypeSproutCapacity",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3893,6 +4449,7 @@
   },
   {
     "id": "gamingStatTypeSproutGrowthCHANCE_m1",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3900,6 +4457,7 @@
   },
   {
     "id": "gamingStatTypeSproutGrowthCHANCEperMUT",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3907,6 +4465,7 @@
   },
   {
     "id": "gamingStatTypeSproutValueTOTAL",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3914,6 +4473,7 @@
   },
   {
     "id": "gamingStatTypeSproutMaxEvo",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3921,6 +4481,7 @@
   },
   {
     "id": "gamingStatTypeLVupChance",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3928,6 +4489,7 @@
   },
   {
     "id": "gamingStatTypeNewMutantChanceDEC",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3935,6 +4497,7 @@
   },
   {
     "id": "gamingStatTypePaletteLuck",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3942,6 +4505,7 @@
   },
   {
     "id": "gamingStatTypeLogGameMulti",
+    "group": "Gaming",
     "system": "Gaming",
     "screen": "Gaming",
     "notShown": null,
@@ -3949,6 +4513,7 @@
   },
   {
     "id": "farmingStuffsNextOGchance",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3956,6 +4521,7 @@
   },
   {
     "id": "farmingStuffsOGmulti",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3963,6 +4529,7 @@
   },
   {
     "id": "farmingStuffsCropsBonusValue_0_69420",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3970,6 +4537,7 @@
   },
   {
     "id": "farmingStuffsPlotRankGain",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3977,6 +4545,7 @@
   },
   {
     "id": "farmingStuffsStickerOdds",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3984,6 +4553,7 @@
   },
   {
     "id": "farmingStuffsStickerOddsMulti",
+    "group": "Farming",
     "system": "Farming",
     "screen": "Farming",
     "notShown": null,
@@ -3991,6 +4561,7 @@
   },
   {
     "id": "ninjaDoor",
+    "group": "Sneaking",
     "system": "Sneaking",
     "screen": "Sneaking",
     "notShown": null,
@@ -3998,6 +4569,7 @@
   },
   {
     "id": "ninjaGloveSPD",
+    "group": "Sneaking",
     "system": "Sneaking",
     "screen": "Sneaking",
     "notShown": null,
@@ -4005,6 +4577,7 @@
   },
   {
     "id": "ninjaUntie",
+    "group": "Sneaking",
     "system": "Sneaking",
     "screen": "Sneaking",
     "notShown": null,
@@ -4012,6 +4585,7 @@
   },
   {
     "id": "summoningManaStart",
+    "group": "Summoning",
     "system": "Summoning",
     "screen": "Summoning Upgrades",
     "notShown": null,
@@ -4019,6 +4593,7 @@
   },
   {
     "id": "summoningUnitDODGE",
+    "group": "Summoning",
     "system": "Summoning",
     "screen": "Summoning Upgrades",
     "notShown": null,
@@ -4026,6 +4601,7 @@
   },
   {
     "id": "summoningSpikePlacementDMG",
+    "group": "Summoning",
     "system": "Summoning",
     "screen": "Summoning Upgrades",
     "notShown": null,
@@ -4033,6 +4609,7 @@
   },
   {
     "id": "hourlyKillRateSpelunking",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4040,6 +4617,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYChanceToHarvest_Spelunking",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4047,6 +4625,7 @@
   },
   {
     "id": "spelunkPOWbase",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4054,6 +4633,7 @@
   },
   {
     "id": "spelunkPOWmulti",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4061,6 +4641,7 @@
   },
   {
     "id": "spelunkBonusDMG",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4068,6 +4649,7 @@
   },
   {
     "id": "spelunkOverstimFillRate",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4075,6 +4657,7 @@
   },
   {
     "id": "spelunkStaminaCostMulti",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4082,6 +4665,7 @@
   },
   {
     "id": "spelunkAmberDailyHaul",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4089,6 +4673,7 @@
   },
   {
     "id": "spelunkAmberDropChance",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4096,6 +4681,7 @@
   },
   {
     "id": "spelunkAmberDropChance2nd",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4103,6 +4689,7 @@
   },
   {
     "id": "spelunkNovaBlastHitChance",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4110,6 +4697,7 @@
   },
   {
     "id": "spelunkShadowStrikeChance",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4117,6 +4705,7 @@
   },
   {
     "id": "spelunkExaltDropChance",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4124,6 +4713,7 @@
   },
   {
     "id": "spelunkPrismaDropChance",
+    "group": "Spelunking",
     "system": "Spelunking",
     "screen": "Spelunking",
     "notShown": null,
@@ -4131,6 +4721,7 @@
   },
   {
     "id": "researchStuffAFKgainsRatePCT",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4138,6 +4729,7 @@
   },
   {
     "id": "researchStuffResearchEXPrateObj",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4145,6 +4737,7 @@
   },
   {
     "id": "researchStuffObservationInsightExpRate",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4152,6 +4745,7 @@
   },
   {
     "id": "researchStuffMaxRoll",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4159,6 +4753,7 @@
   },
   {
     "id": "researchStuffMinRoll",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4166,6 +4761,7 @@
   },
   {
     "id": "researchStuffRollsPerDay",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
@@ -4173,6 +4769,7 @@
   },
   {
     "id": "researchStuffKaleiMultiTot",
+    "group": "Research",
     "system": "Research",
     "screen": "Research",
     "notShown": null,
