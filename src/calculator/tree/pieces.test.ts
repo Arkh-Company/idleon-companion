@@ -1,0 +1,117 @@
+// A piece is built once (spec 008, T017, FR-009, FR-015; bench pieces.cjs `explain` at BASELINE-4): the first call
+// of a block and its arguments under the root gives the piece's rows everywhere, a place that would come out different
+// is counted, and a call of the setup is never the piece. Over the hand-written recording of tree-fixture.ts.
+import { expect, test } from "vitest";
+import type { CalcTreeNode } from "../tree-contract.ts";
+import { buildTree } from "../tree-build.ts";
+import { chainOf, PIECES, recordingOf } from "./tree-fixture.ts";
+import { MAX_DEPTH } from "./pieces.ts";
+
+const kidsOf = (n: CalcTreeNode | null | undefined) =>
+  n && Array.isArray(n.kids) ? n.kids : [];
+const brief = (n: CalcTreeNode | null | undefined) =>
+  kidsOf(n).map((k) => [k.code, k.value]);
+
+function open(...codes: (string | null)[]) {
+  const build = buildTree(PIECES, 0);
+  let node: CalcTreeNode | null = build.root;
+  for (const code of codes) {
+    const id: string | undefined = kidsOf(node).find(
+      (k) => k.code === code && k.kids === "lazy",
+    )?.id;
+    node = id === undefined ? null : build.expand(id);
+  }
+  return { build, node };
+}
+
+test("the root's rows are its calls, then its readings that are numbers", () => {
+  expect(brief(buildTree(PIECES, 0).root)).toEqual([
+    ["Part(1)", 3],
+    ["Part(1)", 3],
+    ["Wrap()", 5],
+    ["Hit(2)", 5],
+    ["Stats.base", 4],
+    ["DNSM.Pool.total", 9],
+    ["DNSM.Side.v", 99],
+  ]);
+});
+
+test("a piece called twice opens with the first call's rows, and the other place is a conflict", () => {
+  const build = buildTree(PIECES, 0);
+  const [first, second] = kidsOf(build.root);
+  // The second place first: the piece does not depend on which one the player opens first.
+  expect(brief(build.expand(second?.id ?? ""))).toEqual([["Level", 3]]);
+  expect(brief(build.expand(first?.id ?? ""))).toEqual([["Level", 3]]);
+  build.expand(second?.id ?? "");
+  expect(build.conflicts).toEqual(['[0,"Part",1]']);
+});
+
+test("a place that gives the same rows is no conflict, opened again", () => {
+  const { build } = open("Part(1)");
+  build.expand(kidsOf(build.root)[0]?.id ?? "");
+  expect(build.conflicts).toEqual([]);
+});
+
+test("a call that only read the cache its twin filled opens as the twin, with no conflict (FR-015)", () => {
+  const hit = open("Hit(2)");
+  expect(brief(hit.node)).toEqual([["Level", 5]]);
+  expect(hit.build.conflicts).toEqual([]);
+  expect(brief(open("Wrap()", "Hit(2)").node)).toEqual([["Level", 5]]);
+});
+
+test("a cache read opens into the call that wrote it", () => {
+  expect(brief(open("DNSM.Pool.total").node)).toEqual([["Stash", 9]]);
+});
+
+test("a setup call with a piece's key keeps its own rows and never becomes the piece", () => {
+  const { build, node } = open("DNSM.Side.v");
+  expect(brief(node)).toEqual([["Level", 99]]);
+  expect(brief(build.expand(kidsOf(build.root)[0]?.id ?? ""))).toEqual([
+    ["Level", 3],
+  ]);
+  expect(build.conflicts).toEqual([]);
+});
+
+test("ids follow the path, with #n on a repeat, and every opened row can open again", () => {
+  const build = buildTree(PIECES, 0);
+  const ids = kidsOf(build.root).map((k) => k.id);
+  expect(ids.slice(0, 2)).toEqual(["root/Game value", "root/Game value#2"]);
+  const wrap = build.expand(ids[2] ?? "");
+  expect(wrap?.id).toBe("root/Game value#3");
+  const hit = kidsOf(wrap)[0];
+  expect(hit?.id).toBe("root/Game value#3/Game value");
+  expect(brief(build.expand(hit?.id ?? ""))).toEqual([["Level", 5]]);
+});
+
+test("an id that is not a lazy branch expands to nothing", () => {
+  const build = buildTree(PIECES, 0);
+  expect(build.expand("root")).toBeNull();
+  expect(build.expand("root/nowhere")).toBeNull();
+  expect(build.expand(kidsOf(build.root)[4]?.id ?? "")).toBeNull();
+});
+
+test(`a branch deeper than ${String(MAX_DEPTH)} levels stops there`, () => {
+  const build = buildTree(chainOf(MAX_DEPTH + 2), 0);
+  let node: CalcTreeNode | null = build.root;
+  for (let depth = 1; depth <= MAX_DEPTH; depth++)
+    node = build.expand(kidsOf(node)[0]?.id ?? "");
+  expect(node?.code).toBe(`Step${String(MAX_DEPTH + 1)}()`);
+  const cut = build.expand(kidsOf(node)[0]?.id ?? "");
+  expect(cut).toMatchObject({ kids: [], flags: { truncated: true } });
+});
+
+test("a call under the twin it read from opens as the piece, not cut", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Loop", a: [1], v: 2, c: [2] },
+      { b: "Loop", a: [1], v: 2, r: [["DNSM.Loop.v", 2, 0]] },
+    ],
+    [{ path: "DNSM.Loop.v", node: 1, v: 2, seq: 0 }],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0);
+  const inner = build.expand(kidsOf(build.root)[0]?.id ?? "");
+  expect(inner?.flags.truncated).toBeUndefined();
+  expect(brief(inner)).toEqual([["Loop(1)", 2]]);
+});

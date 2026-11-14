@@ -4,11 +4,16 @@ import { beforeAll, expect, test } from "vitest";
 import { createEngine } from "./engine.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import { TARGETS } from "./targets.ts";
+import type { CalcTreeNode } from "./tree-contract.ts";
 import { createTreeEngine } from "./tree-engine.ts";
+import { TREE_ROOTS } from "./tree-roots.ts";
 
 let trees: ReturnType<typeof createTreeEngine>;
 beforeAll(() => {
-  trees = createTreeEngine(GAME, PAK);
+  trees = createTreeEngine(GAME, PAK, {
+    ...TREE_ROOTS,
+    sources: ["TreeSources", [0, 0, 0]],
+  });
 });
 
 const number = (id: string) => ({ type: "number", id, character: 0 });
@@ -44,9 +49,9 @@ test("the root of the Drop Rate", () => {
     flags: { unnamed: true },
     kids: [
       {
-        id: "root/Stats.Drop_Rarity",
+        id: "root/Game value",
         pieceKey: '[0,"Stats.Drop_Rarity"]',
-        name: "Stats.Drop_Rarity",
+        name: "Game value",
         value: 2.5,
         fmt: null,
         leaf: "unknown",
@@ -74,10 +79,7 @@ test.each(["notANumber", "__proto__", "constructor"])("%s is refused", (id) => {
 });
 
 test.each([
-  [
-    "an expand, before branches exist",
-    { type: "expand", treeId: "t", nodeId: "n" },
-  ],
+  ["an expand before any tree", { type: "expand", treeId: "t", nodeId: "n" }],
   ["no request", null],
   ["a request without id", { type: "number" }],
 ])("%s throws", (_name, request) => {
@@ -87,3 +89,42 @@ test.each([
 test("a mosaic that is not text throws", () => {
   expect(() => trees.tree(number("dropRate"), { attrs: {} })).toThrow();
 });
+
+const expand = (treeId: string, nodeId: string) => ({
+  type: "expand",
+  treeId,
+  nodeId,
+});
+const kidsOf = (n: CalcTreeNode | "unknownNumber") =>
+  n !== "unknownNumber" && Array.isArray(n.kids) ? n.kids : [];
+
+test("an expand opens a branch of the last tree, with no mosaic: nothing is recorded again", () => {
+  const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
+  expect(reads).toMatchObject({ code: "TreeReads()", kids: "lazy" });
+  const branch = trees.tree(expand("sources", reads?.id ?? ""), undefined);
+  expect(branch).toMatchObject({ id: reads?.id, value: 8 });
+  expect(kidsOf(branch).map((k) => [k.code, k.value])).toEqual([
+    ["TreeStats.a", 3],
+    ["TreeStats.b", 5],
+  ]);
+});
+
+test.each([
+  ["another tree", "dropRate", "root/Game value"],
+  ["a row that is no lazy branch", "sources", "root"],
+  ["an unknown row", "sources", "root/nowhere"],
+])("an expand of %s throws", (_name, treeId, nodeId) => {
+  trees.tree(number("sources"), mosaicOf());
+  expect(() => trees.tree(expand(treeId, nodeId), undefined)).toThrow();
+});
+
+test.each(["dropRate", "notANumber"])(
+  "a new number request (%s) replaces the kept recording",
+  (next) => {
+    const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
+    trees.tree(number(next), mosaicOf());
+    expect(() =>
+      trees.tree(expand("sources", reads?.id ?? ""), undefined),
+    ).toThrow();
+  },
+);

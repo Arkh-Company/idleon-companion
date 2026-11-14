@@ -1,7 +1,8 @@
 // The tree worker's engine (research R1, R4): the game instrumented in memory with the recorder, one recording per
-// `number` request with the root called at the game's arity, and the root with its first level built from it. Opening
-// a branch (`expand`) comes with the assembly's port (US1b).
+// `number` request with the root called at the game's arity, and the root with its first level built from it. An
+// `expand` builds a lazy branch over the build of the last `number` request, without recording again.
 import { buildTree } from "./tree-build.ts";
+import type { TreeBuild } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { TREE_RECIPE } from "./tree-recipe.ts";
@@ -10,7 +11,7 @@ import { TREE_ROOTS } from "./tree-roots.ts";
 import type { TreeRoot } from "./tree-roots.ts";
 
 export interface TreeEngine {
-  /** The root of a `number` request, or "unknownNumber"; throws on any other request or a failure. */
+  /** The root of a `number` request or the branch of an `expand`, or "unknownNumber"; throws on a bad request or a failure. */
   tree(request: unknown, mosaicJson: unknown): CalcTreeNode | "unknownNumber";
 }
 
@@ -24,9 +25,25 @@ export function createTreeEngine(
   recipe: Recipe = TREE_RECIPE,
 ): TreeEngine {
   const recorder = bootRecorder(code, pak);
+  /** The last `number` tree, kept for its branches until the next request. */
+  let last: { treeId: string; build: TreeBuild } | null = null;
 
   return {
     tree(request, mosaicJson) {
+      if (
+        isRecord(request) &&
+        request.type === "expand" &&
+        typeof request.treeId === "string" &&
+        typeof request.nodeId === "string"
+      ) {
+        const branch =
+          last?.treeId === request.treeId
+            ? last.build.expand(request.nodeId)
+            : null;
+        if (!branch) throw new Error("no such branch");
+        return branch;
+      }
+      last = null;
       if (
         !isRecord(request) ||
         request.type !== "number" ||
@@ -40,7 +57,11 @@ export function createTreeEngine(
         : undefined;
       if (!root) return "unknownNumber";
       const recording = recorder.record(mosaicJson, [root], recipe);
-      return buildTree(recording, request.character);
+      last = {
+        treeId: request.id,
+        build: buildTree(recording, request.character),
+      };
+      return last.build.root;
     },
   };
 }

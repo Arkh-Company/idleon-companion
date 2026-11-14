@@ -13,11 +13,12 @@ beforeAll(() => {
 
 const NONE = { recompute: [], builders: [] };
 const treeOf = (block: string, mosaic = mosaicOf(), character = 0) =>
-  buildTree(recorder.record(mosaic, [[block, [0, 0, 0]]], NONE), character);
+  buildTree(recorder.record(mosaic, [[block, [0, 0, 0]]], NONE), character)
+    .root;
 const kidsOf = (n: CalcTreeNode) => (n.kids === "lazy" ? [] : n.kids);
 const rows = (n: CalcTreeNode) =>
   kidsOf(n).map((k) => [
-    k.name,
+    k.code,
     k.value,
     k.kids === "lazy" ? "lazy" : k.kids.length,
   ]);
@@ -37,18 +38,18 @@ test("the root is the root call, with the call's value", () => {
 
 test("the first level is the root's calls, in order, then its state reads", () => {
   expect(rows(treeOf("TreeSources"))).toEqual([
-    ["TreeReads", 8, "lazy"],
-    ["TreeLoop", 6, "lazy"],
+    ["TreeReads()", 8, "lazy"],
+    ["TreeLoop()", 6, "lazy"],
     ["TreeBase", 4, 0],
   ]);
 });
 
-test("a call row carries its piece key and its call with the game's arity, and no name yet", () => {
+test("a call row carries its piece key and its call with the game's arity, and the generic name", () => {
   const [reads] = kidsOf(treeOf("TreeSources"));
   expect(reads).toEqual({
-    id: "root/TreeReads",
+    id: "root/Game value",
     pieceKey: '[0,"TreeReads"]',
-    name: "TreeReads",
+    name: "Game value",
     value: 8,
     fmt: null,
     leaf: null,
@@ -67,7 +68,8 @@ test("a call row carries its piece key and its call with the game's arity, and n
 test("a state read is a leaf of unknown kind, keyed by its path", () => {
   const leaf = kidsOf(treeOf("TreeSources")).at(-1);
   expect(leaf).toMatchObject({
-    id: "root/TreeBase",
+    id: "root/Game value#3",
+    name: "Game value",
     pieceKey: '[0,"TreeBase"]',
     leaf: "unknown",
     code: "TreeBase",
@@ -77,20 +79,20 @@ test("a state read is a leaf of unknown kind, keyed by its path", () => {
 
 test("a piece called twice is the same piece, with its own row id", () => {
   const [a, b] = kidsOf(treeOf("TreeTwice"));
-  expect([a?.id, b?.id]).toEqual(["root/TreeReads", "root/TreeReads#2"]);
+  expect([a?.id, b?.id]).toEqual(["root/Game value", "root/Game value#2"]);
   expect(a?.pieceKey).toBe(b?.pieceKey);
 });
 
 test("a cache read written by a call opens under it; one from the game is saved by the game", () => {
   const [cache] = kidsOf(treeOf("TreeCacheRead"));
   expect(cache).toMatchObject({
-    name: "DNSM.TreeCache.total",
+    code: "DNSM.TreeCache.total",
     value: 8,
     kids: "lazy",
   });
   const [game] = kidsOf(treeOf("TreeGameCache"));
   expect(game).toMatchObject({
-    name: "DNSM.GameCache.v",
+    code: "DNSM.GameCache.v",
     value: 5,
     flags: { unnamed: true, fromCache: true },
     kids: [],
@@ -111,7 +113,7 @@ test("a root that fails is unavailable, with nothing under it", () => {
       NONE,
     ),
     0,
-  );
+  ).root;
   expect(root).toMatchObject({
     value: null,
     flags: { unavailable: true },
@@ -120,6 +122,6 @@ test("a root that fails is unavailable, with nothing under it", () => {
 });
 
 test("a text read is no row: its value is not a number", () => {
-  const names = kidsOf(treeOf("TreeTextValue")).map((k) => k.name);
+  const names = kidsOf(treeOf("TreeTextValue")).map((k) => k.code);
   expect(names).toEqual([]);
 });
