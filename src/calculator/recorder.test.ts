@@ -188,3 +188,103 @@ test("the recorder is in place before the game runs, and records nothing at boot
     writes: [],
   });
 });
+
+// Round 1 of the review: each branch that decides who explains a cache read, and a builder cut by its time limit.
+const builder = (
+  block: string,
+  args: (string | number)[] = [],
+  extra: Partial<Recipe["builders"][number]> = {},
+): Recipe["builders"][number] => ({
+  cache: "TreeCache",
+  run: { block, args },
+  ...extra,
+});
+const linkOf = (rec: Recording, block: string) =>
+  linkReads(rec).links.get(first(rec, block).id)?.[0];
+const writerOf = (rec: Recording, block: string) =>
+  found(rec.nodes[linkOf(rec, block)?.[1] ?? -1]);
+
+test("companions the helpers built equal to the game's keep their writer", () => {
+  const rec = record(
+    ["TreeCompanionRead"],
+    mosaicOf({ Scenario: "companionsBuilt" }),
+  );
+  expect(first(rec, "TreeCompanionRead").v).toBe(3);
+  const writer = writerOf(rec, "TreeCompanionRead");
+  expect(writer.b).toBe("TreeCompBuild");
+  expect(writer.p).toBe(rec.setup);
+});
+
+test("a builder that gives another number than the game's explains nothing", () => {
+  const rec = record(["TreeCacheRead"], mosaicOf(), {
+    recompute: [],
+    builders: [builder("TreeCacheWrong", [], { keepLive: true })],
+  });
+  expect(first(rec, "TreeCacheRead").v).toBe(9);
+  const writer = writerOf(rec, "TreeCacheRead");
+  expect(writer.b).toBe("TreeCacheFill");
+  expect(writer.p).toBe(rec.setup);
+});
+
+test("an event before the builder prepares what the builder reads", () => {
+  const before = {
+    slot: 0,
+    behavior: "ActorEvents_29",
+    set: ["_mode", "d"] as [string, string],
+    event: "_customEvent_Prepare",
+  };
+  const rec = record(["TreeCacheRead"], mosaicOf(), {
+    recompute: [],
+    builders: [builder("TreeCacheReady", [], { before })],
+  });
+  const writer = writerOf(rec, "TreeCacheRead");
+  expect(writer.b).toBe("TreeCacheReady");
+  expect(writer.p).toBe(rec.builders);
+});
+
+test("a builder reads its own scratch write, not another call of its block", () => {
+  const rec = recorder.record(
+    mosaicOf(),
+    [call("TreeScratch"), call("TreeCacheRead")],
+    {
+      recompute: [],
+      builders: [builder("TreeScratch", [-1], { keepLive: true })],
+    },
+  );
+  const pass = found(
+    under(rec, rec.builders).find((n) => n.b === "TreeScratch"),
+  );
+  expect(linkReads(rec).links.get(pass.id)?.[0]).toEqual([
+    "DNSM.TreeScratch.w",
+    pass.id,
+    "offline",
+  ]);
+});
+
+test("a search cut by its time limit does not silence the next recording", () => {
+  const slow = bootRecorder(GAME, PAK, { startMs: 1_000, numberMs: 500 });
+  expect(() =>
+    slow.record(mosaicOf(), [call("TreeSearchForever")], NONE),
+  ).toThrow();
+  const rec = slow.record(mosaicOf(), [call("TreeSearch")], NONE);
+  expect(first(rec, "TreeSearch").r?.map(([path]) => path)).toEqual([
+    "TreeBig contains value 7",
+    "TreeBase",
+  ]);
+});
+
+test("a builder cut by its time limit leaves the state and the links as they were", () => {
+  const slow = bootRecorder(GAME, PAK, { startMs: 1_000, numberMs: 500 });
+  const rec = slow.record(mosaicOf(), [call("TreeCacheRead")], {
+    recompute: [],
+    builders: [
+      builder("TreeEndless"),
+      builder("TreeCacheFill", [-1], { keepLive: true }),
+    ],
+  });
+  expect(slow.context.run("__rec.isOn()", 1_000)).toBe(false);
+  // The next builder found the game's cache in place, and the cut one explains nothing.
+  const writer = writerOf(rec, "TreeCacheRead");
+  expect([writer.b, writer.p]).toEqual(["TreeCacheFill", rec.builders]);
+  expect(rec.writes.some((w) => w.v === 99)).toBe(false);
+});

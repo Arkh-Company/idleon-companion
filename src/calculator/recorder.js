@@ -1,7 +1,7 @@
 // The tree worker's recorder (spec 008, T021; ADR 0008), loaded as text and run inside the context before the game's
 // code, so the instrumented blocks find `__X` already there; it records nothing until a request turns it on. Ported
 // from the bench's build-tree.cjs at BASELINE-4: steps 2 (calls), 3 and 3b (reads, writes, searches), 4 (RECOMPUTE),
-// 4b (steps), 5 (helpers) and 6 (roots). recorder-pass.js adds 6b and 6c over the same state `S`; step 7 (links) runs
+// 4b (steps), 5 (helpers) and 6 (roots). recorder-pass.js adds 6b over the same state `S`; step 7 (links) runs
 // in the worker over the JSON (tree/links.ts). The recording leaves only as JSON text, made here. No character name is
 // kept: a key or an argument that is a character's name becomes its index.
 (function () {
@@ -267,7 +267,8 @@
     // through the record, and the helpers are recorded under a setup node.
     begin: (recipeJson) => {
       S.recipe = JSON.parse(recipeJson);
-      Object.assign(S, { nodes: [], writes: [], spliced: [], readRoots: [] });
+      Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
+      S.searching = 0; // a search cut by a time limit never ran its `finally`
       Object.assign(S, {
         seq: 0,
         bpStart: Infinity,
@@ -323,15 +324,13 @@
       );
     },
 
-    // 6. The roots, with the game's exact arguments; ["@read", cache, key] reads a cache key after the builders.
+    // 6. The roots, with the game's exact arguments.
     roots: (list) => {
       S.root = S.newNode("(root)", [], null);
       S.cur = S.root;
       try {
-        list.forEach((c, i) => {
-          if (c[0] === "@read")
-            S.readRoots.push([S.newNode("@read", c.slice(1), S.cur), i]);
-          else G.__calc.call(c[0], c[1]);
+        list.forEach((c) => {
+          G.__calc.call(c[0], c[1]);
         });
       } finally {
         S.stopped();

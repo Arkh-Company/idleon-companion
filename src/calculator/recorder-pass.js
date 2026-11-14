@@ -1,6 +1,7 @@
 // The recorder's second half (spec 008, T021), run inside the context right after recorder.js, over its state `S`.
-// Ported from the bench's build-tree.cjs at BASELINE-4: step 6b (the builders' pass, after the total) and step 6c (the
-// "@read" roots). Each builder is one call from the worker, under its own time limit.
+// Ported from the bench's build-tree.cjs at BASELINE-4: step 6b (the builders' pass, after the total). Each builder is
+// one call from the worker, under its own time limit; a time limit ends the run without its `finally`, so the worker
+// calls `abandonBuilder` to put the state back.
 (function () {
   "use strict";
   var G = globalThis;
@@ -43,10 +44,17 @@
     var DhRaw = S.raw(Dh);
     var snapDh = Object.assign({}, DhRaw);
     var snapTop = Object.assign({}, S.top);
+    var before = S.writes.length;
+    S.pending = {
+      DhRaw: DhRaw,
+      snapDh: snapDh,
+      snapTop: snapTop,
+      before: before,
+      spliced: S.spliced.length,
+    };
     var liveObj = Dh[key];
     var liveH = S.mapOf(S.raw(liveObj));
     var liveCopy = Object.assign(Array.isArray(liveH) ? [] : {}, liveH);
-    var before = S.writes.length;
     S.on = true;
     try {
       // a cache the block makes new by itself is not deleted first (keepLive): its loop then reads the game's
@@ -86,24 +94,22 @@
       Object.assign(DhRaw, snapDh); // the builder's scratch leaves the state too
       Object.assign(S.top, snapTop);
       Dh[key] = liveObj; // through the record, as the bench puts it back
+      S.pending = null;
       S.stopped();
     }
   };
 
-  // 6c. The "@read" roots read their key of the cache through the record, after the builders: a key the cache does
-  // not have reads as 0.
-  G.__rec.readRoots = () => {
-    S.readRoots.forEach((pair) => {
-      var n = pair[0];
-      var cache = n.a[0];
-      S.cur = n;
-      S.on = true;
-      var A = S.stateOf().h;
-      var o = /^DNSM\./.test(cache) ? A.DNSM.h[cache.slice(5)] : A[cache];
-      var m = o ? S.mapOf(o) : null;
-      var v = m ? m[n.a[1]] : undefined;
-      S.stopped();
-      n.v = typeof v === "number" ? v : 0;
-    });
+  // A builder cut by its time limit: the state goes back as it was before it, and none of its writes explains a read.
+  G.__rec.abandonBuilder = () => {
+    var p = S.pending;
+    S.pending = null;
+    S.searching = 0;
+    if (p) {
+      S.writes.length = p.before;
+      S.spliced.length = p.spliced;
+      Object.assign(p.DhRaw, p.snapDh);
+      Object.assign(S.top, p.snapTop);
+    }
+    S.stopped();
   };
 })();

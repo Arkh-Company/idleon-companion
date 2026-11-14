@@ -6,7 +6,7 @@ export type RecValue = number | boolean | string | null;
 
 export interface RecNode {
   id: number;
-  /** The block's name, or a structural label: "(setup: game helpers)", "(root)", "@read"… */
+  /** The block's name, or a structural label: "(setup: game helpers)", "(root)"… */
   b: string;
   a: RecValue[];
   /** The calls made under this one, in order. */

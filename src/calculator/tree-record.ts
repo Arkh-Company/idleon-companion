@@ -10,9 +10,10 @@ import type { Recipe, Recording } from "./recording.ts";
 /** Measured again on the compiled calculator.js over the real game (T026); the host's own limit is above these. */
 export const TREE_LIMITS = { startMs: 20_000, numberMs: 10_000 };
 
-export type RootCall =
-  | readonly [block: string, args: readonly (string | number)[]]
-  | readonly ["@read", cache: string, key: string];
+export type RootCall = readonly [
+  block: string,
+  args: readonly (string | number)[],
+];
 
 export function bootRecorder(
   code: string,
@@ -56,9 +57,9 @@ export function bootRecorder(
             run(`__rec.builder(${String(i)})`, startMs);
           } catch {
             // A builder out of time leaves its cache unexplained; the total is already recorded.
+            run("__rec.abandonBuilder()", startMs);
           }
         });
-        run("__rec.readRoots()", startMs);
         const json = run("__rec.take()", startMs);
         if (typeof json !== "string") throw new Error("no recording");
         return JSON.parse(json) as Recording;

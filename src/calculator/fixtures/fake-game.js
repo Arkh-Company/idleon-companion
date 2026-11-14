@@ -166,12 +166,17 @@ lime.$scripts.N = function (_exports, $global) {
     s.DNSM.h.CompanionBon.h.b1 = 999;
     s.DNSM.h.ShinyBonusS = new StringMap();
     s.DNSM.h.CompanionLVz = new StringMap();
+    if (s.Scenario === "companionsBuilt") Blocks._customBlock_TreeCompBuild();
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
   // An event of the helper that builds a cache, as the game's own events do.
   HelperActor.prototype._customEvent_Refill = function () {
     a.engine.getGameAttribute("DNSM").h.TreeCache.h.total =
       state().TreeBase * 2;
+  };
+  // The event a builder needs first: it prepares a field the builder reads.
+  HelperActor.prototype._customEvent_Prepare = function () {
+    this._ready = this._mode === "d" ? 2 : 0;
   };
   A["scripts.ActorEvents_29"] = HelperActor;
 
@@ -500,8 +505,18 @@ lime.$scripts.N = function (_exports, $global) {
   A["com.stencyl.utils.Utils"] = {
     mapContainsValue: function (map, value) {
       for (var k in map.h) if (map.h[k] === value) return true;
+      if (value === "forever")
+        for (;;) {
+          // a search that never ends
+        }
       return false;
     },
+  };
+  Blocks._customBlock_TreeSearchForever = function () {
+    return A["com.stencyl.utils.Utils"].mapContainsValue(
+      state().TreeBig,
+      "forever",
+    );
   };
   Blocks._customBlock_TreeSearch = function () {
     var s = state();
@@ -527,6 +542,46 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeNamed = function (name) {
     return name.length > 0 ? 1 : 0;
+  };
+  // The recorder's cases of the builders' pass: each one decides who explains a cache read.
+  var dnsm = function () {
+    return a.engine.getGameAttribute("DNSM").h;
+  };
+  // Builds the companions from the server bridge's list, equal to the running game's (3 each).
+  Blocks._customBlock_TreeCompBuild = function () {
+    dnsm().CompanionBon = new StringMap();
+    var owned = $global.React.createElement("getCompanionInfoMe", []);
+    owned.forEach(function (e) {
+      dnsm().CompanionBon.h[e.split(",")[0]] = 3;
+    });
+  };
+  Blocks._customBlock_TreeCompanionRead = function () {
+    return dnsm().CompanionBon.h.b1;
+  };
+  // A builder that gives the cache another number than the game's.
+  Blocks._customBlock_TreeCacheWrong = function () {
+    dnsm().TreeCache.h.total = 777;
+  };
+  // A builder that never ends, after it put a new cache in place.
+  Blocks._customBlock_TreeEndless = function () {
+    dnsm().TreeCache = new StringMap();
+    dnsm().TreeCache.h.total = 99;
+    for (;;) {
+      // never returns
+    }
+  };
+  // A builder that needs the helper's event first: without it, the cache is 0.
+  Blocks._customBlock_TreeCacheReady = function () {
+    var helper =
+      state().PixelHelperActor[0].behaviors.getBehavior("ActorEvents_29");
+    if (!dnsm().TreeCache) dnsm().TreeCache = new StringMap();
+    dnsm().TreeCache.h.total = state().TreeBase * (helper._ready || 0);
+  };
+  // A working value every call of the block rewrites, read back by the same call; -1 also builds the cache.
+  Blocks._customBlock_TreeScratch = function (t) {
+    dnsm().TreeScratch.h.w = state().TreeBase + t;
+    if (t === -1) dnsm().TreeCache.h.total = state().TreeBase * 2;
+    return a.engine.getGameAttribute("DNSM").h.TreeScratch.h.w;
   };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {
