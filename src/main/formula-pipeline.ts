@@ -1,9 +1,11 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019). What the worker
-// sends is checked before it reaches the window (FR-010b). No electron import, so tests can load it.
-import { isObject } from "../shared/index.ts";
+// sends is checked before it reaches the window (FR-010b). The live values of what is in view go over the same pair
+// (FR-008, plan B). No electron import, so tests can load it.
+import { isObject, TREE_CATALOG } from "../shared/index.ts";
 import type {
   FormulaTree,
+  LiveValues,
   Status,
   TreeNode,
   TreeRequest,
@@ -11,6 +13,7 @@ import type {
 import type { FormulaRequest } from "./payloads.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { statsNumber } from "./stats.ts";
+import { liveValues } from "./live-values.ts";
 import { checkTree } from "./tree-check.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
@@ -19,8 +22,11 @@ export const MAX_TREE_NODES = 20_000;
 
 type TreeHost = Pick<
   ReturnType<typeof createTreeHost>,
-  "request" | "dropCurrent" | "setFiles" | "stop"
+  "request" | "values" | "dropCurrent" | "setFiles" | "stop"
 >;
+
+/** Numbers that need a map actor's field: their tree is unavailable until the actor is read (US12, FR-023). */
+const LIVE_GAME = new Set(TREE_CATALOG.filter((n) => n.live).map((n) => n.id));
 
 /** A structured log entry: a label and a catalog id, never a value of the math or a name (FR-019, FR-010a). */
 export type FormulaLog =
@@ -85,6 +91,7 @@ function swapNode(
 
 export function startFormulaPipeline(deps: {
   send: (tree: FormulaTree) => void;
+  sendValues: (v: LiveValues) => void;
   treeHost: (on: {
     onTree(id: number, tree: unknown): void;
     onUnavailable(id: number): void;
@@ -97,6 +104,8 @@ export function startFormulaPipeline(deps: {
   request(r: FormulaRequest): void;
   /** `formula:close`: no tree open. */
   close(): void;
+  /** `formula:values`: what the window has in view, already checked (`formulaValuesPayload`). */
+  values(ids: string[]): void;
   /** The Stats sent something: maybe a new pair, maybe none (a character change). */
   statsChanged(): void;
   status(s: Status): void;
@@ -118,6 +127,25 @@ export function startFormulaPipeline(deps: {
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
+  /** What the window has in view; the open tree is in view too. */
+  let windowIds: string[] = [];
+  const live = liveValues({
+    ask: (id, ids, mosaicJson) => {
+      host.values(id, ids, mosaicJson);
+    },
+    send: deps.sendValues,
+  });
+
+  /** The live values follow the Stats' pair: its mosaic, or none without a reading or a character. */
+  function follow(): void {
+    const pair = deps.statsPair();
+    live.onMosaic(pair?.mosaicJson ?? null, pair?.calculatedAt);
+  }
+
+  function view(): void {
+    follow();
+    live.setInView(open ? [...windowIds, open.id] : windowIds);
+  }
 
   function show(tree: FormulaTree): void {
     last = tree;
@@ -179,7 +207,7 @@ export function startFormulaPipeline(deps: {
       id: open.id,
       character: open.character ?? active,
     };
-    if (request.character !== active) {
+    if (request.character !== active || LIVE_GAME.has(request.id)) {
       // ponytail: only the active character until the picker (US11) brings the inactive rebuild.
       show({ state: "unavailable", request });
       return;
@@ -241,7 +269,9 @@ export function startFormulaPipeline(deps: {
       asked = null;
       show({ state: "unavailable", request });
     },
-    onValues: () => undefined, // ponytail: live values arrive with US2 (T031).
+    onValues: (id, values) => {
+      live.received(id, values);
+    },
   });
 
   return {
@@ -252,15 +282,22 @@ export function startFormulaPipeline(deps: {
       }
       drop();
       open = { id: r.id, character: r.character };
+      view();
       ask();
     },
     close() {
       open = null;
       openFor = null;
       drop();
+      view();
       show({ state: "none" });
     },
+    values(ids) {
+      windowIds = ids;
+      view();
+    },
     statsChanged() {
+      follow();
       if (!open) return;
       const now = current();
       if (!now) {
@@ -288,6 +325,7 @@ export function startFormulaPipeline(deps: {
           show({ state: "unavailable", request });
         }
       }
+      live.setStale(closed);
       if (closed === stale) return;
       stale = closed;
       if (last.state === "ready") show({ ...last, stale });
@@ -301,6 +339,7 @@ export function startFormulaPipeline(deps: {
     },
     replay() {
       deps.send(last);
+      live.replay();
     },
   };
 }

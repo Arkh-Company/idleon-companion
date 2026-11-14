@@ -1,7 +1,7 @@
 // Builders of the formula tests in src/main: a tree node with every field, as the tree worker sends it, and the formula
 // pipeline over a fake tree host. Every value and name here is invented.
 import { vi } from "vitest";
-import type { FormulaTree, TreeNode } from "../shared/index.ts";
+import type { FormulaTree, LiveValues, TreeNode } from "../shared/index.ts";
 import { startFormulaPipeline } from "./formula-pipeline.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
@@ -44,9 +44,11 @@ export const pairOf = (char = "Invented", n = 1): StatsPair => ({
 export function pipeline(start: StatsPair | null = pairOf()) {
   let pair = start;
   const sent: FormulaTree[] = [];
+  const liveSent: LiveValues[] = [];
   const log = vi.fn();
   const host = {
     request: vi.fn(),
+    values: vi.fn(),
     dropCurrent: vi.fn(),
     setFiles: vi.fn(),
     stop: vi.fn(),
@@ -59,6 +61,9 @@ export function pipeline(start: StatsPair | null = pairOf()) {
     send: (t) => {
       sent.push(t);
     },
+    sendValues: (v) => {
+      liveSent.push(v);
+    },
     treeHost: (callbacks) => {
       on = callbacks;
       return host;
@@ -69,6 +74,7 @@ export function pipeline(start: StatsPair | null = pairOf()) {
   return {
     p,
     sent,
+    liveSent,
     log,
     host,
     last: () => sent.at(-1),
@@ -83,6 +89,10 @@ export function pipeline(start: StatsPair | null = pairOf()) {
     },
     answer: (id: number, tree: unknown) => {
       on?.onTree(id, tree);
+    },
+    /** The worker's answer to the last values asked. */
+    values: (values: unknown) => {
+      on?.onValues(host.values.mock.calls.at(-1)?.[0] as number, values);
     },
     unavailable: () => {
       on?.onUnavailable(host.request.mock.calls.at(-1)?.[0] as number);

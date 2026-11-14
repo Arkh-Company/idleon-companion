@@ -170,3 +170,35 @@ test("formula:close takes no body and closes the tree", async () => {
   await h.p.handlers[IPC.formulaClose]?.(undefined);
   expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "none" });
 });
+
+test("formula:values asks the tree worker with the Stats' mosaic, never the Stats worker (SC-004)", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaValues]?.({ ids: ["hp", "str"] });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("values");
+  expect(asked).toMatchObject({
+    ids: ["hp", "str"],
+    mosaic: h.stats().calcs()[0],
+  });
+  expect(h.stats().sent("values")).toEqual([]);
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: asked?.id,
+    values: { hp: 3, str: 4 },
+  });
+  expect(h.on(IPC.formulaLiveValues).at(-1)).toMatchObject({
+    values: { hp: 3, str: 4 },
+    stale: false,
+  });
+});
+
+test("formula:values with an id outside the catalog is refused before any worker", async () => {
+  const h = setup();
+  await expect(
+    Promise.resolve().then(() =>
+      h.p.handlers[IPC.formulaValues]?.({ ids: ["notInTheCatalog"] }),
+    ),
+  ).rejects.toThrow("formula:values: invalid ids");
+});

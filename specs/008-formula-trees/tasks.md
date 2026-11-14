@@ -283,7 +283,7 @@ Verify: `just test-one src/renderer/FormulaTree.test.tsx` - passes; `just check`
     - a value tap opens the side panel with that id;
     - "Waiting for the game" before the first reading (FR-034);
     - the 004 test "has no field to fill in" still passes (no search box).
-- [ ] T030 [P] [US2] `src/main/live-values.test.ts`
+- [X] T030 [P] [US2] `src/main/live-values.test.ts`
   - Cases:
     - each new mosaic recalculates only the ids in view (open panel, open group, pins, open root);
     - no recording;
@@ -291,7 +291,7 @@ Verify: `just test-one src/renderer/FormulaTree.test.tsx` - passes; `just check`
 
 ### Implementation for User Story 2
 
-- [ ] T031 [US2] The `values` message in the worker and the live-values loop
+- [X] T031 [US2] The `values` message in the worker and the live-values loop
   - Files: `src/calculator/index.ts`, `src/main/live-values.ts`, `src/main/formula-pipeline.ts`
   - Signature: `liveValues(deps): { setInView(ids: string[]): void; onMosaic(json: string): void }`
 - [ ] T032 [US2] The Formulas tab

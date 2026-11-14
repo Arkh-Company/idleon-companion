@@ -7,7 +7,11 @@ import type { WorkerLike } from "./calculator-host.ts";
 import { startFormulaPipeline } from "./formula-pipeline.ts";
 import type { FormulaLog } from "./formula-pipeline.ts";
 import type { GameBytes } from "./game-files.ts";
-import { emptyPayload, formulaRequestPayload } from "./payloads.ts";
+import {
+  emptyPayload,
+  formulaRequestPayload,
+  formulaValuesPayload,
+} from "./payloads.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
 import { createTreeHost } from "./tree-host.ts";
 
@@ -39,6 +43,9 @@ export function startPipelines(deps: {
     send: (t) => {
       deps.send(IPC.formulaUpdate, t);
     },
+    sendValues: (v) => {
+      deps.send(IPC.formulaLiveValues, v);
+    },
     treeHost: (on) =>
       createTreeHost({
         createWorker: deps.createWorker,
@@ -63,6 +70,11 @@ export function startPipelines(deps: {
         if (!emptyPayload(payload))
           throw new Error("formula:close: no body expected");
         trees.close();
+      },
+      [IPC.formulaValues]: (payload) => {
+        const r = formulaValuesPayload(payload);
+        if (!r) throw new Error("formula:values: invalid ids");
+        trees.values(r.ids);
       },
     },
   };

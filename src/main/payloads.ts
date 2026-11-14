@@ -1,7 +1,12 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
 import { win32 } from "node:path";
-import { isCatalogId, isObject, toReading } from "../shared/index.ts";
+import {
+  isCatalogId,
+  isObject,
+  toReading,
+  TREE_CATALOG,
+} from "../shared/index.ts";
 import { MAX_NODE_ID } from "./tree-check.ts";
 import type {
   GameTables,
@@ -50,6 +55,18 @@ export function formulaRequestPayload(v: unknown): FormulaRequest | null {
     return isNodeId(treeId) && isNodeId(nodeId) ? { treeId, nodeId } : null;
   }
   return null;
+}
+
+/** `formula:values` (contracts/ipc.md): what is in view, catalog ids each once, at most the whole catalog (CHK015). */
+export function formulaValuesPayload(v: unknown): { ids: string[] } | null {
+  if (!isObject(v) || !onlyKeys(v, ["ids"])) return null;
+  const { ids } = v;
+  return Array.isArray(ids) &&
+    ids.length <= TREE_CATALOG.length &&
+    new Set(ids).size === ids.length &&
+    ids.every(isCatalogId)
+    ? { ids }
+    : null;
 }
 
 /** `window:sidePanel` (contracts/ipc.md): only `{ open }`, a yes or no. */
