@@ -72,6 +72,7 @@ export function companionApi(ipc: Ipc): CompanionApi {
       },
     setPins: async (pins) =>
       (await ipc.invoke(IPC.pinsSet, pins)) as string | null,
+    feedsList: async (r) => (await ipc.invoke(IPC.feedsList, r)) as string[],
     onFarm: listen(IPC.farmUpdate, true),
     onRadar: listen(IPC.radarUpdate, true),
     dismissRadar: call(IPC.radarDismiss),

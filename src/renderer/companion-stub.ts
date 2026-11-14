@@ -64,6 +64,7 @@ export function stubCompanion(): CompanionStub {
       Promise.resolve({ pins: [], warning: null }),
     ),
     setPins: vi.fn<CompanionApi["setPins"]>(() => Promise.resolve(null)),
+    feedsList: vi.fn<CompanionApi["feedsList"]>(() => Promise.resolve([])),
     onFarm: vi.fn<CompanionApi["onFarm"]>(() => () => undefined),
     onRadar: vi.fn<CompanionApi["onRadar"]>(() => () => undefined),
     dismissRadar: vi.fn<CompanionApi["dismissRadar"]>(() => Promise.resolve()),

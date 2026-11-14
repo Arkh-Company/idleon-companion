@@ -4,7 +4,13 @@
 // number, never its name. No electron import, so tests can load it.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { IPC, isObject, MAX_PINS, PINS_FULL } from "../shared/index.ts";
+import {
+  IPC,
+  isCatalogId,
+  isObject,
+  MAX_PINS,
+  PINS_FULL,
+} from "../shared/index.ts";
 import type { Mark, Pin } from "../shared/index.ts";
 import {
   emptyPayload,
@@ -22,6 +28,15 @@ export const MARK_WITH_NAME = "A mark's name can't have a character's name.";
 export const MARK_TAKEN = "A mark with this name already exists.";
 export const PINS_RESET = "Saved pins could not be read and were reset";
 export const PINS_UNSAVED = "The pins could not be saved on this computer.";
+export const SHAPES_RESET =
+  "Saved tree shapes could not be read and were reset";
+const SHAPES_UNSAVED = "The tree shapes could not be saved on this computer.";
+
+/** The parts of each catalog tree, [pieceKey, name], for one game version (its N.js's sha256); never a value. */
+export interface TreeShapes {
+  gameSha: string | null;
+  trees: Map<string, [key: string, name: string][]>;
+}
 
 type Values = Mark["values"];
 
@@ -64,6 +79,30 @@ function marksOf(v: unknown): Map<string, Mark[]> | null {
 function pinsOf(v: unknown): Pin[] | null {
   if (!isObject(v) || v.version !== 1 || !Array.isArray(v.pins)) return null;
   return pinsPayload(v.pins.slice(0, MAX_PINS));
+}
+
+const isPart = (p: unknown): p is [string, string] =>
+  Array.isArray(p) &&
+  p.length === 2 &&
+  typeof p[0] === "string" &&
+  typeof p[1] === "string";
+
+/** The shapes of `tree-shapes.json`, or null when its shape is wrong. A number no longer in the catalog is dropped. */
+function shapesOf(v: unknown): TreeShapes | null {
+  if (
+    !isObject(v) ||
+    v.version !== 1 ||
+    typeof v.gameSha !== "string" ||
+    !/^[0-9a-f]{64}$/.test(v.gameSha) ||
+    !isObject(v.trees)
+  )
+    return null;
+  const trees = new Map<string, [string, string][]>();
+  for (const [id, parts] of Object.entries(v.trees)) {
+    if (!Array.isArray(parts) || !parts.every(isPart)) return null;
+    if (isCatalogId(id)) trees.set(id, parts);
+  }
+  return { gameSha: v.gameSha, trees };
 }
 
 /**
@@ -155,6 +194,14 @@ export function savedFiles(dir: string): {
     /** The warning of a file that could not be read, given once (FR-041). */
     warning(): string | null;
   };
+  /** The tree shapes of the last game version seen (FR-027, FR-029). */
+  shapes: {
+    get(): TreeShapes;
+    /** Null when saved; else the sentence of a failed write. */
+    save(shapes: TreeShapes): string | null;
+    /** The warning of a file that could not be read, given once (FR-041). */
+    warning(): string | null;
+  };
 } {
   const marks = jsonFile(
     join(dir, "marks.json"),
@@ -169,6 +216,17 @@ export function savedFiles(dir: string): {
     (): Pin[] => [],
     (list) => ({ version: 1, pins: list }),
     { reset: PINS_RESET, unsaved: PINS_UNSAVED },
+  );
+  const shapes = jsonFile(
+    join(dir, "tree-shapes.json"),
+    shapesOf,
+    (): TreeShapes => ({ gameSha: null, trees: new Map() }),
+    ({ gameSha, trees }) => ({
+      version: 1,
+      gameSha,
+      trees: Object.fromEntries(trees),
+    }),
+    { reset: SHAPES_RESET, unsaved: SHAPES_UNSAVED },
   );
 
   return {
@@ -201,8 +259,15 @@ export function savedFiles(dir: string): {
           : pins.save(list.map(({ treeId, nodeId }) => ({ treeId, nodeId }))),
       warning: pins.warning,
     },
+    shapes: { get: shapes.load, save: shapes.save, warning: shapes.warning },
   };
 }
+
+/** Whether `text` holds a character's name anywhere, any case: what a saved file must never get (FR-010a). */
+export const holdsName = (text: string, names: readonly string[]) => {
+  const lower = text.toLowerCase();
+  return names.some((n) => n !== "" && lower.includes(n.toLowerCase()));
+};
 
 /** Whether `text` has a character's name as a whole word, any case. */
 const hasName = (text: string, names: readonly string[]) => {
@@ -230,10 +295,9 @@ export function marksHandlers(
       const tree = open(r.character);
       if (!tree) throw new Error("marks:save: no tree open for that character");
       if (hasName(r.name, tree.names)) return MARK_WITH_NAME;
-      const lower = tree.names.map((n) => n.toLowerCase());
       const values = Object.fromEntries(
         Object.entries(tree.values).filter(
-          ([key]) => !lower.some((n) => key.toLowerCase().includes(n)),
+          ([key]) => !holdsName(key, tree.names),
         ),
       );
       return marks.save(r.character, r.name, values);

@@ -91,6 +91,12 @@ test.each<
     IPC.pinsSet,
     [[{ treeId: "hp", nodeId: null }]],
   ],
+  [
+    "feedsList",
+    (a) => a.feedsList({ pieceKey: '[0,"Sword"]' }),
+    IPC.feedsList,
+    [{ pieceKey: '[0,"Sword"]' }],
+  ],
   ["dismissRadar", (a) => a.dismissRadar(), IPC.radarDismiss, []],
   [
     "setSidePanel",

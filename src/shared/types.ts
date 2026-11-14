@@ -160,6 +160,7 @@ export const IPC = {
   marksClear: "marks:clear",
   pinsGet: "pins:get",
   pinsSet: "pins:set",
+  feedsList: "feeds:list",
   farmUpdate: "farm:update",
   radarUpdate: "radar:update",
   radarDismiss: "radar:dismiss",
@@ -314,6 +315,8 @@ export interface CompanionApi {
   getPins(): Promise<{ pins: Pin[]; warning: string | null }>;
   /** Null when saved; else the sentence for the player. */
   setPins(pins: Pin[]): Promise<string | null>;
+  /** The catalog numbers that use a piece, in the catalog's order: Where this goes (FR-027). */
+  feedsList(r: { pieceKey: string }): Promise<string[]>;
   onFarm(cb: (f: FarmUpdate) => void): () => void;
   onRadar(cb: (r: RadarUpdate) => void): () => void;
   dismissRadar(): Promise<void>;

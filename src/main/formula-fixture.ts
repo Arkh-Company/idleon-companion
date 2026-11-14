@@ -3,6 +3,7 @@
 import { vi } from "vitest";
 import type { FormulaTree, LiveValues, TreeNode } from "../shared/index.ts";
 import { startFormulaPipeline } from "./formula-pipeline.ts";
+import type { TreeShapes } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
 
@@ -41,8 +42,23 @@ export const pairOf = (char = "Invented", n = 1): StatsPair => ({
   calculatedAt: 1_000 * n,
 });
 
+/** Saved tree shapes in memory, as `savedFiles(dir).shapes` (FR-027). */
+export function shapesOf(
+  saved: TreeShapes = { gameSha: null, trees: new Map() },
+) {
+  return {
+    get: () => saved,
+    save: vi.fn<(s: TreeShapes) => string | null>(() => null),
+    warning: () => null,
+  };
+}
+
 /** `checked`: whether the game's code is the one the rules were checked on (the version band, FR-018). */
-export function pipeline(start: StatsPair | null = pairOf(), checked = true) {
+export function pipeline(
+  start: StatsPair | null = pairOf(),
+  checked = true,
+  shapes = shapesOf(),
+) {
   let pair = start;
   const sent: FormulaTree[] = [];
   const liveSent: LiveValues[] = [];
@@ -53,6 +69,7 @@ export function pipeline(start: StatsPair | null = pairOf(), checked = true) {
     dropCurrent: vi.fn(),
     setFiles: vi.fn(),
     stop: vi.fn(),
+    shape: vi.fn<(id: number, treeId: string, mosaicJson: string) => void>(),
   };
   type Callbacks = Parameters<
     Parameters<typeof startFormulaPipeline>[0]["treeHost"]
@@ -72,6 +89,7 @@ export function pipeline(start: StatsPair | null = pairOf(), checked = true) {
     statsPair: () => pair,
     checkedOnThisGame: () => checked,
     log,
+    shapes,
   });
   return {
     p,
@@ -98,6 +116,10 @@ export function pipeline(start: StatsPair | null = pairOf(), checked = true) {
     },
     unavailable: () => {
       on?.onUnavailable(host.request.mock.calls.at(-1)?.[0] as number);
+    },
+    /** The worker's answer to the last shape asked. */
+    shape: (parts: unknown) => {
+      on?.onShape(host.shape.mock.lastCall?.[0] ?? -1, parts);
     },
   };
 }

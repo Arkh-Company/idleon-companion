@@ -9,7 +9,7 @@ const SHA = createHash("sha256").update(CODE).digest("hex");
 
 test("the game code the rules were checked on hides the band", () => {
   const band = versionBand(SHA);
-  band.read(CODE);
+  expect(band.read(CODE)).toBe(SHA); // the version the tree shapes are saved for (FR-027)
   expect(band.checked()).toBe(true);
 });
 

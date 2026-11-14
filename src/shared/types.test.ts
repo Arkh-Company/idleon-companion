@@ -27,6 +27,7 @@ test("IPC holds the fixed channel names", () => {
     marksClear: "marks:clear",
     pinsGet: "pins:get",
     pinsSet: "pins:set",
+    feedsList: "feeds:list",
     farmUpdate: "farm:update",
     radarUpdate: "radar:update",
     radarDismiss: "radar:dismiss",

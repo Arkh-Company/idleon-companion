@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 // calculated, its root reaches the window, and nothing of the trees reaches the Stats (FR-017, FR-019). The workers are
 // fakes; every value and name is invented.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { IPC } from "../shared/index.ts";
+import { IPC, TREE_CATALOG } from "../shared/index.ts";
 import { FakeWorker } from "./calculator-host-fixture.ts";
 import { node } from "./formula-fixture.ts";
 import type { GameBytes } from "./game-files.ts";
@@ -116,6 +116,13 @@ function setup(
       this.stats().emit("message", { type: "result", numbers: CALCULATED });
     },
   };
+}
+
+/** The shape of Where this goes (FR-027) in flight in the background: values asked meanwhile wait for its answer. */
+function answerShape(worker: FakeWorker): void {
+  const shape = worker.sent("shape").at(-1);
+  expect(shape).toBeDefined();
+  worker.emit("message", { type: "shapeResult", id: shape?.id, shape: [] });
 }
 
 test("a tree request goes with the Stats' mosaic and its root reaches the window", async () => {
@@ -257,6 +264,7 @@ test("the saved pins are in view from the start, and pins:set changes what is in
     { treeId: "hp", nodeId: null },
     { treeId: "str", nodeId: null },
   ]);
+  answerShape(h.trees());
   expect(h.trees().sent("values").at(-1)).toMatchObject({ ids: ["hp", "str"] });
   expect(await h.p.handlers[IPC.pinsGet]?.(undefined)).toEqual({
     pins: [
@@ -292,6 +300,7 @@ test("each new Stats pair asks the live values again, even when the Stats texts 
   h.slice(2, [piece("Cards", 2)]);
   await vi.advanceTimersByTimeAsync(100); // the Stats host's gap between two calculations
   h.stats().emit("message", { type: "result", numbers: CALCULATED });
+  answerShape(h.trees());
   const calcs = h.stats().calcs();
   expect(calcs).toHaveLength(2);
   expect(
@@ -300,4 +309,62 @@ test("each new Stats pair asks the live values again, even when the Stats texts 
       .sent("values")
       .map((m) => m.mosaic),
   ).toEqual(calcs);
+});
+
+// Where this goes (FR-027): the tree worker gets the shapes of the catalog in the background, once it read the game's
+// code, and `feeds:list` answers from them.
+test("after the tree, the tree worker is asked a shape over the Stats' mosaic", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  expect(h.trees().sent("shape")).toEqual([]);
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  // The open number's live value goes first: a shape waits for every tree and value.
+  const [values] = h.trees().sent("values");
+  expect(h.trees().sent("shape")).toEqual([]);
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: values?.id,
+    values: {},
+  });
+  const [shape] = h.trees().sent("shape");
+  expect(shape?.mosaic).toBe(h.stats().calcs()[0]);
+  expect(shape?.treeId).toBe(TREE_CATALOG.find((n) => !n.live)?.id);
+});
+
+test("feeds:list gives the catalog numbers of a piece, from the saved shapes", async () => {
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "feeds-")));
+  saved.shapes.save({
+    gameSha: "a".repeat(64),
+    trees: new Map([
+      ["hp", [['["Sword"]', "Game value"]]],
+      ["str", [['["Sword"]', "Game value"]]],
+    ]),
+  });
+  const h = setup(CHECKED_CODE, saved);
+  expect(
+    await h.p.handlers[IPC.feedsList]?.({ pieceKey: '[2,"Sword"]' }),
+  ).toEqual(
+    TREE_CATALOG.map((n) => n.id).filter((id) => ["hp", "str"].includes(id)),
+  );
+});
+
+test.each<[string, unknown]>([
+  ["no body", undefined],
+  ["a key that is no text", { pieceKey: 3 }],
+  ["an empty key", { pieceKey: "" }],
+  ["a key too long", { pieceKey: "k".repeat(2_001) }],
+  ["another field", { pieceKey: "k", id: "hp" }],
+])("feeds:list refuses %s", async (_name, payload) => {
+  const h = setup();
+  await expect(
+    Promise.resolve().then(() => h.p.handlers[IPC.feedsList]?.(payload)),
+  ).rejects.toThrow("feeds:list: invalid piece");
 });

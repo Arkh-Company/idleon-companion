@@ -73,6 +73,13 @@ export function formulaValuesPayload(v: unknown): { ids: string[] } | null {
     : null;
 }
 
+/** `feeds:list` (FR-027): only `{ pieceKey }`, a key as long as a node's id at most. */
+export function feedsListPayload(v: unknown): { pieceKey: string } | null {
+  return isObject(v) && onlyKeys(v, ["pieceKey"]) && isNodeId(v.pieceKey)
+    ? { pieceKey: v.pieceKey }
+    : null;
+}
+
 /** The longest name of a mark (FR-037). */
 export const MAX_MARK_NAME = 40;
 

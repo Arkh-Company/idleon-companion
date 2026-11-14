@@ -9,6 +9,7 @@ import type { FormulaLog } from "./formula-pipeline.ts";
 import type { GameBytes } from "./game-files.ts";
 import {
   emptyPayload,
+  feedsListPayload,
   formulaRequestPayload,
   formulaValuesPayload,
 } from "./payloads.ts";
@@ -64,7 +65,8 @@ export function startPipelines(deps: {
         // The code is hashed before the host transfers its bytes to the worker.
         readFiles: async (resources) => {
           const files = await deps.readFiles(resources);
-          band.read(files.code);
+          const sha = band.read(files.code);
+          formula?.gameRead(sha);
           return files;
         },
         ...on,
@@ -72,6 +74,7 @@ export function startPipelines(deps: {
     statsPair: () => stats.pair(),
     checkedOnThisGame: band.checked,
     log: deps.log,
+    shapes: deps.saved.shapes,
   });
   const trees = formula;
   // The pinned numbers are live whatever the window shows, from the start (FR-026).
@@ -98,6 +101,11 @@ export function startPipelines(deps: {
         const r = formulaValuesPayload(payload);
         if (!r) throw new Error("formula:values: invalid ids");
         trees.values(r.ids);
+      },
+      [IPC.feedsList]: (payload) => {
+        const r = feedsListPayload(payload);
+        if (!r) throw new Error("feeds:list: invalid piece");
+        return trees.feeds(r.pieceKey);
       },
       ...marksHandlers(deps.saved.marks, (n) => trees.markOf(n)),
       ...pinsHandlers(deps.saved.pins, pinned),

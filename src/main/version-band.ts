@@ -11,13 +11,16 @@ export const RULES_GAME_SHA: string | null = null;
 
 export function versionBand(rulesSha: string | null = RULES_GAME_SHA): {
   /** The game's code, as the tree host read it. */
-  read(code: Uint8Array): void;
+  /** The game's code, as the tree host read it; gives its sha256. */
+  read(code: Uint8Array): string;
   checked: () => boolean;
 } {
   let gameSha: string | null = null;
   return {
     read(code) {
-      gameSha = createHash("sha256").update(code).digest("hex");
+      const sha = createHash("sha256").update(code).digest("hex");
+      gameSha = sha;
+      return sha;
     },
     checked: () => gameSha !== null && gameSha === rulesSha,
   };

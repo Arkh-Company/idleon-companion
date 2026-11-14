@@ -186,7 +186,7 @@ function start(): void {
     log: (entry) => {
       console.warn(JSON.stringify(entry));
     },
-    // marks.json and pins.json beside settings.json (contracts/saved-files.md).
+    // marks.json, pins.json and tree-shapes.json beside settings.json (contracts/saved-files.md).
     saved: savedFiles(dataDir),
   });
 

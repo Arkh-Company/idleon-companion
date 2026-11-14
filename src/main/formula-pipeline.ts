@@ -1,7 +1,8 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019). What the worker
 // sends is checked before it reaches the window (FR-010b). The live values of what is in view go over the same pair
-// (FR-008, plan B). No electron import, so tests can load it.
+// (FR-008, plan B). Each part carries how many catalog numbers use it, from the index the shapes fill in the background
+// (FR-027). No electron import, so tests can load it.
 import {
   compareTrees,
   isObject,
@@ -18,7 +19,9 @@ import type {
   TreeNode,
   TreeRequest,
 } from "../shared/index.ts";
+import { feedsIndex, withFeeds } from "./feeds-index.ts";
 import type { FormulaRequest } from "./payloads.ts";
+import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
 import { checkTree } from "./tree-check.ts";
@@ -29,7 +32,7 @@ export const MAX_TREE_NODES = 20_000;
 
 type TreeHost = Pick<
   ReturnType<typeof createTreeHost>,
-  "request" | "values" | "dropCurrent" | "setFiles" | "stop"
+  "request" | "values" | "dropCurrent" | "setFiles" | "stop" | "shape"
 >;
 
 /** Numbers that need a map actor's field: their tree is unavailable until the actor is read (US12, FR-023). */
@@ -54,6 +57,12 @@ function players(
     return null;
   }
 }
+
+/** The characters' names of the mosaic: what a saved file must never get (FR-010a). */
+const namesOf = (mosaicJson: string): string[] =>
+  (players(mosaicJson)?.names ?? []).filter(
+    (n): n is string => typeof n === "string",
+  );
 
 /** The active character's place in the game's list of characters, read from the mosaic; null when it is not there. */
 export function characterNumber(mosaicJson: string): number | null {
@@ -111,11 +120,14 @@ export function startFormulaPipeline(deps: {
     onTree(id: number, tree: unknown): void;
     onUnavailable(id: number): void;
     onValues(id: number, values: unknown): void;
+    onShape(id: number, shape: unknown): void;
   }) => TreeHost;
   statsPair: () => StatsPair | null;
   /** Whether the game's code is the one the name and type rules were checked on (the version band, FR-018). */
   checkedOnThisGame: () => boolean;
   log: (entry: FormulaLog) => void;
+  /** The tree shapes saved on this computer, which the index of Where this goes is built from (FR-027). */
+  shapes: ReturnType<typeof savedFiles>["shapes"];
 }): {
   /** A request the main already checked (`formulaRequestPayload`). */
   request(r: FormulaRequest): void;
@@ -132,6 +144,10 @@ export function startFormulaPipeline(deps: {
   replay(): void;
   /** What a mark of `character` takes: the open tree's values by piece, and the names the file must never get. */
   markOf(character: number): { values: Mark["values"]; names: string[] } | null;
+  /** The tree host read the game's code: its sha256, the version the shapes are saved for. */
+  gameRead(sha: string): void;
+  /** `feeds:list`: the catalog numbers that use a piece, each one a tree to open (FR-027). */
+  feeds(pieceKey: string): string[];
 } {
   /** The number the window has open; `character` null is the active one. */
   let open: { id: string; character: number | null } | null = null;
@@ -183,10 +199,26 @@ export function startFormulaPipeline(deps: {
       show({ ...last, gameChanged: true });
   }
 
-  /** The live values follow the Stats' pair: its mosaic, or none without a reading or a character. */
+  const index = feedsIndex({
+    shapes: deps.shapes,
+    ask: (id, treeId, mosaicJson) => {
+      host.shape(id, treeId, mosaicJson);
+    },
+    // A new count reaches the open tree when the index is written, never per second.
+    changed: () => {
+      if (last.state !== "ready") return;
+      const root = fed(last.root);
+      if (root !== last.root) show({ ...last, root });
+    },
+  });
+  const fed = (root: TreeNode) => withFeeds(root, index.count);
+
+  /** The live values follow the Stats' pair: its mosaic, or none without a reading or a character; so do the shapes. */
   function follow(): void {
     const pair = deps.statsPair();
     live.onMosaic(pair?.mosaicJson ?? null, pair?.calculatedAt);
+    const mosaic = current()?.pair.mosaicJson ?? null;
+    index.mosaic(mosaic, mosaic === null ? [] : namesOf(mosaic));
   }
 
   function view(): void {
@@ -219,7 +251,9 @@ export function startFormulaPipeline(deps: {
     if (last.state !== "ready") return;
     const branch = raw === null ? null : checkTree(raw, MAX_TREE_NODES);
     let root =
-      branch?.id === nodeId ? swapNode(last.root, nodeId, () => branch) : null;
+      branch?.id === nodeId
+        ? swapNode(last.root, nodeId, () => fed(branch))
+        : null;
     if (root && countNodes(root) > MAX_TREE_NODES) root = null;
     if (!root) {
       if (raw !== null) deps.log({ event: "treeRejected", id: treeId });
@@ -288,7 +322,7 @@ export function startFormulaPipeline(deps: {
       show({ state: "diverged", request, statsText: textOf(statsValue) });
       return;
     }
-    const root = before ? compareTrees(before, checked).withWas : checked;
+    const root = fed(before ? compareTrees(before, checked).withWas : checked);
     show({
       state: "ready",
       request,
@@ -321,6 +355,9 @@ export function startFormulaPipeline(deps: {
     },
     onValues: (id, values) => {
       live.received(id, values);
+    },
+    onShape: (id, shape) => {
+      index.received(id, shape);
     },
   });
 
@@ -388,6 +425,7 @@ export function startFormulaPipeline(deps: {
         }
       }
       live.setStale(closed);
+      index.pause(closed);
       if (closed === stale) return;
       stale = closed;
       if (last.state === "ready") show({ ...last, stale });
@@ -397,6 +435,7 @@ export function startFormulaPipeline(deps: {
       openFor = null;
       asked = null;
       host.setFiles(resources);
+      index.reset();
       show({ state: "none" });
     },
     replay() {
@@ -405,11 +444,12 @@ export function startFormulaPipeline(deps: {
     },
     markOf(character) {
       if (last.state !== "ready" || last.character !== character) return null;
-      const names = players(deps.statsPair()?.mosaicJson ?? "")?.names ?? [];
       return {
         values: pieceValues(last.root),
-        names: names.filter((n): n is string => typeof n === "string"),
+        names: namesOf(deps.statsPair()?.mosaicJson ?? ""),
       };
     },
+    gameRead: index.game,
+    feeds: index.list,
   };
 }
