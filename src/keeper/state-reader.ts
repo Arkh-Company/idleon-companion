@@ -3,6 +3,7 @@
 // logged (FR-007).
 import {
   ACTIONS_GROUP,
+  ACTORS_PIECE,
   CATALOG,
   CHARACTER_ROW,
   groupOf,
@@ -156,6 +157,10 @@ export function startStateReader(deps: {
   const characterSubkeys = rows
     .filter((r) => r.reading === "rápida" && r.name.startsWith(CHARACTER_ROW))
     .map((r) => r.name.slice(CHARACTER_ROW.length));
+  /** The map actors' piece is no key of the state: it is read when the catalog has its row (US12). */
+  const extra: StatePath[] = rows.some((r) => r.name === ACTORS_PIECE)
+    ? [[ACTORS_PIECE]]
+    : [];
 
   /** A `slow` pass starts with the `_vars`, in a slot of their own. */
   const queue = (paths: StatePath[], lane: Lane): Queue => {
@@ -237,6 +242,7 @@ export function startStateReader(deps: {
     if (!now) return;
     const listed: StatePath[] = [
       ...top.map((k): StatePath => [k]),
+      ...extra,
       ...children.flatMap(([k, kids]) =>
         (kids as string[]).map((c): StatePath => [k, c]),
       ),

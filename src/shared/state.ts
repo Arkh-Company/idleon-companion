@@ -25,6 +25,12 @@ export const STATE_EXCLUDED: readonly string[] = [
 /** Maps read child by child, because one child is too big for a slice or has its own class. */
 export const STATE_SPLIT: readonly string[] = ["PlayerDATABASE", "DNSM"];
 
+/**
+ * The piece of the map actors' fields the live-game trees read (spec 008 US12): no key of the state, read by
+ * state-slice.js (which keeps this name in its text) and carried in the mosaic as `actors`, beside the `_vars`.
+ */
+export const ACTORS_PIECE = "@actors";
+
 /** The closed list of `_vars`: nothing outside it is ever read out. */
 export const VARS_KEYS: readonly string[] = [
   "voteCategories",

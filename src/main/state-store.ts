@@ -1,6 +1,7 @@
 // The mosaic: the newest value of each piece of the state, only in memory and never logged (FR-007, FR-022).
 import {
   ACTIONS_GROUP,
+  ACTORS_PIECE,
   CATALOG,
   groupOf,
   isObject,
@@ -123,9 +124,11 @@ export function createStateStore(cb: {
   function mosaicJson(): string {
     const attrs: Record<string, unknown> = {};
     let vars: unknown = {};
+    let actors: unknown = {};
     for (const { path, value } of pieces.values()) {
       const [top, child, sub] = path;
       if (top === "_vars") vars = value;
+      else if (top === ACTORS_PIECE) actors = isObject(value) ? value : {};
       else if (child === undefined) attrs[top] = value;
       else {
         // Both split maps are `haxe.ds.StringMap`, the calculator's default: no `$c`.
@@ -137,7 +140,7 @@ export function createStateStore(cb: {
           sub === undefined ? value : withSubkey(split.$m[child], sub, value);
       }
     }
-    return JSON.stringify({ attrs, vars, skipped: STATE_EXCLUDED });
+    return JSON.stringify({ attrs, vars, actors, skipped: STATE_EXCLUDED });
   }
 
   return {

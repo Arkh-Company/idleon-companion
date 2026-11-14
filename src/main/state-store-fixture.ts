@@ -6,6 +6,7 @@ export type Piece = StateSlice["pieces"][number];
 interface Mosaic {
   attrs: Record<string, unknown>;
   vars: Record<string, unknown>;
+  actors: Record<string, unknown>;
   skipped: string[];
 }
 

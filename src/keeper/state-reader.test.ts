@@ -1,12 +1,14 @@
 // The plan and the rotation of the state reader: a fake `send`, fake timers and invented keys (FR-001, FR-002, FR-022).
 // The slots and the first lap of 005 are in state-reader-slots.test.ts.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import type { StatePath } from "../shared/index.ts";
+import { ACTORS_PIECE } from "../shared/index.ts";
+import type { CatalogRow, StatePath } from "../shared/index.ts";
 import {
   fastKeys,
   laneOf,
   setup,
   sliceReads,
+  TEST_CATALOG,
   tick,
 } from "./state-reader-fixture.ts";
 import { pack, pieceBytes } from "./state-reader.ts";
@@ -309,4 +311,22 @@ test("an engine of null reads nothing, and it is asked for at each slot", async 
   h.h.ref = { sessionId: "T", objectId: "P", pausedMs: 1 };
   await tick();
   expect(h.sent[0]).toMatchObject({ objectId: "P", sessionId: "T" });
+});
+
+test("the map actors' piece is read in the lane of its catalog row, and only when the catalog has one (US12)", async () => {
+  const slow = {
+    ...TEST_CATALOG[0],
+    name: ACTORS_PIECE,
+    reading: "lenta",
+    group: "—",
+  } as CatalogRow;
+  const withRow = setup({}, undefined, [...TEST_CATALOG, slow]);
+  await tick(3);
+  expect(sliceReads(withRow.sent).at(-1)?.paths).toEqual([
+    ["ChestMap"],
+    [ACTORS_PIECE],
+  ]);
+  const without = setup();
+  await tick(3);
+  expect(sliceReads(without.sent).at(-1)?.paths).toEqual([["ChestMap"]]);
 });

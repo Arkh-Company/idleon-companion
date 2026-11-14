@@ -1,6 +1,6 @@
 // The mosaic in memory (FR-022). Every value and character name here is made up (FR-021).
 import { expect, test } from "vitest";
-import { STATE_EXCLUDED, VARS_KEYS } from "../shared/index.ts";
+import { ACTORS_PIECE, STATE_EXCLUDED, VARS_KEYS } from "../shared/index.ts";
 import type { StatePath } from "../shared/index.ts";
 import { NONE, piece, setup, WHOLE } from "./state-store-fixture.ts";
 
@@ -54,6 +54,24 @@ test.each([[null], [7], ["x"], [[1]], [{}]])(
     h.add([]);
     h.add([piece("_vars", v)], WHOLE);
     expect(h.dues[0]?.vars).toEqual({});
+  },
+);
+
+test("the map actors' piece lands in actors, beside the vars (US12)", () => {
+  const h = setup();
+  h.add([]);
+  h.add([piece(ACTORS_PIECE, { map: 5, "map0._MonsterHPtot": 9 })], WHOLE);
+  expect(h.dues[0]?.actors).toEqual({ map: 5, "map0._MonsterHPtot": 9 });
+  expect(h.dues[0]?.attrs).toEqual({});
+});
+
+test.each([[null], [7], ["x"], [[1]]])(
+  "an actors piece of %j keeps nothing",
+  (v) => {
+    const h = setup();
+    h.add([]);
+    h.add([piece(ACTORS_PIECE, v)], WHOLE);
+    expect(h.dues[0]?.actors).toEqual({});
   },
 );
 
@@ -115,6 +133,7 @@ test("the first calculation is due once, as the JSON of attrs, vars and skipped"
     JSON.stringify({
       attrs: { Cards: 1 },
       vars: {},
+      actors: {},
       skipped: STATE_EXCLUDED,
     }),
   ]);

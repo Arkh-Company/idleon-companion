@@ -34,7 +34,13 @@ export {
   groupOf,
 } from "./reading-catalog-rules.ts";
 export type { CatalogRow } from "./reading-catalog-rules.ts";
-export { NUMBER_IDS, STATE_EXCLUDED, STATE_SPLIT, VARS_KEYS } from "./state.ts";
+export {
+  ACTORS_PIECE,
+  NUMBER_IDS,
+  STATE_EXCLUDED,
+  STATE_SPLIT,
+  VARS_KEYS,
+} from "./state.ts";
 export type {
   CalcNumbers,
   StateClass,

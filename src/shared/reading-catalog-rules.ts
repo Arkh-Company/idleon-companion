@@ -2,6 +2,7 @@
 import { isObject } from "./link.ts";
 import { NUMBER_IDS, VARS_KEYS } from "./state.ts";
 import type { StateClass, StatePath } from "./state.ts";
+import { TREE_CATALOG } from "./tree-catalog.ts";
 
 export interface CatalogRow {
   name: string;
@@ -22,6 +23,8 @@ export const CHARACTER_ROW = "Personagem.";
 const COLUMNS = 10;
 const NO_NUMBERS = ["nenhum", "não medido", "só quebra"];
 const ALL_NUMBERS = "todos";
+/** The live-game numbers of the tree catalog (spec 008 US12): the bench proved each one reads a map actor's field. */
+const LIVE_NUMBERS = "jogo vivo";
 const NATURES = [
   "dado de origem",
   "cache derivado",
@@ -36,6 +39,8 @@ const NEVER_FAST = [OTHER_CHARACTERS, "_vars."];
 function parseNumbers(cell: string): string[] {
   if (NO_NUMBERS.includes(cell)) return [];
   if (cell === ALL_NUMBERS) return [...NUMBER_IDS];
+  if (cell === LIVE_NUMBERS)
+    return TREE_CATALOG.filter((n) => n.live).map((n) => n.id);
   return cell.split(",").map((id) => id.trim());
 }
 
