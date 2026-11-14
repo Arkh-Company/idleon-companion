@@ -158,7 +158,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
   - Tests:
     - a node with an unknown field, a wrong type, a code snippet in `formula` or `name`, or more than `maxNodes` nodes gives `null`;
     - the pipeline turns `null` into `unavailable` plus a log entry without values or names.
-- [ ] T014 Add the IPC channels and the preload methods
+- [X] T014 Add the IPC channels and the preload methods
   - Files: `src/shared/types.ts` (`IPC`, `CompanionApi`), `src/shared/types.test.ts` (the `IPC` object pinned whole), `src/preload/index.ts`, `src/renderer/companion-stub.ts`, `src/main/index.ts` (wiring only, through a tested function)
   - Channels: `formula:request`, `formula:update`, `formula:close`, `formula:values`, `formula:liveValues`, `panel:update`, `marks:list`, `marks:save`, `marks:clear`, `pins:get`, `pins:set`, `farm:update`, `radar:update`, `radar:dismiss`, `window:sidePanel`, as in [contracts/ipc.md](contracts/ipc.md)
   - Tests: the `IPC` table; the stub has every new method; `formula:update` replays the last tree.
