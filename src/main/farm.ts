@@ -69,6 +69,8 @@ export function farmTracker(deps: {
   let char: string | null | undefined;
   let counted = 0;
   let tick: number | null = null;
+  /** When the last slice came: a gap is measured from it, as a reading can come first after one. */
+  let sliceAt: number | null = null;
   let sentAt = -Infinity;
   let names: Record<string, string> | null = null;
   /** What was read last, also while idle or paused: the next difference starts from it. */
@@ -143,6 +145,7 @@ export function farmTracker(deps: {
     char = undefined;
     counted = 0;
     tick = null;
+    sliceAt = null;
     last = blank();
     xp = new Map();
     gold = 0;
@@ -191,7 +194,8 @@ export function farmTracker(deps: {
       char = s.sentinel.char;
       if (char === null) return;
       // After a gap with no reading the time is not counted, so neither is what changed in it: this slice starts again.
-      const gap = tick !== null && now() - tick > GAP_MS;
+      const gap = sliceAt !== null && now() - sliceAt > GAP_MS;
+      sliceAt = now();
       clock();
       measure(s, state === "counting" && !gap);
       if (state === "counting") send(false);

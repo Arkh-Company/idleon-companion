@@ -203,8 +203,13 @@ test("what changed across a gap with no reading is no gain: the slice after it i
   t += 60 * MIN;
   state({ Money: 5000 });
   expect(snap().goldPerHour).toBe(100);
+  // A reading first after the gap, as when the reader comes back, does not close it.
+  t += 60 * MIN;
+  farm.onMap(3, false);
+  state({ Money: 9000 });
+  expect(snap().goldPerHour).toBe(100);
   // From there, the gains count again.
-  wait(1000, { Money: 5100 });
+  wait(1000, { Money: 9100 });
   expect(snap().goldPerHour).toBeGreaterThan(100);
 });
 
