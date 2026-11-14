@@ -11,7 +11,8 @@ import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import type { BlockSteps, Expr } from "./steps.ts";
-import { firstSrc, hasKids, near } from "./terms.ts";
+import { near, num } from "./math.ts";
+import { firstSrc, hasKids } from "./terms.ts";
 
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
 const CMP: Readonly<Record<string, string>> = {
@@ -30,10 +31,6 @@ const FLIP: Readonly<Record<string, string>> = {
   ">=": "<=",
   "<=": ">=",
 };
-const num = (v: unknown) =>
-  Number.isInteger(Number(v))
-    ? String(Number(v))
-    : String(+Number(v).toPrecision(4));
 interface Cmp {
   l: Expr;
   r: Expr;

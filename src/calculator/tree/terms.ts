@@ -10,8 +10,10 @@ import { MAX_DEPTH } from "./pieces.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
+import { near, num } from "./math.ts";
+import { valPath } from "./val-path.ts";
+import type { Reads } from "./val-path.ts";
 
-export type Reads = ReadonlyMap<string, RecValue>;
 type V = Expr["v"];
 
 export interface TermContext {
@@ -30,29 +32,7 @@ export interface Turn {
   at: number;
 }
 
-export const near = (a: unknown, b: unknown) =>
-  Math.abs(Number(a) - Number(b)) <= 1e-9 * Math.max(1, Math.abs(Number(b)));
-const num = (v: unknown) =>
-  Number.isInteger(Number(v))
-    ? String(Number(v))
-    : String(+Number(v).toPrecision(4));
 const EARLIER_WHY = "a value of a step of the game the recording did not link";
-/** The game's tables: a value is named by one only when no read of the account's state has it. */
-export const TABLE_READ: readonly { test: RegExp; proof: string }[] = [
-  {
-    test: /^(CustomLists|CustomMaps|ItemDefinitionsGET|RANDOlist|NinjaInfo|GuildBonuses|SigilDesc|ChipDesc|JewelDesc|GodsInfo|LabMainBonus|ArcaneUpg|GrimoireUpg|UpgradeVault|ArmoryUpg|SpelunkUpg|ResGridSquares|MarketExoticInfo|ShrineInfo|TalentDescriptions)/,
-    proof: "bench pieces.cjs TABLE_READ",
-  },
-];
-/** Reads that never name a value: the Arena's wave list took a card's per-star value by coincidence. */
-export const COINCIDENT_READS: readonly { test: RegExp; proof: string }[] = [
-  {
-    test: /^(CustomLists\.)?RANDOlist\[53\]/,
-    proof: "bench pieces.cjs valPath; N.js TalentCalc",
-  },
-];
-const any = (rules: readonly { test: RegExp }[], p: string) =>
-  rules.some((r) => r.test.test(p));
 
 export const topOp = (e: Expr | undefined): "*" | "+" | null =>
   e?.t === "op" && (e.o === "*" || e.o === "+") ? e.o : null;
@@ -119,21 +99,6 @@ const branch = (v: V, group: Row[]): Row => ({
 });
 export const hasKids = (r: Row) =>
   r.open !== null || (r.group?.length ?? 0) > 0 || r.node.kids === "lazy";
-
-/** The read a value equals (the account's state first, a game table only when nothing else has it), or null. */
-export function valPath(v: unknown, reads: Reads): string | null {
-  const hits = [...reads].filter(
-    ([p, x]) =>
-      Math.abs(Number(x) - Number(v)) < 1e-9 &&
-      !p.endsWith(".length") &&
-      !p.includes(" contains ") &&
-      !any(COINCIDENT_READS, p),
-  );
-  const pick =
-    hits.find(([p]) => !any(TABLE_READ, p.replace(/^CustomLists\./, ""))) ??
-    hits[0];
-  return pick ? pick[0] : null;
-}
 
 /** How many sources of the player's state an expression has (a table, a cache or a running total is none). */
 const stateSrc = (x: Expr): number =>

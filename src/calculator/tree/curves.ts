@@ -3,15 +3,13 @@
 // BASELINE-4. A curve is the calculation, not a value: its two constants are fixed values named by their role, and the
 // value it curves is the caller's read with the same value. The share of the maximum (FR-015a) is new in the app: only
 // the two decay curves have a maximum.
+import { num } from "./math.ts";
 
 /** [F5-NUM] 3 decimals, or 3 significant digits below 0.01, so the ⓘ's line of numbers recomputes (rule 160). */
 export const fx3 = (v: number): string =>
   v !== 0 && Math.abs(v) < 0.01
     ? String(+v.toPrecision(3))
     : String(+v.toFixed(3));
-/** pieces.cjs `num`: a curve's own text, 4 significant digits. */
-const num = (v: number) =>
-  Number.isInteger(v) ? String(v) : String(+v.toPrecision(4));
 
 export type Curve = [kind: string, x1: number, x2: number, x3: number];
 

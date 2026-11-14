@@ -61,6 +61,17 @@ test("a call that only read the cache its twin filled opens as the twin, with no
   expect(brief(open("Wrap()", "Hit(2)").node)).toEqual([["Level", 5]]);
 });
 
+test("a call whose value is not the twin's within 1e-9 is no twin (pieces.cjs near)", () => {
+  const rec = structuredClone(PIECES);
+  const hit = rec.nodes[8];
+  if (hit) hit.v = 5.0000005;
+  const build = buildTree(rec, 0);
+  const row = kidsOf(build.root).find((k) => k.code === "Hit(2)");
+  build.expand(row?.id ?? "");
+  // not the twin's piece: the place is compared with the first call's rows, and differs
+  expect(build.conflicts).toEqual(['[0,"Hit",2]']);
+});
+
 test("a cache read opens into the call that wrote it", () => {
   expect(brief(open("DNSM.Pool.total").node)).toEqual([["Stash", 9]]);
 });

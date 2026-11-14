@@ -116,3 +116,12 @@ export function formulaAtoms(
     ),
   ];
 }
+
+/** pieces.cjs `near`: equal within 1e-9 of the second number, relative (a yes/no counts as 1 or 0). */
+export const near = (a: unknown, b: unknown): boolean =>
+  Math.abs(Number(a) - Number(b)) <= 1e-9 * Math.max(1, Math.abs(Number(b)));
+/** pieces.cjs `num`: a number as a row's name writes it, whole or with 4 significant digits. */
+export const num = (v: unknown): string =>
+  Number.isInteger(Number(v))
+    ? String(Number(v))
+    : String(+Number(v).toPrecision(4));

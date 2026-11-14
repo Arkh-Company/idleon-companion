@@ -6,7 +6,7 @@ import { COND_SUBS } from "./conditions.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
 import { GAME_TABLE } from "./steps.ts";
-import { COINCIDENT_READS, TABLE_READ } from "./terms.ts";
+import { COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
 const TABLES = {
   COUNT_LEAVES,

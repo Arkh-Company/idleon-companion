@@ -4,14 +4,10 @@
 // are those of its first call under the root in the order the game ran them, whichever place is opened first.
 import type { RecNode, Recording } from "../recording.ts";
 import type { Link } from "./links.ts";
+import { near } from "./math.ts";
 
 /** pieces.cjs MAX_DEPTH [NR-P]: the depth limit of `explain`. */
 export const MAX_DEPTH = 16;
-
-const near = (a: unknown, c: unknown) =>
-  typeof a === "number" &&
-  typeof c === "number" &&
-  Math.abs(a - c) <= 1e-6 * Math.max(1, Math.abs(c));
 
 export interface Pieces<R> {
   /** The rows of call `id`, or null when the depth limit or a cycle cuts it (`seen`: the calls above it). */

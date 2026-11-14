@@ -29,8 +29,9 @@ import type { Row } from "./tree/rows.ts";
 import { termOf } from "./tree/share.ts";
 import { lastReads, makeSteps } from "./tree/steps.ts";
 import type { Expr } from "./tree/steps.ts";
-import { hasKids, makeTerms, near, topOp } from "./tree/terms.ts";
-import type { Reads } from "./tree/terms.ts";
+import { near } from "./tree/math.ts";
+import { hasKids, makeTerms, topOp } from "./tree/terms.ts";
+import type { Reads } from "./tree/val-path.ts";
 
 export { GENERIC_NAME } from "./tree/rows.ts";
 

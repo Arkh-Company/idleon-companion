@@ -6,6 +6,7 @@
 // Step 8c (`formulaOf`, the text of the validation page) has no reader in pieces.cjs and is not ported.
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
+import { near } from "./math.ts";
 
 type StepValue = number | boolean | null | undefined;
 export type Expr =
@@ -283,10 +284,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (pd && lv !== undefined) {
         const pid = opIndex.get(pd);
         const pv = pid !== undefined ? vals.get(pid) : undefined;
-        const near =
-          typeof pv === "number" &&
-          Math.abs(pv - lv) <= 1e-9 * Math.max(1, Math.abs(lv));
-        if (pid !== undefined && near) l = { t: "def", e: e(pd), v: pv };
+        if (pid !== undefined && typeof pv === "number" && near(pv, lv))
+          l = { t: "def", e: e(pd), v: pv };
         else if (pid === undefined) {
           const r0 = leaf(pd, lv);
           if (r0.t !== "val") l = r0;
