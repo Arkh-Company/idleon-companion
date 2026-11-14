@@ -271,3 +271,61 @@ test("a turn whose step of its part is only numbers of the code opens the call o
   const second = kidsOf(open(buildTree(rec, 0, ops), "DNSM.Acc.v"))[1];
   expect(brief(second)).toEqual([["Lv", 6]]);
 });
+
+/**
+ * A loop whose second turn adds 2 and has a step `s.C * 2` of 2, where C is a cache of 1 that Nil wrote and that opens
+ * to nothing; with `call`, the turn calls Part of 2; else it reads the cache Other wrote with 2.
+ */
+function nilStepOf(call: boolean) {
+  // ops: 0 is t + s.A, 1 and 2 its leaves, 3 is s.C * 2, 4 its leaf
+  const { ops } = instrument(
+    "Blocks._customBlock_W = function () { t = t + s.A; u = s.C * 2; };",
+  );
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Top", v: 1, r: [["DNSM.Acc.v", 4, 3]] },
+      {
+        b: "W",
+        c: call ? [3] : [],
+        r: [["DNSM.Nil.v", 1, 1]],
+        x: [
+          [1, 0],
+          [2, 2],
+          [0, 2],
+          [1, 2],
+          [2, 2],
+          [0, 4],
+          [4, 1],
+          [3, 2],
+        ],
+        rx: [
+          ["A", 2, 1],
+          // the turn's first read of 2, so the one a turn with no call opens
+          ...(call ? [] : [["DNSM.Other.v", 2, 3] as [string, number, number]]),
+          ["A", 2, 4],
+          ["DNSM.Nil.v", 1, 6],
+        ],
+      },
+      { b: "Part", v: 2, pxi: 7, r: [["Lv", 2]] },
+      { b: "Nil", v: 1 },
+      { b: "Other", v: 2, r: [["Lv", 2]] },
+    ],
+    [
+      { path: "DNSM.Nil.v", node: 4, v: 1, seq: 1 },
+      { path: "DNSM.Other.v", node: 5, v: 2, seq: 0 },
+      { path: "DNSM.Acc.v", node: 2, v: 2, seq: 2, xi: 3 },
+      { path: "DNSM.Acc.v", node: 2, v: 4, seq: 3, xi: 8 },
+    ],
+    { root: 0 },
+  );
+  return kidsOf(open(buildTree(rec, 0, ops), "DNSM.Acc.v"))[1];
+}
+
+test("a turn whose step is ×1 but for numbers of the code, with a cache that opens to nothing, opens the call of the turn", () => {
+  expect(brief(nilStepOf(true))).toEqual([["Lv", 2]]);
+});
+
+test("a turn whose step has only a cache that opens to nothing opens the other cache it read with the turn's value", () => {
+  expect(brief(nilStepOf(false))).toEqual([["Lv", 2]]);
+});

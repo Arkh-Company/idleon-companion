@@ -233,3 +233,16 @@ test("a cache the block fills in its own loop and reads outside its steps opens 
   );
   expect(brief(buildTree(rec, 0).root)).toEqual([["Lv", 2]]);
 });
+
+test("a block's own result kept in a cache it wrote, that opens to nothing there, is no part beside its rows", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Keep", v: 5, c: [2], r: [["DNSM.Kept.v", 5, 1]] },
+      { b: "Part", v: 2, r: [["Lv", 2]] },
+    ],
+    [{ path: "DNSM.Kept.v", node: 1, v: 5, seq: 1 }],
+    { root: 0 },
+  );
+  expect(brief(buildTree(rec, 0).root)).toEqual([["Part()", 2]]);
+});
