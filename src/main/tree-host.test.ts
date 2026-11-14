@@ -297,3 +297,40 @@ test("values go to the worker and come back to onValues", async () => {
   t.worker.emit("message", { type: "valuesResult", id: 5, values: { hp: 3 } });
   expect(t.onValues).toHaveBeenCalledExactlyOnceWith(5, { hp: 3 });
 });
+
+// Values fail apart from the trees (review of phase 2): their own ids, and `onValues(id, null)`, never `onUnavailable`.
+test("values over a mosaic with no _vars are null before they reach the worker", async () => {
+  const t = await running();
+  answer(t.worker, 1);
+  t.host.values(5, ["hp"], NO_VARS);
+  expect(t.onValues).toHaveBeenCalledExactlyOnceWith(5, null);
+  expect(t.onUnavailable).not.toHaveBeenCalled();
+  expect(t.worker.sent("values")).toEqual([]);
+});
+
+test.each([
+  [
+    "dies",
+    async (t: Awaited<ReturnType<typeof running>>) => {
+      t.worker.emit("exit", 1);
+      await flush();
+    },
+  ],
+  [
+    "runs out of time",
+    async () => {
+      await vi.advanceTimersByTimeAsync(TREE_REQUEST_MS);
+    },
+  ],
+])(
+  "values whose worker %s are null, never a tree unavailable, and are not tried again",
+  async (_name, end) => {
+    const t = await running();
+    answer(t.worker, 1);
+    t.host.values(5, ["hp"], mosaic(5));
+    await end(t);
+    expect(t.onValues).toHaveBeenCalledExactlyOnceWith(5, null);
+    expect(t.onUnavailable).not.toHaveBeenCalled();
+    expect(t.workers).toHaveLength(1);
+  },
+);

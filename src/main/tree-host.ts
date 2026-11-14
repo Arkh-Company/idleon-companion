@@ -41,12 +41,14 @@ export function createTreeHost(deps: {
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
   onTree: (id: number, tree: unknown) => void;
+  /** The worker's values, or null when they failed: values never reach `onUnavailable`, which is for trees. */
   onValues: (id: number, values: unknown) => void;
   onUnavailable: (id: number) => void;
 }): {
   setFiles(resources: string): void;
   /** A `number` request needs its mosaic; an `expand` goes with null. */
   request(id: number, request: TreeRequest, mosaicJson: string | null): void;
+  /** The ids are the caller's own count, apart from the trees'. */
   values(id: number, ids: string[], mosaicJson: string): void;
   /** A character change or a loose reader: the request and its answer no longer matter; the worker stays. */
   dropCurrent(): void;
@@ -92,7 +94,8 @@ export function createTreeHost(deps: {
       lost = current.dropped ? null : current.job;
     else waitingTree = null;
     waitingValues = null; // Values come again with the next mosaic.
-    if (lost?.kind === "tree") {
+    if (lost?.kind === "values") deps.onValues(lost.id, null);
+    else if (lost?.kind === "tree") {
       deps.onUnavailable(lost.id);
       if (retry && !lost.retried && waitingTree === null)
         waitingTree = { ...lost, retried: true };
@@ -236,7 +239,7 @@ export function createTreeHost(deps: {
     },
     values(id, ids, mosaicJson) {
       if (!hasVars(mosaicJson)) {
-        deps.onUnavailable(id);
+        deps.onValues(id, null);
         return;
       }
       waitingValues = { kind: "values", id, ids, mosaic: mosaicJson };
