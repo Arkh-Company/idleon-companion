@@ -252,6 +252,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 - [ ] T026 [US1] [sessão] Measure the compiled `calculator.js` on the real game (lessons 004-3, 005-2)
   - Run the packaged worker on the installed game with the snapshot copy: Drop Rate root + first level time, heap peak, branch expand time.
   - Set the request timeout constants of T009 from these numbers.
+  - Measure the `@actors` piece of US12 (T055) on the real game: its bytes (fill the `Bytes` cell of its row in `reading-catalog.md`) and the extra time of the slice that reads it. It is in the slow reading, so it never delays the Stats' fast pass; if it is large (`_ItemsAndStorageOWNED` and `_BuffIDsOn` are read whole), the first lap gets longer.
   - Write the result in `registro.md`.
 - [X] T027 [US1] Parity test with the bench in `src/calculator/parity.integration.test.ts` (run by `just parity`)
   - It skips by itself when `PARITY_BENCH_DIR`, `PARITY_SNAPSHOT` or `PARITY_GAME_DIR` is missing or a path does not exist (model: `reader.integration.test.ts`). Every test has an explicit timeout.
@@ -544,7 +545,7 @@ Verify: `just test-one src/calculator/inactive.test.ts` - passes; `just check` -
 
 ### Tests for User Story 12
 
-- [ ] T054 [P] [US12] `src/keeper/state-slice.test.ts` (actor fields) and `src/calculator/live-actor.test.ts`
+- [X] T054 [P] [US12] `src/keeper/state-slice.test.ts` (actor fields) and `src/calculator/live-actor.test.ts`
   - Cases:
     - the fields of `atores-vivos.json` (bench's L1) read through `behaviors.cache.h["ActorEvents_N"].script[field]`, properties only, no function call;
     - the reading catalog rule for the new rows passes;
@@ -552,7 +553,7 @@ Verify: `just test-one src/calculator/inactive.test.ts` - passes; `just check` -
 
 ### Implementation for User Story 12
 
-- [ ] T055 [US12] Read the map actor's fields and feed them to the worker
+- [X] T055 [US12] Read the map actor's fields and feed them to the worker
   - Files: `src/keeper/state-slice.js`, `src/shared/reading-catalog.md` (new rows with proven impact), `src/calculator/context.js` (the actor answers from the mosaic instead of the bench's stub)
 
 Verify: `just test-one src/calculator/live-actor.test.ts` - passes; `just check` - passes.
