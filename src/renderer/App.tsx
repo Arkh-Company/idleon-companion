@@ -2,7 +2,7 @@
 // modules that match the context, and the settings. A tapped Stats or Formulas value opens its tree in the side panel,
 // beside the rest, with the window widened (spec 008 FR-005). A system's screen opening in the game switches to its panel
 // (FR-003), says so once (FR-040) and never moves the focus (FR-039); a screen without one keeps the last (FR-033). The
-// pinned numbers and the farm's rates sit under the status bar (FR-026, FR-028).
+// pinned numbers and the farm's rates sit under the status bar (FR-026, FR-028), below the patch radar's band (FR-035).
 import {
   useCallback,
   useEffect,
@@ -16,6 +16,7 @@ import type {
   FormulaTree,
   GameContext,
   LiveValues,
+  RadarUpdate,
   Stats,
   Status,
   SteamState,
@@ -25,6 +26,7 @@ import { FormulasTab, nameOf } from "./FormulasTab.tsx";
 import { screenMap } from "./modules/screen-map.ts";
 import { SYSTEM_PANELS } from "./modules/system-panels.ts";
 import { SettingsView, SteamSettings } from "./SettingsView.tsx";
+import { PatchBand } from "./PatchBand.tsx";
 import { PinStrip, usePins } from "./PinStrip.tsx";
 import { SetupView, steamUnknown } from "./SetupView.tsx";
 import { SidePanel } from "./SidePanel.tsx";
@@ -77,6 +79,16 @@ export function App() {
   const pins = usePins(setSaid);
   const [farm, setFarm] = useState<FarmUpdate | null>(null);
   useEffect(() => window.companion.onFarm(setFarm), []);
+  const [radar, setRadar] = useState<RadarUpdate>(null);
+  useEffect(
+    () =>
+      window.companion.onRadar((r) => {
+        setRadar(r);
+        // An unreadable shapes file is said once (FR-041); the count of trees is not announced.
+        if (r?.warning) setSaid(r.warning);
+      }),
+    [],
+  );
   const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
   useEffect(() => window.companion.onFormula(setFormula), []);
   const [side, setSide] = useState<Side | null>(null);
@@ -84,7 +96,7 @@ export function App() {
   const opener = useRef<HTMLElement | null>(null);
   /** The active tab's content; it takes the focus when a switch removes what had it (FR-039). */
   const tabPanel = useRef<HTMLDivElement>(null);
-  /** The last element focused inside the tab's content or the farm strip. */
+  /** The last element focused inside the tab's content, the patch band or the farm strip. */
   const focused = useRef<Element | null>(null);
   const focusTabPanel = useCallback(() => {
     tabPanel.current?.focus();
@@ -190,6 +202,16 @@ export function App() {
         {steam && (steam.configured || setupFinished) && (
           <>
             {status && <StatusBar status={status} />}
+            <PatchBand
+              radar={radar}
+              onClose={() => {
+                setRadar(null);
+                void window.companion.dismissRadar();
+              }}
+              onFocus={(e) => {
+                focused.current = e.target;
+              }}
+            />
             <PinStrip
               pins={pins.pins}
               note={pins.note}

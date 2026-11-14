@@ -496,3 +496,21 @@ h2 {
 .farm button {
   min-height: 24px;
 }
+
+/* The patch radar's band (FR-035): at 210 px CSS the text breaks, nothing scrolls sideways. */
+.patch {
+  overflow-wrap: anywhere;
+}
+
+.patch p,
+.patch ul {
+  margin: 0 0 4px;
+}
+
+.patch ul {
+  padding-left: 16px;
+}
+
+.patch button {
+  min-height: 24px;
+}
