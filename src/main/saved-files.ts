@@ -13,6 +13,7 @@ export const MARKS_FULL = "Up to 3 marks: clear one first.";
 export const MARKS_RESET = "Saved marks could not be read and were reset";
 export const MARKS_UNSAVED = "The marks could not be saved on this computer.";
 export const MARK_WITH_NAME = "A mark's name can't have a character's name.";
+export const MARK_TAKEN = "A mark with this name already exists.";
 
 type Values = Mark["values"];
 
@@ -94,12 +95,17 @@ export function savedFiles(dir: string): {
     return data;
   }
 
-  /** The whole file, or the sentence of a failed write; the marks stay in memory either way. */
+  /**
+   * The whole file, written to `.tmp` and renamed over it (as setup-store.ts), so a failed write never leaves half a
+   * file; or the sentence of a failed write. The marks stay in memory either way.
+   */
   function write(): string | null {
     try {
       mkdirSync(dir, { recursive: true });
       const characters = Object.fromEntries(load());
-      writeFileSync(file, JSON.stringify({ version: 1, characters }));
+      const tmp = `${file}.tmp`;
+      writeFileSync(tmp, JSON.stringify({ version: 1, characters }));
+      renameSync(tmp, file);
       return null;
     } catch {
       return MARKS_UNSAVED;
@@ -110,14 +116,11 @@ export function savedFiles(dir: string): {
     marks: {
       list: (n) => load().get(String(n)) ?? [],
       save(n, name, values) {
-        const others = (load().get(String(n)) ?? []).filter(
-          (m) => m.name !== name,
-        );
-        if (others.length >= MAX_MARKS) return MARKS_FULL;
-        load().set(String(n), [
-          ...others,
-          { name, takenAt: Date.now(), values },
-        ]);
+        const list = load().get(String(n)) ?? [];
+        // A mark goes only with Clear (FR-025).
+        if (list.some((m) => m.name === name)) return MARK_TAKEN;
+        if (list.length >= MAX_MARKS) return MARKS_FULL;
+        load().set(String(n), [...list, { name, takenAt: Date.now(), values }]);
         return write();
       },
       clear(n, name) {

@@ -16,6 +16,7 @@ import {
   MARKS_FULL,
   MARKS_RESET,
   MARKS_UNSAVED,
+  MARK_TAKEN,
   marksHandlers,
   savedFiles,
 } from "./saved-files.ts";
@@ -68,16 +69,31 @@ test("a fourth mark of the same character is refused; another character still ha
   expect(marks.save(1, "Mark 1", VALUES)).toBe(null);
 });
 
-test("saving a name again replaces that mark, so a full list can still be taken again", () => {
-  const { marks } = savedFiles(folder());
-  for (const name of ["Mark 1", "Mark 2", "Mark 3"])
-    marks.save(0, name, VALUES);
-  expect(marks.save(0, "Mark 2", { '[0,"Sword"]': 9 })).toBe(null);
-  expect(marks.list(0).map((m) => [m.name, m.values])).toEqual([
-    ["Mark 1", VALUES],
-    ["Mark 3", VALUES],
-    ["Mark 2", { '[0,"Sword"]': 9 }],
-  ]);
+test("a name already taken is refused: a mark goes only with Clear (FR-025)", () => {
+  const dir = folder();
+  const { marks } = savedFiles(dir);
+  marks.save(0, "Mark 1", VALUES);
+  expect(marks.save(0, "Mark 1", { '[0,"Sword"]': 9 })).toBe(MARK_TAKEN);
+  expect(MARK_TAKEN).toBe("A mark with this name already exists.");
+  expect(
+    savedFiles(dir)
+      .marks.list(0)
+      .map((m) => m.values),
+  ).toEqual([VALUES]);
+  // Another character may use the same name.
+  expect(marks.save(1, "Mark 1", VALUES)).toBe(null);
+});
+
+test("a write that fails leaves the file before whole and readable", () => {
+  const dir = folder();
+  savedFiles(dir).marks.save(0, "Mark 1", VALUES);
+  // A folder where the temporary file goes: that write fails.
+  mkdirSync(join(dir, "marks.json.tmp"));
+  const { marks } = savedFiles(dir);
+  expect(marks.save(0, "Mark 2", VALUES)).toBe(MARKS_UNSAVED);
+  const again = savedFiles(dir).marks;
+  expect(again.list(0).map((m) => m.name)).toEqual(["Mark 1"]);
+  expect(again.warning()).toBe(null);
 });
 
 test("Clear removes only that mark, on disk too", () => {
