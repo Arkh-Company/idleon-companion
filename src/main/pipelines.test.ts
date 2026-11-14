@@ -175,22 +175,15 @@ test.each([
   },
 );
 
-test("a character change reaches the open tree and the picker through the Stats", async () => {
+test("a character change reaches the open tree and the picker through the Stats; a new page gets the list again", async () => {
   const h = setup();
   await h.showing();
+  h.p.formula.replay();
   await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
   h.p.stats.reading(reading(null));
   expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "waiting" });
-  expect(h.on(IPC.formulaCharacters)).toMatchObject([{ active: 1 }, null]);
-});
-
-test("a new page gets the picker's list again (FR-020)", async () => {
-  const h = setup();
-  await h.showing();
-  const [list] = h.on(IPC.formulaCharacters);
-  expect(list).toMatchObject({ active: 1 });
-  h.p.formula.replay();
-  expect(h.on(IPC.formulaCharacters)).toEqual([list, list]);
+  const list = { active: 1 };
+  expect(h.on(IPC.formulaCharacters)).toMatchObject([list, list, null]);
 });
 
 test("a tree that fails to reach the window never touches the Stats (FR-017)", async () => {
