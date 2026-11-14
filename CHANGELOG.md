@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.6.0...v0.6.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* **calculator:** restore the companion levels of the mosaic after the helpers ([#25](https://github.com/Arkh-Company/idleon-companion/issues/25)) ([9a6eba3](https://github.com/Arkh-Company/idleon-companion/commit/9a6eba3e5829552be8ee9ebab79ddad55a445719))
+
 ## [0.6.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.5.0...v0.6.0) (2026-11-10)
 
 
