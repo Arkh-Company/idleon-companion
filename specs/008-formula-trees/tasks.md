@@ -451,7 +451,7 @@ Verify: `just test-one src/renderer/PinStrip.test.tsx` - passes; `just check` - 
 
 ### Tests for User Story 8
 
-- [ ] T045 [P] [US8] `src/main/feeds-index.test.ts`
+- [X] T045 [P] [US8] `src/main/feeds-index.test.ts`
   - Cases:
     - the index counts `pieceKey`s across the shapes of the catalog trees;
     - only ≥ 2 sets `feeds`;
@@ -459,7 +459,7 @@ Verify: `just test-one src/renderer/PinStrip.test.tsx` - passes; `just check` - 
 
 ### Implementation for User Story 8
 
-- [ ] T046 [US8] The feeds index and badge
+- [X] T046 [US8] The feeds index and badge
   - Files: `src/main/feeds-index.ts` (built from `tree-shapes.json` and refreshed in the background, never per second), `src/renderer/FeedsBadge.tsx`
 
 Verify: `just test-one src/main/feeds-index.test.ts` - passes; `just check` - passes.
