@@ -137,6 +137,36 @@ test("a second Copy inside the 2 s counts its 2 s from itself", async () => {
   expect(item("Copied")).toBeDefined();
 });
 
+test.each([
+  ["copies", "Copied"],
+  ["refuses", "Could not copy"],
+])(
+  "each Copy changes the polite region, even the same sentence again (the clipboard %s)",
+  async (_, sentence) => {
+    if (sentence !== "Copied") writeText.mockRejectedValue(new Error("denied"));
+    await copyRow();
+    const live = region();
+    if (!live) throw new Error("no live region");
+    const changes: string[] = [];
+    const watch = new MutationObserver(() => {
+      changes.push(live.textContent);
+    });
+    watch.observe(live, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+    for (let i = 0; i < 2; i++) {
+      changes.length = 0;
+      await copy();
+      await Promise.resolve();
+      expect(changes.length).toBeGreaterThan(0);
+      expect(live.textContent).toBe(sentence);
+    }
+    watch.disconnect();
+  },
+);
+
 test("a clipboard that refuses never says Copied", async () => {
   writeText.mockRejectedValue(new Error("denied"));
   await copyRow();

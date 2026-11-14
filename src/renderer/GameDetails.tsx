@@ -54,6 +54,8 @@ export function useCopy(announce?: (text: string) => void): {
   return {
     label: (key) => (key === copied ? COPIED : COPY),
     copy: (key, line) => {
+      // The region empties first: the same sentence again is a change, so the reader says it at each Copy.
+      announce?.("");
       navigator.clipboard.writeText(line).then(
         () => {
           announce?.(COPIED);
