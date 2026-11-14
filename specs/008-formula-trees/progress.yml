@@ -7,3 +7,25 @@ phases:
   prototype: {status: done, date: 2026-11-12}
   plan: {status: done, date: 2026-11-13}
   tasks: {status: done, date: 2026-11-13}
+execution:
+  branch: feat/008-formula-trees
+  phases:
+    - {name: "Done gate", status: pending}
+    - {name: "Setup + Foundational", status: pending}
+    - {name: "US1 (T015-T024)", status: pending}
+    - {name: "US1 (T025-T028)", status: pending}
+    - {name: US2, status: pending}
+    - {name: US3, status: pending}
+    - {name: US4, status: pending}
+    - {name: US5, status: pending}
+    - {name: US6, status: pending}
+    - {name: US7, status: pending}
+    - {name: US8, status: pending}
+    - {name: US9, status: pending}
+    - {name: US10, status: pending}
+    - {name: US11, status: pending}
+    - {name: US12, status: pending}
+    - {name: US13, status: pending}
+    - {name: Polish, status: pending}
+  feature_review: pending
+  code_pr: null
