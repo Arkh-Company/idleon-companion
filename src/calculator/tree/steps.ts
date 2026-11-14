@@ -122,17 +122,10 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
 
-  /** stepsOf(n, xs, range) and its checks; `range` is a loop turn of a cache writer (step 8d2). */
-  function stepsOf(
-    n: RecNode,
-    xs: [number, number | boolean | null][] | undefined = n.x,
-    range?: { from: number; to: number },
-  ): BlockSteps {
-    const inTurn = (i: number) => !range || (i >= range.from && i <= range.to);
+  /** stepsOf(n) and its checks; the loop turn of a cache writer (`range`) comes with step 8d2. */
+  function stepsOf(n: RecNode): BlockSteps {
+    const xs = n.x;
     const rxs = n.rx ?? [];
-    const turnReads: Reads | null = range
-      ? [...new Map(rxs.filter((x) => inTurn(x[2])).map((x) => [x[0], x[1]]))]
-      : null;
     if (!xs) return { steps: [], checks: [] };
     const vals = new Map<number, StepValue>();
     const order: number[] = [];
@@ -141,9 +134,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       vals.set(i, v);
     }
     // A number of a step is matched with the value each path had at that point of the call (the last read before it).
-    const base = range ? range.from : 0;
     const lastPos = new Map<number, number>();
-    xs.forEach(([i], j) => lastPos.set(i, base + j));
+    xs.forEach(([i], j) => lastPos.set(i, j));
     const atCache = new Map<number, Reads>();
     const readsAt = (pos: number): Reads => {
       const hit = atCache.get(pos);
@@ -151,7 +143,6 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const m = new Map<string, RecValue>();
       for (const x of rxs) {
         if (x[2] > pos) break;
-        if (range && x[2] < range.from) continue;
         m.set(x[0], x[1]);
       }
       const out = [...m];
@@ -162,14 +153,12 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     const poolFor = (node: AstNode): Reads => {
       const id = opIndex.get(node);
       const pos = id === undefined ? undefined : lastPos.get(id);
-      return pos !== undefined ? readsAt(pos) : (turnReads ?? ownReads);
+      return pos !== undefined ? readsAt(pos) : ownReads;
     };
     const defStack = new Set<AstNode>();
     const used = new Set<number>();
     const usedR = new Set<string>();
-    const kids = n.c
-      .map((c) => nodes[c])
-      .filter((k): k is RecNode => !!k && inTurn(k.pxi));
+    const kids = n.c.map((c) => nodes[c]).filter((k): k is RecNode => !!k);
     const valOf = (node: AstNode): StepValue => {
       const id = opIndex.get(node);
       return id !== undefined ? vals.get(id) : undefined;
@@ -399,6 +388,5 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       }
       return out;
     },
-    stepsOf,
   };
 }
