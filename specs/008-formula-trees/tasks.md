@@ -97,7 +97,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
   - Tests:
     - **First:** change one field of the copy (`share: number | null` → `number`) and one `flags` field, and see `just typecheck` fail. If it does not, compare `Omit<…, "kids">` and pin `kids` apart.
     - The literals are pinned with `toEqual`.
-- [ ] T005 Extract the boot of the game context into `src/calculator/boot.ts` (refactor only)
+- [X] T005 Extract the boot of the game context into `src/calculator/boot.ts` (refactor only)
   - Files: `src/calculator/boot.ts`, `src/calculator/engine.ts`
   - Signature: `bootContext(script: string, pak: Uint8Array, limits: { startMs: number; numberMs: number }): Context`; `lazyDnsmKeys` and `anchored(code)` exported from `boot.ts`.
   - Tests: `engine.test.ts` green before and after, with no assertion changed.

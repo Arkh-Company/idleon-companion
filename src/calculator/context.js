@@ -382,9 +382,10 @@
     finishHelpers: reapply,
 
     // Caught here, as in `helperSteps`: this number alone is unavailable. A time limit is not an error and still cuts it.
-    number: (block, arg) => {
+    // The arguments are the exact ones of the call: the Stats passes (sub, 0, 0), and a tree root its game's arity.
+    call: (block, args) => {
       try {
-        return owner[block]["_customBlock_" + block](arg, 0, 0);
+        return owner[block]["_customBlock_" + block].apply(owner[block], args);
       } catch {
         return null;
       }
