@@ -6,6 +6,8 @@
 // Step 8c (`formulaOf`, the text of the validation page) has no reader in pieces.cjs and is not ported.
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
+import { astPattern, at, CUSTOM, MATH, matchPattern, methodOf } from "./ast.ts";
+import type { AstNode } from "./ast.ts";
 import { near } from "./math.ts";
 
 type StepValue = number | boolean | null | undefined;
@@ -31,20 +33,6 @@ export interface BlockSteps {
   checks: Check[];
 }
 
-/** An acorn node, read by field name. */
-type AstNode = Op["node"];
-const at = (n: AstNode, k: string) => n[k] as AstNode;
-const MATH = new Set([
-  "min",
-  "max",
-  "pow",
-  "floor",
-  "ceil",
-  "round",
-  "abs",
-  "log",
-  "sqrt",
-]);
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
 export const GAME_TABLE: readonly { test: RegExp; proof: string }[] = [
   {
@@ -52,61 +40,6 @@ export const GAME_TABLE: readonly { test: RegExp; proof: string }[] = [
     proof: "bench build-tree.cjs GAME_TABLE",
   },
 ];
-const CUSTOM = "_customBlock_";
-
-/** The name of a call's method (`a.b(…)` → "b"), or null when the callee is no member. */
-function methodOf(n: AstNode): string | null {
-  if (n.type !== "CallExpression") return null;
-  const callee = at(n, "callee");
-  if (callee.type !== "MemberExpression") return null;
-  const name = (callee.property as AstNode | undefined)?.name;
-  return typeof name === "string" ? name : null;
-}
-
-/** `asNumber(x)` is x. */
-function unwrap(n: AstNode): AstNode {
-  const [a, ...rest] = (n.arguments as AstNode[] | undefined) ?? [];
-  return methodOf(n) === "asNumber" && a && !rest.length ? unwrap(a) : n;
-}
-/** C (inv-2): the path a node reads, from its own text: the constant keys in order, a computed key as null. */
-function astPattern(
-  node: AstNode,
-): { toks: (string | null)[]; root: boolean } | null {
-  let n = unwrap(node);
-  const toks: (string | null)[] = [];
-  let root = false;
-  for (;;) {
-    if (n.type === "MemberExpression") {
-      const prop = at(n, "property");
-      if (n.computed)
-        toks.push(prop.type === "Literal" ? String(prop.value) : null);
-      else if (prop.name !== "h") toks.push(prop.name as string);
-      n = at(n, "object");
-      continue;
-    }
-    const arg = (n.arguments as AstNode[] | undefined)?.[0];
-    if (methodOf(n) === "getGameAttribute" && arg?.type === "Literal") {
-      toks.push(String(arg.value));
-      root = true;
-    }
-    break;
-  }
-  toks.reverse();
-  if (!toks.length || (!root && toks.length < 2)) return null;
-  // a length is a guard of the code, not a number of the formula
-  if (toks[toks.length - 1] === "length") return null;
-  return { toks, root };
-}
-function matchPattern(
-  path: string,
-  pat: { toks: (string | null)[]; root: boolean },
-) {
-  const P = path.split(/[^A-Za-z0-9_$]+/).filter(Boolean);
-  const T = pat.toks;
-  if (pat.root ? P.length !== T.length : P.length < T.length) return false;
-  return T.every((t, i) => t === null || t === P[P.length - T.length + i]);
-}
-
 /** Step 9's `rl`: a path the call read with several numbers, with the last one (the state the call ended with). */
 export function lastReads(n: Pick<RecNode, "rx">): Map<string, number> {
   const seen = new Map<string, { last: number; changed: boolean }>();
@@ -121,16 +54,27 @@ export function lastReads(n: Pick<RecNode, "rx">): Map<string, number> {
 }
 
 type Reads = [string, RecValue][];
+/** A loop turn's place in the writer's step log: from its previous write to this one. */
+export interface LoopTurn {
+  from: number;
+  to: number;
+}
 
 export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const { nodes } = rec;
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
 
-  /** stepsOf(n) and its checks; the loop turn of a cache writer (`range`) comes with step 8d2. */
-  function stepsOf(n: RecNode): BlockSteps {
-    const xs = n.x;
+  /**
+   * stepsOf(n, xs, range) and its checks; for a loop turn of a cache writer (step 8d2), `xs` is the slice of the step
+   * log since the writer's previous write and `range` its place, so the turn's reads and calls are its own.
+   */
+  function stepsOf(n: RecNode, xs = n.x, range?: LoopTurn): BlockSteps {
     const rxs = n.rx ?? [];
+    const inTurn = (i: number) => !range || (i >= range.from && i <= range.to);
+    const turnReads: Reads | null = range
+      ? [...new Map(rxs.filter((x) => inTurn(x[2])).map((x) => [x[0], x[1]]))]
+      : null;
     if (!xs) return { steps: [], checks: [] };
     const vals = new Map<number, StepValue>();
     const order: number[] = [];
@@ -139,8 +83,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       vals.set(i, v);
     }
     // A number of a step is matched with the value each path had at that point of the call (the last read before it).
+    const base = range ? range.from : 0;
     const lastPos = new Map<number, number>();
-    xs.forEach(([i], j) => lastPos.set(i, j));
+    xs.forEach(([i], j) => lastPos.set(i, base + j));
     const atCache = new Map<number, Reads>();
     const readsAt = (pos: number): Reads => {
       const hit = atCache.get(pos);
@@ -148,6 +93,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const m = new Map<string, RecValue>();
       for (const x of rxs) {
         if (x[2] > pos) break;
+        if (range && x[2] < range.from) continue;
         m.set(x[0], x[1]);
       }
       const out = [...m];
@@ -158,12 +104,14 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     const poolFor = (node: AstNode): Reads => {
       const id = opIndex.get(node);
       const pos = id === undefined ? undefined : lastPos.get(id);
-      return pos !== undefined ? readsAt(pos) : ownReads;
+      return pos !== undefined ? readsAt(pos) : (turnReads ?? ownReads);
     };
     const defStack = new Set<AstNode>();
     const used = new Set<number>();
     const usedR = new Set<string>();
-    const kids = n.c.map((c) => nodes[c]).filter((k): k is RecNode => !!k);
+    const kids = n.c
+      .map((c) => nodes[c])
+      .filter((k): k is RecNode => !!k && inTurn(k.pxi));
     const valOf = (node: AstNode): StepValue => {
       const id = opIndex.get(node);
       return id !== undefined ? vals.get(id) : undefined;
@@ -383,6 +331,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   }
 
   return {
+    /** The steps of one loop turn of `n` (step 8d2): `xs` the turn's slice of its step log, at `range`. */
+    turn: (n: RecNode, xs: RecNode["x"], range: LoopTurn): Step[] =>
+      stepsOf(n, xs, range).steps,
     /** The steps and checks of call `id` (none for a call with no steps). */
     of(id: number): BlockSteps {
       let out = memo.get(id);

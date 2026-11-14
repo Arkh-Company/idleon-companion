@@ -559,6 +559,24 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return s.TreeList[1 + 1];
   };
+  // A cache filled in a loop (build-tree.cjs 8d2): each turn adds one call's part to the same entry, and two turns give
+  // the same number; the reader reads the entry back.
+  Blocks._customBlock_TreePart = function (i) {
+    return state().TreeTwins[i] * 2;
+  };
+  Blocks._customBlock_TreeFillLoop = function () {
+    var list = state().TreeTwins;
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeSum = new StringMap();
+    d.TreeSum.h.v = 0;
+    for (var i = 0; i < list.length; i++)
+      d.TreeSum.h.v = d.TreeSum.h.v + Blocks._customBlock_TreePart(i);
+    return 0;
+  };
+  Blocks._customBlock_TreeFillRead = function () {
+    Blocks._customBlock_TreeFillLoop();
+    return a.engine.getGameAttribute("DNSM").h.TreeSum.h.v + 1;
+  };
   Blocks._customBlock_TreeMapActor = function () {
     var actor = state().PixelHelperActor[0];
     return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);

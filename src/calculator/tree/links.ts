@@ -18,11 +18,17 @@ function byNodeAndPath(list: RecWrite[]): Map<number, Map<string, RecWrite>> {
   return out;
 }
 
-export function linkReads(rec: Recording): {
+export interface Linked {
   /** The calls under the root and every writer they need. */
   keep: Set<number>;
   links: Map<number, Link[]>;
-} {
+  /** The last write that covers a path (before the read's number `seq`, when given). */
+  writerOf: (readPath: string, seq?: number) => RecWrite | null;
+  /** The call's own write of a path, when it reads its own. */
+  ownOf: (id: number, path: string) => RecWrite | null;
+}
+
+export function linkReads(rec: Recording): Linked {
   const { nodes, writes, setup } = rec;
   const bpStart = rec.bpStart ?? Infinity;
   const lastWrite = new Map(writes.map((w) => [w.path, w]));
@@ -95,5 +101,5 @@ export function linkReads(rec: Recording): {
       links.set(id, [...(links.get(id) ?? []), [path, writer, origin]]);
     }
   }
-  return { keep, links };
+  return { keep, links, writerOf, ownOf };
 }

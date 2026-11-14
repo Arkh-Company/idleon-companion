@@ -224,3 +224,72 @@ test("a path read with several values ends with the last one", () => {
     }),
   ).toEqual(new Map([["A", 3]]));
 });
+
+test("a loop turn's steps read only what that turn read (build-tree.cjs 8d2)", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_T = function () { return s.A * 2; };",
+  );
+  const leaf = ops.findIndex((o) => o.kind === "leaf");
+  const op = ops.findIndex((o) => o.kind === "op");
+  const rec = recordingOf([
+    {
+      b: "T",
+      v: 12,
+      // B holds the same 6 in the first turn only: it names nothing in the second
+      rx: [
+        ["B", 6, 0],
+        ["A", 6, 2],
+      ],
+      x: [
+        [leaf, 6],
+        [op, 12],
+        [leaf, 6],
+        [op, 12],
+      ],
+    },
+  ]);
+  const n = rec.nodes[0];
+  if (!n) throw new Error("no node");
+  const [step] = makeSteps(rec, ops).turn(n, n.x?.slice(2, 4), {
+    from: 2,
+    to: 4,
+  });
+  expect(step?.e).toMatchObject({ l: { t: "read", p: "A", v: 6 } });
+});
+
+test("a value set before a loop turn is named by a read of that turn, not of the whole call", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_T = function () { var p = Blocks._customBlock_P(); return p * 2; };",
+  );
+  const leaf = ops.findIndex((o) => o.kind === "leaf");
+  const op = ops.findIndex((o) => o.kind === "op");
+  const rec = recordingOf([
+    {
+      b: "T",
+      v: 12,
+      c: [1],
+      r: [
+        ["D", 6],
+        ["C", 6],
+      ],
+      rx: [
+        ["D", 6, 0],
+        ["C", 6, 3],
+      ],
+      x: [
+        [leaf, 6],
+        [op, 12],
+        [leaf, 6],
+        [op, 12],
+      ],
+    },
+    { b: "P", v: 6 },
+  ]);
+  const n = rec.nodes[0];
+  if (!n) throw new Error("no node");
+  const [step] = makeSteps(rec, ops).turn(n, n.x?.slice(2, 4), {
+    from: 2,
+    to: 4,
+  });
+  expect(step?.e).toMatchObject({ l: { t: "read", p: "C", v: 6 } });
+});

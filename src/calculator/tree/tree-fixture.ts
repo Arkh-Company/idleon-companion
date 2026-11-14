@@ -7,7 +7,7 @@ type Spec = Partial<RecNode> & Pick<RecNode, "b">;
 /** A recording from its nodes in id order; `p` and `pxi` are filled from the children lists. */
 export function recordingOf(
   specs: Spec[],
-  writes: Omit<RecWrite, "xi">[] = [],
+  writes: (Omit<RecWrite, "xi"> & Partial<Pick<RecWrite, "xi">>)[] = [],
   roles: Partial<Pick<Recording, "setup" | "root" | "fromGame">> = {},
 ): Recording {
   const nodes: RecNode[] = specs.map((s, id) => ({
