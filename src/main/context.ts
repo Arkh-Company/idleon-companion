@@ -1,5 +1,5 @@
 // A reading translated by the screen catalog and the game's tables into the one context every module sees.
-import { identifyScreen, panelSystems } from "../shared/index.ts";
+import { identifyScreen, NO_TABLES, panelSystems } from "../shared/index.ts";
 import type { GameContext, GameTables, Reading } from "../shared/index.ts";
 import { SCREEN_CATALOG } from "../shared/screens/index.ts";
 
@@ -46,7 +46,7 @@ export function contextTracker(send: (c: GameContext) => void): {
   replay(): void;
 } {
   let last: Reading | null = null;
-  let known: GameTables = { maps: null, monsters: null, items: null };
+  let known = NO_TABLES;
   const replay = () => {
     if (last) send(toContext(last, known));
   };

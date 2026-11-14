@@ -4,6 +4,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, expect, test } from "vitest";
+import { NO_TABLES } from "../shared/index.ts";
 import type { FarmUpdate, StateSlice } from "../shared/index.ts";
 import { farmTracker, isTown } from "./farm.ts";
 
@@ -228,7 +229,7 @@ test("sends at once on a change of state, else at most every 10 s", () => {
 });
 
 test("items take the game's names when the table has them, else the game's id", () => {
-  farm.tables({ maps: null, monsters: null, items: { Ore: "Copper Ore" } });
+  farm.tables({ ...NO_TABLES, items: { Ore: "Copper Ore" } });
   state({ InventoryOrder: ["Ore", "Log"], ItemQuantity: [1, 1] });
   farm.onMap(3, false);
   wait(60 * MIN, { InventoryOrder: ["Ore", "Log"], ItemQuantity: [3, 2] });

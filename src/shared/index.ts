@@ -60,6 +60,7 @@ export {
   IPC,
   MAX_PINS,
   moduleChannel,
+  NO_TABLES,
   PINS_FULL,
 } from "./types.ts";
 export type {

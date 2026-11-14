@@ -94,7 +94,7 @@ test("a reading of the wrong shape goes nowhere", () => {
 test("the tables go to the screen tracker, checked", () => {
   const h = setup();
   h.routes.message(bad({ type: "tables", tables: { maps: 1, monsters: {} } }));
-  const checked = { maps: null, monsters: {}, items: null };
+  const checked = { maps: null, monsters: {}, items: null, classes: null };
   expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.farm.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.stats.message).not.toHaveBeenCalled();

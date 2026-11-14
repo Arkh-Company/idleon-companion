@@ -147,7 +147,7 @@ const isText = (x: unknown) => typeof x === "string";
 /** The body of a `tables` link message: a table out of shape counts as unread (null), for that table only. */
 export function linkTables(v: unknown): GameTables {
   const body = isObject(v) ? v : {};
-  const { maps, monsters, items } = body;
+  const { maps, monsters, items, classes } = body;
   const names = (v: unknown) =>
     isObject(v) && Object.values(v).every(isText)
       ? (v as Record<string, string>)
@@ -156,6 +156,7 @@ export function linkTables(v: unknown): GameTables {
     maps: Array.isArray(maps) && maps.every(isText) ? maps : null,
     monsters: names(monsters),
     items: names(items),
+    classes: Array.isArray(classes) && classes.every(isText) ? classes : null,
   };
 }
 

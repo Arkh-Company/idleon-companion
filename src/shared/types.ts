@@ -74,7 +74,17 @@ export interface GameTables {
   monsters: Record<string, string> | null;
   /** Name by item id, for the farm's list (spec 008 FR-028) */
   items: Record<string, string> | null;
+  /** Name by class number, for the character picker (spec 008 FR-020) */
+  classes: string[] | null;
 }
+
+/** No table read. */
+export const NO_TABLES: GameTables = {
+  maps: null,
+  monsters: null,
+  items: null,
+  classes: null,
+};
 
 /** One reading translated by the screen catalog and the game's tables. */
 export interface GameContext {

@@ -55,7 +55,12 @@ test.each<LinkMessage>([
   { type: "reconnect" },
   {
     type: "tables",
-    tables: { maps: ["Vale"], monsters: null, items: { Ore: "Blue Ore" } },
+    tables: {
+      maps: ["Vale"],
+      monsters: null,
+      items: { Ore: "Blue Ore" },
+      classes: ["0", "Novice"],
+    },
   },
   {
     type: "state",

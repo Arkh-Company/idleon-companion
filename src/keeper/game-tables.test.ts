@@ -1,4 +1,4 @@
-// The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
+// The map, monster, item and class names taken from the text of the installed game. All the "game code" here is made up (FR-015).
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -45,6 +45,7 @@ test("code with no table gives null for each", () => {
     maps: null,
     monsters: null,
     items: null,
+    classes: null,
   });
 });
 
@@ -63,6 +64,7 @@ test.each([
     maps: null,
     monsters: { a1: "Beast" },
     items: null,
+    classes: null,
   });
 });
 
@@ -81,6 +83,7 @@ test.each([
     maps: ["Blue Vale", "Peak"],
     monsters: null,
     items: null,
+    classes: null,
   });
 });
 
@@ -116,8 +119,34 @@ test.each([
     maps: ["Blue Vale", "Peak"],
     monsters: { a1: "Beast" },
     items: null,
+    classes: null,
   });
 });
+
+const classes = (names: string) =>
+  `x.ClassNames=function(){return"${names}".split(" ")},x.ClassNamesLANG=function(){return["0 Otra".split(" ")]};`;
+
+test("classes come by number, each word with only its first letter capital", () => {
+  expect(readGameTables(classes("0 NOVICE STAR_SEEKER")).classes).toEqual([
+    "0",
+    "Novice",
+    "Star Seeker",
+  ]);
+});
+
+test.each([
+  ["no match", ""],
+  ["two candidates", classes("0 NOVICE") + classes("0 OTHER")],
+  ["an empty name", classes("0  NOVICE")],
+])(
+  "classes with %s are null, and the other tables still read",
+  (_name, code) => {
+    expect(readGameTables(MAPS + code)).toMatchObject({
+      maps: ["Blue Vale", "Peak"],
+      classes: null,
+    });
+  },
+);
 
 test.each([
   ["a write", "e.h.MenuType2=7;", [7]],

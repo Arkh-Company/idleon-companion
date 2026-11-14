@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { identifyScreen, READ_NULLS } from "../shared/index.ts";
+import { identifyScreen, NO_TABLES, READ_NULLS } from "../shared/index.ts";
 import type { GameContext, GameTables, Reading } from "../shared/index.ts";
 import { SCREEN_CATALOG } from "../shared/screens/index.ts";
 import { contextTracker, panelOf, toContext } from "./context.ts";
@@ -23,8 +23,9 @@ const tables: GameTables = {
   maps: ["Vale", "Peak"],
   monsters: { w6d3: "Samurai Guardian", Nothing: "" },
   items: null,
+  classes: null,
 };
-const UNREAD: GameTables = { maps: null, monsters: null, items: null };
+const UNREAD = NO_TABLES;
 
 test("the world comes from the map", () => {
   expect(toContext({ ...base, map: 264 }, tables).screen.world).toBe(6);

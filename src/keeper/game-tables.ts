@@ -1,4 +1,4 @@
-// The map and monster names of the installed game, found by regular expressions over the text of its code, which is
+// The map, monster, item and class names of the installed game, found by regular expressions over the text of its code, which is
 // never run (FR-014). Any sign of a new format drops that whole table: half a table could give a wrong name (FR-016).
 import type { GameTables } from "../shared/index.ts";
 
@@ -59,11 +59,20 @@ function readItems(code: string): Record<string, string> | null {
   return added > 0 && found === added ? Object.fromEntries(byId) : null;
 }
 
+/** The class names by class number, each word with only its first letter capital. */
+const readClasses = (code: string) =>
+  list(code, "ClassNames")?.map((name) =>
+    spaced(name.toLowerCase()).replace(/(?<!\S)\p{L}/gu, (c) =>
+      c.toUpperCase(),
+    ),
+  ) ?? null;
+
 export function readGameTables(code: string): GameTables {
   return {
     maps: readMaps(code),
     monsters: readMonsters(code),
     items: readItems(code),
+    classes: readClasses(code),
   };
 }
 
