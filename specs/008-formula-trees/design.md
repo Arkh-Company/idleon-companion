@@ -487,7 +487,7 @@ Stats › Drop Rate › Bonuses that add up › Talents        (caminho da linha
 - O teste "has no field to fill in" continua valendo (botão não é campo).
 - Clicar na aba Stats, selecionada ou não, mostra a tabela. A árvore aberta fica em memória: a linha `Drop Rate ›` volta a ela onde parou. O app lembra a última aba aberta na sessão (tira um clique de todos os cenários de §3.9).
 - **Aba `Formulas` (resposta 7b):** no fim das abas, lista os números que têm árvore (os 11 da Stats: Damage aparece como `Max damage` e `Min damage`), cada um com o valor e `›`; **sem busca livre** (a busca, C12, fica para uma spec futura). O caminho começa em `Formulas`. A mesma tabela simples (`<table>`, `<th scope="row">`, o valor como botão), para as duas portas lerem igual.
-- O seletor de personagem (C19) fica no topo da aba Formulas e da página do stat.
+- O seletor de personagem (C19) fica no topo da página do stat. Durante a implementação (decidido pelo Vinicius em 14/11): só no painel lateral, não na aba Formulas, porque os valores da aba são sempre do ativo; mostra "Nome (classe)".
 
 #### C10. Game details (`GameDetails`)
 
