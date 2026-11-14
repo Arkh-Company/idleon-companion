@@ -59,7 +59,7 @@ test("a call row carries its piece key and its call with the game's arity, and t
     code: "TreeReads()",
     role: "piece",
     share: null,
-    shareMode: null,
+    shareMode: "unknown",
     flags: { unnamed: true },
     kids: "lazy",
   });

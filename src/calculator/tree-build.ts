@@ -7,6 +7,8 @@ import type { CalcTreeNode } from "./tree-contract.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
 import { makePieces } from "./tree/pieces.ts";
+import { kidShares, shareNodeOf } from "./tree/share.ts";
+import type { ShareNode } from "./tree/share.ts";
 
 /** The generic name of a part with no proven name (design.md C7). */
 export const GENERIC_NAME = "Game value";
@@ -28,6 +30,9 @@ interface Place {
   open: number;
   depth: number;
   seen: readonly number[];
+  /** The row's formula as the share reads it, and its siblings, which that formula may name. */
+  formula: ShareNode["formula"];
+  sibs: readonly ShareNode[];
 }
 
 const valueOf = (v: RecValue | undefined): number | boolean | null =>
@@ -120,15 +125,33 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     if (!rows) return null;
     const seen = [...place.seen, place.open];
     const count = new Map<string, number>();
-    return rows.map(({ node, open }) => {
-      const n = (count.get(node.name) ?? 0) + 1;
-      count.set(node.name, n);
-      const id = `${place.node.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
-      const placed = { id, ...node };
+    const kids = kidShares(
+      place.node,
+      place.formula,
+      rows.map(({ node }) => {
+        const n = (count.get(node.name) ?? 0) + 1;
+        count.set(node.name, n);
+        return {
+          id: `${place.node.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`,
+          ...node,
+        };
+      }),
+      place.sibs,
+    );
+    const sibs = kids.map((k) => shareNodeOf(k));
+    kids.forEach((node, i) => {
+      const open = rows[i]?.open ?? null;
       if (open !== null)
-        places.set(id, { node: placed, open, depth: place.depth + 1, seen });
-      return placed;
+        places.set(node.id, {
+          node,
+          open,
+          depth: place.depth + 1,
+          seen,
+          formula: null,
+          sibs,
+        });
     });
+    return kids;
   }
 
   const value = valueOf(top.v);
@@ -139,7 +162,15 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
     role: "root" as const,
   };
   if (value !== null)
-    root.kids = kidsAt({ node: root, open: top.id, depth: 0, seen: [] }) ?? [];
+    root.kids =
+      kidsAt({
+        node: root,
+        open: top.id,
+        depth: 0,
+        seen: [],
+        formula: null,
+        sibs: [],
+      }) ?? [];
 
   return {
     root,

@@ -100,6 +100,40 @@ test(`a branch deeper than ${String(MAX_DEPTH)} levels stops there`, () => {
   expect(cut).toMatchObject({ kids: [], flags: { truncated: true } });
 });
 
+test("every level's rows carry their share in the parent, the root none", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Sum", v: 9, c: [2, 3] },
+      { b: "Lower", v: 3, r: [["Level", 3]] },
+      {
+        b: "Upper",
+        v: 6,
+        r: [
+          ["Level", 2],
+          ["Multi", 3],
+        ],
+      },
+    ],
+    [],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0);
+  const shareOf = (n: CalcTreeNode | null) =>
+    kidsOf(n).map((k) => [k.share?.toFixed(4), k.shareMode]);
+  expect([build.root.share, build.root.shareMode]).toEqual([null, null]);
+  expect(shareOf(build.root)).toEqual([
+    ["0.3333", "sum"],
+    ["0.6667", "sum"],
+  ]);
+  const upper = build.expand(kidsOf(build.root)[1]?.id ?? "");
+  expect(upper).toMatchObject({ share: 6 / 9, shareMode: "sum" });
+  expect(shareOf(upper)).toEqual([
+    ["0.3869", "product"],
+    ["0.6131", "product"],
+  ]);
+});
+
 test("a call under the twin it read from opens as the piece, not cut", () => {
   const rec = recordingOf(
     [
