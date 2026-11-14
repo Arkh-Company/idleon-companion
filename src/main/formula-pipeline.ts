@@ -24,6 +24,7 @@ import { namesOf, players } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
+import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
@@ -107,6 +108,8 @@ export function startFormulaPipeline(deps: {
   log: (entry: FormulaLog) => void;
   /** The tree shapes saved on this computer, which the index of Where this goes is built from (FR-027). */
   shapes: ReturnType<typeof savedFiles>["shapes"];
+  /** The patch radar, which the shapes of a new game version are compared for (FR-029, FR-035). */
+  radar?: ReturnType<typeof patchRadar>;
 }): {
   /** A request the main already checked (`formulaRequestPayload`). */
   request(r: FormulaRequest): void;
@@ -180,6 +183,7 @@ export function startFormulaPipeline(deps: {
 
   const index = feedsIndex({
     shapes: deps.shapes,
+    radar: deps.radar,
     ask: (id, treeId, mosaicJson) => {
       host.shape(id, treeId, mosaicJson);
     },
@@ -420,6 +424,7 @@ export function startFormulaPipeline(deps: {
     replay() {
       deps.send(last);
       live.replay();
+      deps.radar?.replay();
     },
     markOf(character) {
       if (last.state !== "ready" || last.character !== character) return null;

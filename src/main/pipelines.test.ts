@@ -1,4 +1,4 @@
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 // The Stats and the trees joined as the app runs them (src/main/index.ts): a tree request uses the mosaic the Stats
@@ -19,7 +19,7 @@ import {
   RESOURCES,
   vars,
 } from "./stats-pipeline-fixture.ts";
-import { savedFiles } from "./saved-files.ts";
+import { savedFiles, SHAPES_RESET } from "./saved-files.ts";
 
 /** The game code of the fixture: the rules count as checked on these bytes (FR-018). */
 const CHECKED_CODE = vi.hoisted(() => Uint8Array.from([1]));
@@ -367,4 +367,68 @@ test.each<[string, unknown]>([
   await expect(
     Promise.resolve().then(() => h.p.handlers[IPC.feedsList]?.(payload)),
   ).rejects.toThrow("feeds:list: invalid piece");
+});
+
+test("a new game version lights the patch radar with the trees whose shape changed, and a new page gets it again until Close (FR-035)", async () => {
+  const first = TREE_CATALOG.find((n) => !n.live)?.id ?? "";
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "radar-")));
+  // Saved on another game version than the code the tree host reads.
+  saved.shapes.save({
+    gameSha: "a".repeat(64),
+    trees: new Map([[first, [['["Sword"]', "Sword"]]]]),
+  });
+  const h = setup(CHECKED_CODE, saved);
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  const [values] = h.trees().sent("values");
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: values?.id,
+    values: {},
+  });
+  const [shape] = h.trees().sent("shape");
+  expect(shape?.treeId).toBe(first);
+  expect(h.on(IPC.radarUpdate)).toEqual([]);
+  h.trees().emit("message", {
+    type: "shapeResult",
+    id: shape?.id,
+    shape: [
+      ['[1,"Sword"]', "Sword"],
+      ['[1,"Shield"]', "Shield"],
+    ],
+  });
+  const lit = {
+    changed: [
+      { catalogId: first, added: ["Shield"], removed: [], renamed: [] },
+    ],
+    warning: null,
+  };
+  expect(h.on(IPC.radarUpdate)).toEqual([lit]);
+  h.p.formula.replay();
+  expect(h.on(IPC.radarUpdate)).toEqual([lit, lit]);
+  // radar:dismiss takes no body; with none, the band goes.
+  await expect(
+    Promise.resolve().then(() => h.p.handlers[IPC.radarDismiss]?.({ x: 1 })),
+  ).rejects.toThrow("radar:dismiss: no body expected");
+  expect(h.on(IPC.radarUpdate)).toHaveLength(2);
+  await h.p.handlers[IPC.radarDismiss]?.(undefined);
+  expect(h.on(IPC.radarUpdate).at(-1)).toBe(null);
+});
+
+test("an unreadable shapes file is said on the patch radar to a new page (FR-041)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "radar-"));
+  writeFileSync(join(dir, "tree-shapes.json"), "{");
+  const h = setup(CHECKED_CODE, savedFiles(dir));
+  h.p.formula.replay();
+  expect(h.on(IPC.radarUpdate)).toEqual([
+    { changed: [], warning: SHAPES_RESET },
+  ]);
 });

@@ -13,6 +13,7 @@ import {
   formulaRequestPayload,
   formulaValuesPayload,
 } from "./payloads.ts";
+import { patchRadar } from "./radar.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
 import { marksHandlers, pinsHandlers } from "./saved-files.ts";
 import type { savedFiles } from "./saved-files.ts";
@@ -30,7 +31,7 @@ export function startPipelines(deps: {
 }): {
   stats: ReturnType<typeof startStatsPipeline>;
   formula: ReturnType<typeof startFormulaPipeline>;
-  /** The window → main formula, marks and pins channels, by name, for `ipcMain.handle`. */
+  /** The window → main formula, marks, pins and radar channels, by name, for `ipcMain.handle`. */
   handlers: Record<string, (payload: unknown) => unknown>;
 } {
   let formula: ReturnType<typeof startFormulaPipeline> | null = null;
@@ -52,6 +53,12 @@ export function startPipelines(deps: {
     onPair: tellTrees,
   });
   const band = versionBand();
+  const radar = patchRadar({
+    send: (r) => {
+      deps.send(IPC.radarUpdate, r);
+    },
+    warning: deps.saved.shapes.warning(),
+  });
   formula = startFormulaPipeline({
     send: (t) => {
       deps.send(IPC.formulaUpdate, t);
@@ -75,6 +82,7 @@ export function startPipelines(deps: {
     checkedOnThisGame: band.checked,
     log: deps.log,
     shapes: deps.saved.shapes,
+    radar,
   });
   const trees = formula;
   // The pinned numbers are live whatever the window shows, from the start (FR-026).
@@ -106,6 +114,11 @@ export function startPipelines(deps: {
         const r = feedsListPayload(payload);
         if (!r) throw new Error("feeds:list: invalid piece");
         return trees.feeds(r.pieceKey);
+      },
+      [IPC.radarDismiss]: (payload) => {
+        if (!emptyPayload(payload))
+          throw new Error("radar:dismiss: no body expected");
+        radar.dismiss();
       },
       ...marksHandlers(deps.saved.marks, (n) => trees.markOf(n)),
       ...pinsHandlers(deps.saved.pins, pinned),

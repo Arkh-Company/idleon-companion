@@ -206,7 +206,10 @@ export interface FarmUpdate {
   items: { name: string; perHour: number }[];
 }
 
-/** `radar:update`: the trees whose shape changed with a game update (FR-035); null when there is nothing to show. */
+/**
+ * `radar:update`: the trees whose shape changed with a game update (FR-035), and the warning of a shapes file that could
+ * not be read (FR-041); null when there is nothing to show.
+ */
 export type RadarUpdate = {
   changed: {
     catalogId: string;
@@ -214,6 +217,7 @@ export type RadarUpdate = {
     removed: string[];
     renamed: [before: string, after: string][];
   }[];
+  warning: string | null;
 } | null;
 
 /** What the setup screen shows (data-model.md): read from Steam's files on request, never written. */

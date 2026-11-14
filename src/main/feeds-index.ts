@@ -7,6 +7,7 @@ import { TREE_CATALOG } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
 import { holdsName, namesOf } from "./saved-files.ts";
 import type { savedFiles, TreeShapes } from "./saved-files.ts";
+import type { patchRadar } from "./radar.ts";
 import { MAX_NODE_ID } from "./tree-check.ts";
 
 /** The file is written after this many new trees, and when the last one comes. */
@@ -93,6 +94,8 @@ export function feedsIndex(deps: {
   ask: (seq: number, id: string, mosaicJson: string) => void;
   /** The counts changed: the open tree's badges follow. */
   changed: () => void;
+  /** The patch radar: the last version's shapes before they go, and each new shape (FR-029). */
+  radar?: Pick<ReturnType<typeof patchRadar>, "patched" | "shaped"> | undefined;
 }): {
   /** How many catalog numbers use the piece. */
   count: (pieceKey: string) => number;
@@ -157,8 +160,9 @@ export function feedsIndex(deps: {
     game(sha) {
       gameSha = sha;
       if (saved.gameSha !== sha) {
-        // ponytail: the old version's shapes go; the patch radar (US10) compares them first.
+        // The old version's shapes go; the patch radar compares them first.
         const had = saved.trees.size > 0;
+        if (had) deps.radar?.patched(saved.trees);
         saved.gameSha = sha;
         saved.trees.clear();
         byPiece.clear();
@@ -179,6 +183,7 @@ export function feedsIndex(deps: {
         failures = 0;
         saved.trees.set(id, parts);
         add(id, parts);
+        deps.radar?.shaped(id, parts);
         if (++unsaved >= SAVE_EVERY) save();
       } else {
         failures++;
