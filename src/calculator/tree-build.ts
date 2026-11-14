@@ -10,6 +10,8 @@ import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { curveOf, inputRead } from "./tree/curves.ts";
 import { makeConditions } from "./tree/conditions.ts";
+import { GAME_BUGS, gameBugOf } from "./tree/game-bugs.ts";
+import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
@@ -61,12 +63,13 @@ function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
 
 /**
  * The tree of the recording's first root call, for the character asked (its index, in every piece key); `ops` are
- * the instrumentation's steps the recording's `x` refers to.
+ * the instrumentation's steps the recording's `x` refers to; `bugs` are the game's known bugs (FR-016).
  */
 export function buildTree(
   rec: Recording,
   character: number,
   ops: readonly Op[] = [],
+  bugs: readonly GameBugRule[] = GAME_BUGS,
 ): TreeBuild {
   const { nodes, writes } = rec;
   const { links } = linkReads(rec);
@@ -266,9 +269,9 @@ export function buildTree(
   );
 
   const places = new Map<string, Place>();
-  /** Each row with its id (the path of names, `#n` on a repeat), its group placed under it. */
+  /** Each row with its id (the path of names, `#n` on a repeat), its group placed under it, a known game bug tagged. */
   function place(
-    parentId: string,
+    parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
     depth: number,
     seen: readonly number[],
@@ -277,11 +280,16 @@ export function buildTree(
     return rows.map(({ node, open, group }) => {
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);
-      const id = `${parentId}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
+      const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
+      const bug = gameBugOf(bugs, parent.code, node.code);
       const placed: CalcTreeNode = {
         id,
         ...node,
-        ...(group ? { kids: place(id, group, depth, seen) } : {}),
+        ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
+        // a group's rows are still the call's own
+        ...(group
+          ? { kids: place({ id, code: parent.code }, group, depth, seen) }
+          : {}),
       };
       if (open !== null) places.set(id, { node: placed, open, depth, seen });
       return placed;
@@ -290,7 +298,7 @@ export function buildTree(
   /** The rows under a place; null when the depth limit or a cycle cuts it. */
   function kidsAt(p: Place): CalcTreeNode[] | null {
     const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
-    return rows && place(p.node.id, rows, p.depth + 1, [...p.seen, p.open]);
+    return rows && place(p.node, rows, p.depth + 1, [...p.seen, p.open]);
   }
 
   const value = valueOf(top.v);

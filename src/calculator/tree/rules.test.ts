@@ -3,6 +3,7 @@
 // quote in it.
 import { expect, test } from "vitest";
 import { COND_SUBS } from "./conditions.ts";
+import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { COINCIDENT_READS, TABLE_READ } from "./terms.ts";
@@ -40,6 +41,15 @@ test.each(Object.entries(TABLES))(
       ]);
   },
 );
+
+// Empty until the bench's audited rules come (US1b-3); each one then needs its proof and an id with no free text.
+test("every game-bug rule has a proof by reference and an id of one word", () => {
+  for (const r of GAME_BUGS)
+    expect([r.id, r.proof]).toEqual([
+      expect.stringMatching(/^[a-zA-Z]\w*$/),
+      expect.toSatisfy(isReference),
+    ]);
+});
 
 test.each<[string, unknown]>([
   ["no proof", undefined],

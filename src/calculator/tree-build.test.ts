@@ -87,6 +87,37 @@ test("a piece called twice is the same piece, with its own row id", () => {
   expect(a?.pieceKey).toBe(b?.pieceKey);
 });
 
+test("a game-bug rule tags each row that counts the source twice, keeps the game's values and tags nothing elsewhere (FR-016)", () => {
+  const bugs = [
+    {
+      id: "inventedTwice",
+      in: /^TreeTwice\(/,
+      test: /^TreeReads\(\)$/,
+      proof: "N.js TreeTwice",
+    },
+  ];
+  const build = (block: string) =>
+    buildTree(
+      recorder.record(mosaicOf(), [[block, [0, 0, 0]]], NONE),
+      0,
+      recorder.ops,
+      bugs,
+    ).root;
+  const twice = build("TreeTwice");
+  expect(twice.value).toBe(16);
+  expect(kidsOf(twice).map((k) => [k.value, k.flags.gameBug])).toEqual([
+    [8, "inventedTwice"],
+    [8, "inventedTwice"],
+  ]);
+  expect(twice.flags.gameBug).toBeUndefined();
+  const once = kidsOf(build("TreeMaxOf"));
+  expect(once.map((k) => k.flags.gameBug)).toEqual([
+    undefined,
+    undefined,
+    undefined,
+  ]);
+});
+
 test("a cache read written by a call opens under it; one from the game is saved by the game", () => {
   const [cache] = kidsOf(treeOf("TreeCacheRead"));
   expect(cache).toMatchObject({
