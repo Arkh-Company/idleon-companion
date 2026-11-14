@@ -19,7 +19,7 @@ execution:
     - {name: US2, status: done, commits: 63b5d1a..b6e9921}
     - {name: "US3 + US4", status: done, commits: 2716cce..2389677}
     - {name: US5, status: done, commits: 5fc6b79..3de65ab}
-    - {name: US6, status: pending}
+    - {name: US6, status: done, commits: eba44f3..a28432f}
     - {name: US7, status: pending}
     - {name: US8, status: pending}
     - {name: US9, status: pending}
