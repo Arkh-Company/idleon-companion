@@ -240,7 +240,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 - [ ] T023 [US1] Add the names table in `src/calculator/tree/names-table.ts` (research R3)
   - Data: `{ [pieceKey]: { name: string; proof: string } }`, generated from the bench's names export redone on the BASELINE-4 and reviewed by Vinicius before this phase closes.
   - Tests: a call named by the table; a call no rule nor the table names gives a generic name and `flags.unnamed`.
-- [ ] T024 [US1] Build the root and the first level, then branches on expand (research R4)
+- [X] T024 [US1] Build the root and the first level, then branches on expand (research R4)
   - Files: `src/calculator/tree-build.ts`, `src/calculator/index.ts`
   - Signatures: `buildTree(recording, request): TreeNode` with unopened branches as `kids: "lazy"`; `expandBranch(recording, nodeId): TreeNode`.
   - The recording is kept for the same mosaic until the next request.

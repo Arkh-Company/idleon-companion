@@ -1,78 +1,16 @@
 // From a tree request of the window to the FormulaTree it gets back: the Stats pair, the parity with the Stats, the
 // character change and the game closed (spec 008, T012). The tree host is a fake; every value and name is invented.
-import { expect, test, vi } from "vitest";
-import type { FormulaTree } from "../shared/index.ts";
-import { node } from "./formula-fixture.ts";
+import { expect, test } from "vitest";
 import {
-  characterNumber,
-  MAX_TREE_NODES,
-  startFormulaPipeline,
-} from "./formula-pipeline.ts";
+  mosaicFor,
+  node,
+  pairOf,
+  pipeline as setup,
+} from "./formula-fixture.ts";
+import { characterNumber, MAX_TREE_NODES } from "./formula-pipeline.ts";
 import { formulaRequestPayload } from "./payloads.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
-
-const NAMES = ["Invented", "Other"];
-const mosaicFor = (char: string, n = 1) =>
-  JSON.stringify({
-    attrs: { n, UserInfo: [char], GetPlayersUsernames: NAMES },
-    vars: { A_invented: 1 },
-    skipped: [],
-  });
-const pairOf = (char = "Invented", n = 1): StatsPair => ({
-  numbers: { ...CALCULATED },
-  mosaicJson: mosaicFor(char, n),
-  calculatedAt: 1_000 * n,
-});
-
-function setup(start: StatsPair | null = pairOf()) {
-  let pair = start;
-  const sent: FormulaTree[] = [];
-  const log = vi.fn();
-  const host = {
-    request: vi.fn(),
-    dropCurrent: vi.fn(),
-    setFiles: vi.fn(),
-    stop: vi.fn(),
-  };
-  type Callbacks = Parameters<
-    Parameters<typeof startFormulaPipeline>[0]["treeHost"]
-  >[0];
-  let on: Callbacks | undefined;
-  const p = startFormulaPipeline({
-    send: (t) => {
-      sent.push(t);
-    },
-    treeHost: (callbacks) => {
-      on = callbacks;
-      return host;
-    },
-    statsPair: () => pair,
-    log,
-  });
-  return {
-    p,
-    sent,
-    log,
-    host,
-    last: () => sent.at(-1),
-    setPair(next: StatsPair | null) {
-      pair = next;
-      p.statsChanged();
-    },
-    /** The id the host got in its last request. */
-    asked: () => host.request.mock.calls.at(-1)?.[0] as number,
-    tree: (tree: unknown) => {
-      on?.onTree(host.request.mock.calls.at(-1)?.[0] as number, tree);
-    },
-    answer: (id: number, tree: unknown) => {
-      on?.onTree(id, tree);
-    },
-    unavailable: () => {
-      on?.onUnavailable(host.request.mock.calls.at(-1)?.[0] as number);
-    },
-  };
-}
 
 const DROP = { type: "number", id: "dropRate", character: 0 } as const;
 

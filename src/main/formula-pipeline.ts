@@ -53,6 +53,36 @@ function countNodes(root: TreeNode): number {
   return count;
 }
 
+/** The tree with the node `id` swapped for `make(node)`, the nodes above it copied; null when no node has that id. */
+function swapNode(
+  root: TreeNode,
+  id: string,
+  make: (old: TreeNode) => TreeNode,
+): TreeNode | null {
+  // The path from the root, found without recursion; then each node on it copied from the bottom up.
+  const pending: TreeNode[][] = [[root]];
+  for (let path = pending.pop(); path; path = pending.pop()) {
+    const n = path.at(-1);
+    if (!n) continue;
+    if (n.id === id) {
+      let done = make(n);
+      for (let i = path.length - 2; i >= 0; i--) {
+        const up = path[i];
+        const kids = up && Array.isArray(up.kids) ? up.kids : [];
+        const old = path[i + 1];
+        done = {
+          ...up,
+          kids: kids.map((k) => (k === old ? done : k)),
+        } as TreeNode;
+      }
+      return done;
+    }
+    if (Array.isArray(n.kids))
+      for (const k of n.kids) pending.push([...path, k]);
+  }
+  return null;
+}
+
 export function startFormulaPipeline(deps: {
   send: (tree: FormulaTree) => void;
   treeHost: (on: {
@@ -83,6 +113,8 @@ export function startFormulaPipeline(deps: {
     pair: StatsPair;
     active: number;
   } | null = null;
+  /** The lazy branch asked of the worker; a newer one replaces it, as in the host. */
+  let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
@@ -94,7 +126,35 @@ export function startFormulaPipeline(deps: {
 
   function drop(): void {
     asked = null;
+    expanding = null;
     host.dropCurrent();
+  }
+
+  function expand(r: { treeId: string; nodeId: string }): void {
+    if (last.state !== "ready" || r.treeId !== open?.id) return;
+    seq++;
+    expanding = { seq, ...r };
+    host.request(seq, { type: "expand", ...r }, null);
+  }
+
+  /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
+  function branched(raw: unknown): void {
+    const { treeId, nodeId } = expanding ?? { treeId: "", nodeId: "" };
+    expanding = null;
+    if (last.state !== "ready") return;
+    const branch = raw === null ? null : checkTree(raw, MAX_TREE_NODES);
+    let root =
+      branch?.id === nodeId ? swapNode(last.root, nodeId, () => branch) : null;
+    if (root && countNodes(root) > MAX_TREE_NODES) root = null;
+    if (!root) {
+      if (raw !== null) deps.log({ event: "treeRejected", id: treeId });
+      root = swapNode(last.root, nodeId, (old) => ({
+        ...old,
+        flags: { ...old.flags, unavailable: true },
+        kids: [],
+      }));
+    }
+    if (root) show({ ...last, root, counts: { nodes: countNodes(root) } });
   }
 
   /** The active character of the Stats' pair, with the pair; null without a reading or a known character. */
@@ -170,8 +230,12 @@ export function startFormulaPipeline(deps: {
   }
 
   const host = deps.treeHost({
-    onTree: received,
+    onTree: (id, raw) => {
+      if (expanding?.seq === id) branched(raw);
+      else received(id, raw);
+    },
     onUnavailable: (id) => {
+      if (expanding?.seq === id) branched(null);
       if (asked?.seq !== id) return;
       const { request } = asked;
       asked = null;
@@ -182,7 +246,10 @@ export function startFormulaPipeline(deps: {
 
   return {
     request(r) {
-      if ("treeId" in r) return; // ponytail: branches open with US1 (T024); no tree has a lazy branch yet.
+      if ("treeId" in r) {
+        expand(r);
+        return;
+      }
       drop();
       open = { id: r.id, character: r.character };
       ask();
@@ -213,6 +280,7 @@ export function startFormulaPipeline(deps: {
       const closed = s.game === "closed";
       if (closed) {
         host.stop();
+        if (expanding) branched(null);
         // The worker ended with the tree in flight: it will never answer (FR-022).
         if (asked) {
           const { request } = asked;
