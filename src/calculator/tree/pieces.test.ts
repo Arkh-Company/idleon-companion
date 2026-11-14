@@ -134,6 +134,38 @@ test("every level's rows carry their share in the parent, the root none", () => 
   ]);
 });
 
+test("every leaf gets its type and its reason; a branch has none", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "Total",
+        v: 5,
+        c: [2, 3],
+        r: [
+          ["StampLevel[0][1]", 3],
+          ["DNSM.Ready.v", 2],
+        ],
+      },
+      { b: "Flat", a: [1], v: 4 },
+      { b: "Deep", v: 1, r: [["Level", 1]] },
+    ],
+    [],
+    { root: 0, fromGame: ["Ready"] },
+  );
+  const kinds = kidsOf(buildTree(rec, 0).root).map((k) => [
+    k.code,
+    k.leaf,
+    k.why,
+  ]);
+  expect(kinds).toEqual([
+    ["Flat(1)", "rawBonus", null],
+    ["Deep()", null, null],
+    ["StampLevel[0][1]", "level", null],
+    ["DNSM.Ready.v", "unknown", "a cache that comes ready from the game"],
+  ]);
+});
+
 test("a call under the twin it read from opens as the piece, not cut", () => {
   const rec = recordingOf(
     [

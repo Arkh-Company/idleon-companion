@@ -6,6 +6,7 @@ import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
+import { classify } from "./tree/kinds.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { kidShares, shareNodeOf } from "./tree/share.ts";
 import type { ShareNode } from "./tree/share.ts";
@@ -103,7 +104,6 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
         pieceKey: JSON.stringify([character, path]),
         value,
         code: path,
-        leaf: "unknown",
         flags:
           link?.[2] === "game"
             ? { unnamed: true, fromCache: true }
@@ -112,7 +112,12 @@ export function buildTree(rec: Recording, character: number): TreeBuild {
       });
       return [{ node, open: writer }];
     });
-    return [...calls, ...reads];
+    // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch has none.
+    return [...calls, ...reads].map((r) =>
+      r.node.kids === "lazy"
+        ? r
+        : { ...r, node: { ...r.node, ...classify(r.node) } },
+    );
   }
   const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
     JSON.stringify(rows.map((r) => r.node)),

@@ -54,7 +54,7 @@ test("the root of the Drop Rate", () => {
         name: "Game value",
         value: 2.5,
         fmt: null,
-        leaf: "unknown",
+        leaf: "tier", // the bench's rule on a code with "rarity" in it
         condition: null,
         why: null,
         formula: null,

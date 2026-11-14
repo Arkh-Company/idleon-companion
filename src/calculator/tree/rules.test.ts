@@ -1,0 +1,44 @@
+// Every rule of the assembly carries its proof as a reference, never as the game's text (spec 008, FR-032, T022): each
+// part of a proof names the bench's rule or the game's block ("bench pieces.cjs KIND_PATHS deep-7; N.js RoyalG"), with no
+// quote in it.
+import { expect, test } from "vitest";
+import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
+
+const TABLES = { COUNT_LEAVES, KIND_PATHS, RULES };
+const QUOTES = /["'`“”‘’]/;
+const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
+
+/** True when the proof is one or more references joined by "; ". */
+export function isReference(proof: unknown): boolean {
+  return (
+    typeof proof === "string" &&
+    proof.length <= 160 &&
+    !QUOTES.test(proof) &&
+    proof.split("; ").every((part) => PART.test(part))
+  );
+}
+
+test.each(Object.entries(TABLES))(
+  "every rule of %s has a proof by reference",
+  (_name, rules) => {
+    expect(rules.length).toBeGreaterThan(0);
+    for (const r of rules)
+      expect([String(r.test), r.proof]).toEqual([
+        String(r.test),
+        expect.toSatisfy(isReference),
+      ]);
+  },
+);
+
+test.each<[string, unknown]>([
+  ["no proof", undefined],
+  ["an empty proof", ""],
+  ["a quoted text of the game", 'N.js Sailing "Total Boat Upgrade LV"'],
+  ["a sentence with no reference", "the boat's levels"],
+  [
+    "a reference followed by a sentence",
+    "bench pieces.cjs RULES; the boat levels",
+  ],
+])("%s is no reference", (_name, proof) => {
+  expect(isReference(proof)).toBe(false);
+});
