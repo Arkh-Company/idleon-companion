@@ -19,7 +19,7 @@ import {
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
 import { GAME_TABLE } from "./steps.ts";
-import { COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
+import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
 const TABLES = {
   COUNT_LEAVES,
@@ -29,6 +29,7 @@ const TABLES = {
   TABLE_READ,
   GAME_TABLE,
   COINCIDENT_READS,
+  BUBBLE_VALUES,
   LOOP_ENTRY_CACHES,
   RUN_TOTALS,
   SKILL_RANKS: [SKILL_RANKS],

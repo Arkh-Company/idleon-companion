@@ -25,6 +25,7 @@ import { makeSteps } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
 import { firstSrc, noSource, topOp } from "./tree/expr.ts";
 import { withFormula } from "./tree/formulas.ts";
+import { withWriterFormula } from "./tree/cache-formulas.ts";
 import { makeCodeFormulas } from "./tree/code-formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
@@ -199,6 +200,7 @@ export function buildTree(
       ),
     terms: termsOf,
     finish,
+    formulas: codeFormulas,
   });
 
   function raw(id: number, depth: number, seen: ReadonlySet<number>): Row[] {
@@ -320,9 +322,9 @@ export function buildTree(
   ): { formula: CalcTreeNode["formula"]; kids: CalcTreeNode[] } | null {
     // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
     if (typeof p.open !== "number") {
-      const rows = caches.open(p.open, p.depth - 1, new Set(p.seen));
-      if (!rows) return null;
-      const w = withFormula(p.row, rows);
+      const got = caches.opened(p.open, p.depth - 1, new Set(p.seen));
+      if (!got) return null;
+      const w = withFormula(withWriterFormula(p.row, got.f), got.rows);
       return {
         formula: w.formula,
         kids: place(p.node, w.rows, p.depth + 1, p.seen),

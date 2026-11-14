@@ -5,8 +5,8 @@
 // returned it. The bench builds the whole tree at once; here a cache read is a lazy row whose rows are built when the
 // player opens it, with the loop entry and the bubble entries open when the row was made (ENTRY_P, OPUS4_OPEN). The
 // tests that only read the recording (which writes, which turn, which side of a step) are in cache-picks.ts.
-// Left out until their own phase: the names of the parts (US1c: a part has the generic name, and the filters that
-// compare names wait for them) and the cache's ⓘ (LAST_WRITER_FORMULA, US1b-3).
+// Each opening gives the ⓘ the writer leaves for the cache (tree/cache-formulas.ts). Left out until their own phase:
+// the names of the parts (US1c: a part has the generic name, and the filters that compare names wait for them).
 import type { RecNode } from "../recording.ts";
 import {
   addedSide,
@@ -15,7 +15,11 @@ import {
   filledHere,
   readsPath,
   turnRead,
+  turnReads,
 } from "./cache-picks.ts";
+import { oneTurnFormula, turnFormula } from "./cache-formulas.ts";
+import type { Opened } from "./cache-formulas.ts";
+import type { CodeFormulas } from "./code-formulas.ts";
 import type { Entries, Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
@@ -47,6 +51,8 @@ export interface CacheContext {
   /** The terms of writer `w`'s steps, with its own links: the rows they make open under `seen`. */
   terms(w: RecNode, seen: readonly number[]): Terms;
   finish(v: unknown, rows: Row[], ones: boolean): Row[];
+  /** The ⓘ the game's code gives (tree/code-formulas.ts). */
+  formulas: CodeFormulas;
 }
 
 const stamp = (rows: Row[], seen: readonly number[]) =>
@@ -74,13 +80,9 @@ export function makeCaches(ctx: CacheContext) {
     at: number,
     e: Expr,
     seen: ReadonlySet<number>,
-    turnReads: readonly TurnRead[],
+    own: readonly TurnRead[],
   ): Row[] {
-    // a turn read of 0 names nothing: 0 is every unset index and total
-    const reads = new Map([
-      ...(w.r ?? []).map(([p, v]) => [p, v] as const),
-      ...turnReads.filter((x) => x[1] !== 0).map(([p, v]) => [p, v] as const),
-    ]);
+    const reads = turnReads(w, own);
     const terms = ctx.terms(w, [...seen, w.id]);
     const { rows, op } = terms.rowsAt({ args: w.a, steps, at }, e, reads);
     return ctx.finish(e.v, rows, op === "*");
@@ -90,11 +92,11 @@ export function makeCaches(ctx: CacheContext) {
     steps: readonly Step[],
     value: unknown,
     seen: ReadonlySet<number>,
-    turnReads: readonly TurnRead[],
+    own: readonly TurnRead[],
   ) => {
     const at = steps.findIndex((x) => near(x.v, value));
     const st = steps[at];
-    return st ? stepRowsAt(w, steps, at, st.e, seen, turnReads) : null;
+    return st ? stepRowsAt(w, steps, at, st.e, seen, own) : null;
   };
 
   function entryRows(
@@ -104,7 +106,7 @@ export function makeCaches(ctx: CacheContext) {
     depth: number,
     seen: ReadonlySet<number>,
     only?: readonly Entry[],
-  ): Row[] | null {
+  ): Opened | null {
     const L = only ?? entries.get(`${String(w.id)}|${p}`);
     if (!L) return null;
     const next = new Set(seen).add(w.id);
@@ -153,7 +155,7 @@ export function makeCaches(ctx: CacheContext) {
             writerOf(turnLinks, read[0], target),
             depth + 1,
             next,
-          ) ?? [];
+          )?.rows ?? [];
       if (!rows.length && !r) {
         // a turn that adds a function of its own to the running total: that function's rows
         const at = q.s.findIndex((x) => near(x.v, q.v));
@@ -168,11 +170,15 @@ export function makeCaches(ctx: CacheContext) {
     // OPUS4-10: every write is 0: the last write's own turn, never the writer's value
     if (!parts.length) {
       const q0 = L.filter((q) => near(q.v, value) && q.s.length).pop();
-      return q0 ? turnRows(q0, value).rows : [];
+      return { rows: q0 ? turnRows(q0, value).rows : [], f: null };
     }
-    // one turn made the value
+    // one turn made the value: the cache's ⓘ is that turn's step
     const [one] = parts;
-    if (one && parts.length === 1) return turnRows(one.q, value).rows;
+    if (one && parts.length === 1)
+      return {
+        rows: turnRows(one.q, value).rows,
+        f: oneTurnFormula(w, one.q, value, ctx.formulas, nodes),
+      };
     const out = parts.map((pt): Row => {
       if (pt.kind === "x" && pt.st) {
         const terms = flat(pt.st.e, "*").filter(
@@ -182,9 +188,10 @@ export function makeCaches(ctx: CacheContext) {
               near(t.v, Number(pt.q.v) / pt.d)
             ),
         );
-        const reads = new Map((w.r ?? []).map(([rp, rv]) => [rp, rv]));
         const at = ctx.terms(w, [...next]);
-        const rows = terms.flatMap((t) => at.term(t, "*", reads) ?? []);
+        const rows = terms.flatMap(
+          (t) => at.term(t, "*", turnReads(w, [])) ?? [],
+        );
         return {
           node: row({
             pieceKey: null,
@@ -199,6 +206,8 @@ export function makeCaches(ctx: CacheContext) {
         };
       }
       const { rows, call, read } = turnRows(pt.q, pt.d);
+      // the turn's ⓘ: the part its step adds to the total
+      const xf = turnFormula(w, pt, ctx.formulas);
       const kind = TURN_KINDS.find((k) =>
         pt.q.r.some(
           ([rp, rv]) =>
@@ -217,9 +226,10 @@ export function makeCaches(ctx: CacheContext) {
         open: null,
         // OPUS3-F3c: a found item is a yes/no with nothing under it
         group: kind?.found ? [] : rows,
+        ...(xf ? { xf } : {}),
       };
     });
-    return ctx.finish(value, out, false);
+    return { rows: ctx.finish(value, out, false), f: null };
   }
 
   /** pieces.cjs cacheRows, with writer `w` found for it; null when the depth limit or a cycle cuts it. */
@@ -229,7 +239,7 @@ export function makeCaches(ctx: CacheContext) {
     w: RecNode | null,
     depth: number,
     seen: ReadonlySet<number>,
-  ): Row[] | null {
+  ): Opened | null {
     const key = w && `${String(w.id)}|${p}`;
     const LL = (key ? entries.get(key) : undefined) ?? [];
     const last = LL.at(-1);
@@ -244,15 +254,16 @@ export function makeCaches(ctx: CacheContext) {
           const s2 = new Set(seen);
           s2.delete(w.id);
           const fe = entryRows(w, p, value, depth, s2, only ?? undefined);
-          if (fe?.length) return fe;
+          if (fe?.rows.length) return fe;
         } finally {
           opening.delete(k4);
         }
       }
     }
     // deep-2: a skill's rank opens into the levels the builder pass recorded in the entry of this path
-    const ranks = skillRankRows(p, w, LL[0]);
-    if (ranks) return ctx.finish(value, ranks, false);
+    const ranks = skillRankRows(p, w, LL[0], value);
+    if (ranks)
+      return { rows: ctx.finish(value, ranks.rows, false), f: ranks.f };
     const wsteps = w ? ctx.steps(w.id) : [];
     // a cache the call being built computed in one of its own steps, not one that reads the cache itself: that step
     if (w && deep && p.startsWith("DNSM.")) {
@@ -261,7 +272,10 @@ export function makeCaches(ctx: CacheContext) {
       );
       const st0 = wsteps[at];
       if (st0 && !near(w.v, value))
-        return stepRowsAt(w, wsteps, at, st0.e, seen, []);
+        return {
+          rows: stepRowsAt(w, wsteps, at, st0.e, seen, []),
+          f: ctx.formulas.expr(st0.e, turnReads(w, []), value),
+        };
     }
     // [T3] a cache the call changed once in a turn of its own loop: the turn whose step is a product of an earlier read
     // of the cache and a call
@@ -269,7 +283,7 @@ export function makeCaches(ctx: CacheContext) {
       const q = factorTurn(LL, p, value);
       if (q) {
         const fe = entryRows(w, p, value, depth, seen, [q]);
-        if (fe?.length) return fe;
+        if (fe?.rows.length) return fe;
       }
     }
     // [DEEP-1, fix A] the call filled this cache (it tested the cache was empty first) and reads its final value back
@@ -280,28 +294,36 @@ export function makeCaches(ctx: CacheContext) {
       filledHere(w, p, seen, last, value)
     ) {
       const fe = entryRows(w, p, value, depth, seen);
-      if (fe?.length) return fe;
+      if (fe?.rows.length) return fe;
     }
-    if (!w) return [];
+    if (!w) return { rows: [], f: null };
     if (seen.has(w.id) || depth > MAX_DEPTH) return null;
     const fromEntries = entryRows(w, p, value, depth, seen);
-    if (fromEntries?.length) return fromEntries;
+    if (fromEntries?.rows.length) return fromEntries;
     // a cache the writer filled entry by entry never opens the whole writer because it returns the same number
-    if (near(w.v, value) && !entries.has(`${String(w.id)}|${p}`))
-      return explained(w.id, depth + 1, seen);
+    if (near(w.v, value) && !entries.has(`${String(w.id)}|${p}`)) {
+      const rows = explained(w.id, depth + 1, seen);
+      return rows && { rows, f: ctx.formulas.call(w) };
+    }
     // the step that makes the value, before one that only reads the cache back
     let at = wsteps.findIndex((x) => near(x.v, value) && !readsPath(x.e, p));
     if (at < 0) at = wsteps.findIndex((x) => near(x.v, value));
     const st = wsteps[at];
-    return st ? stepRowsAt(w, wsteps, at, st.e, seen, []) : [];
+    if (!st) return { rows: [], f: null };
+    return {
+      rows: stepRowsAt(w, wsteps, at, st.e, seen, []),
+      f: readsPath(st.e, p)
+        ? null
+        : ctx.formulas.expr(st.e, turnReads(w, []), value),
+    };
   }
 
-  /** The rows of an opened cache row, as they were when the row was made; null when cut. */
-  function open(
+  /** The rows of an opened cache row, as they were when the row was made, with its writer's ⓘ; null when cut. */
+  function opened(
     o: CacheOpen,
     depth: number,
     seen: ReadonlySet<number>,
-  ): Row[] | null {
+  ): Opened | null {
     const before = [entryP, opening] as const;
     entryP = o.entry;
     opening = new Set(o.opening);
@@ -317,6 +339,8 @@ export function makeCaches(ctx: CacheContext) {
       [entryP, opening] = before;
     }
   }
+  const open = (o: CacheOpen, depth: number, seen: ReadonlySet<number>) =>
+    opened(o, depth, seen)?.rows ?? null;
   /**
    * pieces.cjs `kids.length`: whether a row opens into rows. The bench builds a cache's rows at once, so a cache row is
    * opened now (under the calls above its own rows, else `seen`): one whose writer gives nothing, or that a cycle cuts,
@@ -334,6 +358,7 @@ export function makeCaches(ctx: CacheContext) {
     /** What the tree is walking now, kept on a cache row made now. */
     now: () => ({ entry: entryP, opening: [...opening] }),
     open,
+    opened,
     opens,
   };
 }

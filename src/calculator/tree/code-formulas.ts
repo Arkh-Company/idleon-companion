@@ -37,6 +37,9 @@ const FN: Readonly<Record<string, (...x: number[]) => number>> = {
   pow: Math.pow,
   abs: Math.abs,
 };
+/** A 0 of the code or of an earlier step: the start of a total. */
+export const isZero = (x: Expr) =>
+  (x.t === "val" || x.t === "num") && Number(x.v) === 0;
 /** An expression written with its parts, with its numbers, and its own value from the recorded values. */
 interface Texts {
   names: string;
@@ -151,10 +154,8 @@ export function makeCodeFormulas(
     minOps = 1,
   ): Pair | null {
     // "0 + X" is X: a total that starts at 0 says nothing of its own
-    const zero = (x: Expr) =>
-      (x.t === "val" || x.t === "num") && Number(x.v) === 0;
-    if (e?.t === "op" && e.o === "+" && zero(e.l) !== zero(e.r))
-      return expr(zero(e.l) ? e.r : e.l, reads, v, minOps);
+    if (e?.t === "op" && e.o === "+" && isZero(e.l) !== isZero(e.r))
+      return expr(isZero(e.l) ? e.r : e.l, reads, v, minOps);
     if (
       !e ||
       typeof v !== "number" ||

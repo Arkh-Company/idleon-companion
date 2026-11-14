@@ -48,6 +48,8 @@ export interface Row {
   xf?: [names: string, numbers: string];
   xweak?: [names: string, numbers: string];
   f?: [names: string, numbers: string];
+  /** A cache row that takes its writer's ⓘ only when it gives the row's value, or never (tree/cache-formulas.ts). */
+  writerF?: "sameValue" | "never";
 }
 
 export const valueOf = (v: RecValue | undefined): number | boolean | null =>

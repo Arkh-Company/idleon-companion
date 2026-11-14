@@ -13,7 +13,7 @@ import type { Row } from "./rows.ts";
 import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
-import { valPath } from "./val-path.ts";
+import { any, BUBBLE_VALUES, valPath } from "./val-path.ts";
 import {
   codeTable,
   earlierTotal,
@@ -167,7 +167,11 @@ export function makeTerms(ctx: TermContext) {
     const vp = valPath(v, reads);
     const total = earlierTotal(ctx.entry(), v, reads, vp !== null);
     if (total) return total;
-    if (vp) return ctx.read(vp, v);
+    // OPUS4-6: a bubble's value opens into the bubble, with no ⓘ of its writer
+    if (vp)
+      return any(BUBBLE_VALUES, vp)
+        ? { ...ctx.read(vp, v), writerF: "never" }
+        : ctx.read(vp, v);
     const count = listCount(v, reads);
     if (count) return count;
     let own: Row | null = null;
@@ -278,7 +282,7 @@ export function makeTerms(ctx: TermContext) {
         !near(rv, e.v)
       )
         return exprRow(e, d, reads);
-      return read;
+      return { ...read, writerF: "sameValue" };
     }
     if (s.t !== "call") return null;
     const k = nodes[s.id];

@@ -2,9 +2,17 @@
 // pieces.cjs `cacheRows` and `entryRows` from the bench at BASELINE-4 that only read the recording, apart from the
 // walk that builds the rows (caches.ts).
 import type { RecNode } from "../recording.ts";
-import type { Entry } from "./entries.ts";
+import type { Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import type { Expr } from "./steps.ts";
+import type { Reads } from "./val-path.ts";
+
+/** Writer `w`'s reads, with the reads of its turn after them; a turn read of 0 names nothing (0 is every unset total). */
+export const turnReads = (w: RecNode, r: readonly TurnRead[]): Reads =>
+  new Map([
+    ...(w.r ?? []).map(([p, v]) => [p, v] as const),
+    ...r.filter((x) => x[1] !== 0).map(([p, v]) => [p, v] as const),
+  ]);
 
 /** Whether expression `e` reads path `p` itself. */
 export const readsPath = (e: Expr, p: string) =>
@@ -82,8 +90,7 @@ export function filledHere(
   return (
     [...seen].pop() === w.id &&
     (w.r ?? []).some(
-      ([rp, rv]) =>
-        rv === 0 && rp === `${p.replace(/[[.][^[.]*$/, "")}.length`,
+      ([rp, rv]) => rv === 0 && rp === `${p.replace(/[[.][^[.]*$/, "")}.length`,
     ) &&
     typeof last?.v === "number" &&
     near(last.v, value)

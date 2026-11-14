@@ -23,6 +23,13 @@ export const COINCIDENT_READS: readonly Rule[] = [
     proof: "bench pieces.cjs valPath; N.js TalentCalc",
   },
 ];
+/** A bubble's value: its read opens into the bubble with no ⓘ of the bubble's writer (OPUS4-6). */
+export const BUBBLE_VALUES: readonly Rule[] = [
+  {
+    test: /^DNSM\.AlchBubbles\.\w+$/,
+    proof: "bench pieces.cjs rowOfTerm OPUS4-6; N.js CauldronStats",
+  },
+];
 /** Whether one of the rules holds for path `p`. */
 export const any = (rules: readonly { test: RegExp }[], p: string): boolean =>
   rules.some((r) => r.test.test(p));

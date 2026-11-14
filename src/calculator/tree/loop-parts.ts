@@ -35,17 +35,21 @@ export const SKILL_RANKS = {
   block: "RiftStuff",
   mode: "skillLvRanks",
   total: "DNSM.skillLvRanksDN",
+  /** The account's total levels of the skill that each raise the rank by one. */
+  limits: [150, 200, 300, 400, 500, 750, 1000],
   proof: "bench pieces.cjs cacheRows deep-2; N.js RiftStuff",
 };
 /**
  * deep-2: the rows of skill rank `p` written by `w`, one level per character from the first entry the builder pass
- * recorded, when those levels add up to the total it read; else null.
+ * recorded, when those levels add up to the total it read, with the rank's ⓘ (a 1 per limit reached, or the count when
+ * those 1s do not give the rank `value`); else null.
  */
 export function skillRankRows(
   p: string,
   w: RecNode | null,
   first: Entry | undefined,
-): Row[] | null {
+  value: number,
+): { rows: Row[]; f: [string, string] } | null {
   const mr = SKILL_RANKS.test.exec(p);
   if (!mr || w?.b !== SKILL_RANKS.block || w.a[0] !== SKILL_RANKS.mode)
     return null;
@@ -58,7 +62,15 @@ export function skillRankRows(
     !first?.r.some(([q, v]) => q === SKILL_RANKS.total && v === tot)
   )
     return null;
-  return lv.map(([, v], i) => ({
+  const { limits } = SKILL_RANKS;
+  const reached = limits.filter((x) => tot >= x).length;
+  const f: [string, string] = [
+    `Number of limits (${limits.join(", ")}) that the account's total level of the skill reaches`,
+    reached === value
+      ? `${limits.map((x) => (tot >= x ? 1 : 0)).join(" + ")} = ${String(value)}`
+      : `total ${String(tot)} reaches ${String(reached)} of ${String(limits.length)} limits = ${String(value)}`,
+  ];
+  const rows = lv.map(([, v], i): Row => ({
     node: row({
       pieceKey: null,
       value: valueOf(v),
@@ -67,6 +79,7 @@ export function skillRankRows(
     }),
     open: null,
   }));
+  return { rows, f };
 }
 /** The kind of a loop turn's part, from what the turn read (pieces.cjs entryRows, OPUS3-F3b and the item turn). */
 export const TURN_KINDS: readonly (Rule & {
