@@ -427,6 +427,76 @@ lime.$scripts.N = function (_exports, $global) {
     state().SavedBy = "SaveGamee";
   };
 
+  // The cases of the formula trees (spec 008): each block is one shape the recorder and the assembly must handle. The
+  // values they give with fake-mosaic.ts are in its TREE_CASES.
+  Blocks._customBlock_TreeReads = function () {
+    var s = state();
+    return s.TreeStats.h.a + s.TreeStats.h.b;
+  };
+  // -1 rebuilds the cache, as the game's builders do; any other argument reads it.
+  Blocks._customBlock_TreeCacheFill = function (t) {
+    if (t === -1) {
+      a.engine.getGameAttribute("DNSM").h.TreeCache.h.total =
+        state().TreeBase * 2;
+      return 0;
+    }
+    return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total;
+  };
+  Blocks._customBlock_TreeCacheRead = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total + 1;
+  };
+  Blocks._customBlock_TreeLoop = function () {
+    var list = state().TreeList;
+    var total = 0;
+    for (var i = 0; i < list.length; i++) total += list[i];
+    return total;
+  };
+  Blocks._customBlock_TreeTextValue = function () {
+    var s = state();
+    return s.TreeLabel.length + s.UserInfo[0].length;
+  };
+  Blocks._customBlock_TreeStringLiteral = function () {
+    return state().TreeLabel === "an invented literal" ? 2 : 1;
+  };
+  Blocks._customBlock_TreeTwice = function () {
+    return Blocks._customBlock_TreeReads() + Blocks._customBlock_TreeReads();
+  };
+  Blocks._customBlock_TreeSources = function () {
+    return (
+      Blocks._customBlock_TreeReads() * Blocks._customBlock_TreeLoop() +
+      state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeMinCap = function () {
+    return Math.min(state().TreeCapped, 50);
+  };
+  // A curve that grows toward 40 and never reaches it.
+  Blocks._customBlock_TreeDecay = function () {
+    var level = state().TreeLevel;
+    return (40 * level) / (level + 100);
+  };
+  Blocks._customBlock_TreeTimesOne = function () {
+    var s = state();
+    return s.TreeBase * (1 + s.TreeOwned / 100);
+  };
+  Blocks._customBlock_TreeConditionNo = function () {
+    var s = state();
+    return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
+  };
+  Blocks._customBlock_TreeMapActor = function () {
+    var actor = state().PixelHelperActor[0];
+    return Number(actor.behaviors.getBehavior("ActorEvents_1")._MonsterHPtot);
+  };
+  Blocks._customBlock_TreeCharacter = function () {
+    var s = state();
+    return s.CurrentMap + s.PrayersActive.length + s.Cards[2].length;
+  };
+  var everySceneInit = EveryScene.prototype.init;
+  EveryScene.prototype.init = function () {
+    everySceneInit.call(this);
+    if (state().TreeBase !== undefined) Blocks._customBlock_TreeCacheFill(-1);
+  };
+
   // In the scenario "order", each number is the turn its block ran in, counted in the state the numbers share.
   [
     "DamageDealed",

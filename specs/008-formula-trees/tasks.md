@@ -57,7 +57,7 @@ Verify: `just --list` - shows `parity`; `just check` - passes.
 - [X] T002 Add `acorn@8.19.0` as a devDependency (research R2)
   - Files: `package.json` (`pnpm add -D acorn@8.19.0`, which also updates the lockfile)
   - Tests: `src/calculator/bundle.test.ts` (new, like `no-network.test.ts`) fails on any `import(` in `src/calculator/**` that is not a test.
-- [ ] T003 [P] Extend the invented game with the tree cases
+- [X] T003 [P] Extend the invented game with the tree cases
   - Files: `src/calculator/fixtures/fake-game.js`, `src/calculator/fixtures/fake-mosaic.ts`
   - Blocks to add (invented names and numbers only):
     - a block with state reads;
