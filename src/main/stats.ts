@@ -116,12 +116,17 @@ export function statListCheck(
 }
 
 /** The tab's state. Every `send` is a change, except `replay`. */
-export function statsTracker(send: (s: Stats) => void): {
+export function statsTracker(
+  send: (s: Stats) => void,
+  now: () => number = Date.now,
+): {
   slice(): void;
   character(): void;
   result(s: Stats): void;
   unavailable(): void;
   stalled(): void;
+  /** The game closed: the last numbers stay, stale (FR-022 of 008). */
+  closed(): void;
   clear(): void;
   start(): void;
   replay(): void;
@@ -133,16 +138,21 @@ export function statsTracker(send: (s: Stats) => void): {
   /** The reading stopped: the next slice clears it. */
   let stalled = false;
   let rows: Stats | null = null;
+  let calculatedAt = 0;
+  /** The last numbers of a closed game: until a new start, a slice or no character. */
+  let kept: Stats | null = null;
   let last: Stats = { state: "none" };
 
   function show(): void {
-    const next: Stats = stalled
-      ? { state: "unavailable" }
-      : !active
-        ? { state: "none" }
-        : failed
-          ? { state: "unavailable" }
-          : (rows ?? { state: "calculating" });
+    const next: Stats =
+      kept ??
+      (stalled
+        ? { state: "unavailable" }
+        : !active
+          ? { state: "none" }
+          : failed
+            ? { state: "unavailable" }
+            : (rows ?? { state: "calculating" }));
     if (JSON.stringify(next) === JSON.stringify(last)) return;
     last = next;
     send(next);
@@ -150,6 +160,7 @@ export function statsTracker(send: (s: Stats) => void): {
 
   return {
     slice() {
+      kept = null;
       active = true;
       stalled = false;
       show();
@@ -160,6 +171,7 @@ export function statsTracker(send: (s: Stats) => void): {
     },
     result(s) {
       rows = s;
+      calculatedAt = now();
       show();
     },
     unavailable() {
@@ -170,13 +182,23 @@ export function statsTracker(send: (s: Stats) => void): {
       stalled = true;
       show();
     },
+    closed() {
+      if (rows?.state === "ready")
+        kept = { state: "ready", rows: rows.rows, stale: true, calculatedAt };
+      active = false;
+      stalled = false;
+      rows = null;
+      show();
+    },
     clear() {
+      kept = null;
       active = false;
       stalled = false;
       rows = null;
       show();
     },
     start() {
+      kept = null;
       failed = false;
       active = false;
       stalled = false;

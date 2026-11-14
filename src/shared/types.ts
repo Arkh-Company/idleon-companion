@@ -203,6 +203,13 @@ export type Stats =
   | { state: "none" }
   | { state: "calculating" }
   | { state: "ready"; rows: { label: string; text: string }[] }
+  /** The game closed: the last numbers, calculated at `calculatedAt` (FR-022 of 008). */
+  | {
+      state: "ready";
+      rows: { label: string; text: string }[];
+      stale: true;
+      calculatedAt: number;
+    }
   | { state: "unavailable" };
 
 /** A channel reserved for one module: `module:<id>:<name>`. */

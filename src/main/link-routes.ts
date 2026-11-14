@@ -9,7 +9,10 @@ import { afterGameClosed } from "./updates.ts";
 
 export function routeLink(deps: {
   tracker: ReturnType<typeof contextTracker>;
-  stats: ReturnType<typeof startStatsPipeline>;
+  stats: Pick<
+    ReturnType<typeof startStatsPipeline>,
+    "message" | "reading" | "status" | "replay"
+  >;
   updates: { replay(): void };
   status: () => Status;
   setStatus: (s: Status) => Promise<void>;

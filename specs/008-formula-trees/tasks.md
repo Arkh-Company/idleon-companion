@@ -136,7 +136,7 @@ Verify: `just test-one src/calculator/bundle.test.ts` - passes; `just check` - p
   - Files: `src/main/calculator-host.ts`, `src/main/calculator-host.test.ts`
   - Signature: `onResult(numbers: CalcNumbers, mosaicJson: string)`, with the mosaic captured in `next()`.
   - Tests: two `onDue` during one calculation; the pair result + mosaic is never mixed.
-- [ ] T011 Keep the last reading with the game closed (FR-022; the 004 and 005 tests change, approved by Vinicius 13/11)
+- [X] T011 Keep the last reading with the game closed (FR-022; the 004 and 005 tests change, approved by Vinicius 13/11)
   - Files: `src/main/stats-pipeline.ts`, `src/main/stats.ts`, `src/shared/types.ts` (`Stats` gains `stale`), `src/renderer/StatsPanel.tsx`, and the existing tests that expect `unavailable` with the game closed (`stats-pipeline*.test.ts`, `StatsPanel.test.tsx`, `stats-tab.test.tsx`)
   - Behavior: the pipeline keeps the last `CalcNumbers`, the texts and `calculatedAt` in memory, never on disk. With the game closed it sends `ready` with `stale: true`, and the tab shows "last reading N s ago".
   - Tests:

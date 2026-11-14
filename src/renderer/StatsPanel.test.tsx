@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The Stats panel (contracts/ipc.md): its fixed texts, the ten rows and no field to fill in (FR-020).
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
 import type { Stats } from "../shared/index.ts";
 import { StatsPanel } from "./StatsPanel.tsx";
 
@@ -49,6 +49,28 @@ test("ready shows the ten rows with their text", () => {
     screen.getByRole("row", { name: "Damage value of Damage" }),
   ).toBeDefined();
   expect(screen.getByRole("row", { name: "HP unavailable" })).toBeDefined();
+});
+
+test("ready says nothing of a last reading", () => {
+  render(<StatsPanel stats={READY} />);
+  expect(screen.queryByText(/last reading/)).toBe(null);
+});
+
+test("stale shows the rows and how long ago they were calculated, counting (FR-022 of 008)", () => {
+  vi.useFakeTimers({ now: 10_000 });
+  try {
+    render(
+      <StatsPanel stats={{ ...READY, stale: true, calculatedAt: 5_000 }} />,
+    );
+    expect(screen.getByText("last reading 5 s ago")).toBeDefined();
+    expect(screen.getAllByRole("rowheader")).toHaveLength(LABELS.length);
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+    expect(screen.getByText("last reading 7 s ago")).toBeDefined();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test.each<[string, Stats | null]>([
