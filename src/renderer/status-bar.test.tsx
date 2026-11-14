@@ -130,6 +130,42 @@ test.each([
   expect(b.tabIndex).toBe(0);
 });
 
+// A screen reader announces every change inside a live region: the seconds counter, which changes every second, stays
+// out of it, and a change of the game's or the reader's state stays in.
+const liveRegion = (text: string) =>
+  screen.getByText(text).closest('[role="status"], [aria-live]');
+
+test("the seconds counter is outside the live region, the state and the message inside", () => {
+  const lastReadingAt = Date.now() - 5000;
+  const { rerender } = render(
+    <StatusBar status={{ ...ATTACHED, lastReadingAt }} />,
+  );
+
+  expect(screen.getByText("last reading 5 s ago")).toBeDefined();
+  expect(liveRegion("last reading 5 s ago")).toBe(null);
+  expect(liveRegion("Game running")).not.toBe(null);
+  expect(liveRegion("Reader attached")).not.toBe(null);
+
+  const message = "Reading failed: boom";
+  rerender(
+    <StatusBar
+      status={{ game: "running", reader: "error", message, lastReadingAt }}
+    />,
+  );
+
+  expect(liveRegion("Reader off")).not.toBe(null);
+  expect(liveRegion(message)).not.toBe(null);
+  expect(liveRegion("last reading 5 s ago")).toBe(null);
+
+  rerender(<StatusBar status={{ game: "not-launched", reader: "error" }} />);
+
+  expect(
+    liveRegion(
+      "Live reading needs the game to be launched through Steam with the companion launch option.",
+    ),
+  ).not.toBe(null);
+});
+
 test.each<Status["reader"]>(["error", "released"])(
   "a game update (reader %s): the message stays and Reconnect is gone, it would do nothing",
   (reader) => {

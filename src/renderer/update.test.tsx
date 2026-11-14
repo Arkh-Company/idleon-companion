@@ -28,7 +28,8 @@ function given(u: UpdateState) {
   });
 }
 const restart = () => screen.queryByRole("button", { name: RESTART });
-const barText = () => screen.getByRole("status").textContent;
+// The whole bar, not only its live regions: an update line can show anywhere in it.
+const barText = () => document.querySelector(".status-bar")?.textContent;
 
 test("a ready update with the game closed offers the restart", () => {
   given({ state: "ready", version: "1.2.3", canInstall: true });
