@@ -46,82 +46,90 @@ export function StatusBar({ status }: { status: Status }) {
     message !== GAME_UPDATED &&
     (released || (afterRelease && status.reader === "error"));
   return (
-    <div className="status-bar" role="status">
-      {status.game === "not-launched" ? (
-        <p>{NOT_LAUNCHED}</p>
-      ) : (
-        <p>
-          <span>{GAME[status.game]}</span>
-          {" · "}
-          <span>{READER[status.reader]}</span>
-          {released && (
+    // A screen reader announces every change inside a live region: the seconds counter, which changes every second,
+    // sits outside both. The two regions stay mounted, so a change in them is announced.
+    <div className="status-bar">
+      <p>
+        <span role="status">
+          {status.game === "not-launched" ? (
+            NOT_LAUNCHED
+          ) : (
             <>
+              <span>{GAME[status.game]}</span>
               {" · "}
-              <span>You can close the game now</span>
+              <span>{READER[status.reader]}</span>
+              {released && (
+                <>
+                  {" · "}
+                  <span>You can close the game now</span>
+                </>
+              )}
             </>
           )}
-          {lastReadingAt !== undefined && (
-            <>
-              {" · "}
-              <span>{`last reading ${String(Math.max(0, Math.floor((now - lastReadingAt) / 1000)))} s ago`}</span>
-            </>
-          )}
-        </p>
-      )}
-      {message !== undefined && <p className="message">{message}</p>}
-      {attached && (
-        <>
-          <p>To close the game, press Let the game close first.</p>
+        </span>
+        {status.game !== "not-launched" && lastReadingAt !== undefined && (
+          <>
+            {" · "}
+            <span>{`last reading ${String(Math.max(0, Math.floor((now - lastReadingAt) / 1000)))} s ago`}</span>
+          </>
+        )}
+      </p>
+      <div aria-live="polite">
+        {message !== undefined && <p className="message">{message}</p>}
+        {attached && (
+          <>
+            <p>To close the game, press Let the game close first.</p>
+            <button
+              type="button"
+              onClick={() => {
+                void window.companion.releaseGame();
+              }}
+            >
+              Let the game close
+            </button>
+          </>
+        )}
+        {canReconnect && (
           <button
             type="button"
             onClick={() => {
-              void window.companion.releaseGame();
+              void window.companion.reconnect();
             }}
           >
-            Let the game close
+            Reconnect
           </button>
-        </>
-      )}
-      {canReconnect && (
-        <button
-          type="button"
-          onClick={() => {
-            void window.companion.reconnect();
-          }}
-        >
-          Reconnect
-        </button>
-      )}
-      {warning &&
-        (confirmedFor === message ? (
-          <p>Reading starts next time the game opens.</p>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              void window.companion.confirmAttach().then(() => {
-                setConfirmedFor(message);
-              });
-            }}
-          >
-            Connect next time
-          </button>
-        ))}
-      {update?.state === "ready" && (
-        <>
-          <p>Update ready</p>
-          <button
-            type="button"
-            disabled={!update.canInstall}
-            onClick={() => {
-              void window.companion.installUpdate();
-            }}
-          >
-            Restart to update
-          </button>
-          {!update.canInstall && <p>Update installs after the game closes</p>}
-        </>
-      )}
+        )}
+        {warning &&
+          (confirmedFor === message ? (
+            <p>Reading starts next time the game opens.</p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                void window.companion.confirmAttach().then(() => {
+                  setConfirmedFor(message);
+                });
+              }}
+            >
+              Connect next time
+            </button>
+          ))}
+        {update?.state === "ready" && (
+          <>
+            <p>Update ready</p>
+            <button
+              type="button"
+              disabled={!update.canInstall}
+              onClick={() => {
+                void window.companion.installUpdate();
+              }}
+            >
+              Restart to update
+            </button>
+            {!update.canInstall && <p>Update installs after the game closes</p>}
+          </>
+        )}
+      </div>
     </div>
   );
 }
