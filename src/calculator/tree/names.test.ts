@@ -2,7 +2,10 @@
 // table; nothing else gives the generic name and `unnamed` (FR-012a). The table's keys are taken from the table itself,
 // so this file holds no game text.
 import { afterEach, expect, test } from "vitest";
+import { formulaFor } from "./formulas.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
+import type { Row } from "./rows.ts";
+import { at, read } from "./tree-fixture.ts";
 import {
   clean,
   nameOf,
@@ -79,11 +82,24 @@ test.each([
   ["Stats.q", null],
 ])("%s is named %s by its shape", (code, name) => {
   expect(nameOf(code)).toBe(name);
-  // a name by shape is the bench's generic one: no name yet, so the ⓘ writes the game's path (FR-012a)
-  expect(row({ pieceKey: "k", value: 1, code })).toMatchObject({
-    name: name ?? GENERIC_NAME,
-    flags: { unnamed: true },
-  });
+  // a name by shape is the bench's generic one: no name yet, so the ⓘ writes the game's path (FR-012a); log₁₀ and
+  // log₂ are the math's own notation, a name
+  const r = row({ pieceKey: "k", value: 1, code });
+  expect([r.name, r.flags]).toEqual([
+    name ?? GENERIC_NAME,
+    name?.startsWith("log") ? {} : { unnamed: true },
+  ]);
+});
+
+test("the ⓘ writes log₁₀, never the game's call", () => {
+  const log: Row = {
+    node: row({ pieceKey: "k", value: 2, code: "getLOG(100)" }),
+    open: null,
+  };
+  expect(formulaFor(at(6), [log, read("Stats.a", 3)])).toEqual([
+    "log₁₀ × Stats.a",
+    "2 × 3 = 6",
+  ]);
 });
 
 test.each([

@@ -90,16 +90,20 @@ export const SHAPE_NAMES: readonly {
   test: RegExp;
   proof: string;
   name: (code: string, call: [string, unknown[]] | null) => string | null;
+  /** The math's own notation (log₁₀, log₂): a name, where the other rules give only a generic one. */
+  notation?: true;
 }[] = [
   {
     test: /^getLOG\(/,
     proof: "bench pieces.cjs CALL_NAMES; N.js getLOG",
     name: () => "log₁₀",
+    notation: true,
   },
   {
     test: /^Log2\(/,
     proof: "bench pieces.cjs CALL_NAMES F5B-LOG2; N.js Log2",
     name: () => "log₂",
+    notation: true,
   },
   {
     test: /^[^(]+\(/,
@@ -140,9 +144,12 @@ export function nameOf(code: string): string | null {
   return SHAPE_NAMES.find((r) => r.test.test(code))?.name(code, call) ?? null;
 }
 
-/** Whether `code`'s name, if any, is only a rule by shape: the bench's generic names count as no name yet (FR-012a). */
+/** Whether `code`'s name, if any, is only a rule by shape other than the math's notation: the bench's generic names
+ * (a working value of the game, a mode in words) count as no name yet (FR-012a). */
 export const isGeneric = (code: string): boolean =>
-  !STATIC_NAMES.has(code) && !RECIPE_KEYS.has(code);
+  !STATIC_NAMES.has(code) &&
+  !RECIPE_KEYS.has(code) &&
+  !SHAPE_NAMES.find((r) => r.test.test(code))?.notation;
 
 /** What a name never holds (src/main/tree-check.ts refuses the whole tree for it): a table text with one stays out. */
 const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;
