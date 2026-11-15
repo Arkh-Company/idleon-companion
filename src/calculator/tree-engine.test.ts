@@ -44,18 +44,6 @@ test("values gives each Stats number of the same mosaic, and null outside the ro
   );
 });
 
-test("the Stats stays under 1 s with every catalog value calculated between its runs (SC-004)", () => {
-  const stats = createEngine(GAME, PAK);
-  const ids = Object.keys(TREE_ROOTS);
-  for (const STR of [1, 2, 3]) {
-    const mosaic = mosaicOf({ Stats: { STR } });
-    trees.values(ids, mosaic);
-    const started = performance.now();
-    expect(stats.calculate(mosaic).str).not.toBe(null);
-    expect(performance.now() - started).toBeLessThan(1_000);
-  }
-});
-
 test("values records nothing: the last tree's branches still open", () => {
   const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
   trees.values(["hp"], mosaicOf({ Stats: { STR: 2 } }));

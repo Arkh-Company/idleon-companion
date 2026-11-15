@@ -255,6 +255,7 @@ Verify: `just test-one src/main/formula-pipeline.test.ts` - passes; `just check`
 - [ ] T026 [US1] [sessão] Measure the compiled `calculator.js` on the real game (lessons 004-3, 005-2)
   - Run the packaged worker on the installed game with the snapshot copy: Drop Rate root + first level time, heap peak, branch expand time.
   - Set the request timeout constants of T009 from these numbers.
+  - Measure SC-004 here, on the real game: the Stats' time under 1 s with live values on and the side panel open. The invented game gives no proof of time; what the suite keeps is the Stats running in its own worker, never the trees' (`pipelines.test.ts`, "never the Stats worker").
   - Measure the `@actors` piece of US12 (T055) on the real game: its bytes (fill the `Bytes` cell of its row in `reading-catalog.md`) and the extra time of the slice that reads it. It is in the slow reading, so it never delays the Stats' fast pass; if it is large (`_ItemsAndStorageOWNED` and `_BuffIDsOn` are read whole), the first lap gets longer.
   - Write the result in `registro.md`.
 - [X] T027 [US1] Parity test with the bench in `src/calculator/parity.integration.test.ts` (run by `just parity`)
