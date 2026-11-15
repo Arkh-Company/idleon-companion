@@ -14,6 +14,7 @@ import { gameBugOf } from "./game-bugs.ts";
 import type { GameBugRule } from "./game-bugs.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
+import { aboveText, isGroup, kidNames } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
@@ -115,15 +116,21 @@ export function makePlaces(ctx: PlaceContext) {
       gameBugOf(ctx.bugs, parent.code, code) !== null;
     return oneOfEach(rows, marked).map((r0) => {
       const level0 = levelOf(r0, at, parent.code);
-      const { row: r, level } =
-        r0.node.role === "piece"
-          ? parentPasses(
-              r0,
-              level0,
-              (k, lv) => levelOf(k, lv.at, lv.code),
-              at.up,
-            )
-          : { row: r0, level: level0 };
+      // a group of the parts at 0 or at ×1 keeps the app's name; its rows are named as any level's (pieces.cjs fixNames)
+      const { row: r, level } = isGroup(r0)
+        ? {
+            row: r0,
+            level: level0 && {
+              ...level0,
+              rows: kidNames(level0.rows, r0.node, at.up.map(aboveText)),
+            },
+          }
+        : parentPasses(
+            r0,
+            level0,
+            (k, lv) => levelOf(k, lv.at, lv.code),
+            at.up,
+          );
       const { node, open } = r;
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);

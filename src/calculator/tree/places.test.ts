@@ -68,3 +68,65 @@ test("a level cut by the depth limit or a cycle is kept as cut: the expand says 
   });
   expect(calls).toEqual([1]);
 });
+
+const named = (name: string, value: number): Row => ({
+  node: row({ pieceKey: null, value, code: null, name, leaf: "rawBonus" }),
+  open: null,
+});
+const timesOne = (rows: Row[]): Row => ({
+  node: row({
+    pieceKey: null,
+    value: 1,
+    code: null,
+    name: `At ×1 (${String(rows.length)})`,
+    role: "atOne",
+    fmt: "x",
+    flags: { closed: true },
+  }),
+  open: null,
+  group: rows,
+});
+
+test("a group of the parts at ×1 keeps the app's name: no pass names it by its rows (R14)", () => {
+  const { places } = counted({});
+  // stampBonus would name a row of these two rows "X bonus" (X bonus value × Slot = the row's value)
+  const [group] = places.place(
+    { id: "root", code: "Root()" },
+    [timesOne([named("X bonus value", 1), named("Slot", 1)])],
+    1,
+    [0],
+  );
+  expect(group?.name).toBe("At ×1 (2)");
+});
+
+test("the rows of a group are named as any level's (pieces.cjs fixNames): a system the rows above show leaves their name", () => {
+  const { places } = counted({
+    1: [
+      timesOne([named("Bonus per level (Grimoire)", 1), named("Other", 1)]),
+      named("Rest", 5),
+    ],
+  });
+  const upgrade: Row = {
+    node: row({
+      pieceKey: null,
+      value: 5,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+      name: "Upgrade",
+      kids: "lazy",
+    }),
+    open: 1,
+  };
+  const [placed] = places.place(
+    { id: "root", code: "Root()" },
+    [upgrade],
+    1,
+    [0],
+  );
+  const kids = places.expand(placed?.id ?? "");
+  const group = Array.isArray(kids?.kids) ? kids.kids[0] : undefined;
+  // the group's own name is the app's, also under a parent whose name it starts with
+  expect(group?.name).toBe("At ×1 (2)");
+  expect(
+    (Array.isArray(group?.kids) ? group.kids : []).map((k) => k.name),
+  ).toEqual(["Bonus per level", "Other"]);
+});
