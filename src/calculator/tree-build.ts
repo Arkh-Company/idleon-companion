@@ -5,8 +5,9 @@
 // branch of its constants); then the state reads its steps do not show (tree/data-rows.ts) and its checks, a yes/no read
 // merged into its test (tree/conditions.ts), with the passes of `explainOnce0` (tree/once.ts and [F2-TOP]). A cache read
 // opens into what its writer computed for it (tree/caches.ts, over the loop entries of tree/entries.ts). A piece is
-// built once (tree/pieces.ts). A root of only the reads of its step shows that step (tree/root-step.ts). A row of a call
-// or a read is named by its code (tree/names.ts); with no name, it has the generic one and `unnamed` (FR-012a).
+// built once (tree/pieces.ts), and placed by its id until it is opened (tree/places.ts). A root of only the reads of its
+// step shows that step (tree/root-step.ts). A row of a call or a read is named by its code (tree/names.ts); with no
+// name, it has the generic one and `unnamed` (FR-012a).
 import type { Op } from "./instrument.ts";
 import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
@@ -14,20 +15,19 @@ import { curveOf, inputRead } from "./tree/curves.ts";
 import { makeCaches } from "./tree/caches.ts";
 import { makeConditions } from "./tree/conditions.ts";
 import { entriesOf, makeWriters } from "./tree/entries.ts";
-import { GAME_BUGS, gameBugOf } from "./tree/game-bugs.ts";
+import { GAME_BUGS } from "./tree/game-bugs.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
 import { mould } from "./tree/mould.ts";
 import { makePieces } from "./tree/pieces.ts";
+import { makePlaces } from "./tree/places.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
-import type { CacheOpen, Row } from "./tree/rows.ts";
+import type { Row } from "./tree/rows.ts";
 import { makeSteps } from "./tree/steps.ts";
 import { near } from "./tree/math.ts";
 import { firstSrc, noSource, topOp } from "./tree/expr.ts";
-import { withFormula } from "./tree/formulas.ts";
-import { withWriterFormula } from "./tree/cache-formulas.ts";
 import { makeCodeFormulas } from "./tree/code-formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
@@ -45,15 +45,6 @@ export interface TreeBuild {
   /** The lazy branch `nodeId` with its rows built, or null when no lazy branch has that id. */
   expand(nodeId: string): CalcTreeNode | null;
   readonly conflicts: readonly string[];
-}
-
-interface Place {
-  node: CalcTreeNode;
-  /** The row as it was built, with the game's expressions around it for its ⓘ (tree/formulas.ts). */
-  row: Row;
-  open: number | CacheOpen;
-  depth: number;
-  seen: readonly number[];
 }
 
 /**
@@ -294,66 +285,14 @@ export function buildTree(
 
   /** [NR-G 2b] the ⓘ a call takes from the one cache it returns, by piece, once its rows are built. */
   const openXf = new Map<string, [string, string]>();
-  const places = new Map<string, Place>();
-  /** Each row with its id (the path of names, `#n` on a repeat), its group placed under it, a known game bug tagged. */
-  function place(
-    parent: Pick<CalcTreeNode, "id" | "code">,
-    rows: Row[],
-    depth: number,
-    seen: readonly number[],
-  ): CalcTreeNode[] {
-    const count = new Map<string, number>();
-    return rows.map((r) => {
-      const { node, open, group, seen: own } = r;
-      const above = own ?? seen;
-      const n = (count.get(node.name) ?? 0) + 1;
-      count.set(node.name, n);
-      const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
-      const bug = gameBugOf(bugs, parent.code, node.code);
-      // a branch built already has its ⓘ now; a group's rows are still the call's own
-      const built = group && withFormula(r, group);
-      const placed: CalcTreeNode = {
-        id,
-        ...node,
-        ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
-        ...(built
-          ? {
-              formula: built.formula,
-              kids: place({ id, code: parent.code }, built.rows, depth, above),
-            }
-          : {}),
-      };
-      if (open !== null)
-        places.set(id, { node: placed, row: r, open, depth, seen: above });
-      return placed;
-    });
-  }
-  /** The place's ⓘ and the rows under it; null when the depth limit or a cycle cuts it. */
-  function kidsAt(
-    p: Place,
-  ): { formula: CalcTreeNode["formula"]; kids: CalcTreeNode[] } | null {
-    // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
-    if (typeof p.open !== "number") {
-      const got = caches.opened(p.open, p.depth - 1, new Set(p.seen));
-      if (!got) return null;
-      const w = withFormula(withWriterFormula(p.row, got.f), got.rows);
-      return {
-        formula: w.formula,
-        kids: place(p.node, w.rows, p.depth + 1, p.seen),
-      };
-    }
-    const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
-    if (!rows) return null;
-    // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
-    const from = nodes[p.open];
-    const xf = from && openXf.get(keyOf(from));
-    const w = withFormula(xf ? { ...p.row, xf } : p.row, rows);
-    const parent = { id: p.node.id, code: from ? callText(from) : null };
-    return {
-      formula: w.formula,
-      kids: place(parent, w.rows, p.depth + 1, [...p.seen, p.open]),
-    };
-  }
+  const { place, expand } = makePlaces({
+    nodes,
+    bugs,
+    keyOf,
+    openXf,
+    explain: (id, depth, seen) => pieces.explain(id, depth, seen),
+    opened: (o, depth, seen) => caches.opened(o, depth, seen),
+  });
 
   const value = valueOf(top.v);
   const root: CalcTreeNode = {
@@ -385,14 +324,7 @@ export function buildTree(
 
   return {
     root,
-    expand(nodeId) {
-      const p = places.get(nodeId);
-      if (!p) return null;
-      const built = kidsAt(p);
-      return built
-        ? { ...p.node, ...built }
-        : { ...p.node, flags: { ...p.node.flags, truncated: true }, kids: [] };
-    },
+    expand,
     conflicts: pieces.conflicts,
   };
 }
