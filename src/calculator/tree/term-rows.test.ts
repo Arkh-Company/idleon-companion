@@ -1,82 +1,21 @@
 // The branches of pieces.cjs rowOfTerm, exprRow, stepRef and tidy, over written steps: a stand-in context builds each
-// read and call as a plain row, so only the term's own rule is under test.
+// read and call as a plain row (term-fixture.ts), so only the term's own rule is under test.
 import { expect, test } from "vitest";
-import type { RecNode } from "../recording.ts";
-import { callText, row, valueOf } from "./rows.ts";
-import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
-import { makeTerms } from "./terms.ts";
-import { makeCodeFormulas } from "./code-formulas.ts";
+import type { Expr } from "./steps.ts";
 import { token } from "./formulas.ts";
-
-const nodes: RecNode[] = [
-  { id: 0, b: "Top", a: [], c: [1, 2], p: null, pxi: 0, v: 9 },
-  { id: 1, b: "B", a: [], c: [], p: 0, pxi: 0, v: 3 },
-  { id: 2, b: "C", a: [], c: [], p: 0, pxi: 0, v: 2 },
-  { id: 3, b: "ArbitraryCode5Inputs", a: [], c: [], p: 0, pxi: 0, v: 8 },
-];
-const finished: boolean[] = [];
-/** The terms of `block`'s steps (the first node by default), in the loop entry `entry` gives. */
-const termsOf = (block?: RecNode, entry: () => string | null = () => null) =>
-  makeTerms({
-    nodes,
-    // a read of a cache "DNSM.W…" has a writer to open into; any other read has none
-    read: (p, v) => ({
-      node: row({
-        pieceKey: p,
-        value: valueOf(v ?? null),
-        code: p,
-        kids: p.startsWith("DNSM.W") ? "lazy" : [],
-      }),
-      open: p.startsWith("DNSM.W") ? 9 : null,
-    }),
-    call: (k, v) => ({
-      node: row({
-        pieceKey: k.b,
-        value: valueOf(v ?? null),
-        code: callText(k),
-      }),
-      open: null,
-    }),
-    finish: (_v, rows, ones) => {
-      finished.push(ones);
-      return rows;
-    },
-    block: block ?? { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0 },
-    entry,
-    formulas: makeCodeFormulas(nodes, () => []),
-  });
-const terms = termsOf();
-const num = (v: number): Expr => ({ t: "num", v });
-const val = (v: number): Expr => ({ t: "val", v });
-const read = (p: string, v: number): Expr => ({ t: "read", p, v });
-const call = (id: number, v: number): Expr => ({ t: "call", id, v });
-const op = (o: string, l: Expr, r: Expr, v: number): Expr => ({
-  t: "op",
-  o,
-  l,
-  r,
-  v,
-});
-/** The rows of the last step, a sum unless `op` says otherwise, with the reads given. */
-function rowsOf(
-  steps: Step[],
-  reads: [string, number | string][] = [],
-  args: number[] = [],
-  top: "*" | "+" = "+",
-): Row[] {
-  return terms.stepTerms(
-    { args, steps, at: steps.length - 1 },
-    top,
-    new Map(reads),
-  );
-}
-const brief = (r: Row): unknown[] => [
-  r.node.name,
-  r.node.code,
-  r.node.value,
-  (r.group ?? []).map(brief),
-];
+import {
+  brief,
+  call,
+  finished,
+  fn,
+  num,
+  op,
+  read,
+  rowsOf,
+  terms,
+  termsOf,
+  val,
+} from "./term-fixture.ts";
 
 test("a number of an expression is named by its role: the cap of a min", () => {
   const min: Expr = {
@@ -97,12 +36,6 @@ test("a number of an expression is named by its role: the cap of a min", () => {
   ]);
 });
 
-const fn = (name: string, args: Expr[], v: number): Expr => ({
-  t: "fn",
-  name,
-  args,
-  v,
-});
 test.each<[string, Expr, string[]]>([
   [
     "the minimum of a max",
