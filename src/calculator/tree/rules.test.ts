@@ -40,6 +40,8 @@ import {
   BUBBLE_SCRATCH,
 } from "./above-renames.ts";
 import { STATIC_NAMES } from "./names-table.ts";
+import { FIX_NAMES } from "./kid-names.ts";
+import { SYSTEM_TAGS } from "./tags.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
@@ -87,6 +89,8 @@ const TABLES = {
   DUNGEON_GATE: [DUNGEON_GATE],
   BANNED: [BANNED],
   FISHING_SPOT: [FISHING_SPOT],
+  FIX_NAMES: Object.values(FIX_NAMES),
+  SYSTEM_TAGS,
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

@@ -13,6 +13,7 @@ import { gameBugOf } from "./game-bugs.ts";
 import type { GameBugRule } from "./game-bugs.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
+import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 
@@ -80,35 +81,56 @@ export function makePlaces(ctx: PlaceContext) {
     };
   }
 
-  /** Each row with its id, its group placed under it, a known game bug tagged; a lazy branch kept with its level. */
+  /** The level under row `r` of a level placed at `at`, from the call or cache `code`: its opening's or its group's. */
+  function levelOf(r: Row, at: At, code: string | null): Level | null {
+    if (r.open !== null) return below(r, at);
+    return r.group
+      ? { row: r, rows: r.group, at: { ...at, seen: r.seen ?? at.seen }, code }
+      : null;
+  }
+
+  /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
+  function placedLevel(id: string, lv: Level) {
+    const w = withFormula(lv.row, lv.rows);
+    return {
+      formula: w.formula,
+      kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
+    };
+  }
+
+  /**
+   * Each row with its id, its name and its level decided by the passes over the level under it (a group of the mould
+   * keeps its own), its group placed under it, a known game bug tagged; a lazy branch kept with its level.
+   */
   function placeAt(
     parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
     at: At,
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
-    return rows.map((r) => {
-      const { node, open, group } = r;
-      const level = open === null ? null : below(r, at);
+    return rows.map((r0) => {
+      const level0 = levelOf(r0, at, parent.code);
+      const { row: r, level } =
+        r0.node.role === "piece"
+          ? parentPasses(
+              r0,
+              level0,
+              (k, lv) => levelOf(k, lv.at, lv.code),
+              at.up,
+            )
+          : { row: r0, level: level0 };
+      const { node, open } = r;
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);
       const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
       const bug = gameBugOf(ctx.bugs, parent.code, node.code);
       // a branch built already has its ⓘ now; a group's rows are still the call's own (renamed with the level)
-      const built = group && withFormula(r, group);
+      const group = open === null ? level : null;
       const placed: CalcTreeNode = {
         id,
         ...node,
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
-        ...(built
-          ? {
-              formula: built.formula,
-              kids: placeAt({ id, code: parent.code }, built.rows, {
-                ...at,
-                seen: r.seen ?? at.seen,
-              }),
-            }
-          : {}),
+        ...(group ? placedLevel(id, group) : {}),
       };
       if (open !== null) places.set(id, { node: placed, level });
       return placed;
@@ -131,12 +153,7 @@ export function makePlaces(ctx: PlaceContext) {
       const { node, level } = p;
       if (!level)
         return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
-      const w = withFormula(level.row, level.rows);
-      return {
-        ...node,
-        formula: w.formula,
-        kids: placeAt({ id: node.id, code: level.code }, w.rows, level.at),
-      };
+      return { ...node, ...placedLevel(node.id, level) };
     },
   };
 }
