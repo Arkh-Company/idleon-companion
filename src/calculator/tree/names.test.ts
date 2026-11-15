@@ -2,13 +2,17 @@
 // table; nothing else gives the generic name and `unnamed` (FR-012a). The table's keys are taken from the table itself,
 // so this file holds no game text.
 import { afterEach, expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
 import { formulaFor } from "./formulas.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { at, read } from "./tree-fixture.ts";
 import {
+  callName,
   clean,
   nameOf,
+  NAMES_BY_LABEL,
+  pathName,
   resolveNames,
   transformText,
   useGameNames,
@@ -89,6 +93,45 @@ test.each([
     name ?? GENERIC_NAME,
     name && !name.startsWith("Working value") ? {} : { unnamed: true },
   ]);
+});
+
+test.each(NAMES_BY_LABEL)(
+  "the working value %s is named %s by its label, a name of its own",
+  (label, name) => {
+    for (const code of [`DNSM.${label}`, `DNSM.${label}[2]`]) {
+      const r = row({ pieceKey: "k", value: 1, code });
+      expect([r.name, r.flags]).toEqual([name, {}]);
+      expect(checkTree({ id: "x", ...r }, 1)).not.toBeNull();
+    }
+    // the label is the whole key: a longer one keeps the generic name
+    expect(
+      row({ pieceKey: "k", value: 1, code: `DNSM.${label}x` }).flags,
+    ).toEqual({ unnamed: true });
+  },
+);
+
+const recipeCall = NAME_RECIPES.find((r) => r.key.includes("("))?.key ?? "";
+test.each([
+  // no name, or the game's working value only: the game's path as it is (FR-012a)
+  ["Stats.q", undefined, "Stats.q"],
+  ["DNSM.SomeCache[2]", undefined, "DNSM.SomeCache[2]"],
+  // a name loses its tag in brackets and its " · …"; a bracket of numbers with an operation stays
+  [cacheRecipe?.key ?? "", "Invented cache (tag)", "Invented cache"],
+  [cacheRecipe?.key ?? "", "Invented cache · more", "Invented cache"],
+  [cacheRecipe?.key ?? "", "Invented cache (2 × 3)", "Invented cache (2 × 3)"],
+])("the ⓘ writes the read %s by its name", (path, name, term) => {
+  if (name) useGameNames(new Map([[path, name]]));
+  expect(pathName(path)).toBe(term);
+});
+
+test.each([
+  ['Invented("SomeMode", 0, 3)', undefined, "Some Mode 0, 3"],
+  ["Invented(2)", undefined, "Invented(2)"],
+  // a call's name loses any bracket at its end
+  [recipeCall, "Invented call (2 × 3)", "Invented call"],
+])("the ⓘ writes the call %s by its name", (text, name, term) => {
+  if (name) useGameNames(new Map([[text, name]]));
+  expect(callName(text)).toBe(term);
 });
 
 test.each([

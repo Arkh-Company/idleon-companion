@@ -7,6 +7,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
+import { NAMES_BY_LABEL } from "./names.ts";
 import type { Expr, Step } from "./steps.ts";
 import {
   at,
@@ -99,6 +100,31 @@ test.each<[string, Expr, number, [string, string] | null]>([
 ])("the expression of %s", (_name, e, v, formula) => {
   expect(expr(e, reads, v)).toEqual(formula);
   expectShown(formula);
+});
+
+test("a part with a name is written by its name until the row's parts exist (pieces.cjs pathName, callName)", () => {
+  const [label = "", name = ""] = NAMES_BY_LABEL[0] ?? [];
+  const nodes = [
+    node(0, "Invented", { a: ["SomeMode", 0, 0], v: 4 }),
+    node(1, "ArbitraryCode5Inputs", { a: ["bigBase", 4, 0, 10], v: 4 }),
+  ];
+  const e = op("*", read(`DNSM.${label}`, 2), call(0, 4), 8);
+  const pair = makeCodeFormulas(nodes, () => []).expr(e, reads, 8);
+  expect(pair).toEqual([
+    `${token(`c:DNSM.${label}@2`, name.replace(/\s*\(.*\)$/, ""))} × ${token('c:Invented("SomeMode", 0, 0)', "Some Mode")}`,
+    "2 × 4 = 8",
+  ]);
+  expectShown(pair);
+  // the curve block is "Curve"
+  expect(
+    makeCodeFormulas(nodes, () => []).expr(
+      op("+", call(1, 4), read("Stats.b", 1), 5),
+      reads,
+      5,
+    )?.[0],
+  ).toBe(
+    `${token('c:ArbitraryCode5Inputs("bigBase", 4, 0, 10)', "Curve")} + ${token("c:Stats.b@1", "Stats.b")}`,
+  );
 });
 
 test("an expression of one part is no ⓘ where two are asked", () => {

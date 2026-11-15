@@ -85,6 +85,24 @@ function modeInWords(args: readonly unknown[]): string | null {
   );
 }
 
+/** A game cache by its label, as the recorder labels it (build-tree.cjs `inputOf`): the label, then an entry or none. */
+const cacheOf = (label: string) =>
+  new RegExp(`^DNSM\\.${label}(?:\\..+|\\[\\d+\\])?$`);
+
+/** pieces.cjs NAMES_BY_LABEL: the working values of the game the bench names by their label, over the generic name. */
+export const NAMES_BY_LABEL: readonly (readonly [
+  label: string,
+  name: string,
+])[] = [
+  ["GurtBonuzzDN", "Best bonus of this talent among your characters"],
+  // the same variable then holds Vial Mastery and the vial boosts the call adds
+  ["CauldStatDNzz", "Vial bonus boosts (%)"],
+  ["ArcadBonDNz", "Arcade maxed doubler"],
+  ["GalleryDN2", "Trophy slot multiplier (podium level)"],
+  ["CalcTalentDN1", "Lowest skill level among the 9 skills"],
+  ["cardLvCalco", "Card stars"],
+];
+
 /** The rules by shape (names-008 rule 6), each with its proof by reference: the first whose test matches decides. */
 export const SHAPE_NAMES: readonly {
   test: RegExp;
@@ -93,6 +111,11 @@ export const SHAPE_NAMES: readonly {
   /** The recorder's label of a game's working value: shown, and still no name yet (the bench's generic name). */
   generic?: true;
 }[] = [
+  ...NAMES_BY_LABEL.map(([label, name]) => ({
+    test: cacheOf(label),
+    proof: "bench pieces.cjs NAMES_BY_LABEL",
+    name: () => name,
+  })),
   {
     test: /^getLOG\(/,
     proof: "bench pieces.cjs CALL_NAMES; N.js getLOG",
@@ -150,6 +173,27 @@ export const isGeneric = (code: string): boolean =>
   !STATIC_NAMES.has(code) &&
   !RECIPE_KEYS.has(code) &&
   !!SHAPE_NAMES.find((r) => r.test.test(code))?.generic;
+
+/** A term of the ⓘ for `code`: its name, else the game's path or call as it is (FR-012a). */
+const termName = (code: string): string | null =>
+  isGeneric(code) ? null : nameOf(code);
+
+/** pieces.cjs `pathName`: a read in the ⓘ by its name, its tag in brackets and its " · …" gone; else its path. */
+export function pathName(p: string): string {
+  const name = termName(p);
+  return name === null
+    ? p
+    : name
+        .replace(/ · .*$/, "")
+        .replace(/\s*\((?!.*\d.*[×÷+−]).*?\)\s*$/, "")
+        .trim();
+}
+
+/** pieces.cjs `callName`: a call in the ⓘ by its name, any bracket at its end gone; else the call as it is. */
+export function callName(text: string): string {
+  const name = termName(text);
+  return name === null ? text : name.replace(/\s*\(.*?\)\s*$/, "").trim();
+}
 
 /** What a name never holds (src/main/tree-check.ts refuses the whole tree for it): a table text with one stays out. */
 const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;

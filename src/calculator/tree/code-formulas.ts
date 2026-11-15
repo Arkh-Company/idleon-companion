@@ -2,13 +2,14 @@
 // `exprTexts`, `exprFormula`, `callFormula` and `familyFormula` from the bench at BASELINE-4. An expression is written
 // twice, with its parts as tokens (found later among the row's parts, tree/formulas.ts) and with its numbers, and kept
 // only when it gives the row's value; it is computed here, never by `Function` (FR-010: nothing of the code runs). A
-// part with no row is its path, or its call (FR-012a: no names before US1c). Left out: the bench's `OPEN_XF` (the ⓘ of
-// a worn item's total, NR-G 2, with the names of US1c) and the talent's curve read from its table when the recording
-// did not keep it (the 007 index), as in raw-passes.ts.
+// part with no row is its name (pieces.cjs `pathName`, `callName`), else its path or its call as it is (FR-012a). Left
+// out: the bench's `OPEN_XF` (the ⓘ of a worn item's total, NR-G 2, with the names of US1c) and the talent's curve read
+// from its table when the recording did not keep it (the 007 index), as in raw-passes.ts.
 import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3 } from "./curves.ts";
 import { token } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
+import { callName, pathName } from "./names.ts";
 import { callText } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { valPath } from "./val-path.ts";
@@ -65,8 +66,9 @@ export function makeCodeFormulas(
 ): CodeFormulas {
   const kidsOf = (k: RecNode) =>
     k.c.flatMap((c) => (nodes[c] ? [nodes[c]] : []));
-  const callName = (k: RecNode) =>
-    k.b === "ArbitraryCode5Inputs" ? "Curve" : callText(k);
+  // pieces.cjs callName: the curve block is "Curve"; any other call its name (tree/names.ts), else as it is
+  const termOfCall = (k: RecNode) =>
+    k.b === "ArbitraryCode5Inputs" ? "Curve" : callName(callText(k));
 
   function texts(e: Expr): { t: Texts; ops: number } | null {
     let ops = 0;
@@ -88,7 +90,7 @@ export function makeCodeFormulas(
           };
         if (x.t === "read")
           return {
-            names: token(`c:${x.p}@${String(v)}`, x.p),
+            names: token(`c:${x.p}@${String(v)}`, pathName(x.p)),
             nums: fx3(v),
             value: v,
           };
@@ -104,7 +106,7 @@ export function makeCodeFormulas(
             };
         }
         return {
-          names: token(`c:${k ? callText(k) : ""}`, k ? callName(k) : "?"),
+          names: token(`c:${k ? callText(k) : ""}`, k ? termOfCall(k) : "?"),
           nums: fx3(v),
           value: v,
         };
