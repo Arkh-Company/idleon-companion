@@ -3,11 +3,12 @@
 // is said by its name alone, and the ban flag tested for 0 says what it means. A name from the names table is taken
 // from the table itself, so this file holds no game text.
 import { expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
 import type { RecNode } from "../recording.ts";
-import { makeConditions } from "./conditions.ts";
+import { BAN_FLAG, makeConditions } from "./conditions.ts";
 import { classify } from "./kinds.ts";
 import { nameOf } from "./names.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { NAME_RECIPES, STATIC_NAMES } from "./names-table.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Check, Expr } from "./steps.ts";
@@ -22,11 +23,21 @@ const node = (id: number, b: string, a: RecNode["a"] = [], v = 1): RecNode => ({
   v,
 });
 const BAN = node(3, "RunCodeOfTypeXforThingY", ["TalentBannedforAllLV", 5], 0);
+/** A ban flag's call a recipe of the names table names (no game in this file: it keeps no name). */
+const banKey =
+  NAME_RECIPES.map((r) => r.key).find((k) => k.startsWith(BAN_FLAG.test)) ?? "";
+const RECIPE_BAN = node(
+  4,
+  "RunCodeOfTypeXforThingY",
+  JSON.parse(`[${/\((.*)\)$/.exec(banKey)?.[1] ?? ""}]`) as RecNode["a"],
+  0,
+);
 const NODES = [
   node(0, "Top"),
   node(1, "Invented", ["SomeMode", 0, 0], 3),
   node(2, "Invented", [2], 3),
   BAN,
+  RECIPE_BAN,
 ];
 const { condRows, mergeTests } = makeConditions(NODES);
 const own = (checks: Check[]) => ({ steps: [], checks });
@@ -113,6 +124,138 @@ test("[H1-MERGE] the ban flag of a talent tested for 0 is the talent counting fo
   expect(
     merged(cmp("==", call(1, 0), num(0)), rowOf(callText(NODES[1] ?? BAN), 0)),
   ).toEqual([["Some Mode = 0", null]]);
+});
+
+const shown = (r: Row | undefined) =>
+  r && checkTree({ id: "x", ...r.node }, 1) !== null;
+const nameOfCheck = (c: Check) => {
+  const r = condRows(node(0, "Top"), own([c]))[0];
+  return [r?.node.name, r?.node.flags, shown(r)];
+};
+const or = (l: Expr, r: Expr): Expr => ({ t: "op", o: "||", l, r, v: true });
+const gt = (l: Expr, v: number): Expr => ({
+  t: "op",
+  o: ">",
+  l,
+  r: num(v),
+  v: true,
+});
+
+test.each<[string, Check, string | null]>([
+  ["a named read", cmp(">", read(FLAG, 3), num(0)), `${named} > 0`],
+  ["a named call", cmp(">", call(1, 3), num(0)), "Some Mode > 0"],
+  ["a read with no name", cmp(">", read("Stats.q", 3), num(0)), null],
+  ["a call with no name", cmp(">", call(2, 3), num(0)), null],
+  [
+    "the game's working value",
+    cmp(">", read("DNSM.SomeCache", 3), num(0)),
+    null,
+  ],
+  [
+    "two comparisons, both named",
+    { v: true, e: or(gt(read(FLAG, 3), 0), gt(call(1, 3), 1)) },
+    `${named} > 0 or Some Mode > 1`,
+  ],
+  [
+    "two comparisons, one with no name",
+    { v: true, e: or(gt(read(FLAG, 3), 0), gt(read("Stats.q", 3), 1)) },
+    null,
+  ],
+  [
+    "a side of two reads, one with no name",
+    cmp(">", or(read(FLAG, 3), read("Stats.q", 3)), num(0)),
+    null,
+  ],
+  [
+    "a side of two reads, the first with no name",
+    cmp(">", or(read("Stats.q", 3), read(FLAG, 3)), num(0)),
+    null,
+  ],
+  [
+    "a side that negates a read with no name",
+    cmp("==", { t: "not", a: read("Stats.q", 0), v: true }, num(1)),
+    null,
+  ],
+  [
+    "a side that negates a named read",
+    cmp("==", { t: "not", a: read(FLAG, 0), v: true }, num(1)),
+    `not ${named} = 1`,
+  ],
+  [
+    "a side that compares a read with no name",
+    cmp("==", gt(read("Stats.q", 3), 0), num(1)),
+    null,
+  ],
+  [
+    "a side that compares a named read with one with no name",
+    cmp(
+      "==",
+      { t: "op", o: ">", l: read(FLAG, 3), r: read("Stats.q", 1), v: true },
+      num(1),
+    ),
+    null,
+  ],
+  [
+    "a named read compared with one with no name",
+    cmp(">", read(FLAG, 3), read("Stats.q", 1)),
+    null,
+  ],
+  [
+    "an expression around a read with no name",
+    cmp(
+      ">",
+      { t: "fn", name: "floor", args: [read("Stats.q", 3)], v: 3 },
+      num(0),
+    ),
+    null,
+  ],
+  [
+    "a comparison too long to be a name",
+    {
+      v: true,
+      e: Array.from({ length: 30 }, (_, i) => gt(read(FLAG, 30), i)).reduce(
+        (a, b) => or(a, b),
+      ),
+    },
+    null,
+  ],
+])(
+  "[spec Open Questions] the row of a check on %s is its comparison only when every side has a name",
+  (_name, c, name) => {
+    expect(nameOfCheck(c)).toEqual(
+      name === null
+        ? ["Game value", { unnamed: true }, true]
+        : [name, {}, true],
+    );
+  },
+);
+
+test("a yes/no read merged into its test is named by its name; the ban flag by what it means; else no name", () => {
+  const rowsOf = (c: Check, r: Row) =>
+    mergeTests(
+      node(0, "Top"),
+      [rowOf("Stats.a", 4)],
+      [r],
+      condRows(node(0, "Top"), own([c])),
+      own([]),
+    )
+      .filter((x) => x.node.leaf === "condition")
+      .map((x) => [x.node.name, x.node.flags]);
+  expect(rowsOf(cmp("==", read(FLAG, 1), num(1)), rowOf(FLAG, 1))).toEqual([
+    [named, {}],
+  ]);
+  const ban = rowOf(callText(BAN), 0);
+  expect(rowsOf(cmp("==", call(3, 0), num(0)), ban)).toEqual([
+    ["Counts for All-talent levels", {}],
+  ]);
+  // a ban flag a recipe names, over a game whose table gave no name: its test still says what it means
+  expect(rowOf(callText(RECIPE_BAN), 0).node.flags).toEqual({ unnamed: true });
+  expect(
+    rowsOf(cmp("==", call(4, 0), num(0)), rowOf(callText(RECIPE_BAN), 0)),
+  ).toEqual([["Counts for All-talent levels", {}]]);
+  expect(
+    rowsOf(cmp("==", read("Stats.q", 1), num(1)), rowOf("Stats.q", 1)),
+  ).toEqual([["Game value", { unnamed: true }]]);
 });
 
 test("a read of -1 tested for 1 keeps its comparison: only a 0 or a 1 is said by its name", () => {

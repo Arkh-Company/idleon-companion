@@ -2,13 +2,15 @@
 // `condSub`, `condRows`, `isFlagTest` and `mergeTests` [H1-MERGE] from the bench at BASELINE-4. A check on the player's
 // state is one Condition leaf, yes or no, with its subtype; a yes/no read and the test the block made of it are one
 // leaf. A side of a comparison is written by its name, else by its path or its call (FR-012a); a yes/no read merged into
-// its test "= 1" is said by its name, and the ban flag tested for 0 by what it means. Left out: the 007 dictionary's
-// names of a side (ownSearchName) and a skill's mastery rank by the skill's name (a game table). OPUS4-T2 (the outcome row of a lone check) is in once.ts, over the calls `t1` keeps.
+// its test "= 1" is said by its name, and the ban flag tested for 0 by what it means. The row is named by its comparison
+// when every side has a name, as in the bench (spec Open Questions); else it keeps the generic name. Left out: the 007
+// dictionary's names of a side (ownSearchName). OPUS4-T2 (the outcome row of a lone check) is in once.ts, over the
+// calls `t1` keeps.
 import type { CALC_CONDITION_KINDS } from "../tree-contract.ts";
 import type { RecNode } from "../recording.ts";
 import { classify } from "./kinds.ts";
-import { termName } from "./names.ts";
-import { callText, row } from "./rows.ts";
+import { isNameText, termName } from "./names.ts";
+import { callText, row, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import type { BlockSteps, Expr } from "./steps.ts";
@@ -118,8 +120,6 @@ function comparisons(e: Expr, out: Cmp[] = []): Cmp[] {
   return out;
 }
 
-/** A side of a comparison: its read's or its call's name, else its path or its call as it is (FR-012a). */
-const side = (code: string) => termName(code) ?? code;
 /** [H1-MERGE] the ban flag of a talent: tested for 0, the talent counts for the All-talent levels (N.js). */
 export const BAN_FLAG = {
   /** The ban flag's call, by the start of its code. */
@@ -130,7 +130,15 @@ export const BAN_FLAG = {
 
 export function makeConditions(nodes: readonly RecNode[]) {
   const t1 = new Set<number>();
-  function condText(e: Expr, n: RecNode, own: BlockSteps): string | null {
+  /** The text of a side; with `named`, null when a term of it has no name (the row then keeps the generic name). */
+  function condText(
+    e: Expr,
+    n: RecNode,
+    own: BlockSteps,
+    named = false,
+  ): string | null {
+    const side = (code: string) =>
+      named ? termName(code) : (termName(code) ?? code);
     // OPUS4-T1: numbers and the call's own argument only (a block with no step and one check): its number
     if (
       e.t === "op" &&
@@ -158,17 +166,18 @@ export function makeConditions(nodes: readonly RecNode[]) {
       return k ? side(callText(k)) : null;
     }
     if (e.t === "not") {
-      const a = condText(e.a, n, own);
+      const a = condText(e.a, n, own, named);
       return a ? `not ${a}` : null;
     }
     if (e.t === "op" && (e.o === "||" || e.o === "&&")) {
-      const l = condText(e.l, n, own);
-      const r = condText(e.r, n, own);
-      return l && r ? l + (e.o === "||" ? " or " : " and ") + r : (l ?? r);
+      const l = condText(e.l, n, own, named);
+      const r = condText(e.r, n, own, named);
+      if (l && r) return l + (e.o === "||" ? " or " : " and ") + r;
+      return named ? null : (l ?? r);
     }
     if (e.t === "op" && Object.hasOwn(CMP, e.o)) {
-      const l = condText(e.l, n, own);
-      const r = condText(e.r, n, own);
+      const l = condText(e.l, n, own, named);
+      const r = condText(e.r, n, own, named);
       return l && r ? `${l} ${CMP[e.o] ?? e.o} ${r}` : null;
     }
     if (e.t === "op" || e.t === "fn") {
@@ -207,11 +216,17 @@ export function makeConditions(nodes: readonly RecNode[]) {
       const cs = comparisons(q.e).filter(
         (c) => !(bare(c.l) && bare(c.r)) && !guard(c),
       );
-      const parts = cs.flatMap((c) => {
+      // (spec Open Questions) the row is its comparison when every side of it has a name, as in the bench
+      const said = cs.flatMap((c) => {
         const l = condText(c.l, n, own);
         const r = condText(c.r, n, own);
-        return l && r ? [`${l} ${CMP[c.o] ?? c.o} ${r}`] : [];
+        if (!l || !r) return [];
+        const named =
+          !!condText(c.l, n, own, true) && !!condText(c.r, n, own, true);
+        return [{ text: `${l} ${CMP[c.o] ?? c.o} ${r}`, named }];
       });
+      const parts = said.map((x) => x.text);
+      const allNamed = said.every((x) => x.named);
       const [first] = cs;
       if (!first || !parts.length) continue;
       const txt = parts.join(
@@ -229,6 +244,7 @@ export function makeConditions(nodes: readonly RecNode[]) {
           code: null,
           leaf: "condition",
           condition,
+          ...(allNamed && isNameText(txt) ? { name: txt } : {}),
         }),
         open: null,
         test: txt,
@@ -305,11 +321,19 @@ export function makeConditions(nodes: readonly RecNode[]) {
         !c.node.code && r.node.code && near(c.node.value, r.node.value)
           ? r.node.code
           : c.node.code;
-      return {
-        ...c,
-        ...(test === undefined ? {} : { test }),
-        node: { ...c.node, code },
-      };
+      // the row says its new test when it said its comparison (every side named), and the ban flag by what it means
+      const name =
+        test !== undefined && (test === BAN_FLAG.name || !c.node.flags.unnamed)
+          ? test
+          : null;
+      return withName(
+        {
+          ...c,
+          ...(test === undefined ? {} : { test }),
+          node: { ...c.node, code },
+        },
+        name,
+      );
     });
     const v = Number(n.v);
     if (
