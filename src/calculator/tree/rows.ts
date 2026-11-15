@@ -11,6 +11,7 @@ import {
 import type { Curve } from "./curves.ts";
 import { classify } from "./kinds.ts";
 import { formulaOut } from "./math.ts";
+import { nameOf } from "./names.ts";
 import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */
@@ -60,11 +61,13 @@ export const valueOf = (v: RecValue | undefined): number | boolean | null =>
 export const callText = (n: RecNode): string =>
   `${n.b}(${n.a.map((a) => JSON.stringify(a)).join(", ")})`;
 
+/** A row of a call or a read named by its code (tree/names.ts); with no name, the generic one and `unnamed`. */
 export function row(
   fields: Pick<CalcTreeNode, "pieceKey" | "value" | "code"> & Partial<Node>,
 ): Node {
+  const name = fields.code === null ? null : nameOf(fields.code);
   return {
-    name: GENERIC_NAME,
+    name: name ?? GENERIC_NAME,
     fmt: null,
     leaf: null,
     condition: null,
@@ -73,10 +76,10 @@ export function row(
     role: "piece",
     share: null,
     shareMode: null,
-    flags:
-      fields.value === null
-        ? { unnamed: true, unavailable: true }
-        : { unnamed: true },
+    flags: {
+      ...(name === null ? { unnamed: true } : {}),
+      ...(fields.value === null ? { unavailable: true } : {}),
+    },
     kids: [],
     ...fields,
   };

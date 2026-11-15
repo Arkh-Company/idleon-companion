@@ -195,7 +195,8 @@ test("a product that closes only by a 0 is no ⓘ: the game's expression is", ()
 });
 
 test.each<[string, string, [string, string] | null]>([
-  ["a cache path is no ⓘ", "DNSM.t", null],
+  // a cache path no rule names (FR-012a): its name is its path
+  ["a cache path is no ⓘ", "DNSM.t[x]", null],
   ["another path keeps it", "Stats.t", ["0 + Stats.t", "0 + 5 = 5"]],
 ])("a formula that only adds 0 to %s", (_name, path, formula) => {
   const n = at(5, {
@@ -320,40 +321,12 @@ test("a sum that counts its yes/no among its terms is said by its expression", (
   expectShown(at(7, { xweak: ["x", "9 × 1 = 7"] }), kids);
 });
 
+const RIFT = "1 if Rift level ≥ 15 and Working value of the game > 2, else 0";
 test.each<[number, number, number, [string, string]]>([
-  [
-    20,
-    4,
-    1,
-    [
-      "1 if Rift[0] ≥ 15 and DNSM.skillLvRanks[3] > 2, else 0",
-      "20 ≥ 15 and 4 > 2 → 1",
-    ],
-  ],
-  [
-    20,
-    1,
-    0,
-    [
-      "1 if Rift[0] ≥ 15 and DNSM.skillLvRanks[3] > 2, else 0",
-      "20 ≥ 15 and 1 ≤ 2 → 0",
-    ],
-  ],
-  [
-    10,
-    4,
-    0,
-    ["1 if Rift[0] ≥ 15 and DNSM.skillLvRanks[3] > 2, else 0", "10 < 15 → 0"],
-  ],
-  [
-    20,
-    4,
-    5,
-    [
-      "5 × (1 if Rift[0] ≥ 15 and DNSM.skillLvRanks[3] > 2, else 0)",
-      "5 × 1 = 5",
-    ],
-  ],
+  [20, 4, 1, [RIFT, "20 ≥ 15 and 4 > 2 → 1"]],
+  [20, 1, 0, [RIFT, "20 ≥ 15 and 1 ≤ 2 → 0"]],
+  [10, 4, 0, [RIFT, "10 < 15 → 0"]],
+  [20, 4, 5, [`5 × (${RIFT})`, "5 × 1 = 5"]],
 ])(
   "a skill's Rift bonus (deep-2): level %d, rank %d, value %d",
   (lv, rank, v, formula) => {

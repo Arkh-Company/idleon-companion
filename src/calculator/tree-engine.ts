@@ -8,7 +8,9 @@ import { inactiveMosaic } from "./inactive.ts";
 import { buildTree } from "./tree-build.ts";
 import type { TreeBuild } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
-import { bootRecorder } from "./tree-record.ts";
+import { readGameNames } from "./game-names.ts";
+import { useGameNames } from "./tree/names.ts";
+import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
 import { TREE_RECIPE } from "./tree-recipe.ts";
 import type { Recipe } from "./recording.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
@@ -55,6 +57,8 @@ export function createTreeEngine(
   recipe: Recipe = TREE_RECIPE,
 ): TreeEngine {
   const recorder = bootRecorder(code, pak);
+  // The names of the game's tables, once per game: the rows of every tree read them (tree/names.ts).
+  useGameNames(readGameNames(recorder.context, TREE_LIMITS.startMs));
   const lazyDnsm = lazyDnsmKeys(code);
   const rootOf = (id: string) =>
     Object.hasOwn(roots, id) ? roots[id] : undefined;

@@ -5,6 +5,7 @@ import type { Context } from "./boot.ts";
 import { rebuildScene } from "./inactive.ts";
 import { instrument } from "./instrument.ts";
 import type { Op } from "./instrument.ts";
+import namesReaderSource from "./names-reader.js?raw";
 import recorderPassSource from "./recorder-pass.js?raw";
 import recorderSource from "./recorder.js?raw";
 import type { Recipe, Recording } from "./recording.ts";
@@ -40,6 +41,7 @@ export function bootRecorder(
   const context = bootContext(source, pak, limits, [
     recorderSource,
     recorderPassSource,
+    namesReaderSource,
   ]);
   const { sandbox } = context;
   const run = (text: string, ms: number) => context.run(text, ms);

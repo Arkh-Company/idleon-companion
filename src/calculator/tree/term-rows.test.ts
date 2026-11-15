@@ -207,11 +207,16 @@ test("around a cache read with a writer, the read's row with the expression's va
       3,
     );
   const [open] = rowsOf([{ v: 4, e: op("+", around("DNSM.W.x"), num(1), 4) }]);
-  expect(open && brief(open)).toEqual(["Game value", "DNSM.W.x", 3, []]);
+  expect(open && brief(open)).toEqual([
+    "Working value of the game (W)",
+    "DNSM.W.x",
+    3,
+    [],
+  ]);
   const [parts] = rowsOf([{ v: 4, e: op("+", around("DNSM.N.x"), num(1), 4) }]);
   expect(parts?.group?.map((r) => r.node.name)).toEqual([
     "Base 1",
-    "Game value",
+    "Working value of the game (N)",
     "Percent to number (÷ 100)",
     "× 2",
   ]);

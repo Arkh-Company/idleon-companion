@@ -128,8 +128,9 @@ test("a cache read written by a call opens under it; one from the game is saved 
   const [game] = kidsOf(treeOf("TreeGameCache"));
   expect(game).toMatchObject({
     code: "DNSM.GameCache.v",
+    name: "Working value of the game (GameCache)",
     value: 5,
-    flags: { unnamed: true, fromCache: true },
+    flags: { fromCache: true },
     kids: [],
   });
 });

@@ -1,6 +1,8 @@
 // The version band (spec 008 FR-018; design.md C18): the names and tags were checked on one game's code, and only the
 // same code, by its sha256, hides the band. The bytes here are invented.
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { RULES_GAME_SHA, versionBand } from "./version-band.ts";
 
@@ -26,8 +28,14 @@ test("no game code read yet, or rules with no checked version, show the band", (
   expect(unchecked.checked()).toBe(false);
 });
 
-test("the rules' version is a sha256 or none", () => {
-  expect(RULES_GAME_SHA === null || /^[0-9a-f]{64}$/.test(RULES_GAME_SHA)).toBe(
-    true,
-  );
+test("the rules' version is the N.js the names table was checked on", () => {
+  // read as a file: the main never imports the calculator
+  const table = JSON.parse(
+    readFileSync(
+      join(import.meta.dirname, "../calculator/tree/names-static.json"),
+      "utf8",
+    ),
+  ) as { njsIndex: string };
+  expect(RULES_GAME_SHA).toMatch(/^[0-9a-f]{64}$/);
+  expect(RULES_GAME_SHA).toBe(table.njsIndex);
 });

@@ -391,6 +391,10 @@
       };
     },
 
+    // One family of the game's tables, for the tree worker's names (names-reader.js); undefined outside them.
+    gameTable: (family) =>
+      hasOwn(tables, family) ? tables[family] : undefined,
+
     // The Stats worker's: its numbers never read the live game's actors, whatever the mosaic carries.
     ignoreActors: () => {
       useActors = false;

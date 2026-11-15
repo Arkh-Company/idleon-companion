@@ -5,8 +5,8 @@
 // branch of its constants); then the state reads its steps do not show (tree/data-rows.ts) and its checks, a yes/no read
 // merged into its test (tree/conditions.ts), with the passes of `explainOnce0` (tree/once.ts and [F2-TOP]). A cache read
 // opens into what its writer computed for it (tree/caches.ts, over the loop entries of tree/entries.ts). A piece is
-// built once (tree/pieces.ts). A root of only the reads of its step shows that step (tree/root-step.ts). Names come
-// with US1c: until then a row has the generic name and `unnamed` (FR-012a).
+// built once (tree/pieces.ts). A root of only the reads of its step shows that step (tree/root-step.ts). A row of a call
+// or a read is named by its code (tree/names.ts); with no name, it has the generic one and `unnamed` (FR-012a).
 import type { Op } from "./instrument.ts";
 import type { RecNode, Recording, RecValue } from "./recording.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
@@ -96,12 +96,9 @@ export function buildTree(
       pieceKey: JSON.stringify([character, path]),
       value,
       code: path,
-      flags:
-        link?.[2] === "game"
-          ? { unnamed: true, fromCache: true }
-          : { unnamed: true },
       kids: w ? "lazy" : [],
     });
+    if (link?.[2] === "game") node.flags = { ...node.flags, fromCache: true };
     return {
       node,
       open: w && { path, value, writer: w.id, ...caches.now() },

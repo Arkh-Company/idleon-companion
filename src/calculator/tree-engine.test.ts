@@ -86,7 +86,7 @@ test("the root of the Drop Rate", () => {
     role: "root",
     share: null,
     shareMode: null,
-    flags: { unnamed: true },
+    flags: {},
     kids: [
       {
         id: "root/Game value",

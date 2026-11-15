@@ -116,6 +116,10 @@ lime.$scripts.N = function (_exports, $global) {
     ListThree: function () {
       return [64];
     },
+    // The texts the tree worker's names read (game-names.test.ts): invented, in the game's shapes.
+    ListNames: function () {
+      return [["FIRST_INVENTED_II", 7], ["second|half"]];
+    },
   };
   A["scripts.CustomMaps"] = {
     MapOne: function () {
@@ -125,6 +129,21 @@ lime.$scripts.N = function (_exports, $global) {
   A["scripts.CustomMapsREAL"] = {
     MapTwo: function () {
       return { v: 256 };
+    },
+    // A table of the game's shapes for the names' reader: a map inside, keys out of order (game-names.test.ts).
+    MapNames: function () {
+      var inner = new StringMap();
+      inner.h = { b: "BEE", a: [1] };
+      var list = ["ZERO"];
+      list.h = { 0: "NOT A MAP" };
+      return {
+        z: inner,
+        y: "WHY",
+        list: list,
+        empty: { h: null },
+        text: { h: "AITCH" },
+        both: { h: { q: 1 }, a: 2 },
+      };
     },
   };
 

@@ -4,10 +4,11 @@
 import { createHash } from "node:crypto";
 
 /**
- * The sha256 of the N.js the name and type rules were checked on. Null until the rules carry it (the names table of
- * the bench's BASELINE-4, T023): with no checked version, every tree shows the band.
+ * The sha256 of the N.js the name and type rules were checked on: the bench's BASELINE-4, the version of its 007 index
+ * the names table was exported over (T023, names-static.json `njsIndex`). Null would show the band on every tree.
  */
-export const RULES_GAME_SHA: string | null = null;
+export const RULES_GAME_SHA: string | null =
+  "0e47e87bbe36198cbecc41943ea3cd8949f51e9350a4c125d67e3b7de9771ba4";
 
 export function versionBand(rulesSha: string | null = RULES_GAME_SHA): {
   /** The game's code, as the tree host read it. */
