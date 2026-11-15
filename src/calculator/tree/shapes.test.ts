@@ -1,7 +1,8 @@
 // formulas.cjs `formulaOf` (A), its rename: a branch whose name is its own sum with numbers takes the name of the sum's
 // shape (SHAPES) when each number is one part and the sum gives its value; before the source's name (`fallback`).
 import { expect, test } from "vitest";
-import { atZero } from "./rows.ts";
+import { checkTree } from "../../main/tree-check.ts";
+import { atZero, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { shapeName } from "./shapes.ts";
 import type { Expr } from "./steps.ts";
@@ -40,6 +41,8 @@ test.each<[string, Expr, Row[], string]>([
   ],
 ])("bench formulas.cjs SHAPES: the shape %s", (_shape, e, group, name) => {
   expect(shaped(e, group)).toBe(name);
+  const node = row({ pieceKey: null, value: 1, code: null, name });
+  expect(checkTree({ id: "x", ...node }, 1)).not.toBeNull();
 });
 
 test("a shape names the branch only when each number is one part and the sum gives the value", () => {
