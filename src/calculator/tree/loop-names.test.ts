@@ -2,6 +2,7 @@
 // its turn made, and the row that only repeats the part), over the loop written by hand of loop-fixture.ts. A name from
 // the names table is taken from the table itself, so this file holds no game text.
 import { expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
 import { nameOf } from "./names.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { GENERIC_NAME } from "./rows.ts";
@@ -150,4 +151,20 @@ test("the row that only repeats its part (same name, same value, nothing under i
   });
   const [part] = kidsOf(loopRows(rec));
   expect([part?.name, brief(part)]).toEqual([nameOf(named), [["Stats.c", 5]]]);
+});
+
+test("a turn whose table row's text looks like code has no name, and the tree still passes the host's check", () => {
+  const rec = loopOf(
+    [
+      [0, 1],
+      [1, 2],
+    ],
+    [
+      ["CustomLists.Invented[2][0]", "Grants if (owned)", 1],
+      ["Boats[1][3]", 2, 4],
+    ],
+  );
+  const level = loopRows(rec);
+  expect(kidsOf(level).map((k) => k.name)).toEqual([GENERIC_NAME, "Boat 2"]);
+  expect(level && checkTree(level, 100)).not.toBeNull();
 });

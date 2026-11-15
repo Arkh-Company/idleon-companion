@@ -13,6 +13,7 @@ import {
   nameOf,
   NAMES_BY_LABEL,
   pathName,
+  isNameText,
   resolveNames,
   transformText,
   useGameNames,
@@ -219,6 +220,7 @@ test("a recipe whose table changed, or whose cell is no text, has no name: never
     invented("Code()", null, "CustomLists.D"),
     invented("Long()", null, "CustomLists.E"),
     invented("Empty()", null, "CustomLists.F"),
+    invented("Keyword()", null, "CustomLists.G"),
   ];
   const texts = new Map([
     ["CustomLists.A", "a"],
@@ -226,6 +228,7 @@ test("a recipe whose table changed, or whose cell is no text, has no name: never
     ["CustomLists.D", "x; y"],
     ["CustomLists.E", "x".repeat(201)],
     ["CustomLists.F", " "],
+    ["CustomLists.G", "Grants if (owned)"],
   ]);
   const names = resolveNames(
     (p) => texts.get(p.table) ?? null,
@@ -253,4 +256,23 @@ test("a list's hash is the whole list's, an item's or a monster's its entry's", 
   expect(partTable(part("ItemDefinitionsGET"))).toBe(
     "ItemDefinitionsGET.entry",
   );
+});
+
+test.each([
+  "Plain name",
+  "1 if you have it",
+  "Grants if (owned)",
+  "return{",
+  "x; y",
+  "a => b",
+  "Calls _customBlock_X",
+  "x".repeat(200),
+  "x".repeat(201),
+])("the name barrier takes %s as the host's check does", (text) => {
+  const host =
+    checkTree(
+      { id: "x", ...row({ pieceKey: null, value: 1, code: null, name: text }) },
+      1,
+    ) !== null;
+  expect(isNameText(text)).toBe(host);
 });

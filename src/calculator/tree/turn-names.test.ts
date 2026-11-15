@@ -122,6 +122,12 @@ test.each<[string, TurnRead[], string, string | null]>([
     null,
   ],
   [
+    "a row's text with a keyword before a bracket",
+    [["CustomLists.Invented[2][0]", "Grants if (owned)"]],
+    "DNSM.X",
+    null,
+  ],
+  [
     "a row's text too long",
     [["CustomLists.Invented[2][0]", "a".repeat(201)]],
     "DNSM.X",

@@ -195,9 +195,16 @@ export function callName(text: string): string {
   return name === null ? text : name.replace(/\s*\(.*?\)\s*$/, "").trim();
 }
 
-/** What a name never holds (src/main/tree-check.ts refuses the whole tree for it): a table text with one stays out. */
-const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;
+/**
+ * The copy of src/main/tree-check.ts `CODE_SIGNS` and `MAX_TEXT` (the calculator imports only its own files): what a
+ * name never holds, or the host refuses the whole tree. names.test.ts pins it to the host's check; change both together.
+ */
+const CODE_SIGNS =
+  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
 const MAX_NAME = 200;
+/** Whether a table's text may be a name: the host takes it (a text that fails stays out, never the whole tree). */
+export const isNameText = (s: string): boolean =>
+  s.length <= MAX_NAME && !CODE_SIGNS.test(s);
 
 /**
  * The recipes' names over the installed game: `textOf` gives the text of a part's table cell (null when it is no text),
@@ -220,8 +227,7 @@ export function resolveNames(
       /\{(\d)\}/g,
       (_, k: string) => texts[Number(k)] ?? "",
     );
-    if (name && name.length <= MAX_NAME && !NOT_A_NAME.test(name))
-      out.set(r.key, name);
+    if (name && isNameText(name)) out.set(r.key, name);
   }
   return out;
 }

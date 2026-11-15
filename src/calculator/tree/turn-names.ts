@@ -6,7 +6,7 @@
 // with no text stand in) and the bench's "Part N" (a part with no name keeps the generic one, FR-012a).
 import { isConstant } from "./formulas.ts";
 import type { Entry, TurnRead } from "./entries.ts";
-import { clean, termName } from "./names.ts";
+import { clean, isNameText, termName } from "./names.ts";
 import { near } from "./math.ts";
 import type { Node, Row } from "./rows.ts";
 
@@ -18,9 +18,6 @@ const index = (re: RegExp, rs: readonly TurnRead[]) =>
   rs.map(([p]) => re.exec(p)).find(Boolean);
 const valueOf = (rs: readonly TurnRead[], path: string) =>
   rs.find(([p]) => p === path)?.[1];
-
-/** What a name never holds (src/main/tree-check.ts refuses the whole tree for it), and its length. */
-const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;
 
 /**
  * pieces.cjs `turnName` with names-sailing.cjs TURN_NAMES first: each rule names the turn from the paths and values it
@@ -126,7 +123,7 @@ export const TURN_NAMES: readonly (Rule & {
         )
         .pop()?.[1];
       const name = typeof text === "string" ? clean(text) : "";
-      return name && name.length <= 200 && !NOT_A_NAME.test(name) ? name : null;
+      return name && isNameText(name) ? name : null;
     },
   },
 ];
