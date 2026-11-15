@@ -10,6 +10,7 @@ import {
 } from "./curves.ts";
 import type { Curve } from "./curves.ts";
 import { classify } from "./kinds.ts";
+import { levelRenames } from "./level-renames.ts";
 import { formulaOut } from "./math.ts";
 import { isGeneric, nameOf } from "./names.ts";
 import { kidShares, termOf } from "./share.ts";
@@ -186,10 +187,13 @@ function bySource(rows: Row[]): Row[] {
   return out;
 }
 
-/** A level's rows typed, with their shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0. */
+/**
+ * A level's rows with its context reads gone and its proven leaves named (tree/level-renames.ts), typed, with their
+ * shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0.
+ */
 export function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
   // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
-  const typed = bySource(rows).map((r) =>
+  const typed = bySource(levelRenames(rows)).map((r) =>
     r.node.kids === "lazy" || r.node.leaf || r.group
       ? r
       : { ...r, node: { ...r.node, ...classify(r.node) } },

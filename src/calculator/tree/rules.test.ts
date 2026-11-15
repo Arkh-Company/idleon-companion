@@ -27,6 +27,7 @@ import { SHAPE_NAMES } from "./names.ts";
 import { BRANCH_SHAPES } from "./shapes.ts";
 import { TABLE_TEXTS } from "./table-names.ts";
 import { RENAMES } from "./renames.ts";
+import { CARD_STAR, CONTEXT_READS, LEVEL_RENAMES } from "./level-renames.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
@@ -60,6 +61,9 @@ const TABLES = {
   BRANCH_SHAPES,
   TABLE_TEXTS: Object.values(TABLE_TEXTS),
   RENAMES,
+  CONTEXT_READS,
+  LEVEL_RENAMES,
+  CARD_STAR: [CARD_STAR],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

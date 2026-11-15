@@ -214,7 +214,12 @@ test("[Breeding] another value of the shiny pets keeps its own rows", () => {
 function treeOf(top: Spec, ...more: Spec[]): CalcTreeNode {
   const build = buildTree(
     recordingOf(
-      [{ b: "(root)", c: [1] }, { b: "Wrap", v: top.v, c: [2] }, top, ...more],
+      [
+        { b: "(root)", c: [1] },
+        { b: "Wrap", v: top.v ?? 0, c: [2] },
+        top,
+        ...more,
+      ],
       [],
       { root: 0 },
     ),
