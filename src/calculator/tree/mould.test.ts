@@ -2,7 +2,7 @@
 // with its bonus's name; a step the assembly would name by its shape has no proven name: `no name yet`.
 import { expect, test } from "vitest";
 import { mould } from "./mould.ts";
-import { GENERIC_NAME } from "./rows.ts";
+import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { branch, fixed, ones, read } from "./tree-fixture.ts";
 
@@ -20,6 +20,56 @@ test.each([
 ])("a step never named %s: no name yet", (name) => {
   expect(mould([fixed(name, 2)]).map(brief)).toEqual([
     [GENERIC_NAME, 2, { unnamed: true }],
+  ]);
+});
+
+test.each<[string, Row]>([
+  // a word that starts like a shape is not one
+  ["Captain Boat Speed bonus", fixed("Captain Boat Speed bonus", 2)],
+  // a proven name, on a read or on a fixed value of the game's tables
+  [
+    "Base damage",
+    {
+      node: row({
+        pieceKey: "k",
+        value: 2,
+        code: "Stats.d",
+        name: "Base damage",
+      }),
+      open: null,
+    },
+  ],
+  [
+    "Base damage",
+    {
+      node: row({
+        pieceKey: "k",
+        value: 2,
+        code: "Table[1]",
+        name: "Base damage",
+        leaf: "fixedValue",
+      }),
+      open: null,
+    },
+  ],
+])("a step named %s by its bonus keeps that name", (name, step) => {
+  expect(mould([step]).map(brief)).toEqual([[name, 2, {}]]);
+});
+
+test("a step inside a group at 0 is a step too", () => {
+  const zero: Row = {
+    node: row({
+      pieceKey: null,
+      value: 0,
+      code: null,
+      name: "At 0 (1)",
+      role: "atZero",
+    }),
+    open: null,
+    group: [fixed("Fixed +2", 0)],
+  };
+  expect(mould([zero])[0]?.group?.map(brief)).toEqual([
+    [GENERIC_NAME, 0, { unnamed: true }],
   ]);
 });
 

@@ -50,13 +50,13 @@ function short(r: Part): string {
     .trim();
 }
 /** The names the assembly gives a constant of the code by its place (terms.ts), never a bonus name. */
-export const CONSTANT_NAME =
-  /^(Base|Minus|Cap|Divided by|Exponent|Minimum|Fixed value|Fixed [+×]|× |Percent to number)/;
+const CONSTANT_NAME =
+  /^(?:(?:Base|Minus|Cap|Divided by|Exponent|Minimum|Fixed value|Percent to number)\b|Fixed [+×]|× )/;
+/** A constant of the code named by its place: a fixed value with no code of its own, never a bonus's proven name. */
+export const isConstant = (n: Pick<Row["node"], "leaf" | "code" | "name">) =>
+  n.leaf === "fixedValue" && n.code === null && CONSTANT_NAME.test(n.name);
 /** A constant of the code is written as its number; any other part by its term. */
-const asNum = (r: Row) =>
-  r.node.leaf === "fixedValue" && CONSTANT_NAME.test(r.node.name)
-    ? f(vOf(r))
-    : short(r);
+const asNum = (r: Row) => (isConstant(r.node) ? f(vOf(r)) : short(r));
 const isCurve = (r: Row) => r.node.name.startsWith("Curve: ");
 /** formulas.cjs `partName`: a curve is "curve of" its input. */
 function partName(r: Row): string {

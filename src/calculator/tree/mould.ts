@@ -2,7 +2,7 @@
 // of the root's block, in the game's order, as the assembly gives them (tree-build.ts), each with its bonus's name, and
 // never a name by its shape such as "Fixed +2" (the bench's V1 page, build-v1mold.cjs, is not this shape: no pools, no
 // system buckets). A step with no proven name says so: the generic name and `unnamed` (FR-012a).
-import { CONSTANT_NAME } from "./formulas.ts";
+import { isConstant } from "./formulas.ts";
 import { GENERIC_NAME } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
@@ -14,7 +14,7 @@ const GROUPS = new Set(["atZero", "atOne"]);
  */
 export function mould(rows: readonly Row[]): Row[] {
   return rows.map((r) => {
-    const own = CONSTANT_NAME.test(r.node.name)
+    const own = isConstant(r.node)
       ? {
           ...r,
           node: {
