@@ -1,11 +1,9 @@
-// The rows a block's steps give (spec 008, T022): the port of pieces.cjs `numRole`, `rowOfTerm`, `exprRow`, `stepRef`
-// and `tidy` from the bench at BASELINE-4 (the expression helpers are in expr.ts, `valPath` in val-path.ts, the opening
-// of a cache read in caches.ts). Each term of a step is a row: a number of
-// the code is a fixed value named by its place, a read or a call is the row of that source, a value with no source is
-// the read that holds it, the argument the caller passed or the earlier step that made it. Left out until their own
-// phase: the names (US1c: a row has the generic name), the 007 dictionary (the scratch and literal branches never run
-// without it), the game's own passes (US1b-3) and the cut of the other sources of a branch (R1_CAP: a lazy branch has
-// no size yet). The ×1 group of `tidy` is rows.ts `timesOne`, applied when a level is finished.
+// The rows a block's steps give (spec 008, T022): the port of pieces.cjs `numRole`, `rowOfTerm`, `exprRow` and `stepRef`
+// from the bench at BASELINE-4 (the expression helpers are in expr.ts, `valPath` in val-path.ts, `tidy` in tidy.ts, the
+// opening of a cache read in caches.ts). Each term of a step is a row: a number of the code is a fixed value named by its
+// place, a read or a call is the row of that source, a value with no source is the read that holds it, the argument the
+// caller passed or the earlier step that made it. Left out: the 007 dictionary (the scratch and literal branches never
+// run without it) and the cut of the other sources of a branch (R1_CAP: a lazy branch has no size yet).
 import type { RecNode, RecValue } from "../recording.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { row, valueOf } from "./rows.ts";
@@ -13,6 +11,7 @@ import type { Row } from "./rows.ts";
 import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
+import { fixed, hasKids, tidy } from "./tidy.ts";
 import { any, BUBBLE_VALUES, valPath } from "./val-path.ts";
 import {
   codeTable,
@@ -66,17 +65,6 @@ function numRole(v: unknown, parent: Expr | null, side: number): string {
     return Number(v) === 100 ? "Percent to number (÷ 100)" : `Divided by ${n}`;
   return `Fixed value ${n}`;
 }
-const fixed = (name: string, v: unknown): Row => ({
-  node: row({
-    pieceKey: null,
-    value: valueOf(v as RecValue),
-    code: null,
-    name,
-    leaf: "fixedValue",
-    flags: {},
-  }),
-  open: null,
-});
 const earlier = (v: V): Row => ({
   node: row({
     pieceKey: null,
@@ -95,9 +83,6 @@ const branch = (v: V, group: Row[]): Row => ({
   group,
 });
 export type Terms = ReturnType<typeof makeTerms>;
-export const hasKids = (r: Row) =>
-  r.open !== null || (r.group?.length ?? 0) > 0 || r.node.kids === "lazy";
-
 export function makeTerms(ctx: TermContext) {
   const { nodes } = ctx;
   let turn: Turn | null = null;
@@ -310,60 +295,6 @@ export function makeTerms(ctx: TermContext) {
     if (xf) return { ...r, xf };
     const weak = ctx.formulas.expr(e, reads, e.v, 1);
     return weak ? { ...r, xweak: weak } : r;
-  }
-
-  /**
-   * pieces.cjs `tidy` (the ×1 group aside): a value from an earlier step that another row already shows, or that is 0
-   * outside a product, leaves; one equal to a number the caller passed is that number; a cache read with nothing under
-   * it beside another row of the same value leaves.
-   */
-  function tidy(
-    rows: Row[],
-    op: string | null,
-    args: readonly RecValue[],
-  ): Row[] {
-    const isEarlier = (r: Row) => !!r.earlier && !hasKids(r);
-    const passed = args.filter((x) => typeof x === "number");
-    const out = rows
-      .filter(
-        (r) =>
-          !(
-            isEarlier(r) &&
-            rows.some(
-              (o) =>
-                o !== r && !isEarlier(o) && near(o.node.value, r.node.value),
-            )
-          ),
-      )
-      .filter(
-        (r) =>
-          !(
-            isEarlier(r) &&
-            Math.abs(Number(r.node.value)) < 1e-12 &&
-            op !== "*"
-          ),
-      )
-      .map((r): Row => {
-        if (!isEarlier(r) || !passed.some((x) => near(x, r.node.value)))
-          return r;
-        return fixed(
-          `Value passed by the calling block: ${num(r.node.value)}`,
-          r.node.value,
-        );
-      });
-    return out.filter(
-      (r) =>
-        !(
-          (r.node.code ?? "").startsWith("DNSM.") &&
-          !hasKids(r) &&
-          out.some(
-            (o) =>
-              o !== r &&
-              near(o.node.value, r.node.value) &&
-              (hasKids(o) || !(o.node.code ?? "").startsWith("DNSM.")),
-          )
-        ),
-    );
   }
 
   return {

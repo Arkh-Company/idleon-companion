@@ -34,7 +34,7 @@ import {
   skillRankRows,
   TURN_KINDS,
 } from "./loop-parts.ts";
-import { hasKids } from "./terms.ts";
+import { hasKids } from "./tidy.ts";
 import type { Terms } from "./terms.ts";
 import { any } from "./val-path.ts";
 
