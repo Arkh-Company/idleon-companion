@@ -33,7 +33,15 @@ test("a call that only passes one value on opens into what it passes", () => {
       { b: "(root)", c: [1] },
       { b: "Total", v: 5, c: [2] },
       { b: "Pass", v: 5, c: [3] },
-      { b: "Inner", v: 5, r: [["Level", 5]] },
+      // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+      {
+        b: "Inner",
+        v: 5,
+        r: [
+          ["Level", 5],
+          ["Tier", 1],
+        ],
+      },
     ],
     [],
     { root: 0 },
@@ -43,6 +51,7 @@ test("a call that only passes one value on opens into what it passes", () => {
   expect(pass?.code).toBe("Pass()");
   expect(kidsOf(build.expand(pass?.id ?? "")).map((k) => k.code)).toEqual([
     "Level",
+    "Tier",
   ]);
 });
 

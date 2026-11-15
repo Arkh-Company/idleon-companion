@@ -611,7 +611,8 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeScale.h.v = 0;
     for (var i = 0; i < s.TreeTwins.length; i++)
       d.TreeScale.h.v = d.TreeScale.h.v + Math.round(s.TreeTwins[i] * 1.5);
-    d.TreeScale.h.v = d.TreeScale.h.v * s.TreeBase;
+    // a factor of two reads (a factor of one read with its value would be that read, pieces.cjs structurePass)
+    d.TreeScale.h.v = d.TreeScale.h.v * (s.TreeBase + s.TreeOwned);
     return 0;
   };
   Blocks._customBlock_TreeScaleRead = function () {

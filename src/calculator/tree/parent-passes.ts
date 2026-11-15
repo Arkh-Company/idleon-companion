@@ -1,10 +1,12 @@
 // The passes of pieces.cjs `finish` that look at a row and the level under it (spec 008, T023; spec Open Questions,
 // 15/11): when a row gets its place, the level under it is built (tree/places.ts), and these passes decide the row's
 // name, its one child and its rows' names over it, in the bench's order: rule 67 of `rename`, fixNames
-// (tree/kid-names.ts), nametagGrade and stampBonus (tree/parent-renames.ts).
+// (tree/kid-names.ts), nametagGrade (tree/parent-renames.ts), structurePass (tree/one-child.ts) and stampBonus.
 import type { Above } from "./above-renames.ts";
 import { aboveText, collapsed, kidNames, shinyLevel } from "./kid-names.ts";
 import { nametagGrade, petsEarlier, stampBonus } from "./parent-renames.ts";
+import { near } from "./math.ts";
+import { bare, leafOf, MERGES, nameFrom } from "./one-child.ts";
 import type { Level } from "./places.ts";
 import { withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -54,10 +56,28 @@ export function parentPasses(
   n = withName(n, shinyLevel(n, lv.rows));
   const tag = nametagGrade(n, kidNames(lv.rows, n.node, up.map(aboveText)));
   n = withName(n, tag.name);
-  const at = { ...lv, rows: tag.kids };
+  let at: Level = { ...lv, rows: tag.kids };
+  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a group of the
+  // parts at 0 or at ×1 is the app's (FR-014), no child to merge into
+  for (let i = 0; i < MERGES; i++) {
+    const [c] = at.rows;
+    if (
+      at.rows.length !== 1 ||
+      c?.node.role !== "piece" ||
+      !near(c.node.value, n.node.value)
+    )
+      break;
+    if (bare(c)) return { row: leafOf(n, c), level: null };
+    // a child whose level is cut stays, and says so
+    const next = under(c, at);
+    if (!next) break;
+    n = absorb(nameFrom(n, c), c);
+    at = next;
+  }
+  const done = at;
   n = withName(
     n,
-    stampBonus(n, at.rows, (k) => under(k, at)?.rows ?? []),
+    stampBonus(n, done.rows, (k) => under(k, done)?.rows ?? []),
   );
-  return { row: n, level: at };
+  return { row: n, level: done };
 }

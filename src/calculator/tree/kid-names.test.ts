@@ -58,6 +58,18 @@ test.each<[string, string, string]>([
   expect(isNameText(r?.node.name ?? "")).toBe(true);
 });
 
+test("[fixNames 4] a parent with no proven name renames no child (R14: a generic name names nothing)", () => {
+  const generic = { name: "Game value", code: null, flags: { unnamed: true } };
+  expect(
+    names(kidNames([named("Game value (At 0 (1))")], generic, [])),
+  ).toEqual(["Game value (At 0 (1))"]);
+  expect(
+    names(
+      kidNames([named("Game value (At 0 (1))")], { ...generic, flags: {} }, []),
+    ),
+  ).toEqual(["At 0 (1)"]);
+});
+
 test("[fixNames 4] the parent is compared without its system's emoji, its parentheses and what follows a dot", () => {
   expect(
     names(
@@ -218,8 +230,8 @@ const levels: Record<number, Row[]> = {
   3: [named("Endless win, slot 1", 2), named("Endless win, slot 1", 4)],
   // a pet's shiny EXP under a row named for it
   4: [named("Shiny EXP", 40, "Breeding[22][3]"), named("Base levels", 19)],
-  // a system's call two levels above
-  5: [opening("Inner", 6)],
+  // a system's call two levels above (another value: a row whose one child has its value would be that child)
+  5: [opening("Inner", 6, 5)],
   6: [named("Bonus per level (Grimoire)", 2), named("Other", 4)],
 };
 

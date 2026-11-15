@@ -102,18 +102,28 @@ function otherOf(read: number | string) {
     p: 2,
     pxi: 9,
     v: 4,
-    r: [["Lv", 4]],
+    // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+    r: [
+      ["Lv", 4],
+      ["Tier", 1],
+    ],
   });
   rec.writes.unshift({ path: "DNSM.Other.v", node: 3, v: 4, seq: 1, xi: 0 });
   return rec;
 }
 
 test("a turn with no step of its part opens the cache it read with that value", () => {
-  expect(brief(loopRows(otherOf(4)))).toEqual([["Lv", 4]]);
+  expect(brief(loopRows(otherOf(4)))).toEqual([
+    ["Lv", 4],
+    ["Tier", 1],
+  ]);
 });
 
 test("[R1-PATCH, A R2] a turn's read kept as text is the same number: it opens the cache that wrote it", () => {
-  expect(brief(loopRows(otherOf("4")))).toEqual([["Lv", 4]]);
+  expect(brief(loopRows(otherOf("4")))).toEqual([
+    ["Lv", 4],
+    ["Tier", 1],
+  ]);
 });
 
 test("a cache written once opens into the writer's step that gave the value", () => {
@@ -178,10 +188,12 @@ test("[OPUS4-4] a bubble read inside its own turn opens that turn once more, as 
   // the total before the last turn is the bubble's first write, read in that turn
   const first = open(build, p);
   expect(brief(first)).toEqual([[p, 2]]);
-  // inside the turn being walked the same entry opens once more, then the loop stops
-  const again = build.expand(kidsOf(first)[0]?.id ?? "");
-  expect(brief(again)).toEqual([[p, 2]]);
-  expect(build.expand(kidsOf(again)[0]?.id ?? "")?.flags.truncated).toBe(true);
+  // inside the turn being walked the same entry opens once more, then the loop stops; the turn's one row is that
+  // opening, with its value, so the row is it (pieces.cjs structurePass): its own row is the read once more, cut
+  expect(first?.flags.truncated).toBeUndefined();
+  const again = kidsOf(first)[0];
+  expect([again?.code, again?.value, again?.kids]).toEqual([p, 2, "lazy"]);
+  expect(build.expand(again?.id ?? "")?.flags.truncated).toBe(true);
 });
 
 test("a turn whose step of its part is only numbers of the code opens the call of the turn with that value", () => {
@@ -211,7 +223,16 @@ test("a turn whose step of its part is only numbers of the code opens the call o
           ["A", 6, 5],
         ],
       },
-      { b: "Part", v: 6, pxi: 6, r: [["Lv", 6]] },
+      // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+      {
+        b: "Part",
+        v: 6,
+        pxi: 6,
+        r: [
+          ["Lv", 6],
+          ["Tier", 1],
+        ],
+      },
     ],
     [
       { path: "DNSM.Acc.v", node: 2, v: 6, seq: 1, xi: 4 },
@@ -220,7 +241,10 @@ test("a turn whose step of its part is only numbers of the code opens the call o
     { root: 0 },
   );
   const second = kidsOf(open(buildTree(rec, 0, ops), "DNSM.Acc.v"))[1];
-  expect(brief(second)).toEqual([["Lv", 6]]);
+  expect(brief(second)).toEqual([
+    ["Lv", 6],
+    ["Tier", 1],
+  ]);
 });
 
 /**
@@ -258,9 +282,25 @@ function nilStepOf(call: boolean) {
           ["DNSM.Nil.v", 1, 6],
         ],
       },
-      { b: "Part", v: 2, pxi: 7, r: [["Lv", 2]] },
+      // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+      {
+        b: "Part",
+        v: 2,
+        pxi: 7,
+        r: [
+          ["Lv", 2],
+          ["Tier", 1],
+        ],
+      },
       { b: "Nil", v: 1 },
-      { b: "Other", v: 2, r: [["Lv", 2]] },
+      {
+        b: "Other",
+        v: 2,
+        r: [
+          ["Lv", 2],
+          ["Tier", 1],
+        ],
+      },
     ],
     [
       { path: "DNSM.Nil.v", node: 4, v: 1, seq: 1 },
@@ -274,9 +314,15 @@ function nilStepOf(call: boolean) {
 }
 
 test("a turn whose step is ×1 but for numbers of the code, with a cache that opens to nothing, opens the call of the turn", () => {
-  expect(brief(nilStepOf(true))).toEqual([["Lv", 2]]);
+  expect(brief(nilStepOf(true))).toEqual([
+    ["Lv", 2],
+    ["Tier", 1],
+  ]);
 });
 
 test("a turn whose step has only a cache that opens to nothing opens the other cache it read with the turn's value", () => {
-  expect(brief(nilStepOf(false))).toEqual([["Lv", 2]]);
+  expect(brief(nilStepOf(false))).toEqual([
+    ["Lv", 2],
+    ["Tier", 1],
+  ]);
 });

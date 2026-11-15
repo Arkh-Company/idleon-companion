@@ -40,8 +40,14 @@ test("a piece called twice opens with the first call's rows, and the other place
   const build = buildTree(PIECES, 0);
   const [first, second] = kidsOf(build.root);
   // The second place first: the piece does not depend on which one the player opens first.
-  expect(brief(build.expand(second?.id ?? ""))).toEqual([["Level", 3]]);
-  expect(brief(build.expand(first?.id ?? ""))).toEqual([["Level", 3]]);
+  expect(brief(build.expand(second?.id ?? ""))).toEqual([
+    ["Level", 3],
+    ["Tier", 1],
+  ]);
+  expect(brief(build.expand(first?.id ?? ""))).toEqual([
+    ["Level", 3],
+    ["Tier", 1],
+  ]);
   build.expand(second?.id ?? "");
   expect(build.conflicts).toEqual(['[0,"Part",1]']);
 });
@@ -50,16 +56,25 @@ test("a second place that gives the same rows is no conflict", () => {
   const build = buildTree(SAME_TWICE, 0);
   const second = kidsOf(build.root)[1];
   expect(second?.code).toBe("Part(1)");
-  expect(brief(build.expand(second?.id ?? ""))).toEqual([["Level", 3]]);
+  expect(brief(build.expand(second?.id ?? ""))).toEqual([
+    ["Level", 3],
+    ["Tier", 1],
+  ]);
   expect(build.conflicts).toEqual([]);
 });
 
 test("a call that only read the cache its twin filled opens as the twin, with no conflict (FR-015)", () => {
   const hit = open("Hit(2)");
-  expect(brief(hit.node)).toEqual([["Level", 5]]);
+  expect(brief(hit.node)).toEqual([
+    ["Level", 5],
+    ["Tier", 1],
+  ]);
   // the fixture's own conflict, counted when the root's level is placed (each row's level is built then)
   expect(hit.build.conflicts).toEqual(['[0,"Part",1]']);
-  expect(brief(open("Wrap()", "Hit(2)").node)).toEqual([["Level", 5]]);
+  expect(brief(open("Wrap()", "Hit(2)").node)).toEqual([
+    ["Level", 5],
+    ["Tier", 1],
+  ]);
 });
 
 test("a call whose value is not the twin's within 1e-9 is no twin (pieces.cjs near)", () => {
@@ -74,14 +89,21 @@ test("a call whose value is not the twin's within 1e-9 is no twin (pieces.cjs ne
 });
 
 test("a cache read opens into the call that wrote it", () => {
-  expect(brief(open("DNSM.Pool.total").node)).toEqual([["Stash", 9]]);
+  expect(brief(open("DNSM.Pool.total").node)).toEqual([
+    ["Stash", 9],
+    ["Tier", 1],
+  ]);
 });
 
 test("a setup call with a piece's key keeps its own rows and never becomes the piece", () => {
   const { build, node } = open("DNSM.Side.v");
-  expect(brief(node)).toEqual([["Level", 99]]);
+  expect(brief(node)).toEqual([
+    ["Level", 99],
+    ["Tier", 1],
+  ]);
   expect(brief(build.expand(kidsOf(build.root)[0]?.id ?? ""))).toEqual([
     ["Level", 3],
+    ["Tier", 1],
   ]);
   // only the fixture's own conflict, counted when the root's level is placed
   expect(build.conflicts).toEqual(['[0,"Part",1]']);
@@ -95,7 +117,10 @@ test("ids follow the path, with #n on a repeat, and every opened row can open ag
   expect(wrap?.id).toBe("root/Game value#3");
   const hit = kidsOf(wrap)[0];
   expect(hit?.id).toBe("root/Game value#3/Game value");
-  expect(brief(build.expand(hit?.id ?? ""))).toEqual([["Level", 5]]);
+  expect(brief(build.expand(hit?.id ?? ""))).toEqual([
+    ["Level", 5],
+    ["Tier", 1],
+  ]);
 });
 
 test("an id that is not a lazy branch expands to nothing", () => {
@@ -166,7 +191,15 @@ test("every leaf gets its type and its reason; a branch has none", () => {
       { b: "Const", a: [2], v: 9 },
       { b: "Label", v: "(text)" },
       { b: "Gate", v: 0, q: [["Invented.flag", true]] },
-      { b: "Deep", v: 1, r: [["Level", 1]] },
+      // a branch: two reads (one read with its value would make it that leaf, pieces.cjs structurePass)
+      {
+        b: "Deep",
+        v: 1,
+        r: [
+          ["Level", 1],
+          ["Tier", 2],
+        ],
+      },
     ],
     [],
     { root: 0, fromGame: ["Ready"] },
@@ -195,7 +228,8 @@ test("a call under the twin it read from opens as the piece, not cut", () => {
   const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
-      { b: "Loop", a: [1], v: 2, c: [2] },
+      // with a read beside its twin: a call whose one row has its value would be that row (pieces.cjs structurePass)
+      { b: "Loop", a: [1], v: 2, c: [2], r: [["Tier", 1]] },
       { b: "Loop", a: [1], v: 2, r: [["DNSM.Loop.v", 2, 0]] },
     ],
     [{ path: "DNSM.Loop.v", node: 1, v: 2, seq: 0 }],
@@ -204,5 +238,8 @@ test("a call under the twin it read from opens as the piece, not cut", () => {
   const build = buildTree(rec, 0);
   const inner = build.expand(kidsOf(build.root)[0]?.id ?? "");
   expect(inner?.flags.truncated).toBeUndefined();
-  expect(brief(inner)).toEqual([["Loop(1)", 2]]);
+  expect(brief(inner)).toEqual([
+    ["Loop(1)", 2],
+    ["Tier", 1],
+  ]);
 });

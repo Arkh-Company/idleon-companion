@@ -127,13 +127,20 @@ export const aboveText = (a: { name: string; code: string | null }) =>
 
 /**
  * The rows under the row `parent`, named as fixNames names them: an Endless win's cycles, then (4) by the parent's
- * name, then (5) by the texts of the rows `above` the parent and the parent's own.
+ * name (unless it has no proven name), then (5) by the texts of the rows `above` the parent and the parent's own.
  */
 export function kidNames(
   rows: readonly Row[],
-  parent: { name: string; code: string | null },
+  parent: {
+    name: string;
+    code: string | null;
+    flags?: { unnamed?: boolean };
+  },
   above: readonly string[],
 ): Row[] {
   const texts = [...above, aboveText(parent)];
-  return cycles(rows).map((r) => bySystem(byParent(r, parent.name), texts));
+  // (4) a parent with no proven name says nothing its children could repeat (R14)
+  const own = (r: Row) =>
+    parent.flags?.unnamed ? r : byParent(r, parent.name);
+  return cycles(rows).map((r) => bySystem(own(r), texts));
 }

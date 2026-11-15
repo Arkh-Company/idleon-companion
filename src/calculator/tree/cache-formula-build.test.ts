@@ -160,8 +160,10 @@ test("a value with no source, named by a cache, takes the writer's ⓘ; by a bub
   expect([read?.code, read?.formula]).toEqual([bubble, null]);
 });
 
-const MIN_GAME_VALUE = (a: number) => [
-  ["min", "(", "Game value", ",", "10", ")"],
+// the turn's one row is the min, with the turn's value: the turn is it (pieces.cjs structurePass), so its term is the
+// read under it, A
+const MIN_A = (a: number) => [
+  ["min", "(", "A", ",", "10", ")"],
   [a, 10, a],
 ];
 
@@ -183,7 +185,7 @@ test("a cache one turn of a loop made (the turn before was replaced) has that tu
     [3, 2],
     [5, 4],
   ]);
-  expect(read?.formula).toEqual(MIN_GAME_VALUE(5));
+  expect(read?.formula).toEqual(MIN_A(5));
 });
 
 test("each part of a cache a loop added to has the ⓘ of what its turn added", () => {
@@ -209,8 +211,8 @@ test("each part of a cache a loop added to has the ⓘ of what its turn added", 
     [7, 8],
   ]);
   expect(kidsOf(read).map((k) => [k.value, k.formula])).toEqual([
-    [3, MIN_GAME_VALUE(3)],
-    [4, MIN_GAME_VALUE(4)],
+    [3, MIN_A(3)],
+    [4, MIN_A(4)],
   ]);
 });
 

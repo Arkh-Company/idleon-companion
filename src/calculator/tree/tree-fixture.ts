@@ -44,12 +44,21 @@ export function recordingOf(
 
 /**
  * The pieces case: `Part(1)` is called twice under the root with different rows (a conflict), `Hit(2)` reads the cache
- * its twin under `Wrap()` filled, and the setup's own `Part(1)` writes a cache the root reads.
+ * its twin under `Wrap()` filled, and the setup's own `Part(1)` writes a cache the root reads. Each of them reads a
+ * `Tier` too: a call whose one row has its value would be that row (pieces.cjs structurePass, tree/one-child.ts).
  */
 export const PIECES = recordingOf(
   [
     { b: "(setup: game helpers)", c: [1, 9] },
-    { b: "FillPool", a: [-1], v: 9, r: [["Stash", 9]] },
+    {
+      b: "FillPool",
+      a: [-1],
+      v: 9,
+      r: [
+        ["Stash", 9],
+        ["Tier", 1],
+      ],
+    },
     { b: "(root)", c: [3] },
     {
       b: "Total",
@@ -62,20 +71,45 @@ export const PIECES = recordingOf(
         ["Stats.label", "(text)"],
       ],
     },
-    { b: "Part", a: [1], v: 3, r: [["Level", 3]] },
     {
       b: "Part",
       a: [1],
       v: 3,
       r: [
         ["Level", 3],
+        ["Tier", 1],
+      ],
+    },
+    {
+      b: "Part",
+      a: [1],
+      v: 3,
+      r: [
+        ["Level", 3],
+        ["Tier", 1],
         ["Extra", 0],
       ],
     },
     { b: "Wrap", v: 6, c: [7] },
-    { b: "Hit", a: [2], v: 5, r: [["Level", 5]] },
+    {
+      b: "Hit",
+      a: [2],
+      v: 5,
+      r: [
+        ["Level", 5],
+        ["Tier", 1],
+      ],
+    },
     { b: "Hit", a: [2], v: 5, r: [["DNSM.Twin.v", 5, 1]] },
-    { b: "Part", a: [1], v: 99, r: [["Level", 99]] },
+    {
+      b: "Part",
+      a: [1],
+      v: 99,
+      r: [
+        ["Level", 99],
+        ["Tier", 1],
+      ],
+    },
   ],
   [
     { path: "DNSM.Pool.total", node: 1, v: 9, seq: 0 },
@@ -85,13 +119,22 @@ export const PIECES = recordingOf(
   { setup: 0, root: 2 },
 );
 
-/** `Part(1)` called twice under the root with the same reads: the second place gives the piece's rows. */
+/** `Part(1)` called twice under the root with the same reads (two, as in PIECES): the second place gives the piece's rows. */
+const twoReads = {
+  b: "Part",
+  a: [1],
+  v: 3,
+  r: [
+    ["Level", 3],
+    ["Tier", 1],
+  ] as [string, number][],
+};
 export const SAME_TWICE = recordingOf(
   [
     { b: "(root)", c: [1] },
     { b: "Total", v: 9, c: [2, 3] },
-    { b: "Part", a: [1], v: 3, r: [["Level", 3]] },
-    { b: "Part", a: [1], v: 3, r: [["Level", 3]] },
+    twoReads,
+    { ...twoReads, r: [...twoReads.r] },
   ],
   [],
   { root: 0 },

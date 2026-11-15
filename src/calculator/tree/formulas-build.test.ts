@@ -166,7 +166,8 @@ test("the expression around a call with the call's value, when nothing else give
           [0, 10],
         ],
       },
-      { b: "Calc", v: 5, r: [["X", 5]] },
+      // its read with another value: a call whose one row has its value would be that row (pieces.cjs structurePass)
+      { b: "Calc", v: 5, r: [["X", 4]] },
     ],
     [],
     { root: 0 },

@@ -59,11 +59,17 @@ test("a turn with a function beside the running total opens into it; a write tha
     [true, 4, "x"],
   ]);
   const [, second, factor] = kidsOf(scale);
-  expect(brief(kidsOf(second)[0])).toEqual([
+  // the turn's one row is the function with the turn's value: the turn is that function, and opens into its parts
+  // (pieces.cjs structurePass)
+  expect(brief(second)).toEqual([
     ["TreeTwins[1]", 3],
     [null, 1.5],
   ]);
-  expect(brief(factor)).toEqual([["TreeBase", 4]]);
+  // the factor reads TreeBase + TreeOwned (0) in the invented game, so it keeps its own rows
+  expect(brief(factor)).toEqual([
+    ["TreeBase", 4],
+    [null, 0],
+  ]);
 });
 
 test("a cache the block computed in one of its own steps opens into that step", () => {
@@ -114,7 +120,17 @@ const BY_VALUE = recordingOf(
       ],
     },
     { b: "Part", a: [0], v: 0 },
-    { b: "Part", a: [1], v: 5, pxi: 2, r: [["Lv", 5]] },
+    // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+    {
+      b: "Part",
+      a: [1],
+      v: 5,
+      pxi: 2,
+      r: [
+        ["Lv", 5],
+        ["Tier", 1],
+      ],
+    },
     { b: "(setup: game helpers)" },
   ],
   [
@@ -128,6 +144,7 @@ const BY_VALUE = recordingOf(
 test("a read with no writer recorded opens into the loop whose write has that very value", () => {
   expect(brief(open(buildTree(BY_VALUE, 0), "DNSM.Acc.v"))).toEqual([
     ["Lv", 5],
+    ["Tier", 1],
   ]);
 });
 
@@ -154,7 +171,16 @@ const BUBBLE: Recording = recordingOf(
       ],
       r: [["DNSM.AlchBubbles.a", 8, 1]],
     },
-    { b: "Part", a: [1], v: 8, r: [["DNSM.AlchBubbles.a", 8, 1]] },
+    // two reads: a call whose one row has its value would be that row (pieces.cjs structurePass)
+    {
+      b: "Part",
+      a: [1],
+      v: 8,
+      r: [
+        ["DNSM.AlchBubbles.a", 8, 1],
+        ["Tier", 1],
+      ],
+    },
     { b: "Part", a: [2], v: 24, pxi: 2, r: [["Lv", 24]] },
   ],
   [
@@ -167,6 +193,7 @@ const BUBBLE: Recording = recordingOf(
 test("[OPUS4-4] a bubble read by its own loop opens into the turn that wrote that value", () => {
   expect(brief(open(buildTree(BUBBLE, 0), "DNSM.AlchBubbles.a"))).toEqual([
     ["DNSM.AlchBubbles.a", 8],
+    ["Tier", 1],
   ]);
 });
 
