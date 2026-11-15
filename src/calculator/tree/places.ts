@@ -2,7 +2,8 @@
 // repeat), its group placed under it and a known game bug tagged (FR-016). A row with more under it has its level built
 // when it gets its place, only to decide its own name and its one child (spec Open Questions, 15/11); that level is kept
 // by the row's id, and the player's expand places it then, with no second build, over the same recording
-// (tree-build.ts). A level is renamed by the rows above it before its ⓘ (tree/above-renames.ts).
+// (tree-build.ts). A level is renamed by the rows above it before its ⓘ (tree/above-renames.ts), and has one leaf of each
+// code and value when it is placed (tree/one-of-each.ts).
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
@@ -13,6 +14,7 @@ import { gameBugOf } from "./game-bugs.ts";
 import type { GameBugRule } from "./game-bugs.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
+import { oneOfEach } from "./one-of-each.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -108,7 +110,10 @@ export function makePlaces(ctx: PlaceContext) {
     at: At,
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
-    return rows.map((r0) => {
+    // FR-016: a source a game-bug rule marks stays repeated
+    const marked = (code: string) =>
+      gameBugOf(ctx.bugs, parent.code, code) !== null;
+    return oneOfEach(rows, marked).map((r0) => {
       const level0 = levelOf(r0, at, parent.code);
       const { row: r, level } =
         r0.node.role === "piece"

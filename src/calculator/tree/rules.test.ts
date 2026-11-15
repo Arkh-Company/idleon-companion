@@ -43,6 +43,7 @@ import { STATIC_NAMES } from "./names-table.ts";
 import { FIX_NAMES } from "./kid-names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import { PARENT_RENAMES } from "./parent-renames.ts";
+import { ONE_OF_EACH } from "./one-of-each.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
@@ -93,6 +94,7 @@ const TABLES = {
   FIX_NAMES: Object.values(FIX_NAMES),
   SYSTEM_TAGS,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),
+  ONE_OF_EACH: [ONE_OF_EACH],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
