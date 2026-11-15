@@ -58,15 +58,16 @@ test("a read with a name, around one source, is the read's row: with no name, th
 });
 
 test("the branch of a named read's parts takes the read's name, unless a product's other part is no constant", () => {
+  // formulas.cjs formulaOf (A): 1 + (x ÷ 100) is named by its shape before any source name, named read or not
   const pct = (p: string) =>
     term(op("+", num(1), op("/", read(p, 50), num(100), 0.5), 1.5));
-  expect(shown(pct(NAMED))).toEqual([named, {}, undefined]);
+  expect(shown(pct(NAMED))).toEqual(["Multiplier", {}, undefined]);
   expect(passes(pct(NAMED))).toBe(true);
-  expect(shown(pct("Stats.q"))).toEqual([
-    GENERIC_NAME,
-    { unnamed: true },
-    undefined,
-  ]);
+  expect(shown(pct("Stats.q"))).toEqual(["Multiplier", {}, undefined]);
+  // a sum of no shape keeps the read's name
+  expect(
+    shown(term(op("+", op("/", read(NAMED, 50), num(100), 0.5), num(2), 2.5))),
+  ).toEqual([named, {}, undefined]);
   // a product of the read by another source is no part named for the read
   expect(
     term(op("*", read(NAMED, 5), read("Stats.b", 40), 200))?.node.name,
@@ -84,13 +85,23 @@ test("the branch of a named read's parts takes the read's name, unless a product
 
 test.each<[string, Expr, [string, object, string | undefined]]>([
   [
-    "one source with a name: its name, and its name as the source",
+    "one source with a name, in a shape: the shape's name, and its name as the source",
     op("+", num(1), op("/", call(4, 3), num(100), 0.03), 1.03),
+    ["Multiplier", {}, "Some Mode"],
+  ],
+  [
+    "one source with a name, in no shape: its name, and its name as the source",
+    op("+", op("/", call(4, 3), num(100), 0.03), num(2), 2.03),
     ["Some Mode", {}, "Some Mode"],
   ],
   [
-    "one source with no name: the generic name",
+    "one source with no name, in a shape: the shape's name",
     op("+", num(1), op("/", call(1, 3), num(100), 0.03), 1.03),
+    ["Multiplier", {}, undefined],
+  ],
+  [
+    "one source with no name, in no shape: the generic name",
+    op("+", op("/", call(1, 3), num(100), 0.03), num(2), 2.03),
     [GENERIC_NAME, { unnamed: true }, undefined],
   ],
   [
@@ -162,6 +173,30 @@ test("a def of an expression is named by its first source; with no name, the gen
     { unnamed: true },
     undefined,
   ]);
+  // in a shape, a def with a source keeps its source's name (or none); with no source, its shape's
+  const pct = (src: Expr): Expr => ({
+    t: "def",
+    e: op("+", num(1), op("/", src, num(100), 0.03), 1.03),
+    v: 1.03,
+  });
+  expect(shown(term(pct(read("Stats.q", 3))))).toEqual([
+    GENERIC_NAME,
+    { unnamed: true },
+    undefined,
+  ]);
+  expect(shown(term(pct(num(3))))).toEqual(["Multiplier", {}, undefined]);
+});
+
+test("formulas.cjs r1src: two branches of one shape name are told apart by their first source", () => {
+  const pct = (id: number, v: number) =>
+    term(op("+", num(1), op("/", call(id, v), num(100), v / 100), 1 + v / 100));
+  const [a, b] = [pct(4, 3), pct(5, 2)];
+  const rows = a && b ? finish(2, [a, b], false) : [];
+  expect(rows.map((r) => r.node.name)).toEqual([
+    "Multiplier (Some Mode)",
+    "Multiplier",
+  ]);
+  expect(rows.every(passes)).toBe(true);
 });
 
 test("formulas.cjs r1src: a branch that shares its name with another part takes its source's name after it", () => {

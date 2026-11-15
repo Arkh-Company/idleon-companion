@@ -3,10 +3,10 @@
 // order: deep-2 (RiftSkillBonus), `formulaOf` (the product or the sum of the parts), the game's expression around the
 // row (`xformula`, its parts found by their code), `ifFormula` and `checksFormula` (a value picked by a yes/no), the
 // weak expression (`xweak`), then `lastFormula` (the forms the game uses most). A part's term is its name, or the game's
-// path when it has no name yet (FR-012a); a Condition's is its comparison. Left out: `formulaOf` (A), a branch named by
-// its own sum with numbers (the app names it after US1c; its sum is the row's `xformula` already); `lastFormula` on a
-// curve call (the curve block is a branch of its own with its formula, rows.ts); `borrowStep` (it reads a game table
-// the recording does not keep); the renames by shape (US1c). The R1 source names are rows.ts `finish`'s.
+// path when it has no name yet (FR-012a); a Condition's is its comparison. Left out: the ⓘ of `formulaOf` (A), a branch
+// named by its own sum with numbers (its sum is the row's `xformula` already; its rename by shape is tree/shapes.ts's,
+// when the branch is built); `lastFormula` on a curve call (the curve block is a branch of its own with its formula,
+// rows.ts); `borrowStep` (it reads a game table the recording does not keep). The R1 source names are rows.ts `finish`'s.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { formulaOut } from "./math.ts";
@@ -18,18 +18,18 @@ import { termOf } from "./share.ts";
 export type Pair = [names: string, numbers: string];
 
 /** formulas.cjs `near`: equal within 1e-6 of the second number, relative. */
-const near = (a: number, c: number) =>
+export const near = (a: number, c: number) =>
   Math.abs(a - c) <= 1e-6 * Math.max(1, Math.abs(c));
 const f = (v: number) => fx3(v);
 /** What a part is read by: its node and, for a Condition, its comparison. */
 type Part = Pick<Row, "node" | "test">;
-const vOf = (r: Part): number => {
+export const vOf = (r: Part): number => {
   const v = r.node.value;
   return typeof v === "boolean" ? Number(v) : (v ?? NaN);
 };
-const isCond = (r: Part) => r.node.leaf === "condition";
+export const isCond = (r: Part) => r.node.leaf === "condition";
 /** The group of the parts at ×1 (the bench's "N more parts at ×1"). */
-const isGroup = (r: Row) => r.node.role === "atOne";
+export const isGroup = (r: Row) => r.node.role === "atOne";
 const kidsOf = (r: Row) => r.group ?? [];
 /** What the bench's `k.name` is here: a Condition's comparison, a row's term (its name, or its path with no name). */
 const nameOf = (r: Part) => (isCond(r) && r.test ? r.test : termOf(r.node));

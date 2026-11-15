@@ -8,17 +8,9 @@ import type { RecNode, RecValue } from "../recording.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { callText, row, valueOf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import {
-  adds,
-  exprText,
-  firstSrc,
-  flat,
-  isFormulaName,
-  readValueIn,
-  stateSrc,
-  topOp,
-} from "./expr.ts";
+import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
+import { branchName } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -94,9 +86,6 @@ const branch = (v: V, group: Row[]): Row => ({
   open: null,
   group,
 });
-/** formulas.cjs `fallback`: the branch of an expression takes `name` when its own name would be its sum with numbers. */
-const fallback = (r: Row, e: Expr, name: string | null) =>
-  isFormulaName(exprText(e)) ? withName(r, name) : r;
 export type Terms = ReturnType<typeof makeTerms>;
 export function makeTerms(ctx: TermContext) {
   const { nodes } = ctx;
@@ -248,8 +237,11 @@ export function makeTerms(ctx: TermContext) {
           return branch(e.v, [r]);
         return r && { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
       }
-      // the branch of an expression is named by its first source
-      const r = withName(exprRow(x, d, reads), sourceName(firstSrc(x)));
+      // the branch of an expression is named by its first source; with none, by its shape
+      const src = firstSrc(x);
+      const r = src
+        ? withName(exprRow(x, d, reads), sourceName(src))
+        : branchName(exprRow(x, d, reads), x, null);
       return { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
     }
     if (e.t === "num")
@@ -272,7 +264,7 @@ export function makeTerms(ctx: TermContext) {
     const s = firstSrc(e);
     // a read with no name of its own (pieces.cjs readName) that is no cache: the branch of the parts
     if (!s || (s.t === "read" && !s.p.startsWith("DNSM.") && !nameOf(s.p)))
-      return exprRow(e, d, reads);
+      return branchName(exprRow(e, d, reads), e, null);
     if (s.t === "read") {
       const read = ctx.read(s.p, e.v);
       const rv = readValueIn(e, s.p);
@@ -297,8 +289,11 @@ export function makeTerms(ctx: TermContext) {
           e.t === "op" && e.o === "*"
             ? [e.l, e.r].find((x) => !(x.t === "read" && x.p === s.p))
             : undefined;
-        const r = exprRow(e, d, reads);
-        return !other || other.t === "num" ? fallback(r, e, termName(s.p)) : r;
+        return branchName(
+          exprRow(e, d, reads),
+          e,
+          !other || other.t === "num" ? termName(s.p) : null,
+        );
       }
       return { ...read, writerF: "sameValue" };
     }
@@ -321,8 +316,8 @@ export function makeTerms(ctx: TermContext) {
     ) {
       const reads2 = new Map(reads);
       for (const [rp, rv] of k.r ?? []) if (!reads2.has(rp)) reads2.set(rp, rv);
-      // [G5B-DEPTH] the branch is the call's row, no extra level; its name is its source's for one source, else its
-      // shape's, and its first source's name tells two such branches apart (formulas.cjs r1src)
+      // [G5B-DEPTH] the branch is the call's row, no extra level; its name is its sum's shape's, else its source's for
+      // one source, else its count of sources', and its first source's name tells two such names apart (formulas.cjs r1src)
       const ns = stateSrc(e);
       const own = termName(callText(k));
       const pct =
@@ -332,7 +327,7 @@ export function makeTerms(ctx: TermContext) {
         Number(e.l.v) === 1 &&
         e.r.t === "op" &&
         e.r.o === "/";
-      const shape =
+      const byCount =
         ns <= 1
           ? own
           : pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
@@ -340,7 +335,7 @@ export function makeTerms(ctx: TermContext) {
             : e.t === "op" && e.o === "+"
               ? `Sum of ${String(ns)} sources`
               : `Formula of ${String(ns)} sources`;
-      const r = fallback(exprRow(e, d - 1, reads2, !adds(e)), e, shape);
+      const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
       return own ? { ...r, r1src: own } : r;
     }
     // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the
