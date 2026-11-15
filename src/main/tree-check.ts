@@ -9,12 +9,12 @@ import {
 } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
 
-const MAX_TEXT = 200;
+export const MAX_TEXT = 200;
 /** A node's id is its path of names, with `#n` on repeats: a deep row is long. The window's `nodeId` has the same ceiling. */
 export const MAX_NODE_ID = 2_000;
 /** What code looks like and a name, a table text or a game path never does: a keyword counts only before `(` or `{`,
  * because a player's sentence may say "1 if you have it". */
-const CODE_SIGNS =
+export const CODE_SIGNS =
   /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
 /** The `code` field is the game's call or path: there, a keyword alone is code too. */
 const KEYWORD = /\b(?:function|return|var|let|const|new|if)\b/;

@@ -2,7 +2,7 @@
 // table; nothing else gives the generic name and `unnamed` (FR-012a). The table's keys are taken from the table itself,
 // so this file holds no game text.
 import { afterEach, expect, test } from "vitest";
-import { checkTree } from "../../main/tree-check.ts";
+import { checkTree, CODE_SIGNS, MAX_TEXT } from "../../main/tree-check.ts";
 import { formulaFor } from "./formulas.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -14,6 +14,8 @@ import {
   NAMES_BY_LABEL,
   pathName,
   isNameText,
+  MAX_NAME,
+  NAME_SIGNS,
   resolveNames,
   transformText,
   useGameNames,
@@ -275,4 +277,12 @@ test.each([
       1,
     ) !== null;
   expect(isNameText(text)).toBe(host);
+});
+
+test("the name barrier is the host's copy: the same signs of code and the same length", () => {
+  expect([NAME_SIGNS.source, NAME_SIGNS.flags, MAX_NAME]).toEqual([
+    CODE_SIGNS.source,
+    CODE_SIGNS.flags,
+    MAX_TEXT,
+  ]);
 });

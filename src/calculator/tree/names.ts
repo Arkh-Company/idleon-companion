@@ -197,14 +197,14 @@ export function callName(text: string): string {
 
 /**
  * The copy of src/main/tree-check.ts `CODE_SIGNS` and `MAX_TEXT` (the calculator imports only its own files): what a
- * name never holds, or the host refuses the whole tree. names.test.ts pins it to the host's check; change both together.
+ * name never holds, or the host refuses the whole tree. names.test.ts compares the two; change both together.
  */
-const CODE_SIGNS =
+export const NAME_SIGNS =
   /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
-const MAX_NAME = 200;
+export const MAX_NAME = 200;
 /** Whether a table's text may be a name: the host takes it (a text that fails stays out, never the whole tree). */
 export const isNameText = (s: string): boolean =>
-  s.length <= MAX_NAME && !CODE_SIGNS.test(s);
+  s.length <= MAX_NAME && !NAME_SIGNS.test(s);
 
 /**
  * The recipes' names over the installed game: `textOf` gives the text of a part's table cell (null when it is no text),
