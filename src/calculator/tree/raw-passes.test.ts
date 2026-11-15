@@ -1,9 +1,12 @@
 // The game's own passes of pieces.cjs explainRaw at BASELINE-4, over recordings written by hand: each block's rows are
 // the ones the bench writes from the game's code, in its order, with their types.
 import { expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
 import { instrument } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
+import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
+import { isNameText } from "./name-text.ts";
 import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 type Spec = Partial<RecNode> & Pick<RecNode, "b">;
@@ -202,4 +205,102 @@ test("[Breeding] another value of the shiny pets keeps its own rows", () => {
       r: [["Breeding[1][2]", 500]],
     }).map(([code, value]) => [code, value]),
   ).toEqual([["Breeding[1][2]", 500]]);
+});
+
+/**
+ * The block `top` opened under the root's own call (the root's first level is the mould's, tree/mould.ts), with `more`
+ * calls after it: their ids start at 3.
+ */
+function treeOf(top: Spec, ...more: Spec[]): CalcTreeNode {
+  const build = buildTree(
+    recordingOf(
+      [{ b: "(root)", c: [1] }, { b: "Wrap", v: top.v, c: [2] }, top, ...more],
+      [],
+      { root: 0 },
+    ),
+    0,
+  );
+  const [first] = kidsOf(build.root);
+  const block = first?.role === "piece" ? first : kidsOf(first)[0];
+  const open = build.expand(block?.id ?? "");
+  if (!open) throw new Error("the block does not open");
+  return open;
+}
+/** Each row of a level, a group's rows in it, as [name, flags]. */
+const named = (n: CalcTreeNode): [string, CalcTreeNode["flags"]][] =>
+  kidsOf(n).flatMap((k) =>
+    k.role === "piece" ? [[k.name, k.flags]] : named(k),
+  );
+
+test.each([
+  [
+    "[Companions] an owned companion",
+    treeOf({
+      b: "Companions",
+      a: ["c1"],
+      v: 3,
+      r: [["DNSM.CompanionBon[c1]", 3]],
+    }),
+    ["Owned", "Companion bonus"],
+  ],
+  [
+    "[Companions] a companion not owned",
+    // (a block with no read, no step and no call is a constant of the game: it never opens)
+    treeOf({ b: "Companions", a: ["c2"], v: 0, r: [["Owned.c2", 0]] }),
+    ["Owned"],
+  ],
+  [
+    "[GetTalentNumber] a talent with no points",
+    treeOf({
+      b: "GetTalentNumber",
+      a: [1, 5],
+      v: 0,
+      r: [["SkillLevels[5]", 0]],
+    }),
+    ["Points in the talent > 0", "Points in the talent"],
+  ],
+  [
+    "[Breeding] a shiny pet's level",
+    treeOf(
+      {
+        b: "Breeding",
+        a: ["SpecialPassives", "Lv", 2],
+        v: 9,
+        c: [3],
+        r: [["Breeding[1][2]", 500]],
+      },
+      { b: "MenagerieStuff", v: 1 },
+    ),
+    [
+      "Shiny EXP",
+      "Base levels",
+      "Menagerie unlock 11 (+10 levels)",
+      "Requirement: (1 + L^1.6) × 1.7^L",
+    ],
+  ],
+  [
+    "[CardLv] a card's stars",
+    treeOf(
+      {
+        b: "RunCodeOfTypeXforThingY",
+        a: ["CardLv", "cardZ"],
+        v: 5,
+        c: [3, 4],
+        r: [["Cards[0].cardZ", 12]],
+      },
+      { b: "RiftStuff", v: 1 },
+      { b: "Spelunk", v: 0 },
+    ),
+    [
+      "Cards collected",
+      "Base stars",
+      "Rift 5th star unlocked",
+      "Spelunking 6th star unlocked",
+    ],
+  ],
+])("%s: its rows have the bench's names", (_case, root, names) => {
+  // (the block's other reads follow, as data rows)
+  expect(named(root).slice(0, names.length)).toEqual(names.map((n) => [n, {}]));
+  expect(names.every(isNameText)).toBe(true);
+  expect(checkTree(root, 100)).not.toBeNull();
 });

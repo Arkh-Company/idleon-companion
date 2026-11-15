@@ -1,8 +1,8 @@
 // The game's own passes of pieces.cjs `explainRaw` (spec 008, T022) from the bench at BASELINE-4: blocks whose rows the
 // recording cannot give from their steps, written from the game's code instead, each a rule with its proof. A
 // companion is owned or not, with its bonus; a talent with no points stops before its curve; a shiny pet's level and a
-// card's stars are tests the game repeats level by level. Their rows keep the generic name until US1c, which names them;
-// Golden Food is tree/gold-food.ts; left out: the talent's curve (a table of the 007 index).
+// card's stars are tests the game repeats level by level. Each row has the bench's English name (a companion's bonus the
+// one `structurePass` gives it); Golden Food is tree/gold-food.ts; left out: the talent's curve (a table of the 007 index).
 import type {
   CALC_CONDITION_KINDS,
   CALC_LEAF_KINDS,
@@ -16,7 +16,8 @@ import type { Reads } from "./val-path.ts";
 export const RAW_PASSES: readonly { test: RegExp; proof: string }[] = [
   {
     test: /^Companions /,
-    proof: "bench pieces.cjs explainRaw Companions; N.js Companions",
+    proof:
+      "bench pieces.cjs explainRaw Companions; bench pieces.cjs structurePass; N.js Companions",
   },
   {
     test: /^GetTalentNumber /,
@@ -33,6 +34,7 @@ export const RAW_PASSES: readonly { test: RegExp; proof: string }[] = [
 ];
 
 const leaf = (
+  name: string,
   value: RecValue | undefined,
   kind: (typeof CALC_LEAF_KINDS)[number],
   code: string | null = null,
@@ -42,6 +44,7 @@ const leaf = (
     pieceKey: null,
     value: valueOf(value),
     code,
+    name,
     leaf: kind,
     ...(condition ? { condition } : {}),
   }),
@@ -67,8 +70,10 @@ export function rawPasses(
     const key = `DNSM.CompanionBon[${String(mode)}]`;
     const owned = reads.has(key);
     return [
-      leaf(owned ? 1 : 0, "condition", null, "owned"),
-      ...(owned ? [plus(leaf(reads.get(key), "rawBonus", key))] : []),
+      leaf("Owned", owned ? 1 : 0, "condition", null, "owned"),
+      ...(owned
+        ? [plus(leaf("Companion bonus", reads.get(key), "rawBonus", key))]
+        : []),
     ];
   }
   // a talent with no points: the game stops before the curve (0 ≥ points ? 0 : curve)
@@ -76,8 +81,14 @@ export function rawPasses(
     const path = `SkillLevels[${String(arg)}]`;
     const lv = reads.get(path) ?? 0;
     return [
-      leaf(Number(lv) > 0 ? 1 : 0, "condition", null, "limit"),
-      leaf(lv, "investedPoints", path),
+      leaf(
+        "Points in the talent > 0",
+        Number(lv) > 0 ? 1 : 0,
+        "condition",
+        null,
+        "limit",
+      ),
+      leaf("Points in the talent", lv, "investedPoints", path),
     ];
   }
   // a shiny pet's level: level by level, whether its EXP passes the requirement, up to 19 levels and 10 more with the
@@ -85,10 +96,16 @@ export function rawPasses(
   if (n.b === "Breeding" && mode === "SpecialPassives" && arg === "Lv") {
     const exp = [...reads].find(([p]) => /^Breeding\[\d+\]\[\d+\]$/.test(p));
     return [
-      leaf(exp ? exp[1] : 0, "quantity", exp?.[0] ?? null),
-      leaf(19, "fixedValue"),
-      leaf(kid("MenagerieStuff")?.v ?? 0, "condition", null, "owned"),
-      leaf(1.6, "fixedValue"),
+      leaf("Shiny EXP", exp ? exp[1] : 0, "quantity", exp?.[0] ?? null),
+      leaf("Base levels", 19, "fixedValue"),
+      leaf(
+        "Menagerie unlock 11 (+10 levels)",
+        kid("MenagerieStuff")?.v ?? 0,
+        "condition",
+        null,
+        "owned",
+      ),
+      leaf("Requirement: (1 + L^1.6) × 1.7^L", 1.6, "fixedValue"),
     ];
   }
   // a card's stars: star by star, whether the cards collected pass the star's requirement, up to 4 stars, the Rift's
@@ -96,10 +113,22 @@ export function rawPasses(
   if (n.b === "RunCodeOfTypeXforThingY" && mode === "CardLv") {
     const path = `Cards[0].${String(arg)}`;
     return [
-      leaf(reads.get(path) ?? 0, "quantity", path),
-      leaf(4, "fixedValue"),
-      leaf(kid("RiftStuff")?.v ?? 0, "condition", null, "owned"),
-      leaf(kid("Spelunk")?.v ?? 0, "condition", null, "owned"),
+      leaf("Cards collected", reads.get(path) ?? 0, "quantity", path),
+      leaf("Base stars", 4, "fixedValue"),
+      leaf(
+        "Rift 5th star unlocked",
+        kid("RiftStuff")?.v ?? 0,
+        "condition",
+        null,
+        "owned",
+      ),
+      leaf(
+        "Spelunking 6th star unlocked",
+        kid("Spelunk")?.v ?? 0,
+        "condition",
+        null,
+        "owned",
+      ),
     ];
   }
   return null;
