@@ -34,7 +34,8 @@ execution:
     - {name: Polish, status: done, commits: 76cfa40..316c299}
     - {name: "US1c nomes e molde do Drop Rate (T023)", status: done, commits: 99b8659..547e383}
     - {name: "US1c-2 passes que dependem de nomes (T023)", status: done, commits: 333fb6e..0b06384}
-    - {name: "US1c-3 Golden Food, NAMES do rename e receitas de volta (T023)", status: pending}
-    - {name: "US1c-4 passadas do finish (T023)", status: pending}
+    - {name: "US1c-3 Golden Food, NAMES do rename e receitas de volta (T023)", status: done, commits: ef1f136..ec7fce7}
+    - {name: "US1c-4a Golden Food (T023)", status: pending}
+    - {name: "US1c-4b resto do rename, passadas cruas e do finish (T023)", status: pending}
   feature_review: pending
   code_pr: null
