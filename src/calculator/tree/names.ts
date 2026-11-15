@@ -90,20 +90,18 @@ export const SHAPE_NAMES: readonly {
   test: RegExp;
   proof: string;
   name: (code: string, call: [string, unknown[]] | null) => string | null;
-  /** The math's own notation (log₁₀, log₂): a name, where the other rules give only a generic one. */
-  notation?: true;
+  /** The recorder's label of a game's working value: shown, and still no name yet (the bench's generic name). */
+  generic?: true;
 }[] = [
   {
     test: /^getLOG\(/,
     proof: "bench pieces.cjs CALL_NAMES; N.js getLOG",
     name: () => "log₁₀",
-    notation: true,
   },
   {
     test: /^Log2\(/,
     proof: "bench pieces.cjs CALL_NAMES F5B-LOG2; N.js Log2",
     name: () => "log₂",
-    notation: true,
   },
   {
     test: /^[^(]+\(/,
@@ -113,6 +111,7 @@ export const SHAPE_NAMES: readonly {
   {
     test: /^DNSM\.\w+(?:\..+|\[\d+\])?$/,
     proof: "bench build-tree.cjs inputOf, the game caches",
+    generic: true,
     name: (code) =>
       clean(
         `Working value of the game (${/^DNSM\.(\w+)/.exec(code)?.[1] ?? ""})`,
@@ -121,6 +120,7 @@ export const SHAPE_NAMES: readonly {
   {
     test: /^DummyNumbersStatManager\.|^DummyList\d*\[/,
     proof: "bench build-tree.cjs inputOf, the scratch numbers",
+    generic: true,
     name: () => "Working value of the game",
   },
 ];
@@ -144,12 +144,12 @@ export function nameOf(code: string): string | null {
   return SHAPE_NAMES.find((r) => r.test.test(code))?.name(code, call) ?? null;
 }
 
-/** Whether `code`'s name, if any, is only a rule by shape other than the math's notation: the bench's generic names
- * (a working value of the game, a mode in words) count as no name yet (FR-012a). */
+/** Whether `code`'s name, if any, is only the recorder's label of a game's working value: it counts as no name yet
+ * (FR-012a), so the ⓘ writes the game's path. */
 export const isGeneric = (code: string): boolean =>
   !STATIC_NAMES.has(code) &&
   !RECIPE_KEYS.has(code) &&
-  !SHAPE_NAMES.find((r) => r.test.test(code))?.notation;
+  !!SHAPE_NAMES.find((r) => r.test.test(code))?.generic;
 
 /** What a name never holds (src/main/tree-check.ts refuses the whole tree for it): a table text with one stays out. */
 const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;

@@ -82,22 +82,25 @@ test.each([
   ["Stats.q", null],
 ])("%s is named %s by its shape", (code, name) => {
   expect(nameOf(code)).toBe(name);
-  // a name by shape is the bench's generic one: no name yet, so the ⓘ writes the game's path (FR-012a); log₁₀ and
-  // log₂ are the math's own notation, a name
+  // only the game's working value is a generic name: no name yet, so the ⓘ writes the game's path (FR-012a); log₁₀,
+  // log₂ and a mode in words are names
   const r = row({ pieceKey: "k", value: 1, code });
   expect([r.name, r.flags]).toEqual([
     name ?? GENERIC_NAME,
-    name?.startsWith("log") ? {} : { unnamed: true },
+    name && !name.startsWith("Working value") ? {} : { unnamed: true },
   ]);
 });
 
-test("the ⓘ writes log₁₀, never the game's call", () => {
-  const log: Row = {
-    node: row({ pieceKey: "k", value: 2, code: "getLOG(100)" }),
+test.each([
+  ["getLOG(100)", "log₁₀"],
+  ['Invented("SomeMode", 0, 0)', "Some Mode"],
+])("the ⓘ writes %s by its name, never the game's call", (code, name) => {
+  const part: Row = {
+    node: row({ pieceKey: "k", value: 2, code }),
     open: null,
   };
-  expect(formulaFor(at(6), [log, read("Stats.a", 3)])).toEqual([
-    "log₁₀ × Stats.a",
+  expect(formulaFor(at(6), [part, read("Stats.a", 3)])).toEqual([
+    `${name} × Stats.a`,
     "2 × 3 = 6",
   ]);
 });
