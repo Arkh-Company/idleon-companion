@@ -242,17 +242,27 @@ test("pieces.cjs tidy: a row that only repeats its block (the block's name and v
   expect(terms.tidy(rows, "+", [])).toHaveLength(4);
 });
 
-test("pieces.cjs cacheStepRows: a cache's one step that is a call with no name, nothing under it and the cache's value says nothing", () => {
+test("pieces.cjs cacheStepRows: a cache's one row with no name, nothing under it and the cache's value, in a step that is no sum nor product, says nothing", () => {
   const lone = (e: Expr, r: Row, v = 3) => loneCall(e, [r], v, () => false);
   const unnamed: Row = read2("B()", 3);
   expect(lone(call(1, 3), unnamed)).toEqual([]);
   expect(lone({ t: "def", e: call(1, 3), v: 3 }, unnamed)).toEqual([]);
-  // with a name, another value, something under it, or another term, it stays
+  // any step that is no sum nor product, as the bench's `!op`: min, max, pow, a difference, a quotient, a read
+  for (const e of [
+    fn("max", [call(1, 3), num(0)], 3),
+    fn("pow", [call(1, 3), num(1)], 3),
+    op("-", call(1, 3), num(0), 3),
+    op("/", call(1, 3), num(1), 3),
+    read("A", 3),
+  ])
+    expect(lone(e, unnamed)).toEqual([]);
+  // with a name, another value, something under it, or a sum or a product, it stays
   const withName: Row = { node: { ...unnamed.node, flags: {} }, open: null };
   expect(lone(call(4, 3), withName)).toHaveLength(1);
   expect(lone(call(1, 3), unnamed, 4)).toHaveLength(1);
   expect(loneCall(call(1, 3), [unnamed], 3, () => true)).toHaveLength(1);
-  expect(lone(read("A", 3), unnamed)).toHaveLength(1);
+  expect(lone(op("+", call(1, 3), num(0), 3), unnamed)).toHaveLength(1);
+  expect(lone(op("*", call(1, 3), num(1), 3), unnamed)).toHaveLength(1);
 });
 
 test("in the tree, a block's row that only repeats the block leaves its rows", () => {

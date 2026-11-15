@@ -1,15 +1,11 @@
 // Each place that passes the filter of a row that says nothing: a row that only repeats its block (pieces.cjs `tidy`,
 // its `parent`) in a cache's step, in a loop's factor and in the root's own step ([F2-TOP]); and the lone call of a
-// cache's step (pieces.cjs `cacheStepRows`). The recordings and steps are written by hand, with invented blocks; a
+// cache's step (pieces.cjs `cacheStepRows`). The recordings are written by hand, with invented blocks; a
 // name from the names table is taken from the table itself.
 import { expect, test } from "vitest";
 import { instrument } from "../instrument.ts";
 import { buildTree } from "../tree-build.ts";
-import { makeCaches } from "./caches.ts";
-import { makeCodeFormulas } from "./code-formulas.ts";
 import { NAMES_BY_LABEL } from "./names.ts";
-import { finish } from "./rows.ts";
-import type { Step } from "./steps.ts";
 import { PROGRESS_BY_LABEL } from "./term-passes.ts";
 import { call, nodes, op, read, termsOf } from "./term-fixture.ts";
 import { brief, kidsOf, openPath, recordingOf } from "./tree-fixture.ts";
@@ -108,30 +104,48 @@ test("[F2-TOP] the root's own step drops the row that only repeats the root's ca
   expect(brief(buildTree(rec, 0, ops).root)).toEqual([[null, 0]]);
 });
 
-/** A cache of 3 that writer Top (of 9) made in its one step, a call of B with no name and nothing under it. */
-function loneCallCache(seen: ReadonlySet<number>) {
-  const [top, b] = nodes;
-  const steps: Step[] = [{ v: 3, e: call(1, 3) }];
-  const caches = makeCaches({
-    nodes,
-    entries: new Map(),
-    writerByValue: () => null,
-    steps: (id) => (id === top?.id ? steps : []),
-    explain: () => [],
-    linksOf: () => new Map(),
-    terms: (w) => termsOf(w),
-    finish,
-    formulas: makeCodeFormulas(nodes, () => []),
-  });
-  expect([top?.v, b?.v]).toEqual([9, 3]);
-  return caches.opened(
-    { path: "DNSM.Lone.v", value: 3, writer: 0, entry: null, opening: [] },
-    0,
-    seen,
-  )?.rows;
+/**
+ * W writes the cache DNSM.Lone.v with max(B(), 0) = 3, B a call with no name and nothing under it, and returns the cache
+ * × 3; `inWriter` opens the cache from W's own rows (Top calls W), else from Top's read of it.
+ */
+function loneOf(inWriter: boolean) {
+  // ops: 0 is max, 1 its call leaf, 2 is the cache × 3, 3 its read leaf
+  const { ops } = instrument(
+    "Blocks._customBlock_W = function () { d.Lone = Math.max(Blocks._customBlock_B(), 0); return d.Lone * 3; };",
+  );
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      inWriter
+        ? { b: "Top", v: 9, c: [2] }
+        : { b: "Top", v: 1, r: [["DNSM.Lone.v", 3, 1]] },
+      {
+        b: "W",
+        v: 9,
+        c: [3],
+        r: [["DNSM.Lone.v", 3, 1]],
+        rx: [["DNSM.Lone.v", 3, 2]],
+        x: [
+          [1, 3],
+          [0, 3],
+          [3, 3],
+          [2, 9],
+        ],
+      },
+      { b: "B", v: 3 },
+    ],
+    [{ path: "DNSM.Lone.v", node: 2, v: 3, seq: 1, xi: 2 }],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0, ops);
+  return inWriter
+    ? openPath(build, "W()", "DNSM.Lone.v")
+    : openPath(build, "DNSM.Lone.v");
 }
 
-test("pieces.cjs cacheStepRows: a cache's lone call that says nothing leaves, read anywhere or inside its writer", () => {
-  expect(loneCallCache(new Set())).toEqual([]);
-  expect(loneCallCache(new Set([0]))).toEqual([]);
+test("pieces.cjs cacheStepRows: a cache's step of one term that is no sum nor product drops its lone row that says nothing", () => {
+  for (const inWriter of [false, true]) {
+    const lone = loneOf(inWriter);
+    expect([lone?.code, kidsOf(lone)]).toEqual(["DNSM.Lone.v", []]);
+  }
 });

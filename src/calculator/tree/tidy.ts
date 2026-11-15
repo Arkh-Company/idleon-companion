@@ -2,6 +2,7 @@
 // a level is finished): the rows of a step's terms with the repeats of an earlier value and of a cache read taken out.
 import type { RecNode, RecValue } from "../recording.ts";
 import type { Expr } from "./steps.ts";
+import { topOp } from "./expr.ts";
 import { termName } from "./names.ts";
 import { near, num } from "./math.ts";
 import { callText, row, valueOf } from "./rows.ts";
@@ -82,7 +83,8 @@ export function tidy(
 }
 
 /**
- * pieces.cjs `cacheStepRows`: the one row of a step that is a call (or a def of one) with no name, nothing under it and
+ * pieces.cjs `cacheStepRows`: in a step that is no sum nor product (the bench's `!op`, the same top operator as
+ * terms.ts `rowsAt`: min, max, pow, a difference, a quotient, one term), the one row with no name, nothing under it and
  * the cache's value says nothing of the cache, and leaves.
  */
 export const loneCall = (
@@ -91,7 +93,7 @@ export const loneCall = (
   value: unknown,
   opens: (r: Row) => boolean,
 ): Row[] =>
-  (e.t === "def" ? e.e : e).t === "call"
+  topOp(e) === null
     ? rows.filter(
         (r) =>
           !(r.node.flags.unnamed && !opens(r) && near(r.node.value, value)),
