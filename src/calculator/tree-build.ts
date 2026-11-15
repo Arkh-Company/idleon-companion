@@ -16,6 +16,7 @@ import { makeCaches } from "./tree/caches.ts";
 import { makeConditions } from "./tree/conditions.ts";
 import { entriesOf, makeWriters } from "./tree/entries.ts";
 import { GAME_BUGS } from "./tree/game-bugs.ts";
+import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
@@ -214,8 +215,14 @@ export function buildTree(
       Number.isInteger(last.v) &&
       noSource(last.e) &&
       (n.r ?? []).some(([p]) => p.endsWith(`[${String(last.v)}]`));
-    // a block the game's own passes rewrite (tree/raw-passes.ts) has those rows, before its steps
-    const special = rawPasses(n, nodes, reads);
+    // a block the game's own passes rewrite (tree/gold-food.ts, tree/raw-passes.ts) has those rows, before its steps
+    const special =
+      goldFood(n, own.steps, reads, {
+        nodes,
+        term: (e, o, rs) => terms.term(e, o, rs),
+        finish,
+        formulas: codeFormulas,
+      }) ?? rawPasses(n, nodes, reads);
     const op = indexStep || special ? null : topOp(last?.e);
     const rows =
       special ??

@@ -12,6 +12,7 @@ import { BAN_FLAG, COND_SUBS } from "./conditions.ts";
 import { OPEN_XF } from "./once.ts";
 import { ARENA_TURN, TURN_NAMES } from "./turn-names.ts";
 import { RAW_PASSES } from "./raw-passes.ts";
+import { GOLD_FOOD } from "./gold-food.ts";
 import {
   CODE_TABLES,
   EARLIER_TOTALS,
@@ -44,6 +45,7 @@ const TABLES = {
   SKILL_RANKS: [SKILL_RANKS],
   TURN_KINDS,
   RAW_PASSES,
+  GOLD_FOOD: [GOLD_FOOD],
   EARLIER_TOTALS,
   WORN_TOTAL: [WORN_TOTAL],
   LIST_COUNTS,

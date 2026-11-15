@@ -2,7 +2,7 @@
 // recording cannot give from their steps, written from the game's code instead, each a rule with its proof. A
 // companion is owned or not, with its bonus; a talent with no points stops before its curve; a shiny pet's level and a
 // card's stars are tests the game repeats level by level. Their rows keep the generic name until US1c, which names them;
-// left out until their own phase: Golden Food (its ⓘ, US1b-3) and the talent's curve (a table of the 007 index).
+// Golden Food is tree/gold-food.ts; left out: the talent's curve (a table of the 007 index).
 import type {
   CALC_CONDITION_KINDS,
   CALC_LEAF_KINDS,
