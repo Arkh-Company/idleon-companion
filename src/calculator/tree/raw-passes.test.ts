@@ -33,6 +33,24 @@ test("[Companions] an owned companion is a yes with its bonus; one not owned is 
   ]);
 });
 
+test("[Companions] the bonus of an owned companion is an added bonus", () => {
+  const root = buildTree(
+    recordingOf(
+      [
+        { b: "(root)", c: [1] },
+        { b: "Companions", a: ["c1"], v: 3, r: [["DNSM.CompanionBon[c1]", 3]] },
+      ],
+      [],
+      { root: 0 },
+    ),
+    0,
+  ).root;
+  expect(kidsOf(root).map((k) => [k.leaf, k.fmt])).toEqual([
+    ["condition", null],
+    ["rawBonus", "+"],
+  ]);
+});
+
 test("[GetTalentNumber] a talent with no points stops before its curve: the check and the points", () => {
   const root = buildTree(
     recordingOf(

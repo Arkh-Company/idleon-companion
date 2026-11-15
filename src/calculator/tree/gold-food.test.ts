@@ -8,6 +8,8 @@ import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
+import { sourceTerm } from "./gold-food.ts";
+import { row } from "./rows.ts";
 import { useGameTables } from "./table-names.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
@@ -67,7 +69,7 @@ const kidsOf = (n: CalcTreeNode | undefined) =>
 /** The pass's own rows (branches), without the block's checks and data rows that follow them, as any block's. */
 const goldRows = (n: CalcTreeNode) => kidsOf(n).filter((k) => k.leaf === null);
 const brief = (n: CalcTreeNode | undefined) =>
-  kidsOf(n).map((k) => [k.name, k.value, k.leaf, !!k.flags.unnamed]);
+  kidsOf(n).map((k) => [k.name, k.value, k.leaf, k.fmt, k.flags]);
 const near = (v: number): unknown => expect.closeTo(v, 9);
 // the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1009) ÷ 2.14); the emporium's
 // 7 × it × 0.05 × log(1 + 10^6)
@@ -81,19 +83,19 @@ test("a golden food: the shared multiplier, the worn food and the emporium's, ea
   expect(root.value).toBeCloseTo(WORN + EMPORIUM, 9);
   const [multi, worn, emporium] = kidsOf(root);
   expect(brief(root)).toEqual([
-    ["GFood Multi", near(MULTI), null, false],
-    ["Equipped: Invented Charm", near(WORN), null, false],
-    ["Emporium: Other Dish", near(EMPORIUM), null, false],
+    ["GFood Multi", near(MULTI), null, "x", {}],
+    ["Equipped: Invented Charm", near(WORN), null, null, {}],
+    ["Emporium: Other Dish", near(EMPORIUM), null, null, {}],
     // the block's data row (the quantity its log call took) and its checks, as for any block
-    ["Food slot 1 quantity", 999, "quantity", false],
-    ["Food slot 1 quantity > 0", 0, "condition", false],
-    ["Game value", 0, "condition", true],
+    ["Food slot 1 quantity", 999, "quantity", null, {}],
+    ["Food slot 1 quantity > 0", 0, "condition", null, {}],
+    ["Game value", 0, "condition", null, { unnamed: true }],
   ]);
   const [, sources, set] = kidsOf(multi);
   expect(brief(multi)).toEqual([
-    ["Family Bonus 66", 2, "rawBonus", false],
-    ["Sources ÷ 100", near(0.2), null, false],
-    ["SECRET_SET multi", near(1.3), null, false],
+    ["Family Bonus 66", 2, "rawBonus", null, {}],
+    ["Sources ÷ 100", near(0.2), null, null, {}],
+    ["SECRET_SET multi", near(1.3), null, "x", {}],
   ]);
   expect(kidsOf(sources).map((k) => [k.code, k.name, k.value])).toEqual([
     ["TreeReads()", "Game value", 8],
@@ -106,13 +108,13 @@ test("a golden food: the shared multiplier, the worn food and the emporium's, ea
     ["GfoodSet[1]", 20],
   ]);
   expect(brief(worn)).toEqual([
-    ["Base Amount", 7, "fixedValue", false],
-    ["Quantity", 999, "quantity", false],
-    ["Log Factor", near(3), "quantity", false],
+    ["Base Amount", 7, "fixedValue", null, {}],
+    ["Quantity", 999, "quantity", null, {}],
+    ["Log Factor", near(3), "quantity", null, {}],
   ]);
   expect(brief(emporium)).toEqual([
-    ["Base Amount", 7, "fixedValue", false],
-    ["Log Factor", near(6.000000434294264), "quantity", false],
+    ["Base Amount", 7, "fixedValue", null, {}],
+    ["Log Factor", near(6.000000434294264), "quantity", null, {}],
   ]);
   // every name the pass writes is one the host takes
   expect(checkTree(root, 100)).not.toBeNull();
@@ -128,7 +130,7 @@ test("each row of a golden food has the ⓘ of its step", () => {
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });
-  // a source with no name of its own is its code; "Fixed +3" is the constant of the sum (formulas.ts lastFormula)
+  // a source with no name of its own is its code; "Fixed +3" is the constant of the sum
   expect(sources?.formula).toEqual({
     rule: [
       "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
@@ -185,11 +187,12 @@ test("the multiplier's ⓘ counts a family below 1 as 1, and is not written when
 test("sources taken as a percent by a product are no sources", () => {
   const [multi] = goldRows(treeOf("percent"));
   const sources = kidsOf(multi)[1];
-  expect([sources?.name, sources?.value, kidsOf(sources)]).toEqual([
-    "Sources ÷ 100",
-    null,
-    [],
-  ]);
+  expect([
+    sources?.name,
+    sources?.value,
+    sources?.flags,
+    kidsOf(sources),
+  ]).toEqual(["Sources ÷ 100", null, { unavailable: true }, []]);
   expect(multi?.formula).toBeNull();
 });
 
@@ -208,10 +211,10 @@ test("a set of one part has its ⓘ; one written with its number last has no par
 });
 
 test("a food with no text keeps the generic name; the emporium's with none takes the worn food's", () => {
-  expect(goldRows(treeOf()).map((k) => [k.name, !!k.flags.unnamed])).toEqual([
-    ["GFood Multi", false],
-    ["Game value", true],
-    ["Game value", true],
+  expect(goldRows(treeOf()).map((k) => [k.name, k.flags])).toEqual([
+    ["GFood Multi", {}],
+    ["Game value", { unnamed: true }],
+    ["Game value", { unnamed: true }],
   ]);
   useGameTables(new Map([...TABLES].slice(0, 1)));
   expect(goldRows(treeOf()).map((k) => k.name)).toEqual([
@@ -226,8 +229,8 @@ test("a food whose name would be too long keeps the generic name", () => {
     new Map([["ItemDefinitionsGET.itemA", { displayName: "y".repeat(196) }]]),
   );
   const [, worn, emporium] = goldRows(treeOf());
-  expect([worn?.name, worn?.flags.unnamed]).toEqual(["Game value", true]);
-  expect(emporium?.flags.unnamed).toBe(true);
+  expect([worn?.name, worn?.flags]).toEqual(["Game value", { unnamed: true }]);
+  expect(emporium?.flags).toEqual({ unnamed: true });
 });
 
 test.each<[string, string, number, number, [string, number][]]>([
@@ -323,14 +326,32 @@ test.each<[string, string, number, number, [string, number][]]>([
   ]);
 });
 
-test("a source at 0 goes under the sum's own row at 0, as in any sum", () => {
+test("a source at 0 goes under the sum's own row at 0, as in any sum, and the sources' ⓘ still names it", () => {
   const [multi] = goldRows(treeOf("DropRatez", 999, 3, 2, 0));
-  expect(kidsOf(kidsOf(multi)[1]).map((k) => [k.name, k.value])).toEqual([
+  const sources = kidsOf(multi)[1];
+  expect(kidsOf(sources).map((k) => [k.name, k.value])).toEqual([
     ["Game value", 8],
     ["Game value", 4],
     ["Fixed +3", 3],
     ["At 0 (1)", 0],
   ]);
+  expect(sources?.formula).toEqual({
+    rule: [
+      "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
+      "(8 + 4 + 0 + 3) ÷ 100 = 0.15",
+    ],
+  });
+});
+
+test("a source in the sources' ⓘ is its name without its tag, or its code with no name", () => {
+  const source = (name: string | undefined, code: string) => ({
+    node: row({ pieceKey: null, value: 1, code, ...(name ? { name } : {}) }),
+    open: null,
+  });
+  expect(sourceTerm(source("Invented bonus (Invented tab)", "A.b"))).toBe(
+    "Invented bonus",
+  );
+  expect(sourceTerm(source(undefined, "A.b()"))).toBe("A.b()");
 });
 
 test("another block with the same steps is no golden food", () => {

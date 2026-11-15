@@ -48,6 +48,9 @@ const leaf = (
   open: null,
 });
 
+/** A leaf the block adds, as the bench writes it ("+"). */
+const plus = (r: Row): Row => ({ ...r, node: { ...r.node, fmt: "+" } });
+
 /** The rows of a block one of the passes rewrites, or null. */
 export function rawPasses(
   n: RecNode,
@@ -65,7 +68,7 @@ export function rawPasses(
     const owned = reads.has(key);
     return [
       leaf(owned ? 1 : 0, "condition", null, "owned"),
-      ...(owned ? [leaf(reads.get(key), "rawBonus", key)] : []),
+      ...(owned ? [plus(leaf(reads.get(key), "rawBonus", key))] : []),
     ];
   }
   // a talent with no points: the game stops before the curve (0 ≥ points ? 0 : curve)

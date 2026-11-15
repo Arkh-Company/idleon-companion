@@ -14,6 +14,7 @@ import { isNameText } from "./name-text.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
+import { termOf } from "./share.ts";
 import { tableText } from "./table-names.ts";
 import type { Reads } from "./val-path.ts";
 
@@ -39,12 +40,15 @@ function logsOf(e: Expr | undefined, nodes: readonly RecNode[]): Expr[] {
   return [...here, ...subs.flatMap((x) => logsOf(x, nodes))];
 }
 
-/** A row of the pass with a fixed name, or the generic one when `name` is null; `f` is its finished ⓘ, `xf` its step's. */
+/**
+ * A row of the pass with a fixed name, or the generic one when `name` is null; `f` is its finished ⓘ, `xf` its step's,
+ * `fmt` "x" a multiplier's.
+ */
 function part(
   name: string | null,
   value: unknown,
   group: Row[] = [],
-  ip: { f?: Pair | null; xf?: Pair | null } = {},
+  ip: { f?: Pair | null; xf?: Pair | null; fmt?: "x" } = {},
 ): Row {
   return {
     node: row({
@@ -52,6 +56,7 @@ function part(
       value: valueOf(value as RecValue),
       code: null,
       ...(name === null ? {} : { name }),
+      ...(ip.fmt ? { fmt: ip.fmt } : {}),
     }),
     open: null,
     ...(group.length ? { group } : {}),
@@ -59,6 +64,11 @@ function part(
     ...(ip.xf ? { xf: ip.xf } : {}),
   };
 }
+/** A source in the sources' ⓘ: its name without its tag in parentheses, or its code when it has no name. */
+export const sourceTerm = (r: Row) =>
+  r.node.flags.unnamed
+    ? termOf(r.node)
+    : r.node.name.replace(/\s*\(.*?\)\s*$/, "");
 /** "<what>: <the food's text>", when the item has a text and the whole is a name. */
 function foodName(what: string, text: string | null): string | null {
   const name = text === null ? null : `${what}: ${text}`;
@@ -126,6 +136,18 @@ export function goldFood(
           `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
         ]
       : null;
+  // the sources as the step adds them, before a level groups those at 0
+  const sourcesF: Pair | null =
+    sources.length >= 2 &&
+    near(
+      sources.reduce((a, x) => a + Number(x.node.value), 0) / 100,
+      sumV / 100,
+    )
+      ? [
+          `(${sources.map(sourceTerm).join(" + ")}) ÷ 100`,
+          `(${sources.map((x) => fx3(Number(x.node.value))).join(" + ")}) ÷ 100 = ${fx3(sumV / 100)}`,
+        ]
+      : null;
   const emE = s3?.e.t === "op" ? s3.e.r : undefined;
   // each level's rows with their types and shares, none of them a product's
   const level = (v: unknown, rows: Row[]) => ctx.finish(v, rows, false);
@@ -135,13 +157,15 @@ export function goldFood(
       s0.v,
       level(s0.v, [
         part("Family Bonus 66", fam),
-        // its ⓘ, "(the sources) ÷ 100", is formulas.ts lastFormula's, the same line as the bench's
-        part("Sources ÷ 100", sumE ? sumV / 100 : null, level(sumV, sources)),
+        part("Sources ÷ 100", sumE ? sumV / 100 : null, level(sumV, sources), {
+          f: sourcesF,
+        }),
         part("SECRET_SET multi", secret?.v, level(secret?.v, secretKids), {
           xf: secret ? ctx.formulas.expr(secret, reads, secret.v, 1) : null,
+          fmt: "x",
         }),
       ]),
-      { f: multiF },
+      { f: multiF, fmt: "x" },
     ),
     ...(s1
       ? [
