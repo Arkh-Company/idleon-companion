@@ -21,7 +21,10 @@ const index = (re: RegExp, rs: readonly TurnRead[]) =>
 const valueOf = (rs: readonly TurnRead[], path: string) =>
   rs.find(([p]) => p === path)?.[1];
 
-/** A rule that knows the turn with no text for it (an item's): the search ends with no name (the bench writes the id). */
+/**
+ * A rule that knows the turn with no text for it (an item's), or whose name may be none (too long, or code): the search
+ * ends with no name (the bench writes the id, or the text as it is).
+ */
 export const NO_NAME = { stop: true } as const;
 type TurnName = string | typeof NO_NAME | null;
 
@@ -171,8 +174,9 @@ export const TURN_NAMES: readonly (Rule & {
             /[A-Za-z]/.test(v),
         )
         .pop()?.[1];
-      const name = typeof text === "string" ? clean(text) : "";
-      return name && isNameText(name) ? name : null;
+      if (typeof text !== "string") return null;
+      const name = clean(text);
+      return name && isNameText(name) ? name : NO_NAME;
     },
   },
 ];
@@ -195,12 +199,12 @@ export function arenaTurn(rs: readonly TurnRead[]): string | null {
     : null;
 }
 
-/** The first rule's name, or NO_NAME; one too long to be a name names nothing, and the next rule may. */
+/** The first rule's name, or NO_NAME; a rule that knows the turn ends the search, with no name when its own is none. */
 export const turnName = (rs: readonly TurnRead[], p: string): TurnName =>
   TURN_NAMES.reduce<TurnName>((got, r) => {
     if (got !== null) return got;
     const name = r.name(rs, p);
-    return typeof name !== "string" || isNameText(name) ? name : null;
+    return typeof name !== "string" || isNameText(name) ? name : NO_NAME;
   }, null);
 
 /** pieces.cjs `entryRows` `shared`: a name every added part has among its rows says nothing of one of them. */

@@ -13,7 +13,7 @@ import {
   tableText,
   useGameTables,
 } from "./table-names.ts";
-import { turnName } from "./turn-names.ts";
+import { NO_NAME, turnName } from "./turn-names.ts";
 
 afterEach(() => {
   useGameTables(new Map());
@@ -28,6 +28,8 @@ const TABLES = new Map<string, unknown>([
   // a text that may be a name, too long inside the turn's name
   ["MonsterDefinitionsGET.mobLong", { Name: "x".repeat(195) }],
   ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
+  // an item's text that may be a name, too long in "Found …"
+  ["ItemDefinitionsGET.itemLong", { displayName: "y".repeat(196) }],
 ]);
 const passes = (name: string) =>
   checkTree(
@@ -66,11 +68,6 @@ test.each<[string, TurnRead[], string | null]>([
     "a battle the table has not",
     [["CustomLists.SummonEnemies[7][3]", 1]],
     "Battle 3 win",
-  ],
-  [
-    "a battle whose name would be too long",
-    [["CustomLists.SummonEnemies[7][2]", 1]],
-    null,
   ],
   ["an artifact", [["Sailing[3][2]", 1]], "Invented Relic (artifact 2)"],
   [
@@ -150,6 +147,18 @@ test.each<[string, TurnRead[]]>([
     ],
   ],
   ["a definition with no text", [["ItemDefinitionsGET.itemB.UQ1val", 3]]],
+  // a rule that names the turn with a name too long to be one ends the search too
+  [
+    "a battle whose name would be too long",
+    [["CustomLists.SummonEnemies[7][2]", 1]],
+  ],
+  [
+    "a found item whose name would be too long and a table row's text",
+    [
+      ["Cards[1] contains itemLong", true],
+      ["CustomLists.X[2][0]", "ROW"],
+    ],
+  ],
   [
     "a definition with no text and a table row's text",
     [
@@ -159,16 +168,14 @@ test.each<[string, TurnRead[]]>([
   ],
 ])("[turn recipes] the turn of %s has no name", (_name, reads) => {
   useGameTables(TABLES);
-  expect(turnName(reads, "DNSM.X")).toEqual({ stop: true });
+  expect(turnName(reads, "DNSM.X")).toBe(NO_NAME);
 });
 
 test("with no table of the game, a battle is its number and an item names nothing", () => {
   expect(turnName([["CustomLists.SummonEnemies[7][0]", 1]], "DNSM.X")).toBe(
     "Battle 0 win",
   );
-  expect(turnName([["Cards[1] contains itemA", true]], "DNSM.X")).toEqual({
-    stop: true,
-  });
+  expect(turnName([["Cards[1] contains itemA", true]], "DNSM.X")).toBe(NO_NAME);
 });
 
 test.each<[string, unknown, string | null]>([

@@ -11,6 +11,7 @@ import type { Row } from "./rows.ts";
 import { fixed, read } from "./tree-fixture.ts";
 import {
   arenaTurn,
+  NO_NAME,
   otherReads,
   ownName,
   sharedName,
@@ -24,7 +25,7 @@ const passes = (name: string) =>
     1,
   ) !== null;
 
-test.each<[string, TurnRead[], string, string | null]>([
+test.each<[string, TurnRead[], string, string | typeof NO_NAME | null]>([
   ["a boat's level", [["Boats[2][3]", 7]], "DNSM.X", "Boat 3"],
   ["a boat's other level", [["Boats[0][5]", 7]], "DNSM.X", "Boat 1"],
   [
@@ -119,19 +120,19 @@ test.each<[string, TurnRead[], string, string | null]>([
     "a row's text that is code",
     [["CustomLists.Invented[2][0]", "a; b"]],
     "DNSM.X",
-    null,
+    NO_NAME,
   ],
   [
     "a row's text with a keyword before a bracket",
     [["CustomLists.Invented[2][0]", "Grants if (owned)"]],
     "DNSM.X",
-    null,
+    NO_NAME,
   ],
   [
     "a row's text too long",
     [["CustomLists.Invented[2][0]", "a".repeat(201)]],
     "DNSM.X",
-    null,
+    NO_NAME,
   ],
   [
     "a row's text with no letter",
@@ -149,7 +150,7 @@ test.each<[string, TurnRead[], string, string | null]>([
   ["a read that says nothing", [["Stats.a", 1]], "DNSM.X", null],
 ])("the turn of %s", (_name, reads, p, name) => {
   expect(turnName(reads, p)).toBe(name);
-  if (name) expect(passes(name)).toBe(true);
+  if (typeof name === "string") expect(passes(name)).toBe(true);
 });
 
 test("[OPUS2-PATCH A] a turn of the arena loop is the threshold it reached", () => {
