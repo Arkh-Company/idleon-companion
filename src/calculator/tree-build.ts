@@ -33,6 +33,7 @@ import { checkOutcome, onlyCache } from "./tree/once.ts";
 import { dataRows } from "./tree/data-rows.ts";
 import { rawPasses } from "./tree/raw-passes.ts";
 import { rootStep } from "./tree/root-step.ts";
+import { progressRow } from "./tree/term-passes.ts";
 import { makeTerms } from "./tree/terms.ts";
 import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
@@ -87,12 +88,16 @@ export function buildTree(
     path: string,
     value: number | boolean | null,
     link?: Link,
+    reader?: RecNode,
   ): Row {
     const w = caches.writerOf(
       new Map(link?.[1] == null ? [] : [[path, link[1]]]),
       path,
       value,
     );
+    // DEEP3-FIX-5: read by the call that wrote it, a loop's working value is that loop's progress
+    const progress = (!w || w === reader) && progressRow(path, value);
+    if (progress) return progress;
     const node = row({
       pieceKey: JSON.stringify([character, path]),
       value,
@@ -181,7 +186,7 @@ export function buildTree(
       block: n,
       entry: () => caches.now().entry,
       formulas: codeFormulas,
-      read: (p, v) => at(readRow(p, valueOf(v), linkOf.get(p))),
+      read: (p, v) => at(readRow(p, valueOf(v), linkOf.get(p), n)),
       call: (k, v, rs) => at(callRow(k, n, v ?? null, [...rs], false)),
       finish,
     });
@@ -238,7 +243,7 @@ export function buildTree(
       rows,
       own.steps.map((s) => s.e),
       !op && !special && own.steps.length > 0,
-      (p, v) => readRow(p, v, linkOf.get(p)),
+      (p, v) => readRow(p, v, linkOf.get(p), n),
       writers.writersOf,
       // the bench opens a data row's cache under this call, at its depth
       (r) => caches.opens(r, depth, new Set([...seen, id])),
@@ -357,7 +362,7 @@ export function buildTree(
     const rows = pieces.explain(top.id, 0, new Set()) ?? [];
     // [F3-R1] the root is never a silent leaf
     const own = rootStep(top, steps.of(top.id).steps, rows, root, {
-      read: (p, v) => readRow(p, v, linksOf(top).get(p)),
+      read: (p, v) => readRow(p, v, linksOf(top).get(p), top),
       opens: (r) => caches.opens(r, 0, new Set([top.id])),
     });
     root.formula = own?.formula ?? null;

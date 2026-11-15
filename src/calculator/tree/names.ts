@@ -86,7 +86,7 @@ function modeInWords(args: readonly unknown[]): string | null {
 }
 
 /** A game cache by its label, as the recorder labels it (build-tree.cjs `inputOf`): the label, then an entry or none. */
-const cacheOf = (label: string) =>
+export const cacheOf = (label: string) =>
   new RegExp(`^DNSM\\.${label}(?:\\..+|\\[\\d+\\])?$`);
 
 /** pieces.cjs NAMES_BY_LABEL: the working values of the game the bench names by their label, over the generic name. */

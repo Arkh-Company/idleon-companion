@@ -14,6 +14,7 @@ import {
   CODE_TABLES,
   EARLIER_TOTALS,
   LIST_COUNTS,
+  PROGRESS_BY_LABEL,
   WORN_TOTAL,
 } from "./term-passes.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
@@ -42,6 +43,7 @@ const TABLES = {
   LIST_COUNTS,
   CODE_TABLES,
   SHAPE_NAMES,
+  PROGRESS_BY_LABEL,
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

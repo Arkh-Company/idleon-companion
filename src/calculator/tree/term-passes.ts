@@ -1,8 +1,10 @@
 // The game's own passes of pieces.cjs `rowOfTerm` (spec 008, T022) from the bench at BASELINE-4, each a rule with its
 // proof: the running total of a loop's earlier turns ([D9-7], W3), the length of a list the game counts (OPUS4-8,
-// OPUS1-P5) and a table the block writes in its own code (FIX-4, Holes).
+// OPUS1-P5), a table the block writes in its own code (FIX-4, Holes) and a working value that is the progress of the
+// loop of the call that wrote it (DEEP3-FIX-5).
 import type { RecNode, RecValue } from "../recording.ts";
 import { near } from "./math.ts";
+import { cacheOf } from "./names.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
@@ -122,6 +124,80 @@ export const CODE_TABLES: readonly (Rule & { block: string })[] = [
     proof: "bench pieces.cjs rowOfTerm DEEP3-FIX-4; N.js Holes",
   },
 ];
+
+/**
+ * DEEP3-FIX-5, pieces.cjs PROGRESS_BY_LABEL: a working value a block writes and reads in its own loop, by its label; read
+ * by the call that wrote it, it is the progress of that loop, never a source: a "?" says why, a fixed value is one.
+ */
+interface Progress {
+  label: string;
+  name: string;
+  leaf: "unknown" | "fixedValue";
+  why: string | null;
+  proof: string;
+}
+export const PROGRESS_BY_LABEL: readonly (Progress & Rule)[] = (
+  [
+    {
+      label: "NghMrTOT",
+      name: "Total of the earlier boats",
+      leaf: "unknown",
+      why: "progress of the loop in MenagerieStuff(NightmarinerTotLV): the boat levels above 600 of the boats before this one, before this boat adds to it (N.js)",
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL OPUS1-P4; N.js MenagerieStuff",
+    },
+    {
+      label: "statuearbDN",
+      name: "Statue bonus so far (before the next multiplier)",
+      leaf: "unknown",
+      why: "progress of the statue's multiplications in ArbitraryCode: the block writes the base value (statue level × StatueInfo[3]) and multiplies it by the talent bonuses one after the other (N.js)",
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js ArbitraryCode",
+    },
+    {
+      label: "TrappingDNcm",
+      name: "Best value of the earlier characters",
+      leaf: "unknown",
+      why: "progress of the loop in TrappingStuffs (CollectAllPCT): the block sets it to 0 and keeps the best talent bonus of the characters before this one (N.js)",
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js TrappingStuffs",
+    },
+    // the item definition the block sets to the food in turn and then reads the amount from (a field of the game's table)
+    {
+      label: "playHPbasePOT1",
+      name: "Amount of the food in turn (item table)",
+      leaf: "fixedValue",
+      why: null,
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js TotalFoodBonuses",
+    },
+    {
+      label: "GfoodMap",
+      name: "Amount of the golden food (item table)",
+      leaf: "fixedValue",
+      why: null,
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js GoldFoodBonuses",
+    },
+    {
+      label: "playHPbasePOT2",
+      name: "Total of the earlier foods",
+      leaf: "unknown",
+      why: "progress of the loop in TotalFoodBonuses: the running total of the foods before this one adds to it (N.js)",
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js TotalFoodBonuses",
+    },
+    {
+      label: "BminorDivQ",
+      name: "Total of the earlier minor-link slots",
+      leaf: "unknown",
+      why: "progress of the loop in Divinity (Bonus_Minor, -1): the running total of the 12 slots before this one adds to it (N.js)",
+      proof: "bench pieces.cjs PROGRESS_BY_LABEL; N.js Divinity",
+    },
+  ] satisfies Progress[]
+).map((p) => ({ ...p, test: cacheOf(p.label) }));
+
+/** DEEP3-FIX-5: the row of a working value read by the call that wrote it, when its label is a loop's progress. */
+export function progressRow(p: string, v: unknown): Row | null {
+  const pr = PROGRESS_BY_LABEL.find((r) => r.test.test(p));
+  return pr
+    ? leafRow(p, v as RecValue, { name: pr.name, leaf: pr.leaf, why: pr.why })
+    : null;
+}
 
 const leafRow = (
   code: string | null,
