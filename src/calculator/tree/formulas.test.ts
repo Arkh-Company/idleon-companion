@@ -321,7 +321,7 @@ test("a sum that counts its yes/no among its terms is said by its expression", (
   expectShown(at(7, { xweak: ["x", "9 × 1 = 7"] }), kids);
 });
 
-const RIFT = "1 if Rift level ≥ 15 and Working value of the game > 2, else 0";
+const RIFT = "1 if Rift level ≥ 15 and DNSM.skillLvRanks[3] > 2, else 0";
 test.each<[number, number, number, [string, string]]>([
   [20, 4, 1, [RIFT, "20 ≥ 15 and 4 > 2 → 1"]],
   [20, 1, 0, [RIFT, "20 ≥ 15 and 1 ≤ 2 → 0"]],
@@ -373,6 +373,12 @@ test.each<[string, Row[], number, string]>([
     [read("Calc(2)", 2), read("Stats.a", 3)],
     6,
     "Calc(2) × Stats.a",
+  ],
+  [
+    "two caches with the generic name: their paths",
+    [read("DNSM.CacheA[0]", 2), read("DNSM.CacheB[0]", 3)],
+    6,
+    "DNSM.CacheA[0] × DNSM.CacheB[0]",
   ],
 ])("%s", (_name, kids, v, names) => {
   expect(formulaFor(at(v), kids)?.[0]).toBe(names);

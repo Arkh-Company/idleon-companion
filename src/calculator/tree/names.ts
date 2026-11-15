@@ -140,6 +140,10 @@ export function nameOf(code: string): string | null {
   return SHAPE_NAMES.find((r) => r.test.test(code))?.name(code, call) ?? null;
 }
 
+/** Whether `code`'s name, if any, is only a rule by shape: the bench's generic names count as no name yet (FR-012a). */
+export const isGeneric = (code: string): boolean =>
+  !STATIC_NAMES.has(code) && !RECIPE_KEYS.has(code);
+
 /** What a name never holds (src/main/tree-check.ts refuses the whole tree for it): a table text with one stays out. */
 const NOT_A_NAME = /[{};]|=>|&&|\|\||==/;
 const MAX_NAME = 200;

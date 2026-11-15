@@ -11,7 +11,7 @@ import {
 import type { Curve } from "./curves.ts";
 import { classify } from "./kinds.ts";
 import { formulaOut } from "./math.ts";
-import { nameOf } from "./names.ts";
+import { isGeneric, nameOf } from "./names.ts";
 import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */
@@ -67,6 +67,10 @@ export function row(
 ): Node {
   const name =
     fields.name ?? (fields.code === null ? null : nameOf(fields.code));
+  // a name by shape only (tree/names.ts) is shown, and still counts as no name yet
+  const generic =
+    fields.name === undefined &&
+    (fields.code === null || isGeneric(fields.code));
   return {
     name: name ?? GENERIC_NAME,
     fmt: null,
@@ -78,7 +82,7 @@ export function row(
     share: null,
     shareMode: null,
     flags: {
-      ...(name === null ? { unnamed: true } : {}),
+      ...(name === null || generic ? { unnamed: true } : {}),
       ...(fields.value === null ? { unavailable: true } : {}),
     },
     kids: [],

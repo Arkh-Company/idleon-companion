@@ -79,6 +79,11 @@ test.each([
   ["Stats.q", null],
 ])("%s is named %s by its shape", (code, name) => {
   expect(nameOf(code)).toBe(name);
+  // a name by shape is the bench's generic one: no name yet, so the ⓘ writes the game's path (FR-012a)
+  expect(row({ pieceKey: "k", value: 1, code })).toMatchObject({
+    name: name ?? GENERIC_NAME,
+    flags: { unnamed: true },
+  });
 });
 
 test.each([
