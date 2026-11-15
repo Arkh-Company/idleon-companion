@@ -1,8 +1,10 @@
 // The passes of pieces.cjs `finish` that look at a row and the level under it (spec 008, T023; spec Open Questions,
 // 15/11): when a row gets its place, the level under it is built (tree/places.ts), and these passes decide the row's
-// name, its one child and its rows' names over it, in the bench's order: fixNames (tree/kid-names.ts).
+// name, its one child and its rows' names over it, in the bench's order: rule 67 of `rename`, fixNames
+// (tree/kid-names.ts), nametagGrade and stampBonus (tree/parent-renames.ts).
 import type { Above } from "./above-renames.ts";
 import { aboveText, collapsed, kidNames, shinyLevel } from "./kid-names.ts";
+import { nametagGrade, petsEarlier, stampBonus } from "./parent-renames.ts";
 import type { Level } from "./places.ts";
 import { withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -35,6 +37,7 @@ export function parentPasses(
 ): { row: Row; level: Level | null } {
   let n = r;
   let lv = level;
+  if (lv) n = withName(n, petsEarlier(n, lv.rows));
   // fixNames' loop: a parent whose one child says it again is that child, with the child's rows
   while (lv) {
     const at = lv;
@@ -49,8 +52,12 @@ export function parentPasses(
   }
   if (!lv) return { row: n, level: lv };
   n = withName(n, shinyLevel(n, lv.rows));
-  return {
-    row: n,
-    level: { ...lv, rows: kidNames(lv.rows, n.node, up.map(aboveText)) },
-  };
+  const tag = nametagGrade(n, kidNames(lv.rows, n.node, up.map(aboveText)));
+  n = withName(n, tag.name);
+  const at = { ...lv, rows: tag.kids };
+  n = withName(
+    n,
+    stampBonus(n, at.rows, (k) => under(k, at)?.rows ?? []),
+  );
+  return { row: n, level: at };
 }
