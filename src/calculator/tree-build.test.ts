@@ -35,8 +35,9 @@ test("the root is the root call, with the call's value", () => {
     value: 52,
     code: "TreeSources(0, 0, 0)",
     role: "root",
-    flags: { unnamed: true },
   });
+  // the root has its name, "Total", whatever its call's (the window shows "no name yet" otherwise)
+  expect(root.flags).toEqual({});
 });
 
 test("a root whose last step is no sum or product: its calls, in order, then its state reads", () => {

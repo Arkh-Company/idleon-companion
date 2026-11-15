@@ -345,8 +345,12 @@ export function buildTree(
   const value = valueOf(top.v);
   const root: CalcTreeNode = {
     id: "root",
-    ...row({ pieceKey: keyOf(top), value, code: callText(top) }),
-    name: "Total",
+    ...row({
+      pieceKey: keyOf(top),
+      value,
+      code: callText(top),
+      name: "Total",
+    }),
     role: "root",
   };
   if (value !== null) {

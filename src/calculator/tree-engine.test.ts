@@ -86,7 +86,7 @@ test("the root of the Drop Rate", () => {
     role: "root",
     share: null,
     shareMode: null,
-    flags: { unnamed: true }, // its call is named only by its mode in words (P2)
+    flags: {},
     kids: [
       {
         id: "root/Game value",
