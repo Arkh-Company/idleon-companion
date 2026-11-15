@@ -1,8 +1,10 @@
 // pieces.cjs `tidy` (spec 008, T022) from the bench at BASELINE-4, the ×1 group aside (rows.ts `timesOne`, applied when
 // a level is finished): the rows of a step's terms with the repeats of an earlier value and of a cache read taken out.
-import type { RecValue } from "../recording.ts";
+import type { RecNode, RecValue } from "../recording.ts";
+import type { Expr } from "./steps.ts";
+import { termName } from "./names.ts";
 import { near, num } from "./math.ts";
-import { row, valueOf } from "./rows.ts";
+import { callText, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 /** A constant of the game's code, named by its place. */
@@ -31,6 +33,7 @@ export function tidy(
   rows: Row[],
   op: string | null,
   args: readonly RecValue[],
+  parent?: RecNode,
 ): Row[] {
   const isEarlier = (r: Row) => !!r.earlier && !hasKids(r);
   const passed = args.filter((x) => typeof x === "number");
@@ -55,8 +58,16 @@ export function tidy(
         r.node.value,
       );
     });
+  // a row that only repeats its block (the block's name and value, nothing under it) says nothing
+  const own = parent && termName(callText(parent));
   return out.filter(
     (r) =>
+      !(
+        own &&
+        r.node.name === own &&
+        near(r.node.value, parent.v) &&
+        !hasKids(r)
+      ) &&
       !(
         (r.node.code ?? "").startsWith("DNSM.") &&
         !hasKids(r) &&
@@ -69,3 +80,20 @@ export function tidy(
       ),
   );
 }
+
+/**
+ * pieces.cjs `cacheStepRows`: the one row of a step that is a call (or a def of one) with no name, nothing under it and
+ * the cache's value says nothing of the cache, and leaves.
+ */
+export const loneCall = (
+  e: Expr,
+  rows: Row[],
+  value: unknown,
+  opens: (r: Row) => boolean,
+): Row[] =>
+  (e.t === "def" ? e.e : e).t === "call"
+    ? rows.filter(
+        (r) =>
+          !(r.node.flags.unnamed && !opens(r) && near(r.node.value, value)),
+      )
+    : rows;

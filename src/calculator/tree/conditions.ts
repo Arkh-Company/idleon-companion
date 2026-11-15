@@ -1,12 +1,13 @@
 // The checks a block made, as Condition rows (spec 008, FR-013): the port of pieces.cjs `comparisons`, `condText`,
 // `condSub`, `condRows`, `isFlagTest` and `mergeTests` [H1-MERGE] from the bench at BASELINE-4. A check on the player's
 // state is one Condition leaf, yes or no, with its subtype; a yes/no read and the test the block made of it are one
-// leaf. Until US1c names the rows, a side of a comparison is written by its term (the path of a read, the call of a
-// block), and the renames of a Condition's name ("completed", "reached", a test "= 1" named as its read) wait for the
-// names, as does the ban flag's name. OPUS4-T2 (the outcome row of a lone check) is in once.ts, over the calls `t1` keeps.
+// leaf. A side of a comparison is written by its name, else by its path or its call (FR-012a); a yes/no read merged into
+// its test "= 1" is said by its name, and the ban flag tested for 0 by what it means. Left out: the 007 dictionary's
+// names of a side (ownSearchName) and a skill's mastery rank by the skill's name (a game table). OPUS4-T2 (the outcome row of a lone check) is in once.ts, over the calls `t1` keeps.
 import type { CALC_CONDITION_KINDS } from "../tree-contract.ts";
 import type { RecNode } from "../recording.ts";
 import { classify } from "./kinds.ts";
+import { termName } from "./names.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -117,6 +118,16 @@ function comparisons(e: Expr, out: Cmp[] = []): Cmp[] {
   return out;
 }
 
+/** A side of a comparison: its read's or its call's name, else its path or its call as it is (FR-012a). */
+const side = (code: string) => termName(code) ?? code;
+/** [H1-MERGE] the ban flag of a talent: tested for 0, the talent counts for the All-talent levels (N.js). */
+export const BAN_FLAG = {
+  /** The ban flag's call, by the start of its code. */
+  test: 'RunCodeOfTypeXforThingY("TalentBannedforAllLV"',
+  name: "Counts for All-talent levels",
+  proof: "bench pieces.cjs mergeTests H1-MERGE; N.js RunCodeOfTypeXforThingY",
+};
+
 export function makeConditions(nodes: readonly RecNode[]) {
   const t1 = new Set<number>();
   function condText(e: Expr, n: RecNode, own: BlockSteps): string | null {
@@ -141,10 +152,10 @@ export function makeConditions(nodes: readonly RecNode[]) {
     }
     if (e.t === "num") return num(e.v);
     if (e.t === "val") return e.v == null ? null : num(e.v);
-    if (e.t === "read") return e.p;
+    if (e.t === "read") return side(e.p);
     if (e.t === "call") {
       const k = nodes[e.id];
-      return k ? callText(k) : null;
+      return k ? side(callText(k)) : null;
     }
     if (e.t === "not") {
       const a = condText(e.a, n, own);
@@ -163,7 +174,7 @@ export function makeConditions(nodes: readonly RecNode[]) {
     if (e.t === "op" || e.t === "fn") {
       const s = firstSrc(e);
       const k = s?.t === "call" ? nodes[s.id] : undefined;
-      return s?.t === "read" ? s.p : k ? callText(k) : null;
+      return s?.t === "read" ? side(s.p) : k ? side(callText(k)) : null;
     }
     return null;
   }
@@ -280,12 +291,25 @@ export function makeConditions(nodes: readonly RecNode[]) {
     const out = conds.map((c) => {
       const r = [...merged].find(([, x]) => x === c)?.[0];
       if (!r) return c;
+      // a yes/no read tested for 1 is said by its name; the ban flag tested for 0 by what it means
+      const term = termOf(r.node);
+      const test =
+        c.test === `${term} = 1` && [0, 1].includes(Number(r.node.value))
+          ? term
+          : c.test === `${term} = 0` &&
+              (r.node.code ?? "").startsWith(BAN_FLAG.test)
+            ? BAN_FLAG.name
+            : c.test;
       // [INT3-MERGE-CODE] the read's code only with the read's own value
       const code =
         !c.node.code && r.node.code && near(c.node.value, r.node.value)
           ? r.node.code
           : c.node.code;
-      return { ...c, node: { ...c.node, code } };
+      return {
+        ...c,
+        ...(test === undefined ? {} : { test }),
+        node: { ...c.node, code },
+      };
     });
     const v = Number(n.v);
     if (

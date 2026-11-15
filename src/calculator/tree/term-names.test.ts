@@ -6,11 +6,13 @@ import { checkTree } from "../../main/tree-check.ts";
 import { exprText, isFormulaName } from "./expr.ts";
 import { nameOf } from "./names.ts";
 import { STATIC_NAMES } from "./names-table.ts";
-import { finish, GENERIC_NAME } from "./rows.ts";
+import { finish, GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
-import { branch } from "./tree-fixture.ts";
-import { call, fn, num, op, read, terms } from "./term-fixture.ts";
+import { buildTree } from "../tree-build.ts";
+import { branch, kidsOf, read as read2, recordingOf } from "./tree-fixture.ts";
+import { loneCall } from "./tidy.ts";
+import { call, fn, nodes, num, op, read, terms } from "./term-fixture.ts";
 
 /** A state read the names table names (no game cache, no call). */
 const NAMED =
@@ -182,5 +184,54 @@ test("formulas.cjs r1src: a branch that shares its name with another part takes 
   expect(names([both, r1("Other Mode")])).toEqual([
     "Sum of 2 sources",
     "Sum of 2 sources (Other Mode)",
+  ]);
+});
+
+test("pieces.cjs tidy: a row that only repeats its block (the block's name and value, nothing under it) leaves", () => {
+  const block = nodes[4] ?? nodes[0];
+  const own = (v: number, open: Row["open"] = null): Row => ({
+    node: row({ pieceKey: null, value: v, code: null, name: "Some Mode" }),
+    open,
+  });
+  const rows = [own(3), own(2), own(3, 7), read2("Stats.q", 3)];
+  expect(
+    block &&
+      terms.tidy(rows, "+", [], block).map((r) => [r.node.name, r.node.value]),
+  ).toEqual([
+    ["Some Mode", 2],
+    ["Some Mode", 3],
+    [GENERIC_NAME, 3],
+  ]);
+  // a block with no name, or no block, has nothing to repeat
+  expect(terms.tidy(rows, "+", [], nodes[1])).toHaveLength(4);
+  expect(terms.tidy(rows, "+", [])).toHaveLength(4);
+});
+
+test("pieces.cjs cacheStepRows: a cache's one step that is a call with no name, nothing under it and the cache's value says nothing", () => {
+  const lone = (e: Expr, r: Row, v = 3) => loneCall(e, [r], v, () => false);
+  const unnamed: Row = read2("B()", 3);
+  expect(lone(call(1, 3), unnamed)).toEqual([]);
+  expect(lone({ t: "def", e: call(1, 3), v: 3 }, unnamed)).toEqual([]);
+  // with a name, another value, something under it, or another term, it stays
+  const withName: Row = { node: { ...unnamed.node, flags: {} }, open: null };
+  expect(lone(call(4, 3), withName)).toHaveLength(1);
+  expect(lone(call(1, 3), unnamed, 4)).toHaveLength(1);
+  expect(loneCall(call(1, 3), [unnamed], 3, () => true)).toHaveLength(1);
+  expect(lone(read("A", 3), unnamed)).toHaveLength(1);
+});
+
+test("in the tree, a block's row that only repeats the block leaves its rows", () => {
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "Invented", a: ["SomeMode", 0, 0], v: 3, c: [2, 3] },
+      { b: "Invented", a: ["SomeMode", 0, 0], v: 3 },
+      { b: "Other", v: 0 },
+    ],
+    [],
+    { root: 0 },
+  );
+  expect(kidsOf(buildTree(rec, 0).root).map((k) => k.code)).toEqual([
+    "Other()",
   ]);
 });

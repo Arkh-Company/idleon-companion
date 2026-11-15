@@ -8,7 +8,7 @@ import {
   SKILL_RANKS,
   TURN_KINDS,
 } from "./loop-parts.ts";
-import { COND_SUBS } from "./conditions.ts";
+import { BAN_FLAG, COND_SUBS } from "./conditions.ts";
 import { OPEN_XF } from "./once.ts";
 import { ARENA_TURN, TURN_NAMES } from "./turn-names.ts";
 import { RAW_PASSES } from "./raw-passes.ts";
@@ -51,6 +51,7 @@ const TABLES = {
   OPEN_XF: [OPEN_XF],
   TURN_NAMES,
   ARENA_TURN: [ARENA_TURN],
+  BAN_FLAG: [BAN_FLAG],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

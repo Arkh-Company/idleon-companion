@@ -364,7 +364,11 @@ export function makeTerms(ctx: TermContext) {
     ): { rows: Row[]; op: "*" | "+" | null } {
       const op = topOp(e);
       return withTurn(t, () => {
-        if (op) return { rows: tidy(terms(e, op, 1, reads), op, t.args), op };
+        if (op)
+          return {
+            rows: tidy(terms(e, op, 1, reads), op, t.args, ctx.block),
+            op,
+          };
         const r = rowOfTerm(e, null, 1, reads);
         return { rows: r ? [r] : [], op };
       });

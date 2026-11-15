@@ -34,7 +34,7 @@ import {
   skillRankRows,
   TURN_KINDS,
 } from "./loop-parts.ts";
-import { hasKids } from "./tidy.ts";
+import { hasKids, loneCall } from "./tidy.ts";
 import {
   arenaTurn,
   otherReads,
@@ -95,6 +95,19 @@ export function makeCaches(ctx: CacheContext) {
     const { rows, op } = terms.rowsAt({ args: w.a, steps, at }, e, reads);
     return ctx.finish(e.v, rows, op === "*");
   }
+  /** pieces.cjs cacheStepRows: the writer's step that made the cache's value, without a lone call that says nothing. */
+  const cacheStep = (
+    w: RecNode,
+    steps: readonly Step[],
+    at: number,
+    e: Expr,
+    value: number,
+    depth: number,
+    seen: ReadonlySet<number>,
+  ) =>
+    loneCall(e, stepRowsAt(w, steps, at, e, seen, []), value, (r) =>
+      opens(r, depth + 1, new Set(seen).add(w.id)),
+    );
   const stepRows = (
     w: RecNode,
     steps: readonly Step[],
@@ -220,7 +233,7 @@ export function makeCaches(ctx: CacheContext) {
             flags: {},
           }),
           open: null,
-          group: ctx.finish(pt.d, at.tidy(rows, "*", w.a), true),
+          group: ctx.finish(pt.d, at.tidy(rows, "*", w.a, w), true),
         };
       }
       // the turn's ⓘ: the part its step adds to the total
@@ -301,7 +314,7 @@ export function makeCaches(ctx: CacheContext) {
       const st0 = wsteps[at];
       if (st0 && !near(w.v, value))
         return {
-          rows: stepRowsAt(w, wsteps, at, st0.e, seen, []),
+          rows: cacheStep(w, wsteps, at, st0.e, value, depth, seen),
           f: ctx.formulas.expr(st0.e, turnReads(w, []), value),
         };
     }
@@ -339,7 +352,7 @@ export function makeCaches(ctx: CacheContext) {
     const st = wsteps[at];
     if (!st) return { rows: [], f: null };
     return {
-      rows: stepRowsAt(w, wsteps, at, st.e, seen, []),
+      rows: cacheStep(w, wsteps, at, st.e, value, depth, seen),
       f: readsPath(st.e, p)
         ? null
         : ctx.formulas.expr(st.e, turnReads(w, []), value),

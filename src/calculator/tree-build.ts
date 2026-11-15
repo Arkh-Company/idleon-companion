@@ -283,10 +283,10 @@ export function buildTree(
       firstSrc(st.e)
     ) {
       const parts = terms.branchOf(st.e, reads).group ?? [];
-      if (parts.length) return terms.tidy(parts, null, n.a);
+      if (parts.length) return terms.tidy(parts, null, n.a, n);
     }
     const all = conditions.mergeTests(n, rows, data, conds, own);
-    return finish(n.v, terms.tidy(all, op ?? "*", n.a), true);
+    return finish(n.v, terms.tidy(all, op ?? "*", n.a, n), true);
   }
   const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
     JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
