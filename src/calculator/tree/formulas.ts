@@ -6,7 +6,7 @@
 // path when it has no name yet (FR-012a); a Condition's is its comparison. Left out: `formulaOf` (A), a branch named by
 // its own sum with numbers (the app names it after US1c; its sum is the row's `xformula` already); `lastFormula` on a
 // curve call (the curve block is a branch of its own with its formula, rows.ts); `borrowStep` (it reads a game table
-// the recording does not keep); the renames by shape and the R1 source names (US1c).
+// the recording does not keep); the renames by shape (US1c). The R1 source names are rows.ts `finish`'s.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { formulaOut } from "./math.ts";

@@ -1,6 +1,7 @@
 // The parts of a step's expression (spec 008, T022): the helpers of pieces.cjs `rowOfTerm` from the bench at
 // BASELINE-4 that read an expression tree of tree/steps.ts: its top operator, its terms, its first source, how many
-// sources of the player's state it has, the value a read took in it and whether it adds anything.
+// sources of the player's state it has, the value a read took in it, whether it adds anything, and its text with numbers.
+import { num } from "./math.ts";
 import type { Expr } from "./steps.ts";
 
 type V = Expr["v"];
@@ -72,3 +73,30 @@ export const noSource = (x: Expr): boolean =>
   x.t === "num" ||
   x.t === "val" ||
   (x.t === "op" && noSource(x.l) && noSource(x.r));
+
+const SYM: Readonly<Record<string, string>> = {
+  "*": "×",
+  "/": "÷",
+  "-": "−",
+  "+": "+",
+};
+/** pieces.cjs `text`: an expression written with its numbers, the name the bench gives a branch of its parts. */
+export function exprText(e: Expr): string {
+  if (e.t === "def") return exprText(e.e);
+  if (e.t === "op") {
+    const side = (x: Expr) => {
+      let y = x;
+      while (y.t === "def") y = y.e;
+      return y.t === "op" ? `(${exprText(x)})` : exprText(x);
+    };
+    return `${side(e.l)} ${SYM[e.o] ?? e.o} ${side(e.r)}`;
+  }
+  if (e.t === "fn")
+    return `${String(e.name)}(${e.args.map(exprText).join(", ")})`;
+  return num(e.v);
+}
+/** formulas.cjs `isFormulaName`: a name that is only a sum with numbers, which a branch's source name replaces. */
+export const isFormulaName = (s: string): boolean =>
+  /\d/.test(s) &&
+  /[×÷+−-]|min\(|max\(|pow\(/.test(s) &&
+  !/[a-z]{3,}/i.test(s.replace(/min|max|pow|floor|ceil/g, ""));

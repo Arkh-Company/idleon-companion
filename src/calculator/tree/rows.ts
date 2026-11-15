@@ -51,6 +51,8 @@ export interface Row {
   f?: [names: string, numbers: string];
   /** A cache row that takes its writer's ⓘ only when it gives the row's value, or never (tree/cache-formulas.ts). */
   writerF?: "sameValue" | "never";
+  /** formulas.cjs `r1src`: the name of the first source of a branch around a call, which tells two such branches apart. */
+  r1src?: string;
 }
 
 export const valueOf = (v: RecValue | undefined): number | boolean | null =>
@@ -158,10 +160,28 @@ export function timesOne(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
   return [...rows.filter((r) => !one.includes(r)), g];
 }
 
+/**
+ * formulas.cjs `r1src`: a branch with the name of another part of its level takes its first source's name after it,
+ * in order (the bench renames as it goes, so the last of two same names keeps its own).
+ */
+function bySource(rows: Row[]): Row[] {
+  const out = [...rows];
+  out.forEach((r, i) => {
+    const src = r.r1src;
+    if (
+      src &&
+      out.some((o) => o !== r && o.node.name === r.node.name) &&
+      !r.node.name.includes(src)
+    )
+      out[i] = { ...r, node: { ...r.node, name: `${r.node.name} (${src})` } };
+  });
+  return out;
+}
+
 /** A level's rows typed, with their shares; then a product's parts at ×1 (when `ones`) and a sum's parts at 0. */
 export function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
   // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
-  const typed = rows.map((r) =>
+  const typed = bySource(rows).map((r) =>
     r.node.kids === "lazy" || r.node.leaf || r.group
       ? r
       : { ...r, node: { ...r.node, ...classify(r.node) } },

@@ -12,6 +12,9 @@ export const nodes: RecNode[] = [
   { id: 1, b: "B", a: [], c: [], p: 0, pxi: 0, v: 3 },
   { id: 2, b: "C", a: [], c: [], p: 0, pxi: 0, v: 2 },
   { id: 3, b: "ArbitraryCode5Inputs", a: [], c: [], p: 0, pxi: 0, v: 8 },
+  // two calls named by their mode in words (tree/names.ts, P2)
+  { id: 4, b: "Invented", a: ["SomeMode", 0, 0], c: [], p: 0, pxi: 0, v: 3 },
+  { id: 5, b: "Invented", a: ["OtherMode", 0, 0], c: [], p: 0, pxi: 0, v: 2 },
 ];
 export const finished: boolean[] = [];
 /** The terms of `block`'s steps (the first node by default), in the loop entry `entry` gives. */

@@ -175,7 +175,7 @@ export const isGeneric = (code: string): boolean =>
   !!SHAPE_NAMES.find((r) => r.test.test(code))?.generic;
 
 /** A term of the ⓘ for `code`: its name, else the game's path or call as it is (FR-012a). */
-const termName = (code: string): string | null =>
+export const termName = (code: string): string | null =>
   isGeneric(code) ? null : nameOf(code);
 
 /** pieces.cjs `pathName`: a read in the ⓘ by its name, its tag in brackets and its " · …" gone; else its path. */
