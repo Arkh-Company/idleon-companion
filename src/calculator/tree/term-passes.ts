@@ -1,6 +1,6 @@
 // The game's own passes of pieces.cjs `rowOfTerm` (spec 008, T022) from the bench at BASELINE-4, each a rule with its
 // proof: the running total of a loop's earlier turns ([D9-7], W3), the length of a list the game counts (OPUS4-8,
-// OPUS1-P5) and a table the block writes in its own code (FIX-4, Holes). Their rows keep the generic name until US1c.
+// OPUS1-P5) and a table the block writes in its own code (FIX-4, Holes).
 import type { RecNode, RecValue } from "../recording.ts";
 import { near } from "./math.ts";
 import { row, valueOf } from "./rows.ts";
@@ -12,29 +12,86 @@ interface Rule {
   test: RegExp;
   proof: string;
 }
-/** W3: the caches a loop fills turn by turn, each turn adding to the total of the earlier ones. */
-export const EARLIER_TOTALS: readonly Rule[] = [
+/**
+ * W3, pieces.cjs `EARLIER_NAMES`: the caches a loop fills turn by turn, each turn adding to the total of the earlier
+ * ones; the row of that total is named for it, with the loop that fills it.
+ */
+export const EARLIER_TOTALS: readonly (Rule & {
+  name: string;
+  loop: string;
+})[] = [
   {
-    test: /^DNSM\.(CapeVineBonTOT|PremHatBonTOT|GalleryTrophyBonTOT|GalleryNametagBonTOT)\./,
+    test: /^DNSM\.CapeVineBonTOT\./,
+    name: "Earlier cape vines with the same stat",
+    loop: "Gallery(InitializeCapeBonuses): the total of the earlier cape vines with this stat, before this one adds to it",
     proof: "bench pieces.cjs EARLIER_NAMES; N.js Gallery",
   },
   {
-    test: /^DNSM\.(AlchVials|BoxRewards|CardBonusS)\./,
+    test: /^DNSM\.PremHatBonTOT\./,
+    name: "Earlier hats with the same stat",
+    loop: "Gallery(InitializePremHatBonuses): the total of the earlier hats with this stat, before this one adds to it",
+    proof: "bench pieces.cjs EARLIER_NAMES; N.js Gallery",
+  },
+  {
+    test: /^DNSM\.GalleryTrophyBonTOT\./,
+    name: "Earlier trophies with the same stat",
+    loop: "Gallery(InitializeTrophyBonuses): the total of the earlier trophies with this stat, before this one adds to it",
+    proof: "bench pieces.cjs EARLIER_NAMES; N.js Gallery",
+  },
+  {
+    test: /^DNSM\.AlchVials\./,
+    name: "Earlier vials with the same bonus",
+    loop: "TalentCalc(AlchVials): the total of the earlier vials with this bonus, before this one adds to it",
+    proof: "bench pieces.cjs EARLIER_NAMES; N.js TalentCalc",
+  },
+  {
+    test: /^DNSM\.BoxRewards\./,
+    name: "Earlier post office boxes with the same reward",
+    loop: "TalentCalc(BoxRewards): the total of the earlier post office boxes with this reward, before this one adds to it",
     proof: "bench pieces.cjs EARLIER_NAMES; N.js TalentCalc",
   },
   {
     test: /^DNSM\.StarSigns\./,
+    name: "Earlier star signs with the same bonus",
+    loop: "StarSigns: the total of the earlier star signs (one conditional per sign, in sign order) with this bonus, before this one adds to it",
     proof: "bench pieces.cjs EARLIER_NAMES; N.js StarSigns",
   },
   {
+    test: /^DNSM\.CardBonusS\./,
+    name: "Earlier equipped cards with the same bonus",
+    loop: "TalentCalc(CardBonusS): the total of the earlier equipped cards with this bonus, before this one adds to it",
+    proof: "bench pieces.cjs EARLIER_NAMES; N.js TalentCalc",
+  },
+  {
     test: /^DNSM\.TotalStatsETCmap\./,
+    name: "Earlier worn items with the same bonus",
+    loop: "TotalStats(calcEtcBonuses): the total of the earlier worn items with this bonus, before this one adds to it",
     proof: "bench pieces.cjs EARLIER_NAMES; N.js TotalStats",
   },
   {
     test: /^DNSM\.ChipBbonusz\./,
+    name: "Earlier chips with the same bonus",
+    loop: "ActionBlock(RecalcChipBonuses): the total of the earlier chips with this bonus, before this one adds to it",
     proof: "bench pieces.cjs EARLIER_NAMES; N.js ActionBlock",
   },
+  {
+    test: /^DNSM\.GalleryNametagBonTOT\./,
+    name: "Earlier nametags with the same stat",
+    loop: "Gallery(InitializeNametagBonuses): the total of the earlier nametags with this stat, before this one adds to it",
+    proof: "bench pieces.cjs EARLIER_NAMES; N.js Gallery",
+  },
 ];
+/** The row of a loop's earlier turns in `entry`'s cache: its name and why (pieces.cjs EARLIER_NAMES). */
+function earlierRow(entry: string, code: string): Row | null {
+  const en = EARLIER_TOTALS.find((r) => r.test.test(entry));
+  return en
+    ? leafRow(code, 0, {
+        name: en.name,
+        leaf: "unknown",
+        why: `progress of the loop in ${en.loop} (N.js; nothing earlier wrote it)`,
+      })
+    : null;
+}
 /**
  * [D9-7] the worn items' loop adds each item to its stat's total; the recording binds that first 0 to the running
  * total of another loop (`test`, read in a step that reads the item's definition, `step`): it is the stat's total.
@@ -66,8 +123,6 @@ export const CODE_TABLES: readonly (Rule & { block: string })[] = [
   },
 ];
 
-const EARLIER_WHY =
-  "the total of the earlier turns of the game's loop, before this one adds to it";
 const leafRow = (
   code: string | null,
   v: RecValue | undefined,
@@ -83,7 +138,7 @@ export function wornTotal(p: string, v: unknown, step: Expr | undefined) {
     Number(v) === 0 &&
     !!step &&
     JSON.stringify(step).includes(WORN_TOTAL.step)
-    ? leafRow(WORN_TOTAL.code, 0, { leaf: "unknown", why: EARLIER_WHY })
+    ? earlierRow(`${WORN_TOTAL.code}.x`, WORN_TOTAL.code)
     : null;
 }
 
@@ -98,12 +153,11 @@ export function earlierTotal(
   named: boolean,
 ) {
   if (!entry || Number(v) !== 0 || !named) return null;
-  if (!EARLIER_TOTALS.some((r) => r.test.test(entry))) return null;
   const fam = entry.slice(0, entry.lastIndexOf(".") + 1);
   return [...reads].some(
     ([rp, rv]) => rv === "(undefined)" && rp.startsWith(fam) && rp !== entry,
   )
-    ? leafRow(entry, 0, { leaf: "unknown", why: EARLIER_WHY })
+    ? earlierRow(entry, entry)
     : null;
 }
 

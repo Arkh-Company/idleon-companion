@@ -61,11 +61,12 @@ export const valueOf = (v: RecValue | undefined): number | boolean | null =>
 export const callText = (n: RecNode): string =>
   `${n.b}(${n.a.map((a) => JSON.stringify(a)).join(", ")})`;
 
-/** A row of a call or a read named by its code (tree/names.ts); with no name, the generic one and `unnamed`. */
+/** A row with its name, or named by its code (tree/names.ts); with no name, the generic one and `unnamed`. */
 export function row(
   fields: Pick<CalcTreeNode, "pieceKey" | "value" | "code"> & Partial<Node>,
 ): Node {
-  const name = fields.code === null ? null : nameOf(fields.code);
+  const name =
+    fields.name ?? (fields.code === null ? null : nameOf(fields.code));
   return {
     name: name ?? GENERIC_NAME,
     fmt: null,

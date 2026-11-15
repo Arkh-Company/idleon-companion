@@ -35,6 +35,11 @@ test("a call no rule nor the table names gives a generic name and flags.unnamed"
     name: GENERIC_NAME,
     flags: { unnamed: true },
   });
+  // a row given its name is named, whatever its code
+  expect(
+    row({ pieceKey: "k", value: 1, code: "Invented()", name: "A rule's name" })
+      .flags,
+  ).toEqual({});
   // a part with no value is unavailable, named or not
   expect(row({ pieceKey: "k", value: null, code: staticKey }).flags).toEqual({
     unavailable: true,
