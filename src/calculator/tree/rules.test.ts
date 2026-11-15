@@ -29,6 +29,12 @@ import { TABLE_TEXTS } from "./table-names.ts";
 import { RENAMES } from "./renames.ts";
 import { CARD_STAR, CONTEXT_READS, LEVEL_RENAMES } from "./level-renames.ts";
 import {
+  BANNED,
+  CODE_LEAVES,
+  DUNGEON_GATE,
+  FISHING_SPOT,
+} from "./leaf-passes.ts";
+import {
   ABOVE_RENAMES,
   BUBBLE_FACTOR,
   BUBBLE_SCRATCH,
@@ -77,6 +83,10 @@ const TABLES = {
     ...ABOVE_RENAMES.earlier,
     ABOVE_RENAMES.spelunk,
   ],
+  CODE_LEAVES,
+  DUNGEON_GATE: [DUNGEON_GATE],
+  BANNED: [BANNED],
+  FISHING_SPOT: [FISHING_SPOT],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
