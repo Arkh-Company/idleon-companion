@@ -251,8 +251,13 @@ export function buildTree(
     // a block that only returns one cache: its rows are the cache's own computation
     const cached =
       rows.length === 0 &&
-      onlyCache(n, data, (o) => caches.open(o, depth, new Set([...seen, id])));
-    if (cached) return cached;
+      onlyCache(n, data, (o) =>
+        caches.opened(o, depth, new Set([...seen, id])),
+      );
+    if (cached) {
+      if (cached.xf) openXf.set(keyOf(n), cached.xf);
+      return cached.rows;
+    }
     const conds = conditions.condRows(n, own);
     // OPUS4-T2: a block with no step and one check returns a table cell or 0: the outcome is a row
     const outcome =
@@ -287,6 +292,8 @@ export function buildTree(
     JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
   );
 
+  /** [NR-G 2b] the ⓘ a call takes from the one cache it returns, by piece, once its rows are built. */
+  const openXf = new Map<string, [string, string]>();
   const places = new Map<string, Place>();
   /** Each row with its id (the path of names, `#n` on a repeat), its group placed under it, a known game bug tagged. */
   function place(
@@ -337,9 +344,10 @@ export function buildTree(
     }
     const rows = pieces.explain(p.open, p.depth, new Set(p.seen));
     if (!rows) return null;
-    const w = withFormula(p.row, rows);
     // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
     const from = nodes[p.open];
+    const xf = from && openXf.get(keyOf(from));
+    const w = withFormula(xf ? { ...p.row, xf } : p.row, rows);
     const parent = { id: p.node.id, code: from ? callText(from) : null };
     return {
       formula: w.formula,

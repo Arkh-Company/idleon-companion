@@ -2,9 +2,9 @@
 // `exprTexts`, `exprFormula`, `callFormula` and `familyFormula` from the bench at BASELINE-4. An expression is written
 // twice, with its parts as tokens (found later among the row's parts, tree/formulas.ts) and with its numbers, and kept
 // only when it gives the row's value; it is computed here, never by `Function` (FR-010: nothing of the code runs). A
-// part with no row is its name (pieces.cjs `pathName`, `callName`), else its path or its call as it is (FR-012a). Left
-// out: the bench's `OPEN_XF` (the ⓘ of a worn item's total, NR-G 2, with the names of US1c) and the talent's curve read
-// from its table when the recording did not keep it (the 007 index), as in raw-passes.ts.
+// part with no row is its name (pieces.cjs `pathName`, `callName`), else its path or its call as it is (FR-012a). The
+// bench's `OPEN_XF` (NR-G 2b) is once.ts `onlyCache`'s, given to the call once its rows are built (tree-build.ts). Left
+// out: the talent's curve read from its table when the recording did not keep it (the 007 index), as in raw-passes.ts.
 import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3 } from "./curves.ts";
 import { token } from "./formulas.ts";

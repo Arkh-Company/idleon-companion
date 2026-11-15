@@ -6,7 +6,7 @@
 // run without it) and the cut of the other sources of a branch (R1_CAP: a lazy branch has no size yet).
 import type { RecNode, RecValue } from "../recording.ts";
 import { MAX_DEPTH } from "./pieces.ts";
-import { callText, row, valueOf } from "./rows.ts";
+import { callText, row, valueOf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import {
   adds,
@@ -27,7 +27,9 @@ import {
   codeTable,
   earlierTotal,
   listCount,
+  wornItem,
   wornTotal,
+  wornTurn,
 } from "./term-passes.ts";
 import type { Reads } from "./val-path.ts";
 import type { CodeFormulas } from "./code-formulas.ts";
@@ -92,19 +94,9 @@ const branch = (v: V, group: Row[]): Row => ({
   open: null,
   group,
 });
-/** A branch built here named `name`, a name of its own. */
-const named = (r: Row, name: string | null): Row =>
-  name === null
-    ? r
-    : { ...r, node: { ...r.node, name, flags: withoutUnnamed(r.node.flags) } };
-const withoutUnnamed = (flags: Row["node"]["flags"]) => {
-  const out = { ...flags };
-  delete out.unnamed;
-  return out;
-};
 /** formulas.cjs `fallback`: the branch of an expression takes `name` when its own name would be its sum with numbers. */
 const fallback = (r: Row, e: Expr, name: string | null) =>
-  isFormulaName(exprText(e)) ? named(r, name) : r;
+  isFormulaName(exprText(e)) ? withName(r, name) : r;
 export type Terms = ReturnType<typeof makeTerms>;
 export function makeTerms(ctx: TermContext) {
   const { nodes } = ctx;
@@ -257,7 +249,7 @@ export function makeTerms(ctx: TermContext) {
         return r && { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
       }
       // the branch of an expression is named by its first source
-      const r = named(exprRow(x, d, reads), sourceName(firstSrc(x)));
+      const r = withName(exprRow(x, d, reads), sourceName(firstSrc(x)));
       return { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
     }
     if (e.t === "num")
@@ -319,6 +311,9 @@ export function makeTerms(ctx: TermContext) {
       !(typeof k.v === "number" && typeof e.v === "number" && !near(k.v, e.v))
     )
       return ctx.call(k, e.v, reads);
+    // [NR-G 2] in a turn of the worn items' total, the call is only the multiplier of the item's value
+    if (wornTurn(ctx.entry(), k, e))
+      return wornItem(exprRow(e, d - 1, reads), k, e);
     // [R1-PATCH] around a call whose value is not the call's own, or with two or more sources: the branch of its parts
     if (
       stateSrc(e) > 1 ||

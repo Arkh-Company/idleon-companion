@@ -92,6 +92,14 @@ export function row(
   };
 }
 
+/** Row `r` named `name`, a name of its own (no longer `unnamed`); null leaves it as it is. */
+export function withName(r: Row, name: string | null): Row {
+  if (name === null) return r;
+  const flags = { ...r.node.flags };
+  delete flags.unnamed;
+  return { ...r, node: { ...r.node, name, flags } };
+}
+
 const number = (v: CalcTreeNode["value"]) =>
   typeof v === "boolean" ? Number(v) : v;
 

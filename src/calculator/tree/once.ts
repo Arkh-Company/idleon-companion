@@ -2,27 +2,43 @@
 // cache shows the cache's own computation, and a block with no step and one check that returns a table cell or 0
 // (OPUS4-T2) shows that outcome beside the check. [F2-TOP], the third, is in tree-build.ts, beside the block's rows.
 import type { RecNode } from "../recording.ts";
+import { withWriterFormula } from "./cache-formulas.ts";
+import type { Opened } from "./cache-formulas.ts";
+import type { Pair } from "./formulas.ts";
 import { near } from "./math.ts";
+import { WORN_TURN } from "./term-passes.ts";
 import { row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 
+/** [NR-G 2b] the cache whose ⓘ (its writer's step) goes up with its rows to the block that only returns it. */
+export const OPEN_XF = {
+  test: WORN_TURN.test,
+  proof: "bench pieces.cjs explainOnce0 NR-G 2b; N.js TotalStats",
+};
+
 /**
  * A block with no row of its own whose data rows all have its value, one of them a cache that opens: that cache's rows
- * (`open`), or null.
+ * (`open`) and, for an OPEN_XF cache, its writer's ⓘ for the block; or null.
  */
 export function onlyCache(
   n: RecNode,
   data: readonly Row[],
-  open: (o: CacheOpen) => Row[] | null,
-): Row[] | null {
+  open: (o: CacheOpen) => Opened | null,
+): { rows: Row[]; xf: Pair | null } | null {
   const same = data.filter(
     (x) => Math.abs(Number(x.node.value) - Number(n.v)) < 1e-9,
   );
   if (!same.length || same.length !== data.length) return null;
   for (const x of same)
     if (x.open !== null && typeof x.open !== "number") {
-      const rows = open(x.open);
-      if (rows?.length) return rows;
+      const got = open(x.open);
+      if (got?.rows.length)
+        return {
+          rows: got.rows,
+          xf: x.open.path.startsWith(OPEN_XF.test)
+            ? (withWriterFormula(x, got.f).xf ?? null)
+            : null,
+        };
     }
   return null;
 }

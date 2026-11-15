@@ -9,6 +9,7 @@ import {
   TURN_KINDS,
 } from "./loop-parts.ts";
 import { COND_SUBS } from "./conditions.ts";
+import { OPEN_XF } from "./once.ts";
 import { RAW_PASSES } from "./raw-passes.ts";
 import {
   CODE_TABLES,
@@ -16,6 +17,7 @@ import {
   LIST_COUNTS,
   PROGRESS_BY_LABEL,
   WORN_TOTAL,
+  WORN_TURN,
 } from "./term-passes.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
@@ -44,6 +46,8 @@ const TABLES = {
   CODE_TABLES,
   SHAPE_NAMES,
   PROGRESS_BY_LABEL,
+  WORN_TURN: [WORN_TURN],
+  OPEN_XF: [OPEN_XF],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

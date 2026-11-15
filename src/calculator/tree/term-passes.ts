@@ -1,11 +1,11 @@
 // The game's own passes of pieces.cjs `rowOfTerm` (spec 008, T022) from the bench at BASELINE-4, each a rule with its
 // proof: the running total of a loop's earlier turns ([D9-7], W3), the length of a list the game counts (OPUS4-8,
-// OPUS1-P5), a table the block writes in its own code (FIX-4, Holes) and a working value that is the progress of the
-// loop of the call that wrote it (DEEP3-FIX-5).
+// OPUS1-P5), a table the block writes in its own code (FIX-4, Holes), a working value that is the progress of the
+// loop of the call that wrote it (DEEP3-FIX-5) and a turn of the worn items' loop (NR-G 2).
 import type { RecNode, RecValue } from "../recording.ts";
 import { near } from "./math.ts";
-import { cacheOf } from "./names.ts";
-import { row, valueOf } from "./rows.ts";
+import { cacheOf, termName } from "./names.ts";
+import { callText, row, valueOf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
 import type { Reads } from "./val-path.ts";
@@ -104,6 +104,47 @@ export const WORN_TOTAL = {
   code: "DNSM.TotalStatsETCmap",
   proof: "bench pieces.cjs rowOfTerm D9-7; N.js TotalStats",
 };
+/**
+ * [NR-G 2] a turn of the worn items' loop (N.js TotalStats calcEtcBonuses): the stat's total adds (1 + a grid bonus ÷
+ * 100) × (the item's definition + the slot's own value); the call is only that multiplier.
+ */
+export const WORN_TURN = {
+  /** The stat's total, by the start of its path. */
+  test: "DNSM.TotalStatsETCmap.",
+  step: '"p":"DNSM.TotalStatsDM.',
+  item: /"p":"DNSM\.TotalStatsDM\.(UQ\d+)val"/,
+  proof: "bench pieces.cjs rowOfTerm NR-G 2; N.js TotalStats",
+};
+/** [NR-G 2] whether call `k` in expression `e` is the multiplier of a turn of the worn items' loop of `entry`. */
+export const wornTurn = (entry: string | null, k: RecNode, e: Expr) =>
+  !!entry?.startsWith(WORN_TURN.test) &&
+  !near(k.v, e.v) &&
+  JSON.stringify(e).includes(WORN_TURN.step);
+/**
+ * [NR-G 2] the branch of a worn item's turn, named for what it is; the slot's own value, which the recording keeps as
+ * a bare 0 with no read, is named for its slot.
+ */
+export function wornItem(r: Row, k: RecNode, e: Expr): Row {
+  const name = termName(callText(k));
+  const uq = WORN_TURN.item.exec(JSON.stringify(e))?.[1] ?? "";
+  const slot = (x: Row): Row => {
+    // a level's parts at 0 may be under its "At 0" group
+    if (x.node.role === "atZero")
+      return { ...x, group: (x.group ?? []).map(slot) };
+    if (!x.earlier || Number(x.node.value) !== 0) return x;
+    const n = withName(
+      x,
+      `Slot value of the item in turn (EquipmentMap ${uq}val)`,
+    );
+    return { node: { ...n.node, leaf: "rawBonus", why: null }, open: n.open };
+  };
+  const out = { ...r, group: (r.group ?? []).map(slot) };
+  return withName(
+    out,
+    name === null ? null : `Worn item value × (1 + ${name} ÷ 100)`,
+  );
+}
+
 /** OPUS4-8 and OPUS1-P5: the length of a list the game counts; `single` asks that only one of them has the value. */
 export const LIST_COUNTS: readonly (Rule & { single?: true })[] = [
   {
