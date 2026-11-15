@@ -21,6 +21,7 @@ import {
   useGameNames,
 } from "./names.ts";
 import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
+import { renameOf } from "./renames.ts";
 import type { NameRecipe } from "./names-table.ts";
 
 afterEach(() => {
@@ -103,7 +104,8 @@ test.each(NAMES_BY_LABEL)(
   (label, name) => {
     for (const code of [`DNSM.${label}`, `DNSM.${label}[2]`]) {
       const r = row({ pieceKey: "k", value: 1, code });
-      expect([r.name, r.flags]).toEqual([name, {}]);
+      // (rename NAMES, over every other name, may name the label's own key)
+      expect([r.name, r.flags]).toEqual([renameOf(code) ?? name, {}]);
       expect(checkTree({ id: "x", ...r }, 1)).not.toBeNull();
     }
     // the label is the whole key: a longer one keeps the generic name

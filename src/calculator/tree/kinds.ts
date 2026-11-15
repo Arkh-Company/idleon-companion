@@ -4,6 +4,7 @@
 // code, then the same rules on the name. Every rule carries its proof as a reference, never as the game's text (FR-032).
 // The bench's last step, the 007 dictionary (`dictKind`), stays out of the app.
 import type { CALC_CONDITION_KINDS, CalcTreeNode } from "../tree-contract.ts";
+import { renameKind } from "./renames.ts";
 
 type Leaf = NonNullable<CalcTreeNode["leaf"]>;
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
@@ -302,6 +303,9 @@ export function classify(n: {
     const r = text ? list.find((x) => x.test.test(text)) : undefined;
     return r && kind(r.leaf, r.condition ?? null);
   };
+  // pieces.cjs rename NAMES types the leaf before classify runs, which keeps a type given
+  const named = renameKind(code);
+  if (named) return kind(named.leaf, named.condition);
   const count = found(COUNT_LEAVES, code);
   if (count) return count;
   // OPUS3-F2b: a leaf already proved to be the progress of a loop keeps its why.

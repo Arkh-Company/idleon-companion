@@ -6,6 +6,7 @@
 import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
 import type { NamePart, NameRecipe } from "./names-table.ts";
 import { clean, isNameText, transformText } from "./name-text.ts";
+import { renameOf } from "./renames.ts";
 
 export {
   clean,
@@ -122,6 +123,9 @@ const RECIPE_KEYS = new Set(NAME_RECIPES.map((r) => r.key));
 
 /** The row's name for its call or read path; null when nothing names it (the row keeps the generic name). */
 export function nameOf(code: string): string | null {
+  // pieces.cjs rename NAMES renames the finished tree: over every other name
+  const renamed = renameOf(code);
+  if (renamed !== null) return renamed;
   const known = STATIC_NAMES.get(code);
   if (known) return known.name;
   if (RECIPE_KEYS.has(code)) return gameNames.get(code) ?? null;
@@ -132,6 +136,7 @@ export function nameOf(code: string): string | null {
 /** Whether `code`'s name, if any, is only the recorder's label of a game's working value: it counts as no name yet
  * (FR-012a), so the ⓘ writes the game's path. */
 export const isGeneric = (code: string): boolean =>
+  renameOf(code) === null &&
   !STATIC_NAMES.has(code) &&
   !RECIPE_KEYS.has(code) &&
   !!SHAPE_NAMES.find((r) => r.test.test(code))?.generic;

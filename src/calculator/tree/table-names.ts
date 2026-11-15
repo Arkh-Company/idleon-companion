@@ -77,6 +77,48 @@ export const TABLE_TEXTS = {
     "clean",
     "bench pieces.cjs itemName",
   ),
+  god: text(
+    "CustomLists.GodsInfo",
+    (g) => [g, 0],
+    null,
+    "clean",
+    "bench pieces.cjs rename NAMES AUDIT-E N; N.js Divinity",
+  ),
+  shinyType: text(
+    "CustomLists.RANDOlist",
+    (t) => [91, t],
+    null,
+    "clean",
+    "bench pieces.cjs rename NAMES AUDIT-E N; N.js Breeding",
+  ),
+  meal: text(
+    "CustomLists.MealINFO",
+    (r) => [r, 0],
+    null,
+    "clean",
+    "bench pieces.cjs rename NAMES OPUS4-3; N.js TalentCalc",
+  ),
+  eventShop: text(
+    "CustomLists.NinjaInfo",
+    (i) => [39, 2 * Number(i)],
+    null,
+    "raw(split '_@_' [0])",
+    "bench pieces.cjs rename NAMES B2-5 rule 72; N.js Summoning2",
+  ),
+  summonUpgrade: text(
+    "CustomLists.SummonUPG",
+    (i) => [i, 3],
+    null,
+    "raw",
+    "bench pieces.cjs rename NAMES B2-4 rule 71; N.js Summoning",
+  ),
+  skill: text(
+    "CustomLists.SkillNames",
+    (s) => [s],
+    null,
+    "raw",
+    "bench pieces.cjs rename NAMES deep-2 skillNameOf; N.js RiftStuff",
+  ),
 } as const;
 
 // ponytail: one set of the installed game's tables per worker, set once at its boot (tree-engine.ts), as the names'.
