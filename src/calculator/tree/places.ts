@@ -1,10 +1,11 @@
 // The rows of a tree in their places (spec 008, T024, research R4): each row with its id (the path of names, `#n` on a
-// repeat), its group placed under it and a known game bug tagged (FR-016); a row with more under it is kept by its id,
-// so the player's expand builds its rows then, over the same recording (tree-build.ts). A level is renamed by the rows
-// above it before its ⓘ (tree/above-renames.ts).
+// repeat), its group placed under it and a known game bug tagged (FR-016). A row with more under it has its level built
+// when it gets its place, only to decide its own name and its one child (spec Open Questions, 15/11); that level is kept
+// by the row's id, and the player's expand places it then, with no second build, over the same recording
+// (tree-build.ts). A level is renamed by the rows above it before its ⓘ (tree/above-renames.ts).
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
-import type { Pair } from "./formulas.ts";
+import type { FormulaRow, Pair } from "./formulas.ts";
 import { withFormula } from "./formulas.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
@@ -15,15 +16,21 @@ import type { Above } from "./above-renames.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 
-interface Place {
-  node: CalcTreeNode;
-  /** The row as it was built, with the game's expressions around it for its ⓘ (tree/formulas.ts). */
-  row: Row;
-  open: number | CacheOpen;
+/** Where a level's rows go: their depth, the calls above them and the rows above them in their piece. */
+export interface At {
   depth: number;
   seen: readonly number[];
-  /** The rows above the place's row in its piece, from the piece's head (tree/above-renames.ts). */
   up: readonly Above[];
+}
+/**
+ * The rows under a row before they have a place: `row` is the one whose ⓘ they give, `code` the call (or cache) they
+ * come from, which a game bug is tested in.
+ */
+export interface Level {
+  row: FormulaRow;
+  rows: Row[];
+  at: At;
+  code: string | null;
 }
 
 export interface PlaceContext {
@@ -40,22 +47,49 @@ export interface PlaceContext {
 
 export function makePlaces(ctx: PlaceContext) {
   const { nodes } = ctx;
-  const places = new Map<string, Place>();
-  /**
-   * Each row with its id (the path of names, `#n` on a repeat), its group placed under it, a known game bug tagged; `up`
-   * the rows above them in their piece (none at the first level, the pieces' heads), kept for the rows they open into.
-   */
-  function place(
+  /** Each lazy branch's node and its level, kept since its place (null: the depth limit or a cycle cut it). */
+  const places = new Map<string, { node: CalcTreeNode; level: Level | null }>();
+
+  /** The level under row `r`, placed at `at`: its call's rows or its cache's, renamed by the rows above them. */
+  function below(r: Row, at: At): Level | null {
+    const seen = r.seen ?? at.seen;
+    const up = [...at.up, { code: r.node.code, name: r.node.name }];
+    const o = r.open;
+    if (o === null) return null;
+    // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
+    if (typeof o !== "number") {
+      const got = ctx.opened(o, at.depth - 1, new Set(seen));
+      if (!got) return null;
+      return {
+        row: withWriterFormula(r, got.f),
+        rows: aboveRenames(got.rows, up),
+        at: { depth: at.depth + 1, seen, up },
+        code: r.node.code,
+      };
+    }
+    const rows = ctx.explain(o, at.depth, new Set(seen));
+    if (!rows) return null;
+    // The rows are the call `o`'s, not the row's: a call that passes its value on, or a cache, opens into another.
+    const from = nodes[o];
+    const xf = from && ctx.openXf.get(ctx.keyOf(from));
+    return {
+      row: xf ? { ...r, xf } : r,
+      rows: aboveRenames(rows, up),
+      at: { depth: at.depth + 1, seen: [...seen, o], up },
+      code: from ? callText(from) : null,
+    };
+  }
+
+  /** Each row with its id, its group placed under it, a known game bug tagged; a lazy branch kept with its level. */
+  function placeAt(
     parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
-    depth: number,
-    seen: readonly number[],
-    up: readonly Above[] = [],
+    at: At,
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
     return rows.map((r) => {
-      const { node, open, group, seen: own } = r;
-      const above = own ?? seen;
+      const { node, open, group } = r;
+      const level = open === null ? null : below(r, at);
       const n = (count.get(node.name) ?? 0) + 1;
       count.set(node.name, n);
       const id = `${parent.id}/${node.name}${n > 1 ? `#${String(n)}` : ""}`;
@@ -69,64 +103,40 @@ export function makePlaces(ctx: PlaceContext) {
         ...(built
           ? {
               formula: built.formula,
-              kids: place(
-                { id, code: parent.code },
-                built.rows,
-                depth,
-                above,
-                up,
-              ),
+              kids: placeAt({ id, code: parent.code }, built.rows, {
+                ...at,
+                seen: r.seen ?? at.seen,
+              }),
             }
           : {}),
       };
-      if (open !== null)
-        places.set(id, { node: placed, row: r, open, depth, seen: above, up });
+      if (open !== null) places.set(id, { node: placed, level });
       return placed;
     });
   }
-  /** The place's ⓘ and the rows under it; null when the depth limit or a cycle cuts it. */
-  function kidsAt(
-    p: Place,
-  ): { formula: CalcTreeNode["formula"]; kids: CalcTreeNode[] } | null {
-    const up = [...p.up, { code: p.node.code, name: p.node.name }];
-    // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
-    if (typeof p.open !== "number") {
-      const got = ctx.opened(p.open, p.depth - 1, new Set(p.seen));
-      if (!got) return null;
-      const w = withFormula(
-        withWriterFormula(p.row, got.f),
-        aboveRenames(got.rows, up),
-      );
-      return {
-        formula: w.formula,
-        kids: place(p.node, w.rows, p.depth + 1, p.seen, up),
-      };
-    }
-    const rows = ctx.explain(p.open, p.depth, new Set(p.seen));
-    if (!rows) return null;
-    // The rows are the call `open`'s, not the row's: a call that passes its value on, or a cache, opens into another.
-    const from = nodes[p.open];
-    const xf = from && ctx.openXf.get(ctx.keyOf(from));
-    const w = withFormula(
-      xf ? { ...p.row, xf } : p.row,
-      aboveRenames(rows, up),
-    );
-    const parent = { id: p.node.id, code: from ? callText(from) : null };
-    return {
-      formula: w.formula,
-      kids: place(parent, w.rows, p.depth + 1, [...p.seen, p.open], up),
-    };
-  }
+
   return {
-    place,
-    /** The lazy branch `nodeId` with its rows built, or null when no lazy branch has that id. */
+    /** The rows under `parent`, at `depth` under the root, under the calls `seen` and the rows `up` (none at first). */
+    place: (
+      parent: Pick<CalcTreeNode, "id" | "code">,
+      rows: Row[],
+      depth: number,
+      seen: readonly number[],
+      up: readonly Above[] = [],
+    ): CalcTreeNode[] => placeAt(parent, rows, { depth, seen, up }),
+    /** The lazy branch `nodeId` with its kept level placed, or null when no lazy branch has that id. */
     expand: (nodeId: string): CalcTreeNode | null => {
       const p = places.get(nodeId);
       if (!p) return null;
-      const built = kidsAt(p);
-      return built
-        ? { ...p.node, ...built }
-        : { ...p.node, flags: { ...p.node.flags, truncated: true }, kids: [] };
+      const { node, level } = p;
+      if (!level)
+        return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
+      const w = withFormula(level.row, level.rows);
+      return {
+        ...node,
+        formula: w.formula,
+        kids: placeAt({ id: node.id, code: level.code }, w.rows, level.at),
+      };
     },
   };
 }

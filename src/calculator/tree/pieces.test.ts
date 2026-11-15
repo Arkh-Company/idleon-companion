@@ -57,7 +57,8 @@ test("a second place that gives the same rows is no conflict", () => {
 test("a call that only read the cache its twin filled opens as the twin, with no conflict (FR-015)", () => {
   const hit = open("Hit(2)");
   expect(brief(hit.node)).toEqual([["Level", 5]]);
-  expect(hit.build.conflicts).toEqual([]);
+  // the fixture's own conflict, counted when the root's level is placed (each row's level is built then)
+  expect(hit.build.conflicts).toEqual(['[0,"Part",1]']);
   expect(brief(open("Wrap()", "Hit(2)").node)).toEqual([["Level", 5]]);
 });
 
@@ -69,7 +70,7 @@ test("a call whose value is not the twin's within 1e-9 is no twin (pieces.cjs ne
   const row = kidsOf(build.root).find((k) => k.code === "Hit(2)");
   build.expand(row?.id ?? "");
   // not the twin's piece: the place is compared with the first call's rows, and differs
-  expect(build.conflicts).toEqual(['[0,"Hit",2]']);
+  expect(build.conflicts).toEqual(['[0,"Part",1]', '[0,"Hit",2]']);
 });
 
 test("a cache read opens into the call that wrote it", () => {
@@ -82,7 +83,8 @@ test("a setup call with a piece's key keeps its own rows and never becomes the p
   expect(brief(build.expand(kidsOf(build.root)[0]?.id ?? ""))).toEqual([
     ["Level", 3],
   ]);
-  expect(build.conflicts).toEqual([]);
+  // only the fixture's own conflict, counted when the root's level is placed
+  expect(build.conflicts).toEqual(['[0,"Part",1]']);
 });
 
 test("ids follow the path, with #n on a repeat, and every opened row can open again", () => {
