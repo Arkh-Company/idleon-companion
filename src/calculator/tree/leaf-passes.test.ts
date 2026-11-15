@@ -1,12 +1,17 @@
 // The passes of pieces.cjs `finish` after the types, at BASELINE-4 (tree/leaf-passes.ts): dungeonGate, the ban flag and the
 // leaves the N.js proves by their code (opus3More OPUS3-F7, then the OPUS5 list), over a level's rows in its `finish`.
-import { expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { buildTree } from "../tree-build.ts";
 import { isNameText } from "./name-text.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
+import { useGameTables } from "./table-names.ts";
 import { kidsOf, read, recordingOf } from "./tree-fixture.ts";
+
+afterEach(() => {
+  useGameTables(new Map());
+});
 
 /** The level's rows, its groups' rows in it. */
 const level = (rows: Row[]) =>
@@ -265,6 +270,25 @@ test("[OPUS3-F7e] a monster's column is named by the monster's text; with none, 
     "fixedValue",
   ]);
 });
+
+test.each([
+  [
+    "MonsterDefinitionsGET.mobX.Defence",
+    "Invented Beast Defence (monster table)",
+  ],
+  [
+    "MonsterDefinitionsGET.mobX.MonsterHPTotal",
+    "Invented Beast HP (monster table)",
+  ],
+])(
+  "[OPUS3-F7e] the monster's column %s is named by the monster's text",
+  (code, name) => {
+    useGameTables(
+      new Map([["MonsterDefinitionsGET.mobX", { Name: "INVENTED_BEAST" }]]),
+    );
+    expect(one(code, 4).slice(0, 2)).toEqual([name, "fixedValue"]);
+  },
+);
 
 test("[OPUS3-F7g] the fishing spot is context: it goes, unless it is the level's only row", () => {
   const spot = "PersonalValuesMap.FishingSpotIndex";

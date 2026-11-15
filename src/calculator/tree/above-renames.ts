@@ -2,12 +2,15 @@
 // parent's code, or the calls and caches it sits under in its piece (the bench renames each piece from its head, which
 // has no parent). They run when a level gets its place (tree/places.ts), before its ⓘ, as the bench renames the piece
 // before `addFormulas`; then opus3Leaves OPUS3-F5, which names the same scratch number again when its parent is the
-// bubble. Left out, each needing what the app's tree has not: the bubbles' rules on a parent named by its own sum with
-// numbers (the app's branch has no such name), "Total of the earlier turns" (the app opens a loop's read of its own entry
-// into its writer), the Spelunking "Part N" (no "Part N", R14) and the opening of SpelunkyUpgTOT into its push.
+// bubble. Left out, each needing what the app's tree has not: OPUS4-7's rules on a parent named by its own sum with numbers
+// (the class levels, the meals before the last one, the class bubble not computed yet; the app's branch has no such name),
+// the Green Mushroom kills and the kitchens' upgrade levels (the same, on the parent's name), "Total of the earlier turns"
+// (the app opens a loop's read of its own entry into its writer), the Spelunking "Part N" (no "Part N", R14) and the
+// opening of SpelunkyUpgTOT into its push.
 import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
+import { isLeaf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];
@@ -17,7 +20,6 @@ export interface Above {
   name: string;
 }
 
-const isLeaf = (r: Row) => Array.isArray(r.node.kids) && !r.node.kids.length;
 /** Row `r` named `name`, a leaf typed `leaf` when it is one (its "?" and why gone); a branch only renamed. */
 function renamed(
   r: Row,
@@ -168,13 +170,18 @@ function aboveRename(r: Row, up: readonly Above[]): Row {
   const code = r.node.code ?? "";
   const parent = up.at(-1)?.code ?? "";
   const leaf = isLeaf(r);
+  /** The nearest bubble above, by its key in AlchBubbles. */
+  const bubble = [...up]
+    .reverse()
+    .map((a) => /^DNSM\.AlchBubbles\.(\w+)$/.exec(a.code ?? "")?.[1])
+    .find((b) => b !== undefined);
+  // OPUS4-7, a value from an earlier step: under Y6, the maps with every kill done (with no look at the parent's name)
+  const y6 = BUBBLE_SCRATCH.find((x) => x.test.test("Y6"));
+  if (leaf && r.earlier && bubble === "Y6" && y6)
+    return renamed(r, y6.name, y6.leaf);
   // OPUS4-7 and then OPUS3-F5: a scratch number of the bubbles loop
   const dn = /^DNSM\.CalcTalentDN(\d)$/.exec(code);
   if (leaf && dn) {
-    const bubble = [...up]
-      .reverse()
-      .map((a) => /^DNSM\.AlchBubbles\.(\w+)$/.exec(a.code ?? "")?.[1])
-      .find((b) => b !== undefined);
     const s =
       bubble !== undefined &&
       BUBBLE_SCRATCH.find((x) => x.test.test(bubble) && x.dn === dn[1]);

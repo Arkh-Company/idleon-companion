@@ -12,12 +12,12 @@ import type {
   CALC_LEAF_KINDS,
 } from "../tree-contract.ts";
 import { near } from "./math.ts";
+import { isLeaf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
-const isLeaf = (r: Row) => Array.isArray(r.node.kids) && !r.node.kids.length;
 
 /** DEEP10: Dungon(), the dungeon the current map is (-1 outside one); its ⓘ with no ";" (the host refuses one). */
 export const DUNGEON_GATE = {
@@ -113,7 +113,8 @@ export const CODE_LEAVES: readonly LeafRule[] = [
     leaf: "quantity",
     proof: F7("j", "Summoning"),
   },
-  // (opus1Sailing types it first, whatever its type: forced)
+  // (opus1Sailing types it first, whatever its type: forced; its ⓘ and why are left for US1c-4c, with the rest of
+  // opus1Sailing)
   {
     test: /^RandomEvent\("FractalIslandBonus", \d+/,
     name: null,

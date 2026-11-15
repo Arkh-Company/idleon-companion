@@ -57,6 +57,10 @@ export interface Row {
   r1src?: string;
 }
 
+/** A row with no rows under it: built with none, and none to open later. */
+export const isLeaf = (r: Row): boolean =>
+  Array.isArray(r.node.kids) && !r.node.kids.length;
+
 export const valueOf = (v: RecValue | undefined): number | boolean | null =>
   typeof v === "boolean" || (typeof v === "number" && Number.isFinite(v))
     ? v

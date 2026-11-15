@@ -203,6 +203,36 @@ test.each([
   },
 );
 
+test("[OPUS4-7] a value from an earlier step under the bubble Y6, at any level above, is the maps with every kill done", () => {
+  expect(renamed([earlier], above("DNSM.AlchBubbles.Y6", "In()"))).toEqual([
+    [
+      "World 6 maps with every kill done (13 maps, each character)",
+      "quantity",
+      null,
+      {},
+    ],
+  ]);
+  // under another bubble, or the nearest bubble another one
+  expect(renamed([earlier], above("DNSM.AlchBubbles.W2"))[0]?.[0]).toBe(
+    "Game value",
+  );
+  expect(
+    renamed(
+      [earlier],
+      above("DNSM.AlchBubbles.Y6", "DNSM.AlchBubbles.W2"),
+    )[0]?.[0],
+  ).toBe("Game value");
+  // a read under Y6 is no value from an earlier step
+  expect(renamed([leaf("Q")], above("DNSM.AlchBubbles.Y6"))[0]?.[0]).toBe(
+    leaf("Q").node.name,
+  );
+  // a value from an earlier step with rows under it is no leaf
+  const branch: Row = { ...earlier, node: { ...earlier.node, kids: "lazy" } };
+  expect(
+    aboveRenames([branch], above("DNSM.AlchBubbles.Y6"))[0]?.node.name,
+  ).toBe("Game value");
+});
+
 test("a value from an earlier step under another call, or a row that is none, keeps its name", () => {
   expect(renamed([earlier], above('FarmingStuffs("Other", 0)'))[0]?.[0]).toBe(
     "Game value",
