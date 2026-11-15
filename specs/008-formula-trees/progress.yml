@@ -33,5 +33,6 @@ execution:
     - {name: "US1b-3b ⓘ dos caches e raiz nunca folha muda (T017, T022)", status: done, commits: a5cb58d..8aa0a80}
     - {name: Polish, status: done, commits: 76cfa40..316c299}
     - {name: "US1c nomes e molde do Drop Rate (T023)", status: pending}
+    - {name: "US1c-2 passes que dependem de nomes (T023)", status: pending}
   feature_review: pending
   code_pr: null
