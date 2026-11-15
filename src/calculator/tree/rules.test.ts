@@ -24,6 +24,7 @@ import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
 import { SHAPE_NAMES } from "./names.ts";
 import { BRANCH_SHAPES } from "./shapes.ts";
+import { TABLE_TEXTS } from "./table-names.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
@@ -54,6 +55,7 @@ const TABLES = {
   ARENA_TURN: [ARENA_TURN],
   BAN_FLAG: [BAN_FLAG],
   BRANCH_SHAPES,
+  TABLE_TEXTS: Object.values(TABLE_TEXTS),
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;

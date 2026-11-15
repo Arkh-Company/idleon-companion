@@ -1,13 +1,15 @@
 // The name of a loop turn's part (spec 008, T023): the port of pieces.cjs `entryRows` `arenaTurn`, `turnName` (with
 // names-sailing.cjs TURN_NAMES) and the part's name from its own rows, from the bench at BASELINE-4. A turn is known by
-// what it read: a boat, a star sign, an artifact, a worn item's slot, a colour of the palette, or the text of a table
-// row the recording kept. Left out: the names that need a game table the app does not read (the item a turn found or
-// read, the monster of a battle, the star sign's, artifact's and colour's own names: the bench's own words for a row
-// with no text stand in) and the bench's "Part N" (a part with no name keeps the generic one, FR-012a).
+// what it read: a boat, an item it found, a star sign, a won battle, an artifact, a worn item's slot, a colour of the
+// palette, an item's definition, or the text of a table row the recording kept. The texts of the sign, the battle's
+// monster, the artifact, the colour and the item come from the installed game's checked tables (tree/table-names.ts);
+// with none, the bench's own words for a row with no text stand in, and an item with no text names nothing (the bench
+// writes its id). Left out: the bench's "Part N" (a part with no name keeps the generic one, FR-012a).
 import { isConstant } from "./formulas.ts";
 import type { Entry, TurnRead } from "./entries.ts";
 import { clean, isNameText, termName } from "./names.ts";
 import { near } from "./math.ts";
+import { tableText } from "./table-names.ts";
 import type { Node, Row } from "./rows.ts";
 
 interface Rule {
@@ -35,6 +37,19 @@ export const TURN_NAMES: readonly (Rule & {
     },
   },
   {
+    // OPUS3-F3: a turn that counts a found item
+    test: /^Cards\[1\] contains (\S+)$/,
+    proof: "bench pieces.cjs entryRows turnName OPUS3-F3; N.js Cards",
+    name: (rs) => {
+      const id = rs
+        .filter(([, v]) => v === true)
+        .map(([p]) => /^Cards\[1\] contains (\S+)$/.exec(p)?.[1])
+        .find(Boolean);
+      const item = id === undefined ? null : tableText("item", id);
+      return item === null ? null : `Found ${item}`;
+    },
+  },
+  {
     // the sign the turn found in the list of signs (the game's search), else the last entry of that list it read
     test: /^DNSM\.StarSignsDL(?: contains \d+|\[\d+\])$/,
     proof: "bench pieces.cjs entryRows turnName, sign; N.js StarSigns",
@@ -47,7 +62,21 @@ export const TURN_NAMES: readonly (Rule & {
       const sign = found
         ? /(\d+)$/.exec(found[0])?.[1]
         : rs.filter(([p]) => /^DNSM\.StarSignsDL\[\d+\]$/.test(p)).pop()?.[1];
-      return sign === undefined ? null : `Star sign (sign ${String(sign)})`;
+      return sign === undefined
+        ? null
+        : `${tableText("sign", Number(sign)) ?? "Star sign"} (sign ${String(sign)})`;
+    },
+  },
+  {
+    // a won battle, by the monster it is against
+    test: /^CustomLists\.SummonEnemies\[7\]\[(\d+)\]$/,
+    proof: "bench pieces.cjs entryRows turnName, battle; N.js Summoning",
+    name: (rs) => {
+      const b = index(/^CustomLists\.SummonEnemies\[7\]\[(\d+)\]$/, rs)?.[1];
+      if (b === undefined) return null;
+      const id = tableText("battle", Number(b));
+      const monster = id === null ? null : tableText("monster", id);
+      return `Battle ${b} win${monster === null ? "" : ` (${monster})`}`;
     },
   },
   {
@@ -75,7 +104,10 @@ export const TURN_NAMES: readonly (Rule & {
     proof: "bench pieces.cjs entryRows turnName, artifact; N.js Sailing",
     name: (rs) => {
       const m = index(/^Sailing\[3\]\[(\d+)\]$/, rs);
-      return m ? `Artifact ${m[1] ?? ""} (artifact ${m[1] ?? ""})` : null;
+      const a = m?.[1];
+      return a === undefined
+        ? null
+        : `${tableText("artifact", Number(a)) ?? `Artifact ${a}`} (artifact ${a})`;
     },
   },
   {
@@ -106,7 +138,19 @@ export const TURN_NAMES: readonly (Rule & {
     proof: "bench pieces.cjs entryRows turnName, colour; N.js Spelunk",
     name: (rs) => {
       const m = index(/^Spelunk\[9\]\[(\d+)\]$/, rs);
-      return m ? `Colour ${m[1] ?? ""} (palette ${m[1] ?? ""})` : null;
+      const c = m?.[1];
+      return c === undefined
+        ? null
+        : `${tableText("colour", Number(c)) ?? `Colour ${c}`} (palette ${c})`;
+    },
+  },
+  {
+    // the item whose definition the turn read
+    test: /^ItemDefinitionsGET\.([^.]+)\./,
+    proof: "bench pieces.cjs entryRows turnName, item",
+    name: (rs) => {
+      const id = index(/^ItemDefinitionsGET\.([^.]+)\./, rs)?.[1];
+      return id === undefined ? null : tableText("item", id);
     },
   },
   {
@@ -146,8 +190,13 @@ export function arenaTurn(rs: readonly TurnRead[]): string | null {
     : null;
 }
 
+/** The first rule's name; one too long to be a name names nothing, and the next rule may. */
 export const turnName = (rs: readonly TurnRead[], p: string): string | null =>
-  TURN_NAMES.reduce<string | null>((got, r) => got ?? r.name(rs, p), null);
+  TURN_NAMES.reduce<string | null>((got, r) => {
+    if (got !== null) return got;
+    const name = r.name(rs, p);
+    return name !== null && isNameText(name) ? name : null;
+  }, null);
 
 /** pieces.cjs `entryRows` `shared`: a name every added part has among its rows says nothing of one of them. */
 export const sharedName =

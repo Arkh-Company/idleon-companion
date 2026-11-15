@@ -6,6 +6,7 @@ import { GAME, PAK } from "./fixtures/fake-mosaic.ts";
 import { readGameNames } from "./game-names.ts";
 import { nameOf, useGameNames } from "./tree/names.ts";
 import { NAME_RECIPES } from "./tree/names-table.ts";
+import { tableText, useGameTables } from "./tree/table-names.ts";
 import type { NameRecipe } from "./tree/names-table.ts";
 import { createTreeEngine } from "./tree-engine.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
@@ -42,7 +43,7 @@ test("each recipe over the game's own table, its hash the bench's", () => {
     RECIPES,
     new Map([["CustomLists.ListNames", sha(LIST)]]),
   );
-  expect([...names]).toEqual([
+  expect([...names.names]).toEqual([
     ["First()", "First Invented II (invented)"],
     ["Half()", "half"],
   ]);
@@ -58,7 +59,7 @@ test.each([
   ],
 ])("with %s, no recipe of the table has a name", (_name, hashes) => {
   expect(
-    readGameNames(context, TREE_LIMITS.startMs, RECIPES, hashes).size,
+    readGameNames(context, TREE_LIMITS.startMs, RECIPES, hashes).names.size,
   ).toBe(0);
 });
 
@@ -86,7 +87,7 @@ test("an item's hash is its entry's", () => {
         ["ItemDefinitionsGET.itemA", entry],
         ["CustomLists.ListNames", sha(LIST)],
       ]),
-    ).get("First()"),
+    ).names.get("First()"),
   ).toBe("First Invented II (invented)");
 });
 
@@ -136,7 +137,7 @@ test.each<[string, () => unknown]>([
       1,
       RECIPES,
       new Map([["CustomLists.ListNames", sha(LIST)]]),
-    ).size,
+    ).names.size,
   ).toBe(0);
 });
 
@@ -149,7 +150,7 @@ test("the reading the cases above break gives names", () => {
       1,
       RECIPES,
       new Map([["CustomLists.ListNames", sha(LIST)]]),
-    ).get("First()"),
+    ).names.get("First()"),
   ).toBe("A (invented)");
 });
 
@@ -192,7 +193,36 @@ test("the reader gives each cell's text, and each table in the bench's canonical
 test("the engine reads the game's names at its boot", () => {
   const key = NAME_RECIPES[0]?.key ?? "";
   useGameNames(new Map([[key, "Left from another game"]]));
+  useGameTables(
+    new Map([["CustomLists.StarSigns", [["LEFT_FROM_ANOTHER_GAME"]]]]),
+  );
   createTreeEngine(GAME, PAK);
-  // the invented game has none of the bench's tables: no recipe resolves
-  expect(nameOf(key)).toBeNull();
+  // the invented game has none of the bench's tables: no recipe resolves, no table is kept
+  expect([nameOf(key), tableText("sign", 0)]).toEqual([null, null]);
+});
+
+test("[turn recipes] a table a table text reads is kept in the bench's form, only with the bench's hash", () => {
+  const read = (hash: string, keep: (id: string) => boolean) =>
+    readGameNames(
+      context,
+      TREE_LIMITS.startMs,
+      RECIPES,
+      new Map([["CustomLists.ListNames", hash]]),
+      keep,
+    ).tables;
+  const isList = (id: string) => id === "CustomLists.ListNames";
+  expect([...read(sha(LIST), isList)]).toEqual([
+    ["CustomLists.ListNames", JSON.parse(LIST)],
+  ]);
+  expect(read(sha("[]"), isList).size).toBe(0);
+  expect(read(sha(LIST), () => false).size).toBe(0);
+  // by default, only the tables of tree/table-names.ts
+  expect(
+    readGameNames(
+      context,
+      TREE_LIMITS.startMs,
+      RECIPES,
+      new Map([["CustomLists.ListNames", sha(LIST)]]),
+    ).tables.size,
+  ).toBe(0);
 });

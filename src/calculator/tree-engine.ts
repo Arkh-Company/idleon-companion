@@ -10,6 +10,7 @@ import type { TreeBuild } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { readGameNames } from "./game-names.ts";
 import { useGameNames } from "./tree/names.ts";
+import { useGameTables } from "./tree/table-names.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
 import { TREE_RECIPE } from "./tree-recipe.ts";
 import type { Recipe } from "./recording.ts";
@@ -57,8 +58,10 @@ export function createTreeEngine(
   recipe: Recipe = TREE_RECIPE,
 ): TreeEngine {
   const recorder = bootRecorder(code, pak);
-  // The names of the game's tables, once per game: the rows of every tree read them (tree/names.ts).
-  useGameNames(readGameNames(recorder.context, TREE_LIMITS.startMs));
+  // The names of the game's tables, once per game: the rows of every tree read them (tree/names.ts, tree/table-names.ts).
+  const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
+  useGameNames(game.names);
+  useGameTables(game.tables);
   const lazyDnsm = lazyDnsmKeys(code);
   const rootOf = (id: string) =>
     Object.hasOwn(roots, id) ? roots[id] : undefined;
