@@ -88,7 +88,7 @@ function earlierRow(entry: string, code: string): Row | null {
     ? leafRow(code, 0, {
         name: en.name,
         leaf: "unknown",
-        why: `progress of the loop in ${en.loop} (N.js; nothing earlier wrote it)`,
+        why: `progress of the loop in ${en.loop} (N.js, nothing earlier wrote it)`,
       })
     : null;
 }

@@ -315,7 +315,7 @@ test("[D9-7] the other loop's total read as 0 in a step of the worn items' loop 
     name: "Earlier worn items with the same bonus",
     value: 0,
     leaf: "unknown",
-    why: "progress of the loop in TotalStats(calcEtcBonuses): the total of the earlier worn items with this bonus, before this one adds to it (N.js; nothing earlier wrote it)",
+    why: "progress of the loop in TotalStats(calcEtcBonuses): the total of the earlier worn items with this bonus, before this one adds to it (N.js, nothing earlier wrote it)",
     flags: {},
   });
 });
@@ -330,7 +330,7 @@ test("[W3] in a turn of a loop's entry, a bare 0 is the total of the earlier tur
     code: "DNSM.CardBonusS.a",
     name: "Earlier equipped cards with the same bonus",
     leaf: "unknown",
-    why: "progress of the loop in TalentCalc(CardBonusS): the total of the earlier equipped cards with this bonus, before this one adds to it (N.js; nothing earlier wrote it)",
+    why: "progress of the loop in TalentCalc(CardBonusS): the total of the earlier equipped cards with this bonus, before this one adds to it (N.js, nothing earlier wrote it)",
     flags: {},
   });
   // outside the loop the same 0 is the read that holds it, and so it is when the other entries had a value
