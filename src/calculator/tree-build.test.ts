@@ -135,6 +135,18 @@ test("a cache read written by a call opens under it; one from the game is saved 
   });
 });
 
+test("a step of the first level is never named by its shape: no name yet (FR-006)", () => {
+  // TreeTopRound: round(the cache × 1.5), its 1.5 a constant of the game's code (the assembly's "× 1.5")
+  const [cache, constant] = kidsOf(treeOf("TreeTopRound"));
+  expect(cache?.name).toBe("Working value of the game (GameCache)");
+  expect(constant).toMatchObject({
+    name: "Game value",
+    value: 1.5,
+    leaf: "fixedValue",
+    flags: { unnamed: true },
+  });
+});
+
 test("the piece keys carry the requested character", () => {
   const root = treeOf("TreeMaxOf", mosaicOf(), 1);
   expect(root.pieceKey).toBe('[1,"TreeMaxOf",0,0,0]');

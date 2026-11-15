@@ -49,11 +49,12 @@ function short(r: Part): string {
     .replace(/ · .*$/, "")
     .trim();
 }
-const CONST =
+/** The names the assembly gives a constant of the code by its place (terms.ts), never a bonus name. */
+export const CONSTANT_NAME =
   /^(Base|Minus|Cap|Divided by|Exponent|Minimum|Fixed value|Fixed [+×]|× |Percent to number)/;
 /** A constant of the code is written as its number; any other part by its term. */
 const asNum = (r: Row) =>
-  r.node.leaf === "fixedValue" && CONST.test(r.node.name)
+  r.node.leaf === "fixedValue" && CONSTANT_NAME.test(r.node.name)
     ? f(vOf(r))
     : short(r);
 const isCurve = (r: Row) => r.node.name.startsWith("Curve: ");

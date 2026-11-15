@@ -19,6 +19,7 @@ import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
+import { mould } from "./tree/mould.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
 import type { CacheOpen, Row } from "./tree/rows.ts";
@@ -358,7 +359,8 @@ export function buildTree(
     root.formula = own?.formula ?? null;
     root.kids = place(
       { id: root.id, code: callText(top) },
-      own?.rows ?? rows,
+      // FR-006: the first level is the game steps, never named by their shape
+      mould(own?.rows ?? rows),
       1,
       [top.id],
     );
