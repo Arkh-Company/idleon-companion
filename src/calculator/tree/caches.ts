@@ -5,8 +5,8 @@
 // returned it. The bench builds the whole tree at once; here a cache read is a lazy row whose rows are built when the
 // player opens it, with the loop entry and the bubble entries open when the row was made (ENTRY_P, OPUS4_OPEN). The
 // tests that only read the recording (which writes, which turn, which side of a step) are in cache-picks.ts.
-// Each opening gives the ⓘ the writer leaves for the cache (tree/cache-formulas.ts). Left out until their own phase:
-// the names of the parts (US1c: a part has the generic name, and the filters that compare names wait for them).
+// Each opening gives the ⓘ the writer leaves for the cache (tree/cache-formulas.ts); each part is named by what its turn
+// read or by its own rows (tree/turn-names.ts).
 import type { RecNode } from "../recording.ts";
 import {
   addedSide,
@@ -35,6 +35,14 @@ import {
   TURN_KINDS,
 } from "./loop-parts.ts";
 import { hasKids } from "./tidy.ts";
+import {
+  arenaTurn,
+  otherReads,
+  ownName,
+  sharedName,
+  turnName,
+  withoutRepeats,
+} from "./turn-names.ts";
 import type { Terms } from "./terms.ts";
 import { any } from "./val-path.ts";
 
@@ -179,7 +187,17 @@ export function makeCaches(ctx: CacheContext) {
         rows: turnRows(one.q, value).rows,
         f: oneTurnFormula(w, one.q, value, ctx.formulas, nodes),
       };
-    const out = parts.map((pt): Row => {
+    // each turn's rows first: a part's name looks at the other parts' (pieces.cjs entryRows `built`)
+    const built = parts.map((pt) =>
+      pt.kind === "x"
+        ? { pt, rows: [] as Row[], call: undefined, read: undefined }
+        : { pt, ...turnRows(pt.q, pt.d) },
+    );
+    // (two parts or more here: one part is the one turn that made the value, above)
+    const shared = sharedName(
+      built.filter((b) => b.pt.kind === "+").map((b) => b.rows),
+    );
+    const out = built.map(({ pt, rows, call, read }): Row => {
       if (pt.kind === "x" && pt.st) {
         const terms = flat(pt.st.e, "*").filter(
           (t) =>
@@ -205,7 +223,6 @@ export function makeCaches(ctx: CacheContext) {
           group: ctx.finish(pt.d, at.tidy(rows, "*", w.a), true),
         };
       }
-      const { rows, call, read } = turnRows(pt.q, pt.d);
       // the turn's ⓘ: the part its step adds to the total
       const xf = turnFormula(w, pt, ctx.formulas);
       const kind = TURN_KINDS.find((k) =>
@@ -214,18 +231,29 @@ export function makeCaches(ctx: CacheContext) {
             k.test.test(rp) && (!k.found || (rv === true && near(pt.d, 1))),
         ),
       );
+      // the turn is known by what it read, else by its own rows; a turn of a read or a call is named by its code
+      const others = otherReads(
+        built.map((b) => b.pt.q),
+        pt.q,
+      );
+      const name =
+        arenaTurn(pt.q.r) ??
+        turnName(pt.q.r, p) ??
+        (read ? null : ownName(rows, shared, pt.q.r, others));
+      const node = row({
+        pieceKey: null,
+        value: pt.d,
+        code: read ? read[0] : call ? callText(call) : null,
+        fmt: "+",
+        ...(name === null ? {} : { name }),
+        ...(kind?.found ? { condition: "owned" as const } : {}),
+        ...(kind ? { leaf: kind.leaf } : {}),
+      });
       return {
-        node: row({
-          pieceKey: null,
-          value: pt.d,
-          code: read ? read[0] : call ? callText(call) : null,
-          fmt: "+",
-          ...(kind?.found ? { condition: "owned" as const } : {}),
-          ...(kind ? { leaf: kind.leaf } : {}),
-        }),
+        node,
         open: null,
         // OPUS3-F3c: a found item is a yes/no with nothing under it
-        group: kind?.found ? [] : rows,
+        group: kind?.found ? [] : withoutRepeats(rows, node, kids),
         ...(xf ? { xf } : {}),
       };
     });

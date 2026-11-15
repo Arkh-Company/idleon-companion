@@ -10,6 +10,7 @@ import {
 } from "./loop-parts.ts";
 import { COND_SUBS } from "./conditions.ts";
 import { OPEN_XF } from "./once.ts";
+import { ARENA_TURN, TURN_NAMES } from "./turn-names.ts";
 import { RAW_PASSES } from "./raw-passes.ts";
 import {
   CODE_TABLES,
@@ -48,6 +49,8 @@ const TABLES = {
   PROGRESS_BY_LABEL,
   WORN_TURN: [WORN_TURN],
   OPEN_XF: [OPEN_XF],
+  TURN_NAMES,
+  ARENA_TURN: [ARENA_TURN],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
