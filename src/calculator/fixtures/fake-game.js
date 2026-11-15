@@ -950,6 +950,34 @@ lime.$scripts.N = function (_exports, $global) {
     var memo = dnsm().TotStatMAP;
     return memo ? Object.keys(memo.h).length : -1;
   };
+  // The rename by the rows above a row (pieces.cjs rename): a doubler under ArcadeBonus, the parts of a monument's cache
+  // (two of them at x1), and a bubble's scratch number read under the bubble's cache, under a call, in a branch and under
+  // a call of the branch.
+  Blocks._customBlock_ArcadeBonus = function () {
+    return state().TreeBase * 2;
+  };
+  Blocks._customBlock_TreeArcade = function () {
+    return Blocks._customBlock_ArcadeBonus(0) + 1;
+  };
+  Blocks._customBlock_TreeMonument = function () {
+    var d = dnsm();
+    d.MonumentROGbonuses = new StringMap();
+    d.MonumentROGbonuses.h.v = state().TreeBase * 3 * 1 * 1;
+    return d.MonumentROGbonuses.h.v + 1;
+  };
+  Blocks._customBlock_TreeBubbleLeaf = function () {
+    return dnsm().CalcTalentDN2 + state().TreeBase;
+  };
+  Blocks._customBlock_TreeBubbleInner = function () {
+    return (dnsm().CalcTalentDN2 + Blocks._customBlock_TreeBubbleLeaf()) * 5;
+  };
+  Blocks._customBlock_TreeBubble = function () {
+    var d = dnsm();
+    d.AlchBubbles = new StringMap();
+    d.AlchBubbles.h.W2 =
+      Blocks._customBlock_TreeBubbleInner() + dnsm().CalcTalentDN2;
+    return d.AlchBubbles.h.W2 * 2;
+  };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {
     everySceneInit.call(this);

@@ -28,6 +28,11 @@ import { BRANCH_SHAPES } from "./shapes.ts";
 import { TABLE_TEXTS } from "./table-names.ts";
 import { RENAMES } from "./renames.ts";
 import { CARD_STAR, CONTEXT_READS, LEVEL_RENAMES } from "./level-renames.ts";
+import {
+  ABOVE_RENAMES,
+  BUBBLE_FACTOR,
+  BUBBLE_SCRATCH,
+} from "./above-renames.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
@@ -64,6 +69,14 @@ const TABLES = {
   CONTEXT_READS,
   LEVEL_RENAMES,
   CARD_STAR: [CARD_STAR],
+  BUBBLE_SCRATCH,
+  BUBBLE_FACTOR,
+  ABOVE_RENAMES: [
+    ABOVE_RENAMES.riftSkills,
+    ...ABOVE_RENAMES.fixed,
+    ...ABOVE_RENAMES.earlier,
+    ABOVE_RENAMES.spelunk,
+  ],
 };
 const QUOTES = /["'`“”‘’]/;
 const PART = /^(?:bench [\w.-]+\.cjs|N\.js \w+)(?: [\w .,()+-]+)?$/;
