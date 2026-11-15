@@ -81,13 +81,11 @@ test.each<[string, TurnRead[], string | null]>([
   ["a colour", [["Spelunk[9][0]", 1]], "Invented Hue (palette 0)"],
   ["a found item", [["Cards[1] contains itemA", true]], "Found Invented Charm"],
   ["an item it did not find", [["Cards[1] contains itemA", false]], null],
-  ["a found item with no text", [["Cards[1] contains itemB", true]], null],
   [
     "an item's definition",
     [["ItemDefinitionsGET.itemA.UQ1val", 3]],
     "Invented Charm",
   ],
-  ["a definition with no text", [["ItemDefinitionsGET.itemB.UQ1val", 3]], null],
   [
     "a found item and a sign: the item first",
     [
@@ -134,11 +132,43 @@ test.each<[string, TurnRead[], string | null]>([
   if (name) expect(passes(name)).toBe(true);
 });
 
+// pieces.cjs turnName: a rule of an item always ends the search (the bench writes the item's id); with no text, no name
+test.each<[string, TurnRead[]]>([
+  ["a found item with no text", [["Cards[1] contains itemB", true]]],
+  [
+    "a found item with no text and a table row's text",
+    [
+      ["Cards[1] contains itemB", true],
+      ["CustomLists.X[2][0]", "ROW"],
+    ],
+  ],
+  [
+    "a found item with no text and a sign",
+    [
+      ["DNSM.StarSignsDL[3]", 0],
+      ["Cards[1] contains itemB", true],
+    ],
+  ],
+  ["a definition with no text", [["ItemDefinitionsGET.itemB.UQ1val", 3]]],
+  [
+    "a definition with no text and a table row's text",
+    [
+      ["CustomLists.X[2][0]", "ROW"],
+      ["ItemDefinitionsGET.itemB.UQ1val", 3],
+    ],
+  ],
+])("[turn recipes] the turn of %s has no name", (_name, reads) => {
+  useGameTables(TABLES);
+  expect(turnName(reads, "DNSM.X")).toEqual({ stop: true });
+});
+
 test("with no table of the game, a battle is its number and an item names nothing", () => {
   expect(turnName([["CustomLists.SummonEnemies[7][0]", 1]], "DNSM.X")).toBe(
     "Battle 0 win",
   );
-  expect(turnName([["Cards[1] contains itemA", true]], "DNSM.X")).toBeNull();
+  expect(turnName([["Cards[1] contains itemA", true]], "DNSM.X")).toEqual({
+    stop: true,
+  });
 });
 
 test.each<[string, unknown, string | null]>([

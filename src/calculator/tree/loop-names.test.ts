@@ -49,6 +49,24 @@ test("a turn with no read of its part's value is named by a read only its turn m
   ]);
 });
 
+test("a turn of a found item with no text has no name, not a read only its turn made", () => {
+  const rec = loopOf(
+    [
+      [0, 1],
+      [1, 2],
+    ],
+    [
+      ["Cards[1] contains itemB", true, 1],
+      [named, 9, 1],
+      ["Boats[1][3]", 2, 4],
+    ],
+  );
+  expect(kidsOf(loopRows(rec)).map((k) => k.name)).toEqual([
+    GENERIC_NAME,
+    "Boat 2",
+  ]);
+});
+
 test("a read both turns made names neither; a call's row with a name no other part has names its turn", () => {
   const both = loopOf(
     [

@@ -21,12 +21,16 @@ const index = (re: RegExp, rs: readonly TurnRead[]) =>
 const valueOf = (rs: readonly TurnRead[], path: string) =>
   rs.find(([p]) => p === path)?.[1];
 
+/** A rule that knows the turn with no text for it (an item's): the search ends with no name (the bench writes the id). */
+export const NO_NAME = { stop: true } as const;
+type TurnName = string | typeof NO_NAME | null;
+
 /**
  * pieces.cjs `turnName` with names-sailing.cjs TURN_NAMES first: each rule names the turn from the paths and values it
  * read (`rs`) in the cache `p`; the first that names it decides.
  */
 export const TURN_NAMES: readonly (Rule & {
-  name: (rs: readonly TurnRead[], p: string) => string | null;
+  name: (rs: readonly TurnRead[], p: string) => TurnName;
 })[] = [
   {
     test: /^Boats\[(\d+)\]\[[35]\]$/,
@@ -45,8 +49,9 @@ export const TURN_NAMES: readonly (Rule & {
         .filter(([, v]) => v === true)
         .map(([p]) => /^Cards\[1\] contains (\S+)$/.exec(p)?.[1])
         .find(Boolean);
-      const item = id === undefined ? null : tableText("item", id);
-      return item === null ? null : `Found ${item}`;
+      if (id === undefined) return null;
+      const item = tableText("item", id);
+      return item === null ? NO_NAME : `Found ${item}`;
     },
   },
   {
@@ -150,7 +155,7 @@ export const TURN_NAMES: readonly (Rule & {
     proof: "bench pieces.cjs entryRows turnName, item",
     name: (rs) => {
       const id = index(/^ItemDefinitionsGET\.([^.]+)\./, rs)?.[1];
-      return id === undefined ? null : tableText("item", id);
+      return id === undefined ? null : (tableText("item", id) ?? NO_NAME);
     },
   },
   {
@@ -190,12 +195,12 @@ export function arenaTurn(rs: readonly TurnRead[]): string | null {
     : null;
 }
 
-/** The first rule's name; one too long to be a name names nothing, and the next rule may. */
-export const turnName = (rs: readonly TurnRead[], p: string): string | null =>
-  TURN_NAMES.reduce<string | null>((got, r) => {
+/** The first rule's name, or NO_NAME; one too long to be a name names nothing, and the next rule may. */
+export const turnName = (rs: readonly TurnRead[], p: string): TurnName =>
+  TURN_NAMES.reduce<TurnName>((got, r) => {
     if (got !== null) return got;
     const name = r.name(rs, p);
-    return name !== null && isNameText(name) ? name : null;
+    return typeof name !== "string" || isNameText(name) ? name : null;
   }, null);
 
 /** pieces.cjs `entryRows` `shared`: a name every added part has among its rows says nothing of one of them. */

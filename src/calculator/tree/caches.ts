@@ -37,6 +37,7 @@ import {
 import { hasKids, loneCall } from "./tidy.ts";
 import {
   arenaTurn,
+  NO_NAME,
   otherReads,
   ownName,
   sharedName,
@@ -249,10 +250,13 @@ export function makeCaches(ctx: CacheContext) {
         built.map((b) => b.pt.q),
         pt.q,
       );
+      const turn = arenaTurn(pt.q.r) ?? turnName(pt.q.r, p);
       const name =
-        arenaTurn(pt.q.r) ??
-        turnName(pt.q.r, p) ??
-        (read ? null : ownName(rows, shared, pt.q.r, others));
+        typeof turn === "string"
+          ? turn
+          : turn === NO_NAME || read
+            ? null
+            : ownName(rows, shared, pt.q.r, others);
       const node = row({
         pieceKey: null,
         value: pt.d,
