@@ -292,7 +292,7 @@ Verify: `just test-one src/renderer/FormulaTree.test.tsx` - passes; `just check`
   - Cases:
     - each new mosaic recalculates only the ids in view (open panel, open group, pins, open root);
     - no recording;
-    - the Stats keeps its own worker and its time under 1 s with live values on (SC-004, measured as `ms` in the invented game).
+    - the Stats keeps its own worker and its time under 1 s with live values on (SC-004, measured on the real game in T026).
 
 ### Implementation for User Story 2
 
