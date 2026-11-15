@@ -120,6 +120,12 @@ lime.$scripts.N = function (_exports, $global) {
     ListNames: function () {
       return [["FIRST_INVENTED_II", 7], ["second|half"]];
     },
+    // The emporium's foods, by its slot (the golden food's case).
+    NinjaInfo: function () {
+      var list = [];
+      list[29] = [0, 0, "itemB"];
+      return list;
+    },
   };
   A["scripts.CustomMaps"] = {
     MapOne: function () {
@@ -765,6 +771,149 @@ lime.$scripts.N = function (_exports, $global) {
     dnsm().TreeScratch.h.w = state().TreeBase + t;
     if (t === -1) dnsm().TreeCache.h.total = state().TreeBase * 2;
     return a.engine.getGameAttribute("DNSM").h.TreeScratch.h.w;
+  };
+  // A golden food's bonus in steps of the shape pieces.cjs goldFood reads: the shared multiplier (a set's multi × (the
+  // family's, at least 1, + its sources ÷ 100)), the worn food's part with its logs when one is worn, a level and a
+  // whole number, and the emporium's part added to the bonus when its level is above 0, each log a call of its own. A
+  // level below 0 ends the block after its third step. The key picks how a step is written, one shape per test. (No
+  // quote mark in its comments: instrument.ts finds the end of a block by its braces, outside quotes.)
+  Blocks._customBlock_getLOG = function (x) {
+    return Math.log(x) / Math.LN10;
+  };
+  Blocks._customBlock_GoldFoodBonuses = function (t) {
+    var s = state();
+    var d = dnsm();
+    var worn = 0;
+    var multi;
+    if (s.EquipmentOrder[2][1] === "") return 0;
+    // the sum of the sources taken as a percent by a product, not a division
+    if (t === "percent")
+      multi =
+        (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
+        (Math.max(d.FamBonusQTYs[66], 1) +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) *
+            0.01);
+    // a set of one part, then one written with its number last
+    else if (t === "oneSet")
+      multi =
+        (1 + s.GfoodSet[0] / 100) *
+        (Math.max(d.FamBonusQTYs[66], 1) +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
+            100);
+    else if (t === "setLast")
+      multi =
+        (s.GfoodSet[0] / 100 + 1) *
+        (Math.max(d.FamBonusQTYs[66], 1) +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
+            100);
+    // a family of at least 2, which the ⓘ of the bench does not read
+    else if (t === "atTwo")
+      multi =
+        (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
+        (Math.max(d.FamBonusQTYs[66], 2) +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
+            100);
+    else
+      multi =
+        (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
+        (Math.max(d.FamBonusQTYs[66], 1) +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
+            100);
+    // the part of the worn food: kept in the block, rounded, added to the bonus, or the bonus itself
+    if (s.EquipmentQuantity[2][1] > 0 && t === "local")
+      worn =
+        d.GfoodMap.h.Amount *
+        multi *
+        0.05 *
+        Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
+        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+    else if (s.EquipmentQuantity[2][1] > 0 && t === "round")
+      d.GfoodBonus = Math.round(
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
+          (1 +
+            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14),
+      );
+    else if (s.EquipmentQuantity[2][1] > 0 && t === "added")
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
+          (1 +
+            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+    else if (s.EquipmentQuantity[2][1] > 0)
+      d.GfoodBonus =
+        d.GfoodMap.h.Amount *
+        multi *
+        0.05 *
+        Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
+        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+    var level = s.Ninja[104][0] * 1;
+    if (level < 0) return multi;
+    var whole = Math.floor(multi);
+    if (level <= 0 || s.CustomLists.h.NinjaInfo[29][2] === "")
+      return d.GfoodBonus + worn + whole * Blocks._customBlock_TreeReads() * 0;
+    // the part of the emporium: added to a value of the block, to another read, times 1, inside a max, twice, or to the
+    // bonus
+    if (t === "local")
+      return (
+        worn +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level))
+      );
+    if (t === "other")
+      return (
+        s.GfoodStart +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level))
+      );
+    if (t === "scaled")
+      d.GfoodBonus =
+        (d.GfoodBonus +
+          d.GfoodMap.h.Amount *
+            multi *
+            0.05 *
+            Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level))) *
+        1;
+    else if (t === "inFn")
+      d.GfoodBonus =
+        d.GfoodBonus +
+        Math.max(
+          d.GfoodMap.h.Amount *
+            multi *
+            0.05 *
+            Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level)),
+          0,
+        );
+    else if (t === "twice") {
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.01 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level));
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level));
+    } else
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level));
+    return d.GfoodBonus;
   };
   // The scene caches the game rebuilds when a character's scene loads (inactive.ts): the Lab's event needs its trigger
   // text, TalentCalc(-7) builds from what the event left, and every TalentCalc leaves a working value in the TotalStats
