@@ -31,6 +31,27 @@ test("each Stats root equals the Stats number of the same mosaic", () => {
   }
 });
 
+// SC-001, US6: 10 item swaps in a row over the same worker, the root of each Stats number equal to the Stats each time.
+test("over 10 mosaics in a row, as 10 item swaps, each root still equals the Stats number", () => {
+  const stats = createEngine(GAME, PAK);
+  for (let swap = 1; swap <= 10; swap++) {
+    const mosaic = mosaicOf({
+      Stats: {
+        STR: swap,
+        AGI: 2 * swap,
+        WIS: 3,
+        LUK: swap % 4,
+        Drop_Rarity: swap / 2,
+      },
+    });
+    const numbers = stats.calculate(mosaic);
+    for (const [id] of TARGETS) {
+      const root = trees.tree(number(id), mosaic);
+      expect(root === "unknownNumber" ? root : root.value).toBe(numbers[id]);
+    }
+  }
+});
+
 test("values gives each Stats number of the same mosaic, and null outside the roots", () => {
   const mosaic = mosaicOf({ Stats: { STR: 7, Drop_Rarity: 3.5 } });
   const stats = createEngine(GAME, PAK).calculate(mosaic);

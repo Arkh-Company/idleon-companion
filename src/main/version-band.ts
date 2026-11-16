@@ -11,7 +11,6 @@ export const RULES_GAME_SHA: string | null =
   "0e47e87bbe36198cbecc41943ea3cd8949f51e9350a4c125d67e3b7de9771ba4";
 
 export function versionBand(rulesSha: string | null = RULES_GAME_SHA): {
-  /** The game's code, as the tree host read it. */
   /** The game's code, as the tree host read it; gives its sha256. */
   read(code: Uint8Array): string;
   checked: () => boolean;
