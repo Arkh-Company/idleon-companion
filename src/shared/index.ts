@@ -24,6 +24,7 @@ export {
   pieceValues,
 } from "./formula-tree-compare.ts";
 export { modulesFor } from "./modules.ts";
+export { MINUS, plain, valueText } from "./row-text.ts";
 export { toReading } from "./reading.ts";
 export { READ_NULLS } from "./reading-fixture.ts";
 export { identifyScreen } from "./screens/identify.ts";

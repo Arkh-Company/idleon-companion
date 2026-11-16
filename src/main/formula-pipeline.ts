@@ -9,6 +9,7 @@ import {
   pieceValues,
   rootText,
   statsNumber,
+  valueText,
 } from "../shared/index.ts";
 import type {
   FormulaTree,
@@ -41,6 +42,29 @@ type TreeHost = Pick<
 export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
   | { event: "treeRejected"; id: string };
+
+// ponytail: the first parts in the tree's order; a bigger tree's later parts do not light "Game changed" (FR-024).
+const MAX_LIVE_PARTS = 200;
+
+/** The parts the band follows (FR-024): every built row but the root, with a piece and a number, one per piece. */
+function partsOf(root: TreeNode): Map<string, TreeNode> {
+  const parts = new Map<string, TreeNode>();
+  const pending = Array.isArray(root.kids) ? root.kids.toReversed() : [];
+  for (
+    let n = pending.pop();
+    n && parts.size < MAX_LIVE_PARTS;
+    n = pending.pop()
+  ) {
+    if (
+      n.pieceKey !== null &&
+      typeof n.value === "number" &&
+      !parts.has(n.pieceKey)
+    )
+      parts.set(n.pieceKey, n);
+    if (Array.isArray(n.kids)) pending.push(...n.kids.toReversed());
+  }
+  return parts;
+}
 
 /** Walked without recursion: a checked tree can be as deep as it has nodes. */
 function countNodes(root: TreeNode): number {
@@ -145,17 +169,26 @@ export function startFormulaPipeline(deps: {
   /** What the window has in view; the pins and the open tree are in view too. */
   let windowIds: string[] = [];
   let pinIds: string[] = [];
+  /** The parts of the open tree asked live, by piece; only of the active character's tree (FR-024). */
+  let parts = new Map<string, TreeNode>();
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
     },
     send: (v) => {
-      deps.sendValues(v);
+      // A part's piece key is a JSON list: the window only gets the catalog numbers.
+      const values = Object.entries(v.values).filter(
+        ([k]) => !k.startsWith("["),
+      );
+      deps.sendValues({ ...v, values: Object.fromEntries(values) });
       changedInGame(v);
     },
   });
 
-  /** "Game changed · Refresh": the open number's text, in a reading newer than the tree's, is not the tree's (FR-024). */
+  /**
+   * "Game changed · Refresh": in a reading newer than the tree's, the open number's text or the text of one of its open
+   * parts is not the tree's (FR-024); a counter that moves none of them changes nothing.
+   */
   function changedInGame(v: LiveValues): void {
     if (
       last.state !== "ready" ||
@@ -168,9 +201,17 @@ export function startFormulaPipeline(deps: {
     )
       return;
     const now = v.values[last.request.id];
+    const moved = (key: string, n: TreeNode) => {
+      const value = v.values[key];
+      return (
+        typeof value === "number" &&
+        valueText({ value, fmt: n.fmt }) !== valueText(n)
+      );
+    };
     if (
-      typeof now === "number" &&
-      rootText(last.request.id, now) !== last.rootText
+      (typeof now === "number" &&
+        rootText(last.request.id, now) !== last.rootText) ||
+      [...parts].some(([key, n]) => moved(key, n))
     )
       show({ ...last, gameChanged: true });
   }
@@ -198,14 +239,32 @@ export function startFormulaPipeline(deps: {
     index.mosaic(mosaic);
   }
 
+  function inView(): void {
+    live.setInView([
+      ...windowIds,
+      ...pinIds,
+      ...(open ? [open.id] : []),
+      ...parts.keys(),
+    ]);
+  }
+
   function view(): void {
     follow();
-    live.setInView([...windowIds, ...pinIds, ...(open ? [open.id] : [])]);
+    inView();
   }
 
   function show(tree: FormulaTree): void {
+    const root = tree.state === "ready" ? tree.root : null;
+    if (root !== (last.state === "ready" ? last.root : null))
+      parts =
+        tree.state === "ready" &&
+        root &&
+        tree.character === tree.activeCharacter
+          ? partsOf(root)
+          : new Map<string, TreeNode>();
     last = tree;
     deps.send(tree);
+    inView();
   }
 
   function drop(): void {

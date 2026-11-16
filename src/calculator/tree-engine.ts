@@ -20,7 +20,10 @@ import type { TreeRoot } from "./tree-roots.ts";
 export interface TreeEngine {
   /** The root of a `number` request or the branch of an `expand`, or "unknownNumber"; throws on a bad request or a failure. */
   tree(request: unknown, mosaicJson: unknown): CalcTreeNode | "unknownNumber";
-  /** One number per id over the mosaic, null outside the roots or when it fails; throws on a bad request. */
+  /**
+   * One number per id over the mosaic: a catalog id's root, or the call of a part's piece key (FR-024); null for anything
+   * else or when it fails; throws on a bad request.
+   */
   values(ids: unknown, mosaicJson: unknown): Record<string, number | null>;
   /** Each part of the number's whole tree, [pieceKey, name], each piece once; "unknownNumber" outside the roots. */
   shape(id: unknown, mosaicJson: unknown): [string, string][] | "unknownNumber";
@@ -50,6 +53,27 @@ export function shapeOf(build: TreeBuild): [string, string][] {
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
+
+/** The call of a part's piece key (`[character, block, ...args]`), or null for a read path or anything else. */
+export function pieceCall(
+  key: string,
+): [block: string, args: (string | number)[]] | null {
+  if (!key.startsWith("[")) return null;
+  try {
+    const parsed: unknown = JSON.parse(key);
+    if (!Array.isArray(parsed)) return null;
+    const [character, block, ...args] = parsed as unknown[];
+    const isArg = (a: unknown): a is string | number =>
+      typeof a === "string" || typeof a === "number";
+    return typeof character === "number" &&
+      typeof block === "string" &&
+      args.every(isArg)
+      ? [block, args]
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 export function createTreeEngine(
   code: string,
@@ -113,13 +137,18 @@ export function createTreeEngine(
         throw new Error("not a values request");
       const { context } = recorder;
       context.load(mosaicJson, lazyDnsm);
+      const asked = ids.filter((id): id is string => typeof id === "string");
+      // The roots first: a part's call (FR-024) comes after the number it is part of, as in the game. A read path is no
+      // block of the game: the context answers null.
+      const value = (id: string) => {
+        const call = rootOf(id) ?? pieceCall(id);
+        return call ? context.number(...call) : null;
+      };
+      const isRoot = (id: string) => rootOf(id) !== undefined;
       return Object.fromEntries(
-        ids
-          .filter((id): id is string => typeof id === "string")
-          .map((id) => {
-            const root = rootOf(id);
-            return [id, root ? context.number(...root) : null];
-          }),
+        [...asked.filter(isRoot), ...asked.filter((id) => !isRoot(id))].map(
+          (id) => [id, value(id)],
+        ),
       );
     },
     shape(id, mosaicJson) {

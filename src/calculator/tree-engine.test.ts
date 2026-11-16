@@ -44,6 +44,24 @@ test("values gives each Stats number of the same mosaic, and null outside the ro
   );
 });
 
+// "Game changed" by a part of an open node (FR-024): a part's piece key is its call, calculated as a root is.
+test("values gives a call's piece key its number, and null to a read path or a key that is no call", () => {
+  const mosaic = mosaicOf({ Stats: { STR: 7, Drop_Rarity: 3.5 } });
+  const [block, args] = TREE_ROOTS.hp ?? ["", []];
+  const call = JSON.stringify([0, block, ...args]);
+  const values = trees.values(
+    [call, '[0,"Some.read.path"]', "[0,1]", "[nope"],
+    mosaic,
+  );
+  expect(values).toEqual({
+    [call]: trees.values(["hp"], mosaic).hp,
+    '[0,"Some.read.path"]': null,
+    "[0,1]": null,
+    "[nope": null,
+  });
+  expect(values[call]).toEqual(expect.any(Number));
+});
+
 test("values records nothing: the last tree's branches still open", () => {
   const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
   trees.values(["hp"], mosaicOf({ Stats: { STR: 2 } }));
