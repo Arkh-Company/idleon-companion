@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
   MARKS_RESET,
+  MARK_TAKEN,
   MARKS_UNSAVED,
   PINS_RESET,
   PINS_UNSAVED,
@@ -71,4 +72,15 @@ test("saving again a mark whose write failed tries the write again, never 'alrea
       .marks.list(0)
       .map((m) => m.name),
   ).toEqual(["Mark 1"]);
+});
+
+test("after a Clear whose write failed, saving a mark that exists is still 'already exists'", () => {
+  const dir = mkdtempSync(join(tmpdir(), "clear-"));
+  const { marks } = savedFiles(dir);
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(null);
+  expect(marks.save(0, "Mark 2", { k: 2 })).toBe(null);
+  mkdirSync(join(dir, "marks.json.tmp"));
+  expect(marks.clear(0, "Mark 2")).toBe(MARKS_UNSAVED);
+  rmdirSync(join(dir, "marks.json.tmp"));
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(MARK_TAKEN);
 });

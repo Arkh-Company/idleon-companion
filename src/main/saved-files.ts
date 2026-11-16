@@ -172,8 +172,6 @@ function jsonFile<T>(
   load: () => T;
   /** Null when written; else the sentence of a failed write. The data stays in memory either way. */
   save: (data: T) => string | null;
-  /** The last write failed: what is in memory is not on disk. */
-  unsaved: () => boolean;
   /** The warning of a file that could not be read, given once (FR-041). */
   warning: () => string | null;
 } {
@@ -181,7 +179,6 @@ function jsonFile<T>(
   let warning: string | null = null;
   /** The file is there but could not be read (busy, locked): it is never written over in this session. */
   let kept = false;
-  let unsaved = false;
 
   function load(): T {
     if (data !== null) return data;
@@ -221,7 +218,6 @@ function jsonFile<T>(
     save(next) {
       load();
       data = next;
-      unsaved = true;
       if (kept) return sentences.unsaved;
       // Written to `.tmp` and renamed over the file (as setup-store.ts), so a failed write never leaves half a file.
       try {
@@ -229,13 +225,11 @@ function jsonFile<T>(
         const tmp = `${file}.tmp`;
         writeFileSync(tmp, JSON.stringify(toFile(next)));
         renameSync(tmp, file);
-        unsaved = false;
         return null;
       } catch {
         return sentences.unsaved;
       }
     },
-    unsaved: () => unsaved,
     warning() {
       load();
       const w = warning;
@@ -304,25 +298,38 @@ export function savedFiles(dir: string): {
     { reset: SHAPES_RESET, unsaved: SHAPES_UNSAVED },
   );
 
+  /** The mark whose write failed: saved again, it is written again; any other name taken stays taken. */
+  let failed: { n: number; name: string } | null = null;
+  /** Writes the marks; a write that works leaves nothing unsaved. */
+  const write = (all: Map<string, Mark[]>, mark: typeof failed) => {
+    const refused = marks.save(all);
+    failed = refused === null ? null : mark;
+    return refused;
+  };
+
   return {
     marks: {
       list: (n) => marks.load().get(String(n)) ?? [],
       save(n, name, values) {
         const all = marks.load();
         const list = all.get(String(n)) ?? [];
-        // A mark goes only with Clear (FR-025); saved again after a failed write, it is written again.
+        // A mark goes only with Clear (FR-025); saved again after its write failed, it is written again.
         if (list.some((m) => m.name === name))
-          return marks.unsaved() ? marks.save(all) : MARK_TAKEN;
+          return failed?.n === n && failed.name === name
+            ? write(all, failed)
+            : MARK_TAKEN;
         if (list.length >= MAX_MARKS) return MARKS_FULL;
         all.set(String(n), [...list, { name, takenAt: Date.now(), values }]);
-        return marks.save(all);
+        return write(all, { n, name });
       },
       clear(n, name) {
         const all = marks.load();
         const left = (all.get(String(n)) ?? []).filter((m) => m.name !== name);
         if (left.length > 0) all.set(String(n), left);
         else all.delete(String(n));
-        return marks.save(all);
+        // The mark cleared is no longer one to write again.
+        const keep = failed?.n === n && failed.name === name ? null : failed;
+        return write(all, keep);
       },
       warning: marks.warning,
     },
