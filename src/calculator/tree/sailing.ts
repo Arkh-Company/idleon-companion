@@ -4,7 +4,7 @@
 // bench's name of the branch ("max(0, 32)", its own sum with numbers) is one the app never gives (tree/shapes.ts): the
 // branch is told by its parts, an unlinked earlier value and the minimum 0, with no code nor name of its own.
 import type { Level } from "./places.ts";
-import { row } from "./rows.ts";
+import { row, unlinked } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 /** The rule, with what it tests and the why of the 0 it shows. */
@@ -16,9 +16,6 @@ export const ARTIFACT_PICK = {
   why: "the game fills the artifact list with 0 and then each artifact in order, and this read comes before its own entry (N.js Sailing)",
   proof: "bench pieces.cjs opus1Sailing; N.js Sailing ArtifactBonus",
 };
-
-/** An earlier value no rule named (pieces.cjs "Value from an earlier step"). */
-const unlinked = (r: Row) => !!r.earlier && !!r.node.flags.unnamed;
 
 /** max(0, t): t only picks the artifact's entry, no part of its bonus. */
 function isPick(x: Row): boolean {

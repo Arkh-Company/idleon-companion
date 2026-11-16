@@ -11,7 +11,7 @@ import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
 import { lastAbove } from "./last-renames.ts";
-import { bare, isLeaf } from "./rows.ts";
+import { bare, isLeaf, unlinked, untyped } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];
@@ -242,9 +242,8 @@ function aboveRename(r: Row, up: readonly Above[]): Row {
   const f7f = ABOVE_RENAMES.friendScore;
   if (
     bare(r) &&
-    r.earlier &&
-    r.node.flags.unnamed &&
-    (r.node.leaf === null || r.node.leaf === "unknown") &&
+    unlinked(r) &&
+    untyped(r) &&
     up.slice(-3).some((a) => f7f.test.test(a.code ?? ""))
   )
     return renamed(r, f7f.name, "quantity");

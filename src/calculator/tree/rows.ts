@@ -64,6 +64,14 @@ export const isLeaf = (r: Row): boolean =>
 /** A row with no rows under it, built (a group) or to build (an opening). */
 export const bare = (r: Row): boolean => r.open === null && !r.group?.length;
 
+/** pieces.cjs "Value from an earlier step": an earlier value no rule named. */
+export const unlinked = (r: Row): boolean =>
+  !!r.earlier && !!r.node.flags.unnamed;
+
+/** A leaf with no type yet, or a "?" (pieces.cjs `!n.kind || n.kind === "?"`). */
+export const untyped = (r: Row): boolean =>
+  r.node.leaf === null || r.node.leaf === "unknown";
+
 /** Row `r` with the name `name`, its flags as they are (a name changed from another proven one). */
 export const named = (r: Row, name: string): Row =>
   name === r.node.name ? r : { ...r, node: { ...r.node, name } };

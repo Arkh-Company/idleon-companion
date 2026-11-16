@@ -17,13 +17,10 @@ import type { Above } from "./above-renames.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
 import { nameOf } from "./names.ts";
-import { bare, row, withName } from "./rows.ts";
+import { bare, row, unlinked, untyped, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 const O5 = (block: string) => `bench pieces.cjs opus5 OPUS5; N.js ${block}`;
-const open = (r: Row) => r.node.leaf === null || r.node.leaf === "unknown";
-/** An earlier value no rule named (pieces.cjs "Value from an earlier step"). */
-const unlinked = (r: Row) => !!r.earlier && !!r.node.flags.unnamed;
 
 /** Each rule, with what it tests. */
 export const LAST_RENAMES = {
@@ -112,7 +109,7 @@ export function lastLeaf(r: Row): Row {
     fish !== undefined && r.node.flags.unnamed
       ? withName(r, `Big Fish upgrade ${fish} level`)
       : r;
-  if (!open(n)) return n;
+  if (!untyped(n)) return n;
   if (R.goldStart.test.test(code) && near(n.node.value, 0))
     return typed(n, R.goldStart.name, "fixedValue", null);
   for (const p of [R.kingdom, R.foodSlots])
@@ -138,7 +135,7 @@ export function lastAbove(
     up.some((a) => R.tome.test.test(a.code ?? ""))
   )
     return typed(r, R.tome.name, "quantity", null);
-  if (!open(r)) {
+  if (!untyped(r)) {
     // the first sign of a sign total took a fixed value (its step is "amount + 0")
     return r.node.leaf === "fixedValue" &&
       R.sign.test.test(r.node.name) &&

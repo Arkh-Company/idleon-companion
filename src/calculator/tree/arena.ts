@@ -7,7 +7,7 @@
 // the call's level and in the branches built in it).
 import { near } from "./math.ts";
 import type { Level } from "./places.ts";
-import { bare, withName } from "./rows.ts";
+import { bare, unlinked, untyped, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
 
@@ -33,10 +33,6 @@ export const MEASURE = {
   read: "DNSM.HoleozDNm",
   proof: "bench pieces.cjs opus2Arena F; N.js Holes",
 };
-
-const unknown = (r: Row) => r.node.leaf === null || r.node.leaf === "unknown";
-/** An earlier value no rule named (pieces.cjs "Value from an earlier step"). */
-const unlinked = (r: Row) => !!r.earlier && !!r.node.flags.unnamed;
 
 /** A: the arena's count named, its waves limits reached, its ⓘ their sum. */
 function arenaCount(n: Row, lv: Level): { row: Row; level: Level } | null {
@@ -94,7 +90,7 @@ function measured(n: Row, lv: Level): Level | null {
   if (!MEASURE.test.test(n.node.code ?? "")) return null;
   const src = lv.rows.find(
     (k) =>
-      bare(k) && !!k.node.code && !unknown(k) && k.node.code !== MEASURE.read,
+      bare(k) && !!k.node.code && !untyped(k) && k.node.code !== MEASURE.read,
   );
   if (!src) return null;
   const as = (k: Row): Row => {

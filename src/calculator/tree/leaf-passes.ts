@@ -15,7 +15,7 @@ import type {
   CALC_LEAF_KINDS,
 } from "../tree-contract.ts";
 import { near } from "./math.ts";
-import { isLeaf, withName } from "./rows.ts";
+import { isLeaf, untyped, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
 import { lastLeaf } from "./last-renames.ts";
@@ -354,8 +354,7 @@ function pass(r: Row): Row {
   if (maps) return maps;
   if (code.startsWith(BANNED.test))
     return typed(r, BANNED.name, "condition", "equalsValue", null);
-  const open = (x: LeafRule) =>
-    r.node.leaf === null || r.node.leaf === "unknown" || r.node.leaf === x.also;
+  const open = (x: LeafRule) => untyped(r) || r.node.leaf === x.also;
   for (const x of CODE_LEAVES) {
     const m = x.test.exec(code);
     if (!m || (x.value !== undefined && !near(r.node.value, x.value))) continue;
@@ -392,7 +391,7 @@ export function leafPasses(rows: readonly Row[]): Row[] {
         !(
           r.node.code === FISHING_SPOT.test &&
           isLeaf(r) &&
-          (r.node.leaf === null || r.node.leaf === "unknown") &&
+          untyped(r) &&
           rows.length > 1
         ),
     );
