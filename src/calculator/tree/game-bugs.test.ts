@@ -1,7 +1,10 @@
 // A game-bug rule inside the closed groups of a call (spec 008 FR-016): a source the call counts twice is still the
 // call's own when it sits under "At 0". A hand-written recording with invented blocks.
 import { expect, test } from "vitest";
+import { node } from "../../main/formula-fixture.ts";
+import { checkTree } from "../../main/tree-check.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
+import { GAME_BUGS } from "./game-bugs.ts";
 import { buildTree } from "../tree-build.ts";
 import { recordingOf } from "./tree-fixture.ts";
 
@@ -62,4 +65,9 @@ test("a source counted twice at 0 is tagged inside the At 0 group", () => {
     ["Nothing()", "inventedTwice"],
   ]);
   expect(kids[0]?.flags.gameBug).toBeUndefined();
+});
+
+test("every game-bug rule's id passes the main's check of a tree (tree-check.ts isRuleId)", () => {
+  for (const id of [...GAME_BUGS.map((r) => r.id), "inventedTwice"])
+    expect(checkTree(node({ flags: { gameBug: id } }), 1)).not.toBe(null);
 });

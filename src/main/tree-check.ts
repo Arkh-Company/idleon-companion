@@ -30,7 +30,7 @@ const isText = textUpTo(MAX_TEXT);
 const isTextOrNull = (v: unknown) => v === null || isText(v);
 const isNodeText = textUpTo(MAX_NODE_ID);
 const isCode = (v: unknown) => v === null || (isText(v) && !KEYWORD.test(v));
-/** A game-bug rule's id (calculator tree/game-bugs.ts), never free text. */
+/** A game-bug rule's id, as `GameBugRule.id` documents it (calculator tree/game-bugs.ts), never free text. */
 const isRuleId = (v: unknown) =>
   typeof v === "string" && /^[A-Za-z][A-Za-z0-9]{0,59}$/.test(v);
 const isFinite = (v: unknown): v is number =>

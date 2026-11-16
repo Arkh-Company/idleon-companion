@@ -3,7 +3,10 @@
 // phrase. A rule enters only with its proof by reference (the block, the argument and the place in the game's code that
 // counts twice), never with the game's text (FR-032).
 export interface GameBugRule {
-  /** The id the row carries, never free text. */
+  /**
+   * The id the row carries, never free text: a letter, then letters or digits, up to 60 (the main refuses any other,
+   * src/main/tree-check.ts `isRuleId`).
+   */
   id: string;
   /** The call of the block that counts twice, by its game call. */
   in: RegExp;
