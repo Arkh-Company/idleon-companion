@@ -127,7 +127,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s49",
-    "name": "Talent Bannedfor All LV",
+    "name": "Talent Bannedfor All LV (talent 49)",
     "group": "Character",
     "system": "Talents",
     "screen": "Talents",
@@ -136,7 +136,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYTalentBannedforAllLV_s227",
-    "name": "Talent Bannedfor All LV",
+    "name": "Talent Bannedfor All LV (talent 227)",
     "group": "Character",
     "system": "Talents",
     "screen": "Talents",
@@ -190,7 +190,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYAllTalentLV",
-    "name": "All-talent levels",
+    "name": "All-talent levels (talent 0)",
     "group": "Character",
     "system": "Combat",
     "screen": "Items",
@@ -199,7 +199,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYAllTalentLVz_s0_0",
-    "name": "All-talent levels",
+    "name": "All-talent levels (talent 0, slot 0)",
     "group": "Character",
     "system": "Combat",
     "screen": "Items",
@@ -208,7 +208,7 @@
   },
   {
     "id": "hourlyKillRateFighting",
-    "name": "Fighting",
+    "name": "Fighting (kills per hour)",
     "group": "Character",
     "system": "AFK",
     "screen": "AFK Gains",
@@ -226,7 +226,7 @@
   },
   {
     "id": "afkfoodsTimeReduxFighting",
-    "name": "Fighting",
+    "name": "Fighting (food time reduction)",
     "group": "Character",
     "system": "AFK",
     "screen": "AFK Gains",
@@ -1513,7 +1513,7 @@
   },
   {
     "id": "petStuffTotalDMG",
-    "name": "Total DMG",
+    "name": "Total DMG (slot 0)",
     "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
@@ -1522,7 +1522,7 @@
   },
   {
     "id": "petStuffTotalDMG_Basic",
-    "name": "Total DMG",
+    "name": "Total DMG (basic)",
     "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
@@ -2197,7 +2197,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost",
-    "name": "Chip Repo CHIP",
+    "name": "Chip Repo CHIP (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2206,7 +2206,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost_1",
-    "name": "Chip Repo CHIP 1, 0",
+    "name": "Chip Repo CHIP 1, 0 (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2215,7 +2215,7 @@
   },
   {
     "id": "labbChipRepoCHIP_Cost_2",
-    "name": "Chip Repo CHIP 2, 0",
+    "name": "Chip Repo CHIP 2, 0 (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2224,7 +2224,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned",
-    "name": "Chip Repo CHIP",
+    "name": "Chip Repo CHIP (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2233,7 +2233,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned_1",
-    "name": "Chip Repo CHIP 1, 0",
+    "name": "Chip Repo CHIP 1, 0 (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2242,7 +2242,7 @@
   },
   {
     "id": "labbChipRepoCHIP_QTYowned_2",
-    "name": "Chip Repo CHIP 2, 0",
+    "name": "Chip Repo CHIP 2, 0 (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2251,7 +2251,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost",
-    "name": "Chip Repo JEWEL",
+    "name": "Chip Repo JEWEL (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2260,7 +2260,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost_1",
-    "name": "Chip Repo JEWEL 1, 0",
+    "name": "Chip Repo JEWEL 1, 0 (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2269,7 +2269,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_Cost_2",
-    "name": "Chip Repo JEWEL 2, 0",
+    "name": "Chip Repo JEWEL 2, 0 (cost)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2278,7 +2278,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned",
-    "name": "Chip Repo JEWEL",
+    "name": "Chip Repo JEWEL (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2287,7 +2287,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned_1",
-    "name": "Chip Repo JEWEL 1, 0",
+    "name": "Chip Repo JEWEL 1, 0 (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
@@ -2296,7 +2296,7 @@
   },
   {
     "id": "labbChipRepoJEWEL_QTYowned_2",
-    "name": "Chip Repo JEWEL 2, 0",
+    "name": "Chip Repo JEWEL 2, 0 (owned)",
     "group": "W4",
     "system": "Laboratory",
     "screen": "Lab",
