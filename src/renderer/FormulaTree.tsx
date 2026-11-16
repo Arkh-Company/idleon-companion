@@ -6,52 +6,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { changes } from "../shared/index.ts";
 import type { FormulaTree as Tree, TreeNode } from "../shared/index.ts";
-import {
-  FEEDS_LOADING,
-  FeedsBadge,
-  feedsText,
-  useFeedsLists,
-} from "./FeedsBadge.tsx";
+import { FEEDS_LOADING, useFeedsLists } from "./FeedsBadge.tsx";
 import { nameOf } from "./FormulasTab.tsx";
 import { countRows, gameDetails, treeCounts, useCopy } from "./GameDetails.tsx";
-import {
-  leafLabel,
-  leafPhrase,
-  LeafTag,
-  LevelTag,
-  WIDE_CAP,
-} from "./LeafTag.tsx";
-import {
-  formulaLines,
-  GROUP_SUFFIX,
-  reachedText,
-  rowChange,
-  shareText,
-  spokenValue,
-  valueClass,
-  valueText,
-} from "./tree-text.ts";
+import { partLine, phrasesOf, treeItem, treeLines } from "./tree-items.tsx";
+import type { RowCtx } from "./tree-items.tsx";
+import { keyMove } from "./tree-keys.ts";
+import type { Visible } from "./tree-keys.ts";
+import { formulaLines, GROUP_SUFFIX } from "./tree-text.ts";
 import { flip, isGroup, partition } from "./tree-parts.ts";
-import { truthTags, TruthTags } from "./TruthTag.tsx";
 
 type Ready = Extract<Tree, { state: "ready" }>;
-
-/** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7); a group has none. */
-const phrasesOf = (n: TreeNode): [key: string, phrase: string][] => [
-  ...(n.leaf ? [["type", leafPhrase(n)] as [string, string]] : []),
-  ...(isGroup(n) ? [] : truthTags(n)).flatMap((t, i): [string, string][] =>
-    t.phrase ? [[`truth${String(i)}`, t.phrase]] : [],
-  ),
-];
-
-interface Visible {
-  key: string;
-  parent: string | null;
-  expandable: boolean;
-  expanded: boolean;
-  /** What Enter or a tap does on a row that opens nothing (a number of a part's list). */
-  activate: (() => void) | undefined;
-}
 
 const FEEDS = "::feeds";
 
@@ -120,54 +85,19 @@ export function FormulaTree({
     setOpen((s) => flip(s, key));
   }
 
-  function item(
-    key: string,
-    level: number,
-    pos: [number, number],
-    parent: string | null,
-    label: string,
-    line: ReactNode,
-    /** Drawn only when open: the rows inside are visible only then. */
-    inside: (() => ReactNode) | null,
-    expandable: boolean,
-    changed = false,
-    activate?: () => void,
-  ): ReactNode {
-    const expanded =
-      expandable &&
-      (key.endsWith("::all") ? showAll.has(key.slice(0, -5)) : open.has(key));
-    visible.push({ key, parent, expandable, expanded, activate });
-    return (
-      <li
-        key={key}
-        role="treeitem"
-        data-key={key}
-        aria-label={label}
-        aria-level={level}
-        aria-posinset={pos[0]}
-        aria-setsize={pos[1]}
-        {...(expandable ? { "aria-expanded": expanded } : {})}
-        tabIndex={key === active ? 0 : -1}
-      >
-        <div
-          className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}${changed ? " changed" : ""}`}
-          onClick={() => {
-            setActive(key);
-            setFocusKey(key);
-            if (activate) activate();
-            else if (expandable) toggle(key);
-          }}
-        >
-          <span className="twisty" aria-hidden="true">
-            {expandable ? (expanded ? "▾" : "▸") : ""}
-          </span>
-          <LevelTag level={level} />
-          {line}
-        </div>
-        {expanded && inside?.()}
-      </li>
-    );
-  }
+  const ctx: RowCtx = {
+    visible,
+    active,
+    isOpen: (key) =>
+      key.endsWith("::all") ? showAll.has(key.slice(0, -5)) : open.has(key),
+    focus: (key) => {
+      setActive(key);
+      setFocusKey(key);
+    },
+    toggle,
+  };
+  const item = treeItem.bind(null, ctx);
+  const lines = treeLines.bind(null, ctx);
 
   function info(
     n: TreeNode,
@@ -275,33 +205,6 @@ export function FormulaTree({
     const to = n.kids === "lazy" ? n.id : key;
     setActive(to);
     setFocusKey(to);
-  }
-
-  /** The rows inside an informative row (the two lines of the math, the pairs of Game details and its Copy): treeitems
-   * that do not open, so the arrows reach them and the reader says their text (design.md §3.8); Enter does `activate`. */
-  function lines(
-    parent: string,
-    level: number,
-    rows: [label: string, line: ReactNode, activate?: () => void][],
-  ): ReactNode {
-    return (
-      <ul role="group">
-        {rows.map(([label, line, activate], i) =>
-          item(
-            `${parent}::${String(i)}`,
-            level,
-            [i + 1, rows.length],
-            parent,
-            label,
-            line,
-            null,
-            false,
-            false,
-            activate,
-          ),
-        )}
-      </ul>
-    );
   }
 
   function details(
@@ -435,31 +338,15 @@ export function FormulaTree({
     nodes.set(n.id, n);
     const root = n.id === tree.root.id;
     const group = isGroup(n);
-    const name = rowName(n);
-    const value = root ? tree.rootText : valueText(n);
-    const tags = group ? [] : truthTags(n);
-    const share = group ? null : shareText(n);
-    const reached = reachedText(n);
-    // The root's `was` is in the header, written as the Stats writes it.
-    const closed = !open.has(n.id) && changedInside.has(n.id);
-    const change = rowChange(root ? undefined : n.was, n.fmt, closed);
-    const label = [
-      name,
-      group
-        ? ""
-        : root
-          ? tree.rootText.replace(/x$/, " times")
-          : spokenValue(n),
-      share,
-      change?.spoken,
-      reached,
-      n.feeds === undefined ? "" : feedsText(n.feeds),
-      leafLabel(n),
-      ...tags.map((t) => t.spoken),
-      n.formula ? "has a calculation" : "",
-    ]
-      .filter(Boolean)
-      .join(", ");
+    const { label, line, was } = partLine(n, {
+      name: rowName(n),
+      root,
+      rootText: tree.rootText,
+      closedChange: !open.has(n.id) && changedInside.has(n.id),
+      onFeeds: () => {
+        tapFeeds(n);
+      },
+    });
     const expandable =
       n.kids === "lazy" ||
       n.kids.length > 0 ||
@@ -468,30 +355,6 @@ export function FormulaTree({
           n.code !== null ||
           n.feeds !== undefined ||
           phrasesOf(n).length > 0));
-    const line = (
-      <>
-        <span className="name">{name}</span>
-        {reached && <span className="reached">{reached}</span>}
-        <LeafTag n={n} />
-        <TruthTags tags={tags} />
-        {n.feeds !== undefined && (
-          <FeedsBadge
-            count={n.feeds}
-            onTap={() => {
-              tapFeeds(n);
-            }}
-          />
-        )}
-        {!group && <span className={valueClass(n)}>{value}</span>}
-        {change && <span className="was">{change.text}</span>}
-        {share && <span className="share">{share}</span>}
-        {share &&
-          n.share !== null &&
-          (n.shareMode === "sum" || n.shareMode === "product") && (
-            <meter min={0} max={1} value={n.share} aria-hidden="true" />
-          )}
-      </>
-    );
     return item(
       n.id,
       level,
@@ -501,7 +364,7 @@ export function FormulaTree({
       line,
       () => rows(n, level + 1),
       expandable,
-      change?.was,
+      was,
     );
   }
 
@@ -511,42 +374,11 @@ export function FormulaTree({
     const key = (e.target as HTMLElement).closest<HTMLElement>(
       '[role="treeitem"]',
     )?.dataset.key;
-    const i = visible.findIndex((v) => v.key === key);
-    const here = visible[i];
-    if (!here) return;
     const go = (to: Visible | undefined) => {
-      if (!to) return;
-      setActive(to.key);
-      setFocusKey(to.key);
+      if (to) ctx.focus(to.key);
     };
-    const moves: Record<string, () => void> = {
-      ArrowDown: () => {
-        go(visible[i + 1]);
-      },
-      ArrowUp: () => {
-        go(visible[i - 1]);
-      },
-      Home: () => {
-        go(visible[0]);
-      },
-      End: () => {
-        go(visible.at(-1));
-      },
-      ArrowRight: () => {
-        if (here.expandable && !here.expanded) toggle(here.key);
-        else if (here.expanded && visible[i + 1]?.parent === here.key)
-          go(visible[i + 1]);
-      },
-      ArrowLeft: () => {
-        if (here.expanded) toggle(here.key);
-        else go(visible.find((v) => v.key === here.parent));
-      },
-      Enter: () => {
-        if (here.activate) here.activate();
-        else if (here.expandable) toggle(here.key);
-      },
-    };
-    const move = moves[e.key];
+    const i = visible.findIndex((v) => v.key === key);
+    const move = keyMove(e.key, visible, i, go, toggle);
     if (!move) return;
     e.preventDefault();
     move();

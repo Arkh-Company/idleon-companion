@@ -19,8 +19,8 @@ import {
 } from "./cache-picks.ts";
 import { oneTurnFormula, turnFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
-import type { CodeFormulas } from "./code-formulas.ts";
-import type { Entries, Entry, TurnRead } from "./entries.ts";
+import type { CacheContext } from "./cache-context.ts";
+import type { Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { callText, row } from "./rows.ts";
@@ -44,25 +44,7 @@ import {
   turnName,
   withoutRepeats,
 } from "./turn-names.ts";
-import type { Terms } from "./terms.ts";
 import { any } from "./val-path.ts";
-
-export interface CacheContext {
-  nodes: readonly RecNode[];
-  entries: Entries;
-  writerByValue(p: string, value: unknown): RecNode | null;
-  /** The steps of call `id`. */
-  steps(id: number): readonly Step[];
-  /** The rows of call `id`, or null when the depth limit or a cycle cuts it. */
-  explain(id: number, depth: number, seen: ReadonlySet<number>): Row[] | null;
-  /** The writers of a call's cache reads, by path. */
-  linksOf(n: RecNode): ReadonlyMap<string, number>;
-  /** The terms of writer `w`'s steps, with its own links: the rows they make open under `seen`. */
-  terms(w: RecNode, seen: readonly number[]): Terms;
-  finish(v: unknown, rows: Row[], ones: boolean): Row[];
-  /** The ⓘ the game's code gives (tree/code-formulas.ts). */
-  formulas: CodeFormulas;
-}
 
 const stamp = (rows: Row[], seen: readonly number[]) =>
   rows.map((r) => (r.seen ? r : { ...r, seen }));
