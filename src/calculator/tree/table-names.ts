@@ -112,6 +112,14 @@ export const TABLE_TEXTS = {
     "raw",
     "bench pieces.cjs rename NAMES B2-4 rule 71; N.js Summoning",
   ),
+  /** A collectible's per-unit number, the second field of its text (pieces.cjs opus2Arena E: a number, not a name). */
+  jar: text(
+    "CustomLists.HolesInfo",
+    (t) => [67, t],
+    null,
+    "raw(split '|' [1])",
+    "bench pieces.cjs opus2Arena E; N.js Holes2",
+  ),
   skill: text(
     "CustomLists.SkillNames",
     (s) => [s],

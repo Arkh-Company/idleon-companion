@@ -2,7 +2,7 @@
 // 15/11): when a row gets its place, the level under it is built (tree/places.ts), and these passes decide the row's
 // name, its one child and its rows' names over it, in the bench's order: rule 67 of `rename`, fixNames
 // (tree/kid-names.ts), nametagGrade (tree/parent-renames.ts), structurePass (tree/one-child.ts), stampBonus and
-// opus1Sailing's artifact pick (tree/sailing.ts). The
+// opus1Sailing's artifact pick (tree/sailing.ts) and opus2Arena's rules (tree/arena.ts). The
 // bench runs the first three over every level before structurePass, so a child merged into its row passes them too.
 import type { Above } from "./above-renames.ts";
 import { aboveText, collapsed, kidNames, shinyLevel } from "./kid-names.ts";
@@ -10,6 +10,7 @@ import { nametagGrade, petsEarlier, stampBonus } from "./parent-renames.ts";
 import { near } from "./math.ts";
 import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import { artifactPick } from "./sailing.ts";
+import { arenaPasses } from "./arena.ts";
 import type { Level } from "./places.ts";
 import { bare, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -105,5 +106,6 @@ export function parentPasses(
     n,
     stampBonus(n, at.rows, (k) => under(k, at)?.rows ?? []),
   );
-  return artifactPick(n, at);
+  const art = artifactPick(n, at);
+  return arenaPasses(art.row, art.level);
 }

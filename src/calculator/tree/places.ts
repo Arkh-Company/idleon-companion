@@ -3,7 +3,7 @@
 // when it gets its place, only to decide its own name and its one child (spec Open Questions, 15/11); that level is kept
 // by the row's id, and the player's expand places it then, with no second build, over the same recording
 // (tree-build.ts). A level is renamed by the rows above it before its ⓘ (tree/above-renames.ts), and has one leaf of each
-// code and value when it is placed (tree/one-of-each.ts).
+// code and value when it is placed (tree/one-of-each.ts), the yes/no beside the arena's count named as it (tree/arena.ts).
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
@@ -16,6 +16,7 @@ import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { aboveText, isGroup, kidNames } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
+import { besideArena } from "./arena.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -114,7 +115,8 @@ export function makePlaces(ctx: PlaceContext) {
     // FR-016: a source a game-bug rule marks stays repeated
     const marked = (code: string) =>
       gameBugOf(ctx.bugs, parent.code, code) !== null;
-    return oneOfEach(rows, marked).map((r0) => {
+    // opus2Arena: the yes/no beside the arena's count is named as the count
+    return besideArena(oneOfEach(rows, marked)).map((r0) => {
       const level0 = levelOf(r0, at, parent.code);
       // a group of the parts at 0 or at ×1 keeps the app's name; its rows are named as any level's (pieces.cjs fixNames)
       const { row: r, level } = isGroup(r0)

@@ -91,7 +91,8 @@ test("[NR-C B2-R4] the talent's ban flag is a yes/no of the game", () => {
 
 test.each([
   // OPUS3-F7
-  ['WorkbenchStuff("OverkillQTY", 3, 0)', 7, null, "quantity", null],
+  // (with a last argument of 0, opus2Leaf names it first: arena.test.ts)
+  ['WorkbenchStuff("OverkillQTY", 3, 1)', 7, null, "quantity", null],
   [
     "FamilyValuesMap.MinigameHiscores[2]",
     7,

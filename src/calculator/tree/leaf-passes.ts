@@ -1,6 +1,7 @@
 // The passes of pieces.cjs `finish` after the types (spec 008, T023), from the bench at BASELINE-4, over a level's rows in
 // its `finish` (tree/rows.ts): dungeonGate (the dungeon the map is, a yes/no and never a source), oneOfEach's ban flag of a
-// talent (a yes/no) and the leaves the N.js proves by their code, opus1Sailing's (forced, the Fractal Island's with its ⓘ;
+// talent (a yes/no) and the leaves the N.js proves by their code: opus2Leaf's names of the counts its classify typed,
+// opus1Sailing's (forced, the Fractal Island's with its ⓘ;
 // a class line is context), opus3More OPUS3-F7 and then the OPUS5 list, each only on a leaf still with no type ("?")
 // but the ones the bench forces. opus1Sailing's types by the code of a leaf still "?" (and the boats' names they
 // give) are the classify rules every leaf already passed (tree/kinds.ts, names-sailing.cjs KINDS). Left out, each
@@ -47,6 +48,8 @@ interface LeafRule {
   why?: string;
   /** OPUS5's `force`: a leaf already typed takes the rule too. */
   force?: boolean;
+  /** The type the leaf's classify gave it with its name in the bench (opus2Leaf): a leaf of that type is still open. */
+  also?: Leaf;
   /** The ⓘ of a rule (its two lines) and its why, from the match and the leaf's value. */
   rule?: (m: RegExpExecArray, v: Row["node"]["value"]) => [string, string];
   ruleWhy?: (m: RegExpExecArray) => string;
@@ -60,6 +63,17 @@ const ACTOR = (actor: number, cell: string) =>
     `^PixelHelperActor\\[\\d+\\]\\.behaviors\\.getBehavior\\(ActorEvents_${String(actor)}\\)\\._GenINFO\\[${cell}\\]$`,
   );
 
+const OPUS2 = (block: string) =>
+  `bench pieces.cjs opus2Leaf OPUS2-PATCH B C D; N.js ${block}`;
+/** opus2Leaf: the cavern resources the bench names by their slot (the game's own words). */
+const CAVERN: Readonly<Record<string, string>> = {
+  0: "Gravel",
+  1: "Golddust",
+  2: "Redstone",
+  11: "Natural Notes",
+  13: "Trebel Notes",
+  15: "Quaver Notes",
+};
 /** opus1Sailing OPUS1-P3b: the hours on Fractal Island each of its 8 bonuses needs. */
 export const FRACTAL_HOURS = [24, 200, 750, 2500, 1e4, 2e4, 4e4, 6e4];
 const P3B = (block: string) =>
@@ -67,6 +81,29 @@ const P3B = (block: string) =>
 
 /** opus1Sailing, OPUS3-F7 and then OPUS5, in the bench's order: the first rule whose code matches decides. */
 export const CODE_LEAVES: readonly LeafRule[] = [
+  // opus2Leaf's names (OPUS2-PATCH B C D): its classify types them (tree/kinds.ts COUNT_LEAVES) and names them
+  {
+    test: /^WorkbenchStuff\("OverkillQTY", (\d+), 0\)$/,
+    name: (m) => `Deathnote points of World ${String(Number(m[1]) + 1)}`,
+    leaf: "quantity",
+    also: "quantity",
+    proof: OPUS2("WorkbenchStuff OverkillQTY"),
+  },
+  {
+    test: /^Holes\[9\]\[(\d+)\]$/,
+    name: (m) =>
+      `${CAVERN[m[1] ?? ""] ?? `Cavern resource ${m[1] ?? ""}`} owned`,
+    leaf: "quantity",
+    also: "quantity",
+    proof: OPUS2("ActorEvents_670"),
+  },
+  {
+    test: /ActorEvents_670.*_GenINFO\[129\]$/,
+    name: () => "Unique string types on the Harp",
+    leaf: "quantity",
+    also: "quantity",
+    proof: OPUS2("CavernStuffz2"),
+  },
   // (opus1Sailing types them whatever their type: forced)
   {
     test: /^RandomEvent\("FractalIslandBonus", ([0-7]), -?\d+\)$/,
@@ -274,11 +311,12 @@ function pass(r: Row): Row {
   if (!isLeaf(r)) return r;
   if (code.startsWith(BANNED.test))
     return typed(r, BANNED.name, "condition", "equalsValue", null);
-  const open = r.node.leaf === null || r.node.leaf === "unknown";
+  const open = (x: LeafRule) =>
+    r.node.leaf === null || r.node.leaf === "unknown" || r.node.leaf === x.also;
   for (const x of CODE_LEAVES) {
     const m = x.test.exec(code);
     if (!m || (x.value !== undefined && !near(r.node.value, x.value))) continue;
-    if (!open && !x.force) return r;
+    if (!open(x) && !x.force) return r;
     const t = typed(
       r,
       x.name?.(m) ?? null,

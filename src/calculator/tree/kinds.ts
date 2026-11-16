@@ -24,7 +24,7 @@ const rule = (
 ): KindRule =>
   condition ? { test, leaf, condition, proof } : { test, leaf, proof };
 
-/** The type half of pieces.cjs `opus2Leaf` (OPUS2-PATCH B C D): three counts the N.js proves; their names come with US1c. */
+/** The type half of pieces.cjs `opus2Leaf` (OPUS2-PATCH B C D): three counts the N.js proves; their names are tree/leaf-passes.ts's. */
 export const COUNT_LEAVES: readonly KindRule[] = [
   rule(
     /^WorkbenchStuff\("OverkillQTY", \d+, 0\)$/,
