@@ -70,18 +70,11 @@ function jarNumber(n: Row, lv: Level): Level | null {
   const per = Number(text);
   return {
     ...lv,
-    rows: lv.rows.map((k) =>
-      unlinked(k) && bare(k) && near(k.node.value, per)
-        ? {
-            ...withName(k, JAR.name),
-            node: {
-              ...withName(k, JAR.name).node,
-              leaf: "fixedValue",
-              why: null,
-            },
-          }
-        : k,
-    ),
+    rows: lv.rows.map((k) => {
+      if (!unlinked(k) || !bare(k) || !near(k.node.value, per)) return k;
+      const j = withName(k, JAR.name);
+      return { ...j, node: { ...j.node, leaf: "fixedValue", why: null } };
+    }),
   };
 }
 
