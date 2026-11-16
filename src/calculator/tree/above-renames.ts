@@ -2,7 +2,7 @@
 // parent's code, or the calls and caches it sits under in its piece (the bench renames each piece from its head, which
 // has no parent). They run when a level gets its place (tree/places.ts), before its ⓘ, as the bench renames the piece
 // before `addFormulas`; then opus3Leaves OPUS3-F5, which names the same scratch number again when its parent is the
-// bubble. Left out, each needing what the app's tree has not: OPUS4-7's rules on a parent named by its own sum with numbers
+// bubble, and opus3More OPUS3-F7f, the friend's score under a friend's bonus. Left out, each needing what the app's tree has not: OPUS4-7's rules on a parent named by its own sum with numbers
 // (the class levels, the meals before the last one, the class bubble not computed yet; the app's branch has no such name),
 // the Green Mushroom kills and the kitchens' upgrade levels (the same, on the parent's name), "Total of the earlier turns"
 // (the app opens a loop's read of its own entry into its writer), the Spelunking "Part N" (no "Part N", R14) and the
@@ -10,7 +10,7 @@
 import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
-import { isLeaf } from "./rows.ts";
+import { bare, isLeaf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];
@@ -159,6 +159,11 @@ export const ABOVE_RENAMES = {
       proof: "bench pieces.cjs rename; N.js Holes",
     },
   ],
+  friendScore: {
+    test: /FrendBonzStatz|FriendBonusQTY/,
+    name: "Friend score",
+    proof: "bench pieces.cjs opus3More OPUS3-F7f; N.js Thingies",
+  },
   spelunk: {
     test: /^Spelunk\("ShopUpgBonus", (\d+),/,
     proof: "bench pieces.cjs rename; N.js Spelunk",
@@ -232,6 +237,16 @@ function aboveRename(r: Row, up: readonly Above[]): Row {
     const x = ABOVE_RENAMES.earlier.find((e) => e.test.test(chain));
     if (x) return renamed(r, x.name, x.leaf);
   }
+  // OPUS3-F7f: an unlinked earlier value within three rows under a friend's bonus is the friend's score
+  const f7f = ABOVE_RENAMES.friendScore;
+  if (
+    bare(r) &&
+    r.earlier &&
+    r.node.flags.unnamed &&
+    (r.node.leaf === null || r.node.leaf === "unknown") &&
+    up.slice(-3).some((a) => f7f.test.test(a.code ?? ""))
+  )
+    return renamed(r, f7f.name, "quantity");
   return r;
 }
 

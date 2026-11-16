@@ -32,6 +32,7 @@ import {
   BANNED,
   CLASS_LINE,
   CODE_LEAVES,
+  MAPS_COUNT,
   DUNGEON_GATE,
   FISHING_SPOT,
 } from "./leaf-passes.ts";
@@ -89,6 +90,7 @@ const TABLES = {
     ABOVE_RENAMES.riftSkills,
     ...ABOVE_RENAMES.fixed,
     ...ABOVE_RENAMES.earlier,
+    ABOVE_RENAMES.friendScore,
     ABOVE_RENAMES.spelunk,
   ],
   CODE_LEAVES,
@@ -96,6 +98,7 @@ const TABLES = {
   BANNED: [BANNED],
   FISHING_SPOT: [FISHING_SPOT],
   CLASS_LINE: [CLASS_LINE],
+  MAPS_COUNT: [MAPS_COUNT],
   ARTIFACT_PICK: [ARTIFACT_PICK],
   ARENA: [ARENA, JAR, MEASURE],
   FIX_NAMES: Object.values(FIX_NAMES),

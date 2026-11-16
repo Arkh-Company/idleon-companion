@@ -1,12 +1,12 @@
 // The passes of pieces.cjs `finish` after the types (spec 008, T023), from the bench at BASELINE-4, over a level's rows in
 // its `finish` (tree/rows.ts): dungeonGate (the dungeon the map is, a yes/no and never a source), oneOfEach's ban flag of a
 // talent (a yes/no) and the leaves the N.js proves by their code: opus2Leaf's names of the counts its classify typed,
-// opus1Sailing's (forced, the Fractal Island's with its ⓘ;
-// a class line is context), opus3More OPUS3-F7 and then the OPUS5 list, each only on a leaf still with no type ("?")
-// but the ones the bench forces. opus1Sailing's types by the code of a leaf still "?" (and the boats' names they
-// give) are the classify rules every leaf already passed (tree/kinds.ts, names-sailing.cjs KINDS). Left out, each
-// needing what a level does not have: F7a (a count whose rows are all leaves: the app opens a row later), F7c (the obols'
-// stat, read across the recording), F7f (the friend score, by the calls above), and OPUS5's rules on a name the bench's
+// opus1Sailing's (forced, the Fractal Island's with its ⓘ; a class line is context), opus3More OPUS3-F7 (F7a's count of
+// maps also on a row whose rows are all leaves, tree/parent-passes.ts; F7f is tree/above-renames.ts's) and then the
+// OPUS5 list, each only on a leaf still with no type ("?") but the ones the bench forces. opus1Sailing's types by the
+// code of a leaf still "?" (and the boats' names they give) are the classify rules every leaf already passed
+// (tree/kinds.ts, names-sailing.cjs KINDS). F7c names the obols' stat by its slot: the bench's name is the obol list's
+// own text, which the recording keeps out (recorder.js). Left out: OPUS5's rules on a name the bench's
 // earlier passes gave (stamps, signs, statues, the Tome bubbles' "5,000"). structurePass's "Multi" is a name the app never
 // gives. oneOfEach's one leaf for the same code and value twice is out too: it would hide a source the game counts twice
 // (FR-016, game-bugs.test.ts).
@@ -15,7 +15,7 @@ import type {
   CALC_LEAF_KINDS,
 } from "../tree-contract.ts";
 import { near } from "./math.ts";
-import { isLeaf } from "./rows.ts";
+import { isLeaf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
 
@@ -135,6 +135,13 @@ export const CODE_LEAVES: readonly LeafRule[] = [
     name: null,
     leaf: "quantity",
     proof: F7("b", "WorkbenchStuff"),
+  },
+  // (the bench names the stat by the obol list's own text, which the recording keeps out: the slot's number then)
+  {
+    test: /^PixelHelperActor\[\d+\]\.behaviors\.getBehavior\(ActorEvents_29\)\._ScrollCircleINFO\[43\]\[(\d+)\]\[3\]$/,
+    name: (m) => `Obols: stat ${m[1] ?? ""} total`,
+    leaf: "rawBonus",
+    proof: F7("c", "TotalStats"),
   },
   {
     test: /^FamilyValuesMap\.MinigameHiscores\[(\d+)\]$/,
@@ -287,6 +294,39 @@ function typed(
 }
 
 /** One row after dungeonGate, the ban flag and the code rules. */
+/** OPUS3-F7a: TalentCalc's count of the maps where the character's kills reached a mark, by its cache entry. */
+export const MAPS_COUNT = {
+  test: /^DNSM\.CalcTalentMAP\[(209|49_4)\]$/,
+  marks: { "209": "1,000,000,000", "49_4": "100,000,000" } as Record<
+    string,
+    string
+  >,
+  proof: F7("a", "TalentCalc"),
+};
+/**
+ * OPUS3-F7a: the count of maps with at least the mark's kills, whose rows (only the counter's last turn) are all leaves
+ * or none: that count itself, a quantity with no rows; null when `r` is no such count.
+ */
+export function mapsCount(r: Row, rows: readonly Row[]): Row | null {
+  const m = MAPS_COUNT.test.exec(r.node.code ?? "");
+  const mark = m?.[1] && MAPS_COUNT.marks[m[1]];
+  if (!mark || !rows.every((k) => k.open === null && !k.group?.length))
+    return null;
+  const n = withName(r, `Maps with at least ${mark} kills (this character)`);
+  return {
+    ...n,
+    open: null,
+    node: {
+      ...n.node,
+      kids: [],
+      leaf: "quantity",
+      condition: null,
+      formula: null,
+      why: null,
+    },
+  };
+}
+
 function pass(r: Row): Row {
   const code = r.node.code ?? "";
   if (code === DUNGEON_GATE.test) {
@@ -309,6 +349,8 @@ function pass(r: Row): Row {
     };
   }
   if (!isLeaf(r)) return r;
+  const maps = mapsCount(r, []);
+  if (maps) return maps;
   if (code.startsWith(BANNED.test))
     return typed(r, BANNED.name, "condition", "equalsValue", null);
   const open = (x: LeafRule) =>
