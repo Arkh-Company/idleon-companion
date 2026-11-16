@@ -140,3 +140,11 @@ test.each<[string, unknown]>([
 ])("formulaValuesPayload refuses %s", (_name, payload) => {
   expect(formulaValuesPayload(payload)).toBe(null);
 });
+
+test("new game files close the tree and take its number out of view", () => {
+  const h = setup();
+  h.p.values(["str"]);
+  h.p.request({ id: "dropRate", character: null });
+  h.p.gameFiles("C:/invented");
+  expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["str"]);
+});

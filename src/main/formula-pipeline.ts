@@ -1,16 +1,8 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
-// Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019). What the worker
-// sends is checked before it reaches the window (FR-010b). The live values of what is in view go over the same pair
-// (FR-008, plan B). Each part carries how many catalog numbers use it, from the index the shapes fill in the background
-// (FR-027). No electron import, so tests can load it.
-import {
-  compareTrees,
-  isLiveNumber,
-  pieceValues,
-  rootText,
-  statsNumber,
-  valueText,
-} from "../shared/index.ts";
+// Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019, formula-answer.ts).
+// The live values of what is in view go over the same pair (FR-008, plan B). Each part carries how many catalog numbers
+// use it, from the index the shapes fill in the background (FR-027). No electron import, so tests can load it.
+import { pieceValues } from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
@@ -28,84 +20,18 @@ import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
 import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
+import { gameChangedBy, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
+import type { FormulaLog } from "./formula-answer.ts";
+import { partsOf, withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
-/** Drop Rate without compaction is about 5,000 rows (plan, Scale). */
-export const MAX_TREE_NODES = 20_000;
+export { MAX_TREE_NODES } from "./formula-answer.ts";
+export type { FormulaLog } from "./formula-answer.ts";
 
 type TreeHost = Pick<
   ReturnType<typeof createTreeHost>,
   "request" | "values" | "dropCurrent" | "setFiles" | "stop" | "shape"
 >;
-
-/** A structured log entry: a label and a catalog id, never a value of the math or a name (FR-019, FR-010a). */
-export type FormulaLog =
-  | { event: "treeDiverged"; label: string; id: string }
-  | { event: "treeRejected"; id: string };
-
-// ponytail: the first parts in the tree's order; a bigger tree's later parts do not light "Game changed" (FR-024).
-const MAX_LIVE_PARTS = 200;
-
-/** The parts the band follows (FR-024): every built row but the root, with a piece and a number, one per piece. */
-function partsOf(root: TreeNode): Map<string, TreeNode> {
-  const parts = new Map<string, TreeNode>();
-  const pending = Array.isArray(root.kids) ? root.kids.toReversed() : [];
-  for (
-    let n = pending.pop();
-    n && parts.size < MAX_LIVE_PARTS;
-    n = pending.pop()
-  ) {
-    if (
-      n.pieceKey !== null &&
-      typeof n.value === "number" &&
-      !parts.has(n.pieceKey)
-    )
-      parts.set(n.pieceKey, n);
-    if (Array.isArray(n.kids)) pending.push(...n.kids.toReversed());
-  }
-  return parts;
-}
-
-/** Walked without recursion: a checked tree can be as deep as it has nodes. */
-function countNodes(root: TreeNode): number {
-  let count = 0;
-  const pending = [root];
-  for (let n = pending.pop(); n; n = pending.pop()) {
-    count++;
-    if (Array.isArray(n.kids)) pending.push(...n.kids);
-  }
-  return count;
-}
-
-/** The tree with the node `id` swapped for `make(node)`, the nodes above it copied; null when no node has that id. */
-function swapNode(
-  root: TreeNode,
-  id: string,
-  make: (old: TreeNode) => TreeNode,
-): TreeNode | null {
-  // The path from the root, found without recursion; then each node on it copied from the bottom up.
-  const pending: TreeNode[][] = [[root]];
-  for (let path = pending.pop(); path; path = pending.pop()) {
-    const n = path.at(-1);
-    if (!n) continue;
-    if (n.id === id) {
-      let done = make(n);
-      for (let i = path.length - 2; i >= 0; i--) {
-        const up = path[i];
-        const kids = up && Array.isArray(up.kids) ? up.kids : [];
-        const old = path[i + 1];
-        done = {
-          ...up,
-          kids: kids.map((k) => (k === old ? done : k)),
-        } as TreeNode;
-      }
-      return done;
-    }
-    if (Array.isArray(n.kids))
-      for (const k of n.kids) pending.push([...path, k]);
-  }
-  return null;
-}
 
 export function startFormulaPipeline(deps: {
   send: (tree: FormulaTree) => void;
@@ -185,34 +111,9 @@ export function startFormulaPipeline(deps: {
     },
   });
 
-  /**
-   * "Game changed · Refresh": in a reading newer than the tree's, the open number's text or the text of one of its open
-   * parts is not the tree's (FR-024); a counter that moves none of them changes nothing.
-   */
+  /** "Game changed · Refresh" (FR-024), once, over the open tree. */
   function changedInGame(v: LiveValues): void {
-    if (
-      last.state !== "ready" ||
-      last.request.type !== "number" ||
-      // The live values are the active character's.
-      last.character !== last.activeCharacter ||
-      last.gameChanged ||
-      last.stale ||
-      v.calculatedAt <= last.calculatedAt
-    )
-      return;
-    const now = v.values[last.request.id];
-    const moved = (key: string, n: TreeNode) => {
-      const value = v.values[key];
-      return (
-        typeof value === "number" &&
-        valueText({ value, fmt: n.fmt }) !== valueText(n)
-      );
-    };
-    if (
-      (typeof now === "number" &&
-        rootText(last.request.id, now) !== last.rootText) ||
-      [...parts].some(([key, n]) => moved(key, n))
-    )
+    if (last.state === "ready" && gameChangedBy(last, v, parts))
       show({ ...last, gameChanged: true });
   }
 
@@ -301,20 +202,16 @@ export function startFormulaPipeline(deps: {
   ): void {
     if (last.state !== "ready") return;
     const branch = raw === null ? null : checkTree(raw, MAX_TREE_NODES);
-    let root =
-      branch?.id === nodeId
-        ? swapNode(last.root, nodeId, () => fed(branch))
-        : null;
-    if (root && countNodes(root) > MAX_TREE_NODES) root = null;
-    if (!root) {
-      if (raw !== null) deps.log({ event: "treeRejected", id: treeId });
-      root = swapNode(last.root, nodeId, (old) => ({
-        ...old,
-        flags: { ...old.flags, unavailable: true },
-        kids: [],
-      }));
-    }
-    if (root) show({ ...last, root, counts: { nodes: countNodes(root) } });
+    const done = withBranch(
+      last.root,
+      nodeId,
+      branch && fed(branch),
+      MAX_TREE_NODES,
+    );
+    if (!done) return;
+    if (done.refused && raw !== null)
+      deps.log({ event: "treeRejected", id: treeId });
+    show({ ...last, root: done.root, counts: { nodes: done.nodes } });
   }
 
   /** The active character of the Stats' pair, with the pair; null without a reading or a known character. */
@@ -349,47 +246,14 @@ export function startFormulaPipeline(deps: {
 
   function received(id: number, raw: unknown): void {
     if (asked?.seq !== id) return;
-    const { request, pair, active, before } = asked;
-    asked = null;
-    const checked = checkTree(raw, MAX_TREE_NODES);
-    if (!checked) {
-      deps.log({ event: "treeRejected", id: request.id });
-      show({ state: "unavailable", request });
-      return;
-    }
-    // A live-game number with no value at its root: the actor it reads was not on the map (US12, FR-023).
-    if (isLiveNumber(request.id) && checked.value === null) {
-      show({ state: "unavailable", request });
-      return;
-    }
-    const stats = statsNumber(request.id);
-    const statsValue = stats
-      ? pair.numbers[request.id as keyof StatsPair["numbers"]]
-      : null;
-    const textOf = (v: unknown) =>
-      typeof v === "number" ? rootText(request.id, v) : "unavailable";
-    if (stats && request.character === active && checked.value !== statsValue) {
-      deps.log({ event: "treeDiverged", label: stats.label, id: request.id });
-      show({ state: "diverged", request, statsText: textOf(statsValue) });
-      return;
-    }
-    const root = fed(before ? compareTrees(before, checked).withWas : checked);
-    show({
-      state: "ready",
-      request,
-      title: stats?.label ?? request.id,
-      rootText: textOf(root.value),
-      statsValue,
-      character: request.character,
-      activeCharacter: active,
-      calculatedAt: pair.calculatedAt,
-      gameChanged: false,
+    const answer = treeAnswer(raw, asked, {
+      fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
       stale,
-      comparingWith: null,
-      counts: { nodes: countNodes(root) },
-      root,
     });
+    asked = null;
+    if (answer.log) deps.log(answer.log);
+    show(answer.tree);
   }
 
   const host = deps.treeHost({

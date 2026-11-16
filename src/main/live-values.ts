@@ -75,6 +75,9 @@ export function liveValues(deps: {
         const v = isObject(raw) && Object.hasOwn(raw, key) ? raw[key] : null;
         values.set(key, typeof v === "number" && Number.isFinite(v) ? v : null);
       }
+      // What left the view is not kept: an open tree's parts would pile up tree after tree.
+      const shown = new Set(inView);
+      for (const key of values.keys()) if (!shown.has(key)) values.delete(key);
       show();
     },
     setStale(on) {

@@ -139,3 +139,14 @@ test("the game closed keeps the values, stale, and replay sends the last again",
   expect(t.send).toHaveBeenCalledTimes(3);
   expect(t.last()).toMatchObject({ stale: true });
 });
+
+test("a value out of view is not kept: the next answer sends only what is in view", () => {
+  const t = setup();
+  t.lv.onMosaic(M1, 1_000);
+  t.lv.setInView(["hp", "str"]);
+  t.lv.received(1, { hp: 3, str: 4 });
+  t.lv.setInView(["hp"]);
+  t.lv.received(2, { hp: 5 });
+  expect(t.last()).toMatchObject({ values: { hp: 5 } });
+  expect(Object.keys((t.last() as { values: object }).values)).toEqual(["hp"]);
+});
