@@ -54,9 +54,9 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["PlayerDATABASE[3].Lv0[20]", "Character 4: Research level"],
   ["PlayerDATABASE[1].Lv0[15]", "Character 2: Gaming level"],
   ["PlayerDATABASE[0].CharacterClass", "Character 1: Class"],
-  ["CustomLists.CompassUpg[39][5]", "Circle Supremacy (bonus per level)"],
-  ["CustomLists.CompassUpg[80][5]", "Abomination Slayer XXI (bonus per level)"],
-  ["CustomLists.CompassUpg[42][5]", "Critter Culture (bonus per level)"],
+  ["CustomLists.CompassUpg[39][5]", "Circle Supremacy bonus per level"],
+  ["CustomLists.CompassUpg[80][5]", "Abomination Slayer XXI bonus per level"],
+  ["CustomLists.CompassUpg[42][5]", "Critter Culture bonus per level"],
   // the shop's own text (the file's example, "Gallery Multiplier", is the screen's text after two buys)
   [
     "OptionsListAccount[467]",
@@ -115,13 +115,13 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
     "Max HP working value, part 1",
     1,
   ],
-  ["CustomLists.MealINFO[6][2]", "Corn meal (bonus per level)"],
-  ["CustomLists.MealINFO[27][2]", "Riceball meal (bonus per level)"],
+  ["CustomLists.MealINFO[6][2]", "Corn meal bonus per level"],
+  ["CustomLists.MealINFO[27][2]", "Riceball meal bonus per level"],
   ["Refinery[3][1]", "Redox Salts rank"],
   ["Menagerie[0][8]", "Scurge level", 1],
   ["Menagerie[0][11]", "Construction build bonus 1 stacks", 1],
-  ["CustomLists.SummonUPG[78][6]", "Allstar (bonus per level)"],
-  ["CustomLists.SummonUPG[24][6]", "Re-Draw (bonus per level)"],
+  ["CustomLists.SummonUPG[78][6]", "Allstar bonus per level"],
+  ["CustomLists.SummonUPG[24][6]", "Re-Draw bonus per level"],
   ["CustomLists.Research[58][24]", "Menagerie Boost: x Drop Rate (per level)"],
   [
     "CustomLists.Research[58][16]",
@@ -262,6 +262,8 @@ test("a name that already exists wins over the family's rule", () => {
   }
 });
 
+const COMPASS_CALL = 'Windwalker("CompassBonus", 39, 0)';
+const SUMMONING_CALL = 'Summoning("SummUpgBonus", 78, 0)';
 // pathName cuts a name's last bracket: what tells two reads of a family apart is never in it
 test.each([
   [["CustomMaps.NjEQ.NjGem5[3]", "CustomMaps.NjEQ.NjGem5[5]"]],
@@ -292,8 +294,18 @@ test.each([
     ],
   ],
   [["DNSM.RooDN3", "DNSM.RooDN4", "DNSM.DropRateLUK", "DNSM.DropRateLUK2"]],
+  // a bonus per level and the call that reads it, named by its recipe with the same table text
+  [["CustomLists.CompassUpg[39][5]", COMPASS_CALL]],
+  [["CustomLists.SummonUPG[78][6]", SUMMONING_CALL]],
+  [["CustomLists.MealINFO[6][2]", "CustomLists.MealINFO[27][2]"]],
 ])("the reads %j each have their own term in the ⓘ", (codes) => {
   useGameTables(GAME);
+  useGameNames(
+    new Map([
+      [COMPASS_CALL, "Circle Supremacy"],
+      [SUMMONING_CALL, "Allstar"],
+    ]),
+  );
   const terms = codes.map(pathName);
   expect(new Set(terms).size).toBe(codes.length);
   // a term is a name, never the path

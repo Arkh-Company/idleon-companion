@@ -82,7 +82,7 @@ const TABLE_RULES: readonly StateRule[] = [
   rule(
     /^CustomLists\.CompassUpg\[(\d+)\]\[5\]$/,
     "N.js Windwalker CompassBonus",
-    (m) => with_(tableText("compass", n(m)), (t) => `${t} (bonus per level)`),
+    (m) => with_(tableText("compass", n(m)), (t) => `${t} bonus per level`),
   ),
   rule(
     /^OptionsListAccount\[(467|468)\]$/,
@@ -166,7 +166,7 @@ const TABLE_RULES: readonly StateRule[] = [
     with_(tableText("bubba", n(m)), (t) => `${t} bonus LV`),
   ),
   rule(/^CustomLists\.MealINFO\[(\d+)\]\[2\]$/, "N.js MealBonus", (m) =>
-    with_(tableText("meal", n(m)), (t) => `${t} meal (bonus per level)`),
+    with_(tableText("meal", n(m)), (t) => `${t} meal bonus per level`),
   ),
   rule(
     /^Refinery\[(\d+)\]\[1\]$/,
@@ -185,7 +185,7 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("summonUpgradeName", n(m)),
-        (t) => `${t} (bonus per level)`,
+        (t) => `${t} bonus per level`,
       ),
   ),
   rule(
