@@ -106,8 +106,10 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   installed `N.js` in memory with a parser (acorn), only adding calls to `__X`; the **recorder** (`recorder.js`,
   `recorder-pass.js`, loaded as text before the game's code) records nothing until a request turns it on, and then
   writes one **recording** per `number` request (calls, reads, writes, steps, helpers), only as JSON text, with a
-  character's name turned into its index. `tree-build.ts` and `tree/` build the root and its first level from it; each
-  `lazy` branch is built on `expand`, over the same recording. `values` recalculates only the numbers in view, with the
+  character's name turned into its index. `tree-build.ts` and `tree/` build the root and its first level from it, over
+  the same recording. A row's level is built when its parent's level is placed, to decide the row's name and its one
+  child, and is kept by the row's id; `expand` places that stored level. So building the root also builds the level of
+  each first-level row. `values` recalculates only the numbers in view, with the
   recorder off; `shape` lists every part of a tree for Where this goes. The worker lives until the game closes or new
   game files arrive; a failure or a time limit makes that one request "unavailable", the next one starts another worker,
   and the Stats worker is never touched. A request always uses the Stats' own pair of mosaic and result, so the root is
