@@ -199,7 +199,7 @@
   },
   {
     "id": "runCodeOfTypeXforThingYAllTalentLVz_s0_0",
-    "name": "All-talent levels (talent 0, slot 0)",
+    "name": "All-talent levels (talent 0, 0)",
     "group": "Character",
     "system": "Combat",
     "screen": "Items",
@@ -1513,7 +1513,7 @@
   },
   {
     "id": "petStuffTotalDMG",
-    "name": "Total DMG (slot 0)",
+    "name": "Total DMG (0)",
     "group": "W4",
     "system": "Breeding",
     "screen": "Breeding",
