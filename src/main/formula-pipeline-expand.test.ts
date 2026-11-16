@@ -148,6 +148,46 @@ test("a newer expand replaces the one waiting", () => {
   expect(kidsOf(rootOf(h.last()))[0]?.kids).toEqual([leaf]);
 });
 
+// Review of the feature (R-I1): two lazy rows opened one after the other both get their branch, one ask at a time.
+test("two different branches asked in a row both come, the second asked after the first answers", () => {
+  const other = node({ ...lazy, id: "root/Other", name: "Other" });
+  const otherLeaf = node({ id: "root/Other/Level", name: "Level", value: 3 });
+  const h = pipeline();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(node({ value: CALCULATED.dropRate, kids: [lazy, other] }));
+  h.p.request(EXPAND);
+  const first = h.asked();
+  h.p.request({ treeId: "dropRate", nodeId: "root/Other" });
+  expect(h.asked()).toBe(first);
+  h.answer(first, { ...lazy, kids: [leaf] });
+  expect(h.host.request).toHaveBeenLastCalledWith(
+    h.asked(),
+    { type: "expand", treeId: "dropRate", nodeId: "root/Other" },
+    null,
+  );
+  h.tree({ ...other, kids: [otherLeaf] });
+  expect(kidsOf(rootOf(h.last())).map((k) => k.kids)).toEqual([
+    [leaf],
+    [otherLeaf],
+  ]);
+});
+
+test("the game closing leaves the branch in flight and the one waiting unavailable", () => {
+  const other = node({ ...lazy, id: "root/Other", name: "Other" });
+  const h = pipeline();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(node({ value: CALCULATED.dropRate, kids: [lazy, other] }));
+  h.p.request(EXPAND);
+  h.p.request({ treeId: "dropRate", nodeId: "root/Other" });
+  const asked = h.host.request.mock.calls.length;
+  h.p.status({ game: "closed", reader: "error" });
+  expect(h.host.request.mock.calls.length).toBe(asked);
+  expect(kidsOf(rootOf(h.last())).map((k) => k.flags.unavailable)).toEqual([
+    true,
+    true,
+  ]);
+});
+
 test("the game closing with a branch in flight leaves the row unavailable, the tree stale", () => {
   const h = ready();
   h.p.request(EXPAND);

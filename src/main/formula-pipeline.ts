@@ -135,8 +135,10 @@ export function startFormulaPipeline(deps: {
   } | null = null;
   /** Set by a Refresh, taken by the next ask. */
   let refreshFrom: TreeNode | null = null;
-  /** The lazy branch asked of the worker; a newer one replaces it, as in the host. */
+  /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
+  /** The other rows opened meanwhile: each one asked after the branch before it answers (the host keeps one waiting). */
+  let queued: { treeId: string; nodeId: string }[] = [];
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
@@ -209,20 +211,35 @@ export function startFormulaPipeline(deps: {
   function drop(): void {
     asked = null;
     expanding = null;
+    queued = [];
     host.dropCurrent();
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
     if (last.state !== "ready" || r.treeId !== open?.id) return;
+    if (expanding && expanding.nodeId !== r.nodeId) {
+      if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
+      return;
+    }
     seq++;
     expanding = { seq, ...r };
     host.request(seq, { type: "expand", ...r }, null);
   }
 
-  /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
-  function branched(raw: unknown): void {
-    const { treeId, nodeId } = expanding ?? { treeId: "", nodeId: "" };
+  /** The answer of the branch asked, then the next row waiting is asked. */
+  function expanded(raw: unknown): void {
+    const target = expanding;
     expanding = null;
+    if (target) branched(target, raw);
+    const next = queued.shift();
+    if (next) expand(next);
+  }
+
+  /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
+  function branched(
+    { treeId, nodeId }: { treeId: string; nodeId: string },
+    raw: unknown,
+  ): void {
     if (last.state !== "ready") return;
     const branch = raw === null ? null : checkTree(raw, MAX_TREE_NODES);
     let root =
@@ -318,11 +335,11 @@ export function startFormulaPipeline(deps: {
 
   const host = deps.treeHost({
     onTree: (id, raw) => {
-      if (expanding?.seq === id) branched(raw);
+      if (expanding?.seq === id) expanded(raw);
       else received(id, raw);
     },
     onUnavailable: (id) => {
-      if (expanding?.seq === id) branched(null);
+      if (expanding?.seq === id) expanded(null);
       if (asked?.seq !== id) return;
       const { request } = asked;
       asked = null;
@@ -391,7 +408,11 @@ export function startFormulaPipeline(deps: {
       const closed = s.game === "closed";
       if (closed) {
         host.stop();
-        if (expanding) branched(null);
+        // The branch in flight and the ones waiting never come: the worker ended.
+        const lost = [...(expanding ? [expanding] : []), ...queued];
+        expanding = null;
+        queued = [];
+        for (const r of lost) branched(r, null);
         // The worker ended with the tree in flight: it will never answer (FR-022).
         if (asked) {
           const { request } = asked;
