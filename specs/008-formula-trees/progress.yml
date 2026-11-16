@@ -38,6 +38,6 @@ execution:
     - {name: "US1c-4a Golden Food (T023)", status: done, commits: 3562148..b83425b}
     - {name: "US1c-4b resto do rename, passadas cruas e do finish (T023)", status: done, commits: 70a4464..e25572b}
     - {name: "US1c-4c fixNames, passadas que renomeiam o pai e oneOfEach (T023)", status: done, commits: c32cb8e..93181e6}
-    - {name: "US1c-4d opus1Sailing, opus2Arena, opus5, opus3More F7a/c/f e o fixNames nos níveis fundidos (T023)", status: pending}
+    - {name: "US1c-4d opus1Sailing, opus2Arena, opus5, opus3More F7a/c/f e o fixNames nos níveis fundidos (T023)", status: done, commits: 8d48cd3..78f66d6}
   feature_review: pending
   code_pr: null
