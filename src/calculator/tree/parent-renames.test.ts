@@ -159,6 +159,19 @@ test("[stampBonus] the head of a system's member keeps its own name", () => {
 });
 
 const CURVE = 'ArbitraryCode5Inputs("decay", 5, 100, 3)';
+test("[stampBonus] with no exalted multiplier, the curve's level is never built", () => {
+  const cur = branch("Curve", 3, CURVE);
+  const asked: Row[] = [];
+  const of = (c: Row) => {
+    asked.push(c);
+    return [leaf("Golden Apple Stamp level", 3)];
+  };
+  expect(
+    stampBonus(leaf("Product", 6), [leaf("Exalted", 2, "DNSM.Other"), cur], of),
+  ).toBeNull();
+  expect(asked).toEqual([]);
+});
+
 test("[stampBonus] the exalted multiplier × the curve of a stamp's level is that stamp's bonus", () => {
   const cur = branch("Curve", 3, CURVE);
   const double = leaf("Exalted", 2, "DNSM.StampExalted_double");

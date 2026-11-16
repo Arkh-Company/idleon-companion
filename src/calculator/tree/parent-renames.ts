@@ -99,8 +99,10 @@ export function stampBonus(
     return val.node.name.replace(/ value$/, "");
   const mult = kids.some((k) => PARENT_RENAMES.stampCurve.test.test(code(k)));
   const cur = kids.find((k) => code(k).startsWith("ArbitraryCode5Inputs("));
-  const lvl = cur && kidsOf(cur).find((k) => k.node.name.endsWith(" level"));
-  return mult && lvl ? lvl.node.name.replace(/ level$/, " bonus") : null;
+  // the curve's level is built only beside the exalted multiplier
+  const lvl =
+    mult && cur && kidsOf(cur).find((k) => k.node.name.endsWith(" level"));
+  return lvl ? lvl.node.name.replace(/ level$/, " bonus") : null;
 }
 
 /**
