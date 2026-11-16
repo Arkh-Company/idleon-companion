@@ -78,10 +78,9 @@ export function parentPasses(
     n = absorb(nameFrom(n, c), c);
     at = { ...next, rows: named };
   }
-  const done = at;
   n = withName(
     n,
-    stampBonus(n, done.rows, (k) => under(k, done)?.rows ?? []),
+    stampBonus(n, at.rows, (k) => under(k, at)?.rows ?? []),
   );
-  return { row: n, level: done };
+  return { row: n, level: at };
 }

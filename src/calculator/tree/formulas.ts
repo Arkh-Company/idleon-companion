@@ -29,7 +29,7 @@ export const vOf = (r: Part): number => {
 };
 export const isCond = (r: Part) => r.node.leaf === "condition";
 /** The group of the parts at ×1 (the bench's "N more parts at ×1"). */
-export const isGroup = (r: Row) => r.node.role === "atOne";
+export const isAtOne = (r: Row) => r.node.role === "atOne";
 const kidsOf = (r: Row) => r.group ?? [];
 /** What the bench's `k.name` is here: a Condition's comparison, a row's term (its name, or its path with no name). */
 const nameOf = (r: Part) => (isCond(r) && r.test ? r.test : termOf(r.node));
@@ -67,7 +67,7 @@ function partName(r: Row): string {
 const unique = (xs: string[]) => new Set(xs).size === xs.length;
 /** The row's parts and the parts of its ×1 group, which a formula may name. */
 const poolOf = (kids: readonly Row[]) =>
-  kids.flatMap((k) => (isGroup(k) ? [k, ...kidsOf(k)] : [k]));
+  kids.flatMap((k) => (isAtOne(k) ? [k, ...kidsOf(k)] : [k]));
 const COMPARE = / [=≠<>≤≥] /;
 /** A check whose text a reader cannot follow ("0 = 0 and …"). */
 const unclean = (c: Row) =>
@@ -78,7 +78,7 @@ export type FormulaRow = Pick<Row, "node" | "xf" | "xweak" | "f">;
 
 /** formulas.cjs `formulaOf` (B): the parts' product or sum gives the row's value. */
 function formulaOf(n: FormulaRow, all: readonly Row[]): Pair | null {
-  const kids = all.filter((k) => !isGroup(k));
+  const kids = all.filter((k) => !isAtOne(k));
   const grouped = kids.length !== all.length;
   if (kids.some(isCond)) return null;
   if (kids.length < 2 || !kids.every((k) => Number.isFinite(vOf(k))))
@@ -110,7 +110,7 @@ function resolveParts(kids: readonly Row[], text: string): string {
   const pool = poolOf(kids);
   const plain = (x: Row, v: number) =>
     !x.node.code &&
-    !isGroup(x) &&
+    !isAtOne(x) &&
     near(vOf(x), v) &&
     !isCond(x) &&
     !COMPARE.test(nameOf(x));
@@ -138,7 +138,7 @@ function resolveParts(kids: readonly Row[], text: string): string {
     // a yes/no never names a number of the sum
     const same = pool.filter(
       (x) =>
-        !isGroup(x) &&
+        !isAtOne(x) &&
         near(vOf(x), v) &&
         !isCond(x) &&
         !COMPARE.test(nameOf(x)),
@@ -151,7 +151,7 @@ function resolveParts(kids: readonly Row[], text: string): string {
 function checksFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
   const conds = kids.filter((k) => isCond(k) && !kidsOf(k).length);
   if (!conds.length) return null;
-  const parts = kids.filter((k) => !isCond(k) && !isGroup(k));
+  const parts = kids.filter((k) => !isCond(k) && !isAtOne(k));
   const v = vOf(n);
   if (
     parts.length >= 2 &&
@@ -225,7 +225,7 @@ function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
     )
   )
     return null;
-  const part = pool.filter((k) => !isCond(k) && near(vOf(k), v) && !isGroup(k));
+  const part = pool.filter((k) => !isCond(k) && near(vOf(k), v) && !isAtOne(k));
   // a whole number with no part is the code's literal (the bench's own 0/1 of the yes/no is that literal too: a check is
   // 1 when it passes, and a failed one reaches here only beside the row of its 0)
   const literal = !part.length && Number.isInteger(v) && v !== 0;
@@ -253,7 +253,7 @@ function lastFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
   const curves = kids.filter((k) => isCurve(k) && k.f && near(vOf(k), v));
   if (curves.length === 1 && curves[0]?.f) return curves[0].f;
   const parts = kids.filter(
-    (k) => !isCond(k) && !isGroup(k) && Number.isFinite(vOf(k)),
+    (k) => !isCond(k) && !isAtOne(k) && Number.isFinite(vOf(k)),
   );
   if (!parts.length) return null;
   const shorts = parts.map(short);

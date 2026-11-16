@@ -5,7 +5,7 @@
 // name: it keeps the generic one when neither applies.
 import { exprText, isFormulaName } from "./expr.ts";
 import { fx3 } from "./curves.ts";
-import { isCond, isGroup, near, vOf } from "./formulas.ts";
+import { isCond, isAtOne, near, vOf } from "./formulas.ts";
 import { evaluate } from "./math.ts";
 import { withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -49,7 +49,7 @@ const NUMBER = /\d+(?:\.\d+)?/g;
 export function shapeName(e: Expr, r: Row): string | null {
   const text = exprText(e);
   const kids = (r.group ?? []).flatMap((k) =>
-    k.node.role === "atZero" ? (k.group ?? []) : isGroup(k) ? [] : [k],
+    k.node.role === "atZero" ? (k.group ?? []) : isAtOne(k) ? [] : [k],
   );
   if (kids.some(isCond) || !isFormulaName(text)) return null;
   const parts = new Map<string, Row>();

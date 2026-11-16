@@ -2,6 +2,7 @@
 // of a level with the same code and the same value are one leaf (the game calls Dungon() many times per tree), and the
 // group of the parts at 0 or at ×1 counts the rows it keeps ([NR-C]). A source a game-bug rule marks stays repeated,
 // as FR-016 asks (tree/game-bugs.ts). It runs when a level gets its place (tree/places.ts), after the passes over it.
+import { isGroup } from "./kid-names.ts";
 import { bare } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
@@ -18,7 +19,7 @@ export function oneOfEach(
 ): Row[] {
   const seen = new Set<string>();
   return rows.flatMap((r) => {
-    if (r.group && (r.node.role === "atZero" || r.node.role === "atOne")) {
+    if (r.group && isGroup(r)) {
       const group = oneOfEach(r.group, marked);
       const name = r.node.name.replace(
         ONE_OF_EACH.test,
