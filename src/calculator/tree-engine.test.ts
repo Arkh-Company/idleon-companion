@@ -50,7 +50,8 @@ test("over 10 mosaics in a row, as 10 item swaps, each root still equals the Sta
       expect(root === "unknownNumber" ? root : root.value).toBe(numbers[id]);
     }
   }
-});
+  // 10 recordings of 11 trees: about 6.5 s under the whole suite, against the 5 s default (under 1 s alone).
+}, 30_000);
 
 test("values gives each Stats number of the same mosaic, and null outside the roots", () => {
   const mosaic = mosaicOf({ Stats: { STR: 7, Drop_Rarity: 3.5 } });
