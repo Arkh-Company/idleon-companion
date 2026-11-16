@@ -4,6 +4,7 @@
 // deviation (research R14): the pet's own name in its shiny level (the pets' table is not one the names table reads,
 // and the bench's fallback is the game's code), and the names of the root's first level (the steps, FR-006).
 import { near } from "./math.ts";
+import { named } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tagOf } from "./tags.ts";
 
@@ -37,10 +38,6 @@ const SHINY = "Shiny EXP";
 
 /** A name without the parentheses at its end. */
 const base = (s: string) => s.replace(FIX_NAMES.collapse.test, "").trim();
-
-/** Row `r` named `name`. */
-const named = (r: Row, name: string): Row =>
-  name === r.node.name ? r : { ...r, node: { ...r.node, name } };
 
 /**
  * fixNames' loop: the one child of `n` that says `n` again, with its value and rows of its own (`hasRows`), whose rows

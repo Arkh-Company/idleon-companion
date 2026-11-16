@@ -6,9 +6,9 @@ import type { Above } from "./above-renames.ts";
 import { aboveText, collapsed, kidNames, shinyLevel } from "./kid-names.ts";
 import { nametagGrade, petsEarlier, stampBonus } from "./parent-renames.ts";
 import { near } from "./math.ts";
-import { bare, leafOf, MERGES, nameFrom } from "./one-child.ts";
+import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import type { Level } from "./places.ts";
-import { withName } from "./rows.ts";
+import { bare, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 /** The level under row `r` of the level `at` (tree/places.ts), or null when it has none. */

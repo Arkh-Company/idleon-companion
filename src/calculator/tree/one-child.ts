@@ -31,9 +31,6 @@ export const isSum = (name: string, under: string): boolean =>
   (/[+×÷−]/.test(name) || callLit(name) || callLit(under)) &&
   ONE_CHILD.sum.test.test(name);
 
-/** A row with no rows under it, built or to build. */
-export const bare = (r: Row): boolean => r.open === null && !r.group?.length;
-
 /**
  * Row `n` with the name its child `c` gives it: `c`'s when `n`'s is vague or only a sum and `c`'s is proven (a generic
  * name names nothing, R14).

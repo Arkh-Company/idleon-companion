@@ -7,7 +7,7 @@
 import { LEVEL_RENAMES } from "./level-renames.ts";
 import { near } from "./math.ts";
 import { nameOf } from "./names.ts";
-import { GENERIC_NAME } from "./rows.ts";
+import { bare, GENERIC_NAME, named } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tagOf } from "./tags.ts";
 
@@ -46,10 +46,6 @@ const grade = (s: string) =>
     )
     .replace(/Trophy slot multiplier/g, "Nametag grade multiplier")
     .replace(/Podium level/g, "Grade factor");
-const named = (r: Row, name: string): Row =>
-  name === r.node.name ? r : { ...r, node: { ...r.node, name } };
-/** A row with no rows under it, built or to build. */
-const bare = (r: Row) => r.open === null && !r.group?.length;
 const code = (r: Row) => r.node.code ?? "";
 
 /**
