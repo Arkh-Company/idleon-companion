@@ -233,3 +233,65 @@ test("[OPUS1-P3] the 0 of an artifact with no name of its own is the artifact's,
   const { n, kids } = artifact([]);
   expect([n?.leaf, n?.kids, kids]).toEqual([null, "lazy", []]);
 });
+
+/** A lazy call whose level is one bare read of its value, placed: the structurePass makes it that leaf. */
+function mergedCall(code: string, value: number) {
+  const top: Row = {
+    node: row({ pieceKey: null, value, code, kids: "lazy" }),
+    open: 1,
+  };
+  const places = makePlaces({
+    nodes: [0, 1].map((i) => recNode(i, `Call${String(i)}`)),
+    bugs: [],
+    keyOf: (n) => String(n.id),
+    openXf: new Map(),
+    explain: (id) =>
+      id === 1
+        ? [
+            {
+              node: row({
+                pieceKey: null,
+                value,
+                code: "DNSM.Cache[2]",
+                leaf: "unknown",
+                why: "a cache that comes ready from the game",
+              }),
+              open: null,
+            },
+          ]
+        : null,
+    opened: () => null,
+  });
+  return places.place(
+    { id: "root", code: "Root()" },
+    [top, read("Q", 1)],
+    1,
+    [0],
+  )[0];
+}
+
+test("[structurePass, then opus1Sailing] a Fractal Island call merged with its cache read is the yes/no, with its ⓘ and why", () => {
+  const n = mergedCall('RandomEvent("FractalIslandBonus", 2, 0)', 1);
+  expect(n).toMatchObject({
+    code: 'RandomEvent("FractalIslandBonus", 2, 0)',
+    leaf: "condition",
+    condition: "limit",
+    formula: {
+      rule: [
+        "If the hours on Fractal Island reach 750: 1, else 0",
+        "reached 750 hours → 1",
+      ],
+    },
+    why: "the game sets this bonus to 1 once the hours on Fractal Island reach 750, else to 0 (N.js RandomEvent)",
+    kids: [],
+  });
+});
+
+test("[structurePass, then opus2Leaf] a Death Note count merged with its cache read is named", () => {
+  const n = mergedCall('WorkbenchStuff("OverkillQTY", 2, 0)', 40);
+  expect([n?.name, n?.leaf, n?.kids]).toEqual([
+    "Deathnote points of World 3",
+    "quantity",
+    [],
+  ]);
+});

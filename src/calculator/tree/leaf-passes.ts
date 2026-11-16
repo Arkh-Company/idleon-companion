@@ -377,24 +377,23 @@ function pass(r: Row): Row {
   return r;
 }
 
+/** One row after the passes by its code, then opus5's (tree/last-renames.ts); also a row merged into its leaf. */
+export const leafRules = (r: Row): Row => lastLeaf(pass(r));
+
 /** A level's rows after the passes that follow their types. */
 export function leafPasses(rows: readonly Row[]): Row[] {
   // OPUS1-P3b: a class line is context, a leaf or not; OPUS3-F7g: the fishing spot is context, when the level has more
   // than it
-  return (
-    rows
-      .map(pass)
-      // opus5's rules by the leaf's own code beyond the OPUS5 list (tree/last-renames.ts)
-      .map(lastLeaf)
-      .filter(
-        (r) =>
-          !r.node.code?.startsWith(CLASS_LINE.test) &&
-          !(
-            r.node.code === FISHING_SPOT.test &&
-            isLeaf(r) &&
-            (r.node.leaf === null || r.node.leaf === "unknown") &&
-            rows.length > 1
-          ),
-      )
-  );
+  return rows
+    .map(leafRules)
+    .filter(
+      (r) =>
+        !r.node.code?.startsWith(CLASS_LINE.test) &&
+        !(
+          r.node.code === FISHING_SPOT.test &&
+          isLeaf(r) &&
+          (r.node.leaf === null || r.node.leaf === "unknown") &&
+          rows.length > 1
+        ),
+    );
 }

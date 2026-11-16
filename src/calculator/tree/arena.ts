@@ -1,7 +1,8 @@
 // pieces.cjs `opus2Arena` (OPUS2-PATCH A, E and F) from the bench at BASELINE-4 (spec 008, T023): the rules on a row and
 // the level under it, run when the row gets its place, after opus1Sailing's (tree/parent-passes.ts), as the bench runs
 // them; and the name the yes/no beside the arena's count takes, over a level's rows (tree/places.ts). Its "B C D again"
-// (opus2Leaf's names on a leaf) is tree/leaf-passes.ts's. Left out, a deviation (research R14): F's measured amount
+// (opus2Leaf's names on a leaf, also one structurePass merged with its read) is tree/leaf-passes.ts's `leafRules`, run
+// in the level's `finish` and on the leaf a merge makes (tree/parent-passes.ts). Left out, a deviation (research R14): F's measured amount
 // under a row that opens later (the app builds a level when its row gets its place: the reads F renames are found in
 // the call's level and in the branches built in it).
 import { near } from "./math.ts";

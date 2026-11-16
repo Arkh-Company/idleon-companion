@@ -12,7 +12,7 @@ import { near } from "./math.ts";
 import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import { artifactPick } from "./sailing.ts";
 import { arenaPasses } from "./arena.ts";
-import { mapsCount } from "./leaf-passes.ts";
+import { leafRules, mapsCount } from "./leaf-passes.ts";
 import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
 import { bare, withName } from "./rows.ts";
@@ -94,7 +94,8 @@ export function parentPasses(
       !near(c.node.value, n.node.value)
     )
       break;
-    if (bare(c)) return { row: leafOf(n, c), level: null };
+    // the bench's passes after structurePass see the leaf with the row's own code
+    if (bare(c)) return { row: leafRules(leafOf(n, c)), level: null };
     // a child whose level is cut stays, and says so
     const next = under(c, at);
     if (!next) break;
