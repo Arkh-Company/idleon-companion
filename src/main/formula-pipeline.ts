@@ -354,8 +354,9 @@ export function startFormulaPipeline(deps: {
       open = null;
       openFor = null;
       asked = null;
-      // First: the shape the new files cut answers null to an index that no longer waits for it.
+      // First: the shape and the values the new files cut answer null to an index and live values that wait for neither.
       index.reset();
+      live.forget();
       host.setFiles(resources);
       show({ state: "none" });
     },

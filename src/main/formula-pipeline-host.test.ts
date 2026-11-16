@@ -102,3 +102,14 @@ test("the game closing with values in flight keeps the last values on screen", a
     stale: true,
   });
 });
+
+test("new game files with values in flight keep the last values on screen", async () => {
+  const h = await open();
+  h.reply("valuesResult", { values: { dropRate: 4 } });
+  h.p.values(["hp"]);
+  h.reply("valuesResult", { values: { dropRate: 4, hp: 3 } });
+  expect(h.live.at(-1)?.values.hp).toBe(3);
+  h.p.values(["hp", "str"]);
+  h.p.gameFiles(RESOURCES);
+  expect(h.live.at(-1)?.values.hp).toBe(3);
+});

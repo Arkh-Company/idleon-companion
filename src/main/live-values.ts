@@ -15,6 +15,8 @@ export function liveValues(deps: {
   /** The worker's answer to an ask, or null when it failed. */
   received(id: number, values: unknown): void;
   setStale(stale: boolean): void;
+  /** The worker ends (the game closed, new files): what was asked never comes with values; the last ones stay. */
+  forget(): void;
   replay(): void;
 } {
   let inView: string[] = [];
@@ -81,7 +83,7 @@ export function liveValues(deps: {
       show();
     },
     setStale(on) {
-      // The game closed: what was asked never comes with values (the worker ended); the last ones stay on screen.
+      // The game closed: the worker ended with what was asked.
       if (on) asked.clear();
       if (on === stale) return;
       stale = on;
@@ -89,6 +91,9 @@ export function liveValues(deps: {
     },
     replay() {
       if (last) deps.send(last);
+    },
+    forget() {
+      asked.clear();
     },
   };
 }
