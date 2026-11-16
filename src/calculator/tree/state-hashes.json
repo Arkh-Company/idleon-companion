@@ -1,7 +1,15 @@
 {
-  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them.",
+  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not, and the form at the boot of the two tables the game changes after it (CustomLists.LabMainBonus, grown by NinjaInfo[25..28] with an Emporium bonus, and CustomLists.NinjaInfo, rows 3, 9 and 10 rescaled by OptionsListAccount[231]), which replaces the bench's hash of a loaded game: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them.",
   "version": "0e47e87b",
   "hashes": [
+    [
+      "f16e9031ca6b624479a688c1aafae88430c2a9b4cca29e3e9165e6f9bd7276de",
+      "CustomLists.LabMainBonus"
+    ],
+    [
+      "c52490bb4cf1336f131cbc8d2c5416cf565470afa34fc1037f4e55d2ce1b4e8a",
+      "CustomLists.NinjaInfo"
+    ],
     [
       "ebb85a55b6eb0e956c3e9c8b45fdcddde5bedf820e596ea808d959c309ea79f8",
       "CustomLists.FishToolkitInfo"
