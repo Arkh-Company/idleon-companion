@@ -1,0 +1,7 @@
+# Lições da feature 008-formula-trees
+
+1. Uma fila de um lugar só ("o pedido novo substitui o que esperava") serve para pedidos que se substituem, como `number` e `values`, e quebra os que são de outra coisa, como o `expand` de outra linha. O teste usava o mesmo nó duas vezes e passou com o defeito. Origem: revisão da feature, achado 1, e `/code-review high`.
+2. Uma pendência que cruza fases, escrita só num comentário ("até a US1c"), fica para trás quando a fase fecha: os ids crus do catálogo apareceram na tela até a revisão da feature. Uma pendência assim vira uma linha em `tasks.md` na hora. Origem: revisão da feature, achado 2, e o `ponytail:` de `nameOf`.
+3. Uma fase com dados gerados (nomes, catálogo, raízes) junto com a lógica chegou a 27 mil linhas e só pôde ser amostrada. Os dados vão em commits próprios, com um teste de forma, para o diff da lógica caber numa leitura. Origem: fase 23 e revisão da feature.
+4. Um achado de documento que pede o sim do Vinicius, anotado só em `achados-menores.md`, não chega à spec: a FR-024 e a regra do nome da marca ficaram dias sem linha em Open Questions. Esse achado vira pergunta na parada da própria fase. Origem: revisão da feature, achado 4 e Minor 29.
+5. O porte de uma passada da bancada que roda sobre a árvore inteira, feito num app que monta nível a nível, deixou casos sem nome em três rodadas seguidas (fusão, segunda fusão, linha fundida). Para uma passada assim, o teste já começa por uma cadeia de dois ou mais níveis. Origem: fases 28 e 29, rodadas 1 a 3.
