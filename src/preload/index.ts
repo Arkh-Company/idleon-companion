@@ -1,53 +1,5 @@
-// Preload: the only bridge between the window and the main process, through the fixed IPC channels only.
+// Preload: the only bridge between the window and the main process, through the fixed IPC channels only (api.ts).
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC } from "../shared/index.ts";
-import type {
-  CompanionApi,
-  Settings,
-  SetupProgress,
-  SteamState,
-} from "../shared/index.ts";
-import { channel } from "./channel.ts";
+import { companionApi } from "./api.ts";
 
-/** A main → window channel; `replay` repeats the last value to a late subscriber (contracts/ipc.md). */
-const listen = (name: string, replay: boolean) =>
-  channel(
-    (n, l) => {
-      ipcRenderer.on(n, l);
-    },
-    name,
-    replay,
-  );
-
-const api: CompanionApi = {
-  onContext: listen(IPC.contextUpdate, true),
-  onStatus: listen(IPC.statusUpdate, true),
-  getSettings: async () =>
-    (await ipcRenderer.invoke(IPC.settingsGet)) as Settings,
-  setSettings: async (s) => {
-    await ipcRenderer.invoke(IPC.settingsSet, s);
-  },
-  confirmAttach: async () => {
-    await ipcRenderer.invoke(IPC.confirmAttach);
-  },
-  // The channels of 002 (contracts/ipc.md).
-  steamState: async () =>
-    (await ipcRenderer.invoke(IPC.steamState)) as SteamState,
-  setupSteam: async () =>
-    (await ipcRenderer.invoke(IPC.steamSetup)) as SetupProgress,
-  // Each step of setting up goes only to whoever listens at that moment: a late screen must not see an old "done".
-  onSetupProgress: listen(IPC.steamProgress, false),
-  releaseGame: async () => {
-    await ipcRenderer.invoke(IPC.readerRelease);
-  },
-  reconnect: async () => {
-    await ipcRenderer.invoke(IPC.readerReconnect);
-  },
-  onUpdate: listen(IPC.updateState, true),
-  installUpdate: async () => {
-    await ipcRenderer.invoke(IPC.updateInstall);
-  },
-  onStats: listen(IPC.statsUpdate, true),
-};
-
-contextBridge.exposeInMainWorld("companion", api);
+contextBridge.exposeInMainWorld("companion", companionApi(ipcRenderer));

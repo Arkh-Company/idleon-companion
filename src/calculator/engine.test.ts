@@ -1,37 +1,19 @@
 // The engine over an invented game: isolation, the long-lived context and every way a number or the start can fail (FR-008, FR-011, FR-012).
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 import { createEngine } from "./engine.ts";
+import { BASE, GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import { handleMessage } from "./index.ts";
 import type { CalcNumbers } from "./targets.ts";
+import { createTreeEngine } from "./tree-engine.ts";
 
-const GAME = readFileSync(
-  join(import.meta.dirname, "fixtures", "fake-game.js"),
-  "utf8",
-);
 const ANCHOR = 'A["com.stencyl.Engine"]=a,';
-const PAK = new Uint8Array([7, 8, 9]);
-
-const BASE = {
-  AFKtarget: "mushA",
-  Base: { $m: { hp: 500, acc: 7 }, $c: "haxe.ds.StringMap" },
-  Damage: [120, 80],
-  Stats: { STR: 11, AGI: 12, WIS: 13, LUK: 14, Drop_Rarity: 2.5 },
-  AfkRate: 1.5,
-  DNSM: {
-    $m: { CompanionBon: { $m: { b1: 3 } }, ShinyBonusS: { $m: { s1: 4 } } },
-  },
-};
 
 let engine: ReturnType<typeof createEngine>;
 beforeAll(() => {
   engine = createEngine(GAME, PAK);
 });
 
-const mosaicOf = (attrs: object = {}, vars: object = {}): string =>
-  JSON.stringify({ attrs: { ...BASE, ...attrs }, vars, skipped: [] });
 const calc = (attrs: object = {}, vars: object = {}): CalcNumbers =>
   engine.calculate(mosaicOf(attrs, vars));
 /** The game of a patch that moved this class: only its definition is renamed. */
@@ -128,6 +110,22 @@ describe("numbers", () => {
     expect(next?.numbers.hp).toBe(500);
   }, 20_000);
 
+  test("the live game's actors are the trees' alone: the Stats give the same numbers with them as without (US12)", () => {
+    const attrs = {
+      Scenario: "liveActors",
+      MapMonstersList: [{ $x: 1 }],
+    };
+    const actors = {
+      map: BASE.CurrentMap,
+      "H0._GenINFO[3]": 11,
+      "map0._MonsterType": "mobA",
+      "map0._MonsterHPtot": 4500,
+    };
+    const without = engine.calculate(mosaicOf(attrs));
+    expect(without.accuracy).toBe(7);
+    expect(engine.calculate(mosaicOf(attrs, {}, actors))).toEqual(without);
+  });
+
   test("finishing the helpers in an endless loop fails the calculation within 8 s", () => {
     const started = performance.now();
     expect(() => scenario("endlessFinish")).toThrow();
@@ -135,33 +133,65 @@ describe("numbers", () => {
   }, 20_000);
 });
 
-describe("isolation (FR-008)", () => {
+/** One number of a mosaic, as one worker gives it: the Stats' `calculate()[id]` or the root of a tree request. */
+type NumberOf = (id: keyof CalcNumbers, mosaic: string) => number | null;
+
+const WORKERS: [string, () => NumberOf][] = [
+  [
+    "the Stats worker",
+    () => {
+      const stats = createEngine(GAME, PAK);
+      return (id, mosaic) => stats.calculate(mosaic)[id];
+    },
+  ],
+  [
+    "the tree worker",
+    () => {
+      const trees = createTreeEngine(GAME, PAK);
+      return (id, mosaic) => {
+        const root = trees.tree({ type: "number", id, character: 0 }, mosaic);
+        return root === "unknownNumber" || typeof root.value !== "number"
+          ? null
+          : root.value;
+      };
+    },
+  ],
+];
+
+describe.each(WORKERS)("isolation (FR-008) on %s", (_name, start) => {
+  let numberOf: NumberOf;
+  beforeAll(() => {
+    numberOf = start();
+  });
+  const accuracyIn = (Scenario: string, attrs: object = {}) =>
+    numberOf("accuracy", mosaicOf({ ...attrs, Scenario }));
+
   test("nothing reached the network, code generation or the host", () => {
-    expect(calc().mp).toBe(0);
+    expect(numberOf("mp", mosaicOf())).toBe(0);
   });
 
   test("no global and no prototype of globalThis generates code", () => {
-    const n = scenario("globals");
-    expect(n.mp).toBe(0);
-    expect(n.accuracy).toBeGreaterThan(40);
+    const mosaic = mosaicOf({ Scenario: "globals" });
+    expect(numberOf("mp", mosaic)).toBe(0);
+    expect(numberOf("accuracy", mosaic)).toBeGreaterThan(40);
   });
 
   test("the bytes of default.pak live in an array of the context", () => {
-    expect(scenario("pak").accuracy).toBe(8);
+    expect(accuracyIn("pak")).toBe(8);
   });
 
   test("the decompressors take and give arrays of the context, and fail with its errors", () => {
     const Packed = [...gzipSync(new Uint8Array([42]))];
-    expect(scenario("decompress", { Packed }).accuracy).toBe(42);
+    expect(accuracyIn("decompress", { Packed })).toBe(42);
   });
 
   test("the host copies bytes without the context's Uint8Array.prototype.set", () => {
     const Packed = [...gzipSync(new Uint8Array([42]))];
-    expect(scenario("arraySet", { Packed }).accuracy).toBe(0);
+    expect(accuracyIn("arraySet", { Packed })).toBe(0);
   });
 
   test("assets the game does not have read as empty text", () => {
-    expect(scenario("assets").accuracy).toBe(1);
+    expect(accuracyIn("assets")).toBe(1);
   });
 });
 

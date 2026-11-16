@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { DEFAULT_SETTINGS, READ_NULLS } from "../shared/index.ts";
+import { DEFAULT_SETTINGS, NO_TABLES, READ_NULLS } from "../shared/index.ts";
 import type { Reading, Status } from "../shared/index.ts";
 import {
   emptyPayload,
@@ -93,14 +93,16 @@ test.each([
   expect(linkStatus(value)).toBeNull();
 });
 
-const tables = { maps: ["Vale", "Peak"], monsters: { a1: "Beast" } };
+const tables = {
+  maps: ["Vale", "Peak"],
+  monsters: { a1: "Beast" },
+  items: { Ore: "Blue Ore" },
+  classes: ["0", "Novice"],
+};
 
 test("link tables of the right shape keep only their fields", () => {
   expect(linkTables({ ...tables, extra: 1 })).toStrictEqual(tables);
-  expect(linkTables({ maps: null, monsters: null })).toStrictEqual({
-    maps: null,
-    monsters: null,
-  });
+  expect(linkTables(NO_TABLES)).toStrictEqual(NO_TABLES);
 });
 
 test.each([
@@ -124,6 +126,26 @@ test.each([
     { ...tables, monsters: ["Beast"] },
     { ...tables, monsters: null },
   ],
+  [
+    "a number in items",
+    { ...tables, items: { Ore: 1 } },
+    { ...tables, items: null },
+  ],
+  [
+    "an array as items",
+    { ...tables, items: ["Blue Ore"] },
+    { ...tables, items: null },
+  ],
+  [
+    "a number in classes",
+    { ...tables, classes: ["0", 1] },
+    { ...tables, classes: null },
+  ],
+  [
+    "classes that are not a list",
+    { ...tables, classes: { 1: "Novice" } },
+    { ...tables, classes: null },
+  ],
 ])(
   "link tables with %s count as unread for that table only",
   (_name, value, expected) => {
@@ -135,8 +157,8 @@ test.each([
   ["a text", "tables"],
   ["null", null],
   ["a list", []],
-])("link tables whose body is %s give both null", (_name, value) => {
-  expect(linkTables(value)).toStrictEqual({ maps: null, monsters: null });
+])("link tables whose body is %s give every table null", (_name, value) => {
+  expect(linkTables(value)).toStrictEqual(NO_TABLES);
 });
 
 const slice = {

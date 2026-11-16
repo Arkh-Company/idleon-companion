@@ -138,18 +138,6 @@ test.each<[string, (h: ReturnType<typeof setup>) => void]>([
     },
   ],
   [
-    "a closed game",
-    (h) => {
-      h.p.status({ game: "closed", reader: "error" });
-    },
-  ],
-  [
-    "a closed game with the reader still attached",
-    (h) => {
-      h.p.status({ game: "closed", reader: "attached" });
-    },
-  ],
-  [
     "a dropped link",
     (h) => {
       h.p.status({ game: "not-launched", reader: "error" });

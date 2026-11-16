@@ -16,6 +16,23 @@ test("IPC holds the fixed channel names", () => {
     updateState: "update:state",
     updateInstall: "update:install",
     statsUpdate: "stats:update",
+    formulaRequest: "formula:request",
+    formulaUpdate: "formula:update",
+    formulaClose: "formula:close",
+    formulaValues: "formula:values",
+    formulaLiveValues: "formula:liveValues",
+    panelUpdate: "panel:update",
+    marksList: "marks:list",
+    marksSave: "marks:save",
+    marksClear: "marks:clear",
+    pinsGet: "pins:get",
+    pinsSet: "pins:set",
+    feedsList: "feeds:list",
+    farmUpdate: "farm:update",
+    radarUpdate: "radar:update",
+    radarDismiss: "radar:dismiss",
+    formulaCharacters: "formula:characters",
+    sidePanel: "window:sidePanel",
   });
 });
 

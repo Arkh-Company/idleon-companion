@@ -7,3 +7,37 @@ phases:
   prototype: {status: done, date: 2026-11-12}
   plan: {status: done, date: 2026-11-13}
   tasks: {status: done, date: 2026-11-13}
+execution:
+  branch: feat/008-formula-trees
+  phases:
+    - {name: "Done gate", status: done, commits: bbfb73b..a1ec493}
+    - {name: "Setup + Foundational", status: done, commits: 1f5ba1b..265be8b}
+    - {name: "US1a gravador e raiz (T015-T016, T018, T020-T021, T024)", status: done, commits: 567173f..797fd04}
+    - {name: "US1b-1 peças, expand, share, tipos e curvas (T017, T022, T024)", status: done, commits: c6311f5..a2342c9}
+    - {name: "US1b-2 passos e linhas (T017, T022)", status: done, commits: ddab772..01202fb}
+    - {name: "US1 (T025-T028)", status: done, commits: 32ffc1c..27b01a4}
+    - {name: US2, status: done, commits: 63b5d1a..b6e9921}
+    - {name: "US3 + US4", status: done, commits: 2716cce..2389677}
+    - {name: US5, status: done, commits: 5fc6b79..3de65ab}
+    - {name: US6, status: done, commits: eba44f3..a28432f}
+    - {name: US7, status: done, commits: 3354486..970ce65}
+    - {name: US8, status: done, commits: b6feead..06dee06}
+    - {name: US9, status: done, commits: 24ce33d..75aec11}
+    - {name: US10, status: done, commits: ab9bcd7..eecb6a1}
+    - {name: US11, status: done, commits: 8adca82..063e5e6}
+    - {name: "Catálogo + 211 da F5", status: done, commits: ca3135c..6b76766}
+    - {name: US12, status: done, commits: dae801c..fd81565}
+    - {name: US13, status: done, commits: 07e5b25..5c41166}
+    - {name: "US1b-2b laços do cache e passes do jogo (T017, T022)", status: done, commits: 97b8599..8e1f57b}
+    - {name: "US1b-3 formas do ⓘ, molde e game-bugs (T017, T022)", status: done, commits: 8bc3995..5c5419d}
+    - {name: "US1b-3b ⓘ dos caches e raiz nunca folha muda (T017, T022)", status: done, commits: a5cb58d..8aa0a80}
+    - {name: Polish, status: done, commits: 76cfa40..316c299}
+    - {name: "US1c nomes e molde do Drop Rate (T023)", status: done, commits: 99b8659..547e383}
+    - {name: "US1c-2 passes que dependem de nomes (T023)", status: done, commits: 333fb6e..0b06384}
+    - {name: "US1c-3 Golden Food, NAMES do rename e receitas de volta (T023)", status: done, commits: ef1f136..ec7fce7}
+    - {name: "US1c-4a Golden Food (T023)", status: done, commits: 3562148..b83425b}
+    - {name: "US1c-4b resto do rename, passadas cruas e do finish (T023)", status: done, commits: 70a4464..e25572b}
+    - {name: "US1c-4c fixNames, passadas que renomeiam o pai e oneOfEach (T023)", status: done, commits: c32cb8e..93181e6}
+    - {name: "US1c-4d opus1Sailing, opus2Arena, opus5, opus3More F7a/c/f e o fixNames nos níveis fundidos (T023)", status: done, commits: 8d48cd3..78f66d6}
+  feature_review: done
+  code_pr: 35

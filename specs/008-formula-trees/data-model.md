@@ -28,7 +28,7 @@ O tipo é recursivo; se o teste não acusar a mudança, a comparação passa a s
 | `leaf` | um de `LEAF_KINDS`, ou nulo | Só nas folhas (FR-013) |
 | `condition` | um de `CONDITION_KINDS`, ou nulo | Só nas folhas `condition` |
 | `why` | texto ou nulo | Motivo de um `?`, frase de jogador |
-| `formula` | `[nomes, números]` ou nulo | "How it adds up". Só átomos; um termo sem nome aparece como o caminho do jogo (FR-012a); 3 algarismos significativos |
+| `formula` | `[nomes, números]`, `{ rule: [linha de nomes, linha de números] }` (durante a implementação: um ⓘ de regra, ver contracts/tree-worker.md; uma regra com linha acima de 200 caracteres fica sem ⓘ) ou nulo | "How it adds up". Só átomos; um termo sem nome aparece como o caminho do jogo (FR-012a); 3 algarismos significativos |
 | `code` | texto ou nulo | Bloco e argumentos ou caminho, só em "Game details" |
 | `role` | um de `NODE_ROLES` | |
 | `share` | 0..1 ou nulo | Peso no pai (Share S); nulo em condição e em `unknown` |
@@ -46,7 +46,7 @@ O tipo é recursivo; se o teste não acusar a mudança, a comparação passa a s
 | `none` | Nenhuma árvore aberta |
 | `waiting` | "Waiting for the game": sem leitura ou sem personagem (FR-034) |
 | `calculating` | O pedido |
-| `unavailable` | O pedido; a falha não leva texto do jogo |
+| `unavailable` | O pedido; a falha não leva texto do jogo. Durante a implementação: `liveMap: true` quando é um número do jogo ao vivo cujo ator não estava no mapa ("Needs the live map", FR-023); sem ele, a falha do worker ("Calculator unavailable") |
 | `diverged` | O pedido e o texto da Stats: "Breakdown unavailable" (FR-019) |
 | `ready` | `request`, `title`, `rootText` (escrito pelo main com o formatador da linha da Stats), `statsValue`, `character` (número), `activeCharacter`, `calculatedAt`, `gameChanged`, `checkedOnThisGame` (faixa de versão, FR-018), `stale` (jogo fechado, FR-022), `comparingWith` (nome da marca ou nulo), `counts`, `root` |
 
@@ -62,7 +62,8 @@ O tipo é recursivo; se o teste não acusar a mudança, a comparação passa a s
 | Campo | Regra |
 | --- | --- |
 | `id` | Único e estável (o slug da bancada) |
-| `system` | O sistema ou a skill: o grupo da aba Formulas, na ordem do jogo (FR-038) |
+| `group` | Durante a implementação: o grupo da aba Formulas, na ordem da FR-038 (Character, Account, W1…W7, depois as skills na ordem do jogo), vindo da curadoria da bancada |
+| `system` | O sistema ou a skill, dentro do grupo (segundo nível da aba Formulas) |
 | `screen` | O nome da tela no catálogo de telas da 003, ou nulo (sem painel: só a aba Formulas) |
 | `notShown` | `null` ou um de `cost`, `cap`, `chance`, `rate` (grupos fechados do painel, FR-004) |
 | `live` | Sim quando precisa de campo de ator de mapa (FR-023) |

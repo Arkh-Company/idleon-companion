@@ -41,7 +41,20 @@ function setup(current: Status = RUNNING) {
       status: vi.fn(),
       replay: vi.fn(),
     },
+    formula: {
+      status: vi.fn(),
+      gameFiles: vi.fn(),
+      replay: vi.fn(),
+      tables: vi.fn(),
+    },
     updates: { replay: vi.fn() },
+    farm: {
+      onState: vi.fn(),
+      onMap: vi.fn(),
+      tables: vi.fn(),
+      reset: vi.fn(),
+      replay: vi.fn(),
+    },
     setStatus: vi.fn((): Promise<void> => Promise.resolve()),
     sendStatus: vi.fn(),
     gameExited: vi.fn(),
@@ -52,7 +65,9 @@ function setup(current: Status = RUNNING) {
   const routes = routeLink({
     tracker: h.tracker,
     stats: h.stats,
+    formula: h.formula,
     updates: h.updates,
+    farm: h.farm,
     status: () => current,
     setStatus: h.setStatus,
     sendStatus: h.sendStatus,
@@ -81,20 +96,76 @@ test("a reading of the wrong shape goes nowhere", () => {
   expect(h.stats.reading).not.toHaveBeenCalled();
 });
 
-test("the tables go to the screen tracker, checked", () => {
+test("the tables go to the screen tracker, the farm and the picker, checked", () => {
   const h = setup();
   h.routes.message(bad({ type: "tables", tables: { maps: 1, monsters: {} } }));
-  expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith({
-    maps: null,
-    monsters: {},
-  });
+  const checked = { maps: null, monsters: {}, items: null, classes: null };
+  expect(h.tracker.tables).toHaveBeenCalledExactlyOnceWith(checked);
+  expect(h.farm.tables).toHaveBeenCalledExactlyOnceWith(checked);
+  expect(h.formula.tables).toHaveBeenCalledExactlyOnceWith(checked);
   expect(h.stats.message).not.toHaveBeenCalled();
 });
 
-test("a status goes to the Stats and to the app", () => {
+test("a reading tells the farm its map and whether it is a town, by the scene's name (FR-028)", () => {
+  const h = setup();
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, map: 50, scene: "zDesertaTown" },
+  });
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, map: 51, scene: "zDesertA" },
+  });
+  expect(h.farm.onMap.mock.calls).toEqual([
+    [50, true],
+    [51, false],
+  ]);
+});
+
+test("a reading with no scene says nothing to the farm, and one with no character resets it", () => {
+  const h = setup();
+  h.routes.message({ type: "reading", reading: { ...READING, scene: null } });
+  expect(h.farm.onMap).not.toHaveBeenCalled();
+  expect(h.farm.reset).not.toHaveBeenCalled();
+  h.routes.message({
+    type: "reading",
+    reading: { ...READING, char: null, scene: "PlayerSelect" },
+  });
+  expect(h.farm.onMap).not.toHaveBeenCalled();
+  expect(h.farm.reset).toHaveBeenCalledOnce();
+});
+
+test("a slice goes to the farm, checked; one of the wrong shape does not", () => {
+  const h = setup();
+  h.routes.message({ type: "state", slice: SLICE });
+  h.routes.message(bad({ type: "state", slice: { sentinel: 1 } }));
+  expect(h.farm.onState).toHaveBeenCalledExactlyOnceWith(SLICE);
+});
+
+test.each<[string, Status, number]>([
+  ["a closed game", CLOSED, 1],
+  ["a game not launched", { game: "not-launched", reader: "error" }, 1],
+  ["a running game", RUNNING, 0],
+])(
+  "%s: the farm resets only when the game is not running",
+  (_name, status, times) => {
+    const h = setup();
+    h.routes.message({ type: "status", status });
+    expect(h.farm.reset).toHaveBeenCalledTimes(times);
+  },
+);
+
+test("a dropped link resets the farm", () => {
+  const h = setup();
+  h.routes.connected(false);
+  expect(h.farm.reset).toHaveBeenCalledOnce();
+});
+
+test("a status goes to the Stats, the trees and the app", () => {
   const h = setup();
   h.routes.message({ type: "status", status: RUNNING });
   expect(h.stats.status).toHaveBeenCalledExactlyOnceWith(RUNNING);
+  expect(h.formula.status).toHaveBeenCalledExactlyOnceWith(RUNNING);
   expect(h.setStatus).toHaveBeenCalledExactlyOnceWith(RUNNING);
 });
 
@@ -131,10 +202,20 @@ test.each<[string, LinkMessage]>([
   expect(h.stats.message).toHaveBeenCalledExactlyOnceWith(m);
 });
 
-test("a dropped link is a status for the Stats and for the app", () => {
+test("the game's folder goes to the trees too, and a folder of the wrong shape does not", () => {
+  const h = setup();
+  h.routes.message({ type: "gameFiles", resources: "C:\\x\\resources" });
+  h.routes.message({ type: "gameFiles", resources: "C:\\x\\elsewhere" });
+  expect(h.formula.gameFiles).toHaveBeenCalledExactlyOnceWith(
+    "C:\\x\\resources",
+  );
+});
+
+test("a dropped link is a status for the Stats, the trees and the app", () => {
   const h = setup();
   h.routes.connected(false);
   expect(h.stats.status).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
+  expect(h.formula.status).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
   expect(h.setStatus).toHaveBeenCalledExactlyOnceWith(NOT_CONNECTED);
 });
 
@@ -152,9 +233,11 @@ test("a link that comes up changes nothing", () => {
   expect(h.setStatus).not.toHaveBeenCalled();
 });
 
-test("each page load gets the status, the context, the update and the Stats again", () => {
+test("each page load gets the status, the context, the update, the Stats, the tree and the farm again", () => {
   const h = setup();
   h.load();
+  expect(h.farm.replay).toHaveBeenCalledOnce();
+  expect(h.formula.replay).toHaveBeenCalledOnce();
   expect(h.sendStatus).toHaveBeenCalledExactlyOnceWith(RUNNING);
   expect(h.tracker.replay).toHaveBeenCalledOnce();
   expect(h.updates.replay).toHaveBeenCalledOnce();

@@ -11,6 +11,7 @@ import {
 } from "./reading-catalog-rules.ts";
 import type { CatalogRow } from "./reading-catalog-rules.ts";
 import { NUMBER_IDS } from "./state.ts";
+import { TREE_CATALOG } from "./tree-catalog.ts";
 
 const HEAD = [
   "| Peça | Tipo | Bytes | Natureza | Números afetados | Muda em | Mecânica | Feature | Leitura | Grupo |",
@@ -82,6 +83,12 @@ describe("parseCatalog", () => {
     expect(parseCatalog(table(line("todos")))[0]?.numbers).toEqual([
       ...NUMBER_IDS,
     ]);
+  });
+
+  test("the cell `jogo vivo` is every live-game number of the tree catalog (US12)", () => {
+    const live = TREE_CATALOG.filter((n) => n.live).map((n) => n.id);
+    expect(live.length).toBeGreaterThan(0);
+    expect(parseCatalog(table(line("jogo vivo")))[0]?.numbers).toEqual(live);
   });
 
   test("a table padded to line up reads the same", () => {

@@ -1,9 +1,18 @@
 // Shape checks of what reaches the main process: the window's IPC payloads and the keeper's link readings. Nothing
 // from either is used before it passes here. No electron import, so tests can load it.
 import { win32 } from "node:path";
-import { isObject, toReading } from "../shared/index.ts";
+import {
+  isCatalogId,
+  isObject,
+  MAX_MARK_NAME,
+  MAX_PINS,
+  toReading,
+  TREE_CATALOG,
+} from "../shared/index.ts";
+import { MAX_NODE_ID } from "./tree-check.ts";
 import type {
   GameTables,
+  Pin,
   Reading,
   Settings,
   StatePath,
@@ -24,6 +33,102 @@ export function settingsPayload(v: unknown): Settings | null {
   return { showWindowOnGameStart, closeWithGame, alwaysOnTop };
 }
 
+/** `formula:request` (contracts/ipc.md): a catalog number, for the active character (null) or one by its number. */
+export type FormulaRequest =
+  { id: string; character: number | null } | { treeId: string; nodeId: string };
+
+const onlyKeys = (v: Record<string, unknown>, keys: readonly string[]) =>
+  Object.keys(v).every((k) => keys.includes(k));
+const isNodeId = (v: unknown): v is string =>
+  typeof v === "string" && v.length > 0 && v.length <= MAX_NODE_ID;
+
+/** A character's number: whole, not negative, and written whole as a key of a saved file. */
+const isCharacter = (v: unknown): v is number =>
+  Number.isSafeInteger(v) && (v as number) >= 0;
+
+/** `formula:request`: the id is checked against the catalog before anything reaches a worker (CHK015). */
+export function formulaRequestPayload(v: unknown): FormulaRequest | null {
+  if (!isObject(v)) return null;
+  if (onlyKeys(v, ["id", "character"])) {
+    const { id, character } = v;
+    if (!isCatalogId(id)) return null;
+    if (character === undefined) return { id, character: null };
+    return isCharacter(character) ? { id, character } : null;
+  }
+  if (onlyKeys(v, ["treeId", "nodeId"])) {
+    const { treeId, nodeId } = v;
+    return isNodeId(treeId) && isNodeId(nodeId) ? { treeId, nodeId } : null;
+  }
+  return null;
+}
+
+/** `formula:values` (contracts/ipc.md): what is in view, catalog ids each once, at most the whole catalog (CHK015). */
+export function formulaValuesPayload(v: unknown): { ids: string[] } | null {
+  if (!isObject(v) || !onlyKeys(v, ["ids"])) return null;
+  const { ids } = v;
+  return Array.isArray(ids) &&
+    ids.length <= TREE_CATALOG.length &&
+    new Set(ids).size === ids.length &&
+    ids.every(isCatalogId)
+    ? { ids }
+    : null;
+}
+
+/** `feeds:list` (FR-027): only `{ pieceKey }`, a key as long as a node's id at most. */
+export function feedsListPayload(v: unknown): { pieceKey: string } | null {
+  return isObject(v) && onlyKeys(v, ["pieceKey"]) && isNodeId(v.pieceKey)
+    ? { pieceKey: v.pieceKey }
+    : null;
+}
+
+/** `marks:list`: only `{ character }`. */
+export function marksListPayload(v: unknown): { character: number } | null {
+  return isObject(v) && onlyKeys(v, ["character"]) && isCharacter(v.character)
+    ? { character: v.character }
+    : null;
+}
+
+/** `marks:save` and `marks:clear` (contracts/ipc.md): a character's number and a name of 1 to 40 characters, trimmed. */
+export function markPayload(
+  v: unknown,
+): { character: number; name: string } | null {
+  if (!isObject(v) || !onlyKeys(v, ["character", "name"])) return null;
+  const { character, name } = v;
+  if (!isCharacter(character) || typeof name !== "string") return null;
+  const trimmed = name.trim();
+  return trimmed.length > 0 && trimmed.length <= MAX_MARK_NAME
+    ? { character, name: trimmed }
+    : null;
+}
+
+/**
+ * `pins:set` (contracts/ipc.md), and each pin read from `pins.json`: up to 5 catalog numbers, each once, nothing else in
+ * a pin (never a value).
+ */
+export function pinsPayload(v: unknown): Pin[] | null {
+  if (!Array.isArray(v) || v.length > MAX_PINS) return null;
+  const pins: Pin[] = [];
+  for (const p of v) {
+    // ponytail: numbers only; a leaf's `nodeId` once the tree has a Pin per row (FR-026).
+    if (
+      !isObject(p) ||
+      !onlyKeys(p, ["treeId", "nodeId"]) ||
+      !isCatalogId(p.treeId) ||
+      p.nodeId !== null
+    )
+      return null;
+    pins.push({ treeId: p.treeId, nodeId: null });
+  }
+  return new Set(pins.map((p) => p.treeId)).size === pins.length ? pins : null;
+}
+
+/** `window:sidePanel` (contracts/ipc.md): only `{ open }`, a yes or no. */
+export function sidePanelPayload(v: unknown): { open: boolean } | null {
+  if (!isObject(v) || !onlyKeys(v, ["open"]) || typeof v.open !== "boolean")
+    return null;
+  return { open: v.open };
+}
+
 /** A channel without a body (`settings:get`, `reader:confirm-attach`, `steam:state`, `steam:setup`,
  * `reader:release`, `reader:reconnect`, `update:install`): only a missing body or an empty object passes. */
 export function emptyPayload(v: unknown): boolean {
@@ -40,13 +145,16 @@ const isText = (x: unknown) => typeof x === "string";
 /** The body of a `tables` link message: a table out of shape counts as unread (null), for that table only. */
 export function linkTables(v: unknown): GameTables {
   const body = isObject(v) ? v : {};
-  const { maps, monsters } = body;
+  const { maps, monsters, items, classes } = body;
+  const names = (v: unknown) =>
+    isObject(v) && Object.values(v).every(isText)
+      ? (v as Record<string, string>)
+      : null;
   return {
     maps: Array.isArray(maps) && maps.every(isText) ? maps : null,
-    monsters:
-      isObject(monsters) && Object.values(monsters).every(isText)
-        ? (monsters as Record<string, string>)
-        : null,
+    monsters: names(monsters),
+    items: names(items),
+    classes: Array.isArray(classes) && classes.every(isText) ? classes : null,
   };
 }
 

@@ -1,0 +1,440 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+// The Stats and the trees joined as the app runs them (src/main/index.ts): a tree request uses the mosaic the Stats
+// calculated, its root reaches the window, and nothing of the trees reaches the Stats (FR-017, FR-019). The workers are
+// fakes; every value and name is invented.
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { IPC, NO_TABLES, TREE_CATALOG } from "../shared/index.ts";
+import { FakeWorker } from "./calculator-host-fixture.ts";
+import { node } from "./formula-fixture.ts";
+import type { GameBytes } from "./game-files.ts";
+import { startPipelines } from "./pipelines.ts";
+import {
+  ATTACHED,
+  CALCULATED,
+  flush,
+  piece,
+  reading,
+  RESOURCES,
+  vars,
+} from "./stats-pipeline-fixture.ts";
+import { savedFiles, SHAPES_RESET } from "./saved-files.ts";
+
+/** The game code of the fixture: the rules count as checked on these bytes (FR-018). */
+const CHECKED_CODE = vi.hoisted(() => Uint8Array.from([1]));
+vi.mock("./version-band.ts", async (importOriginal) => {
+  const real = await importOriginal<typeof import("./version-band.ts")>();
+  const { createHash } = await import("node:crypto");
+  const sha = createHash("sha256").update(CHECKED_CODE).digest("hex");
+  return { ...real, versionBand: () => real.versionBand(sha) };
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+const CHARACTER = [
+  piece("UserInfo", ["Invented"]),
+  piece("GetPlayersUsernames", ["Someone", "Invented"]),
+  piece("CharacterClass", 1),
+];
+
+function setup(
+  code: Uint8Array<ArrayBuffer> = CHECKED_CODE,
+  // No mark or pin is read or written here unless a test gives a folder.
+  saved = savedFiles(join(tmpdir(), "no-marks")),
+) {
+  const workers: { worker: FakeWorker; heap: number }[] = [];
+  const sent: { channel: string; value: unknown }[] = [];
+  /** The window gone for the trees only. */
+  let treesFail = false;
+  const send = vi.fn((channel: string, value: unknown) => {
+    if (treesFail && channel === IPC.formulaUpdate)
+      throw new Error("window gone");
+    sent.push({ channel, value });
+  });
+  const log = vi.fn();
+  const p = startPipelines({
+    send,
+    createWorker: (o) => {
+      const worker = new FakeWorker();
+      workers.push({
+        worker,
+        heap: o.resourceLimits?.maxOldGenerationSizeMb ?? 0,
+      });
+      return worker;
+    },
+    readFiles: (): Promise<GameBytes> =>
+      Promise.resolve({
+        code,
+        pak: Uint8Array.from([2]),
+      }),
+    log,
+    saved,
+  });
+  const workerOf = (heap: number) => {
+    const w = workers.find((x) => x.heap === heap)?.worker;
+    if (!w) throw new Error("no such worker");
+    return w;
+  };
+  const on = (channel: string) =>
+    sent.filter((s) => s.channel === channel).map((s) => s.value);
+  return {
+    p,
+    send,
+    failTrees() {
+      treesFail = true;
+    },
+    log,
+    on,
+    stats: () => workerOf(1024),
+    trees: () => workerOf(2048),
+    slice(fast: number, pieces: typeof CHARACTER, char = "Invented") {
+      p.stats.message({
+        type: "state",
+        slice: {
+          sentinel: { char, map: 5 },
+          pieces,
+          at: 1,
+          cycles: { fast, all: fast },
+        },
+      });
+    },
+    /** The game open, a character read and its Stats answered. */
+    async showing() {
+      p.stats.status(ATTACHED);
+      p.stats.reading(reading());
+      p.stats.message({ type: "gameFiles", resources: RESOURCES });
+      p.formula.gameFiles(RESOURCES);
+      this.slice(0, []);
+      this.slice(1, [vars, ...CHARACTER]);
+      await flush();
+      this.stats().emit("message", { type: "ready" });
+      this.stats().emit("message", { type: "result", numbers: CALCULATED });
+    },
+  };
+}
+
+/** The shape of Where this goes (FR-027) in flight in the background: values asked meanwhile wait for its answer. */
+function answerShape(worker: FakeWorker): void {
+  const shape = worker.sent("shape").at(-1);
+  expect(shape).toBeDefined();
+  worker.emit("message", { type: "shapeResult", id: shape?.id, shape: [] });
+}
+
+test("a tree request goes with the Stats' mosaic and its root reaches the window", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  expect(asked?.mosaic).toBe(h.stats().calcs()[0]);
+  expect(asked?.request).toEqual({
+    type: "number",
+    id: "dropRate",
+    character: 1,
+  });
+
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  expect(h.on(IPC.formulaUpdate).at(-1)).toMatchObject({
+    state: "ready",
+    rootText: "6x",
+    character: 1,
+  });
+});
+
+test.each([
+  ["the code the rules were checked on has no band", CHECKED_CODE, true],
+  ["another game code has the band", Uint8Array.from([9]), false],
+])(
+  "the tree's version band comes from the game code the tree host read: %s (FR-018)",
+  async (_name, code, checked) => {
+    const h = setup(code);
+    await h.showing();
+    await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+    await flush();
+    h.trees().emit("message", { type: "ready" });
+    const [asked] = h.trees().sent("tree");
+    h.trees().emit("message", {
+      type: "treeResult",
+      id: asked?.id,
+      tree: node({ value: CALCULATED.dropRate }),
+    });
+    expect(h.on(IPC.formulaUpdate).at(-1)).toMatchObject({
+      state: "ready",
+      checkedOnThisGame: checked,
+    });
+  },
+);
+
+test("a character change reaches the open tree and the picker through the Stats, the classes once read; a new page gets the list again", async () => {
+  const h = setup();
+  await h.showing();
+  h.p.formula.tables({ ...NO_TABLES, classes: ["0", "Novice"] });
+  h.p.formula.replay();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  h.p.stats.reading(reading(null));
+  expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "waiting" });
+  const list = { active: 1, classes: [null, "Novice"] };
+  expect(h.on(IPC.formulaCharacters)).toMatchObject([{}, list, list, null]);
+});
+
+test("a tree that fails to reach the window never touches the Stats (FR-017)", async () => {
+  const h = setup();
+  await h.showing();
+  h.failTrees();
+  await expect(
+    Promise.resolve().then(() =>
+      h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" }),
+    ),
+  ).rejects.toThrow("window gone");
+  h.p.stats.reading(reading("Other"));
+  h.slice(2, [], "Other"); // the new character: the tree would go to waiting, and cannot reach the window
+  expect(h.on(IPC.statsUpdate).at(-1)).toEqual({ state: "calculating" });
+  expect(h.on(IPC.statsUpdate)).not.toContainEqual({ state: "unavailable" });
+});
+
+test.each<[string, unknown]>([
+  ["no body", undefined],
+  ["an id outside the catalog", { id: "notInTheCatalog" }],
+])(
+  "formula:request with %s is refused before any worker",
+  async (_name, payload) => {
+    const h = setup();
+    await expect(
+      Promise.resolve().then(() => h.p.handlers[IPC.formulaRequest]?.(payload)),
+    ).rejects.toThrow("formula:request: invalid request");
+  },
+);
+
+test("formula:close takes no body and closes the tree", async () => {
+  const h = setup();
+  await expect(
+    Promise.resolve().then(() => h.p.handlers[IPC.formulaClose]?.({ x: 1 })),
+  ).rejects.toThrow("formula:close: no body expected");
+  await h.p.handlers[IPC.formulaClose]?.(undefined);
+  expect(h.on(IPC.formulaUpdate).at(-1)).toEqual({ state: "none" });
+});
+
+test("formula:values asks the tree worker with the Stats' mosaic, never the Stats worker (SC-004)", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaValues]?.({ ids: ["hp", "str"] });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("values");
+  expect(asked).toMatchObject({
+    ids: ["hp", "str"],
+    mosaic: h.stats().calcs()[0],
+  });
+  expect(h.stats().sent("values")).toEqual([]);
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: asked?.id,
+    values: { hp: 3, str: 4 },
+  });
+  expect(h.on(IPC.formulaLiveValues).at(-1)).toMatchObject({
+    values: { hp: 3, str: 4 },
+    stale: false,
+  });
+});
+
+test("the saved pins are in view from the start, and pins:set changes what is in view (FR-026, FR-036)", async () => {
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "pins-")));
+  saved.pins.set([{ treeId: "hp", nodeId: null }]);
+  const h = setup(CHECKED_CODE, saved);
+  await h.showing();
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [first] = h.trees().sent("values");
+  expect(first).toMatchObject({ ids: ["hp"] });
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: first?.id,
+    values: { hp: 3 },
+  });
+  expect(h.on(IPC.formulaLiveValues).at(-1)).toMatchObject({
+    values: { hp: 3 },
+  });
+  await h.p.handlers[IPC.pinsSet]?.([
+    { treeId: "hp", nodeId: null },
+    { treeId: "str", nodeId: null },
+  ]);
+  answerShape(h.trees());
+  expect(h.trees().sent("values").at(-1)).toMatchObject({ ids: ["hp", "str"] });
+  expect(await h.p.handlers[IPC.pinsGet]?.(undefined)).toEqual({
+    pins: [
+      { treeId: "hp", nodeId: null },
+      { treeId: "str", nodeId: null },
+    ],
+    warning: null,
+  });
+});
+
+test("formula:values with an id outside the catalog is refused before any worker", async () => {
+  const h = setup();
+  await expect(
+    Promise.resolve().then(() =>
+      h.p.handlers[IPC.formulaValues]?.({ ids: ["notInTheCatalog"] }),
+    ),
+  ).rejects.toThrow("formula:values: invalid ids");
+});
+
+test("each new Stats pair asks the live values again, even when the Stats texts stay the same (FR-008)", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaValues]?.({ ids: ["str"] });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [first] = h.trees().sent("values");
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: first?.id,
+    values: { str: 4 },
+  });
+  // Another mosaic of the same character, with the same 11 numbers: the Stats tab has nothing new to show.
+  h.slice(2, [piece("Cards", 2)]);
+  await vi.advanceTimersByTimeAsync(100); // the Stats host's gap between two calculations
+  h.stats().emit("message", { type: "result", numbers: CALCULATED });
+  answerShape(h.trees());
+  const calcs = h.stats().calcs();
+  expect(calcs).toHaveLength(2);
+  expect(
+    h
+      .trees()
+      .sent("values")
+      .map((m) => m.mosaic),
+  ).toEqual(calcs);
+});
+
+// Where this goes (FR-027): the tree worker gets the shapes of the catalog in the background, once it read the game's
+// code, and `feeds:list` answers from them.
+test("after the tree, the tree worker is asked a shape over the Stats' mosaic", async () => {
+  const h = setup();
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  expect(h.trees().sent("shape")).toEqual([]);
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  // The open number's live value goes first: a shape waits for every tree and value.
+  const [values] = h.trees().sent("values");
+  expect(h.trees().sent("shape")).toEqual([]);
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: values?.id,
+    values: {},
+  });
+  const [shape] = h.trees().sent("shape");
+  expect(shape?.mosaic).toBe(h.stats().calcs()[0]);
+  expect(shape?.treeId).toBe(TREE_CATALOG.find((n) => !n.live)?.id);
+});
+
+test("feeds:list gives the catalog numbers of a piece, from the saved shapes", async () => {
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "feeds-")));
+  saved.shapes.save({
+    gameSha: "a".repeat(64),
+    trees: new Map([
+      ["hp", [['["Sword"]', "Game value"]]],
+      ["str", [['["Sword"]', "Game value"]]],
+    ]),
+  });
+  const h = setup(CHECKED_CODE, saved);
+  expect(
+    await h.p.handlers[IPC.feedsList]?.({ pieceKey: '[2,"Sword"]' }),
+  ).toEqual(
+    TREE_CATALOG.map((n) => n.id).filter((id) => ["hp", "str"].includes(id)),
+  );
+});
+
+test.each<[string, unknown]>([
+  ["no body", undefined],
+  ["a key that is no text", { pieceKey: 3 }],
+  ["an empty key", { pieceKey: "" }],
+  ["a key too long", { pieceKey: "k".repeat(2_001) }],
+  ["another field", { pieceKey: "k", id: "hp" }],
+])("feeds:list refuses %s", async (_name, payload) => {
+  const h = setup();
+  await expect(
+    Promise.resolve().then(() => h.p.handlers[IPC.feedsList]?.(payload)),
+  ).rejects.toThrow("feeds:list: invalid piece");
+});
+
+test("a new game version lights the patch radar with the trees whose shape changed, and a new page gets it again until Close (FR-035)", async () => {
+  const first = TREE_CATALOG.find((n) => !n.live)?.id ?? "";
+  const saved = savedFiles(mkdtempSync(join(tmpdir(), "radar-")));
+  // Saved on another game version than the code the tree host reads.
+  saved.shapes.save({
+    gameSha: "a".repeat(64),
+    trees: new Map([[first, [['["Sword"]', "Sword"]]]]),
+  });
+  const h = setup(CHECKED_CODE, saved);
+  await h.showing();
+  await h.p.handlers[IPC.formulaRequest]?.({ id: "dropRate" });
+  await flush();
+  h.trees().emit("message", { type: "ready" });
+  const [asked] = h.trees().sent("tree");
+  h.trees().emit("message", {
+    type: "treeResult",
+    id: asked?.id,
+    tree: node({ value: CALCULATED.dropRate }),
+  });
+  const [values] = h.trees().sent("values");
+  h.trees().emit("message", {
+    type: "valuesResult",
+    id: values?.id,
+    values: {},
+  });
+  const [shape] = h.trees().sent("shape");
+  expect(shape?.treeId).toBe(first);
+  expect(h.on(IPC.radarUpdate)).toEqual([]);
+  h.trees().emit("message", {
+    type: "shapeResult",
+    id: shape?.id,
+    shape: [
+      ['[1,"Sword"]', "Sword"],
+      ['[1,"Shield"]', "Shield"],
+    ],
+  });
+  const lit = {
+    changed: [
+      { catalogId: first, added: ["Shield"], removed: [], renamed: [] },
+    ],
+    checking: false,
+    warning: null,
+  };
+  expect(h.on(IPC.radarUpdate)).toEqual([lit]);
+  h.p.formula.replay();
+  expect(h.on(IPC.radarUpdate)).toEqual([lit, lit]);
+  // radar:dismiss takes no body; with none, the band goes.
+  await expect(
+    Promise.resolve().then(() => h.p.handlers[IPC.radarDismiss]?.({ x: 1 })),
+  ).rejects.toThrow("radar:dismiss: no body expected");
+  expect(h.on(IPC.radarUpdate)).toHaveLength(2);
+  await h.p.handlers[IPC.radarDismiss]?.(undefined);
+  expect(h.on(IPC.radarUpdate).at(-1)).toBe(null);
+});
+
+test("an unreadable shapes file is said on the patch radar to a new page (FR-041)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "radar-"));
+  writeFileSync(join(dir, "tree-shapes.json"), "{");
+  const h = setup(CHECKED_CODE, savedFiles(dir));
+  h.p.formula.replay();
+  expect(h.on(IPC.radarUpdate)).toEqual([
+    { changed: [], checking: false, warning: SHAPES_RESET },
+  ]);
+});

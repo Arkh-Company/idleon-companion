@@ -1,5 +1,6 @@
 // Contracts shared by the keeper, the main process, the preload and the window (spec §5 and §6).
 import type { ComponentType } from "react";
+import type { FormulaTree } from "./formula-tree.ts";
 
 /** What the reader takes from the game every second (spec §5.1). */
 export interface Reading {
@@ -71,7 +72,19 @@ export interface GameTables {
   maps: string[] | null;
   /** Name by monster id */
   monsters: Record<string, string> | null;
+  /** Name by item id, for the farm's list (spec 008 FR-028) */
+  items: Record<string, string> | null;
+  /** Name by class number, for the character picker (spec 008 FR-020) */
+  classes: string[] | null;
 }
+
+/** No table read. */
+export const NO_TABLES: GameTables = {
+  maps: null,
+  monsters: null,
+  items: null,
+  classes: null,
+};
 
 /** One reading translated by the screen catalog and the game's tables. */
 export interface GameContext {
@@ -147,7 +160,94 @@ export const IPC = {
   updateState: "update:state",
   updateInstall: "update:install",
   statsUpdate: "stats:update",
+  // Spec 008 (specs/008-formula-trees/contracts/ipc.md).
+  formulaRequest: "formula:request",
+  formulaUpdate: "formula:update",
+  formulaClose: "formula:close",
+  formulaValues: "formula:values",
+  formulaLiveValues: "formula:liveValues",
+  panelUpdate: "panel:update",
+  marksList: "marks:list",
+  marksSave: "marks:save",
+  marksClear: "marks:clear",
+  pinsGet: "pins:get",
+  pinsSet: "pins:set",
+  feedsList: "feeds:list",
+  farmUpdate: "farm:update",
+  radarUpdate: "radar:update",
+  radarDismiss: "radar:dismiss",
+  formulaCharacters: "formula:characters",
+  sidePanel: "window:sidePanel",
 } as const;
+
+/** `formula:request`: a catalog number (the active character when `character` is absent), or a branch to open. */
+export type FormulaRequestBody =
+  { id: string; character?: number } | { treeId: string; nodeId: string };
+
+/**
+ * `formula:characters`: the game's characters by place, for the picker (FR-020), each one's class (null when unknown),
+ * and the active one's place; null with no reading. The names go to the screen only (FR-010, FR-010a).
+ */
+export type Characters = {
+  names: string[];
+  classes: (string | null)[];
+  active: number;
+} | null;
+
+/** `formula:liveValues`: the numbers in view, by catalog id; null = unavailable. */
+export interface LiveValues {
+  values: Record<string, number | null>;
+  calculatedAt: number;
+  stale: boolean;
+}
+
+/** One saved mark of a character (contracts/saved-files.md): values by piece, never a name of a row. */
+export interface Mark {
+  name: string;
+  takenAt: number;
+  values: Record<string, number | boolean>;
+}
+
+/** One pinned number, without its value. */
+export interface Pin {
+  treeId: string;
+  nodeId: string | null;
+}
+
+/** How many numbers the Pin strip holds, and the sentence of one more (FR-036). */
+export const MAX_PINS = 5;
+export const PINS_FULL = "Up to 5 pins: unpin one first.";
+/** Marks per character (FR-037), and the longest name of one. */
+export const MAX_MARKS = 3;
+export const MARKS_FULL = "Up to 3 marks: clear one first.";
+export const MAX_MARK_NAME = 40;
+
+/** `farm:update`: only measured, for the active character (FR-028). */
+export interface FarmUpdate {
+  state: "idle" | "counting" | "paused";
+  minutes: number;
+  xpPerHour: number;
+  goldPerHour: number;
+  items: { name: string; perHour: number }[];
+}
+
+/** What a game update changed in one tree's shape: names of parts new, gone and renamed (FR-029). */
+export interface RadarChange {
+  catalogId: string;
+  added: string[];
+  removed: string[];
+  renamed: [before: string, after: string][];
+}
+
+/**
+ * `radar:update`: the trees whose shape changed with a game update (FR-035), `checking` while old trees are still to be
+ * compared, and the warning of a shapes file that could not be read (FR-041); null when there is nothing to show.
+ */
+export type RadarUpdate = {
+  changed: RadarChange[];
+  checking: boolean;
+  warning: string | null;
+} | null;
 
 /** What the setup screen shows (data-model.md): read from Steam's files on request, never written. */
 export interface SteamState {
@@ -203,6 +303,13 @@ export type Stats =
   | { state: "none" }
   | { state: "calculating" }
   | { state: "ready"; rows: { label: string; text: string }[] }
+  /** The game closed: the last numbers, calculated at `calculatedAt` (FR-022 of 008). */
+  | {
+      state: "ready";
+      rows: { label: string; text: string }[];
+      stale: true;
+      calculatedAt: number;
+    }
   | { state: "unavailable" };
 
 /** A channel reserved for one module: `module:<id>:<name>`. */
@@ -225,4 +332,29 @@ export interface CompanionApi {
   onUpdate(cb: (u: UpdateState) => void): () => void;
   installUpdate(): Promise<void>;
   onStats(cb: (s: Stats) => void): () => void;
+  // Spec 008 (contracts/ipc.md).
+  requestFormula(r: FormulaRequestBody): Promise<void>;
+  onFormula(cb: (t: FormulaTree) => void): () => void;
+  closeFormula(): Promise<void>;
+  formulaValues(r: { ids: string[] }): Promise<void>;
+  onLiveValues(cb: (v: LiveValues) => void): () => void;
+  onPanel(cb: (p: { system: string | null }) => void): () => void;
+  /** The character's marks, and once the warning of a file that could not be read (FR-041). */
+  listMarks(r: {
+    character: number;
+  }): Promise<{ marks: Mark[]; warning: string | null }>;
+  /** Null when done; else the sentence for the player (FR-037). */
+  saveMark(r: { character: number; name: string }): Promise<string | null>;
+  clearMark(r: { character: number; name: string }): Promise<string | null>;
+  /** The pinned numbers, and once the warning of a file that could not be read (FR-041). */
+  getPins(): Promise<{ pins: Pin[]; warning: string | null }>;
+  /** Null when saved; else the sentence for the player. */
+  setPins(pins: Pin[]): Promise<string | null>;
+  /** The catalog numbers that use a piece, in the catalog's order: Where this goes (FR-027). */
+  feedsList(r: { pieceKey: string }): Promise<string[]>;
+  onFarm(cb: (f: FarmUpdate) => void): () => void;
+  onRadar(cb: (r: RadarUpdate) => void): () => void;
+  onCharacters(cb: (c: Characters) => void): () => void;
+  dismissRadar(): Promise<void>;
+  setSidePanel(r: { open: boolean }): Promise<void>;
 }

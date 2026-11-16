@@ -1,0 +1,81 @@
+// The recording recipe of the real game (spec 008, T021): only names of caches, blocks and helper events, as the bench
+// keeps them at BASELINE-4 (build-tree.cjs, step 4: `RECOMPUTE` and `BUILDERS`). Proof by reference, never game text:
+// each cache was rebuilt offline and compared entry by entry with the running game's on the bench (test of 10/11).
+import type { Recipe } from "./recording.ts";
+
+const block = (name: string, ...args: (string | number)[]) => ({
+  block: name,
+  args,
+});
+
+export const TREE_RECIPE: Recipe = {
+  // Each one rebuilt offline keeps the Drop Rate identical (build-tree.cjs, step 4, the measure of 10/11).
+  recompute: [
+    "OwlBonus",
+    "SetBonusTOTz",
+    "StampBonuses_Map_Of_Val",
+    "SummWinBonus",
+    "UNQ_sushi",
+    "EmperorBon",
+    "FountBonT",
+    "GalleryTrophyBonTOT",
+    "GalleryNametagBonTOT",
+    "PremHatBonTOT",
+    "CapeVineBonTOT",
+    "PaletteBonz",
+    "FrendBonzStatz",
+    "SpelunkyUpgTOT",
+    "TotKngdSt",
+    "PrayNonEq",
+    "GlimboTOT",
+    "ChipBbonusz",
+  ],
+  // The game's own call that builds each cache (build-tree.cjs, step 4, `BUILDERS`; `KEEP_LIVE` in step 6b).
+  builders: [
+    { cache: "AlchVials", run: block("TalentCalc", -2), keepLive: true },
+    { cache: "AlchBubbles", run: block("TalentCalc", -2), keepLive: true },
+    { cache: "FamBonusQTYs", run: block("TalentCalc", -3) },
+    { cache: "MealBonusesS", run: block("TalentCalc", -6) },
+    { cache: "SailzArtiBonusL", run: block("TalentCalc", -9) },
+    {
+      cache: "TotalStatsETCmap",
+      run: block("TotalStats", "calcEtcBonuses", 0, 0),
+    },
+    {
+      cache: "LabMFbonuses",
+      run: block("TalentCalc", -7),
+      // The Lab helper's own event, step "d", fills the Lab's connections first (step 6b, probe-lab2.cjs).
+      before: {
+        slot: 22,
+        behavior: "ActorEvents_548",
+        set: ["_TRIGGEREDtext", "d"],
+        event: "_customEvent_Lab",
+      },
+    },
+    {
+      cache: "ShinyBonusS",
+      run: block("Breeding", "ShinyBonusS", "Nah", 0, -1),
+    },
+    { cache: "StarSigns", run: block("StarSigns", 0) },
+    { cache: "LoreEpiBon", run: block("Thingies", "LoreEpiBon", -1, 0) },
+    {
+      cache: "VaultKillzTOT",
+      run: block("Summoning", "VaultKillzTotal", 0, 0),
+    },
+    { cache: "skillLvRanks", run: block("RiftStuff", "skillLvRanks", 0) },
+    {
+      cache: "ExoticFarmBon",
+      run: block("FarmingStuffs", "ExoticBonusQTY", -1, 0),
+    },
+    {
+      cache: "TomeQTY",
+      run: {
+        slot: 4,
+        behavior: "ActorEvents_229",
+        event: "_customEvent_TomeQTY",
+        args: [],
+      },
+    },
+    { cache: "BigFishBon", run: block("Spelunk", "BigFishBonuses", -1, 0) },
+  ],
+};

@@ -1,35 +1,195 @@
 // The window: only the setup screen while Steam is not set up (FR-005); after it, the status bar, the panels of the
-// modules that match the context, and the settings.
-import { useCallback, useEffect, useState } from "react";
-import { modulesFor } from "../shared/index.ts";
+// modules that match the context, and the settings. A tapped Stats or Formulas value opens its tree in the side panel,
+// beside the rest, with the window widened (spec 008 FR-005). A system's screen opening in the game switches to its panel
+// (FR-003), says so once (FR-040) and never moves the focus (FR-039); a screen without one keeps the last (FR-033). The
+// pinned numbers and the farm's rates sit under the status bar (FR-026, FR-028), below the patch radar's band (FR-035).
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { modulesFor, panelSystems } from "../shared/index.ts";
 import type {
+  Characters,
+  FarmUpdate,
+  FormulaTree,
   GameContext,
+  LiveValues,
+  RadarUpdate,
   Stats,
   Status,
   SteamState,
 } from "../shared/index.ts";
+import { FarmStrip } from "./FarmStrip.tsx";
+import { FormulasTab, nameOf } from "./FormulasTab.tsx";
 import { screenMap } from "./modules/screen-map.ts";
+import { SYSTEM_PANELS } from "./modules/system-panels.ts";
 import { SettingsView, SteamSettings } from "./SettingsView.tsx";
+import { PatchBand } from "./PatchBand.tsx";
+import { PinStrip, usePins } from "./PinStrip.tsx";
 import { SetupView, steamUnknown } from "./SetupView.tsx";
-import { StatsPanel } from "./StatsPanel.tsx";
+import { SidePanel } from "./SidePanel.tsx";
+import type { Side } from "./SidePanel.tsx";
+import { STATS_TREES, StatsPanel } from "./StatsPanel.tsx";
+import type { StatsRow } from "./StatsPanel.tsx";
 import { StatusBar } from "./StatusBar.tsx";
+import { SystemTab } from "./SystemPanel.tsx";
 
 const MODULES = [screenMap];
 const TABS = [
   ["map", "Screen map"],
   ["stats", "Stats"],
+  ["formulas", "Formulas"],
 ] as const;
+type Tab = (typeof TABS)[number][0] | "panel";
 // ponytail: v1 modules never message the main process; module:<id>:* channels when one needs to.
 const send = () => Promise.resolve();
 
 export function App() {
   const [ctx, setCtx] = useState<GameContext | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
-  useEffect(() => window.companion.onContext(setCtx), []);
+  /** The last context with a system panel: a screen without one keeps it (FR-033). */
+  const [panelCtx, setPanelCtx] = useState<GameContext | null>(null);
+  /** The screen of the last context: the main sends it just before the panel switch, which names its systems. */
+  const screenLabel = useRef("");
+  useEffect(
+    () =>
+      window.companion.onContext((c) => {
+        screenLabel.current = c.screen.label;
+        setCtx(c);
+        if (modulesFor(c, SYSTEM_PANELS).length > 0) setPanelCtx(c);
+      }),
+    [],
+  );
   useEffect(() => window.companion.onStatus(setStatus), []);
   const [stats, setStats] = useState<Stats | null>(null);
   useEffect(() => window.companion.onStats(setStats), []);
-  const [tab, setTab] = useState<"map" | "stats">("map");
+  const [tab, setTab] = useState<Tab>("map");
+  const tabs = [...TABS, ...(panelCtx ? [["panel", "Panel"] as const] : [])];
+  /** The polite live region's sentence, each one a new node: the same sentence again is said again (design.md §3.8). */
+  const [said, setSaid] = useState({ text: "", n: 0 });
+  const announce = useCallback((text: string) => {
+    setSaid((s) => ({ text, n: s.n + 1 }));
+  }, []);
+  // One switch, one sentence, with every system the screen shows; cleared on a screen without a panel. Coming back to the
+  // systems the panel tab still shows is no new switch to say (Vinicius, 16/11).
+  useEffect(() => {
+    let last: string | null = null;
+    let saidFor: string | null = null;
+    return window.companion.onPanel(({ system }) => {
+      if (system === last) return;
+      last = system;
+      if (system === null) {
+        announce("");
+        return;
+      }
+      setTab("panel");
+      const all = panelSystems(screenLabel.current);
+      const shown = all.includes(system) ? all : [system];
+      const key = shown.join("|");
+      if (key === saidFor) return;
+      saidFor = key;
+      const names =
+        shown.length === 1
+          ? system
+          : `${shown.slice(0, -1).join(", ")} and ${String(shown.at(-1))}`;
+      announce(`${names} ${shown.length === 1 ? "panel" : "panels"}`);
+    });
+  }, [announce]);
+  const [live, setLive] = useState<LiveValues | null>(null);
+  useEffect(() => window.companion.onLiveValues(setLive), []);
+  const pins = usePins(announce);
+  const [farm, setFarm] = useState<FarmUpdate | null>(null);
+  useEffect(() => window.companion.onFarm(setFarm), []);
+  const [radar, setRadar] = useState<RadarUpdate>(null);
+  useEffect(() => {
+    let warned: string | null = null;
+    return window.companion.onRadar((r) => {
+      setRadar(r);
+      // An unreadable shapes file is said once (FR-041), though each update carries it; the count of trees is not said.
+      if (!r?.warning || r.warning === warned) return;
+      warned = r.warning;
+      announce(r.warning);
+    });
+  }, [announce]);
+  const [characters, setCharacters] = useState<Characters>(null);
+  useEffect(() => window.companion.onCharacters(setCharacters), []);
+  const [formula, setFormula] = useState<FormulaTree>({ state: "none" });
+  useEffect(() => window.companion.onFormula(setFormula), []);
+  const [side, setSide] = useState<Side | null>(null);
+  /** The number that opened the panel: ✕ gives the focus back to it (FR-039). */
+  const opener = useRef<HTMLElement | null>(null);
+  /** The active tab's content; it takes the focus when a switch removes what had it (FR-039). */
+  const tabPanel = useRef<HTMLDivElement>(null);
+  /** The last element focused inside the tab's content, the patch band or the farm strip. */
+  const focused = useRef<Element | null>(null);
+  const focusTabPanel = useCallback(() => {
+    tabPanel.current?.focus();
+  }, []);
+  // A switch of the game that removed the focused element would drop the focus on the page: it goes to the tab's panel.
+  useLayoutEffect(() => {
+    const was = focused.current;
+    if (was && !was.isConnected && document.activeElement === document.body) {
+      focused.current = null;
+      tabPanel.current?.focus();
+    }
+  });
+
+  /** The window grew to the left: the panel goes on the left, so the Stats stays under the cursor (FR-005). */
+  const [left, setLeft] = useState(false);
+  /** Each open and close counts: a widening that ends after a close is ignored. */
+  const turn = useRef(0);
+
+  function widen(): void {
+    const before = window.screenX;
+    const mine = ++turn.current;
+    void window.companion.setSidePanel({ open: true }).then(() => {
+      if (turn.current === mine && window.screenX < before) setLeft(true);
+    });
+  }
+  function openTree(next: Side, from: HTMLElement): void {
+    opener.current = from;
+    if (!side) widen();
+    setSide(next);
+    if (next.id) void window.companion.requestFormula({ id: next.id });
+  }
+  function openSide(row: StatsRow, from: HTMLElement): void {
+    const trees = STATS_TREES[row.label];
+    if (!trees) return;
+    const id = trees.length === 1 ? (trees[0]?.[0] ?? null) : null;
+    openTree({ label: row.label, text: row.text, trees, id }, from);
+  }
+  function closeSide(): void {
+    turn.current++;
+    setSide(null);
+    setLeft(false);
+    void window.companion.setSidePanel({ open: false });
+    void window.companion.closeFormula();
+    // The switch may have removed the number that opened it: then the tab's panel takes the focus.
+    if (opener.current?.isConnected) opener.current.focus();
+    else focusTabPanel();
+  }
+  function pick(id: string): void {
+    setSide((s) => s && { ...s, id });
+    void window.companion.requestFormula({ id });
+  }
+  /** A number of a part's list (FR-027): its tree in the same panel; ✕ still gives the focus back to the first opener. */
+  function openNumber(id: string): void {
+    const name = nameOf(id);
+    setSide({ label: name, text: "", trees: [[id, name]], id });
+    void window.companion.requestFormula({ id });
+  }
+  /** The open number's tree for another character (FR-020). */
+  function pickCharacter(character: number): void {
+    if (side?.id)
+      void window.companion.requestFormula({ id: side.id, character });
+  }
+  function expand(nodeId: string): void {
+    if (side?.id)
+      void window.companion.requestFormula({ treeId: side.id, nodeId });
+  }
 
   // Null until the main process answers, so the 001 window never flashes before the setup screen.
   const [steam, setSteam] = useState<SteamState | null>(null);
@@ -53,47 +213,145 @@ export function App() {
   }, []);
 
   return (
-    <main>
-      <h1>IdleOn Companion</h1>
-      {steam && (!steam.configured || setupFinished) && (
-        <SetupView
-          key={setupRun}
-          state={steam}
-          onReload={loadSteam}
-          onFinished={finishSetup}
-        />
-      )}
-      {steam && (steam.configured || setupFinished) && (
-        <>
-          {status && <StatusBar status={status} />}
-          <div role="tablist" className="tabs">
-            {TABS.map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={tab === id}
-                onClick={() => {
-                  setTab(id);
+    <main
+      className={
+        side ? `app with-side${left ? " with-side--left" : ""}` : "app"
+      }
+    >
+      <div className="main-panel">
+        <h1>IdleOn Companion</h1>
+        <p className="sr-only" aria-live="polite">
+          <span key={said.n}>{said.text}</span>
+        </p>
+        {steam && (!steam.configured || setupFinished) && (
+          <SetupView
+            key={setupRun}
+            state={steam}
+            onReload={loadSteam}
+            onFinished={finishSetup}
+          />
+        )}
+        {steam && (steam.configured || setupFinished) && (
+          <>
+            {status && <StatusBar status={status} />}
+            {radar && (
+              <PatchBand
+                radar={radar}
+                onClose={() => {
+                  setRadar(null);
+                  void window.companion.dismissRadar();
                 }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {tab === "stats" && <StatsPanel stats={stats} />}
-          {tab === "map" &&
-            ctx &&
-            modulesFor(ctx, MODULES).map(({ id, title, Panel }) => (
-              <section key={id}>
-                <h2>{title}</h2>
-                <Panel ctx={ctx} send={send} />
-              </section>
-            ))}
-          <SettingsView>
-            <SteamSettings onReload={loadSteam} onSteam={showSteam} />
-          </SettingsView>
-        </>
+                onFocus={(e) => {
+                  focused.current = e.target;
+                }}
+              />
+            )}
+            <PinStrip
+              pins={pins.pins}
+              note={pins.note}
+              live={live}
+              onOpen={openTree}
+              onUnpin={pins.toggle}
+              onEmpty={focusTabPanel}
+            />
+            <FarmStrip
+              farm={farm}
+              onFocus={(e) => {
+                focused.current = e.target;
+              }}
+            />
+            <div
+              role="tablist"
+              className="tabs"
+              onKeyDown={(e) => {
+                // The APG tabs: the arrows go round, Home and End to the ends; the tab moved to is selected.
+                const ids = tabs.map(([id]) => id);
+                const i = ids.indexOf(tab);
+                const to = {
+                  ArrowRight: ids[(i + 1) % ids.length],
+                  ArrowLeft: ids[(i - 1 + ids.length) % ids.length],
+                  Home: ids[0],
+                  End: ids.at(-1),
+                }[e.key];
+                if (to === undefined) return;
+                e.preventDefault();
+                setTab(to);
+                document.getElementById(`tab-${to}`)?.focus();
+              }}
+            >
+              {tabs.map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${id}`}
+                  aria-controls="tab-content"
+                  aria-selected={tab === id}
+                  tabIndex={tab === id ? 0 : -1}
+                  onClick={() => {
+                    setTab(id);
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div
+              role="tabpanel"
+              // No tab's id: the tabs are `tab-<id>`, and one of them is `panel`.
+              id="tab-content"
+              aria-labelledby={`tab-${tab}`}
+              tabIndex={-1}
+              ref={tabPanel}
+              onFocus={(e) => {
+                focused.current = e.target;
+              }}
+            >
+              {tab === "stats" && (
+                <StatsPanel stats={stats} onOpen={openSide} />
+              )}
+              {tab === "formulas" && (
+                <FormulasTab stats={stats} live={live} onOpen={openTree} />
+              )}
+              {tab === "panel" && panelCtx && (
+                <SystemTab
+                  modules={modulesFor(panelCtx, SYSTEM_PANELS)}
+                  ctx={panelCtx}
+                  stats={stats}
+                  live={live}
+                  onOpen={openTree}
+                />
+              )}
+              {tab === "map" &&
+                ctx &&
+                modulesFor(ctx, MODULES).map(({ id, title, Panel }) => (
+                  <section key={id}>
+                    <h2>{title}</h2>
+                    <Panel ctx={ctx} send={send} />
+                  </section>
+                ))}
+            </div>
+            <SettingsView>
+              <SteamSettings onReload={loadSteam} onSteam={showSteam} />
+            </SettingsView>
+          </>
+        )}
+      </div>
+      {side && (
+        <SidePanel
+          side={side}
+          tree={formula}
+          live={live}
+          onClose={closeSide}
+          onPick={pick}
+          onExpand={expand}
+          announce={announce}
+          pins={pins.pins}
+          onPin={pins.toggle}
+          onOpenNumber={openNumber}
+          characters={characters}
+          onCharacter={pickCharacter}
+        />
       )}
     </main>
   );

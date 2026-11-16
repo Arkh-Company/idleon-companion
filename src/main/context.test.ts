@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { identifyScreen, READ_NULLS } from "../shared/index.ts";
+import { identifyScreen, NO_TABLES, READ_NULLS } from "../shared/index.ts";
 import type { GameContext, GameTables, Reading } from "../shared/index.ts";
 import { SCREEN_CATALOG } from "../shared/screens/index.ts";
-import { contextTracker, toContext } from "./context.ts";
+import { contextTracker, panelOf, toContext } from "./context.ts";
 
 const base: Reading = {
   t: 1234,
@@ -22,8 +22,10 @@ const base: Reading = {
 const tables: GameTables = {
   maps: ["Vale", "Peak"],
   monsters: { w6d3: "Samurai Guardian", Nothing: "" },
+  items: null,
+  classes: null,
 };
-const UNREAD: GameTables = { maps: null, monsters: null };
+const UNREAD = NO_TABLES;
 
 test("the world comes from the map", () => {
   expect(toContext({ ...base, map: 264 }, tables).screen.world).toBe(6);
@@ -173,6 +175,20 @@ test("replay with no reading yet sends nothing", () => {
   expect(sent).toEqual([]);
 });
 
+test("a screen with a panel names its system for the switch (FR-003); a screen without one names none (FR-033)", () => {
+  const at = (label: string) =>
+    panelOf({
+      ...toContext(base, tables),
+      screen: { world: 1, map: 1, label },
+    });
+
+  expect(at("Stamps")).toEqual({ system: "Stamps" });
+  expect(at("Stamps › Unknown tab")).toEqual({ system: "Stamps" });
+  expect(at("Stamps › Bribes")).toEqual({ system: "Bribes" });
+  expect(at("World Map")).toEqual({ system: null });
+  expect(at("Unknown screen")).toEqual({ system: null });
+});
+
 // ponytail: reads the source because index.ts imports electron and no test may load it.
 test.each([
   [
@@ -180,8 +196,16 @@ test.each([
     /connectLink\(LINK_PIPE, routes\.message, routes\.connected\)/,
   ],
   [
-    "the stats pipeline to the routes",
-    /const stats = startStatsPipeline\(\{[\s\S]*?routeLink\(\{\s+tracker,\s+stats,/,
+    "the stats and formula pipelines to the routes",
+    /const \{ stats, formula, handlers \} = startPipelines\(\{[\s\S]*?routeLink\(\{\s+tracker,\s+stats,\s+formula,/,
+  ],
+  [
+    "the panel switch to each context sent",
+    /send\(IPC\.contextUpdate, c\);\s+send\(IPC\.panelUpdate, panelOf\(c\)\);/,
+  ],
+  [
+    "the formula channels to the window's IPC",
+    /for \(const \[channel, f\] of Object\.entries\(handlers\)\) handle\(channel, f\);/,
   ],
 ])("the app wires %s", (_name, wiring) => {
   const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");

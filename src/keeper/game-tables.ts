@@ -1,4 +1,4 @@
-// The map and monster names of the installed game, found by regular expressions over the text of its code, which is
+// The map, monster, item and class names of the installed game, found by regular expressions over the text of its code, which is
 // never run (FR-014). Any sign of a new format drops that whole table: half a table could give a wrong name (FR-016).
 import type { GameTables } from "../shared/index.ts";
 
@@ -37,8 +37,43 @@ function readMonsters(code: string): Record<string, string> | null {
   return byId.size > 0 ? Object.fromEntries(byId) : null;
 }
 
+const ITEM_KINDS = String.raw`\.addNew(?:Item|Equip|Consumable|Quest)\("`;
+/** Each item: its display name, then, before the next display name, the call that adds it by id. */
+const ITEM = new RegExp(
+  String.raw`\.h\.displayName="([^"]*)"(?:(?!\.h\.displayName=)[\s\S]){0,4000}?${ITEM_KINDS}([^"]+)",`,
+  "g",
+);
+
+/** Every item added by the game, or null when one of them has no display name found before it. */
+function readItems(code: string): Record<string, string> | null {
+  const added = code.match(new RegExp(ITEM_KINDS, "g"))?.length ?? 0;
+  const byId = new Map<string, string>();
+  let found = 0;
+  for (const [, name = "", id = ""] of code.matchAll(ITEM)) {
+    if (name === "") return null;
+    found++;
+    // A `|` breaks the line in the game's text.
+    byId.set(id, spaced(name).replaceAll("|", " "));
+  }
+  // fromEntries defines own keys, so an id like `__proto__` is an ordinary key.
+  return added > 0 && found === added ? Object.fromEntries(byId) : null;
+}
+
+/** The class names by class number, each word with only its first letter capital. */
+const readClasses = (code: string) =>
+  list(code, "ClassNames")?.map((name) =>
+    spaced(name.toLowerCase()).replace(/(?<!\S)\p{L}/gu, (c) =>
+      c.toUpperCase(),
+    ),
+  ) ?? null;
+
 export function readGameTables(code: string): GameTables {
-  return { maps: readMaps(code), monsters: readMonsters(code) };
+  return {
+    maps: readMaps(code),
+    monsters: readMonsters(code),
+    items: readItems(code),
+    classes: readClasses(code),
+  };
 }
 
 const NUMBER = String.raw`(-?\d+(?:\.\d+)?)`;

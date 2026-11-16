@@ -1,0 +1,415 @@
+// pieces.cjs `structurePass` at BASELINE-4 (tree/one-child.ts): a row whose one child has its value is that child, a
+// leaf when the child is one, else with the child's rows; a vague name or a name that is only a sum takes the child's.
+// Over a context written by hand (tree/places.ts `PlaceContext`), with invented names.
+import { expect, test } from "vitest";
+import { checkTree } from "../../main/tree-check.ts";
+import { isSum, ONE_CHILD } from "./one-child.ts";
+import { makePlaces } from "./places.ts";
+import { row } from "./rows.ts";
+import type { Row } from "./rows.ts";
+import { kidsOf, recNode } from "./tree-fixture.ts";
+
+const leaf = (name: string, value: number): Row => ({
+  node: row({
+    pieceKey: null,
+    value,
+    code: `Stats.${name.replace(/\W/g, "")}`,
+    name,
+    leaf: "level",
+    why: "its own why",
+  }),
+  open: null,
+});
+const lazy = (name: string, open: number, value = 6): Row => ({
+  node: row({
+    pieceKey: null,
+    value,
+    code: `Call${String(open)}()`,
+    name,
+    kids: "lazy",
+    fmt: "+",
+  }),
+  open,
+});
+
+function placesOf(levels: Record<number, Row[]>) {
+  return makePlaces({
+    nodes: Array.from({ length: 20 }, (_, i) => recNode(i, `Call${String(i)}`)),
+    bugs: [],
+    keyOf: (n) => String(n.id),
+    openXf: new Map(),
+    explain: (id) => levels[id] ?? null,
+    opened: () => null,
+  });
+}
+const placeOne = (levels: Record<number, Row[]>, r: Row) => {
+  const places = placesOf(levels);
+  const [n] = places.place({ id: "root", code: "Root()" }, [r], 1, [0]);
+  return { places, n };
+};
+
+test("a row whose one child is a leaf with its value is that leaf, with its own name, code and sign", () => {
+  const { places, n } = placeOne(
+    { 1: [leaf("Stamp level", 6)] },
+    lazy("Drop bonus", 1),
+  );
+  expect(n).toMatchObject({
+    name: "Drop bonus",
+    code: "Call1()",
+    fmt: "+",
+    leaf: "level",
+    why: "its own why",
+    kids: [],
+  });
+  expect(places.expand(n?.id ?? "")).toBeNull();
+  expect(n && checkTree(n, 1)).not.toBeNull();
+});
+
+test.each(["Multi", "Multiplier", "Bonus", "Value"])(
+  "a row with the vague name %s takes its one leaf's name and code",
+  (vague) => {
+    const parent: Row = {
+      ...lazy(vague, 1),
+      node: { ...lazy(vague, 1).node, code: null },
+    };
+    const { n } = placeOne({ 1: [leaf("Stamp level", 6)] }, parent);
+    expect([n?.name, n?.code, n?.flags]).toEqual([
+      "Stamp level",
+      "Stats.Stamplevel",
+      {},
+    ]);
+  },
+);
+
+test("a vague name or a sum takes no generic name of its child (R14: a generic name names nothing)", () => {
+  const generic = (r: Row): Row => ({
+    ...r,
+    node: { ...r.node, name: "Game value", flags: { unnamed: true } },
+  });
+  const one = placeOne(
+    { 1: [generic(leaf("Stamp level", 6))] },
+    lazy("Multiplier", 1),
+  );
+  expect([one.n?.name, one.n?.flags, one.n?.kids]).toEqual([
+    "Multiplier",
+    {},
+    [],
+  ]);
+  const rows = placeOne(
+    { 1: [generic(lazy("Total", 2))], 2: [leaf("A", 2), leaf("B", 4)] },
+    lazy("Fixed +2", 1),
+  );
+  expect([rows.n?.name, rows.n?.flags]).toEqual(["Fixed +2", {}]);
+});
+
+test("a row whose one row is a group of the parts at 0 or at ×1 keeps it: the group is the app's (FR-014)", () => {
+  const group = (role: "atZero" | "atOne", value: number): Row => ({
+    node: row({
+      pieceKey: null,
+      value,
+      code: null,
+      name: role === "atZero" ? "At 0 (2)" : "At ×1 (2)",
+      role,
+      flags: { closed: true },
+    }),
+    open: null,
+    group: [leaf("A", value), leaf("B", value)],
+  });
+  for (const [role, value] of [
+    ["atZero", 0],
+    ["atOne", 1],
+  ] as const) {
+    const { places, n } = placeOne(
+      { 1: [group(role, value)] },
+      lazy("Drop bonus", 1, value),
+    );
+    expect(n?.kids).toBe("lazy");
+    expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.role)).toEqual([
+      role,
+    ]);
+  }
+});
+
+test("a row whose one child is cut (the depth limit or a cycle) keeps it, and the child says it is cut", () => {
+  const { places, n } = placeOne(
+    { 1: [lazy("Inner", 2)] },
+    lazy("Drop bonus", 1),
+  );
+  const kids = kidsOf(places.expand(n?.id ?? ""));
+  expect(kids.map((k) => [k.name, k.kids])).toEqual([["Inner", "lazy"]]);
+  expect(places.expand(kids[0]?.id ?? "")?.flags.truncated).toBe(true);
+});
+
+test("a row whose one child is a branch built already takes the branch's rows, placed with it; a vague name takes its name", () => {
+  const branch: Row = {
+    node: row({ pieceKey: null, value: 6, code: null, name: "Stamp parts" }),
+    open: null,
+    group: [leaf("A", 2), leaf("B", 4)],
+  };
+  const { n } = placeOne({ 1: [branch] }, lazy("Multiplier", 1));
+  expect([n?.name, kidsOf(n).map((k) => k.name)]).toEqual([
+    "Stamp parts",
+    ["A", "B"],
+  ]);
+});
+
+test("a row keeps its rows when its one child has another value, or it has two", () => {
+  const two = placeOne(
+    { 1: [leaf("A", 6), leaf("B", 6)] },
+    lazy("Drop bonus", 1),
+  );
+  expect(two.n?.kids).toBe("lazy");
+  const other = placeOne({ 1: [leaf("A", 5)] }, lazy("Drop bonus", 1));
+  expect(other.n?.kids).toBe("lazy");
+  expect(
+    kidsOf(other.places.expand(other.n?.id ?? "")).map((k) => k.name),
+  ).toEqual(["A"]);
+});
+
+test("a row whose one child has rows of its own takes those rows; a name that is only a sum takes the child's", () => {
+  const levels = {
+    1: [lazy("Stamp total", 2)],
+    2: [leaf("A", 2), leaf("B", 4)],
+  };
+  const own = placeOne(levels, lazy("Drop bonus", 1));
+  expect([own.n?.name, own.n?.kids]).toEqual(["Drop bonus", "lazy"]);
+  expect(kidsOf(own.places.expand(own.n?.id ?? "")).map((k) => k.name)).toEqual(
+    ["A", "B"],
+  );
+  const sum = placeOne(levels, lazy("Fixed +2", 1));
+  expect(sum.n?.name).toBe("Stamp total");
+});
+
+test.each<[string, string, boolean]>([
+  ["Fixed +2", "", true],
+  ["2 × 3", "", true],
+  ["(a + 1) ÷ 4", "", true],
+  ["round(400)", "", true],
+  ["Rounded 400", "round(400)", true],
+  ["Rounded 400", "Total", false],
+  ["Fixed + two", "", false],
+  ["Bonus per level 2", "", false],
+  ["Drop: +2", "", false],
+])("[structurePass isSum] %s over %s: %s", (name, under, sum) => {
+  expect(isSum(name, under)).toBe(sum);
+});
+
+test("a chain of rows with one child each is merged 8 times at most, as the bench's guard", () => {
+  const levels: Record<number, Row[]> = {};
+  for (let i = 1; i <= 10; i++)
+    levels[i] = [lazy(`Step ${String(i + 1)}`, i + 1)];
+  levels[11] = [leaf("A", 2), leaf("B", 4)];
+  const { places, n } = placeOne(levels, lazy("Top", 1));
+  const [next] = kidsOf(places.expand(n?.id ?? ""));
+  // eight merges: the 9th step's row, placed with its own merges, is under the top
+  expect(next?.name).toBe("Step 10");
+});
+
+test("every structurePass rule has a test", () => {
+  expect(Object.keys(ONE_CHILD).sort()).toEqual(["sum", "vague"]);
+});
+
+test("the rows a merge brings are named as the bench names the child's rows: rule 4 by the child's name", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Stamp total", 2)],
+      2: [leaf("Stamp total: A", 2), leaf("B", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+test("the rows a merge brings are named as the bench names the child's rows: rule 5 by the rows above", () => {
+  const upgrade: Row = {
+    ...lazy("Upgrade", 1),
+    node: {
+      ...lazy("Upgrade", 1).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Inner", 2)],
+      2: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    upgrade,
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});
+
+test("the rows a merge brings are named as the bench names the child's rows: nametagGrade beside a nametag", () => {
+  const nametag: Row = {
+    ...leaf("Nametag", 1),
+    node: { ...leaf("Nametag", 1).node, code: "EquipmentNametag3" },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Gallery", 2)],
+      2: [leaf("Trophy slot multiplier (podium level)", 2), nametag],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Nametag grade multiplier (grade factor)",
+    "Nametag",
+  ]);
+});
+
+test("the rows a merge brings see a system two rows above the merged row", () => {
+  const grimoire: Row = {
+    ...lazy("Book", 1, 10),
+    node: {
+      ...lazy("Book", 1, 10).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Upgrade", 2), leaf("Rest", 4)],
+      2: [lazy("Inner", 3)],
+      3: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    grimoire,
+  );
+  const upgrade = kidsOf(places.expand(n?.id ?? ""))[0];
+  expect(kidsOf(places.expand(upgrade?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});
+
+/** A row with no proven name: the generic one and `unnamed`. */
+const nameless = (r: Row): Row => ({
+  ...r,
+  node: { ...r.node, name: "Game value", flags: { unnamed: true } },
+});
+
+test("a row with no proven name whose one child is a leaf with its value is that leaf, with the leaf's name", () => {
+  const { n } = placeOne(
+    { 1: [leaf("Stamp level", 6)] },
+    nameless(lazy("Drop bonus", 1)),
+  );
+  expect([n?.name, n?.flags, n?.leaf, n?.kids]).toEqual([
+    "Stamp level",
+    {},
+    "level",
+    [],
+  ]);
+});
+
+test("a row with no proven name whose one child has rows takes the child's name and rows", () => {
+  const { places, n } = placeOne(
+    { 1: [lazy("Stamp total", 2)], 2: [leaf("A", 2), leaf("B", 4)] },
+    nameless(lazy("Drop bonus", 1)),
+  );
+  expect([n?.name, n?.flags]).toEqual(["Stamp total", {}]);
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+test("the rows two merges bring see the system of the row merged first (pieces.cjs fixNames rule 5)", () => {
+  const upgrade: Row = {
+    ...lazy("Upgrade", 2),
+    node: {
+      ...lazy("Upgrade", 2).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [upgrade],
+      2: [lazy("Inner", 3)],
+      3: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});
+
+/** Row `r` with the code `code`. */
+const coded = (r: Row, code: string): Row => ({
+  ...r,
+  node: { ...r.node, code },
+});
+
+test("a merged child whose one child says it again takes that child's rows first, then names them (pieces.cjs fixNames' loop)", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Stamp total", 2)],
+      2: [lazy("Stamp total (inner)", 3)],
+      3: [leaf("Stamp total: A", 2), leaf("B", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+test("a merged child named for a pet's shiny EXP is its shiny level, and a vague row takes that name", () => {
+  const { n } = placeOne(
+    {
+      1: [lazy("Shiny EXP", 2)],
+      2: [coded(leaf("Shiny EXP", 4), "Breeding[1][2]"), leaf("Other", 2)],
+    },
+    lazy("Bonus", 1),
+  );
+  expect(n?.name).toBe("Shiny level");
+});
+
+test("a merged child named as the earlier pets' total was is the pet's (rule 67), and a vague row takes that name", () => {
+  const earlier: Row = {
+    node: {
+      ...row({
+        pieceKey: null,
+        value: 0,
+        code: "CustomLists.RANDOlist[90][4]",
+      }),
+      name: "Earlier pets with the same shiny bonus",
+      flags: {},
+    },
+    open: null,
+  };
+  const { n } = placeOne(
+    {
+      1: [lazy("Shiny bonus type of pet gene 4", 2, 2)],
+      2: [
+        earlier,
+        coded(leaf("Bored Bean", 2), 'Breeding("SpecialPassives", "Lv", 0, 3)'),
+      ],
+    },
+    lazy("Bonus", 1, 2),
+  );
+  expect(n?.name).toBe("Bored Bean, with the earlier pets");
+});
+
+test("a merged child beside a nametag is renamed as its grade (nametagGrade), and a vague row takes that name", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Trophy slot multiplier bonus", 2)],
+      2: [
+        leaf("Trophy slot multiplier (podium level)", 2),
+        coded(leaf("Nametag", 3), "EquipmentNametag3"),
+      ],
+    },
+    lazy("Bonus", 1),
+  );
+  expect(n?.name).toBe("Nametag grade multiplier bonus");
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Nametag grade multiplier (grade factor)",
+    "Nametag",
+  ]);
+});

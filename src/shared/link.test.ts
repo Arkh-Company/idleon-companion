@@ -53,7 +53,15 @@ test("release and reconnect decode bare, also with extra fields", () => {
 test.each<LinkMessage>([
   { type: "release" },
   { type: "reconnect" },
-  { type: "tables", tables: { maps: ["Vale"], monsters: null } },
+  {
+    type: "tables",
+    tables: {
+      maps: ["Vale"],
+      monsters: null,
+      items: { Ore: "Blue Ore" },
+      classes: ["0", "Novice"],
+    },
+  },
   {
     type: "state",
     slice: {

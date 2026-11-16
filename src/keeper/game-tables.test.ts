@@ -1,4 +1,4 @@
-// The map and monster names taken from the text of the installed game. All the "game code" here is made up (FR-015).
+// The map, monster, item and class names taken from the text of the installed game. All the "game code" here is made up (FR-015).
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -40,8 +40,13 @@ test("a monster id that is an Object.prototype name is an ordinary key", () => {
   expect(Object.keys(monsters ?? {})).toEqual(["__proto__"]);
 });
 
-test("code with neither table gives null for both", () => {
-  expect(readGameTables("var a=1;")).toEqual({ maps: null, monsters: null });
+test("code with no table gives null for each", () => {
+  expect(readGameTables("var a=1;")).toEqual({
+    maps: null,
+    monsters: null,
+    items: null,
+    classes: null,
+  });
 });
 
 test.each([
@@ -58,6 +63,8 @@ test.each([
   expect(readGameTables(code + MONSTER)).toEqual({
     maps: null,
     monsters: { a1: "Beast" },
+    items: null,
+    classes: null,
   });
 });
 
@@ -75,8 +82,71 @@ test.each([
   expect(readGameTables(MAPS + code)).toEqual({
     maps: ["Blue Vale", "Peak"],
     monsters: null,
+    items: null,
+    classes: null,
   });
 });
+
+/** An item as the game builds it: its common fields, the display name among them, then the call that adds it by id. */
+const item = (id: string, name: string, kind = "Item") =>
+  `e=new l,(t=new l).h.displayName="${name}",t.h.sellPrice=3,e.h.common=t,N.addNew${kind}("${id}",e),`;
+
+test("items come by id, with a space in place of the underscore and of the line break", () => {
+  expect(
+    readGameTables(
+      item("Ore", "Blue_Ore") +
+        item("Hat", "Old_Hat", "Equip") +
+        item("Pie", "Small|Pie", "Consumable") +
+        item("Note", "A_Note", "Quest"),
+    ).items,
+  ).toEqual({
+    Ore: "Blue Ore",
+    Hat: "Old Hat",
+    Pie: "Small Pie",
+    Note: "A Note",
+  });
+});
+
+test.each([
+  ["no match", ""],
+  [
+    "an item added without a display name",
+    `${item("Ore", "Blue_Ore")}N.addNewItem("Log",e),`,
+  ],
+  ["an empty name", item("Ore", "")],
+])("items with %s are null, and the other tables still read", (_name, code) => {
+  expect(readGameTables(MAPS + MONSTER + code)).toEqual({
+    maps: ["Blue Vale", "Peak"],
+    monsters: { a1: "Beast" },
+    items: null,
+    classes: null,
+  });
+});
+
+const classes = (names: string) =>
+  `x.ClassNames=function(){return"${names}".split(" ")},x.ClassNamesLANG=function(){return["0 Otra".split(" ")]};`;
+
+test("classes come by number, each word with only its first letter capital", () => {
+  expect(readGameTables(classes("0 NOVICE STAR_SEEKER")).classes).toEqual([
+    "0",
+    "Novice",
+    "Star Seeker",
+  ]);
+});
+
+test.each([
+  ["no match", ""],
+  ["two candidates", classes("0 NOVICE") + classes("0 OTHER")],
+  ["an empty name", classes("0  NOVICE")],
+])(
+  "classes with %s are null, and the other tables still read",
+  (_name, code) => {
+    expect(readGameTables(MAPS + code)).toMatchObject({
+      maps: ["Blue Vale", "Peak"],
+      classes: null,
+    });
+  },
+);
 
 test.each([
   ["a write", "e.h.MenuType2=7;", [7]],

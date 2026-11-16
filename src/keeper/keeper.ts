@@ -7,6 +7,7 @@ import type {
   StateSlice,
   Status,
 } from "../shared/index.ts";
+import { NO_TABLES } from "../shared/index.ts";
 import { KNOWN_WINDOWS } from "../shared/screens/index.ts";
 import type { Cdp } from "./cdp.ts";
 import { readGameTables, screenNumbers } from "./game-tables.ts";
@@ -206,7 +207,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
 
   // Research R8: once per opening, right after startApp and synchronous, and a failure only reaches the log. Whatever
   // happens the app hears, so the tables of an earlier session are never kept.
-  let tables: GameTables = { maps: null, monsters: null };
+  let tables = NO_TABLES;
   try {
     if (installed.code !== undefined) {
       tables = readGameTables(installed.code);
@@ -215,7 +216,7 @@ export async function runKeeper(d: KeeperDeps): Promise<void> {
       );
       if (numbers.length > 0) log("unknown-screen-numbers", { numbers });
     }
-    const unreadable = (["maps", "monsters"] as const).filter(
+    const unreadable = (Object.keys(NO_TABLES) as (keyof GameTables)[]).filter(
       (table) => !tables[table],
     );
     if (unreadable.length > 0) log("game-tables-unreadable", { unreadable });

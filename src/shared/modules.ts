@@ -3,7 +3,7 @@ import type { CompanionModule, GameContext } from "./types.ts";
 
 export function modulesFor(
   ctx: GameContext,
-  all: CompanionModule[],
+  all: readonly CompanionModule[],
 ): CompanionModule[] {
   return all.filter((m) => m.matches(ctx));
 }

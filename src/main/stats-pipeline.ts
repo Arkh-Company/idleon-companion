@@ -3,13 +3,26 @@
 // (FR-014, FR-016).
 import type { WorkerOptions } from "node:worker_threads";
 import { isObject } from "../shared/index.ts";
-import type { LinkMessage, Reading, Stats, Status } from "../shared/index.ts";
+import type {
+  CalcNumbers,
+  LinkMessage,
+  Reading,
+  Stats,
+  Status,
+} from "../shared/index.ts";
 import { createCalculatorHost } from "./calculator-host.ts";
 import type { WorkerLike } from "./calculator-host.ts";
 import type { GameBytes } from "./game-files.ts";
 import { linkGameFiles, linkState } from "./payloads.ts";
 import { createStateStore } from "./state-store.ts";
 import { statListCheck, statsRows, statsTracker } from "./stats.ts";
+
+/** The last result of the active character and the mosaic it came from: what a tree request uses (FR-019 of 008). */
+export interface StatsPair {
+  numbers: CalcNumbers;
+  mosaicJson: string;
+  calculatedAt: number;
+}
 
 /** With a character and the reader attached, the state reader sends twelve slices a second. */
 const STALL_MS = 30_000;
@@ -34,11 +47,15 @@ export function startStatsPipeline(deps: {
   send: (s: Stats) => void;
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
+  /** Each new pair of result and mosaic, also when the tab's texts stay the same (the live values follow it). */
+  onPair?: () => void;
 }): {
   message(m: LinkMessage): void;
   reading(r: Reading): void;
   status(s: Status): void;
   replay(): void;
+  /** Kept in memory with the game closed (FR-022 of 008); null after a character change or with no character. */
+  pair(): StatsPair | null;
 } {
   /** Stays until a new `gameFiles`, also across a release: a game patch does not heal by reconnecting. */
   let failed = false;
@@ -46,6 +63,7 @@ export function startStatsPipeline(deps: {
   let selected = false;
   let char: string | null = null;
   let statList: unknown;
+  let pair: StatsPair | null = null;
   let check = statListCheck(Date.now);
   /** Stays set after it fires, so a repeated status does not start it again before a new slice. */
   let stall: ReturnType<typeof setTimeout> | undefined;
@@ -75,8 +93,10 @@ export function startStatsPipeline(deps: {
   const host = createCalculatorHost({
     createWorker: deps.createWorker,
     readFiles: deps.readFiles,
-    onResult: guarded((n) => {
+    onResult: guarded((n, mosaicJson) => {
+      pair = { numbers: n, mosaicJson, calculatedAt: Date.now() };
       tracker.result(statsRows(n, check(n, statList)));
+      deps.onPair?.();
     }),
     onUnavailable: fail,
   });
@@ -96,6 +116,7 @@ export function startStatsPipeline(deps: {
     },
     onCharacter: (c) => {
       char = c;
+      pair = null;
       forget();
       if (c === null) tracker.clear();
       else tracker.character();
@@ -105,8 +126,17 @@ export function startStatsPipeline(deps: {
   function stop(): void {
     store.clear();
     char = null;
+    pair = null;
     forget();
     tracker.clear();
+  }
+
+  /** The game closed: the reading and the calculation end, and the last numbers stay (FR-022 of 008). */
+  function close(): void {
+    store.clear();
+    char = null;
+    forget();
+    tracker.closed();
   }
 
   function watch(slice = false): void {
@@ -152,7 +182,8 @@ export function startStatsPipeline(deps: {
 
   function status(s: Status): void {
     attached = s.game === "running" && s.reader === "attached";
-    if (!attached) stop();
+    if (s.game === "closed") close();
+    else if (!attached) stop();
     watch();
   }
 
@@ -163,5 +194,6 @@ export function startStatsPipeline(deps: {
     replay: guarded(() => {
       tracker.replay();
     }),
+    pair: () => pair,
   };
 }

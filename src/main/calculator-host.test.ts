@@ -130,19 +130,36 @@ test("a result reaches onResult, with an absent or non-number id as null", async
     ms: 1,
   });
   expect(onResult).toHaveBeenCalledTimes(1);
-  expect(onResult).toHaveBeenCalledWith({
-    damageMax: 7,
-    damageMin: 0,
-    hp: null,
-    mp: null,
-    accuracy: null,
-    str: null,
-    agi: null,
-    wis: null,
-    luk: null,
-    dropRate: null,
-    afkGains: null,
-  });
+  expect(onResult).toHaveBeenCalledWith(
+    {
+      damageMax: 7,
+      damageMin: 0,
+      hp: null,
+      mp: null,
+      accuracy: null,
+      str: null,
+      agi: null,
+      wis: null,
+      luk: null,
+      dropRate: null,
+      afkGains: null,
+    },
+    mosaic(1),
+  );
+});
+
+test("each result comes with the mosaic it was calculated from, never a newer one (T010)", async () => {
+  const { host, worker, onResult } = await running();
+  host.calculate(mosaic(2));
+  host.calculate(mosaic(3));
+  answer(worker);
+  await vi.advanceTimersByTimeAsync(60);
+  host.calculate(mosaic(4));
+  answer(worker);
+  expect(onResult.mock.calls.map((c) => c[1] as unknown)).toEqual([
+    mosaic(1),
+    mosaic(3),
+  ]);
 });
 
 test("a result with no numbers object is every number null", async () => {

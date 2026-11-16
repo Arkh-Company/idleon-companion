@@ -5,7 +5,7 @@ import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
-import { createLineDecoder, READ_NULLS } from "../shared/index.ts";
+import { createLineDecoder, NO_TABLES, READ_NULLS } from "../shared/index.ts";
 import type {
   GameTables,
   LinkMessage,
@@ -68,11 +68,16 @@ async function until(ok: () => boolean): Promise<void> {
 const MAPS =
   'x.MapName=function(){return"a b".split(" ")},x.MapDispName=function(){return"Vale Peak".split(" ")};';
 const MONSTER = 'G.addNewMonster("a1",{Name:"Beast"});';
+const ITEM =
+  '(t=new l).h.displayName="Blue_Ore",e.h.common=t,N.addNewItem("Ore",e),';
+const CLASSES =
+  'x.ClassNames=function(){return"0 NOVICE STAR_SEEKER".split(" ")};';
 const TABLES: GameTables = {
   maps: ["Vale", "Peak"],
   monsters: { a1: "Beast" },
+  items: { Ore: "Blue Ore" },
+  classes: ["0", "Novice", "Star Seeker"],
 };
-const NO_TABLES: GameTables = { maps: null, monsters: null };
 
 /** A running keeper whose game and reader are fakes; `extract` stands for the scan, which `order` records. */
 async function keeper(
@@ -149,7 +154,7 @@ const reading: Reading = {
 };
 
 test("the tables are read only after startApp was called, and reach the app", async () => {
-  const h = await keeper(() => MAPS + MONSTER);
+  const h = await keeper(() => MAPS + MONSTER + ITEM + CLASSES);
   expect(h.order).toEqual(["launch", "read", "app", "scan"]);
   expect(await app(h.deps.pipePath, 1)).toEqual([
     { type: "tables", tables: TABLES },
@@ -166,13 +171,15 @@ test("no game code publishes both tables as null and runs no scan", async () => 
   expect(h.logs).toContainEqual({
     label: "game-tables-unreadable",
     id: 42,
-    unreadable: ["maps", "monsters"],
+    unreadable: ["maps", "monsters", "items", "classes"],
   });
 });
 
 test.each([
-  ["maps", MONSTER],
-  ["monsters", MAPS],
+  ["maps", MONSTER + ITEM + CLASSES],
+  ["monsters", MAPS + ITEM + CLASSES],
+  ["items", MAPS + MONSTER + CLASSES],
+  ["classes", MAPS + MONSTER + ITEM],
 ])("unreadable %s are logged by name", async (name, code) => {
   const h = await keeper(() => code);
   expect(h.logs).toContainEqual({
@@ -206,7 +213,7 @@ test("a scan that throws is logged, publishes no names, and the keeper still end
 });
 
 test("a new client gets the tables first, then the status, then the reading", async () => {
-  const h = await keeper(() => MAPS + MONSTER);
+  const h = await keeper(() => MAPS + MONSTER + ITEM + CLASSES);
   const status: Status = { game: "running", reader: "attached" };
   h.reader.onStatus?.(status);
   h.reader.onReading?.(reading);

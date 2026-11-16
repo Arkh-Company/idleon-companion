@@ -3,11 +3,20 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
-import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  nativeImage,
+  screen,
+  Tray,
+} from "electron";
 import { IPC, LINK_PIPE } from "../shared/index.ts";
 import type { Status } from "../shared/index.ts";
 import { calculatorPath } from "./calculator-host.ts";
-import { contextTracker } from "./context.ts";
+import { contextTracker, panelOf } from "./context.ts";
+import { farmTracker } from "./farm.ts";
 import { forgetOldNames } from "./forget-names.ts";
 import { readGameFiles } from "./game-files.ts";
 import {
@@ -22,8 +31,10 @@ import { connectLink } from "./link-client.ts";
 import { routeLink } from "./link-routes.ts";
 import { emptyPayload, settingsPayload } from "./payloads.ts";
 import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
+import { startPipelines } from "./pipelines.ts";
+import { savedFiles } from "./saved-files.ts";
 import { setupStoreIn } from "./setup-store.ts";
-import { startStatsPipeline } from "./stats-pipeline.ts";
+import { sidePanelControl, sidePanelHandler } from "./side-panel.ts";
 import {
   companionPart,
   steamSetupJob,
@@ -63,6 +74,7 @@ function start(): void {
   };
   const tracker = contextTracker((c) => {
     send(IPC.contextUpdate, c);
+    send(IPC.panelUpdate, panelOf(c));
   });
   const setStatus = (s: Status) => {
     status = s;
@@ -161,23 +173,37 @@ function start(): void {
     { isPackaged: app.isPackaged },
   );
 
-  // The calculator's worker is the app's, never the keeper's: a crash of it cannot reach the game (FR-010, FR-016).
-  const stats = startStatsPipeline({
-    send: (s) => {
-      send(IPC.statsUpdate, s);
-    },
+  // The calculator's workers, the Stats one and the trees one, are the app's, never the keeper's: a crash of one cannot
+  // reach the game (FR-010, FR-016), and the trees never fail the Stats (FR-017 of 008).
+  const { stats, formula, handlers } = startPipelines({
+    send,
     createWorker: (options) =>
       new Worker(
         `${calculatorPath(import.meta.dirname)}/calculator.js`,
         options,
       ),
     readFiles: readGameFiles,
+    // A label and a catalog id only, never a value or a name (FR-019 of 008).
+    log: (entry) => {
+      console.warn(JSON.stringify(entry));
+    },
+    // marks.json, pins.json and tree-shapes.json beside settings.json (contracts/saved-files.md).
+    saved: savedFiles(dataDir),
+  });
+
+  // XP, gold and items per hour, measured from the slices and only in memory (FR-028 of 008).
+  const farm = farmTracker({
+    send: (f) => {
+      send(IPC.farmUpdate, f);
+    },
   });
 
   const routes = routeLink({
     tracker,
     stats,
+    formula,
     updates,
+    farm,
     status: () => status,
     setStatus,
     sendStatus: (s) => {
@@ -226,6 +252,18 @@ function start(): void {
       throw new Error("update:install: no body expected");
     return updates.install();
   });
+  // The formula, marks and pins channels of 008 (contracts/ipc.md), checked in pipelines.ts and saved-files.ts.
+  for (const [channel, f] of Object.entries(handlers)) handle(channel, f);
+  // The side panel widens the window toward the side with room on its screen (FR-005 of 008).
+  handle(
+    IPC.sidePanel,
+    sidePanelHandler(
+      sidePanelControl(
+        win,
+        () => screen.getDisplayMatching(win.getBounds()).workArea,
+      ),
+    ),
+  );
 
   // Steam setup (contracts/ipc.md): the part Steam runs before the game, the records and the copies (FR-027).
   const part = companionPart({

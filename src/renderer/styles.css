@@ -38,6 +38,11 @@ h2 {
   opacity: 0.7;
 }
 
+/* A catalog id has no space: it breaks anywhere rather than scroll sideways at 210 px CSS (FR-031). */
+.formulas th {
+  overflow-wrap: anywhere;
+}
+
 .tabs button {
   margin: 0.5rem 0.5rem 0 0;
 }
@@ -80,4 +85,442 @@ h2 {
 
 .steam-settings button {
   margin: 0.5rem 0.5rem 0 0;
+}
+
+/* Spec 008: the side panel and the formula tree (design.md §3.2, C1, C2, C4, C7, C8). */
+:root {
+  --surface: #f4f4f5;
+  --line: #e4e4e7;
+  --control: #6b6b73;
+  --muted: #52525b;
+  --zero: #6b6b73;
+  --add: #047857;
+  --mult: #b45309;
+  --focus: #1d4ed8;
+  --danger: #b91c1c;
+  --grow-fg: #1e40af;
+  --grow-bg: #dbeafe;
+  --pick-fg: #5b21b6;
+  --pick-bg: #ede9fe;
+  --set-fg: #3f3f46;
+  --set-bg: #e4e4e7;
+  --changed: #fef9c3;
+  --fade: 2400ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #1f1f23;
+    --line: #2e2e33;
+    --control: #8b8b94;
+    --muted: #a1a1aa;
+    --zero: #8b8b94;
+    --add: #6ee7b7;
+    --mult: #fcd34d;
+    --focus: #93c5fd;
+    --danger: #fca5a5;
+    --grow-fg: #bfdbfe;
+    --grow-bg: #1e3a8a;
+    --pick-fg: #ddd6fe;
+    --pick-bg: #4c1d95;
+    --set-fg: #d4d4d8;
+    --set-bg: #2a2a2f;
+    --changed: #26230a;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The window at 840 px: the panels side by side, each as wide as the window was (FR-005). */
+.app.with-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+/* The window grew to the left: the panel takes the new half, and the rest stays where it was. */
+.with-side--left .side-panel {
+  order: -1;
+}
+
+.value-button {
+  font: inherit;
+  text-align: left;
+  min-height: 24px;
+}
+
+.side-panel {
+  container: side / inline-size;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.side-panel .close {
+  float: right;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.side-panel h2 {
+  font-size: 16px;
+}
+
+.side-panel h2 .num {
+  display: block;
+  font-size: 28px;
+}
+
+.answer,
+.band {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 0 8px;
+}
+
+.band {
+  border: 1px solid var(--control);
+  font-size: 12px;
+}
+
+.answer p {
+  margin: 0 0 4px;
+}
+
+.answer .trust {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.formula-tree,
+.formula-tree [role="group"] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.formula-tree [role="treeitem"]:focus-visible {
+  outline: none;
+}
+
+.formula-tree [role="treeitem"]:focus-visible > .row {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  cursor: default;
+}
+
+.row .name {
+  flex: 1 1 8em;
+  min-width: 0;
+}
+
+.row .twisty {
+  width: 1em;
+}
+
+.row meter {
+  width: 56px;
+}
+
+.lvl-1 {
+  padding-left: 20px;
+}
+.lvl-2 {
+  padding-left: 32px;
+}
+.lvl-3 {
+  padding-left: 44px;
+}
+.lvl-4 {
+  padding-left: 56px;
+}
+.lvl-5 {
+  padding-left: 68px;
+}
+.lvl-6 {
+  padding-left: 80px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.num--add {
+  color: var(--add);
+}
+.num--mult {
+  color: var(--mult);
+}
+.num--zero {
+  color: var(--zero);
+}
+
+.reached,
+.share,
+.busy,
+.phrase {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.busy {
+  padding: 4px 8px 4px 32px;
+}
+
+/* Where this goes (FR-027): the count of numbers a part feeds, a round badge; its words are in the row's name. */
+.feeds {
+  min-width: 1.5em;
+  padding: 0 6px;
+  border: 1px solid var(--control);
+  border-radius: 999px;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.tag--grows {
+  color: var(--grow-fg);
+  background: var(--grow-bg);
+}
+.tag--pick {
+  color: var(--pick-fg);
+  background: var(--pick-bg);
+}
+.tag--set {
+  color: var(--set-fg);
+  background: var(--set-bg);
+}
+.tag--unknown {
+  color: var(--muted);
+  border-style: dashed;
+}
+.tag--truth {
+  border-color: var(--control);
+}
+
+.lvl-tag {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.lvl-tag--narrow {
+  display: none;
+}
+
+.code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* A row that changed on Refresh (design.md C11): its background fades; "was …" says it without color. */
+.row.changed {
+  animation: changed var(--fade) ease-out;
+}
+
+@keyframes changed {
+  from {
+    background: var(--changed);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row.changed {
+    animation: none;
+    background: var(--changed);
+  }
+}
+
+.was {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Antes/depois (FR-037): wraps at 210 px CSS, no sideways scroll. */
+.marks,
+.marks form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 0 8px;
+}
+
+.marks button,
+.marks input,
+.marks select {
+  min-height: 24px;
+  max-width: 100%;
+}
+
+/* The character picker (design.md C19): its band is the same as the version band's. */
+.character-picker select {
+  min-height: 24px;
+  max-width: 100%;
+}
+
+.character-picker .band {
+  margin-top: 8px;
+}
+
+.marks .note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+}
+
+/* The Pin strip (FR-026): three to a line, so a fourth wraps; at 210 px CSS the text breaks, nothing scrolls sideways. */
+.pins {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.pins ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pin {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--control);
+  border-radius: 4px;
+}
+
+.pin button {
+  min-height: 24px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.pin-open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.pin-name {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pin-unpin {
+  min-width: 24px;
+}
+
+/* A value that changed since it was last tapped: the color comes with the word "changed". */
+.pin--changed {
+  background: var(--changed);
+}
+
+.pin-changed {
+  font-size: 12px;
+}
+
+.pins .note {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+/* At 200% zoom the panel is 210 px CSS: smaller steps of indent, capped at 4 (FR-031). */
+@container side (max-width: 300px) {
+  .side-panel h2 .num {
+    font-size: 22px;
+  }
+  .lvl-1 {
+    padding-left: 16px;
+  }
+  .lvl-2 {
+    padding-left: 24px;
+  }
+  .lvl-3 {
+    padding-left: 32px;
+  }
+  .lvl-4,
+  .lvl-5,
+  .lvl-6 {
+    padding-left: 40px;
+  }
+  .lvl-tag--narrow {
+    display: inline;
+  }
+  .row meter {
+    display: none;
+  }
+}
+
+/* The farm strip (FR-028): two short lines; at 210 px CSS the text breaks, nothing scrolls sideways. */
+.farm {
+  margin: 0 0 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.farm p,
+.farm ul {
+  margin: 0;
+}
+
+.farm ul {
+  padding-left: 16px;
+}
+
+.farm button {
+  min-height: 24px;
+}
+
+/* The patch radar's band (FR-035): at 210 px CSS the text breaks, nothing scrolls sideways. */
+.patch {
+  overflow-wrap: anywhere;
+}
+
+.patch p,
+.patch ul {
+  margin: 0 0 4px;
+}
+
+.patch ul {
+  padding-left: 16px;
+}
+
+.patch button {
+  min-height: 24px;
 }

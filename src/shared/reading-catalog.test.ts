@@ -7,7 +7,8 @@ import {
   groupOf,
 } from "./reading-catalog-rules.ts";
 import { CATALOG } from "./reading-catalog.ts";
-import { NUMBER_IDS, STATE_EXCLUDED } from "./state.ts";
+import { ACTORS_PIECE, NUMBER_IDS, STATE_EXCLUDED } from "./state.ts";
+import { TREE_CATALOG } from "./tree-catalog.ts";
 
 const fast = CATALOG.filter((r) => r.reading === "rápida");
 const PREFIXES = ["DNSM", "Personagem", "OutrosPersonagens", "_vars"];
@@ -50,4 +51,12 @@ test("the classes and groups of the real catalog", () => {
   expect(groupOf(CATALOG, [actions?.name ?? ""], null)).toBe(ACTIONS_GROUP);
   expect(classOf(CATALOG, ["NotInTheCatalog"], null)).toBe("slow");
   expect(groupOf(CATALOG, ["NotInTheCatalog"], null)).toBeNull();
+});
+
+test("the map actors' piece has a row: every live-game number, in the slow reading by the rule (US12)", () => {
+  const actors = CATALOG.find((r) => r.name === ACTORS_PIECE);
+  expect(actors?.numbers).toEqual(
+    TREE_CATALOG.filter((n) => n.live).map((n) => n.id),
+  );
+  expect(classOf(CATALOG, [ACTORS_PIECE], null)).toBe("slow");
 });

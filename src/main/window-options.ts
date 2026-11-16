@@ -1,13 +1,16 @@
 // Type-only import: tests load this file without loading Electron (plan, Kit decision 7).
 import type { BrowserWindowConstructorOptions } from "electron";
 
+/** The window's width; the side panel widens it by as much (spec 008 FR-005). */
+export const WINDOW_WIDTH = 420;
+
 /** The companion window: no Node in the page, sandboxed, with the preload as the only bridge. */
 export function windowOptions(
   preloadPath: string,
 ): BrowserWindowConstructorOptions {
   return {
     title: "IdleOn Companion",
-    width: 420,
+    width: WINDOW_WIDTH,
     height: 640,
     webPreferences: {
       preload: preloadPath,
