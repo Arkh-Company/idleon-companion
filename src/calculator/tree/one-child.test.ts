@@ -337,3 +337,79 @@ test("the rows two merges bring see the system of the row merged first (pieces.c
     "Other",
   ]);
 });
+
+/** Row `r` with the code `code`. */
+const coded = (r: Row, code: string): Row => ({
+  ...r,
+  node: { ...r.node, code },
+});
+
+test("a merged child whose one child says it again takes that child's rows first, then names them (pieces.cjs fixNames' loop)", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Stamp total", 2)],
+      2: [lazy("Stamp total (inner)", 3)],
+      3: [leaf("Stamp total: A", 2), leaf("B", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+test("a merged child named for a pet's shiny EXP is its shiny level, and a vague row takes that name", () => {
+  const { n } = placeOne(
+    {
+      1: [lazy("Shiny EXP", 2)],
+      2: [coded(leaf("Shiny EXP", 4), "Breeding[1][2]"), leaf("Other", 2)],
+    },
+    lazy("Bonus", 1),
+  );
+  expect(n?.name).toBe("Shiny level");
+});
+
+test("a merged child named as the earlier pets' total was is the pet's (rule 67), and a vague row takes that name", () => {
+  const earlier: Row = {
+    node: {
+      ...row({
+        pieceKey: null,
+        value: 0,
+        code: "CustomLists.RANDOlist[90][4]",
+      }),
+      name: "Earlier pets with the same shiny bonus",
+      flags: {},
+    },
+    open: null,
+  };
+  const { n } = placeOne(
+    {
+      1: [lazy("Shiny bonus type of pet gene 4", 2, 2)],
+      2: [
+        earlier,
+        coded(leaf("Bored Bean", 2), 'Breeding("SpecialPassives", "Lv", 0, 3)'),
+      ],
+    },
+    lazy("Bonus", 1, 2),
+  );
+  expect(n?.name).toBe("Bored Bean, with the earlier pets");
+});
+
+test("a merged child beside a nametag is renamed as its grade (nametagGrade), and a vague row takes that name", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Trophy slot multiplier bonus", 2)],
+      2: [
+        leaf("Trophy slot multiplier (podium level)", 2),
+        coded(leaf("Nametag", 3), "EquipmentNametag3"),
+      ],
+    },
+    lazy("Bonus", 1),
+  );
+  expect(n?.name).toBe("Nametag grade multiplier bonus");
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Nametag grade multiplier (grade factor)",
+    "Nametag",
+  ]);
+});
