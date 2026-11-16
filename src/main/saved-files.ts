@@ -329,8 +329,6 @@ export function savedFiles(dir: string): {
         const left = (all.get(String(n)) ?? []).filter((m) => m.name !== name);
         if (left.length > 0) all.set(String(n), left);
         else all.delete(String(n));
-        // The mark cleared is no longer one to write again.
-        unsaved.delete(keyOf(n, name));
         return write(all, null);
       },
       warning: marks.warning,
