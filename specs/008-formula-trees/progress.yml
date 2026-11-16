@@ -40,4 +40,4 @@ execution:
     - {name: "US1c-4c fixNames, passadas que renomeiam o pai e oneOfEach (T023)", status: done, commits: c32cb8e..93181e6}
     - {name: "US1c-4d opus1Sailing, opus2Arena, opus5, opus3More F7a/c/f e o fixNames nos níveis fundidos (T023)", status: done, commits: 8d48cd3..78f66d6}
   feature_review: done
-  code_pr: null
+  code_pr: 35
