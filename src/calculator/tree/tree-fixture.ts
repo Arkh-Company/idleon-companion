@@ -4,6 +4,7 @@ import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { TreeBuild } from "../tree-build.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
+import { makePlaces } from "./places.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -239,3 +240,24 @@ export const callOf = (nodes: RecNode[], steps: Record<number, Step[]> = {}) =>
   makeCodeFormulas(nodes, (id) => steps[id] ?? []).call(
     nodes[0] ?? recNode(0, "None"),
   );
+
+/** The rows `top` placed under a root, each call `id` opening into `levels[id]`, over 10 calls `Call0`…`Call9`. */
+export function placed(
+  levels: Record<number, Row[]>,
+  top: Row[],
+  nodes = Array.from({ length: 10 }, (_, i) => recNode(i, `Call${String(i)}`)),
+) {
+  const places = makePlaces({
+    nodes,
+    bugs: [],
+    keyOf: (n) => String(n.id),
+    openXf: new Map(),
+    explain: (id) => levels[id] ?? null,
+    opened: () => null,
+  });
+  return {
+    rows: places.place({ id: "root", code: "Root()" }, top, 1, [0]),
+    open: (id: string) => kidsOf(places.expand(id)),
+    expand: (id: string) => places.expand(id),
+  };
+}

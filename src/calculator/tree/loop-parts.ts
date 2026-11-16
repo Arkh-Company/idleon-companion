@@ -9,11 +9,8 @@ import { near } from "./math.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
+import type { Rule } from "./val-path.ts";
 
-interface Rule {
-  test: RegExp;
-  proof: string;
-}
 /** OPUS4-4: a loop whose entries another entry of the same loop reads; that read opens into the entry's own turns. */
 export const LOOP_ENTRY_CACHES: readonly Rule[] = [
   {

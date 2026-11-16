@@ -4,7 +4,8 @@
 import type { RecValue } from "../recording.ts";
 
 export type Reads = ReadonlyMap<string, RecValue>;
-interface Rule {
+/** A rule of the bench by the path or call it matches, with its proof by reference. */
+export interface Rule {
   test: RegExp;
   proof: string;
 }

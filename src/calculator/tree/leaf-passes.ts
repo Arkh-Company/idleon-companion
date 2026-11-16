@@ -15,7 +15,7 @@ import type {
   CALC_LEAF_KINDS,
 } from "../tree-contract.ts";
 import { near } from "./math.ts";
-import { isLeaf, untyped, withName } from "./rows.ts";
+import { isLeaf, untyped, withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
 import { lastLeaf } from "./last-renames.ts";

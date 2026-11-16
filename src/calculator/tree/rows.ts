@@ -13,10 +13,13 @@ import { classify } from "./kinds.ts";
 import { leafPasses } from "./leaf-passes.ts";
 import { levelRenames } from "./level-renames.ts";
 import { formulaOut } from "./math.ts";
+import { isLeaf, untyped, withName } from "./row-checks.ts";
 import { isGeneric, nameOf } from "./names.ts";
 import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */
+export { isLeaf, untyped, withName };
+
 export const GENERIC_NAME = "Game value";
 
 export type Node = Omit<CalcTreeNode, "id">;
@@ -57,20 +60,12 @@ export interface Row {
   r1src?: string;
 }
 
-/** A row with no rows under it: built with none, and none to open later. */
-export const isLeaf = (r: Row): boolean =>
-  Array.isArray(r.node.kids) && !r.node.kids.length;
-
 /** A row with no rows under it, built (a group) or to build (an opening). */
 export const bare = (r: Row): boolean => r.open === null && !r.group?.length;
 
 /** pieces.cjs "Value from an earlier step": an earlier value no rule named. */
 export const unlinked = (r: Row): boolean =>
   !!r.earlier && !!r.node.flags.unnamed;
-
-/** A leaf with no type yet, or a "?" (pieces.cjs `!n.kind || n.kind === "?"`). */
-export const untyped = (r: Row): boolean =>
-  r.node.leaf === null || r.node.leaf === "unknown";
 
 /** Row `r` with the name `name`, its flags as they are (a name changed from another proven one). */
 export const named = (r: Row, name: string): Row =>
@@ -111,14 +106,6 @@ export function row(
     kids: [],
     ...fields,
   };
-}
-
-/** Row `r` named `name`, a name of its own (no longer `unnamed`); null leaves it as it is. */
-export function withName(r: Row, name: string | null): Row {
-  if (name === null) return r;
-  const flags = { ...r.node.flags };
-  delete flags.unnamed;
-  return { ...r, node: { ...r.node, name, flags } };
 }
 
 const number = (v: CalcTreeNode["value"]) =>

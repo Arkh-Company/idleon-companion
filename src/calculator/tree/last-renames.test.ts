@@ -5,10 +5,9 @@ import { checkTree } from "../../main/tree-check.ts";
 import { aboveRenames } from "./above-renames.ts";
 import { LAST_RENAMES } from "./last-renames.ts";
 import { isNameText } from "./name-text.ts";
-import { makePlaces } from "./places.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { kidsOf, read, recNode } from "./tree-fixture.ts";
+import { kidsOf, placed, read, recNode } from "./tree-fixture.ts";
 
 const R = LAST_RENAMES;
 const leaf = (
@@ -166,24 +165,6 @@ test("[OPUS5] the first sign of a sign total, a fixed value, is a raw bonus like
   ).toBe("fixedValue");
 });
 
-function placed(
-  levels: Record<number, Row[]>,
-  top: Row[],
-  nodes = Array.from({ length: 10 }, (_, i) => recNode(i, `Call${String(i)}`)),
-) {
-  const places = makePlaces({
-    nodes,
-    bugs: [],
-    keyOf: (n) => String(n.id),
-    openXf: new Map(),
-    explain: (id) => levels[id] ?? null,
-    opened: () => null,
-  });
-  return {
-    rows: places.place({ id: "root", code: "Root()" }, top, 1, [0]),
-    expand: (id: string) => places.expand(id),
-  };
-}
 const lazy = (code: string, value: number, open = 1): Row => ({
   node: row({ pieceKey: null, value, code, kids: "lazy" }),
   open,

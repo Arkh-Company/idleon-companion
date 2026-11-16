@@ -8,12 +8,8 @@ import { cacheOf, termName } from "./names.ts";
 import { callText, row, valueOf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
-import type { Reads } from "./val-path.ts";
+import type { Reads, Rule } from "./val-path.ts";
 
-interface Rule {
-  test: RegExp;
-  proof: string;
-}
 /**
  * W3, pieces.cjs `EARLIER_NAMES`: the caches a loop fills turn by turn, each turn adding to the total of the earlier
  * ones; the row of that total is named for it, with the loop that fills it.

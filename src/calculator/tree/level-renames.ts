@@ -3,7 +3,7 @@
 // (DROP_CODE, DROP_NAME, rule 52, B2-1), and a leaf that is a loop's progress is named for it, with the why of its "?"
 // (rule 53, rule 67), or the card's per-star value the Arena's list had named by coincidence. Left out: rule 67 renames
 // the pet's own row too ("…, with the earlier pets"), a row above this level, already placed with its name.
-import { isLeaf } from "./rows.ts";
+import { isLeaf } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
 /** The reads that are only context, never a source, by their code or the name their code gives them; a leaf only. */

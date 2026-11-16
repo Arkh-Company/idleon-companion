@@ -39,8 +39,6 @@ import { makeTerms } from "./tree/terms.ts";
 import type { Terms } from "./tree/terms.ts";
 import type { Reads } from "./tree/val-path.ts";
 
-export { GENERIC_NAME } from "./tree/rows.ts";
-
 export interface TreeBuild {
   root: CalcTreeNode;
   /** The lazy branch `nodeId` with its rows built, or null when no lazy branch has that id. */

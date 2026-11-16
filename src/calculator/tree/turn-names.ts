@@ -11,11 +11,8 @@ import { clean, isNameText, termName } from "./names.ts";
 import { near } from "./math.ts";
 import { tableText } from "./table-names.ts";
 import type { Node, Row } from "./rows.ts";
+import type { Rule } from "./val-path.ts";
 
-interface Rule {
-  test: RegExp;
-  proof: string;
-}
 const index = (re: RegExp, rs: readonly TurnRead[]) =>
   rs.map(([p]) => re.exec(p)).find(Boolean);
 const valueOf = (rs: readonly TurnRead[], path: string) =>

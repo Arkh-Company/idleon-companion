@@ -5,11 +5,10 @@ import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { ARENA, JAR, MEASURE } from "./arena.ts";
 import { isNameText } from "./name-text.ts";
-import { makePlaces } from "./places.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { useGameTables } from "./table-names.ts";
-import { kidsOf, read, recNode } from "./tree-fixture.ts";
+import { kidsOf, placed, read } from "./tree-fixture.ts";
 
 afterEach(() => {
   useGameTables(new Map());
@@ -42,22 +41,6 @@ const lazy = (
 });
 
 /** The rows `top` placed, each level by its call's number. */
-function placed(levels: Record<number, Row[]>, top: Row[]) {
-  const places = makePlaces({
-    nodes: Array.from({ length: 10 }, (_, i) => recNode(i, `Call${String(i)}`)),
-    bugs: [],
-    keyOf: (n) => String(n.id),
-    openXf: new Map(),
-    explain: (id) => levels[id] ?? null,
-    opened: () => null,
-  });
-  const rows = places.place({ id: "root", code: "Root()" }, top, 1, [0]);
-  return {
-    rows,
-    open: (id: string) => kidsOf(places.expand(id)),
-    expand: (id: string) => places.expand(id),
-  };
-}
 const wave = (round: number, bonus: number, v = 1) =>
   leaf(
     `Best Pet Arena round ≥ ${String(round)} (arena bonus ${String(bonus)})`,

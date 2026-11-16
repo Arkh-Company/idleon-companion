@@ -6,29 +6,13 @@ import { checkTree } from "../../main/tree-check.ts";
 import { aboveRenames } from "./above-renames.ts";
 import { MAPS_COUNT } from "./leaf-passes.ts";
 import { isNameText } from "./name-text.ts";
-import { makePlaces } from "./places.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { kidsOf, read, recNode } from "./tree-fixture.ts";
+import { placed, read } from "./tree-fixture.ts";
 
 const MAPS = "Maps with at least 1,000,000,000 kills (this character)";
 const MAPS_8 = "Maps with at least 100,000,000 kills (this character)";
 
-function placed(levels: Record<number, Row[]>, top: Row[]) {
-  const places = makePlaces({
-    nodes: Array.from({ length: 10 }, (_, i) => recNode(i, `Call${String(i)}`)),
-    bugs: [],
-    keyOf: (n) => String(n.id),
-    openXf: new Map(),
-    explain: (id) => levels[id] ?? null,
-    opened: () => null,
-  });
-  return {
-    rows: places.place({ id: "root", code: "Root()" }, top, 1, [0]),
-    open: (id: string) => kidsOf(places.expand(id)),
-    expand: (id: string) => places.expand(id),
-  };
-}
 const lazy = (code: string, value: number, open = 1): Row => ({
   node: row({ pieceKey: null, value, code, kids: "lazy" }),
   open,

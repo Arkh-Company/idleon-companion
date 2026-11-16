@@ -7,16 +7,15 @@
 // out: the talent's curve read from its table when the recording did not keep it (the 007 index), as in raw-passes.ts.
 import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3 } from "./curves.ts";
-import { token } from "./formulas.ts";
+import { near as nearRounded, token } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
+import { near } from "./math.ts";
 import { callName, pathName } from "./names.ts";
 import { callText } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { valPath } from "./val-path.ts";
 import type { Reads } from "./val-path.ts";
 
-const near = (a: number, b: number, tol = 1e-9) =>
-  Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
 const SYMB: Readonly<Record<string, string>> = {
   "+": " + ",
   "-": " − ",
@@ -165,7 +164,7 @@ export function makeCodeFormulas(
     )
       return null;
     const out = texts(e);
-    if (!out || out.ops < minOps || !near(out.t.value, v, 1e-6)) return null;
+    if (!out || out.ops < minOps || !nearRounded(out.t.value, v)) return null;
     return [out.t.names, `${out.t.nums} = ${fx3(v)}`];
   }
 

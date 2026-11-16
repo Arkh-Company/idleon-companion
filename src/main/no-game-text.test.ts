@@ -27,7 +27,7 @@ const PROOF = /\bproof["']?\s*:\s*(["'`])((?:\\.|(?!\1)[^\\])*)\1/g;
 /** A quote, or code: "; " only joins references. */
 const QUOTE_OR_CODE = /["'`“”‘’]|[{}]|;(?!\s)|=>/;
 
-export function gameText(text: string): string[] {
+function gameText(text: string): string[] {
   const hits: string[] = [];
   text.split("\n").forEach((line, i) => {
     const at = `line ${String(i + 1)}`;
