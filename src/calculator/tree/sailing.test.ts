@@ -3,6 +3,7 @@
 // only picks the bonus. Rows written by hand, with invented names.
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
+import { FRACTAL_HOURS } from "./leaf-passes.ts";
 import { isNameText } from "./name-text.ts";
 import { makePlaces } from "./places.ts";
 import { finish, row } from "./rows.ts";
@@ -23,7 +24,7 @@ test.each([
 ])(
   "[OPUS1-P3b] the Fractal Island's bonus %s is a yes/no of a limit, with its ⓘ and why",
   (i, v, numbers) => {
-    const hours = [24, 200, 750, 2500, 1e4, 2e4, 4e4, 6e4][i];
+    const hours = FRACTAL_HOURS[i];
     const [r] = level([
       call(`RandomEvent("FractalIslandBonus", ${String(i)}, 0)`, v),
     ]);
