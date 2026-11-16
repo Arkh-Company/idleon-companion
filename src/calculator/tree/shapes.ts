@@ -7,7 +7,7 @@ import { exprText, isFormulaName } from "./expr.ts";
 import { fx3 } from "./curves.ts";
 import { isCond, isAtOne, near, vOf } from "./formulas.ts";
 import { evaluate } from "./math.ts";
-import { withName } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
 

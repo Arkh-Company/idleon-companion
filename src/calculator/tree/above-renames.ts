@@ -11,7 +11,8 @@ import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
 import { lastAbove } from "./last-renames.ts";
-import { bare, isLeaf, unlinked, untyped } from "./rows.ts";
+import { bare, unlinked } from "./rows.ts";
+import { isLeaf, untyped } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];

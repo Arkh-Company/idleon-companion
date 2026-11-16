@@ -4,7 +4,7 @@
 // (tree/parent-passes.ts). Left out, each a deviation (research R14): the system's bucket of the bench's V1 page (the
 // app's first level has none, tree/mould.ts), and "Multi" and the companion's "Bonus" renamed (the app never gives them:
 // tree/raw-passes.ts names the companion's bonus).
-import { withName } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
 /** Each rule, with what it tests. */

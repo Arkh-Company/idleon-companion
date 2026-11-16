@@ -6,7 +6,7 @@ import { IPC } from "../shared/index.ts";
 import type { WorkerLike } from "./calculator-host.ts";
 import { characterSender } from "./characters.ts";
 import { startFormulaPipeline } from "./formula-pipeline.ts";
-import type { FormulaLog } from "./formula-pipeline.ts";
+import type { FormulaLog } from "./formula-answer.ts";
 import type { GameBytes } from "./game-files.ts";
 import {
   emptyPayload,

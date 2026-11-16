@@ -6,7 +6,8 @@
 // run without it) and the cut of the other sources of a branch (R1_CAP: a lazy branch has no size yet).
 import type { RecNode, RecValue } from "../recording.ts";
 import { MAX_DEPTH } from "./pieces.ts";
-import { callText, row, valueOf, withName } from "./rows.ts";
+import { callText, row, valueOf } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";

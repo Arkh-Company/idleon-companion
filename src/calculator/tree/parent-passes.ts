@@ -16,7 +16,8 @@ import { pommelion } from "./pommelion.ts";
 import { leafRules, mapsCount } from "./leaf-passes.ts";
 import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
-import { bare, withName } from "./rows.ts";
+import { bare } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
 /** The level under row `r` of the level `at` (tree/places.ts), or null when it has none. */

@@ -5,7 +5,8 @@
 import type { RecNode, RecValue } from "../recording.ts";
 import { near } from "./math.ts";
 import { cacheOf, termName } from "./names.ts";
-import { callText, row, valueOf, withName } from "./rows.ts";
+import { callText, row, valueOf } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
 import type { Reads, Rule } from "./val-path.ts";

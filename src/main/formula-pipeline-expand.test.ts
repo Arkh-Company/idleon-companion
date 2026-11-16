@@ -4,7 +4,7 @@
 import { expect, test } from "vitest";
 import type { FormulaTree, TreeNode } from "../shared/index.ts";
 import { node, pairOf, pipeline } from "./formula-fixture.ts";
-import { MAX_TREE_NODES } from "./formula-pipeline.ts";
+import { MAX_TREE_NODES } from "./formula-answer.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
 
 const lazy = node({

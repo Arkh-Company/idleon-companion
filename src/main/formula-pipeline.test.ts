@@ -7,7 +7,7 @@ import {
   pairOf,
   pipeline as setup,
 } from "./formula-fixture.ts";
-import { MAX_TREE_NODES } from "./formula-pipeline.ts";
+import { MAX_TREE_NODES } from "./formula-answer.ts";
 import { formulaRequestPayload } from "./payloads.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";

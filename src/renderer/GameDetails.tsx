@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { TreeNode } from "../shared/index.ts";
-import { valueText } from "./tree-text.ts";
+import { valueText } from "../shared/index.ts";
 
 const COPY = "Copy";
 const COPIED = "Copied";

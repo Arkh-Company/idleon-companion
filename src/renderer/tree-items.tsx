@@ -18,8 +18,8 @@ import {
   shareText,
   spokenValue,
   valueClass,
-  valueText,
 } from "./tree-text.ts";
+import { valueText } from "../shared/index.ts";
 import { truthTags, TruthTags } from "./TruthTag.tsx";
 
 /** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7); a group has none. */

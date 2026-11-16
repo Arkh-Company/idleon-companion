@@ -2,7 +2,7 @@
 // share, and the largest multiplier, each line only when the tree has it, then whether the root is the Stats number.
 import type { FormulaTree, TreeNode } from "../shared/index.ts";
 import { LastReading } from "./StatsPanel.tsx";
-import { plain } from "./tree-text.ts";
+import { plain } from "../shared/index.ts";
 import { isGroup } from "./tree-parts.ts";
 
 type Ready = Extract<FormulaTree, { state: "ready" }>;

@@ -25,9 +25,6 @@ import type { FormulaLog } from "./formula-answer.ts";
 import { partsOf, withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
-export { MAX_TREE_NODES } from "./formula-answer.ts";
-export type { FormulaLog } from "./formula-answer.ts";
-
 type TreeHost = Pick<
   ReturnType<typeof createTreeHost>,
   "request" | "values" | "dropCurrent" | "setFiles" | "stop" | "shape"

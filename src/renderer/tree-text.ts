@@ -3,8 +3,6 @@
 import { MINUS, plain, valueText } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
 
-export { plain, valueText };
-
 /** The same value read aloud: no symbol alone (design.md §3.8, S1). */
 export function spokenValue(n: Pick<TreeNode, "value" | "fmt">): string {
   if (n.value === null) return "unavailable";

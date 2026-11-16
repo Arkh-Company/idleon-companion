@@ -3,11 +3,15 @@
 // the main keeps live (plan B), and a tapped value opens its tree in the side panel, as the Stats does. The system
 // panels (SystemPanel.tsx) list their numbers with the same table and the same live values.
 import { useEffect, useState } from "react";
-import { catalogName, statsNumber, TREE_CATALOG } from "../shared/index.ts";
+import {
+  catalogName,
+  plain,
+  statsNumber,
+  TREE_CATALOG,
+} from "../shared/index.ts";
 import type { CatalogNumber, LiveValues, Stats } from "../shared/index.ts";
 import type { Side } from "./SidePanel.tsx";
 import { LastReading, STATS_TREES } from "./StatsPanel.tsx";
-import { plain } from "./tree-text.ts";
 
 /** Groups, then systems, in the catalog's order: a Map keeps the order each key first appears in. */
 const GROUPS = [

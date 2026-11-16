@@ -17,7 +17,8 @@ import type { Above } from "./above-renames.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
 import { nameOf } from "./names.ts";
-import { bare, row, unlinked, untyped, withName } from "./rows.ts";
+import { bare, row, unlinked } from "./rows.ts";
+import { untyped, withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
 const O5 = (block: string) => `bench pieces.cjs opus5 OPUS5; N.js ${block}`;

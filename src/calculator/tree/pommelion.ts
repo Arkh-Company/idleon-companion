@@ -4,7 +4,7 @@
 // runs it (tree/parent-passes.ts). Left out, a deviation (research R14): a factor whose rows open later (the bench's
 // factor is a branch of the seed's expression, built with its rows).
 import type { Level } from "./places.ts";
-import { withName } from "./rows.ts";
+import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import { tagOf } from "./tags.ts";
 
