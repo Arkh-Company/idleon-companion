@@ -68,3 +68,25 @@ test("going back shows the map again", async () => {
   expect(map()).not.toBe(null);
   expect(stats()).toBe(null);
 });
+
+// The APG tabs (review of the feature): one Tab stop on the selected tab, the arrows, Home and End move and select.
+test("the arrows, Home and End move the selection along the tabs, which are one Tab stop", async () => {
+  render(<App />);
+  await screen.findAllByRole("tab");
+  const stops = () =>
+    screen.getAllByRole("tab").filter((t) => t.tabIndex === 0);
+  expect(stops()).toEqual([tab("Screen map")]);
+  tab("Screen map").focus();
+  fireEvent.keyDown(tab("Screen map"), { key: "ArrowRight" });
+  expect(tab("Stats").getAttribute("aria-selected")).toBe("true");
+  expect(document.activeElement).toBe(tab("Stats"));
+  expect(stops()).toEqual([tab("Stats")]);
+  fireEvent.keyDown(tab("Stats"), { key: "End" });
+  expect(document.activeElement).toBe(tab("Formulas"));
+  fireEvent.keyDown(tab("Formulas"), { key: "ArrowRight" });
+  expect(document.activeElement).toBe(tab("Screen map"));
+  fireEvent.keyDown(tab("Screen map"), { key: "ArrowLeft" });
+  expect(document.activeElement).toBe(tab("Formulas"));
+  fireEvent.keyDown(tab("Formulas"), { key: "Home" });
+  expect(tab("Screen map").getAttribute("aria-selected")).toBe("true");
+});

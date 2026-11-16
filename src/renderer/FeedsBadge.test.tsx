@@ -118,6 +118,24 @@ test("the list is asked once per part, and says it is loading until it comes", a
   expect(item("Open HP")).toBeDefined();
 });
 
+test("a part whose count grew asks its list again the next time it opens", async () => {
+  const tree = (feeds: number) =>
+    ready(node({ kids: [{ ...sword, feeds }, once] }));
+  const { rerender } = render(
+    <FormulaTree tree={tree(3)} onExpand={vi.fn()} />,
+  );
+  item(/^Sword/).focus();
+  key("ArrowRight");
+  key("ArrowRight");
+  key("ArrowRight");
+  await settle();
+  key("ArrowLeft");
+  rerender(<FormulaTree tree={tree(4)} onExpand={vi.fn()} />);
+  key("ArrowRight");
+  await settle();
+  expect(companion.feedsList).toHaveBeenCalledTimes(2);
+});
+
 test("in the side panel, a number of the list opens its tree with the focus on its title, and ✕ gives the focus back to the first number", async () => {
   let sendTree: (t: Tree) => void = () => undefined;
   companion.onStats.mockImplementation((cb) => {

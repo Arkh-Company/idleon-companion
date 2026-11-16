@@ -189,3 +189,20 @@ test("with the band, the header no longer says Same as Stats (design.md C1)", ()
   render(<AnswerHeader tree={ready(node(), { gameChanged: true })} />);
   expect(screen.queryByText("Same as Stats")).toBe(null);
 });
+
+test("a Refresh whose tree came unavailable says no update for a later tree", async () => {
+  await openDrop();
+  const tree = ready(node({ value: 1_234.5 }), { gameChanged: true });
+  act(() => {
+    sendLive(live(2_000));
+    sendTree(tree);
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Refresh now" }));
+  act(() => {
+    sendTree({ state: "unavailable", request: tree.request });
+  });
+  act(() => {
+    sendTree(ready(node({ value: 2_000 }), { calculatedAt: 3_000 }));
+  });
+  expect(said()).not.toMatch(/updated/);
+});

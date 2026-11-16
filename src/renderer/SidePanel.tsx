@@ -89,6 +89,11 @@ export function SidePanel({
   /** The character picked: its first ready tree is said once (design.md C19). */
   const picked = useRef<number | null>(null);
   useEffect(() => {
+    // A Refresh or a pick answered with no tree is over: a later tree is no answer to it.
+    if (["unavailable", "diverged", "none"].includes(tree.state)) {
+      refreshed.current = null;
+      picked.current = null;
+    }
     if (tree.state !== "ready") return;
     if (refreshed.current && refreshed.current !== tree) {
       refreshed.current = null;

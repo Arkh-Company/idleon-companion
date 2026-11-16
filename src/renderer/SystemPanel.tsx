@@ -69,6 +69,7 @@ export function SystemPanel({ system }: { system: string }) {
         numbers={numbers.filter((n) => n.notShown === null)}
         live={live}
         onOpen={onOpen}
+        title="Shown in the game"
       />
     </>
   );

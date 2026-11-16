@@ -64,6 +64,7 @@ export function App() {
   const [stats, setStats] = useState<Stats | null>(null);
   useEffect(() => window.companion.onStats(setStats), []);
   const [tab, setTab] = useState<Tab>("map");
+  const tabs = [...TABS, ...(panelCtx ? [["panel", "Panel"] as const] : [])];
   /** The polite live region's sentence, each one a new node: the same sentence again is said again (design.md §3.8). */
   const [said, setSaid] = useState({ text: "", n: 0 });
   const announce = useCallback((text: string) => {
@@ -241,11 +242,26 @@ export function App() {
                 focused.current = e.target;
               }}
             />
-            <div role="tablist" className="tabs">
-              {[
-                ...TABS,
-                ...(panelCtx ? [["panel", "Panel"] as const] : []),
-              ].map(([id, label]) => (
+            <div
+              role="tablist"
+              className="tabs"
+              onKeyDown={(e) => {
+                // The APG tabs: the arrows go round, Home and End to the ends; the tab moved to is selected.
+                const ids = tabs.map(([id]) => id);
+                const i = ids.indexOf(tab);
+                const to = {
+                  ArrowRight: ids[(i + 1) % ids.length],
+                  ArrowLeft: ids[(i - 1 + ids.length) % ids.length],
+                  Home: ids[0],
+                  End: ids.at(-1),
+                }[e.key];
+                if (to === undefined) return;
+                e.preventDefault();
+                setTab(to);
+                document.getElementById(`tab-${to}`)?.focus();
+              }}
+            >
+              {tabs.map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
@@ -253,6 +269,7 @@ export function App() {
                   id={`tab-${id}`}
                   aria-controls="tab-content"
                   aria-selected={tab === id}
+                  tabIndex={tab === id ? 0 : -1}
                   onClick={() => {
                     setTab(id);
                   }}

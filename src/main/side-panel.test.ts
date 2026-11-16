@@ -23,6 +23,9 @@ function windowAt(x: number, width = 420) {
     move: (to: number) => {
       bounds = { ...bounds, x: to };
     },
+    resize: (to: number) => {
+      bounds = { ...bounds, width: to };
+    },
   };
 }
 
@@ -64,6 +67,14 @@ test("closing after the player moved the window keeps the move and gives back th
   w.move(900);
   w.control.set(false);
   expect(w.bounds()).toMatchObject({ x: 1320, width: 420 });
+});
+
+test("closing after the player narrowed the open window never goes under one window's width", () => {
+  const w = windowAt(100);
+  w.control.set(true);
+  w.resize(600);
+  w.control.set(false);
+  expect(w.bounds()).toMatchObject({ width: 420 });
 });
 
 test("opening twice widens once, and closing a closed panel does nothing", () => {

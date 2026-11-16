@@ -74,8 +74,8 @@ export function FormulaTree({
       return;
     }
     if (key.endsWith(FEEDS)) {
-      const piece = nodes.get(key.slice(0, -FEEDS.length))?.pieceKey;
-      if (piece) feeds.load(piece);
+      const n = nodes.get(key.slice(0, -FEEDS.length));
+      if (n?.pieceKey) feeds.load(n.pieceKey, n.feeds ?? 0);
     }
     const n = nodes.get(key);
     if (n?.kids === "lazy" && !open.has(key) && !asked.current.has(key)) {

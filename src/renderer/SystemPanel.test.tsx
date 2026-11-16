@@ -225,6 +225,14 @@ test("only the open groups' numbers go live, with the system's other numbers", (
   });
 });
 
+test("the system's other numbers come in a table with its title, below the groups", () => {
+  panelOf("The Hole");
+  const table = screen.getByRole("table", { name: "Shown in the game" });
+  expect(table.querySelectorAll("tbody tr")).toHaveLength(
+    idsOf("The Hole").length,
+  );
+});
+
 test("tapping the gilded chance opens its tree", () => {
   const onOpen = panelOf("Stamps");
   fireEvent.click(screen.getByRole("button", { name: "Chances" }));

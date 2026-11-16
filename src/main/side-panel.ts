@@ -26,7 +26,9 @@ export function sidePanelControl(
         shift = b.x - x;
         win.setBounds({ x, width });
       } else {
-        win.setBounds({ x: b.x + (shift ?? 0), width: b.width - WINDOW_WIDTH });
+        // Narrowed by the player while open, the window still keeps one window's width.
+        const width = Math.max(WINDOW_WIDTH, b.width - WINDOW_WIDTH);
+        win.setBounds({ x: b.x + (shift ?? 0), width });
         shift = null;
       }
     },

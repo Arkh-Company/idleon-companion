@@ -64,13 +64,17 @@ export function NumberTable({
   numbers,
   live,
   onOpen,
+  title,
 }: {
   numbers: readonly CatalogNumber[];
   live: LiveValues | null;
   onOpen: OpenTree;
+  /** The table's caption, when nothing above names it. */
+  title?: string;
 }) {
   return (
     <table className="screen-map formulas">
+      {title && <caption>{title}</caption>}
       <tbody>
         {numbers.map(({ id }) => {
           const name = nameOf(id);
