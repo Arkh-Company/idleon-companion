@@ -1,5 +1,5 @@
 {
-  "about": "Spec 008 names table (T023), static part: the name the bench's rules give a call or a read path, with its proof by reference (N.js block, case, position, path, table name or bench tag; never game code). Game text may be in a name (Vinicius, 14/11). Converted from the bench's names-008 export (NAMES-008-static.json): names maps a call or a path, as the tree writes it, to [name, proof].",
+  "about": "Spec 008 names table (T023), static part: the name the bench's rules give a call or a read path, with its proof by reference (N.js block, case, position, path, table name or bench tag; never game code). Game text may be in a name (Vinicius, 14/11). Converted from the bench's names-008 export (NAMES-008-static.json): names maps a call or a path, as the tree writes it, to [name, proof]. Then 54 calls the 007 catalog names from the game's own tables (proven at its index 0e47e87b, the same game as RULES_GAME_SHA), with the 007 proof by reference (Vinicius, 16/11).",
   "baseline": "BASELINE-4 (bench git 99d1772)",
   "njsIndex": "0e47e87bbe36198cbecc41943ea3cd8949f51e9350a4c125d67e3b7de9771ba4",
   "sources": {
@@ -9,11 +9,99 @@
     "screen-proposal/names-other.cjs": "3e0afbe7",
     "build-tree.cjs": "deb3ef18"
   },
-  "count": 2730,
+  "count": 2784,
   "names": {
     "AchieveReg[108]": [
       "S-M-R-T (achievement)",
       "tables CustomLists.RegAchieves"
+    ],
+    "ArcadeBonus(13)": [
+      "Arcade: Shiny Chance",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[13][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(18)": [
+      "Arcade: Skill EXP gain",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[18][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(19)": [
+      "Arcade: Base STR",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[19][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(2)": [
+      "Arcade: Total Accuracy",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[2][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(20)": [
+      "Arcade: Base AGI",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[20][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(21)": [
+      "Arcade: Base WIS",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[21][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(22)": [
+      "Arcade: Base LUK",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[22][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(24)": [
+      "Arcade: Worship Souls",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[24][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(25)": [
+      "Arcade: Refinery Speed",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[25][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(27)": [
+      "Arcade: Drop Rate",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[27][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(32)": [
+      "Arcade: Artifact Find 32",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[32][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(33)": [
+      "Arcade: Sailing Loot",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[33][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(39)": [
+      "Arcade: Gold Ball Gain",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[39][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(47)": [
+      "Arcade: Windwalker Dust",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[47][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(51)": [
+      "Arcade: Emperor Bonuses",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[51][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(54)": [
+      "Arcade: Prisma Bonuses",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[54][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(58)": [
+      "Arcade: Palette Luck",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[58][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(59)": [
+      "Arcade: Meritocracy Bonus",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[59][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(6)": [
+      "Arcade: AFK Gains Rate",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[6][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(61)": [
+      "Arcade: Kruk Bubble LVs",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[61][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(64)": [
+      "Arcade: Megacrop Chance",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[64][0]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "ArcadeBonus(66)": [
+      "Arcade: Artifact Find 66",
+      "N.js block ArcadeBonus; tables CustomLists.ArcadeShopInfo; refs ArcadeShopInfo[66][0]; bench 007 catalog, proven at 0e47e87b"
     ],
     "ArcaneType(\"ArcaneMobSpawnQTY\", 0, 0)": [
       "Mobs spawned",
@@ -198,6 +286,10 @@
     "Boats[9][0]": [
       "Boat 10 captain",
       "refs BoatFrame, BoatSpeed, BoatUpgCostQty, BoatValue, OnPlayStart3, TomeQTY, Boats[t], Boats[t][3], Boats[t][5], Boats[t][k]; tables CustomLists.Tome"
+    ],
+    "Breeding(\"2ndMulti\", \"0\", 3, 15)": [
+      "Hedgehog (pet multi)",
+      "N.js block Breeding, case 2ndMulti; tables CustomLists.PetStats; refs PetStats[3][15][0]; bench 007 catalog, proven at 0e47e87b"
     ],
     "Bubba[1][0]": ["Bubba 0", "refs MegafleshOwned, Bubba[1][8]"],
     "Bubba[1][11]": ["Bubba 11", "refs MegafleshOwned, Bubba[1][8]"],
@@ -1757,6 +1849,10 @@
       "Stamps: WorshipEff",
       "refs WorshipEff"
     ],
+    "DistanceEqn(1335, 294, 470, 294)": [
+      "Distance",
+      "N.js block DistanceEqn; bench 007 catalog, proven at 0e47e87b"
+    ],
     "Divinity[12]": [
       "God linked to character 1",
       "tables CustomLists.GodsInfo"
@@ -2337,6 +2433,18 @@
       "Sticker odds multiplier",
       "N.js block FarmingStuffs, case StickerOddsMulti; bench [F5-ROOT]"
     ],
+    "FlurboShop(2)": [
+      "Flurbo shop bonus 2",
+      "N.js block FlurboShop; bench 007 catalog, proven at 0e47e87b, no game table names it"
+    ],
+    "FlurboShop(5)": [
+      "Flurbo shop bonus 5",
+      "N.js block FlurboShop; bench 007 catalog, proven at 0e47e87b, no game table names it"
+    ],
+    "FlurboShop(7)": [
+      "Flurbo shop bonus 7",
+      "N.js block FlurboShop; bench 007 catalog, proven at 0e47e87b, no game table names it"
+    ],
     "FoodSlotsOwned": ["Food slots owned", "refs FoodSlotsOwned"],
     "Gallery(\"PodiumsOwned\", 0, 0)": [
       "Podiums owned",
@@ -2461,6 +2569,30 @@
     "GemItemsPurchased[8]": [
       "Gem shop purchase 8",
       "refs GemItemsPurchased[8]"
+    ],
+    "GetBuffBonuses(124, 1)": [
+      "Balanced Spirit",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[124], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "GetBuffBonuses(273, 1)": [
+      "Strafe",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[273], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "GetBuffBonuses(288, 2)": [
+      "Extendo Rangeo",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[288], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "GetBuffBonuses(40, 1)": [
+      "Maestro Transfusion 1",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[40], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "GetBuffBonuses(40, 2)": [
+      "Maestro Transfusion 2",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[40], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "GetBuffBonuses(94, 1)": [
+      "Firmly Grasp It",
+      "N.js block GetBuffBonuses; tables CustomLists.TalentIconNames; refs TalentIconNames[94], PixelHelperActor[2]._BuffIDsOn; bench 007 catalog, proven at 0e47e87b"
     ],
     "Holes(\"GambitPTSmulti\", 0, 0)": [
       "Gambit points multiplier",
@@ -2907,6 +3039,50 @@
       "refs RecalcChipBonuses, Lab[1+character]"
     ],
     "Lv0[0]": ["Class level", "refs Lv0[0]; tables CustomLists.GamingUpg"],
+    "MainframeBonus(112)": [
+      "Emerald Navette",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[12][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(116)": [
+      "Black Diamond Rhinestone",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[16][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(118)": [
+      "Pure Opal Rhinestone",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[18][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(119)": [
+      "Pure Opal Navette",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[19][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(120)": [
+      "Pure Opal Rhombol",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[20][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(122)": [
+      "North Winds Jewel",
+      "N.js block MainframeBonus; tables CustomLists.JewelDesc; refs JewelDesc[22][11]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(14)": [
+      "Artifact Attraction",
+      "N.js block MainframeBonus; tables CustomLists.LabMainBonus; refs LabMainBonus[14][6]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(15)": [
+      "Slab Sovereignty",
+      "N.js block MainframeBonus; tables CustomLists.LabMainBonus; refs LabMainBonus[15][6]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(17)": [
+      "Depot Studies PhD",
+      "N.js block MainframeBonus; tables CustomLists.LabMainBonus; refs LabMainBonus[17][6]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(2)": [
+      "Gilded Cyclical Tubing",
+      "N.js block MainframeBonus; tables CustomLists.LabMainBonus; refs LabMainBonus[2][6]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "MainframeBonus(8)": [
+      "Spelunker Obol",
+      "N.js block MainframeBonus; tables CustomLists.LabMainBonus; refs LabMainBonus[8][6]; bench 007 catalog, proven at 0e47e87b"
+    ],
     "MenagerieStuff(\"BlackStarsOwned\", 0, 0)": [
       "Black stars owned",
       "N.js block MenagerieStuff, case BlackStarsOwned; bench [F5-ROOT]"
@@ -10086,6 +10262,46 @@
     "SushiStuff(\"UpgLvREQ\", 0, 0)": [
       "Upgrade level requirement",
       "N.js block SushiStuff, case UpgLvREQ; bench [F5-ROOT]"
+    ],
+    "TalentCalc(110)": [
+      "Apocalypse Zow",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[110]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(125)": [
+      "Precision Power",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[125]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(305)": [
+      "Looty Mc Shooty",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[305]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(31)": [
+      "Skillage Damage",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[31]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(470)": [
+      "Paperwork, Great",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[470]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(485)": [
+      "Virile Vials",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[485]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(57)": [
+      "Species Epoch",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[57]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(620)": [
+      "Will Of The Eldest",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[620]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(650)": [
+      "Rando Event Looty",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[650]; bench 007 catalog, proven at 0e47e87b"
+    ],
+    "TalentCalc(656)": [
+      "Dreamer Damage",
+      "N.js block TalentCalc; tables CustomLists.TalentIconNames; refs TalentIconNames[656]; bench 007 catalog, proven at 0e47e87b"
     ],
     "Thingies(\"Boss6HP\", 1, 0)": [
       "Emperor HP 1, 0",
