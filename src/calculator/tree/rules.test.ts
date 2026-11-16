@@ -30,10 +30,12 @@ import { RENAMES } from "./renames.ts";
 import { CARD_STAR, CONTEXT_READS, LEVEL_RENAMES } from "./level-renames.ts";
 import {
   BANNED,
+  CLASS_LINE,
   CODE_LEAVES,
   DUNGEON_GATE,
   FISHING_SPOT,
 } from "./leaf-passes.ts";
+import { ARTIFACT_PICK } from "./sailing.ts";
 import {
   ABOVE_RENAMES,
   BUBBLE_FACTOR,
@@ -92,6 +94,8 @@ const TABLES = {
   DUNGEON_GATE: [DUNGEON_GATE],
   BANNED: [BANNED],
   FISHING_SPOT: [FISHING_SPOT],
+  CLASS_LINE: [CLASS_LINE],
+  ARTIFACT_PICK: [ARTIFACT_PICK],
   FIX_NAMES: Object.values(FIX_NAMES),
   SYSTEM_TAGS,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),

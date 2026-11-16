@@ -1,7 +1,9 @@
 // The passes of pieces.cjs `finish` after the types (spec 008, T023), from the bench at BASELINE-4, over a level's rows in
 // its `finish` (tree/rows.ts): dungeonGate (the dungeon the map is, a yes/no and never a source), oneOfEach's ban flag of a
-// talent (a yes/no) and the leaves the N.js proves by their code, opus3More OPUS3-F7
-// and then the OPUS5 list, each only on a leaf still with no type ("?") but the one the bench forces. Left out, each
+// talent (a yes/no) and the leaves the N.js proves by their code, opus1Sailing's (forced, the Fractal Island's with its ⓘ;
+// a class line is context), opus3More OPUS3-F7 and then the OPUS5 list, each only on a leaf still with no type ("?")
+// but the ones the bench forces. opus1Sailing's types by the code of a leaf still "?" (and the boats' names they
+// give) are the classify rules every leaf already passed (tree/kinds.ts, names-sailing.cjs KINDS). Left out, each
 // needing what a level does not have: F7a (a count whose rows are all leaves: the app opens a row later), F7c (the obols'
 // stat, read across the recording), F7f (the friend score, by the calls above), and OPUS5's rules on a name the bench's
 // earlier passes gave (stamps, signs, statues, the Tome bubbles' "5,000"). structurePass's "Multi" is a name the app never
@@ -45,6 +47,9 @@ interface LeafRule {
   why?: string;
   /** OPUS5's `force`: a leaf already typed takes the rule too. */
   force?: boolean;
+  /** The ⓘ of a rule (its two lines) and its why, from the match and the leaf's value. */
+  rule?: (m: RegExpExecArray, v: Row["node"]["value"]) => [string, string];
+  ruleWhy?: (m: RegExpExecArray) => string;
   proof: string;
 }
 const F7 = (where: string, block: string) =>
@@ -55,8 +60,39 @@ const ACTOR = (actor: number, cell: string) =>
     `^PixelHelperActor\\[\\d+\\]\\.behaviors\\.getBehavior\\(ActorEvents_${String(actor)}\\)\\._GenINFO\\[${cell}\\]$`,
   );
 
-/** OPUS3-F7 and then OPUS5, in the bench's order: the first rule whose code matches decides. */
+/** opus1Sailing OPUS1-P3b: the hours on Fractal Island each of its 8 bonuses needs. */
+export const FRACTAL_HOURS = [24, 200, 750, 2500, 1e4, 2e4, 4e4, 6e4];
+const P3B = (block: string) =>
+  `bench pieces.cjs opus1Sailing OPUS1-P3b; N.js ${block}`;
+
+/** opus1Sailing, OPUS3-F7 and then OPUS5, in the bench's order: the first rule whose code matches decides. */
 export const CODE_LEAVES: readonly LeafRule[] = [
+  // (opus1Sailing types them whatever their type: forced)
+  {
+    test: /^RandomEvent\("FractalIslandBonus", ([0-7]), -?\d+\)$/,
+    name: null,
+    leaf: "condition",
+    condition: "limit",
+    force: true,
+    rule: (m, v) => {
+      const h = String(FRACTAL_HOURS[Number(m[1])]);
+      return [
+        `If the hours on Fractal Island reach ${h}: 1, else 0`,
+        v === 1 ? `reached ${h} hours → 1` : `below ${h} hours → 0`,
+      ];
+    },
+    // the bench's why names the game's paths; here only what they hold
+    ruleWhy: (m) =>
+      `the game sets this bonus to 1 once the hours on Fractal Island reach ${String(FRACTAL_HOURS[Number(m[1])])}, else to 0 (N.js RandomEvent)`,
+    proof: P3B("RandomEvent; N.js ActorEvents_623"),
+  },
+  {
+    test: /^DNSM\.CalcTalentMAP\[620\]$/,
+    name: () => "Highest class level among your characters",
+    leaf: "level",
+    force: true,
+    proof: P3B("TalentCalc"),
+  },
   {
     test: /^WorkbenchStuff\("OverkillQTY", \d+, /,
     name: null,
@@ -113,15 +149,12 @@ export const CODE_LEAVES: readonly LeafRule[] = [
     leaf: "quantity",
     proof: F7("j", "Summoning"),
   },
-  // (opus1Sailing types it first, whatever its type: forced; its ⓘ and why are left for US1c-4c, with the rest of
-  // opus1Sailing)
   {
     test: /^RandomEvent\("FractalIslandBonus", \d+/,
     name: null,
     leaf: "condition",
     condition: "limit",
-    force: true,
-    proof: "bench pieces.cjs opus1Sailing OPUS1-P3b; " + O5("RandomEvent"),
+    proof: O5("RandomEvent"),
   },
   {
     test: ACTOR(481, "111"),
@@ -189,6 +222,11 @@ export const CODE_LEAVES: readonly LeafRule[] = [
     proof: O5("StarSigns"),
   },
 ];
+/** OPUS1-P3b: a class's line of classes is context (the stat a portrait's class uses), never a source. */
+export const CLASS_LINE = {
+  test: "ReturnClasses(",
+  proof: P3B("Sailing ArtifactBonus"),
+};
 /** OPUS3-F7g: the fishing spot the character stands at is context, like the current map. */
 export const FISHING_SPOT = {
   test: "PersonalValuesMap.FishingSpotIndex",
@@ -241,24 +279,32 @@ function pass(r: Row): Row {
     const m = x.test.exec(code);
     if (!m || (x.value !== undefined && !near(r.node.value, x.value))) continue;
     if (!open && !x.force) return r;
-    return typed(
+    const t = typed(
       r,
       x.name?.(m) ?? null,
       x.leaf,
       x.condition ?? null,
-      x.why ?? null,
+      x.ruleWhy?.(m) ?? x.why ?? null,
     );
+    return x.rule
+      ? {
+          ...t,
+          node: { ...t.node, formula: { rule: x.rule(m, r.node.value) } },
+        }
+      : t;
   }
   return r;
 }
 
 /** A level's rows after the passes that follow their types. */
 export function leafPasses(rows: readonly Row[]): Row[] {
-  // OPUS3-F7g: the fishing spot is context, when the level has more than it
+  // OPUS1-P3b: a class line is context, a leaf or not; OPUS3-F7g: the fishing spot is context, when the level has more
+  // than it
   return rows
     .map(pass)
     .filter(
       (r) =>
+        !r.node.code?.startsWith(CLASS_LINE.test) &&
         !(
           r.node.code === FISHING_SPOT.test &&
           isLeaf(r) &&
