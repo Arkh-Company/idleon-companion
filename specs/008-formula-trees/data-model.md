@@ -46,7 +46,7 @@ O tipo é recursivo; se o teste não acusar a mudança, a comparação passa a s
 | `none` | Nenhuma árvore aberta |
 | `waiting` | "Waiting for the game": sem leitura ou sem personagem (FR-034) |
 | `calculating` | O pedido |
-| `unavailable` | O pedido; a falha não leva texto do jogo |
+| `unavailable` | O pedido; a falha não leva texto do jogo. Durante a implementação: `liveMap: true` quando é um número do jogo ao vivo cujo ator não estava no mapa ("Needs the live map", FR-023); sem ele, a falha do worker ("Calculator unavailable") |
 | `diverged` | O pedido e o texto da Stats: "Breakdown unavailable" (FR-019) |
 | `ready` | `request`, `title`, `rootText` (escrito pelo main com o formatador da linha da Stats), `statsValue`, `character` (número), `activeCharacter`, `calculatedAt`, `gameChanged`, `checkedOnThisGame` (faixa de versão, FR-018), `stale` (jogo fechado, FR-022), `comparingWith` (nome da marca ou nulo), `counts`, `root` |
 

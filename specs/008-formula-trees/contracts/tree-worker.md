@@ -15,9 +15,11 @@ O worker de árvores é uma segunda instância do `calculator.js` (research R1).
 | --- | --- | --- |
 | host → worker | `{ type: "tree", id, request: { type: "number", id, character }, mosaic }` | O mosaico em texto JSON, o mesmo par mosaico × resultado que a Stats usou para o ativo (paridade, FR-019) |
 | host → worker | `{ type: "tree", id, request: { type: "expand", treeId, nodeId } }` | Monta um ramo sobre a gravação guardada; não refaz o estado |
-| host → worker | `{ type: "values", id, ids: string[], mosaic }` | O "ao vivo do que está à vista": só calcula os números, sem gravar (research R4) |
+| host → worker | `{ type: "values", id, ids: string[], mosaic }` | O "ao vivo do que está à vista": só calcula os números, sem gravar (research R4). Durante a implementação: um id é um número do catálogo ou a `pieceKey` de uma parte de um nó aberto (`[personagem, bloco, ...args]`), calculada como a chamada dela, depois das raízes ("Game changed" por uma parte, FR-024); um caminho de leitura volta nulo |
+| host → worker | `{ type: "shape", id, treeId, mosaic }` | Durante a implementação: "Onde isto entra" (FR-027). As partes da árvore inteira do número, com os ramos abertos, sem tocar a montagem do último `number`; em segundo plano, depois de toda árvore e todo valor |
 | worker → host | `{ type: "treeResult", id, tree }`, `{ …, refused: "unknownNumber" }` ou `{ …, failed: true }` | Só átomos (FR-010). A gravação crua nunca sai; ela é serializada dentro do contexto e lida com `JSON.parse` no worker |
 | worker → host | `{ type: "valuesResult", id, values: { [id]: number \| null } }` | Um número por id; nulo = `unavailable` |
+| worker → host | `{ type: "shapeResult", id, shape: [pieceKey, nome][] }` ou `{ …, failed: true }` | Só a chave e o nome de cada parte, nunca um valor; o main confere de novo antes de guardar (sem nome de personagem) |
 
 Durante a implementação: o `formula` de um nó é `[termos, números]`. Os termos são a linha com nomes partida em nomes, números do código e operadores; um nome ou caminho de filho fica inteiro, mesmo com parênteses. Os operadores são os sinais (`× ÷ + − - * / ^ :`), os parênteses, a vírgula e os nomes de conta (`min`, `max`, `pow`, `floor`, `ceil`, `round`, `abs`, `sqrt`, `log`, `log10`, `log₁₀`). Os números são todos os da linha com números, em ordem, sem a vírgula de milhar, com o resultado por último. Cada termo que não é operador leva o próximo número.
 
