@@ -7,7 +7,7 @@ import { isNameText, transformText } from "./name-text.ts";
 import { partTable } from "./names-table.ts";
 import type { NamePart } from "./names-table.ts";
 
-type At = (i: string | number) => readonly (string | number)[];
+type At = (...i: (string | number)[]) => readonly (string | number)[];
 interface TableText {
   /** The table, by the id its hash goes by (an item or a monster by its entry). */
   test: RegExp;
@@ -127,6 +127,120 @@ export const TABLE_TEXTS = {
     "raw",
     "bench pieces.cjs rename NAMES deep-2 skillNameOf; N.js RiftStuff",
   ),
+  // the game state paths' rules (tree/state-names.ts)
+  compass: text(
+    "CustomLists.CompassUpg",
+    (n) => [n, 0],
+    null,
+    "clean",
+    "N.js Windwalker CompassBonus",
+  ),
+  jelly: text(
+    "CustomLists.JellyUPG",
+    (n) => [n, 0],
+    null,
+    "clean",
+    "N.js JellyOperation UpgradeQTY",
+  ),
+  talent: text(
+    "CustomLists.TalentIconNames",
+    (n) => [n],
+    null,
+    "clean",
+    "N.js TalentCalc",
+  ),
+  tome: text(
+    "CustomLists.Tome",
+    (k) => [k, 0],
+    null,
+    "clean",
+    "N.js _customEvent_TomeQTY",
+  ),
+  lab: text(
+    "CustomLists.LabMainBonus",
+    (k) => [k, 6],
+    null,
+    "clean",
+    "N.js MainframeBonus",
+  ),
+  dream: text(
+    "CustomLists.DreamUpg",
+    (u) => [u, 0],
+    null,
+    "clean",
+    "N.js Dreamstuff",
+  ),
+  /** The kind of a Summoning win's bonus, a number: the bonus's text is the kind's, one row up (`summonWinText`). */
+  summonWin: text(
+    "CustomLists.SummonEnemies",
+    (r) => [9, r],
+    null,
+    "raw",
+    "N.js Summoning WinBonus",
+  ),
+  summonWinText: text(
+    "CustomLists.SummonEnemies",
+    (t) => [6, t],
+    null,
+    "clean",
+    "N.js Summoning WinBonus",
+  ),
+  landRankUpgrade: text(
+    "CustomLists.NinjaInfo",
+    (k) => [34, k],
+    null,
+    "clean",
+    "N.js FarmingStuffs LankRankUpgBonus",
+  ),
+  bubba: text(
+    "CustomLists.BubbaUpg",
+    (t) => [t, 0],
+    null,
+    "clean",
+    "N.js Bubbastuff TotUpgBonus",
+  ),
+  atom: text(
+    "CustomLists.AtomInfo",
+    (n) => [n, 0],
+    null,
+    "clean",
+    "N.js AtomCollider",
+  ),
+  research: text(
+    "CustomLists.Research",
+    (list, i) => [list, i],
+    null,
+    "clean",
+    "N.js MenagerieStuff BoostQTY; N.js FarmingStuffs StickerBonus",
+  ),
+  killroyShop: text(
+    "CustomLists.SkullShopDesc",
+    (q) => [q, 0],
+    null,
+    "clean",
+    "N.js RandomEvent KillroyBonuses",
+  ),
+  fishToolkit: text(
+    "CustomLists.FishToolkitInfo",
+    (k, j) => [k, j, 0],
+    null,
+    "clean",
+    "N.js FishingToolkit",
+  ),
+  ninjaItem: text(
+    "CustomMaps.NjEQ",
+    (id) => [id, 2],
+    null,
+    "clean",
+    "N.js Ninja GemstoneBonus",
+  ),
+  summonUpgradeName: text(
+    "CustomLists.SummonUPG",
+    (n) => [n, 3],
+    null,
+    "clean",
+    "N.js Summoning SummUpgBonus",
+  ),
 } as const;
 
 // ponytail: one set of the installed game's tables per worker, set once at its boot (tree-engine.ts), as the names'.
@@ -159,13 +273,19 @@ export function partText(p: NamePart): string | null {
 /** The text that names row `i` of a table text, or null. */
 export function tableText(
   kind: keyof typeof TABLE_TEXTS,
-  i: string | number,
+  ...i: (string | number)[]
 ): string | null {
   const t = TABLE_TEXTS[kind];
   return partText({
     table: t.table,
-    index: t.at(i),
+    index: t.at(...i),
     field: t.field,
     transform: t.transform,
   });
+}
+
+/** How many rows the checked table of a table text has; null when the boot did not check it as a list. */
+export function tableRows(kind: keyof typeof TABLE_TEXTS): number | null {
+  const v = gameTables.get(TABLE_TEXTS[kind].table);
+  return Array.isArray(v) ? v.length : null;
 }

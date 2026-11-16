@@ -7,6 +7,7 @@
 // were converted from the export.
 import recipes from "./names-recipes.json" with { type: "json" };
 import statics from "./names-static.json" with { type: "json" };
+import stateHashes from "./state-hashes.json" with { type: "json" };
 
 export interface NamePart {
   /** `CustomLists.X`, `CustomMaps.X`, `ItemDefinitionsGET` or `MonsterDefinitionsGET`. */
@@ -67,11 +68,13 @@ export const NAME_RECIPES: readonly NameRecipe[] = [
   })),
 ];
 
-/** The sha256 of each table a recipe reads, at the version the bench saw, by table id (`partTable`). */
+/** The sha256 of each table a recipe reads, at the version the bench saw, by table id (`partTable`); then the tables
+ * only the game state paths' rules read (tree/state-names.ts), at 0e47e87b. */
 export const TABLE_HASHES: ReadonlyMap<string, string> = new Map(
-  (recipes.hashes as unknown as readonly (readonly [string, string])[]).map(
-    ([sha, id]) => [id, sha],
-  ),
+  [...recipes.hashes, ...stateHashes.hashes].map(([sha = "", id = ""]) => [
+    id,
+    sha,
+  ]),
 );
 
 /** The id the hash of a part's table goes by: a list whole, an item or a monster by its entry. */
