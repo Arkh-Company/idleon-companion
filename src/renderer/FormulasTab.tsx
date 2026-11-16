@@ -3,7 +3,7 @@
 // the main keeps live (plan B), and a tapped value opens its tree in the side panel, as the Stats does. The system
 // panels (SystemPanel.tsx) list their numbers with the same table and the same live values.
 import { useEffect, useState } from "react";
-import { statsNumber, TREE_CATALOG } from "../shared/index.ts";
+import { catalogName, statsNumber, TREE_CATALOG } from "../shared/index.ts";
 import type { CatalogNumber, LiveValues, Stats } from "../shared/index.ts";
 import type { Side } from "./SidePanel.tsx";
 import { LastReading, STATS_TREES } from "./StatsPanel.tsx";
@@ -20,8 +20,9 @@ const GROUPS = [
 
 /** The Stats numbers by the names their trees have in the Stats (design.md C9: Damage is Max and Min damage). */
 const STATS_NAMES = new Map(Object.values(STATS_TREES).flat());
-// ponytail: a catalog id is the name until the names table (US1c) names the trees.
-export const nameOf = (id: string) => STATS_NAMES.get(id) ?? id;
+/** A number's name on screen (the catalog's); the id only for a root still waiting for the bench's name. */
+export const nameOf = (id: string) =>
+  STATS_NAMES.get(id) ?? catalogName(id) ?? id;
 
 export function valueText(id: string, v: number | null | undefined): string {
   if (v === undefined) return "calculating";

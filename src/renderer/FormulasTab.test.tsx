@@ -13,7 +13,7 @@ import { App } from "./App.tsx";
 import { stubCompanion } from "./companion-stub.ts";
 import type { CompanionStub } from "./companion-stub.ts";
 import { FR038_GROUPS } from "../shared/tree-catalog-fixture.ts";
-import { FormulasTab } from "./FormulasTab.tsx";
+import { FormulasTab, nameOf } from "./FormulasTab.tsx";
 
 const STATS: Stats = { state: "ready", rows: [{ label: "HP", text: "500" }] };
 const idsOf = (group: string) =>
@@ -125,4 +125,10 @@ test("at 210 px CSS a long catalog id wraps instead of scrolling sideways (FR-03
   );
   const css = readFileSync(join(import.meta.dirname, "styles.css"), "utf8");
   expect(css).toMatch(/.formulas th {[^}]*overflow-wrap: anywhere/);
+});
+
+test("a number shows the catalog's name, and a Stats number its Stats row's (Vinicius, 16/11)", () => {
+  const named = TREE_CATALOG.find((n) => n.system !== "Stats" && n.name);
+  expect(nameOf(named?.id ?? "")).toBe(named?.name);
+  expect(nameOf("damageMax")).toBe("Max damage");
 });

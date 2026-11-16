@@ -2,6 +2,7 @@
 // "Game changed · Refresh" lights over it (FR-024). The root is checked against the Stats number (FR-019) and what the
 // worker sends is checked before it reaches the window (FR-010b). No electron import, so tests can load it.
 import {
+  catalogName,
   compareTrees,
   isLiveNumber,
   rootText,
@@ -69,7 +70,7 @@ export function treeAnswer(
     tree: {
       state: "ready",
       request,
-      title: stats?.label ?? request.id,
+      title: stats?.label ?? catalogName(request.id) ?? request.id,
       rootText: textOf(root.value),
       statsValue,
       character: request.character,

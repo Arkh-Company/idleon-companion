@@ -2,7 +2,7 @@
 // the Stats' mosaic, and the `formula:values` payload checked at the main's edge. The tree host is a fake; every value
 // and name is invented.
 import { expect, test } from "vitest";
-import { TREE_CATALOG } from "../shared/index.ts";
+import { catalogName, TREE_CATALOG } from "../shared/index.ts";
 import {
   mosaicFor,
   node,
@@ -158,4 +158,14 @@ test("new game files close the tree and take its number out of view", () => {
   h.p.request({ id: "dropRate", character: null });
   h.p.gameFiles("C:/invented");
   expect(h.host.values.mock.calls.at(-1)?.[1]).toEqual(["str"]);
+});
+
+test("a number's tree has the catalog's name for its title, never the game's id", () => {
+  const id =
+    TREE_CATALOG.find((n) => n.system !== "Stats" && n.name !== null)?.id ?? "";
+  const h = setup();
+  h.p.request({ id, character: null });
+  h.tree(node({ value: 4 }));
+  expect(h.last()).toMatchObject({ title: catalogName(id) });
+  expect(catalogName(id)).not.toBe(id);
 });

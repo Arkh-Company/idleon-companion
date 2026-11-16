@@ -58,6 +58,7 @@ export {
   statsNumber,
 } from "./stats-text.ts";
 export {
+  catalogName,
   isCatalogId,
   isLiveNumber,
   LIVE_MAP_TEXT,

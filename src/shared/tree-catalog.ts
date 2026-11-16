@@ -1,12 +1,18 @@
 // The numbers that have a formula tree (data-model.md, "Catálogo de números"): what the window lists and the main
 // accepts in a request. The game's call of each id is not here: it lives in the calculator (src/calculator/tree-roots.ts),
 // pinned against this list by a test. The list is the bench's curation at BASELINE-4 (CATALOGO-008-app), in the game's
-// order (FR-038): identifiers only, never a phrase of the game (FR-032); tree-catalog.test.ts checks each field.
+// order (FR-038): identifiers only, never a phrase of the game (FR-032), and each number's name on screen from the names
+// table (catalog-names.test.ts in the calculator pins it); tree-catalog.test.ts checks each field.
 import numbers from "./number-catalog.json" with { type: "json" };
 
 export interface CatalogNumber {
   /** Unique and stable. */
   id: string;
+  /**
+   * The name on screen: the root's proven name in the names table, else the bench's P2 rule's (Vinicius, 16/11),
+   * pinned by src/calculator/catalog-names.test.ts; null only while a root waits for the bench's name.
+   */
+  name: string | null;
   /** The group of the Formulas tab, in the order of FR-038: Character, Account, W1…W7, then the skills. */
   group: string;
   /** The system or skill, inside the group (the second level of the Formulas tab). */
@@ -62,6 +68,13 @@ export function panelSystems(label: string): string[] {
     }
   return systems;
 }
+
+const NAMES: ReadonlyMap<string, string | null> = new Map(
+  TREE_CATALOG.map((n) => [n.id, n.name]),
+);
+
+/** The catalog number's name on screen; null outside the catalog or while it waits for the bench's name. */
+export const catalogName = (id: string): string | null => NAMES.get(id) ?? null;
 
 /** The id is a number of the catalog. */
 export const isCatalogId = (id: unknown): id is string =>
