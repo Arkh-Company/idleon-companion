@@ -12,6 +12,7 @@ import { near } from "./math.ts";
 import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import { artifactPick } from "./sailing.ts";
 import { arenaPasses } from "./arena.ts";
+import { pommelion } from "./pommelion.ts";
 import { leafRules, mapsCount } from "./leaf-passes.ts";
 import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
@@ -40,7 +41,7 @@ function absorb(n: Row, c: Row): Row {
 /**
  * Row `r` and its level named as pieces.cjs names every level before its structurePass: rule 67, fixNames' loop (a
  * parent whose one child says it again is that child, with the child's rows), the shiny level, the rows' names by the
- * row and the texts `above` it (tree/kid-names.ts), then nametagGrade over them. `text` is the row's text as the levels
+ * row and the texts `above` it (tree/kid-names.ts), then nametagGrade over them and pommelionPass (tree/pommelion.ts). `text` is the row's text as the levels
  * under it see it, before nametagGrade renames it (pieces.cjs fixNames' rule 5 runs before nametagGrade).
  */
 function nameLevel(
@@ -64,9 +65,11 @@ function nameLevel(
   }
   n = withName(n, shinyLevel(n, lv.rows));
   const tag = nametagGrade(n, kidNames(lv.rows, n.node, above));
+  const row = withName(n, tag.name);
   return {
-    row: withName(n, tag.name),
-    level: { ...lv, rows: tag.kids },
+    row,
+    // pommelionPass, after nametagGrade as the bench runs it
+    level: pommelion(row, { ...lv, rows: tag.kids }),
     text: aboveText(n.node),
   };
 }

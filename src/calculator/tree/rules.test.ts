@@ -39,6 +39,7 @@ import {
 import { ARTIFACT_PICK } from "./sailing.ts";
 import { ARENA, JAR, MEASURE } from "./arena.ts";
 import { LAST_RENAMES } from "./last-renames.ts";
+import { POMMELION } from "./pommelion.ts";
 import {
   ABOVE_RENAMES,
   BUBBLE_FACTOR,
@@ -103,6 +104,7 @@ const TABLES = {
   ARTIFACT_PICK: [ARTIFACT_PICK],
   ARENA: [ARENA, JAR, MEASURE],
   LAST_RENAMES: Object.values(LAST_RENAMES),
+  POMMELION: [POMMELION],
   FIX_NAMES: Object.values(FIX_NAMES),
   SYSTEM_TAGS,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),
