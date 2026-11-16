@@ -298,12 +298,15 @@ export function savedFiles(dir: string): {
     { reset: SHAPES_RESET, unsaved: SHAPES_UNSAVED },
   );
 
-  /** The mark whose write failed: saved again, it is written again; any other name taken stays taken. */
-  let failed: { n: number; name: string } | null = null;
-  /** Writes the marks; a write that works leaves nothing unsaved. */
-  const write = (all: Map<string, Mark[]>, mark: typeof failed) => {
+  /** The marks whose write failed, by character and name: saved again, they are written again; any other name taken
+   * stays taken. */
+  const unsaved = new Set<string>();
+  const keyOf = (n: number, name: string) => `${String(n)}\n${name}`;
+  /** Writes the marks: a refused write keeps `key` to write again; one that works leaves all on disk. */
+  const write = (all: Map<string, Mark[]>, key: string | null) => {
     const refused = marks.save(all);
-    failed = refused === null ? null : mark;
+    if (refused === null) unsaved.clear();
+    else if (key !== null) unsaved.add(key);
     return refused;
   };
 
@@ -313,14 +316,13 @@ export function savedFiles(dir: string): {
       save(n, name, values) {
         const all = marks.load();
         const list = all.get(String(n)) ?? [];
+        const key = keyOf(n, name);
         // A mark goes only with Clear (FR-025); saved again after its write failed, it is written again.
         if (list.some((m) => m.name === name))
-          return failed?.n === n && failed.name === name
-            ? write(all, failed)
-            : MARK_TAKEN;
+          return unsaved.has(key) ? write(all, key) : MARK_TAKEN;
         if (list.length >= MAX_MARKS) return MARKS_FULL;
         all.set(String(n), [...list, { name, takenAt: Date.now(), values }]);
-        return write(all, { n, name });
+        return write(all, key);
       },
       clear(n, name) {
         const all = marks.load();
@@ -328,8 +330,8 @@ export function savedFiles(dir: string): {
         if (left.length > 0) all.set(String(n), left);
         else all.delete(String(n));
         // The mark cleared is no longer one to write again.
-        const keep = failed?.n === n && failed.name === name ? null : failed;
-        return write(all, keep);
+        unsaved.delete(keyOf(n, name));
+        return write(all, null);
       },
       warning: marks.warning,
     },

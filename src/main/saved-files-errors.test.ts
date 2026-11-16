@@ -84,3 +84,18 @@ test("after a Clear whose write failed, saving a mark that exists is still 'alre
   rmdirSync(join(dir, "marks.json.tmp"));
   expect(marks.save(0, "Mark 1", { k: 1 })).toBe(MARK_TAKEN);
 });
+
+test("two mark writes failing in a row: saving the first again writes both", () => {
+  const dir = mkdtempSync(join(tmpdir(), "twice-"));
+  mkdirSync(join(dir, "marks.json.tmp"));
+  const { marks } = savedFiles(dir);
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(MARKS_UNSAVED);
+  expect(marks.save(0, "Mark 2", { k: 2 })).toBe(MARKS_UNSAVED);
+  rmdirSync(join(dir, "marks.json.tmp"));
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(null);
+  expect(
+    savedFiles(dir)
+      .marks.list(0)
+      .map((m) => m.name),
+  ).toEqual(["Mark 1", "Mark 2"]);
+});
