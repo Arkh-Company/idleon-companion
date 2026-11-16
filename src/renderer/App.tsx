@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { modulesFor } from "../shared/index.ts";
+import { modulesFor, panelSystems } from "../shared/index.ts";
 import type {
   Characters,
   FarmUpdate,
@@ -52,9 +52,12 @@ export function App() {
   const [status, setStatus] = useState<Status | null>(null);
   /** The last context with a system panel: a screen without one keeps it (FR-033). */
   const [panelCtx, setPanelCtx] = useState<GameContext | null>(null);
+  /** The screen of the last context: the main sends it just before the panel switch, which names its systems. */
+  const screenLabel = useRef("");
   useEffect(
     () =>
       window.companion.onContext((c) => {
+        screenLabel.current = c.screen.label;
         setCtx(c);
         if (modulesFor(c, SYSTEM_PANELS).length > 0) setPanelCtx(c);
       }),
@@ -70,14 +73,29 @@ export function App() {
   const announce = useCallback((text: string) => {
     setSaid((s) => ({ text, n: s.n + 1 }));
   }, []);
-  // One switch, one sentence; cleared on a screen without a panel.
+  // One switch, one sentence, with every system the screen shows; cleared on a screen without a panel. Coming back to the
+  // systems the panel tab still shows is no new switch to say (Vinicius, 16/11).
   useEffect(() => {
     let last: string | null = null;
+    let saidFor: string | null = null;
     return window.companion.onPanel(({ system }) => {
       if (system === last) return;
       last = system;
-      announce(system === null ? "" : `${system} panel`);
-      if (system !== null) setTab("panel");
+      if (system === null) {
+        announce("");
+        return;
+      }
+      setTab("panel");
+      const all = panelSystems(screenLabel.current);
+      const shown = all.includes(system) ? all : [system];
+      const key = shown.join("|");
+      if (key === saidFor) return;
+      saidFor = key;
+      const names =
+        shown.length === 1
+          ? system
+          : `${shown.slice(0, -1).join(", ")} and ${String(shown.at(-1))}`;
+      announce(`${names} ${shown.length === 1 ? "panel" : "panels"}`);
     });
   }, [announce]);
   const [live, setLive] = useState<LiveValues | null>(null);

@@ -156,7 +156,7 @@ test("✕ after a switch removed the number that opened the tree puts the focus 
   expect(document.activeElement).toBe(tabPanel());
 });
 
-test("the switch is said once in a polite live region, and again on the next switch (FR-040)", async () => {
+test("the switch is said once in a polite live region, and not again on a return to the same system (FR-040)", async () => {
   await app();
   expect(announced()?.textContent).toBe("");
   gameOn("Stamps", "Stamps");
@@ -167,9 +167,18 @@ test("the switch is said once in a polite live region, and again on the next swi
   gameOn("World Map", null);
   expect(announced()?.textContent).toBe("");
   expect(tab("Stats").getAttribute("aria-selected")).toBe("true");
+  // Vinicius, 16/11: the panel tab still shows Stamps, so coming back is no new switch to say.
   gameOn("Stamps", "Stamps");
-  expect(announced()?.textContent).toBe("Stamps panel");
+  expect(announced()?.textContent).toBe("");
   expect(tab("Panel").getAttribute("aria-selected")).toBe("true");
+  gameOn("Stamps › Bribes", "Bribes");
+  expect(announced()?.textContent).toBe("Bribes panel");
+});
+
+test("a screen that several systems share says each one's panel", async () => {
+  await app();
+  gameOn("Items › Skills", "Mining");
+  expect(announced()?.textContent).toBe("Mining, Choppin and Fishing panels");
 });
 
 // The panel itself (FR-004, FR-034).
