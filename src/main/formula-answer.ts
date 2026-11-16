@@ -52,7 +52,7 @@ export function treeAnswer(
     };
   // A live-game number with no value at its root: the actor it reads was not on the map (US12, FR-023).
   if (isLiveNumber(request.id) && checked.value === null)
-    return { tree: { state: "unavailable", request } };
+    return { tree: { state: "unavailable", request, liveMap: true } };
   const stats = statsNumber(request.id);
   const statsValue = stats
     ? pair.numbers[request.id as keyof StatsPair["numbers"]]

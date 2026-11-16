@@ -5,12 +5,7 @@
 // character picker asks another character's tree of the same number (FR-020).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  changes,
-  compareValues,
-  isLiveNumber,
-  LIVE_MAP_TEXT,
-} from "../shared/index.ts";
+import { changes, compareValues, LIVE_MAP_TEXT } from "../shared/index.ts";
 import type {
   Characters,
   FormulaTree as Tree,
@@ -263,7 +258,7 @@ function Body({
     case "waiting":
       return <p>Waiting for the game</p>;
     case "unavailable":
-      return tree.request.type === "number" && isLiveNumber(tree.request.id) ? (
+      return tree.liveMap ? (
         <p>{LIVE_MAP_TEXT}</p>
       ) : (
         <p>Calculator unavailable. The formulas can't be calculated now.</p>

@@ -337,11 +337,25 @@ function SIDE_REQUEST() {
 test("a live-game number that is unavailable says why, in the player's words (US12)", () => {
   const id = TREE_CATALOG.find((n) => n.live)?.id ?? "";
   drawPanel(
-    { state: "unavailable", request: { type: "number", id, character: 1 } },
+    {
+      state: "unavailable",
+      request: { type: "number", id, character: 1 },
+      liveMap: true,
+    },
     { label: id, text: "", trees: [[id, id]], id },
   );
   expect(screen.getByText(LIVE_MAP_TEXT)).toBeDefined();
   expect(screen.queryByText(/Calculator unavailable/)).toBe(null);
+});
+
+test("a live-game number whose calculator failed says the calculator is unavailable, not the live map", () => {
+  const id = TREE_CATALOG.find((n) => n.live)?.id ?? "";
+  drawPanel(
+    { state: "unavailable", request: { type: "number", id, character: 1 } },
+    { label: id, text: "", trees: [[id, id]], id },
+  );
+  expect(screen.getByText(/Calculator unavailable/)).toBeDefined();
+  expect(screen.queryByText(LIVE_MAP_TEXT)).toBe(null);
 });
 
 test("a tree of another number is not shown: the panel waits for its own", () => {

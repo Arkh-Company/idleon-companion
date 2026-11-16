@@ -104,6 +104,17 @@ test("a live-game number whose root came with no value is unavailable: its actor
   expect(h.last()).toEqual({
     state: "unavailable",
     request: { type: "number", id: LIVE_ID, character: 0 },
+    liveMap: true,
+  });
+});
+
+test("a live-game number whose worker failed is unavailable with no word of the live map", () => {
+  const h = setup();
+  h.p.request({ id: LIVE_ID, character: null });
+  h.unavailable();
+  expect(h.last()).toEqual({
+    state: "unavailable",
+    request: { type: "number", id: LIVE_ID, character: 0 },
   });
 });
 

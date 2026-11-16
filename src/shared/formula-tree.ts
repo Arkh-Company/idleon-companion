@@ -135,7 +135,12 @@ export type FormulaTree =
   | { state: "none" }
   | { state: "waiting" }
   | { state: "calculating"; request: TreeRequest }
-  | { state: "unavailable"; request: TreeRequest }
+  | {
+      state: "unavailable";
+      request: TreeRequest;
+      /** A live-game number whose map actor is not on the map (FR-023); absent when the calculator failed. */
+      liveMap?: true;
+    }
   | { state: "diverged"; request: TreeRequest; statsText: string }
   | {
       state: "ready";
