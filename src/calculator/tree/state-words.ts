@@ -24,6 +24,11 @@ export const rule = (
   },
 });
 export const n = (m: RegExpExecArray, k = 1): number => Number(m[k]);
+/** The path of a helper actor's working list, as the recorder writes it. */
+export const GEN_INFO = (slot: number, event: number): string =>
+  `PixelHelperActor[${String(slot)}].behaviors.getBehavior(ActorEvents_${String(event)})._GenINFO`;
+export const escape = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const plus1 = (m: RegExpExecArray, k = 1) => String(n(m, k) + 1);
 
 const ACRONYM = /^(?:AGI|STR|WIS|LUK|XP|EXP|AFK|MC|DMG|ACC|SPD|ATK|HP|MP)$/;
@@ -74,10 +79,10 @@ const CACHES: Readonly<Record<string, string>> = {
   SpelunkyChDN: "Spelunk chapter bonus (cached)",
   DreamDN1: "Dream bar fill requirement (cached)",
   RooDN1: "Roo cost and shiny multiplier (cached)",
-  RooDN3: "Roo reset bonus (cached 3)",
-  RooDN4: "Roo reset bonus (cached 4)",
+  RooDN3: "Roo reset bonus 3 (cached)",
+  RooDN4: "Roo reset bonus 4 (cached)",
   DropRateLUK: "Drop Rate from LUK",
-  DropRateLUK2: "Drop Rate from LUK (second part)",
+  DropRateLUK2: "Drop Rate from LUK, second part",
   CaptnBonuz: "Captain Slabbo bonus (cached)",
   GfoodBonus: "Golden food bonus (cached)",
   GfoodBonusMULTI: "Golden food bonus multiplier",
@@ -101,8 +106,6 @@ const SCRATCH: Readonly<Record<string, string>> = {
 };
 const DEPTHS = ["Weight", "Yellow Depth", "Red Depth", "Purple Depth"];
 const CAVERNS = ["Motherlode", "Eternal Hive", "Evertree Cavern", "4th cavern"];
-const SUMMONING_FIGHT =
-  "PixelHelperActor\\[24\\]\\.behaviors\\.getBehavior\\(ActorEvents_623\\)\\._GenINFO";
 
 /** The rules in words, the first that matches decides. */
 export const WORD_RULES: readonly StateRule[] = [
@@ -154,7 +157,7 @@ export const WORD_RULES: readonly StateRule[] = [
   rule(
     /^PlayerDATABASE\[(\d+)\]\.CharacterClass$/,
     "bench names-sailing.cjs; N.js LoadPlayerInfo",
-    (m) => `Class (character slot ${plus1(m)})`,
+    (m) => `Character ${plus1(m)}: Class`,
   ),
   rule(
     /^Spelunk\[4\]\[(1|10)\]$/,
@@ -168,7 +171,7 @@ export const WORD_RULES: readonly StateRule[] = [
     (m) => `Sneaking symbol ${String(n(m))} LV`,
   ),
   rule(
-    new RegExp(`^${SUMMONING_FIGHT}\\[(146|132)\\]$`),
+    new RegExp(`^${escape(GEN_INFO(24, 623))}\\[(146|132)\\]$`),
     "N.js Summoning2 battle, inferred",
     (m) =>
       n(m) === 146
@@ -188,7 +191,7 @@ export const WORD_RULES: readonly StateRule[] = [
   rule(
     /^Holes\[11\]\[(1|3|5|7)\]$/,
     "N.js _customEvent_TomeQTY Holes sum, the order of the caverns inferred",
-    (m) => `Resource Layers Destroyed (${CAVERNS[(n(m) - 1) / 2] ?? ""})`,
+    (m) => `${CAVERNS[(n(m) - 1) / 2] ?? ""}: Resource Layers Destroyed`,
   ),
   rule(
     /^Holes\[11\]\[55\]$/,
@@ -217,9 +220,9 @@ export const WORD_RULES: readonly StateRule[] = [
     ),
     "bench build-tree.cjs inputOf, the scratch numbers by their block, inferred",
     (m) =>
-      `Working value of the game (${SCRATCH[m[1] ?? ""] ?? ""}${
+      `${SCRATCH[m[1] ?? ""] ?? ""} working value${
         m[2] === undefined ? "" : `, part ${plus1(m, 2)}`
-      })`,
+      }`,
   ),
   rule(
     /^Menagerie\[0\]\[(8|11|12|13|14)\]$/,

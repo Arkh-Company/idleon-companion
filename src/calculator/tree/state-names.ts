@@ -4,11 +4,9 @@
 // name of the Tome's line k. A character is only its slot. The rules in words are in tree/state-words.ts. A name that
 // already exists wins (tree/names.ts): an item's bonus value keeps the rename's, now that the item's table is checked.
 import { tableRows, tableText } from "./table-names.ts";
-import { n, rule, WORD_RULES } from "./state-words.ts";
+import { escape, GEN_INFO, n, rule, WORD_RULES } from "./state-words.ts";
 import type { StateRule } from "./state-words.ts";
 
-const GEN_INFO = (slot: number, event: number) =>
-  `PixelHelperActor[${String(slot)}].behaviors.getBehavior(ActorEvents_${String(event)})._GenINFO`;
 const OLA = (i: number) => `OptionsListAccount[${String(i)}]`;
 
 /** N.js _customEvent_TomeQTY: the paths the Tome keeps as they are, by the Tome's line. */
@@ -35,7 +33,6 @@ export const TOME_PATHS: ReadonlyMap<string, number> = new Map([
   [`${GEN_INFO(9, 498)}[12]`, 17],
   [`${GEN_INFO(24, 623)}[143][9]`, 71],
 ]);
-const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** `text` in `form`, or null with no text. */
 const with_ = (text: string | null, form: (t: string) => string) =>
@@ -50,9 +47,9 @@ const FISH = [
   "Speed",
   "POW",
 ];
-const COST = ["", "cost base", "cost growth"];
-const ATOM = [...COST, "column 3", "bonus per level"];
-const BUBBA = [...COST, "bonus per level"];
+const COLUMNS = ["", "cost base", "cost growth", "bonus per level"];
+/** AtomInfo's columns: the bonus per level is the fourth. */
+const ATOM = ["", "cost base", "cost growth", "", "bonus per level"];
 
 /** The rules by a table, the first that matches decides. */
 const TABLE_RULES: readonly StateRule[] = [
@@ -73,13 +70,13 @@ const TABLE_RULES: readonly StateRule[] = [
     /^PlayerDATABASE\[(\d+)\]\.Lv0\[(\d+)\]$/,
     "bench names-sailing.cjs Lv0; N.js _customEvent_TomeQTY",
     (m) => {
-      const slot = `(character slot ${String(n(m) + 1)})`;
-      if (n(m, 2) === 0) return `Class LV ${slot}`;
+      const slot = `Character ${String(n(m) + 1)}:`;
+      if (n(m, 2) === 0) return `${slot} Class level`;
       const skill = tableText("skill", n(m, 2) - 1);
       // a skill the list holds as a number is no skill's name
       return skill === null || /^\d+$/.test(skill)
         ? null
-        : `${skill} LV ${slot}`;
+        : `${slot} ${skill} level`;
     },
   ),
   rule(
@@ -117,13 +114,12 @@ const TABLE_RULES: readonly StateRule[] = [
   rule(
     /^Spelunk\[49\]\[(\d+)\]$/,
     "bench pieces.cjs PaletteBonus; N.js GamingStatType",
-    (m) => with_(tableText("colour", n(m)), (t) => `${t} black star tier`),
+    (m) => with_(tableText("colour", n(m)), (t) => `${t} black star`),
   ),
   rule(
     /^CustomLists\.FishToolkitInfo\[([01])\]\[(\d+)\]\[1\]$/,
     "N.js FishingToolkit mode D0, inferred",
-    (m) =>
-      with_(tableText("fishToolkit", n(m), n(m, 2)), (t) => `${t} (Weight)`),
+    (m) => with_(tableText("fishToolkit", n(m), n(m, 2)), (t) => `${t} Weight`),
   ),
   rule(
     /^CustomLists\.FishToolkitInfo\[([01])\]\[(\d+)\]\[([2-7])\]$/,
@@ -131,13 +127,13 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("fishToolkit", n(m), n(m, 2)),
-        (t) => `${t} (${FISH[n(m, 3)] ?? ""})`,
+        (t) => `${t} ${FISH[n(m, 3)] ?? ""}`,
       ),
   ),
   rule(
     new RegExp(`^${escape(GEN_INFO(22, 548))}\\[92\\]\\[(\\d+)\\]$`),
     "N.js MainframeBonus",
-    (m) => with_(tableText("lab", n(m)), (t) => `${t} connected (Lab)`),
+    (m) => with_(tableText("lab", n(m)), (t) => `${t} connected`),
   ),
   rule(/^Dream\[(\d+)\]$/, "N.js Dreamstuff; N.js TotalStats", (m) =>
     with_(tableText("dream", n(m) - 2), (t) => `${t} LV`),
@@ -208,10 +204,14 @@ const TABLE_RULES: readonly StateRule[] = [
       with_(tableText("research", 23, n(m)), (t) => `${t} (bonus per sticker)`),
   ),
   rule(
-    /^CustomLists\.AtomInfo\[(\d+)\]\[([1-4])\]$/,
+    /^CustomLists\.AtomInfo\[(\d+)\]\[([124])\]$/,
     "N.js AtomCollider",
-    (m) =>
-      with_(tableText("atom", n(m)), (t) => `${t} (${ATOM[n(m, 2)] ?? ""})`),
+    (m) => with_(tableText("atom", n(m)), (t) => `${t} ${ATOM[n(m, 2)] ?? ""}`),
+  ),
+  rule(
+    /^CustomLists\.AtomInfo\[(\d+)\]\[3\]$/,
+    "N.js AtomCollider cost, inferred",
+    (m) => with_(tableText("atom", n(m)), (t) => `${t} max LV`),
   ),
   rule(
     /^CustomMaps\.NjEQ\.(\w+)\[(3|5)\]$/,
@@ -219,7 +219,7 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("ninjaItem", m[1] ?? ""),
-        (t) => `${t} (${n(m, 2) === 3 ? "base bonus" : "bonus growth"})`,
+        (t) => `${t} ${n(m, 2) === 3 ? "base bonus" : "bonus growth"}`,
       ),
   ),
   rule(
@@ -237,7 +237,7 @@ const TABLE_RULES: readonly StateRule[] = [
     /^CustomLists\.BubbaUpg\[(\d+)\]\[([1-3])\]$/,
     "N.js Bubbastuff TotUpgBonus",
     (m) =>
-      with_(tableText("bubba", n(m)), (t) => `${t} (${BUBBA[n(m, 2)] ?? ""})`),
+      with_(tableText("bubba", n(m)), (t) => `${t} ${COLUMNS[n(m, 2)] ?? ""}`),
   ),
   rule(
     /^QuestComplete\.([A-Za-z_]+?)(\d+)$/,

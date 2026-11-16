@@ -3,7 +3,13 @@
 // proofs say "inferred"). The tables here hold only the cells the examples read, with the installed game's text at
 // 0e47e87b; a character is only ever its slot.
 import { afterEach, expect, test } from "vitest";
-import { isNameText, nameOf, SHAPE_NAMES, useGameNames } from "./names.ts";
+import {
+  isNameText,
+  nameOf,
+  pathName,
+  SHAPE_NAMES,
+  useGameNames,
+} from "./names.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import { useGameTables } from "./table-names.ts";
 import { TOME_PATHS } from "./state-names.ts";
@@ -44,10 +50,10 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["Research[4][0]", "Observation 1 LV", 1],
   ["Research[2][0]", "Observation 1 found", 1],
   ["Research[7][14]", "Jelly Operator daily Bloodcell bonus (%)", 1],
-  ["PlayerDATABASE[0].Lv0[9]", "Worship LV (character slot 1)"],
-  ["PlayerDATABASE[3].Lv0[20]", "Research LV (character slot 4)"],
-  ["PlayerDATABASE[1].Lv0[15]", "Gaming LV (character slot 2)"],
-  ["PlayerDATABASE[0].CharacterClass", "Class (character slot 1)"],
+  ["PlayerDATABASE[0].Lv0[9]", "Character 1: Worship level"],
+  ["PlayerDATABASE[3].Lv0[20]", "Character 4: Research level"],
+  ["PlayerDATABASE[1].Lv0[15]", "Character 2: Gaming level"],
+  ["PlayerDATABASE[0].CharacterClass", "Character 1: Class"],
   ["CustomLists.CompassUpg[39][5]", "Circle Supremacy (bonus per level)"],
   ["CustomLists.CompassUpg[80][5]", "Abomination Slayer XXI (bonus per level)"],
   ["CustomLists.CompassUpg[42][5]", "Critter Culture (bonus per level)"],
@@ -65,16 +71,16 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["OptionsListAccount[238]", "Moissanite gemstone LV"],
   ["OptionsListAccount[369]", "Spirited Valley Emperor Boss Kills"],
   ["OptionsListAccount[594]", "Button Presses"],
-  ["Spelunk[49][28]", "Violet black star tier"],
+  ["Spelunk[49][28]", "Violet black star"],
   ["Spelunk[46].length", "Premium Hats Found"],
   ["Spelunk[6].length", "Total Spelunk Discoveries made"],
   ["Spelunk[4][1]", "Overstim LV"],
   ["Spelunk[4][10]", "Manic Mode on"],
   ["Spelunk[14][0]", "Sneaking symbol 0 LV", 1],
-  ["CustomLists.FishToolkitInfo[1][9][1]", "Zeus Gon Fishin (Weight)", 1],
-  ["CustomLists.FishToolkitInfo[1][9][2]", "Zeus Gon Fishin (Yellow Depth)"],
-  ["CustomLists.FishToolkitInfo[0][9][5]", "Valve Circles (EXP)"],
-  [`${LAB}._GenINFO[92][50]`, "Invented Link connected (Lab)"],
+  ["CustomLists.FishToolkitInfo[1][9][1]", "Zeus Gon Fishin Weight", 1],
+  ["CustomLists.FishToolkitInfo[1][9][2]", "Zeus Gon Fishin Yellow Depth"],
+  ["CustomLists.FishToolkitInfo[0][9][5]", "Valve Circles EXP"],
+  [`${LAB}._GenINFO[92][50]`, "Invented Link connected"],
   [`${SUMMONING}._GenINFO[143][9]`, "Total Career Summoning Wins"],
   [`${STAMPS}._GenINFO[106]`, "Stamp Total LV"],
   [`${SUMMONING}._GenINFO[146]`, "Summoning battle type in progress", 1],
@@ -95,22 +101,18 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["FarmRank[2][20]", "Invented Boost LV"],
   ["KRbest.stache", "Killroy Prime best: Sir Stache"],
   ["KRbest.w4c1", "Killroy Prime best: Clammie"],
-  ["Holes[11][3]", "Resource Layers Destroyed (Eternal Hive)", 1],
-  ["Holes[11][1]", "Resource Layers Destroyed (Motherlode)", 1],
+  ["Holes[11][3]", "Eternal Hive: Resource Layers Destroyed", 1],
+  ["Holes[11][1]", "Motherlode: Resource Layers Destroyed", 1],
   ["Holes[11][55]", "Ancient Golem sanctums cleared"],
   ["Bubba[2][13]", "Super Chart bonus LV"],
   ["Bubba[2][0]", "1st Slice bonus LV"],
   ["Bubba[4][0]", "Bubba die 1 value", 1],
   ["Bubba[5][0]", "Smoked meat type 1 (Bubba)", 1],
   ["PlayerStuff[1]", "Talent preset in use", 1],
-  [
-    "DummyNumbersStatManager.TotalStatsDN",
-    "Working value of the game (Total Stats)",
-    1,
-  ],
+  ["DummyNumbersStatManager.TotalStatsDN", "Total Stats working value", 1],
   [
     "DummyNumbersStatManager.PlayerHPmaxLIST[0]",
-    "Working value of the game (Max HP, part 1)",
+    "Max HP working value, part 1",
     1,
   ],
   ["CustomLists.MealINFO[6][2]", "Corn meal (bonus per level)"],
@@ -131,21 +133,23 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ],
   [
     "CustomLists.AtomInfo[11][4]",
-    "Magnesium - Trap Compounder (bonus per level)",
+    "Magnesium - Trap Compounder bonus per level",
   ],
   [
     "CustomLists.AtomInfo[1][4]",
-    "Helium - Talent Power Stacker (bonus per level)",
+    "Helium - Talent Power Stacker bonus per level",
   ],
   ["EquipmentMap[0][5].UQ1val", "Worn item (group 0 – slot 5) bonus value 1"],
-  ["CustomMaps.NjEQ.NjGem5[3]", "Moissanite (base bonus)", 1],
-  ["CustomMaps.NjEQ.NjGem5[5]", "Moissanite (bonus growth)", 1],
-  ["CustomMaps.NjEQ.NjTr18[5]", "Gold Dagger (bonus growth)", 1],
+  ["CustomLists.AtomInfo[1][3]", "Helium - Talent Power Stacker max LV", 1],
+  ["CustomLists.AtomInfo[1][1]", "Helium - Talent Power Stacker cost base"],
+  ["CustomMaps.NjEQ.NjGem5[3]", "Moissanite base bonus", 1],
+  ["CustomMaps.NjEQ.NjGem5[5]", "Moissanite bonus growth", 1],
+  ["CustomMaps.NjEQ.NjTr18[5]", "Gold Dagger bonus growth", 1],
   ["Sailing[3][41]", "Artifact slot 42 rarity (no artifact yet)"],
   ["Sailing[3][59]", "Artifact slot 60 rarity (no artifact yet)"],
   ["GamingSprout[32][1]", "Highest Immortal Snail LV"],
-  ["CustomLists.BubbaUpg[13][3]", "Super Chart (bonus per level)"],
-  ["CustomLists.BubbaUpg[0][1]", "1st Slice (cost base)"],
+  ["CustomLists.BubbaUpg[13][3]", "Super Chart bonus per level"],
+  ["CustomLists.BubbaUpg[0][1]", "1st Slice cost base"],
   ["QuestComplete.Cactolyte3", "Cactolyte quest 3 completed"],
   ["QuestComplete.Lord_of_the_Hunt2", "Lord of the Hunt quest 2 completed"],
 ];
@@ -258,6 +262,44 @@ test("a name that already exists wins over the family's rule", () => {
   }
 });
 
+// pathName cuts a name's last bracket: what tells two reads of a family apart is never in it
+test.each([
+  [["CustomMaps.NjEQ.NjGem5[3]", "CustomMaps.NjEQ.NjGem5[5]"]],
+  [[1, 2, 3, 4].map((c) => `CustomLists.AtomInfo[1][${String(c)}]`)],
+  [[1, 2, 3].map((c) => `CustomLists.BubbaUpg[0][${String(c)}]`)],
+  [
+    [1, 2, 3, 4, 5, 6, 7].map(
+      (c) => `CustomLists.FishToolkitInfo[1][9][${String(c)}]`,
+    ),
+  ],
+  [[1, 3, 5, 7].map((c) => `Holes[11][${String(c)}]`)],
+  [
+    [
+      "PlayerDATABASE[0].Lv0[9]",
+      "PlayerDATABASE[1].Lv0[9]",
+      "PlayerDATABASE[11].Lv0[0]",
+      "PlayerDATABASE[12].Lv0[0]",
+      "PlayerDATABASE[0].CharacterClass",
+      "PlayerDATABASE[1].CharacterClass",
+    ],
+  ],
+  [
+    [
+      "DummyNumbersStatManager.TotalStatsDN",
+      "DummyNumbersStatManager.PlayerHPmaxDN",
+      "DummyNumbersStatManager.PlayerHPmaxLIST[0]",
+      "DummyNumbersStatManager.PlayerHPmaxLIST[1]",
+    ],
+  ],
+  [["DNSM.RooDN3", "DNSM.RooDN4", "DNSM.DropRateLUK", "DNSM.DropRateLUK2"]],
+])("the reads %j each have their own term in the ⓘ", (codes) => {
+  useGameTables(GAME);
+  const terms = codes.map(pathName);
+  expect(new Set(terms).size).toBe(codes.length);
+  // a term is a name, never the path
+  expect(terms.filter((t, i) => t === codes[i])).toEqual([]);
+});
+
 test("the boot checks by its hash each table the examples read", () => {
   expect([...GAME.keys()].filter((id) => !TABLE_HASHES.has(id))).toEqual([]);
   // every monster, for Killroy's best of any of them
@@ -268,10 +310,10 @@ test("a character is only its slot, never a name", () => {
   useGameTables(GAME);
   for (const p of [0, 7, 10]) {
     expect(nameOf(`PlayerDATABASE[${String(p)}].Lv0[9]`)).toBe(
-      `Worship LV (character slot ${String(p + 1)})`,
+      `Character ${String(p + 1)}: Worship level`,
     );
     expect(nameOf(`PlayerDATABASE[${String(p)}].CharacterClass`)).toBe(
-      `Class (character slot ${String(p + 1)})`,
+      `Character ${String(p + 1)}: Class`,
     );
   }
   // a skill the list holds as a number is no skill's name
