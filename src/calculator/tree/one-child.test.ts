@@ -284,3 +284,34 @@ test("the rows a merge brings see a system two rows above the merged row", () =>
     "Other",
   ]);
 });
+
+/** A row with no proven name: the generic one and `unnamed`. */
+const nameless = (r: Row): Row => ({
+  ...r,
+  node: { ...r.node, name: "Game value", flags: { unnamed: true } },
+});
+
+test("a row with no proven name whose one child is a leaf with its value is that leaf, with the leaf's name", () => {
+  const { n } = placeOne(
+    { 1: [leaf("Stamp level", 6)] },
+    nameless(lazy("Drop bonus", 1)),
+  );
+  expect([n?.name, n?.flags, n?.leaf, n?.kids]).toEqual([
+    "Stamp level",
+    {},
+    "level",
+    [],
+  ]);
+});
+
+test("a row with no proven name whose one child has rows takes the child's name and rows", () => {
+  const { places, n } = placeOne(
+    { 1: [lazy("Stamp total", 2)], 2: [leaf("A", 2), leaf("B", 4)] },
+    nameless(lazy("Drop bonus", 1)),
+  );
+  expect([n?.name, n?.flags]).toEqual(["Stamp total", {}]);
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});

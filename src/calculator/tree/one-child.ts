@@ -31,24 +31,26 @@ export const isSum = (name: string, under: string): boolean =>
   (/[+×÷−]/.test(name) || callLit(name) || callLit(under)) &&
   ONE_CHILD.sum.test.test(name);
 
+/** A name that says nothing of its own: vague, or no proven name at all (the generic one, R14). */
+const vague = (n: Row) =>
+  !!n.node.flags.unnamed || ONE_CHILD.vague.test.test(n.node.name);
+
 /**
- * Row `n` with the name its child `c` gives it: `c`'s when `n`'s is vague or only a sum and `c`'s is proven (a generic
- * name names nothing, R14).
+ * Row `n` with the name its child `c` gives it: `c`'s when `n`'s says nothing or is only a sum and `c`'s is proven (a
+ * generic name names nothing, R14).
  */
 export function nameFrom(n: Row, c: Row): Row {
   const takes =
-    !c.node.flags.unnamed &&
-    (ONE_CHILD.vague.test.test(n.node.name) || isSum(n.node.name, c.node.name));
+    !c.node.flags.unnamed && (vague(n) || isSum(n.node.name, c.node.name));
   return takes ? withName(n, c.node.name) : n;
 }
 
 /**
- * Row `n` as its one leaf `c`: the leaf's type and why, its code when `n` has none, `n`'s name unless it is vague and
- * the leaf's is proven (R14).
+ * Row `n` as its one leaf `c`: the leaf's type and why, its code when `n` has none, `n`'s name unless it says nothing
+ * and the leaf's is proven (R14).
  */
 export function leafOf(n: Row, c: Row): Row {
-  const vague = ONE_CHILD.vague.test.test(n.node.name);
-  const own = vague && !c.node.flags.unnamed ? withName(n, c.node.name) : n;
+  const own = vague(n) && !c.node.flags.unnamed ? withName(n, c.node.name) : n;
   return {
     node: {
       ...own.node,
