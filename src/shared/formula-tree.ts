@@ -56,15 +56,22 @@ export const LEAF_FAMILY = {
   unknown: null,
 } as const satisfies Record<LeafKind, "grows" | "pick" | "set" | null>;
 
-export type ShareMode =
-  | "sum"
-  | "product"
-  | "productZero"
-  | "cap"
-  | "capZero"
-  | "mixed"
-  | "condition"
-  | "unknown";
+export const SHARE_MODES = [
+  "sum",
+  "product",
+  "productZero",
+  "cap",
+  "capZero",
+  "mixed",
+  "condition",
+  "unknown",
+] as const;
+export type ShareMode = (typeof SHARE_MODES)[number];
+
+/** How a row writes its value: × for a multiplier, % and + for what adds (design.md §3.6). */
+export const VALUE_FORMATS = ["x", "%", "+"] as const;
+/** A row over its cap, or under it (FR-015). */
+export const CAP_KINDS = ["overTheCap", "notReached"] as const;
 
 export interface TreeFlags {
   unknown?: boolean;
@@ -93,7 +100,7 @@ export interface TreeNode {
   value: number | boolean | null;
   /** The value of the tree before, or of the mark (FR-024, FR-025). */
   was?: number | boolean | null;
-  fmt: "x" | "%" | "+" | null;
+  fmt: (typeof VALUE_FORMATS)[number] | null;
   leaf: LeafKind | null;
   condition: ConditionKind | null;
   /** Why a `?`, in a player's words. */
@@ -109,7 +116,7 @@ export interface TreeNode {
   /** Weight in the parent, 0..1. */
   share: number | null;
   shareMode: ShareMode | null;
-  cap?: "overTheCap" | "notReached";
+  cap?: (typeof CAP_KINDS)[number];
   maxReached?: { share: number; max: number };
   /** How many catalog numbers use this piece; only when 2 or more (FR-027). */
   feeds?: number;

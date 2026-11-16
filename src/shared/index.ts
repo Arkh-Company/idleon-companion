@@ -2,10 +2,13 @@
 export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export {
+  CAP_KINDS,
   CONDITION_KINDS,
   LEAF_FAMILY,
   LEAF_KINDS,
   NODE_ROLES,
+  SHARE_MODES,
+  VALUE_FORMATS,
 } from "./formula-tree.ts";
 export type {
   ConditionKind,

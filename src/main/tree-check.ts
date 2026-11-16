@@ -2,34 +2,37 @@
 // the fields of a TreeNode with their types, a ceiling of nodes, and only atoms in the texts. Anything else is null, and the
 // pipeline shows the tree as unavailable. No electron import, so tests can load it.
 import {
+  CAP_KINDS,
   CONDITION_KINDS,
   isObject,
   LEAF_KINDS,
   NODE_ROLES,
+  SHARE_MODES,
+  VALUE_FORMATS,
 } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
 
 export const MAX_TEXT = 200;
 /** A node's id is its path of names, with `#n` on repeats: a deep row is long. The window's `nodeId` has the same ceiling. */
 export const MAX_NODE_ID = 2_000;
-/** What code looks like and a name, a table text or a game path never does: a keyword counts only before `(` or `{`,
- * because a player's sentence may say "1 if you have it". */
+/** What code looks like and a name, a table text or a game path never does: a keyword counts only before `(` (a `{`
+ * is code anywhere), because a player's sentence may say "1 if you have it". */
 export const CODE_SIGNS =
-  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
+  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*\(/;
 /** The `code` field is the game's call or path: there, a keyword alone is code too. */
 const KEYWORD = /\b(?:function|return|var|let|const|new|if)\b/;
 
 const textUpTo =
-  (max: number, code: RegExp | null = null) =>
+  (max: number) =>
   (v: unknown): v is string =>
-    typeof v === "string" &&
-    v.length <= max &&
-    !CODE_SIGNS.test(v) &&
-    !(code?.test(v) ?? false);
+    typeof v === "string" && v.length <= max && !CODE_SIGNS.test(v);
 const isText = textUpTo(MAX_TEXT);
 const isTextOrNull = (v: unknown) => v === null || isText(v);
 const isNodeText = textUpTo(MAX_NODE_ID);
-const isCode = (v: unknown) => v === null || textUpTo(MAX_TEXT, KEYWORD)(v);
+const isCode = (v: unknown) => v === null || (isText(v) && !KEYWORD.test(v));
+/** A game-bug rule's id (calculator tree/game-bugs.ts), never free text. */
+const isRuleId = (v: unknown) =>
+  typeof v === "string" && /^[A-Za-z][A-Za-z0-9]{0,59}$/.test(v);
 const isFinite = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v);
 const isValue = (v: unknown) =>
@@ -54,7 +57,7 @@ const FLAGS: Record<string, (v: unknown) => boolean> = {
   truncated: (v) => typeof v === "boolean",
   closed: (v) => typeof v === "boolean",
   progress: (v) => typeof v === "boolean",
-  gameBug: isText,
+  gameBug: isRuleId,
 };
 
 const fieldsFit = (
@@ -73,7 +76,7 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   name: isText,
   value: isValue,
   was: isValue,
-  fmt: orNull(oneOf(["x", "%", "+"])),
+  fmt: orNull(oneOf(VALUE_FORMATS)),
   leaf: orNull(oneOf(LEAF_KINDS)),
   condition: orNull(oneOf(CONDITION_KINDS)),
   why: isTextOrNull,
@@ -97,19 +100,8 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   code: isCode,
   role: oneOf(NODE_ROLES),
   share: orNull(isShare),
-  shareMode: orNull(
-    oneOf([
-      "sum",
-      "product",
-      "productZero",
-      "cap",
-      "capZero",
-      "mixed",
-      "condition",
-      "unknown",
-    ]),
-  ),
-  cap: oneOf(["overTheCap", "notReached"]),
+  shareMode: orNull(oneOf(SHARE_MODES)),
+  cap: oneOf(CAP_KINDS),
   maxReached: (m) =>
     fieldsFit(m, { share: isShare, max: isFinite }, ["share", "max"]),
   feeds: (n) => Number.isInteger(n) && (n as number) >= 2,

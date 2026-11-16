@@ -55,7 +55,7 @@ export function transformText(transform: string, raw: string): string | null {
  * name never holds, or the host refuses the whole tree. names.test.ts compares the two; change both together.
  */
 export const NAME_SIGNS =
-  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*[({]/;
+  /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*\(/;
 export const MAX_NAME = 200;
 /** Whether a table's text may be a name: the host takes it (a text that fails stays out, never the whole tree). */
 export const isNameText = (s: string): boolean =>

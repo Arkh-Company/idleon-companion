@@ -38,6 +38,10 @@ test.each<[string, unknown]>([
   ["an unknown flag", node({ flags: { other: true } as never })],
   ["a flag of the wrong type", node({ flags: { closed: "yes" } as never })],
   [
+    "a game bug that is free text, not a rule's id",
+    node({ flags: { gameBug: "counts the same source twice" } }),
+  ],
+  [
     "a missing field",
     (() => {
       const n: Partial<TreeNode> = node();
