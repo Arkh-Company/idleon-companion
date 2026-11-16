@@ -282,3 +282,16 @@ test("[OPUS5] each rule by the rows above tests its own code, an earlier value a
   );
   expect(kidsOf(expand(s[0]?.id ?? ""))[0]?.name).not.toBe("Base statue bonus");
 });
+
+test.each(Object.entries(LAST_RENAMES))(
+  "every text of the rule %s may be a name or a why",
+  (_key, rule) => {
+    const texts = Object.entries(rule)
+      .filter(
+        ([k, v]) =>
+          ["name", "parent", "why"].includes(k) && typeof v === "string",
+      )
+      .map(([, v]) => String(v));
+    expect(texts.filter((t) => !isNameText(t))).toEqual([]);
+  },
+);
