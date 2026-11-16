@@ -208,3 +208,79 @@ test("a chain of rows with one child each is merged 8 times at most, as the benc
 test("every structurePass rule has a test", () => {
   expect(Object.keys(ONE_CHILD).sort()).toEqual(["sum", "vague"]);
 });
+
+test("the rows a merge brings are named as the bench names the child's rows: rule 4 by the child's name", () => {
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Stamp total", 2)],
+      2: [leaf("Stamp total: A", 2), leaf("B", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+test("the rows a merge brings are named as the bench names the child's rows: rule 5 by the rows above", () => {
+  const upgrade: Row = {
+    ...lazy("Upgrade", 1),
+    node: {
+      ...lazy("Upgrade", 1).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Inner", 2)],
+      2: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    upgrade,
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});
+
+test("the rows a merge brings are named as the bench names the child's rows: nametagGrade beside a nametag", () => {
+  const nametag: Row = {
+    ...leaf("Nametag", 1),
+    node: { ...leaf("Nametag", 1).node, code: "EquipmentNametag3" },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Gallery", 2)],
+      2: [leaf("Trophy slot multiplier (podium level)", 2), nametag],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Nametag grade multiplier (grade factor)",
+    "Nametag",
+  ]);
+});
+
+test("the rows a merge brings see a system two rows above the merged row", () => {
+  const grimoire: Row = {
+    ...lazy("Book", 1, 10),
+    node: {
+      ...lazy("Book", 1, 10).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [lazy("Upgrade", 2), leaf("Rest", 4)],
+      2: [lazy("Inner", 3)],
+      3: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    grimoire,
+  );
+  const upgrade = kidsOf(places.expand(n?.id ?? ""))[0];
+  expect(kidsOf(places.expand(upgrade?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});

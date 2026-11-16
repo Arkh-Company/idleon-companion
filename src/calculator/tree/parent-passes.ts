@@ -71,8 +71,12 @@ export function parentPasses(
     // a child whose level is cut stays, and says so
     const next = under(c, at);
     if (!next) break;
+    // the bench names every level (fixNames, nametagGrade) before it merges: the child's rows, by the child and the rows
+    // above it
+    const above = [...up.map(aboveText), aboveText(n.node)];
+    const named = nametagGrade(c, kidNames(next.rows, c.node, above)).kids;
     n = absorb(nameFrom(n, c), c);
-    at = next;
+    at = { ...next, rows: named };
   }
   const done = at;
   n = withName(
