@@ -52,10 +52,8 @@ export function partition(kids: TreeNode[]): {
     top.add(k);
     covered += share(k);
   }
-  const shown = [
-    ...parts.filter((k) => top.has(k)),
-    ...parts.filter((k) => k.share === null),
-  ];
+  // A part with no share (a Condition, an unknown one) keeps its place in the game's order (FR-006, FR-014).
+  const shown = parts.filter((k) => top.has(k) || k.share === null);
   return {
     shown,
     small,
