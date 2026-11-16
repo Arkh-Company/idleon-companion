@@ -3,7 +3,7 @@
 // can load it.
 import { isObject } from "../shared/index.ts";
 import type { Characters } from "../shared/index.ts";
-import { players } from "./saved-files.ts";
+import { players } from "./character-names.ts";
 
 /** An own entry of a Haxe map as the mosaic carries it. */
 const entry = (map: unknown, key: string): unknown =>

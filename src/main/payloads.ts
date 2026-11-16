@@ -4,6 +4,7 @@ import { win32 } from "node:path";
 import {
   isCatalogId,
   isObject,
+  MAX_MARK_NAME,
   MAX_PINS,
   toReading,
   TREE_CATALOG,
@@ -79,9 +80,6 @@ export function feedsListPayload(v: unknown): { pieceKey: string } | null {
     ? { pieceKey: v.pieceKey }
     : null;
 }
-
-/** The longest name of a mark (FR-037). */
-export const MAX_MARK_NAME = 40;
 
 /** `marks:list`: only `{ character }`. */
 export function marksListPayload(v: unknown): { character: number } | null {

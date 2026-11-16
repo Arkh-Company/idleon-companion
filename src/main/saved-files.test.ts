@@ -12,18 +12,16 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
-import { IPC, PINS_FULL } from "../shared/index.ts";
+import { IPC, MARKS_FULL, PINS_FULL } from "../shared/index.ts";
 import {
-  MARKS_FULL,
   MARKS_RESET,
   MARKS_UNSAVED,
   MARK_TAKEN,
-  marksHandlers,
   PINS_RESET,
   PINS_UNSAVED,
-  pinsHandlers,
   savedFiles,
 } from "./saved-files.ts";
+import { marksHandlers, pinsHandlers } from "./saved-handlers.ts";
 
 const VALUES = { '[0,"Sword"]': 4, '[0,"Owned"]': true };
 

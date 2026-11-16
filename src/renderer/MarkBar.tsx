@@ -3,10 +3,8 @@
 // number; the focus never drops on the page, and each message goes once to the page's live region.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SubmitEvent } from "react";
+import { MARKS_FULL, MAX_MARK_NAME, MAX_MARKS } from "../shared/index.ts";
 import type { Mark } from "../shared/index.ts";
-
-const MAX_MARKS = 3;
-const FULL = "Up to 3 marks: clear one first.";
 
 /** "Mark 1", "Mark 2"…: the first one not taken. */
 function suggestion(marks: readonly Mark[]): string {
@@ -58,7 +56,7 @@ export function MarkBar({
 
   function start(): void {
     if (marks.length >= MAX_MARKS) {
-      say(FULL);
+      say(MARKS_FULL);
       return;
     }
     setMessage(null);
@@ -105,7 +103,7 @@ export function MarkBar({
             <input
               ref={field}
               value={name}
-              maxLength={40}
+              maxLength={MAX_MARK_NAME}
               onChange={(e) => {
                 setName(e.target.value);
               }}

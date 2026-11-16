@@ -5,7 +5,7 @@
 // tests can load it.
 import { TREE_CATALOG } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
-import { holdsName, namesOf } from "./saved-files.ts";
+import { holdsName, namesOf } from "./character-names.ts";
 import type { savedFiles, TreeShapes } from "./saved-files.ts";
 import type { patchRadar } from "./radar.ts";
 import { MAX_NODE_ID } from "./tree-check.ts";

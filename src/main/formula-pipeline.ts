@@ -14,7 +14,7 @@ import type {
 import { characterNumber } from "./characters.ts";
 import { feedsIndex, withFeeds } from "./feeds-index.ts";
 import type { FormulaRequest } from "./payloads.ts";
-import { namesOf } from "./saved-files.ts";
+import { namesOf } from "./character-names.ts";
 import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";

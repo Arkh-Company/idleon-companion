@@ -1,7 +1,7 @@
 // A saved file that is there but cannot be read (busy, locked, not a file) is never written over: only a missing file is
-// "nothing saved" (review of the feature, CR2; FR-041). The item starts empty for the session and warns once. Every
-// value and name is invented.
-import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
+// "nothing saved" (review of the feature, CR2; FR-041). The item starts empty for the session and warns once. A mark
+// whose write failed is tried again by saving it again. Every value and name is invented.
+import { existsSync, mkdirSync, mkdtempSync, rmdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -57,3 +57,18 @@ test.each([
     expect(existsSync(join(dir, `${file}.bad`))).toBe(false);
   },
 );
+
+test("saving again a mark whose write failed tries the write again, never 'already exists'", () => {
+  const dir = mkdtempSync(join(tmpdir(), "retry-"));
+  // A folder where the temporary file goes: the write fails, the file is still missing.
+  mkdirSync(join(dir, "marks.json.tmp"));
+  const { marks } = savedFiles(dir);
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(MARKS_UNSAVED);
+  rmdirSync(join(dir, "marks.json.tmp"));
+  expect(marks.save(0, "Mark 1", { k: 1 })).toBe(null);
+  expect(
+    savedFiles(dir)
+      .marks.list(0)
+      .map((m) => m.name),
+  ).toEqual(["Mark 1"]);
+});

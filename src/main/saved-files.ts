@@ -5,26 +5,19 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  IPC,
   isCatalogId,
   isObject,
+  MARKS_FULL,
+  MAX_MARK_NAME,
+  MAX_MARKS,
   MAX_PINS,
   PINS_FULL,
 } from "../shared/index.ts";
 import type { Mark, Pin, RadarChange } from "../shared/index.ts";
-import {
-  emptyPayload,
-  MAX_MARK_NAME,
-  markPayload,
-  marksListPayload,
-  pinsPayload,
-} from "./payloads.ts";
+import { pinsPayload } from "./payloads.ts";
 
-export const MAX_MARKS = 3;
-export const MARKS_FULL = "Up to 3 marks: clear one first.";
 export const MARKS_RESET = "Saved marks could not be read and were reset";
 export const MARKS_UNSAVED = "The marks could not be saved on this computer.";
-export const MARK_WITH_NAME = "A mark's name can't have a character's name.";
 export const MARK_TAKEN = "A mark with this name already exists.";
 export const PINS_RESET = "Saved pins could not be read and were reset";
 export const PINS_UNSAVED = "The pins could not be saved on this computer.";
@@ -52,7 +45,7 @@ export interface TreeShapes {
   patch?: ShapesPatch;
 }
 
-type Values = Mark["values"];
+export type Values = Mark["values"];
 
 const isValue = (v: unknown) =>
   typeof v === "boolean" || (typeof v === "number" && Number.isFinite(v));
@@ -72,7 +65,7 @@ function markOf(v: unknown): Mark | null {
   return {
     name: name.slice(0, MAX_MARK_NAME),
     takenAt,
-    values: Object.fromEntries(Object.entries(values)) as Values,
+    values: values as Values,
   };
 }
 
@@ -179,6 +172,8 @@ function jsonFile<T>(
   load: () => T;
   /** Null when written; else the sentence of a failed write. The data stays in memory either way. */
   save: (data: T) => string | null;
+  /** The last write failed: what is in memory is not on disk. */
+  unsaved: () => boolean;
   /** The warning of a file that could not be read, given once (FR-041). */
   warning: () => string | null;
 } {
@@ -186,6 +181,7 @@ function jsonFile<T>(
   let warning: string | null = null;
   /** The file is there but could not be read (busy, locked): it is never written over in this session. */
   let kept = false;
+  let unsaved = false;
 
   function load(): T {
     if (data !== null) return data;
@@ -225,6 +221,7 @@ function jsonFile<T>(
     save(next) {
       load();
       data = next;
+      unsaved = true;
       if (kept) return sentences.unsaved;
       // Written to `.tmp` and renamed over the file (as setup-store.ts), so a failed write never leaves half a file.
       try {
@@ -232,11 +229,13 @@ function jsonFile<T>(
         const tmp = `${file}.tmp`;
         writeFileSync(tmp, JSON.stringify(toFile(next)));
         renameSync(tmp, file);
+        unsaved = false;
         return null;
       } catch {
         return sentences.unsaved;
       }
     },
+    unsaved: () => unsaved,
     warning() {
       load();
       const w = warning;
@@ -311,8 +310,9 @@ export function savedFiles(dir: string): {
       save(n, name, values) {
         const all = marks.load();
         const list = all.get(String(n)) ?? [];
-        // A mark goes only with Clear (FR-025).
-        if (list.some((m) => m.name === name)) return MARK_TAKEN;
+        // A mark goes only with Clear (FR-025); saved again after a failed write, it is written again.
+        if (list.some((m) => m.name === name))
+          return marks.unsaved() ? marks.save(all) : MARK_TAKEN;
         if (list.length >= MAX_MARKS) return MARKS_FULL;
         all.set(String(n), [...list, { name, takenAt: Date.now(), values }]);
         return marks.save(all);
@@ -329,104 +329,9 @@ export function savedFiles(dir: string): {
     pins: {
       get: pins.load,
       // Only which numbers, never a value (FR-036).
-      set: (list) =>
-        list.length > MAX_PINS
-          ? PINS_FULL
-          : pins.save(list.map(({ treeId, nodeId }) => ({ treeId, nodeId }))),
+      set: (list) => (list.length > MAX_PINS ? PINS_FULL : pins.save(list)),
       warning: pins.warning,
     },
     shapes: { get: shapes.load, save: shapes.save, warning: shapes.warning },
-  };
-}
-
-/** The mosaic's active character and list of characters' names, with its attrs; null when it has neither. */
-export function players(mosaicJson: string): {
-  info: unknown[];
-  names: unknown[];
-  attrs: Record<string, unknown>;
-} | null {
-  try {
-    const parsed: unknown = JSON.parse(mosaicJson);
-    const attrs = isObject(parsed) ? parsed.attrs : null;
-    if (!isObject(attrs)) return null;
-    const { UserInfo: info, GetPlayersUsernames: names } = attrs;
-    return Array.isArray(info) && Array.isArray(names)
-      ? { info, names, attrs }
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-/** The characters' names of the mosaic: what a saved file must never get (FR-010a). */
-export const namesOf = (mosaicJson: string): string[] =>
-  (players(mosaicJson)?.names ?? []).filter(
-    (n): n is string => typeof n === "string",
-  );
-
-/** Whether `text` holds a character's name anywhere, any case: what a saved file must never get (FR-010a). */
-export const holdsName = (text: string, names: readonly string[]) => {
-  const lower = text.toLowerCase();
-  return names.some((n) => n !== "" && lower.includes(n.toLowerCase()));
-};
-
-/** Whether `text` has a character's name as a whole word, any case. */
-const hasName = (text: string, names: readonly string[]) => {
-  const words = text.toLowerCase().split(/[^\p{L}\p{N}_]+/u);
-  return names.some((n) => words.includes(n.toLowerCase()));
-};
-
-/**
- * The marks channels (contracts/ipc.md), each payload checked first. A mark takes the open tree's values (`open`); a
- * piece whose key holds a character's name is left out, and a mark's name with one is refused (FR-010a).
- */
-export function marksHandlers(
-  marks: ReturnType<typeof savedFiles>["marks"],
-  open: (character: number) => { values: Values; names: string[] } | null,
-): Record<string, (payload: unknown) => unknown> {
-  return {
-    [IPC.marksList]: (payload) => {
-      const r = marksListPayload(payload);
-      if (!r) throw new Error("marks:list: invalid request");
-      return { marks: marks.list(r.character), warning: marks.warning() };
-    },
-    [IPC.marksSave]: (payload) => {
-      const r = markPayload(payload);
-      if (!r) throw new Error("marks:save: invalid mark");
-      const tree = open(r.character);
-      if (!tree) throw new Error("marks:save: no tree open for that character");
-      if (hasName(r.name, tree.names)) return MARK_WITH_NAME;
-      const values = Object.fromEntries(
-        Object.entries(tree.values).filter(
-          ([key]) => !holdsName(key, tree.names),
-        ),
-      );
-      return marks.save(r.character, r.name, values);
-    },
-    [IPC.marksClear]: (payload) => {
-      const r = markPayload(payload);
-      if (!r) throw new Error("marks:clear: invalid mark");
-      return marks.clear(r.character, r.name);
-    },
-  };
-}
-
-/** The pins channels (contracts/ipc.md), each payload checked first; `pinned` hears each list kept. */
-export function pinsHandlers(
-  pins: ReturnType<typeof savedFiles>["pins"],
-  pinned: (list: Pin[]) => void,
-): Record<string, (payload: unknown) => unknown> {
-  return {
-    [IPC.pinsGet]: (payload) => {
-      if (!emptyPayload(payload)) throw new Error("pins:get: invalid request");
-      return { pins: pins.get(), warning: pins.warning() };
-    },
-    [IPC.pinsSet]: (payload) => {
-      const list = pinsPayload(payload);
-      if (!list) throw new Error("pins:set: invalid pins");
-      const refused = pins.set(list);
-      pinned(pins.get());
-      return refused;
-    },
   };
 }

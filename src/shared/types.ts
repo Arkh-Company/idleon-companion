@@ -217,6 +217,10 @@ export interface Pin {
 /** How many numbers the Pin strip holds, and the sentence of one more (FR-036). */
 export const MAX_PINS = 5;
 export const PINS_FULL = "Up to 5 pins: unpin one first.";
+/** Marks per character (FR-037), and the longest name of one. */
+export const MAX_MARKS = 3;
+export const MARKS_FULL = "Up to 3 marks: clear one first.";
+export const MAX_MARK_NAME = 40;
 
 /** `farm:update`: only measured, for the active character (FR-028). */
 export interface FarmUpdate {

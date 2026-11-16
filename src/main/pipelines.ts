@@ -16,7 +16,7 @@ import {
 } from "./payloads.ts";
 import { patchRadar } from "./radar.ts";
 import { startStatsPipeline } from "./stats-pipeline.ts";
-import { marksHandlers, pinsHandlers } from "./saved-files.ts";
+import { marksHandlers, pinsHandlers } from "./saved-handlers.ts";
 import type { savedFiles } from "./saved-files.ts";
 import type { GameTables, Pin } from "../shared/index.ts";
 import { createTreeHost } from "./tree-host.ts";
