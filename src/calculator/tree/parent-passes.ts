@@ -57,6 +57,8 @@ export function parentPasses(
   const tag = nametagGrade(n, kidNames(lv.rows, n.node, up.map(aboveText)));
   n = withName(n, tag.name);
   let at: Level = { ...lv, rows: tag.kids };
+  // the texts of every level above the rows a merge brings: the rows above, the row, then each child merged into it
+  const above = [...up.map(aboveText), aboveText(n.node)];
   // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a group of the
   // parts at 0 or at ×1 is the app's (FR-014), no child to merge into
   for (let i = 0; i < MERGES; i++) {
@@ -73,8 +75,8 @@ export function parentPasses(
     if (!next) break;
     // the bench names every level (fixNames, nametagGrade) before it merges: the child's rows, by the child and the rows
     // above it
-    const above = [...up.map(aboveText), aboveText(n.node)];
     const named = nametagGrade(c, kidNames(next.rows, c.node, above)).kids;
+    above.push(aboveText(c.node));
     n = absorb(nameFrom(n, c), c);
     at = { ...next, rows: named };
   }

@@ -315,3 +315,25 @@ test("a row with no proven name whose one child has rows takes the child's name 
     "B",
   ]);
 });
+
+test("the rows two merges bring see the system of the row merged first (pieces.cjs fixNames rule 5)", () => {
+  const upgrade: Row = {
+    ...lazy("Upgrade", 2),
+    node: {
+      ...lazy("Upgrade", 2).node,
+      code: 'Summoning("GrimoireUpgBonus", 5)',
+    },
+  };
+  const { places, n } = placeOne(
+    {
+      1: [upgrade],
+      2: [lazy("Inner", 3)],
+      3: [leaf("Bonus per level (Grimoire)", 2), leaf("Other", 4)],
+    },
+    lazy("Drop bonus", 1),
+  );
+  expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.name)).toEqual([
+    "Bonus per level",
+    "Other",
+  ]);
+});
