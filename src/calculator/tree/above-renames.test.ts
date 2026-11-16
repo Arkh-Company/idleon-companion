@@ -245,7 +245,8 @@ test("a value from an earlier step under another call, or a row that is none, ke
 test.each([
   ["W2", "2", "Slab items found ÷ 100 (rounded down)", "quantity"],
   ["M4", "2", "Slab items found ÷ 100 (rounded down)", "quantity"],
-  ["A9", "2", "Tome points above 5000, per 2000 (rounded down)", "quantity"],
+  // (under A9, opus5's TOME_DN2 renames it last: tree/last-renames.ts)
+  ["A9", "2", "Tome points above 5,000, per 2,000", "quantity"],
   [
     "M10AllCharz",
     "2",

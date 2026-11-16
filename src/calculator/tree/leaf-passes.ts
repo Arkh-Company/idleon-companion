@@ -6,8 +6,8 @@
 // OPUS5 list, each only on a leaf still with no type ("?") but the ones the bench forces. opus1Sailing's types by the
 // code of a leaf still "?" (and the boats' names they give) are the classify rules every leaf already passed
 // (tree/kinds.ts, names-sailing.cjs KINDS). F7c names the obols' stat by its slot: the bench's name is the obol list's
-// own text, which the recording keeps out (recorder.js). Left out: OPUS5's rules on a name the bench's
-// earlier passes gave (stamps, signs, statues, the Tome bubbles' "5,000"). structurePass's "Multi" is a name the app never
+// own text, which the recording keeps out (recorder.js). opus5's other rules are tree/last-renames.ts's, the ones by a
+// leaf's own code run here after these. structurePass's "Multi" is a name the app never
 // gives. oneOfEach's one leaf for the same code and value twice is out too: it would hide a source the game counts twice
 // (FR-016, game-bugs.test.ts).
 import type {
@@ -18,6 +18,7 @@ import { near } from "./math.ts";
 import { isLeaf, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";
+import { lastLeaf } from "./last-renames.ts";
 
 type Leaf = (typeof CALC_LEAF_KINDS)[number];
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
@@ -380,16 +381,20 @@ function pass(r: Row): Row {
 export function leafPasses(rows: readonly Row[]): Row[] {
   // OPUS1-P3b: a class line is context, a leaf or not; OPUS3-F7g: the fishing spot is context, when the level has more
   // than it
-  return rows
-    .map(pass)
-    .filter(
-      (r) =>
-        !r.node.code?.startsWith(CLASS_LINE.test) &&
-        !(
-          r.node.code === FISHING_SPOT.test &&
-          isLeaf(r) &&
-          (r.node.leaf === null || r.node.leaf === "unknown") &&
-          rows.length > 1
-        ),
-    );
+  return (
+    rows
+      .map(pass)
+      // opus5's rules by the leaf's own code beyond the OPUS5 list (tree/last-renames.ts)
+      .map(lastLeaf)
+      .filter(
+        (r) =>
+          !r.node.code?.startsWith(CLASS_LINE.test) &&
+          !(
+            r.node.code === FISHING_SPOT.test &&
+            isLeaf(r) &&
+            (r.node.leaf === null || r.node.leaf === "unknown") &&
+            rows.length > 1
+          ),
+      )
+  );
 }

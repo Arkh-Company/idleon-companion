@@ -10,6 +10,7 @@
 import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { near } from "./math.ts";
+import { lastAbove } from "./last-renames.ts";
 import { bare, isLeaf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
@@ -261,7 +262,8 @@ export function aboveRenames(
   up: readonly Above[],
 ): Row[] {
   return rows.map((r) => {
-    const own = aboveRename(r, up);
+    // opus5's rules by the rows above, after the bench's other passes (tree/last-renames.ts)
+    const own = lastAbove(aboveRename(r, up), up, rows);
     if (!own.group) return own;
     const inside =
       own.node.role === "atZero"

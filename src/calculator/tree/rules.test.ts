@@ -38,6 +38,7 @@ import {
 } from "./leaf-passes.ts";
 import { ARTIFACT_PICK } from "./sailing.ts";
 import { ARENA, JAR, MEASURE } from "./arena.ts";
+import { LAST_RENAMES } from "./last-renames.ts";
 import {
   ABOVE_RENAMES,
   BUBBLE_FACTOR,
@@ -101,6 +102,7 @@ const TABLES = {
   MAPS_COUNT: [MAPS_COUNT],
   ARTIFACT_PICK: [ARTIFACT_PICK],
   ARENA: [ARENA, JAR, MEASURE],
+  LAST_RENAMES: Object.values(LAST_RENAMES),
   FIX_NAMES: Object.values(FIX_NAMES),
   SYSTEM_TAGS,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),

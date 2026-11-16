@@ -13,6 +13,7 @@ import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import { artifactPick } from "./sailing.ts";
 import { arenaPasses } from "./arena.ts";
 import { mapsCount } from "./leaf-passes.ts";
+import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
 import { bare, withName } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -111,5 +112,11 @@ export function parentPasses(
   const art = artifactPick(n, at);
   // OPUS3-F7a, between opus1Sailing and opus2Arena as the bench runs them
   const maps = art.level && mapsCount(art.row, art.level.rows);
-  return maps ? { row: maps, level: null } : arenaPasses(art.row, art.level);
+  if (maps) return { row: maps, level: null };
+  const ar = arenaPasses(art.row, art.level);
+  // opus5, last: the count of maps named by the earlier maps' total among its rows
+  return {
+    row: withName(ar.row, mapsByKills(ar.row, ar.level?.rows ?? [])),
+    level: ar.level,
+  };
 }

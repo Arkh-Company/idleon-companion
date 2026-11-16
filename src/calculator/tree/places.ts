@@ -17,6 +17,7 @@ import type { Above } from "./above-renames.ts";
 import { aboveText, isGroup, kidNames } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
+import { baseStatue } from "./last-renames.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -116,7 +117,9 @@ export function makePlaces(ctx: PlaceContext) {
     const marked = (code: string) =>
       gameBugOf(ctx.bugs, parent.code, code) !== null;
     // opus2Arena: the yes/no beside the arena's count is named as the count
-    return besideArena(oneOfEach(rows, marked)).map((r0) => {
+    return besideArena(oneOfEach(rows, marked)).map((x) => {
+      // opus5's openStatue: the statue's base bonus, over the recording
+      const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
       // a group of the parts at 0 or at ×1 keeps the app's name; its rows are named as any level's (pieces.cjs fixNames)
       const { row: r, level } = isGroup(r0)
