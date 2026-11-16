@@ -20,7 +20,7 @@ const GROUPS = [
 
 /** The Stats numbers by the names their trees have in the Stats (design.md C9: Damage is Max and Min damage). */
 const STATS_NAMES = new Map(Object.values(STATS_TREES).flat());
-/** A number's name on screen (the catalog's); the id only for a root still waiting for the bench's name. */
+/** A number's name on screen: the catalog's, or the Stats row's for a Stats number. */
 export const nameOf = (id: string) =>
   STATS_NAMES.get(id) ?? catalogName(id) ?? id;
 

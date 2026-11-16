@@ -9,10 +9,10 @@ export interface CatalogNumber {
   /** Unique and stable. */
   id: string;
   /**
-   * The name on screen: the root's proven name in the names table, else the bench's P2 rule's (Vinicius, 16/11),
-   * pinned by src/calculator/catalog-names.test.ts; null only while a root waits for the bench's name.
+   * The name on screen: the root's proven name in the names table, else the bench's P2 rule's, else the bench's tree
+   * title (Vinicius, 16/11); pinned by src/calculator/catalog-names.test.ts.
    */
-  name: string | null;
+  name: string;
   /** The group of the Formulas tab, in the order of FR-038: Character, Account, W1…W7, then the skills. */
   group: string;
   /** The system or skill, inside the group (the second level of the Formulas tab). */
@@ -69,11 +69,11 @@ export function panelSystems(label: string): string[] {
   return systems;
 }
 
-const NAMES: ReadonlyMap<string, string | null> = new Map(
+const NAMES: ReadonlyMap<string, string> = new Map(
   TREE_CATALOG.map((n) => [n.id, n.name]),
 );
 
-/** The catalog number's name on screen; null outside the catalog or while it waits for the bench's name. */
+/** The catalog number's name on screen; null outside the catalog. */
 export const catalogName = (id: string): string | null => NAMES.get(id) ?? null;
 
 /** The id is a number of the catalog. */

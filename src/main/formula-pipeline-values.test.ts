@@ -161,8 +161,7 @@ test("new game files close the tree and take its number out of view", () => {
 });
 
 test("a number's tree has the catalog's name for its title, never the game's id", () => {
-  const id =
-    TREE_CATALOG.find((n) => n.system !== "Stats" && n.name !== null)?.id ?? "";
+  const id = TREE_CATALOG.find((n) => n.system !== "Stats")?.id ?? "";
   const h = setup();
   h.p.request({ id, character: null });
   h.tree(node({ value: 4 }));
