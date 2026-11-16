@@ -184,15 +184,21 @@ function jsonFile<T>(
 } {
   let data: T | null = null;
   let warning: string | null = null;
+  /** The file is there but could not be read (busy, locked): it is never written over in this session. */
+  let kept = false;
 
   function load(): T {
     if (data !== null) return data;
     let text: string;
     try {
       text = readFileSync(file, "utf8");
-    } catch {
-      // No file yet (or none readable): nothing saved.
+    } catch (e) {
       data = empty();
+      // Only a missing file is nothing saved; any other error keeps the file as it is, with the warning.
+      if (!isObject(e) || e.code !== "ENOENT") {
+        kept = true;
+        warning = sentences.reset;
+      }
       return data;
     }
     let parsed: unknown = null;
@@ -217,7 +223,9 @@ function jsonFile<T>(
   return {
     load,
     save(next) {
+      load();
       data = next;
+      if (kept) return sentences.unsaved;
       // Written to `.tmp` and renamed over the file (as setup-store.ts), so a failed write never leaves half a file.
       try {
         mkdirSync(dirname(file), { recursive: true });
