@@ -406,6 +406,9 @@ export function startFormulaPipeline(deps: {
     },
     status(s) {
       const closed = s.game === "closed";
+      // First: the shape and the values the stop cuts answer null, and neither is a failure nor a value on screen.
+      live.setStale(closed);
+      index.pause(closed);
       if (closed) {
         host.stop();
         // The branch in flight and the ones waiting never come: the worker ended.
@@ -420,8 +423,6 @@ export function startFormulaPipeline(deps: {
           show({ state: "unavailable", request });
         }
       }
-      live.setStale(closed);
-      index.pause(closed);
       if (closed === stale) return;
       stale = closed;
       if (last.state === "ready") show({ ...last, stale });
@@ -430,8 +431,9 @@ export function startFormulaPipeline(deps: {
       open = null;
       openFor = null;
       asked = null;
-      host.setFiles(resources);
+      // First: the shape the new files cut answers null to an index that no longer waits for it.
       index.reset();
+      host.setFiles(resources);
       show({ state: "none" });
     },
     replay() {

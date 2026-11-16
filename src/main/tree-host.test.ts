@@ -1,16 +1,17 @@
 // The app's side of the tree worker (research R1, contracts/tree-worker.md): long-lived, one request in flight, and a
 // failure of it is that request "unavailable" and nothing else (FR-017). The worker is a fake; every value is invented.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { flush, nth, RESOURCES } from "./calculator-host-fixture.ts";
+import { TREE_REQUEST_MS } from "./tree-host.ts";
 import {
-  FakeWorker,
-  files,
-  flush,
+  answer,
+  DROP,
+  HP,
   mosaic,
-  nth,
-  RESOURCES,
-} from "./calculator-host-fixture.ts";
-import type { GameBytes } from "./game-files.ts";
-import { createTreeHost, TREE_REQUEST_MS } from "./tree-host.ts";
+  NO_VARS,
+  running,
+  setup,
+} from "./tree-host-fixture.ts";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -18,58 +19,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
 });
-
-const DROP = { type: "number", id: "dropRate", character: 0 } as const;
-const HP = { type: "number", id: "hp", character: 0 } as const;
-const NO_VARS = JSON.stringify({ attrs: { n: 1 }, vars: {}, skipped: [] });
-
-function setup(read: () => Promise<GameBytes> = files) {
-  const workers: FakeWorker[] = [];
-  const options: unknown[] = [];
-  const readFiles = vi.fn(read);
-  const onTree = vi.fn();
-  const onValues = vi.fn();
-  const onUnavailable = vi.fn();
-  const onShape = vi.fn();
-  const host = createTreeHost({
-    createWorker: (o) => {
-      options.push(o);
-      const w = new FakeWorker();
-      workers.push(w);
-      return w;
-    },
-    readFiles,
-    onTree,
-    onValues,
-    onUnavailable,
-    onShape,
-  });
-  host.setFiles(RESOURCES);
-  return {
-    host,
-    workers,
-    options,
-    readFiles,
-    onTree,
-    onValues,
-    onUnavailable,
-    onShape,
-  };
-}
-
-/** A host whose worker is ready and has request 1 (the Drop Rate over mosaic 1) in flight. */
-async function running() {
-  const t = setup();
-  t.host.request(1, DROP, mosaic(1));
-  await flush();
-  const worker = nth(t.workers);
-  worker.emit("message", { type: "ready" });
-  return { ...t, worker };
-}
-
-const answer = (w: FakeWorker, id: number, tree: unknown = { id: "root" }) => {
-  w.emit("message", { type: "treeResult", id, tree });
-};
 
 test("the worker has no environment, no stdin and 2 GB of heap", async () => {
   const t = await running();

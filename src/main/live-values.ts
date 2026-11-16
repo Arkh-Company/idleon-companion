@@ -78,6 +78,8 @@ export function liveValues(deps: {
       show();
     },
     setStale(on) {
+      // The game closed: what was asked never comes with values (the worker ended); the last ones stay on screen.
+      if (on) asked.clear();
       if (on === stale) return;
       stale = on;
       if (last) show();

@@ -63,7 +63,7 @@ export function createTreeHost(deps: {
   values(id: number, ids: string[], mosaicJson: string): void;
   /**
    * In the background: after every tree and value, and kept by `dropCurrent`. A new one replaces the waiting one;
-   * `stop` and `setFiles` drop it with no answer.
+   * `stop` and `setFiles` drop the waiting one with no answer, and answer null to the one in flight.
    */
   shape(id: number, treeId: string, mosaicJson: string): void;
   /** A character change or a loose reader: the request and its answer no longer matter; the worker stays. */
@@ -234,14 +234,23 @@ export function createTreeHost(deps: {
     last = null;
   }
 
+  /** The worker ends on purpose: a shape or values in flight are lost, so they answer null as a failure does. */
+  function cut(): void {
+    const current = inFlight;
+    inFlight = null;
+    end();
+    if (!current || current.dropped) return;
+    if (current.job.kind === "shape") deps.onShape(current.job.id, null);
+    else if (current.job.kind === "values") deps.onValues(current.job.id, null);
+  }
+
   return {
     setFiles(folder) {
       drop();
       waitingShape = null;
       built = null;
-      inFlight = null;
-      end();
       resources = folder;
+      cut();
     },
     request(id, request, mosaicJson) {
       if (
@@ -285,8 +294,7 @@ export function createTreeHost(deps: {
     stop() {
       drop();
       waitingShape = null;
-      inFlight = null;
-      end();
+      cut();
     },
     replay() {
       if (!last) return;
