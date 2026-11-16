@@ -167,33 +167,58 @@ test("[OPUS4-4] a total summed again in each loop opens into the run of writes t
 
 test("[OPUS4-4] a bubble read inside its own turn opens that turn once more, as its own entry, then is cut", () => {
   const p = "DNSM.AlchBubbles.a";
-  const rec = loopOf(
-    [
-      [0, 2],
-      [2, 3],
-    ],
-    [
-      [p, 2, 1],
-      ["Q", 3, 4],
-    ],
-    { v: 5, r: [[p, 2, 1]] },
-    [
-      { path: p, node: 2, v: 2, seq: 1, xi: 3 },
-      { path: p, node: 2, v: 5, seq: 2, xi: 6 },
-    ],
+  // each turn adds s.B (0) beside s.A, so a turn has two rows and no level is its one row (pieces.cjs structurePass);
+  // ops: 0 is (t + s.A) + s.B, 1 is t + s.A, 2 is t, 3 is s.A, 4 is s.B
+  const { ops } = instrument(
+    "Blocks._customBlock_W = function () { t = t + s.A + s.B; };",
   );
-  const root = rec.nodes[0];
-  if (root) root.c = [2];
-  const build = buildTree(rec, 0, LOOP);
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "W",
+        v: 5,
+        r: [[p, 2, 1]],
+        x: [
+          [2, 0],
+          [3, 2],
+          [1, 2],
+          [4, 0],
+          [0, 2],
+          [2, 2],
+          [3, 3],
+          [1, 5],
+          [4, 0],
+          [0, 5],
+        ],
+        rx: [
+          [p, 2, 1],
+          ["B", 0, 3],
+          ["Q", 3, 6],
+          ["B", 0, 8],
+        ],
+      },
+    ],
+    [
+      { path: p, node: 1, v: 2, seq: 1, xi: 5 },
+      { path: p, node: 1, v: 5, seq: 2, xi: 10 },
+    ],
+    { root: 0 },
+  );
+  const build = buildTree(rec, 0, ops);
   // the total before the last turn is the bubble's first write, read in that turn
   const first = open(build, p);
-  expect(brief(first)).toEqual([[p, 2]]);
-  // inside the turn being walked the same entry opens once more, then the loop stops; the turn's one row is that
-  // opening, with its value, so the row is it (pieces.cjs structurePass): its own row is the read once more, cut
-  expect(first?.flags.truncated).toBeUndefined();
-  const again = kidsOf(first)[0];
-  expect([again?.code, again?.value, again?.kids]).toEqual([p, 2, "lazy"]);
-  expect(build.expand(again?.id ?? "")?.flags.truncated).toBe(true);
+  expect(brief(first)).toEqual([
+    [p, 2],
+    [null, 0],
+  ]);
+  // inside the turn being walked the same entry opens once more, then the loop stops
+  const again = build.expand(kidsOf(first)[0]?.id ?? "");
+  expect(brief(again)).toEqual([
+    [p, 2],
+    [null, 0],
+  ]);
+  expect(build.expand(kidsOf(again)[0]?.id ?? "")?.flags.truncated).toBe(true);
 });
 
 test("a turn whose step of its part is only numbers of the code opens the call of the turn with that value", () => {
