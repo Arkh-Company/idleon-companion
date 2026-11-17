@@ -5,7 +5,7 @@
 // name: it keeps the generic one when neither applies.
 import { exprText, isFormulaName } from "./expr.ts";
 import { fx3 } from "./curves.ts";
-import { isCond, isAtOne, near, vOf } from "./formulas.ts";
+import { atOneParts, isCond, near, vOf } from "./formulas.ts";
 import { evaluate } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
@@ -42,15 +42,15 @@ export const BRANCH_SHAPES: readonly {
 const NUMBER = /\d+(?:\.\d+)?/g;
 
 /**
- * formulas.cjs `formulaOf` (A), its rename: the shape's name of branch `r` of expression `e`, when its parts (the ×1
- * group aside, the parts at 0 among them) have no Condition, each number of the sum is one part's value, and the sum
+ * formulas.cjs `formulaOf` (A), its rename: the shape's name of branch `r` of expression `e`, when its parts (those
+ * at ×1 a product leaves aside, tree/formulas.ts `atOneParts`, apart; the parts at 0 among them) have no Condition, each number of the sum is one part's value, and the sum
  * with the parts' exact values is the branch's; else null.
  */
 export function shapeName(e: Expr, r: Row): string | null {
   const text = exprText(e);
-  const kids = (r.group ?? []).flatMap((k) =>
-    k.node.role === "atZero" ? (k.group ?? []) : isAtOne(k) ? [] : [k],
-  );
+  const group = r.group ?? [];
+  const aside = atOneParts(group);
+  const kids = group.filter((k) => !aside.has(k));
   if (kids.some(isCond) || !isFormulaName(text)) return null;
   const parts = new Map<string, Row>();
   for (const x of new Set(text.match(NUMBER))) {

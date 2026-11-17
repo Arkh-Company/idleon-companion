@@ -28,7 +28,7 @@ export interface GoldFoodContext {
   /** One term of a sum as a row, with no step around it (tree/terms.ts `term`). */
   term(e: Expr, op: "+", reads: Reads): Row | null;
   /** A level's rows with their types and shares, under a parent of value `v` (rows.ts `finish`). */
-  finish(v: unknown, rows: Row[], ones: boolean): Row[];
+  finish(v: unknown, rows: Row[]): Row[];
   formulas: CodeFormulas;
 }
 
@@ -150,7 +150,7 @@ export function goldFood(
       : null;
   const emE = s3?.e.t === "op" ? s3.e.r : undefined;
   // each level's rows with their types and shares, none of them a product's
-  const level = (v: unknown, rows: Row[]) => ctx.finish(v, rows, false);
+  const level = (v: unknown, rows: Row[]) => ctx.finish(v, rows);
   return [
     part(
       "GFood Multi",

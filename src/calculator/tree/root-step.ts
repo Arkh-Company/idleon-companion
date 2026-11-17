@@ -97,7 +97,7 @@ export function rootStep(
     }),
     open: null,
   }));
-  const all = finish(top.v, [...readRows.values(), ...argRows], false);
+  const all = finish(top.v, [...readRows.values(), ...argRows]);
   return {
     rows: withShares(parent, pair, all).rows,
     formula: formulaOut(pair, termsOf(all)),

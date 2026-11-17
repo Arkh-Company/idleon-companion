@@ -31,9 +31,6 @@ export const CALC_NODE_ROLES = [
   "subsystem",
   "pool",
   "bucket",
-  "atZero",
-  "atOne",
-  "small",
   "piece",
   "row",
 ] as const;

@@ -1,8 +1,8 @@
 // The game's pools of a tree's first level (spec 009, FR-005, research R1): how the root's rows give its value. A root
 // whose rows add up to it is one Additive pool; one whose rows multiply to it has a pool per factor, an Additive one when
 // the factor sums the bonuses of two sources or more before it multiplies (`a + b`, `1 + (a + b) ÷ 100`, read in the
-// root's step), else a Multi one. The parts at ×1 and at 0 (rows.ts) are factors and terms like the others. A root no
-// sum and no product gives (a max, a floor or a condition at the top) has no pool: its rows stay as they are.
+// root's step), else a Multi one. A root no sum and no product gives (a max, a floor or a condition at the top) has no
+// pool: its rows stay as they are.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { flat, topOp } from "./expr.ts";
@@ -25,7 +25,6 @@ export interface Pool {
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
 
-const GROUPS = new Set(["atZero", "atOne"]);
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 /** The sources an expression reads or calls (a value of an earlier step is one too). */
 const sources = (e: Expr): number =>
@@ -74,7 +73,7 @@ function additiveRows(
   const sum = rows.reduce((s, r) => s + vOf(r), 0);
   const gives = a.combine === "sum" ? sum : 1 + sum / 100;
   if (rows.length !== a.terms.length || !near(gives, v)) return null;
-  return { rows: finish(sum, rows, false), combine: a.combine };
+  return { rows: finish(sum, rows), combine: a.combine };
 }
 
 /** Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more. */
@@ -99,9 +98,7 @@ export function poolsOf(
   term?: TermRow,
 ): Pool[] | null {
   const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
-  const parts = rows.flatMap((r) =>
-    GROUPS.has(r.node.role) && r.group ? r.group : [r],
-  );
+  const parts = [...rows];
   const vals = parts.map(vOf);
   if (v === null || !parts.length || !vals.every(Number.isFinite)) return null;
   const isProduct = near(
@@ -155,9 +152,7 @@ export function rootExtreme(
   const e = root.expr ? strip(root.expr) : null;
   const rule =
     e?.t === "fn" && (e.name === "max" || e.name === "min") ? e.name : null;
-  const vals = rows
-    .flatMap((r) => (GROUPS.has(r.node.role) && r.group ? r.group : [r]))
-    .map(vOf);
+  const vals = rows.map(vOf);
   if (!rule || !vals.length || !vals.every(Number.isFinite)) return null;
   const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
   return v !== null && near(Math[rule](...vals), v) ? rule : null;

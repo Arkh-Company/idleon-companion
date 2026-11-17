@@ -8,19 +8,15 @@ import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
 import { poolsOf, poolsPair, rootExtreme } from "./pools.ts";
 import type { Combine, Pool, TermRow } from "./pools.ts";
-import { atZero, GENERIC_NAME, row, timesOne, withShares } from "./rows.ts";
+import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { SYSTEM_ORDER, systemLabel, systemOf, V1_SYSTEMS } from "./systems.ts";
 import type { System } from "./systems.ts";
 import type { Expr } from "./steps.ts";
 
-const GROUPS = new Set(["atZero", "atOne"]);
-
-/**
- * The root's rows as its steps: a step named by its shape loses that name. The rows of its groups at 0 and at ×1 are
- * steps too; a branch's own rows are its parts, with their names by shape for its ⓘ.
- */
+/** The root's rows as its steps: a step named by its shape loses that name; a branch's own rows are its parts, with
+ * their names by shape for its ⓘ. */
 export function mould(rows: readonly Row[]): Row[] {
   return rows.map((r) => {
     const own = isConstant(r.node)
@@ -33,9 +29,7 @@ export function mould(rows: readonly Row[]): Row[] {
           },
         }
       : r;
-    return own.group && GROUPS.has(own.node.role)
-      ? { ...own, group: mould(own.group) }
-      : own;
+    return own;
   });
 }
 
@@ -106,10 +100,8 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
     fmt: product ? "x" : combine === "onePlusPercent" ? "%" : "+",
     flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
   });
-  const shared = withShares(node, null, rows);
-  const group = product
-    ? timesOne(shared.rows, shared.mode)
-    : atZero(shared.rows, shared.mode);
+  // every source in its place (FR-016)
+  const group = withShares(node, null, rows).rows;
   const pair = value === null ? null : ownPair(group, product, value);
   return {
     node: { ...node, formula: pair && formulaOut(pair, termsOf(group)) },
@@ -142,11 +134,8 @@ export function bySystem(
   combine: Combine,
   writerOf: WriterOf,
 ): readonly Row[] {
-  const parts = rows.flatMap((r) =>
-    GROUPS.has(r.node.role) && r.group ? r.group : [r],
-  );
   const groups = new Map<System, Row[]>();
-  for (const r of parts) {
+  for (const r of rows) {
     const s = systemOfRow(r, writerOf) ?? OTHER;
     groups.set(s, [...(groups.get(s) ?? []), r]);
   }

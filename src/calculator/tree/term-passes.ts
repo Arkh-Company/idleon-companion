@@ -125,9 +125,6 @@ export function wornItem(r: Row, k: RecNode, e: Expr): Row {
   const name = termName(callText(k));
   const uq = WORN_TURN.item.exec(JSON.stringify(e))?.[1] ?? "";
   const slot = (x: Row): Row => {
-    // a level's parts at 0 may be under its "At 0" group
-    if (x.node.role === "atZero")
-      return { ...x, group: (x.group ?? []).map(slot) };
     if (!x.earlier || Number(x.node.value) !== 0) return x;
     const n = withName(
       x,

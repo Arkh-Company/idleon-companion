@@ -88,8 +88,8 @@ export function parentPasses(
   let at = own.level;
   // the texts of every level above the rows a merge brings: the rows above, the row, then each child merged into it
   const above = [...up.map(aboveText), own.text];
-  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a group of the
-  // parts at 0 or at ×1 is the app's (FR-014), no child to merge into
+  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows (a part at 0 or
+  // at ×1 too: spec 009, FR-016); a pool or a system's group is the app's, no child to merge into
   for (let i = 0; i < MERGES; i++) {
     const [c] = at.rows;
     if (

@@ -61,12 +61,6 @@ export const readValueIn = (e: Expr, p: string): V => {
   }
   return undefined;
 };
-export const adds = (x: Expr): boolean =>
-  (x.t === "op" && (x.o === "+" || x.o === "-")) ||
-  (x.t === "op" && (adds(x.l) || adds(x.r))) ||
-  (x.t === "def" && adds(x.e)) ||
-  (x.t === "not" && adds(x.a)) ||
-  (x.t === "fn" && x.args.some(adds));
 
 /** A step made of numbers only, none of them read (DEEP3-FIX-1, the index of a table cell). */
 export const noSource = (x: Expr): boolean =>

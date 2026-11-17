@@ -1,5 +1,5 @@
-// The rows of one level before they have a place (spec 008): a row of the game, the curve block as a branch, the group
-// of the parts at ×1 (pieces.cjs `tidy`) and the group of the parts at 0 (FR-014), each with its share in the parent.
+// The rows of one level before they have a place (spec 008): a row of the game and the curve block as a branch, each with
+// its share in the parent; the parts at 0 and at ×1 stay in their places (spec 009, FR-016).
 import type { RecNode, RecValue } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import {
@@ -105,9 +105,6 @@ export function row(
   };
 }
 
-const number = (v: CalcTreeNode["value"]) =>
-  typeof v === "boolean" ? Number(v) : v;
-
 /** The rows with their share in a parent of value `value` (tree/share.ts), the parent's formula given. */
 export function withShares(
   parent: Pick<CalcTreeNode, "name" | "value">,
@@ -133,46 +130,6 @@ export function withShares(
   };
 }
 
-/** A group row of the tree's mould (no piece of its own), closed at first (FR-014). */
-function group(
-  role: "atZero" | "atOne",
-  name: string,
-  value: number,
-  rows: Row[],
-): Row {
-  return {
-    node: row({
-      pieceKey: null,
-      value,
-      code: null,
-      name,
-      role,
-      fmt: role === "atOne" ? "x" : null,
-      flags: { closed: true },
-    }),
-    open: null,
-    group: rows,
-  };
-}
-
-/**
- * pieces.cjs `tidy`, in a product (FR-014: multipliers at ×1): the parts at ×1 go under one closed row, at the end, when
- * there are two or more; the row weighs what they weighed in the parent.
- */
-export function timesOne(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
-  if (mode !== "product" && mode !== "productZero") return rows;
-  const one = rows.filter((r) => {
-    const v = number(r.node.value);
-    return v !== null && Math.abs(v - 1) < 1e-9;
-  });
-  if (one.length < 2) return rows;
-  const shared = withShares({ name: "", value: 1 }, null, one).rows;
-  const g = group("atOne", `At ×1 (${String(one.length)})`, 1, shared);
-  g.node.share = one.reduce((s, r) => s + (r.node.share ?? 0), 0);
-  g.node.shareMode = mode;
-  return [...rows.filter((r) => !one.includes(r)), g];
-}
-
 /**
  * formulas.cjs `r1src`: a branch with the name of another part of its level takes its first source's name after it,
  * in order (the bench renames as it goes, so the last of two same names keeps its own).
@@ -193,41 +150,21 @@ function bySource(rows: Row[]): Row[] {
 
 /**
  * A level's rows with its context reads gone and its proven leaves named (tree/level-renames.ts), typed, through the
- * passes after the types (tree/leaf-passes.ts), with their shares; then a product's parts at ×1 (when `ones`) and a
- * sum's parts at 0.
+ * passes after the types (tree/leaf-passes.ts), with their shares; every part in its place, at 0 or at ×1 too (spec
+ * 009, FR-016: no group "At 0" nor "At ×1").
  */
-export function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
+export function finish(v: unknown, rows: Row[]): Row[] {
   // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
   const typed = bySource(levelRenames(rows)).map((r) =>
     r.node.kids === "lazy" || r.node.leaf || r.group
       ? r
       : { ...r, node: { ...r.node, ...classify(r.node) } },
   );
-  const shared = withShares(
+  return withShares(
     { name: "", value: valueOf(v as RecValue) },
     null,
     leafPasses(typed),
-  );
-  return atZero(
-    ones ? timesOne(shared.rows, shared.mode) : shared.rows,
-    shared.mode,
-  );
-}
-
-/** FR-014: in a sum, the parts at 0 go under one closed row at the end; a Condition that is "no" stays in the list. */
-export function atZero(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
-  if (mode !== "sum") return rows;
-  const zero = rows.filter(
-    (r) =>
-      r.node.value === 0 &&
-      r.node.leaf !== "condition" &&
-      r.node.role === "piece",
-  );
-  if (!zero.length) return rows;
-  return [
-    ...rows.filter((r) => !zero.includes(r)),
-    group("atZero", `At 0 (${String(zero.length)})`, 0, zero),
-  ];
+  ).rows;
 }
 
 /**

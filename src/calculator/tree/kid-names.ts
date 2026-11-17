@@ -118,10 +118,10 @@ function bySystem(r: Row, above: readonly string[]): Row {
     : r;
 }
 
-/** A group of the parts at 0 or at ×1 (FR-014), a pool or a system's group (spec 009): its name is the app's. */
-export const isGroup = (r: Row): boolean =>
-  r.node.role === "atZero" || r.node.role === "atOne" || isMould(r);
-/** A pool or a system's group (spec 009): its rows keep the names they had at the level above it. */
+/**
+ * A pool or a system's group (spec 009): its name is the app's, and its rows keep the names they had at the level above
+ * it.
+ */
 export const isMould = (r: Pick<Row, "node">): boolean =>
   r.node.role === "pool" || r.node.role === "system";
 
@@ -132,7 +132,7 @@ export const aboveText = (a: { name: string; code: string | null }) =>
 /**
  * The rows under the row `parent`, named as fixNames names them: an Endless win's cycles, then (4) by the parent's
  * name (unless it has no proven name), then (5) by the texts of the rows `above` the parent and the parent's own. A
- * group of the parts at 0 or at ×1 keeps the app's name (FR-014, R14).
+ * pool or a system's group keeps the app's name (spec 009).
  */
 export function kidNames(
   rows: readonly Row[],
@@ -147,5 +147,5 @@ export function kidNames(
   // (4) a parent with no proven name says nothing its children could repeat (R14)
   const own = (r: Row) =>
     parent.flags?.unnamed ? r : byParent(r, parent.name);
-  return cycles(rows).map((r) => (isGroup(r) ? r : bySystem(own(r), texts)));
+  return cycles(rows).map((r) => (isMould(r) ? r : bySystem(own(r), texts)));
 }

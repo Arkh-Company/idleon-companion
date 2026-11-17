@@ -14,7 +14,7 @@ import { gameBugOf } from "./game-bugs.ts";
 import type { GameBugRule } from "./game-bugs.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
-import { aboveText, isGroup, isMould, kidNames } from "./kid-names.ts";
+import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { baseStatue } from "./last-renames.ts";
@@ -124,18 +124,9 @@ export function makePlaces(ctx: PlaceContext) {
       // opus5's openStatue: the statue's base bonus, over the recording
       const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
-      // a group of the parts at 0 or at ×1 keeps the app's name; its rows are named as any level's (pieces.cjs fixNames),
-      // but a pool's or a system's, which keep the names of the level they come from (spec 009)
-      const { row: r, level } = isGroup(r0)
-        ? {
-            row: r0,
-            level: level0 && {
-              ...level0,
-              rows: isMould(r0)
-                ? level0.rows
-                : kidNames(level0.rows, r0.node, at.up.map(aboveText)),
-            },
-          }
+      // a pool or a system's group keeps the app's name, and its rows the names of the level they come from (spec 009)
+      const { row: r, level } = isMould(r0)
+        ? { row: r0, level: level0 }
         : parentPasses(
             r0,
             level0,

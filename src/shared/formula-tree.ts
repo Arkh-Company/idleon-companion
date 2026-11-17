@@ -34,9 +34,6 @@ export const NODE_ROLES = [
   "subsystem",
   "pool",
   "bucket",
-  "atZero",
-  "atOne",
-  "small",
   "piece",
   "row",
 ] as const;
