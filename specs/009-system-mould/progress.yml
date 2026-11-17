@@ -7,3 +7,14 @@ phases:
   plan: {status: done, date: 2026-11-17}
   prototype: {status: skipped, date: 2026-11-17}
   tasks: {status: done, date: 2026-11-17}
+execution:
+  branch: feat/009-system-mould
+  phases:
+    - {name: "Foundational (T001-T004)", status: pending}
+    - {name: "US2 (T005-T009)", status: pending}
+    - {name: "US1 (T010-T012)", status: pending}
+    - {name: "US3 (T013-T014)", status: pending}
+    - {name: "Vista da árvore (T015-T020)", status: pending}
+    - {name: "Polish (T021-T024)", status: pending}
+  feature_review: pending
+  code_pr: null
