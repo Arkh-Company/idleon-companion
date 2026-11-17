@@ -7,7 +7,7 @@ Muda o contrato `specs/008-formula-trees/contracts/tree-worker.md`, mensagem `tr
 O mesmo `CalcTreeNode` da 008, com estes campos a mais (`data-model.md`):
 
 - `role`: além dos papéis da 008, aceita `"pool"` e `"system"`.
-- `combine`: `"sum"`, `"product"` ou `"onePlusPercent"` em `pool` e `system`; nas outras linhas o campo não aparece, nem como null.
+- `combine`: `"sum"`, `"product"`, `"onePlusPercent"`, `"max"` ou `"min"` em `pool` e `system` (`max`/`min` só nos grupos de uma raiz com `max`/`min` no topo); nas outras linhas o campo não aparece, nem como null.
 - `poolKind`: `"additive"` ou `"multi"` em `pool`, null em `system`; nas outras linhas o campo não aparece.
 
 O primeiro nível de uma árvore de número é a lista de `pool` (FR-005). O nó `expand` de um pool ou grupo ainda fechado segue a regra de expand da 008: o worker manda o nível guardado.

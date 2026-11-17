@@ -19,7 +19,7 @@
 - [X] T001 [P] Tests first: the node's new roles and fields in `src/main/tree-check.test.ts` and `src/shared/formula-tree.test.ts` (FR-011, SEC-003)
   - Files: `src/main/tree-check.test.ts`, `src/shared/formula-tree.test.ts`
   - Cases:
-    - `role: "pool"` with `poolKind: "additive" | "multi"` and `combine: "sum" | "product" | "onePlusPercent"` passes;
+    - `role: "pool"` with `poolKind: "additive" | "multi"` and `combine: "sum" | "product" | "onePlusPercent" | "max" | "min"` passes (`max`/`min` added on 17/11);
     - `role: "system"` with `combine` and `poolKind: null` passes;
     - any other value for `combine` or `poolKind` is refused;
     - a `pool` or `system` with a non-null `pieceKey` is refused (contracts/tree-node.md);
@@ -180,7 +180,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
     - "live" freezes the tree's values at the click and compares from there;
     - a mark deleted while compared against falls back to "live";
     - no change shows no arrow;
-    - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`);
+    - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`, `max`, `min`);
     - against a mark, the base is the mark's piece values;
     - an unavailable source makes the group's arrow absent.
 - [ ] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx` (FR-001, FR-013, FR-014, FR-015, NFR-004; depends on T002)

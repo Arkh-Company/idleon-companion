@@ -73,7 +73,7 @@ O jogador abre qualquer número do catálogo, como o HP máximo, um número de S
 1. **Given** uma árvore cuja raiz só multiplica fontes, **When** ela aparece, **Then** cada fator do jogo é um pool ("Multi pool N" quando multiplica tudo, "Additive pool" quando soma bônus antes), com os sistemas dentro (FR-005).
 2. **Given** uma árvore cuja raiz soma e depois multiplica, **When** ela aparece, **Then** o topo tem um Additive pool e um Multi pool na ordem da conta, o ⓘ da raiz diz "Additive pool × Multi pool", e os grupos por sistema ficam dentro de cada pool.
 3. **Given** uma fonte cujo sistema o app não conhece, **When** a árvore aparece, **Then** ela fica no grupo "🔹 Other", no fim.
-4. **Given** uma raiz cuja conta a regra dos pools não consegue ler (por exemplo, um `max` ou uma condição no topo), **When** a árvore aparece, **Then** o jogador vê as fontes direto no primeiro nível, agrupadas por sistema, sem pool inventado e sem árvore vazia.
+4. **Given** uma raiz cuja conta a regra dos pools não consegue ler (por exemplo, um `max` ou uma condição no topo), **When** a árvore aparece, **Then** o jogador vê as fontes direto no primeiro nível, agrupadas por sistema, sem pool inventado e sem árvore vazia. Num `max` ou `min` no topo, cada grupo faz a mesma conta da raiz sobre as suas fontes (o maior, ou o menor, de dentro), e a raiz é essa conta sobre os grupos, então o valor fecha até o pai.
 
 ---
 
@@ -224,3 +224,6 @@ A verificação da 009 termina quando todas estas condições valem:
 | O que acontece quando o jogo muda a forma da árvore aberta (uma fonte aparece ou some)? | resolved | Padrão do agente: a árvore se refaz sozinha, sem botão (FR-015) |
 | Os campos combine e poolKind são obrigatórios em toda linha ou opcionais? | resolved | durante a implementação: opcionais, só em pool e system, como was, cap e feeds da 008; nas outras linhas eles não aparecem (Vinicius, 17/11) |
 | O filtro de nomes do main deve recusar um caminho como DNSM.X? | resolved | durante a implementação: o filtro fica como está (recusar texto com ponto derrubaria nomes do jogo como "Lv. 5"); um caminho do jogo como DNSM.X não deve chegar a nome, e as regras de nome não o produzem (Vinicius, 17/11) |
+| Ligar o molde muda o primeiro nível das árvores que os testes da 008 conferem; como ligar? | resolved | durante a implementação: o molde fica sempre ligado; os testes da 008 passam a atravessar pool e grupo pelos ajudantes do tree-fixture, sem afrouxar asserção (Vinicius, 17/11) |
+| Numa raiz com max ou min no topo, as fontes ficam soltas ou agrupadas? | resolved | durante a implementação: agrupadas por sistema; o grupo faz a mesma conta da raiz sobre as suas fontes (combine "max" ou "min"), e a raiz é essa conta sobre os grupos. Uma condição no topo espera a medida da sonda da T022 (Vinicius, 17/11) |
+| Um fator ×1 do produto vira o seu próprio Multi pool ou vai para "At ×1"? | resolved | durante a implementação: cada um fica no lugar, na ordem da conta, com o valor ×1, como os grupos neutros (Vinicius, 17/11) |
