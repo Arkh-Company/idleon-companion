@@ -84,14 +84,14 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 - [X] T007 [US2] The pools from the root's sum in `src/calculator/tree/pools.ts` (FR-005; depends on T005)
   - Files: `src/calculator/tree/pools.ts`
   - Signature: `poolsOf(rows: readonly Row[], rootFormula): Pool[]` with `Pool = { kind: "additive" | "multi"; rows: Row[]; combine }` (research R1).
-- [ ] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts` (FR-001, FR-002, FR-004, FR-005, FR-006; depends on T004, T006, T007)
+- [X] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts` (FR-001, FR-002, FR-004, FR-005, FR-006; depends on T004, T006, T007)
   - Files: `src/calculator/tree/mould.ts`, `src/calculator/tree-build.ts` (where `mould` is called)
   - The first level becomes the pool rows with the system groups inside (`systems.ts`). Names: `"Additive pool"`, `"Multi pool N"` (FR-005). A root the pools rule cannot read gives the sources grouped by system with no pool (US2, scenario 4). A failure of the mould leaves the tree unavailable and one log line with a label and the catalog id, never a name or a value (NFR-005). Each file stays under 400 lines.
 - [X] T009 [US2] All pools and groups closed on open in `src/renderer/FormulaTree.tsx` (FR-002, FR-012, NFR-004; depends on T002)
   - Files: `src/renderer/FormulaTree.tsx`, `src/renderer/FormulaTree.test.tsx` (test first)
   - Cases: on open, every `pool` and `system` row is closed (FR-012); a `system` row shows its emoji name and its value in the format of the parts (`"×45,582"`, `"+80%"`).
 
-- [ ] T009a [US2] No automatic grouping of parts at any level (FR-016; decision of 17/11, during implementation)
+- [X] T009a [US2] No automatic grouping of parts at any level (FR-016; decision of 17/11, during implementation)
   - Files: `src/calculator/tree/rows.ts` (`timesOne`, `atZero`), `src/renderer/tree-parts.ts` (`partition`: "Small" and "Show all"), `src/renderer/FormulaTree.tsx`, and the passes that read those groups (`one-of-each.ts`, `term-passes.ts`, `tree-fixture.ts`); tests first.
   - Cases: a sum with parts at 0 keeps them in place, in the game's order, value greyed; a product with two or more parts at ×1 keeps them in place; a product with a part at 0 keeps the "zeroes the total" tag; a level with more than 10 parts shows them all, with no "Small" row and no "Show all" button.
   - The 008 tests that pin "At 0", "At ×1", "Small" or "Show all" change to pin the parts in place (the Vinicius's decision); none is deleted without a replacement that checks the same parts.
