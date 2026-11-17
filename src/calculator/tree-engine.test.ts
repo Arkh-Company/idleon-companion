@@ -276,3 +276,23 @@ test.each([
 ])("a shape with %s throws", (_name, id, mosaic) => {
   expect(() => trees.shape(id, mosaic)).toThrow();
 });
+
+test("the engine's log says a number's chain of steps could not be read, for that number only (spec 009, NFR-005)", () => {
+  const logged = createTreeEngine(GAME, PAK, {
+    ...TREE_ROOTS,
+    open: ["TreeChainOpen", [0, 0, 0]],
+    chain: ["TreeChain", [0, 0, 0]],
+  });
+  const open = logged.tree(number("open"), mosaicOf());
+  expect(logged.log?.()).toBe("chainOpen");
+  logged.tree(number("chain"), mosaicOf());
+  expect(logged.log?.()).toBeNull();
+  // a branch opened right after the open number answers with no log: the log went with the number
+  logged.tree(number("open"), mosaicOf());
+  const lazyIn = (n: CalcTreeNode): CalcTreeNode | undefined =>
+    n.kids === "lazy" ? n : n.kids.map(lazyIn).find(Boolean);
+  const branch = open === "unknownNumber" ? undefined : lazyIn(open);
+  expect(branch).toBeDefined();
+  logged.tree(expand("open", branch?.id ?? ""), undefined);
+  expect(logged.log?.()).toBeNull();
+});
