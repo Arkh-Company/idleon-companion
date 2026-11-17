@@ -226,3 +226,49 @@ test("a source at 0 stays in its place in the sum, as in any sum, and the source
     ],
   });
 });
+
+// the steps of a golden food's emporium and worn food, as the pass reads them (the 008's cases)
+test.each<[string, string, number, number, [string, number][]]>([
+  [
+    "no emporium level: no emporium row",
+    "DropRatez",
+    999,
+    0,
+    [["Equipped: Invented Charm", WORN]],
+  ],
+  [
+    "a worn food added to the bonus is the worn food's step, not the emporium's",
+    "added",
+    999,
+    0,
+    [["Equipped: Invented Charm", WORN]],
+  ],
+  [
+    "the emporium's log inside a max",
+    "inFn",
+    999,
+    3,
+    [
+      ["Equipped: Invented Charm", WORN],
+      ["Emporium: Other Dish", EMPORIUM],
+    ],
+  ],
+  [
+    "the emporium's twice: the last step, over the worn food's",
+    "twice",
+    999,
+    3,
+    [
+      ["Equipped: Invented Charm", WORN],
+      ["Emporium: Other Dish", EMPORIUM / 5 + EMPORIUM],
+    ],
+  ],
+])("%s", (_name, key, quantity, level, rows) => {
+  useGameTables(TABLES);
+  expect(
+    goldRows(passOf(key, quantity, level)).map((k) => [k.name, k.value]),
+  ).toEqual([
+    ["GFood Multi", near(MULTI)],
+    ...rows.map(([n, v]) => [n, near(v)]),
+  ]);
+});
