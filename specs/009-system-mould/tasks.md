@@ -110,12 +110,12 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Tests for User Story 1 (write first)
 
-- [ ] T010 [P] [US1] Test the Drop Rate's V1 pools in `src/calculator/tree/mould.test.ts` (FR-005, FR-010; depends on T008)
+- [X] T010 [P] [US1] Test the Drop Rate's V1 pools in `src/calculator/tree/mould.test.ts` (FR-005, FR-010; depends on T008)
   - Files: `src/calculator/tree/mould.test.ts`
   - Cases:
     - `dropRate` gets the four V1 pools, in V1's order and with V1's names, by a table with proof keyed by the catalog id;
     - any other id never gets them.
-- [ ] T011 [P] [US1] The V1 parity in `src/calculator/parity.integration.test.ts` (a new `describe`, run by the existing `just parity`) (FR-010; depends on T008)
+- [X] T011 [P] [US1] The V1 parity in `src/calculator/parity.integration.test.ts` (a new `describe`, run by the existing `just parity`) (FR-010; depends on T008)
   - Files: `src/calculator/parity.integration.test.ts`, `src/calculator/parity-compare.ts`
   - Signature: `compareMould(app: CalcTreeNode, bench: BenchRow): Difference[]` compares pools, groups, order, values and each group's sources by piece key, two levels deep (research R4).
   - Skips by itself without `PARITY_BENCH_DIR/parity/dropRate-v1.json`.
@@ -123,7 +123,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] The V1 pools table in `src/calculator/tree/mould.ts` (FR-005, FR-010; depends on T010)
+- [X] T012 [US1] The V1 pools table in `src/calculator/tree/mould.ts` (FR-005, FR-010; depends on T010)
   - Files: `src/calculator/tree/mould.ts` (or a sibling `v1-pools.ts` if `mould.ts` passes 400 lines)
   - Each pool's rule has a proof by reference to `build-v1mold.cjs`.
 
