@@ -21,6 +21,8 @@ export interface Pool {
   rows: Row[];
   /** How the pool's rows give its value: their sum, their product, or 1 + their sum ÷ 100. */
   combine: Combine;
+  /** How the pool joins the total of the pools before it in the game's chain: added, or multiplied (when not set). */
+  join?: "+" | "*";
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
@@ -74,6 +76,27 @@ function additiveRows(
   const gives = a.combine === "sum" ? sum : 1 + sum / 100;
   if (rows.length !== a.terms.length || !near(gives, v)) return null;
   return { rows: finish(sum, rows, false), combine: a.combine };
+}
+
+/** A factor that sums bonuses inside 1 + (…) ÷ 100 multiplies: its own Multi pool; one that sums sources adds them. */
+const kindOf = (c: Combine): PoolKind =>
+  c === "onePlusPercent" ? "multi" : "additive";
+/** A Multi pool of single multipliers, which share one pool when they come in a row (the order changes nothing). */
+const isSingles = (p: Omit<Pool, "name">) =>
+  p.kind === "multi" && p.combine === "product";
+function singlesTogether(pools: Omit<Pool, "name">[]): Omit<Pool, "name">[] {
+  const out: Omit<Pool, "name">[] = [];
+  for (const p of pools) {
+    const last = out.at(-1);
+    if (last && isSingles(last) && isSingles(p) && last.join === p.join)
+      out[out.length - 1] = {
+        ...last,
+        value: last.value * p.value,
+        rows: [...last.rows, ...p.rows],
+      };
+    else out.push(p);
+  }
+  return out;
 }
 
 /** Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more. */
@@ -136,9 +159,9 @@ export function poolsOf(
     if (i < 0) continue;
     used.add(i);
     const add = term && additiveRows(e, fv, term);
-    if (add) pools[i] = { kind: "additive", value: fv, ...add };
+    if (add) pools[i] = { kind: kindOf(add.combine), value: fv, ...add };
   }
-  return named(pools);
+  return named(singlesTogether(pools));
 }
 
 /**
@@ -158,16 +181,28 @@ export function rootExtreme(
   return v !== null && near(Math[rule](...vals), v) ? rule : null;
 }
 
-/** The root's ⓘ as its two lines: how its pools give it ("Additive pool × Multi pool"); none for a single pool. */
+/**
+ * The root's ⓘ as its two lines: how its pools give it, in the game's chain ("(Additive pool 1 × Multi pool 1 +
+ * Additive pool 2) × Multi pool 2"); none for a single pool.
+ */
 export function poolsPair(
   pools: readonly Pool[],
   value: number,
 ): [names: string, numbers: string] | null {
   if (pools.length < 2) return null;
-  return [
-    pools.map((p) => p.name).join(" × "),
-    `${pools.map((p) => fx3(p.value)).join(" × ")} = ${fx3(value)}`,
-  ];
+  const line = (text: (p: Pool) => string) =>
+    pools.reduce(
+      (acc, p, i) => {
+        if (i === 0) return { s: text(p), sum: false };
+        if (p.join === "+") return { s: `${acc.s} + ${text(p)}`, sum: true };
+        return {
+          s: `${acc.sum ? `(${acc.s})` : acc.s} × ${text(p)}`,
+          sum: false,
+        };
+      },
+      { s: "", sum: false },
+    ).s;
+  return [line((p) => p.name), `${line((p) => fx3(p.value))} = ${fx3(value)}`];
 }
 
 /** The root's ⓘ as the contract writes it (atoms). */
