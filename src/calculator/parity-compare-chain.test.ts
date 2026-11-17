@@ -27,13 +27,9 @@ const node = (over: Partial<CalcTreeNode>): CalcTreeNode => ({
 });
 const leaf = (name: string, value: number) =>
   node({ id: name, name, value, leaf: "level" });
+/** A number of a step's terms, named by its place as the chain keeps it (tree/mould.ts). */
 const constant = (value: number) =>
-  node({
-    name: "Game value",
-    value,
-    leaf: "fixedValue",
-    flags: { unnamed: true },
-  });
+  node({ name: `Fixed +${String(value)}`, value, leaf: "fixedValue" });
 const pool = (
   name: string,
   kind: "additive" | "multi",
