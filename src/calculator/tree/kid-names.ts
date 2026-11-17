@@ -122,7 +122,7 @@ function bySystem(r: Row, above: readonly string[]): Row {
 export const isGroup = (r: Row): boolean =>
   r.node.role === "atZero" || r.node.role === "atOne" || isMould(r);
 /** A pool or a system's group (spec 009): its rows keep the names they had at the level above it. */
-export const isMould = (r: Row): boolean =>
+export const isMould = (r: Pick<Row, "node">): boolean =>
   r.node.role === "pool" || r.node.role === "system";
 
 /** A row's text as the levels under it see it: its name and its tag. */

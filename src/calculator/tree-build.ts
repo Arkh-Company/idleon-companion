@@ -21,7 +21,7 @@ import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
-import { mould } from "./tree/mould.ts";
+import { firstLevel, mould } from "./tree/mould.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { makePlaces } from "./tree/places.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
@@ -318,13 +318,23 @@ export function buildTree(
       opens: (r) => caches.opens(r, 0, new Set([top.id])),
     });
     root.formula = own?.formula ?? null;
-    root.kids = place(
-      { id: root.id, code: callText(top) },
-      // FR-006: the first level is the game steps, never named by their shape
-      mould(own?.rows ?? rows),
-      1,
-      [top.id],
-    );
+    // FR-006: the game steps, never named by their shape; spec 009: in the game's pools, by system
+    const last = steps.of(top.id).steps.at(-1);
+    const terms = termsOf(top);
+    const reads: Reads = new Map((top.r ?? []).map(([p, v]) => [p, v]));
+    const first = firstLevel(mould(own?.rows ?? rows), root, {
+      expr: last && near(last.v, top.v) ? last.e : null,
+      term: (e) => terms.term(e, "+", reads),
+      writerOf: (r) => {
+        const o = r.open;
+        const w = o !== null && typeof o === "object" ? nodes[o.writer] : null;
+        return w ? callText(w) : undefined;
+      },
+    });
+    root.formula = first.formula;
+    root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [
+      top.id,
+    ]);
   }
 
   return {

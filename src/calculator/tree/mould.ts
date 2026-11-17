@@ -6,13 +6,14 @@
 import { fx3 } from "./curves.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
-import { poolsPair } from "./pools.ts";
-import type { Combine, Pool } from "./pools.ts";
+import { poolsOf, poolsPair, rootExtreme } from "./pools.ts";
+import type { Combine, Pool, TermRow } from "./pools.ts";
 import { atZero, GENERIC_NAME, row, timesOne, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { SYSTEM_ORDER, systemLabel, systemOf, V1_SYSTEMS } from "./systems.ts";
 import type { System } from "./systems.ts";
+import type { Expr } from "./steps.ts";
 
 const GROUPS = new Set(["atZero", "atOne"]);
 
@@ -106,13 +107,29 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
     flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
   });
   const shared = withShares(node, null, rows);
+  const group = product
+    ? timesOne(shared.rows, shared.mode)
+    : atZero(shared.rows, shared.mode);
+  const pair = value === null ? null : ownPair(group, product, value);
   return {
-    node,
+    node: { ...node, formula: pair && formulaOut(pair, termsOf(group)) },
     open: null,
-    group: product
-      ? timesOne(shared.rows, shared.mode)
-      : atZero(shared.rows, shared.mode),
+    group,
   };
+}
+
+/** The ⓘ of a pool or group from its rows: their sum or product; none for a single row (it is the row's). */
+function ownPair(
+  rows: readonly Row[],
+  product: boolean,
+  value: number,
+): [string, string] | null {
+  if (rows.length < 2) return null;
+  const op = product ? " × " : " + ";
+  return [
+    rows.map((r) => termOf(r.node)).join(op),
+    `${rows.map((r) => fx3(vOf(r))).join(op)} = ${fx3(value)}`,
+  ];
 }
 
 /**
@@ -151,7 +168,7 @@ function poolRow(p: Pool, writerOf: WriterOf): Row {
         `1 + (${level.map((r) => termOf(r.node)).join(" + ")}) ÷ 100`,
         `1 + (${level.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
       ]
-    : null;
+    : ownPair(level, p.combine === "product", p.value);
   const node = row({
     pieceKey: null,
     value: p.value,
@@ -162,7 +179,7 @@ function poolRow(p: Pool, writerOf: WriterOf): Row {
     poolKind: p.kind,
     fmt: p.combine === "sum" ? null : "x",
     flags: { closed: true },
-    ...(pair ? { formula: formulaOut(pair, termsOf(level)) } : {}),
+    formula: pair && formulaOut(pair, termsOf(level)),
   });
   return { node, open: null, group: withShares(node, pair, level).rows };
 }
@@ -187,5 +204,45 @@ export function poolRows(
         pair,
         pools.map((p) => p.name),
       ),
+  };
+}
+
+/** What the first level reads of the root's call: its last step, a term of it as a row, a cache's writer. */
+export interface FirstLevelContext {
+  expr: Expr | null;
+  term: TermRow;
+  writerOf: WriterOf;
+}
+
+/**
+ * The root's first level (spec 009, FR-001, FR-005): the steps (`rows`, named by `mould`) in the game's pools, by
+ * system; with no pool and a max or a min at the top, the steps by system under that rule (US2 scenario 4); else the
+ * steps as they are. The root's ⓘ is how its pools or groups give it, when it has none of its own.
+ */
+export function firstLevel(
+  rows: Row[],
+  root: Pick<Node, "name" | "value" | "formula">,
+  { expr, term, writerOf }: FirstLevelContext,
+): { rows: Row[]; formula: Node["formula"] } {
+  const pools = poolsOf(rows, { value: root.value, expr }, term);
+  if (pools) {
+    const out = poolRows(
+      pools.map((p) => ({ ...p, rows: mould(p.rows) })),
+      root,
+      writerOf,
+    );
+    return { rows: out.rows, formula: out.formula ?? root.formula };
+  }
+  const rule = rootExtreme(rows, { value: root.value, expr });
+  const level = rule ? bySystem(rows, rule, writerOf) : rows;
+  if (!rule || level === rows) return { rows, formula: root.formula };
+  const v = vOf({ node: root as Node });
+  const pair: [string, string] = [
+    `${rule}(${level.map((r) => termOf(r.node)).join(", ")})`,
+    `${rule}(${level.map((r) => fx3(vOf(r))).join(", ")}) = ${fx3(v)}`,
+  ];
+  return {
+    rows: withShares(root, pair, [...level]).rows,
+    formula: root.formula ?? formulaOut(pair, termsOf(level)),
   };
 }

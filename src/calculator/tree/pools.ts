@@ -113,8 +113,15 @@ export function poolsOf(
     v,
   );
   const expr = root.expr ? strip(root.expr) : null;
-  if (isSum && (!isProduct || topOp(expr ?? undefined) === "+"))
-    return named([{ kind: "additive", value: v, rows: parts, combine: "sum" }]);
+  // both close (1 + 2 + 3 = 1 × 2 × 3, or all at 0): the step's top decides, else the level's own rule (rows.ts
+  // finish); a lone row is a Multi pool
+  const sumFirst =
+    parts.length > 1 &&
+    (expr ? topOp(expr) === "+" : rows.some((r) => r.node.shareMode === "sum"));
+  if (isSum && (!isProduct || sumFirst))
+    return named([
+      { kind: "additive", value: v, rows: [...rows], combine: "sum" },
+    ]);
   if (!isProduct) return null;
   const pools: Omit<Pool, "name">[] = parts.map((r) => ({
     kind: "multi",

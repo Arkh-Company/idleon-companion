@@ -96,7 +96,10 @@ export function makePlaces(ctx: PlaceContext) {
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
   function placedLevel(id: string, lv: Level) {
-    const w = withFormula(lv.row, lv.rows);
+    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows
+    const w = isMould(lv.row)
+      ? { formula: lv.row.node.formula, rows: lv.rows }
+      : withFormula(lv.row, lv.rows);
     return {
       formula: w.formula,
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
