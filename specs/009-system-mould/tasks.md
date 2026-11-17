@@ -110,7 +110,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Tests for User Story 1 (write first)
 
-- [ ] T010 [US1] Test the chain rule in `src/calculator/tree/pools.test.ts` and `src/calculator/tree/tree-build-mould.test.ts` (FR-005; depends on T008)
+- [X] T010 [US1] Test the chain rule in `src/calculator/tree/pools.test.ts` and `src/calculator/tree/tree-build-mould.test.ts` (FR-005; depends on T008)
   - Cases:
     - a chain `sum → +c → ×m1 → +d → ×m2 × m3` gives Additive pool 1 (the sum and +c), Multi pool 1 (m1), Additive pool 2 (d), Multi pool 2 (m2 and m3 together), each value closing with the step's value and the root's ⓘ showing how they join;
     - consecutive steps that each multiply by single sources share one Multi pool, grouped by system;
@@ -118,13 +118,13 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
     - a root of one step keeps today's behaviour for a sum, and for a product its single multipliers share one Multi pool (the Phase 2 tests that expected "Multi pool 1, 2, 3…", one per factor, change to this: the Vinicius's decision of 17/11);
     - a factor at ×1 stays in place, greyed, as a source inside its Multi pool;
     - a fake-game block with the Drop Rate's shape of chain (`src/calculator/fixtures/fake-game.js`) built by `buildTree(..., "dropRate")` gets the chain's pools and passes `checkTree` of the main.
-- [ ] T011 [US1] The Drop Rate through the 008 parity (FR-010, SC-002; depends on T010)
+- [X] T011 [US1] The Drop Rate through the 008 parity (FR-010, SC-002; depends on T010)
   - Files: `src/calculator/parity-compare.ts`, `src/calculator/parity.integration.test.ts`, their tests
   - The 008 parity goes through the chain's pools as through the Phase 2 pools; the V1 comparison (`compareMould`, its `describe` and its tests) goes out with the V1 structure.
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] The chain rule in `src/calculator/tree/pools.ts` and `src/calculator/tree/mould.ts` (FR-005; depends on T010)
+- [X] T012 [US1] The chain rule in `src/calculator/tree/pools.ts` and `src/calculator/tree/mould.ts` (FR-005; depends on T010)
   - Remove the V1 pools (`src/calculator/tree/v1-pools.ts`, its test and the call in `tree-build.ts`).
   - Each pool closes with the game's value and has a `combine` from the list (no pool without a rule).
   - Each file stays under 400 lines.
