@@ -97,6 +97,14 @@ const benchThrough = (
       ? benchThrough(k.kids ?? [], true)
       : [[k, inside]],
   );
+/**
+ * A constant of an Additive pool, which pairs by value only: the app's terms built again name it "Fixed +N"
+ * (tree/terms.ts rowOfTerm), the bench's expression parts "Base N" and "Percent to number (÷ 100)" (numRole).
+ */
+const isConstant = (name: string | undefined) =>
+  /^(?:Fixed \+|Base )-?\d[\d.]*(?:e[+-]?\d+)?$|^Percent to number \(÷ 100\)$/i.test(
+    name ?? "",
+  );
 /** The leaves under a row, all the way down. */
 const appLeaves = (n: CalcTreeNode): CalcTreeNode[] =>
   Array.isArray(n.kids) && n.kids.length ? n.kids.flatMap(appLeaves) : [n];
@@ -179,7 +187,10 @@ export function compareTrees(
       walk(k, bi, `${path} › ${bi.name ?? "?"}`, `${at}/${String(i)}`, false);
     });
   };
-  /** An Additive pool and the bench's factor: the same value, and the same leaves by value. */
+  /**
+   * An Additive pool and the bench's factor: the same value, and the same leaves by value and name; one difference of
+   * name at the pool, the reviewed names not counting inside it (its leaves have no place of their own in the app).
+   */
   function sameLeaves(a: CalcTreeNode, b: BenchRow, at: string): void {
     if (!sameValue(a.value, b.v)) out.push({ at, field: "value" });
     const left = appLeaves(a);
@@ -187,14 +198,28 @@ export function compareTrees(
     // 1 + (bonuses) ÷ 100: the pool holds only the bonuses' terms, and its 1 and 100 are the bench's constants
     if (a.combine === "onePlusPercent")
       for (const c of [1, 100]) {
-        const k = leaves.findIndex((bl) => sameValue(c, bl.v));
+        const k = leaves.findIndex(
+          (bl) => isConstant(bl.name) && sameValue(c, bl.v),
+        );
         if (k >= 0) leaves.splice(k, 1);
       }
+    let renamed = false;
     const unmatched = leaves.filter((bl) => {
-      const j = left.findIndex((x) => sameValue(x.value, bl.v));
+      const fits = (x: CalcTreeNode) => sameValue(x.value, bl.v);
+      const named = left.findIndex((x) => fits(x) && x.name === bl.name);
+      const j = named >= 0 ? named : left.findIndex(fits);
+      const x = left[j];
+      if (
+        x &&
+        x.name !== bl.name &&
+        !isConstant(x.name) &&
+        !isConstant(bl.name)
+      )
+        renamed = true;
       if (j >= 0) left.splice(j, 1);
       return j < 0;
     });
+    if (renamed) out.push({ at, field: "name" });
     if (unmatched.length || left.length) out.push({ at, field: "shape" });
   }
   walk(app, bench, bench.name ?? "?", "0", true);

@@ -330,3 +330,52 @@ test("an Additive pool of 1 + percent pairs with the bench's factor, its 1 and i
     { at: "0/0", field: "shape" },
   ]);
 });
+
+// The leaves of an Additive pool pair by name too: a bonus of another name is one difference of name at the pool, the
+// reviewed names not counting inside it. Its constants (the app's "Fixed +N", the bench's "Base N" and the 1 and 100
+// of 1 + percent) pair by value only.
+test("a bonus of the Additive pool with another name, of the same value, is a difference of name at the pool", () => {
+  const [sum, multi] = FORGE_BENCH.kids ?? [];
+  const renamed: BenchRow = {
+    ...FORGE_BENCH,
+    kids: [
+      {
+        ...sum,
+        kids: (sum?.kids ?? []).map((k) =>
+          k.name === "X" ? { ...k, name: "Not X" } : k,
+        ),
+      },
+      multi ?? {},
+    ],
+  };
+  const expected = [{ at: "0/0", field: "name" }];
+  expect(compareTrees(FORGE, renamed, new Set())).toEqual(expected);
+  const reviewed = new Set(["Forge stats 2 › Sum of 2 sources › Not X"]);
+  expect(compareTrees(FORGE, renamed, reviewed)).toEqual(expected);
+});
+
+test.each([1, 100])(
+  "a bonus of %d in an Additive pool of 1 + percent pairs with its own leaf, not with a constant",
+  (b) => {
+    const pct = app({
+      ...PCT,
+      value: (1 + (30 + b) / 100) * 2,
+      kids: [
+        app({
+          ...(Array.isArray(PCT.kids) ? PCT.kids[0] : undefined),
+          value: 1 + (30 + b) / 100,
+          kids: [leafOf("pa", "A", 30), leafOf("pb", "B", b)],
+        }),
+        pool("Multi pool", [leafOf("root/Multi pool/M", "M", 2)]),
+      ],
+    });
+    const bench = pctBench(b);
+    const [factor, m] = bench.kids ?? [];
+    const fixed: BenchRow = {
+      ...bench,
+      v: (1 + (30 + b) / 100) * 2,
+      kids: [{ ...factor, v: 1 + (30 + b) / 100 }, m ?? {}],
+    };
+    expect(compareTrees(pct, fixed, new Set())).toEqual([]);
+  },
+);
