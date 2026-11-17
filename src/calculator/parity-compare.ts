@@ -12,6 +12,10 @@ export interface BenchRow {
   formula?: [names: string, numbers: string];
   ref?: string;
   kids?: BenchRow[];
+  /** The V1's (spec 009): the call or read a row shows, a pool, and a group by system. */
+  code?: string;
+  pool?: boolean;
+  bucket?: boolean;
 }
 
 export interface Difference {
@@ -203,7 +207,7 @@ export function compareTrees(
         );
         if (k >= 0) leaves.splice(k, 1);
       }
-    let renamed = false;
+    let renamed = 0;
     const unmatched = leaves.filter((bl) => {
       const fits = (x: CalcTreeNode) => sameValue(x.value, bl.v);
       const named = left.findIndex((x) => fits(x) && x.name === bl.name);
@@ -215,14 +219,83 @@ export function compareTrees(
         !isConstant(x.name) &&
         !isConstant(bl.name)
       )
-        renamed = true;
+        renamed++;
       if (j >= 0) left.splice(j, 1);
       return j < 0;
     });
-    if (renamed) out.push({ at, field: "name" });
+    if (renamed > 0) out.push({ at, field: "name" });
     if (unmatched.length || left.length) out.push({ at, field: "shape" });
   }
   walk(app, bench, bench.name ?? "?", "0", true);
+  return out;
+}
+
+/** A code of the game (a call or a read), not a text the bench wrote for a step of the chain ("+ 0.3"). */
+const GAME_CODE = /^[A-Za-z_$][\w$.]*(?:\(.*\)|\[[^\]]*\])*$/;
+/** A bench group of one source of its value, or one the bench merged into its source, is that source (FR-006). */
+function benchSource(b: BenchRow): BenchRow {
+  if (!b.bucket) return b;
+  const [only, more] = b.kids ?? [];
+  if (b.code !== undefined) return { ...b, bucket: false };
+  const v = only && !more ? benchValue(only.v) : undefined;
+  return only && v !== undefined && sameValue(v, b.v) ? only : b;
+}
+/** The same source: the same piece when the bench names one, else the same value. */
+const sameSource = (a: CalcTreeNode, b: BenchRow) =>
+  b.code !== undefined && GAME_CODE.test(b.code)
+    ? a.code === b.code
+    : sameValue(a.value, b.v);
+
+/**
+ * The app's Drop Rate against the bench's V1 (spec 009, FR-010, research R4), two levels deep: the pools by name, value
+ * and order; under a pool with groups, its groups and lone sources in order, each group's sources by piece in any order.
+ * Below the sources, the 008 parity compares.
+ */
+export function compareMould(app: CalcTreeNode, bench: BenchRow): Difference[] {
+  const out: Difference[] = [];
+  const kidsOf = (n: CalcTreeNode) => (Array.isArray(n.kids) ? n.kids : []);
+  const pools = kidsOf(app);
+  const bp = bench.kids ?? [];
+  if (pools.length !== bp.length) return [{ at: "0", field: "shape" }];
+  pools.forEach((p, i) => {
+    const b = bp[i] ?? {};
+    const at = `0/${String(i)}`;
+    if (p.name !== b.name) out.push({ at, field: "name" });
+    if (!sameValue(p.value, b.v)) out.push({ at, field: "value" });
+    const ak = kidsOf(p);
+    const bk = (b.kids ?? []).map(benchSource);
+    const groups =
+      ak.some((k) => k.role === "system") || bk.some((k) => k.bucket);
+    if (p.name !== b.name || !groups) return;
+    if (ak.length !== bk.length) {
+      out.push({ at, field: "shape" });
+      return;
+    }
+    ak.forEach((k, j) => {
+      const g = bk[j] ?? {};
+      const place = `${at}/${String(j)}`;
+      const add = (field: Difference["field"]) =>
+        out.push({ at: place, field });
+      if ((k.role === "system") !== (g.bucket === true)) {
+        add("shape");
+        return;
+      }
+      if (!g.bucket) {
+        if (!sameSource(k, g)) add("shape");
+        else if (!sameValue(k.value, g.v)) add("value");
+        return;
+      }
+      if (k.name !== g.name) add("name");
+      if (!sameValue(k.value, g.v)) add("value");
+      const left = [...kidsOf(k)];
+      const unmatched = (g.kids ?? []).filter((s) => {
+        const x = left.findIndex((a) => sameSource(a, s));
+        if (x >= 0) left.splice(x, 1);
+        return x < 0;
+      });
+      if (unmatched.length || left.length) add("shape");
+    });
+  });
   return out;
 }
 
