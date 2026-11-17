@@ -3,7 +3,6 @@
 import { expect, test } from "vitest";
 import { node } from "../../main/formula-fixture.ts";
 import { checkTree } from "../../main/tree-check.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { buildTree } from "../tree-build.ts";
 import { kidsOf, recordingOf } from "./tree-fixture.ts";
