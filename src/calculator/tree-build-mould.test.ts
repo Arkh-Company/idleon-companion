@@ -2,6 +2,7 @@
 // FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (all of them in
 // "🔹 Other": the invented blocks have no system), and every pool closes to the root.
 import { beforeAll, expect, test } from "vitest";
+import { checkTree } from "../main/tree-check.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
@@ -19,7 +20,7 @@ const treeOf = (block: string) =>
     0,
     recorder.ops,
   ).root;
-const kidsOf = (n: CalcTreeNode | undefined) =>
+const kidsOf = (n: CalcTreeNode | null | undefined) =>
   n && Array.isArray(n.kids) ? n.kids : [];
 
 test("a root that sums is one Additive pool, with no piece, holding its rows", () => {
@@ -69,4 +70,74 @@ test("every pool closes to the root, and only pools and groups have no piece key
       );
     }
   }
+});
+
+// The shape of the Drop Rate's chain (fake-game.js TreeChain): 37 → + 2 (when a flag is on) → × 6 → + 0.5 →
+// × (1 + (3 + 80) ÷ 100) → × 3 × 2, each step on the running total (FR-005, rule Y of 17/11); the first sum is the
+// working value the game wrote and reads back, which opens inside its pool.
+test("a root that is a chain of steps gets a pool per run, in the game's order, each closing, and the main takes it", () => {
+  const build = buildTree(
+    recorder.record(mosaicOf(), [["TreeChain", [0, 0, 0]]], NONE),
+    0,
+    recorder.ops,
+  );
+  const root = build.root;
+  const level = kidsOf(root);
+  expect(
+    level.map((k) => [k.name, k.role, k.poolKind, k.combine, k.value]),
+  ).toEqual([
+    ["Additive pool 1", "pool", "additive", "sum", 39],
+    ["Multi pool 1", "pool", "multi", "product", 6],
+    ["Additive pool 2", "pool", "additive", "sum", 0.5],
+    ["Multi pool 2", "pool", "multi", "onePlusPercent", 1.83],
+    ["Multi pool 3", "pool", "multi", "product", 6],
+    // the check that guards the + 2 stays, after the pools: no source leaves (FR-008)
+    ["Game value", "piece", undefined, undefined, 1],
+  ]);
+  expect(level.map((k) => kidsOf(k).map((r) => [r.code, r.value]))).toEqual([
+    [
+      ["DNSM.TreeChain.v", 37],
+      [null, 2],
+    ],
+    [["TreeLoop()", 6]],
+    [[null, 0.5]],
+    [
+      ["TreeStats.a", 3],
+      ["TreeCapped", 80],
+    ],
+    [
+      ["TreeTwins[0]", 3],
+      ["TreeList[1]", 2],
+    ],
+    [],
+  ]);
+  expect(root.formula).toEqual([
+    [
+      "(",
+      "Additive pool 1",
+      "×",
+      "Multi pool 1",
+      "+",
+      "Additive pool 2",
+      ")",
+      "×",
+      "Multi pool 2",
+      "×",
+      "Multi pool 3",
+    ],
+    [39, 6, 0.5, 1.83, 6, 2574.81],
+  ]);
+  // the sum the game wrote opens inside the pool into its terms
+  const [cache] = kidsOf(level[0]);
+  expect(
+    kidsOf(cache?.kids === "lazy" ? build.expand(cache.id) : cache).map((r) => [
+      r.code,
+      r.value,
+    ]),
+  ).toEqual([
+    ["TreeReads()", 8],
+    ["TreeBase", 4],
+    ["TreeLevel", 25],
+  ]);
+  expect(checkTree(root, 100)).not.toBeNull();
 });

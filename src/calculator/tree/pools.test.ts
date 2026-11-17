@@ -4,11 +4,17 @@
 // sum and no product gives (a max at the top) has no pool. Invented paths and values, apart from the game's own block
 // names the system rules read.
 import { expect, test } from "vitest";
-import { poolsFormula, poolsOf, rootExtreme } from "./pools.ts";
+import {
+  chainPools,
+  poolsFormula,
+  poolsOf,
+  poolsPair,
+  rootExtreme,
+} from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr, Step } from "./steps.ts";
 import { branch, fixed, read } from "./tree-fixture.ts";
 
 const src = (code: string, value: number): Row => ({
@@ -216,4 +222,112 @@ test("a root with a max or a min at the top has no pool, and its groups take its
   expect(
     rootExtreme(rows, { value: 8, expr: fn("floor", args, 8) }),
   ).toBeNull();
+});
+
+// The chain of the game's steps (FR-005, rule Y of 17/11): each step adds to or multiplies the total the step before it
+// gave, a value with no source; a working value the game wrote and reads back is a cache, a term that opens into its
+// writer's step, as in the 008. Sums in a row are an Additive pool, single
+// multipliers in a row one Multi pool, a factor that sums bonuses inside 1 + (…) ÷ 100 its own; each change of + to ×
+// opens a pool. A term of a step is its row as tree/terms.ts makes it: here a read is its source, a number its constant.
+const val = (v: number): Expr => ({ t: "val", v });
+const termAt = (e: Expr): Row | null =>
+  e.t === "read"
+    ? src(e.p, Number(e.v))
+    : e.t === "num"
+      ? fixed(`Fixed +${String(e.v)}`, Number(e.v))
+      : null;
+const percent = (a: Expr, b: Expr, v: number): Expr =>
+  op("+", num(1), op("/", op("+", a, b, (v - 1) * 100), num(100), v - 1), v);
+// sum 37 → + 2 → × 6 → + 0.5 → × 2 × 3
+const CHAIN: Step[] = [
+  { v: 37, e: op("+", at("Stats.a", 30), at("Stats.b", 7), 37) },
+  { v: 39, e: op("+", val(37), num(2), 39) },
+  { v: 234, e: op("*", val(39), at("Stats.m", 6), 234) },
+  { v: 234.5, e: op("+", val(234), num(0.5), 234.5) },
+  {
+    v: 1407,
+    e: op(
+      "*",
+      op("*", val(234.5), at("Stats.p", 2), 469),
+      at("Stats.q", 3),
+      1407,
+    ),
+  },
+];
+
+test("a chain of steps gives a pool per run of sums or of multipliers, in the game's order, each closing", () => {
+  const pools = chainPools(CHAIN, { value: 1407 }, termAt);
+  expect(pools?.map(brief)).toEqual([
+    ["Additive pool 1", "additive", "sum", 39, [30, 7, 2]],
+    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+  ]);
+  expect(pools && poolsPair(pools, 1407)).toEqual([
+    "(Additive pool 1 × Multi pool 1 + Additive pool 2) × Multi pool 2",
+    "(39 × 6 + 0.5) × 6 = 1407",
+  ]);
+  // the ⓘ closes with the numbers, and the main takes it
+  expect(pools && poolsFormula(pools, 1407)).toEqual([
+    [
+      "(",
+      "Additive pool 1",
+      "×",
+      "Multi pool 1",
+      "+",
+      "Additive pool 2",
+      ")",
+      "×",
+      "Multi pool 2",
+    ],
+    [39, 6, 0.5, 6, 1407],
+  ]);
+});
+
+test("single multipliers of steps in a row share one Multi pool; a factor that sums bonuses inside is its own", () => {
+  const steps: Step[] = [
+    { v: 20, e: op("+", at("Stats.a", 10), at("Stats.b", 10), 20) },
+    { v: 40, e: op("*", val(20), at("Stats.m", 2), 40) },
+    {
+      v: 180,
+      e: op(
+        "*",
+        op("*", val(40), at("Stats.n", 3), 120),
+        percent(
+          at("CardBonusREAL(10, 0)", 30),
+          at("GetTalentNumber(1, 207)", 20),
+          1.5,
+        ),
+        180,
+      ),
+    },
+    { v: 720, e: op("*", val(180), at("Stats.g", 4), 720) },
+  ];
+  expect(chainPools(steps, { value: 720 }, termAt)?.map(brief)).toEqual([
+    ["Additive pool", "additive", "sum", 20, [10, 10]],
+    ["Multi pool 1", "multi", "product", 6, [2, 3]],
+    ["Multi pool 2", "multi", "onePlusPercent", 1.5, [30, 20]],
+    ["Multi pool 3", "multi", "product", 4, [4]],
+  ]);
+});
+
+test("a working value the game wrote and reads back stays a term of its pool, where it opens: the chain stops there", () => {
+  const steps: Step[] = [
+    CHAIN[0] ?? { v: 0, e: num(0) },
+    { v: 39, e: op("+", at("DNSM.Run.v", 37), num(2), 39) },
+    ...CHAIN.slice(2),
+  ];
+  expect(chainPools(steps, { value: 1407 }, termAt)?.map(brief)).toEqual([
+    ["Additive pool 1", "additive", "sum", 39, [37, 2]],
+    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+  ]);
+});
+
+test("a root of one step, or a chain whose pools do not give the root, is no chain", () => {
+  expect(chainPools(CHAIN.slice(0, 1), { value: 37 }, termAt)).toBeNull();
+  expect(chainPools(CHAIN, { value: 1400 }, termAt)).toBeNull();
+  // a term the assembly cannot make a row of
+  expect(chainPools(CHAIN, { value: 1407 }, () => null)).toBeNull();
 });

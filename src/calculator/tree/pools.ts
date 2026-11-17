@@ -10,7 +10,7 @@ import { near, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
 import { finish } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr, Step } from "./steps.ts";
 
 export type Combine = NonNullable<CalcTreeNode["combine"]>;
 export type PoolKind = NonNullable<CalcTreeNode["poolKind"]>;
@@ -26,6 +26,8 @@ export interface Pool {
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
+/** A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn). */
+export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 /** The sources an expression reads or calls (a value of an earlier step is one too). */
@@ -218,4 +220,107 @@ export function poolsFormula(
       pools.map((p) => p.name),
     )
   );
+}
+
+/** A step of the root's chain: its operation, and its terms but the running total it takes. */
+interface Link {
+  at: number;
+  op: "*" | "+";
+  terms: Expr[];
+}
+/**
+ * The root's chain of steps, first to last, from the step that gives `value`: each step takes the total of the step
+ * before it as a value with no source, back to the first, which takes none. A working value the game wrote and reads
+ * back is a cache: it stays a term, which opens into what its writer computed, as in the 008. Null for a root of one
+ * step.
+ */
+function chainOf(steps: readonly Step[], value: number): Link[] | null {
+  const out: Link[] = [];
+  for (let k = steps.findLastIndex((s) => near(s.v, value)); k >= 0;) {
+    const e = steps[k]?.e;
+    const op = topOp(e);
+    if (!e || !op) return null;
+    const ts = flat(e, op);
+    let prev = -1;
+    const run = ts.findIndex((x) => {
+      if (x.t !== "val") return false;
+      prev = steps.findLastIndex((p, j) => j < k && near(p.v, Number(x.v)));
+      return prev >= 0;
+    });
+    out.unshift({ at: k, op, terms: ts.filter((_, i) => i !== run) });
+    if (run < 0) break;
+    k = prev;
+  }
+  return out.length > 1 ? out : null;
+}
+
+/**
+ * The pools of a root whose steps are a chain (spec 009, FR-005, rule Y of 17/11): sums in a row are an Additive pool,
+ * single multipliers in a row one Multi pool, a factor that sums bonuses inside its own pool (`additive`); each change
+ * of + to × opens a pool. Null for a root of one step (`poolsOf` reads it), or when the pools do not give the root.
+ */
+export function chainPools(
+  steps: readonly Step[],
+  root: { value: CalcTreeNode["value"] },
+  termAt: TermAt,
+): Pool[] | null {
+  const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
+  const chain = v === null ? null : chainOf(steps, v);
+  if (v === null || !chain) return null;
+  const pools: Omit<Pool, "name">[] = [];
+  for (const { at, op, terms } of chain) {
+    // the added terms or the single multipliers of a step are one level, finished together as in the 008
+    let batch: Row[] = [];
+    const flush = () => {
+      if (!batch.length) return;
+      const value = batch.reduce(
+        (a, r) => (op === "*" ? a * vOf(r) : a + vOf(r)),
+        op === "*" ? 1 : 0,
+      );
+      const rows = finish(value, batch, op === "*");
+      const last = pools.at(-1);
+      batch = [];
+      if (op === "+" && last?.combine === "sum" && last.join === "+")
+        pools[pools.length - 1] = {
+          ...last,
+          value: last.value + value,
+          rows: [...last.rows, ...rows],
+        };
+      else
+        pools.push({
+          kind: op === "+" ? "additive" : "multi",
+          combine: op === "+" ? "sum" : "product",
+          join: op,
+          value,
+          rows,
+        });
+    };
+    for (const e of terms) {
+      const factor =
+        op === "*"
+          ? additiveRows(e, Number(e.v), (t) => termAt(t, "+", at))
+          : null;
+      if (factor) {
+        flush();
+        pools.push({
+          kind: kindOf(factor.combine),
+          value: Number(e.v),
+          join: "*",
+          ...factor,
+        });
+        continue;
+      }
+      const r = termAt(e, op, at);
+      if (!r) return null;
+      batch.push(r);
+    }
+    flush();
+  }
+  const out = singlesTogether(pools);
+  const total = out.reduce(
+    (acc, p, i) =>
+      i === 0 ? p.value : p.join === "+" ? acc + p.value : acc * p.value,
+    0,
+  );
+  return near(total, v) ? named(out) : null;
 }

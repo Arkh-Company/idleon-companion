@@ -6,14 +6,14 @@
 import { fx3 } from "./curves.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
-import { poolsOf, poolsPair, rootExtreme } from "./pools.ts";
-import type { Combine, Pool, TermRow } from "./pools.ts";
+import { chainPools, poolsOf, poolsPair, rootExtreme } from "./pools.ts";
+import type { Combine, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { SYSTEM_ORDER, systemLabel, systemOf, V1_SYSTEMS } from "./systems.ts";
 import type { System } from "./systems.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr, Step } from "./steps.ts";
 
 /** The root's rows as its steps: a step named by its shape loses that name; a branch's own rows are its parts, with
  * their names by shape for its ⓘ. */
@@ -196,11 +196,16 @@ export function poolRows(
   };
 }
 
-/** What the first level reads of the root's call: its last step, a term of it as a row, a cache's writer. */
+/**
+ * What the first level reads of the root's call: its last step, a term of it as a row, a cache's writer; and all its
+ * steps with a term of any of them as a row, for its chain of steps.
+ */
 export interface FirstLevelContext {
   expr: Expr | null;
   term: TermRow;
   writerOf: WriterOf;
+  steps?: readonly Step[];
+  termAt?: TermAt;
 }
 
 /**
@@ -211,16 +216,24 @@ export interface FirstLevelContext {
 export function firstLevel(
   rows: Row[],
   root: Pick<Node, "name" | "value" | "formula">,
-  { expr, term, writerOf }: FirstLevelContext,
+  { expr, term, writerOf, steps, termAt }: FirstLevelContext,
 ): { rows: Row[]; formula: Node["formula"] } {
-  const pools = poolsOf(rows, { value: root.value, expr }, term);
+  // a chain of steps gives its pools from the steps (rule Y); a root of one step, from its rows
+  const chain = steps && termAt ? chainPools(steps, root, termAt) : null;
+  const pools = chain ?? poolsOf(rows, { value: root.value, expr }, term);
   if (pools) {
+    // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
     const out = poolRows(
-      pools.map((p) => ({ ...p, rows: mould(p.rows) })),
+      chain ? pools : pools.map((p) => ({ ...p, rows: mould(p.rows) })),
       root,
       writerOf,
     );
-    return { rows: out.rows, formula: out.formula ?? root.formula };
+    // FR-008: the root's checks, which no step of the chain shows, stay after its pools
+    const checks = chain ? rows.filter((r) => r.node.leaf === "condition") : [];
+    return {
+      rows: [...out.rows, ...checks],
+      formula: out.formula ?? root.formula,
+    };
   }
   const rule = rootExtreme(rows, { value: root.value, expr });
   const level = rule ? bySystem(rows, rule, writerOf) : rows;

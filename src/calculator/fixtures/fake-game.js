@@ -530,6 +530,22 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return s.TreeBase * (1 + s.TreeOwned / 100);
   };
+  // The shape of the Drop Rate's chain (spec 009, FR-005): a sum, then each step adds to or multiplies the running total
+  // it wrote: + 2, × a single multiplier, + 0.5, × one that sums two bonuses inside, × two single multipliers.
+  Blocks._customBlock_TreeChain = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeChain = new StringMap();
+    d.TreeChain.h.v =
+      Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeLevel;
+    if (s.TreeFlagOn == 1) d.TreeChain.h.v = d.TreeChain.h.v + 2;
+    d.TreeChain.h.v = d.TreeChain.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeChain.h.v = d.TreeChain.h.v + 0.5;
+    d.TreeChain.h.v =
+      d.TreeChain.h.v * (1 + (s.TreeStats.h.a + s.TreeCapped) / 100);
+    d.TreeChain.h.v = d.TreeChain.h.v * s.TreeTwins[0] * s.TreeList[1];
+    return d.TreeChain.h.v;
+  };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
