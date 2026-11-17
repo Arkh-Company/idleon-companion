@@ -32,9 +32,10 @@ test("a cache filled in a loop opens into one part per turn, each with its turn'
     ["TreePart(1)", 6, "+"],
   ]);
   // the first turn's step adds the call to the running total; the second turn has no step of 6, so its call opens
+  // (the running total at 0 in its place, in the step's order: spec 009, FR-016)
   expect(brief(kidsOf(sum)[0])).toEqual([
+    ["DNSM.TreeSum.v", 0],
     ["TreePart(0)", 6],
-    [null, 0],
   ]);
   expect(brief(kidsOf(sum)[1])).toEqual([
     ["TreeTwins[1]", 3],
@@ -44,7 +45,7 @@ test("a cache filled in a loop opens into one part per turn, each with its turn'
 
 test("a cache the writer reads inside its own loop, with nothing that gives it, is cut", () => {
   const build = gameOf("TreeFillRead");
-  const zero = open(build, "DNSM.TreeSum.v", "TreePart(0)", null);
+  const zero = open(build, "DNSM.TreeSum.v", "TreePart(0)");
   const read = kidsOf(zero).find((k) => k.code === "DNSM.TreeSum.v");
   expect(build.expand(read?.id ?? "")?.flags.truncated).toBe(true);
 });
@@ -68,7 +69,7 @@ test("a turn with a function beside the running total opens into it; a write tha
   // the factor reads TreeBase + TreeOwned (0) in the invented game, so it keeps its own rows
   expect(brief(factor)).toEqual([
     ["TreeBase", 4],
-    [null, 0],
+    ["TreeOwned", 0],
   ]);
 });
 
@@ -149,8 +150,8 @@ test("a read with no writer recorded opens into the loop whose write has that ve
 });
 
 test("a working value the call rewrites in its own loop is no part of the call", () => {
-  // Fill is 0: it sits in the group of the parts at 0
-  expect(brief(open(buildTree(BY_VALUE, 0), null, "Fill()"))).toEqual([
+  // Fill is 0: it sits in its place among the root's parts (spec 009, FR-016)
+  expect(brief(open(buildTree(BY_VALUE, 0), "Fill()"))).toEqual([
     ["Part(0)", 0],
     ["Part(1)", 5],
   ]);

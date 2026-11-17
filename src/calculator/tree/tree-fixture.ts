@@ -212,18 +212,6 @@ export const branch = (value: number, group: Row[] = []): Row => ({
   open: null,
   group,
 });
-export const ones = (...rows: Row[]): Row => ({
-  node: row({
-    pieceKey: null,
-    value: 1,
-    code: null,
-    name: `At ×1 (${String(rows.length)})`,
-    role: "atOne",
-    flags: { closed: true },
-  }),
-  open: null,
-  group: rows,
-});
 /** The row whose ⓘ is asked: a call, with the game's expressions around it. */
 export const at = (
   value: number,

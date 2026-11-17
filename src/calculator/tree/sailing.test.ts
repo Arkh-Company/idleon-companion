@@ -15,7 +15,7 @@ const call = (code: string, value: number, lazy = false): Row => ({
   node: row({ pieceKey: code, value, code, kids: lazy ? "lazy" : [] }),
   open: lazy ? 1 : null,
 });
-const level = (rows: Row[]) => finish(9, rows, false);
+const level = (rows: Row[]) => finish(9, rows);
 
 test.each([
   [0, 1, "reached 24 hours → 1"],

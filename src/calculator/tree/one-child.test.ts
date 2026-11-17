@@ -102,30 +102,18 @@ test("a vague name or a sum takes no generic name of its child (R14: a generic n
   expect([rows.n?.name, rows.n?.flags]).toEqual(["Fixed +2", {}]);
 });
 
-test("a row whose one row is a group of the parts at 0 or at ×1 keeps it: the group is the app's (FR-014)", () => {
-  const group = (role: "atZero" | "atOne", value: number): Row => ({
-    node: row({
-      pieceKey: null,
-      value,
-      code: null,
-      name: role === "atZero" ? "At 0 (2)" : "At ×1 (2)",
-      role,
-      flags: { closed: true },
-    }),
-    open: null,
-    group: [leaf("A", value), leaf("B", value)],
-  });
-  for (const [role, value] of [
-    ["atZero", 0],
-    ["atOne", 1],
-  ] as const) {
+test("a row whose rows are two parts at 0 or at ×1 keeps them both, in their places (spec 009, FR-016)", () => {
+  for (const value of [0, 1]) {
     const { places, n } = placeOne(
-      { 1: [group(role, value)] },
+      { 1: [leaf("A", value), leaf("B", value)] },
       lazy("Drop bonus", 1, value),
     );
     expect(n?.kids).toBe("lazy");
-    expect(kidsOf(places.expand(n?.id ?? "")).map((k) => k.role)).toEqual([
-      role,
+    expect(
+      kidsOf(places.expand(n?.id ?? "")).map((k) => [k.name, k.role, k.value]),
+    ).toEqual([
+      ["A", "piece", value],
+      ["B", "piece", value],
     ]);
   }
 });

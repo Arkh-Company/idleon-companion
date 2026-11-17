@@ -326,14 +326,14 @@ test.each<[string, string, number, number, [string, number][]]>([
   ]);
 });
 
-test("a source at 0 goes under the sum's own row at 0, as in any sum, and the sources' ⓘ still names it", () => {
+test("a source at 0 stays in its place in the sum, as in any sum, and the sources' ⓘ still names it (spec 009, FR-016)", () => {
   const [multi] = goldRows(treeOf("DropRatez", 999, 3, 2, 0));
   const sources = kidsOf(multi)[1];
   expect(kidsOf(sources).map((k) => [k.name, k.value])).toEqual([
     ["Game value", 8],
     ["Game value", 4],
+    ["Working value of the game (GameCache)", 0],
     ["Fixed +3", 3],
-    ["At 0 (1)", 0],
   ]);
   expect(sources?.formula).toEqual({
     rule: [

@@ -87,35 +87,15 @@ test("a root that multiplies has a Multi pool per factor, numbered in the game's
   ]);
 });
 
-test("the parts at ×1 and at 0 are factors and terms like the others", () => {
-  const ones: Row = {
-    node: row({
-      pieceKey: null,
-      value: 1,
-      code: null,
-      name: "At ×1 (2)",
-      role: "atOne",
-    }),
-    open: null,
-    group: [src("Stats.b", 1), src("Stats.c", 1)],
-  };
-  expect(poolsOf([src("Stats.a", 2), ones], { value: 2 })?.map(brief)).toEqual([
+test("the parts at ×1 and at 0 are factors and terms like the others, in their places (FR-016)", () => {
+  const ones = [src("Stats.a", 2), src("Stats.b", 1), src("Stats.c", 1)];
+  expect(poolsOf(ones, { value: 2 })?.map(brief)).toEqual([
     ["Multi pool 1", "multi", "product", 2, [2]],
     ["Multi pool 2", "multi", "product", 1, [1]],
     ["Multi pool 3", "multi", "product", 1, [1]],
   ]);
-  const zero: Row = {
-    node: row({
-      pieceKey: null,
-      value: 0,
-      code: null,
-      name: "At 0 (1)",
-      role: "atZero",
-    }),
-    open: null,
-    group: [src("Stats.c", 0)],
-  };
-  expect(poolsOf([src("Stats.a", 5), zero], { value: 5 })?.map(brief)).toEqual([
+  const zero = [src("Stats.a", 5), src("Stats.c", 0)];
+  expect(poolsOf(zero, { value: 5 })?.map(brief)).toEqual([
     ["Additive pool", "additive", "sum", 5, [5, 0]],
   ]);
 });

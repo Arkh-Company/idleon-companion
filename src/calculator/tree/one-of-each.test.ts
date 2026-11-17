@@ -1,10 +1,9 @@
 // pieces.cjs `oneOfEach` at BASELINE-4, narrow (spec Open Questions, 15/11; tree/one-of-each.ts): the leaves of a level
-// with the same code and the same value are one leaf, like the Dungon() the game calls many times, and a group's count
-// says the rows it keeps; a source a game-bug rule marks stays twice (FR-016, tree/game-bugs.test.ts). Over a context
-// written by hand (tree/places.ts `PlaceContext`).
+// with the same code and the same value are one leaf, like the Dungon() the game calls many times, at 0 and at ×1 too
+// (spec 009, FR-016: no group counts its rows); a source a game-bug rule marks stays twice (FR-016 of the 008,
+// tree/game-bugs.test.ts). Over a context written by hand (tree/places.ts `PlaceContext`).
 import { expect, test } from "vitest";
 import type { GameBugRule } from "./game-bugs.ts";
-import { ONE_OF_EACH } from "./one-of-each.ts";
 import { makePlaces } from "./places.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -13,18 +12,6 @@ import { kidsOf, recNode } from "./tree-fixture.ts";
 const leaf = (code: string | null, value: number, name = "Gate"): Row => ({
   node: row({ pieceKey: null, value, code, name, leaf: "condition" }),
   open: null,
-});
-const group = (role: "atZero" | "atOne", rows: Row[]): Row => ({
-  node: row({
-    pieceKey: null,
-    value: role === "atZero" ? 0 : 1,
-    code: null,
-    name: `${role === "atZero" ? "At 0" : "At ×1"} (${String(rows.length)})`,
-    role,
-    flags: { closed: true },
-  }),
-  open: null,
-  group: rows,
 });
 
 function placed(rows: Row[], bugs: readonly GameBugRule[] = []) {
@@ -109,25 +96,21 @@ test("a source a game-bug rule marks stays twice (FR-016); another source of the
   ]);
 });
 
-test("a group's leaves are one of each, and its name counts the rows it keeps", () => {
+test("the leaves at 0 and at ×1 are one of each too, in their places (spec 009, FR-016)", () => {
   const rows = placed([
     leaf("Kept()", 4),
-    group("atZero", [
-      leaf("Nothing()", 0),
-      leaf("Nothing()", 0),
-      leaf("Gone()", 0),
-    ]),
-    group("atOne", [leaf("One()", 1), leaf("One()", 1)]),
+    leaf("Nothing()", 0),
+    leaf("Nothing()", 0),
+    leaf("Gone()", 0),
+    leaf("One()", 1),
+    leaf("One()", 1),
   ]);
-  expect(rows.map((r) => [r.id, kidsOf(r).map((k) => k.code)])).toEqual([
-    ["root/Gate", []],
-    ["root/At 0 (2)", ["Nothing()", "Gone()"]],
-    ["root/At ×1 (1)", ["One()"]],
+  expect(rows.map((r) => [r.code, r.value])).toEqual([
+    ["Kept()", 4],
+    ["Nothing()", 0],
+    ["Gone()", 0],
+    ["One()", 1],
   ]);
-  // a group with nothing repeated keeps its name
-  expect(
-    placed([group("atZero", [leaf("A()", 0), leaf("B()", 0)])])[0]?.name,
-  ).toBe("At 0 (2)");
 });
 
 test("the level under a row is one of each when it is placed", () => {
@@ -164,10 +147,4 @@ test("the level under a row is one of each when it is placed", () => {
     "Dungon()",
     "Other()",
   ]);
-});
-
-test("the rule has its test", () => {
-  expect(ONE_OF_EACH.test.test("At ×1 (3)")).toBe(true);
-  expect(ONE_OF_EACH.test.test("At 0 (12)")).toBe(true);
-  expect(ONE_OF_EACH.test.test("At 1 (3)")).toBe(false);
 });

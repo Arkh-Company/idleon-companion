@@ -244,7 +244,7 @@ test.each([
     "Unique string types on the Harp",
   ],
 ])("[opus2Leaf] the count %s is named", (code, name) => {
-  const [r] = finish(9, [read(code, 3), read("Q", 1)], false);
+  const [r] = finish(9, [read(code, 3), read("Q", 1)]);
   expect([r?.node.name, r?.node.leaf, r?.node.why, r?.node.flags]).toEqual([
     name,
     "quantity",
@@ -260,10 +260,10 @@ test("[opus2Leaf] a count typed already as something else, or with rows, keeps i
     node: { ...read(code, 3).node, leaf: "fixedValue" },
     open: null,
   };
-  const [r] = finish(9, [typed, read("Q", 1)], false);
+  const [r] = finish(9, [typed, read("Q", 1)]);
   expect(r?.node.name).toBe(read(code, 3).node.name);
   const opens: Row = { node: { ...read(code, 3).node, kids: "lazy" }, open: 1 };
-  expect(finish(9, [opens, read("Q", 1)], false)[0]?.node.name).toBe(
+  expect(finish(9, [opens, read("Q", 1)])[0]?.node.name).toBe(
     read(code, 3).node.name,
   );
 });

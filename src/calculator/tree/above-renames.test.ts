@@ -42,7 +42,7 @@ test("a doubler of 2 under ArcadeBonus is the maxed doubler, at the level its ca
   ]);
 });
 
-test("a monument's cache opens into its parts, renamed by the cache: its fixed number, not the two at x1 under their group", () => {
+test("a monument's cache opens into its parts, renamed by the cache: its fixed number, not the two at ×1 the bench keeps aside", () => {
   const build = gameOf("TreeMonument");
   const cache = openPath(build, "DNSM.MonumentROGbonuses.v");
   expect(named(cache)).toEqual([
@@ -156,33 +156,21 @@ test.each([
   expect(renamed([fixed(name, v)], above(parent))[0]?.[0]).toBe(name);
 });
 
-test("a fixed number whose parent is the ×1 group, not the call, keeps its name; the group of the parts at 0 is the level's", () => {
-  const ones: Row = {
-    node: row({
-      pieceKey: null,
-      value: 1,
-      code: null,
-      name: "At ×1 (2)",
-      role: "atOne",
-    }),
-    open: null,
-    group: [fixed("Fixed ×1", 1), fixed("Fixed ×1", 1)],
-  };
-  const zero: Row = {
-    node: row({
-      pieceKey: null,
-      value: 0,
-      code: null,
-      name: "At 0 (1)",
-      role: "atZero",
-    }),
-    open: null,
-    group: [fixed("Fixed ×0", 0)],
-  };
-  const out = aboveRenames([ones, zero], above("DNSM.MonumentROGbonuses[2]"));
-  expect(out.map((r) => r.group?.map((g) => g.node.name))).toEqual([
-    ["Fixed ×1", "Fixed ×1"],
-    ["Bonus per monument level"],
+test("in a product, the fixed numbers at ×1 keep their names, and the one at 0 is named by the call above, all in their places (spec 009, FR-016)", () => {
+  const inProduct = (r: Row): Row => ({
+    ...r,
+    node: { ...r.node, shareMode: "product" },
+  });
+  const out = aboveRenames(
+    [fixed("Fixed ×1", 1), fixed("Fixed ×1", 1), fixed("Fixed ×0", 0)].map(
+      inProduct,
+    ),
+    above("DNSM.MonumentROGbonuses[2]"),
+  );
+  expect(out.map((r) => [r.node.name, r.node.value])).toEqual([
+    ["Fixed ×1", 1],
+    ["Fixed ×1", 1],
+    ["Bonus per monument level", 0],
   ]);
 });
 

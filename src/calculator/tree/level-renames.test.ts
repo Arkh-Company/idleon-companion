@@ -19,7 +19,7 @@ const call = (code: string, value = 2): Row => ({
 });
 /** The level's rows as [code, name, leaf, why, flags], its groups' rows in it. */
 const level = (rows: Row[]) =>
-  finish(9, rows, false)
+  finish(9, rows)
     .flatMap((r) => (r.group && r.node.role !== "piece" ? r.group : [r]))
     .map((r) => [
       r.node.code,
@@ -109,7 +109,7 @@ test.each([
 );
 
 test("a card's per-star value with rows under it is named so, with no code, and keeps its rows", () => {
-  const [r] = finish(9, [lazy("CustomLists.RANDOlist[53][4]")], false);
+  const [r] = finish(9, [lazy("CustomLists.RANDOlist[53][4]")]);
   expect([r?.node.name, r?.node.code, r?.node.leaf, r?.node.kids]).toEqual([
     "Bonus per star (card)",
     null,
@@ -140,7 +140,7 @@ test.each(["CustomLists.RANDOlist[90][3]", "RANDOlist[90][0]"])(
 
 test("[rule 67] the shiny table cell with no pet's passive beside it, or with rows under it, keeps its name", () => {
   const name = (rows: Row[]) =>
-    finish(9, rows, false)
+    finish(9, rows)
       .flatMap((r) => (r.group && r.node.role !== "piece" ? r.group : [r]))
       .find((r) => r.node.code?.includes("RANDOlist[90]"))?.node.name;
   expect(

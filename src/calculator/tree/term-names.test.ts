@@ -191,7 +191,7 @@ test("formulas.cjs r1src: two branches of one shape name are told apart by their
   const pct = (id: number, v: number) =>
     term(op("+", num(1), op("/", call(id, v), num(100), v / 100), 1 + v / 100));
   const [a, b] = [pct(4, 3), pct(5, 2)];
-  const rows = a && b ? finish(2, [a, b], false) : [];
+  const rows = a && b ? finish(2, [a, b]) : [];
   expect(rows.map((r) => r.node.name)).toEqual([
     "Multiplier (Some Mode)",
     "Multiplier",
@@ -208,7 +208,7 @@ test("formulas.cjs r1src: a branch that shares its name with another part takes 
       r1src: src,
     };
   };
-  const names = (rows: Row[]) => finish(4, rows, false).map((r) => r.node.name);
+  const names = (rows: Row[]) => finish(4, rows).map((r) => r.node.name);
   expect(names([r1("Some Mode"), r1("Other Mode")])).toEqual([
     "Sum of 2 sources (Some Mode)",
     "Sum of 2 sources",

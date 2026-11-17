@@ -50,7 +50,7 @@ import { FIX_NAMES } from "./kid-names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import { SYSTEM_RULES } from "./systems.ts";
 import { PARENT_RENAMES } from "./parent-renames.ts";
-import { ONE_OF_EACH } from "./one-of-each.ts";
+
 import { ONE_CHILD } from "./one-child.ts";
 import { GAME_TABLE } from "./steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
@@ -110,7 +110,7 @@ const TABLES = {
   SYSTEM_TAGS,
   SYSTEM_RULES,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),
-  ONE_OF_EACH: [ONE_OF_EACH],
+
   ONE_CHILD: Object.values(ONE_CHILD),
 };
 const QUOTES = /["'`“”‘’]/;

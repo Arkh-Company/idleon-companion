@@ -1,6 +1,6 @@
 // The rows of a block with no formula of its own (spec 008, T017; pieces.cjs explainRaw and tidy, FR-014, FR-015a):
-// a call that passes one value on is skipped down, the curve block is a branch of its constants, the parts at ×1 and
-// the parts at 0 of a sum go into closed groups, and a Condition that is "no" stays in the list. Hand-written
+// a call that passes one value on is skipped down, the curve block is a branch of its constants, and every part stays in
+// its place, in the game's order, at 0 or at ×1 too (spec 009, FR-016: no group "At 0" nor "At ×1"). Hand-written
 // recordings with invented blocks and paths.
 import { expect, test } from "vitest";
 import { buildTree } from "../tree-build.ts";
@@ -131,7 +131,7 @@ test("a curve whose input no read holds uses the level it was given; a curve wit
   ]);
 });
 
-test("in a product, two or more parts at ×1 go under one closed row at the end", () => {
+test("in a product, two or more parts at ×1 stay in their places, each at ×1 (FR-016)", () => {
   const build = rootOf(
     [
       { b: "One", a: [1], v: 1, x: [[0, 1]] },
@@ -141,14 +141,21 @@ test("in a product, two or more parts at ×1 go under one closed row at the end"
     { v: 6 },
   );
   const kids = kidsOf(build.root);
-  expect(kids.map((k) => [k.name, k.role, k.value])).toEqual([
-    ["Game value", "piece", 6],
-    ["At ×1 (2)", "atOne", 1],
+  expect(kids.map((k) => [k.code, k.role, k.value])).toEqual([
+    ["One(1)", "piece", 1],
+    ["Big()", "piece", 6],
+    ["One(2)", "piece", 1],
   ]);
-  expect(kids[1]).toMatchObject({ fmt: "x", flags: { closed: true } });
-  expect(kidsOf(kids[1]).map((k) => [k.id, k.code])).toEqual([
-    ["root/At ×1 (2)/Game value", "One(1)"],
-    ["root/At ×1 (2)/Game value#2", "One(2)"],
+  // each factor its own Multi pool, in the game's order (spec 009, FR-005)
+  expect(
+    (Array.isArray(build.root.kids) ? build.root.kids : []).map((p) => [
+      p.id,
+      p.value,
+    ]),
+  ).toEqual([
+    ["root/Multi pool 1", 1],
+    ["root/Multi pool 2", 6],
+    ["root/Multi pool 3", 1],
   ]);
 });
 
@@ -183,7 +190,7 @@ test("one part at ×1 stays in the list", () => {
   expect(kids.map((k) => k.role)).toEqual(["piece", "piece"]);
 });
 
-test("in a sum, the parts at 0 go under one closed row at the end; a Condition that is no stays", () => {
+test("in a sum, the parts at 0 stay in their places, in the game's order, and a Condition that is no too (FR-016)", () => {
   const build = rootOf(
     [
       { b: "Some", v: 4, x: [[0, 4]] },
@@ -193,29 +200,31 @@ test("in a sum, the parts at 0 go under one closed row at the end; a Condition t
     { v: 7, r: [["Invented thing unlocked", 0]] },
   );
   const kids = kidsOf(build.root);
-  expect(kids.map((k) => [k.code ?? k.name, k.role, k.leaf])).toEqual([
-    ["Some()", "piece", "rawBonus"],
-    ["More()", "piece", "rawBonus"],
-    ["Invented thing unlocked", "piece", "condition"],
-    ["At 0 (1)", "atZero", null],
+  expect(kids.map((k) => [k.code ?? k.name, k.role, k.leaf, k.value])).toEqual([
+    ["Some()", "piece", "rawBonus", 4],
+    ["Nothing()", "piece", "rawBonus", 0],
+    ["More()", "piece", "rawBonus", 3],
+    ["Invented thing unlocked", "piece", "condition", 0],
   ]);
-  expect(kids[3]).toMatchObject({ value: 0, flags: { closed: true } });
-  expect(kidsOf(kids[3]).map((k) => k.code)).toEqual(["Nothing()"]);
 });
 
-test("outside a sum, a part at 0 stays in the list", () => {
-  const kids = kidsOf(
-    rootOf(
-      [
-        { b: "Zero", v: 0, x: [[0, 0]] },
-        { b: "Big", v: 6, x: [[0, 6]] },
-      ],
-      { v: 0 },
-    ).root,
+test("outside a sum, a part at 0 stays in the list, and its pool zeroes the product", () => {
+  const { root } = rootOf(
+    [
+      { b: "Zero", v: 0, x: [[0, 0]] },
+      { b: "Big", v: 6, x: [[0, 6]] },
+    ],
+    { v: 0 },
   );
-  expect(kids.map((k) => [k.role, k.shareMode])).toEqual([
-    ["piece", "productZero"],
-    ["piece", "productZero"],
+  expect(kidsOf(root).map((k) => [k.code, k.role, k.value])).toEqual([
+    ["Zero()", "piece", 0],
+    ["Big()", "piece", 6],
+  ]);
+  // the factors' share of the root is their pools' (spec 009, FR-005)
+  const pools = Array.isArray(root.kids) ? root.kids : [];
+  expect(pools.map((p) => [p.role, p.shareMode])).toEqual([
+    ["pool", "productZero"],
+    ["pool", "productZero"],
   ]);
 });
 

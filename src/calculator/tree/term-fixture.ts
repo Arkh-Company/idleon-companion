@@ -16,7 +16,6 @@ export const nodes: RecNode[] = [
   { id: 4, b: "Invented", a: ["SomeMode", 0, 0], c: [], p: 0, pxi: 0, v: 3 },
   { id: 5, b: "Invented", a: ["OtherMode", 0, 0], c: [], p: 0, pxi: 0, v: 2 },
 ];
-export const finished: boolean[] = [];
 /** The terms of `block`'s steps (the first node by default), in the loop entry `entry` gives. */
 export const termsOf = (
   block?: RecNode,
@@ -42,10 +41,7 @@ export const termsOf = (
       }),
       open: null,
     }),
-    finish: (_v, rows, ones) => {
-      finished.push(ones);
-      return rows;
-    },
+    finish: (_v, rows) => rows,
     block: block ?? { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0 },
     entry,
     formulas: makeCodeFormulas(nodes, () => []),

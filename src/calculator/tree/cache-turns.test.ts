@@ -41,7 +41,7 @@ test("a turn's found item is a yes/no part with nothing under it; a turn that re
   ]);
 });
 
-test("[OPUS4-10] a cache whose every write is 0 opens into the last turn's step; a turn read of 0 names nothing", () => {
+test("[OPUS4-10] a cache whose every write is 0 is the last turn's read of 0, its one part of its value (pieces.cjs structurePass, spec 009 FR-016); that read names nothing", () => {
   const rec = loopOf(
     [
       [0, 0],
@@ -53,11 +53,15 @@ test("[OPUS4-10] a cache whose every write is 0 opens into the last turn's step;
       ["Z", 0, 5],
     ],
   );
-  expect(kidsOf(loopRows(rec)).map((k) => [k.role, k.code])).toEqual([
-    ["atZero", null],
+  // the last turn read B at 0, the cache's one part with its value, which the row takes (no At 0 group holds it apart
+  // any more); the read names nothing, so the row keeps the cache's own
+  const cache = loopRows(rec);
+  expect([cache?.code, cache?.value, cache?.kids, cache?.flags]).toEqual([
+    "DNSM.Acc.v",
+    0,
+    [],
+    { unnamed: true },
   ]);
-  // the last turn read B; the writer's own first step read A
-  expect(brief(kidsOf(loopRows(rec))[0])).toEqual([["B", 0]]);
 });
 
 test("a write that does not add to the running total replaces it: the parts start again", () => {
@@ -210,13 +214,13 @@ test("[OPUS4-4] a bubble read inside its own turn opens that turn once more, as 
   const first = open(build, p);
   expect(brief(first)).toEqual([
     [p, 2],
-    [null, 0],
+    ["B", 0],
   ]);
   // inside the turn being walked the same entry opens once more, then the loop stops
   const again = build.expand(kidsOf(first)[0]?.id ?? "");
   expect(brief(again)).toEqual([
     [p, 2],
-    [null, 0],
+    ["B", 0],
   ]);
   expect(build.expand(kidsOf(again)[0]?.id ?? "")?.flags.truncated).toBe(true);
 });

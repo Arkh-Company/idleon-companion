@@ -5,7 +5,7 @@ import { bySystem, mould, poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { branch, fixed, ones, placed, read } from "./tree-fixture.ts";
+import { branch, fixed, placed, read } from "./tree-fixture.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 
 /** A placed row's own rows, the pools and groups among them (tree-fixture.ts `kidsOf` goes through them). */
@@ -62,19 +62,8 @@ test.each<[string, Row]>([
   expect(mould([step]).map(brief)).toEqual([[name, 2, {}]]);
 });
 
-test("a step inside a group at 0 is a step too", () => {
-  const zero: Row = {
-    node: row({
-      pieceKey: null,
-      value: 0,
-      code: null,
-      name: "At 0 (1)",
-      role: "atZero",
-    }),
-    open: null,
-    group: [fixed("Fixed +2", 0)],
-  };
-  expect(mould([zero])[0]?.group?.map(brief)).toEqual([
+test("a step at 0 is a step in its place (spec 009, FR-016: no group at 0)", () => {
+  expect(mould([fixed("Fixed +2", 0)]).map(brief)).toEqual([
     [GENERIC_NAME, 0, { unnamed: true }],
   ]);
 });
@@ -95,10 +84,8 @@ test("a branch of the first level keeps its parts' names by shape, for its ⓘ",
   ]);
 });
 
-test("a step inside a group of the first level is a step too", () => {
-  const [group] = mould([ones(fixed("× 1", 1), read("Stats.x", 1))]);
-  expect(group?.node.name).toBe("At ×1 (2)");
-  expect(group?.group?.map(brief)).toEqual([
+test("the steps at ×1 of the first level are steps in their places (spec 009, FR-016: no group at ×1)", () => {
+  expect(mould([fixed("× 1", 1), read("Stats.x", 1)]).map(brief)).toEqual([
     [GENERIC_NAME, 1, { unnamed: true }],
     [GENERIC_NAME, 1, { unnamed: true }],
   ]);
@@ -186,6 +173,11 @@ test("a group multiplies its sources in a product, and a group at ×1 or at 0 ke
     ["🎯 Talents", 6],
     ["🃏 Cards", 0],
   ]);
+  // its sources at 0 in their places, with no group "At 0" (FR-016)
+  expect(zero[1]?.group?.map((k) => [k.node.code, k.node.role])).toEqual([
+    ["CardBonusREAL(10, 0)", "piece"],
+    ["CardBonusREAL(11, 0)", "piece"],
+  ]);
 });
 
 test("a group mixing + and × sources is in the pool's format, its sources in theirs; in 1 + (bonuses) ÷ 100, in percents", () => {
@@ -233,7 +225,7 @@ test("a cache read goes to its writer's system; a branch to its sources' one sys
 });
 
 test("all sources in Other: the sources stand as they are, with no group", () => {
-  const rows = [other(1), other(2, 2), ones(other(1, 3), other(1, 4))];
+  const rows = [other(1), other(2, 2), other(1, 3), other(1, 4)];
   expect(bySystem(rows, "product", writerOf)).toBe(rows);
 });
 

@@ -72,9 +72,11 @@ test("[GetTalentNumber] a talent with no points stops before its curve: the chec
     "condition",
     "limit",
   ]);
-  // the points are 0: they sit in the group of the parts at 0
-  expect(kidsOf(zero).map((k) => [k.code, k.value, k.leaf])).toEqual([
-    ["SkillLevels[5]", 0, "investedPoints"],
+  // the points are 0: they sit in their place, beside the check (spec 009, FR-016)
+  expect([zero?.code, zero?.value, zero?.leaf]).toEqual([
+    "SkillLevels[5]",
+    0,
+    "investedPoints",
   ]);
 });
 

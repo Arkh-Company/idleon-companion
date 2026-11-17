@@ -1,12 +1,12 @@
 // The branches of pieces.cjs rowOfTerm, exprRow, stepRef and tidy, over written steps: a stand-in context builds each
 // read and call as a plain row (term-fixture.ts), so only the term's own rule is under test.
 import { expect, test } from "vitest";
+import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
 import { token } from "./formulas.ts";
 import {
   brief,
   call,
-  finished,
   fn,
   num,
   op,
@@ -155,15 +155,22 @@ test("around a cache read with a writer, the read's row with the expression's va
   ]);
 });
 
-test("the parts of an expression that adds are no group at ×1; a product's are", () => {
-  finished.length = 0;
+test("the parts of an expression, one that adds or a product, stay in their places (spec 009, FR-016)", () => {
+  const codes = (rows: Row[]): string[] =>
+    rows.flatMap((r) =>
+      r.group ? codes(r.group) : [r.node.code ?? r.node.name],
+    );
   const sum = op("+", call(1, 3), call(2, 2), 5);
-  rowsOf([{ v: 6, e: op("+", op("*", sum, num(1), 5), num(1), 6) }]);
+  expect(
+    codes(rowsOf([{ v: 6, e: op("+", op("*", sum, num(1), 5), num(1), 6) }])),
+  ).toEqual(["B()", "C()", "× 1", "Fixed +1"]);
   const product = op("*", call(1, 3), call(2, 2), 6);
-  rowsOf([{ v: 7, e: op("+", product, num(1), 7) }]);
-  expect(finished).toEqual([false, true]);
+  expect(codes(rowsOf([{ v: 7, e: op("+", product, num(1), 7) }]))).toEqual([
+    "B()",
+    "C()",
+    "Fixed +1",
+  ]);
 });
-
 test("a number cut out of a text the block read is a fixed value", () => {
   const [fixed] = rowsOf(
     [{ v: 26, e: op("+", val(25), num(1), 26) }],

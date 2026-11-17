@@ -26,7 +26,7 @@ const earlier = (v = 3): Row => ({
   earlier: true,
 });
 const one = (r: Row) => {
-  const [x] = finish(9, [r, read("Q", 2)], false);
+  const [x] = finish(9, [r, read("Q", 2)]);
   return [x?.node.name, x?.node.leaf, x?.node.why, x?.node.flags];
 };
 
@@ -66,7 +66,7 @@ test.each([
     node: row({ pieceKey: null, value: 5, code, kids: "lazy" }),
     open: 1,
   };
-  expect(finish(9, [lazy, read("Q", 2)], false)[0]?.node.name).not.toBe(p.name);
+  expect(finish(9, [lazy, read("Q", 2)])[0]?.node.name).not.toBe(p.name);
 });
 
 const above = (...codes: (string | null)[]) =>
