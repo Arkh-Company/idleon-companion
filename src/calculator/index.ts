@@ -49,9 +49,11 @@ function treeResult(
   try {
     if (!engine) throw new Error("no tree engine");
     const tree = engine.tree(request, mosaic);
+    // spec 009 NFR-005: a label only, never a text of the game
+    const log = engine.log?.() ?? null;
     return tree === "unknownNumber"
       ? { type: "treeResult", id, refused: "unknownNumber" }
-      : { type: "treeResult", id, tree };
+      : { type: "treeResult", id, tree, ...(log ? { log } : {}) };
   } catch {
     return { type: "treeResult", id, failed: true };
   }

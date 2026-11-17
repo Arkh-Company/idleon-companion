@@ -49,7 +49,8 @@ const messageOf = (job: Job): unknown =>
 export function createTreeHost(deps: {
   createWorker: (options: WorkerOptions) => WorkerLike;
   readFiles: (resources: string) => Promise<GameBytes>;
-  onTree: (id: number, tree: unknown) => void;
+  /** A tree, with the worker's log label when it has one (spec 009, NFR-005). */
+  onTree: (id: number, tree: unknown, log?: "chainOpen") => void;
   /** The worker's values, or null when they failed: values never reach `onUnavailable`, which is for trees. */
   onValues: (id: number, values: unknown) => void;
   onUnavailable: (id: number) => void;
@@ -153,6 +154,8 @@ export function createTreeHost(deps: {
     if (!dropped) {
       if (job.kind === "values") deps.onValues(job.id, m.values);
       else if (job.kind === "shape") deps.onShape(job.id, m.shape ?? null);
+      else if ("tree" in m && m.log === "chainOpen")
+        deps.onTree(job.id, m.tree, "chainOpen");
       else if ("tree" in m) deps.onTree(job.id, m.tree);
       else deps.onUnavailable(job.id);
     }

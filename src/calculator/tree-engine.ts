@@ -27,6 +27,8 @@ export interface TreeEngine {
   values(ids: unknown, mosaicJson: unknown): Record<string, number | null>;
   /** Each part of the number's whole tree, [pieceKey, name], each piece once; "unknownNumber" outside the roots. */
   shape(id: unknown, mosaicJson: unknown): [string, string][] | "unknownNumber";
+  /** The log label of the last `tree` answer: a number whose chain of steps is open (spec 009, NFR-005), else null. */
+  log?(): "chainOpen" | null;
 }
 
 /** A whole tree is about 5,000 rows for the Drop Rate (plan, Scale): the walk stops past this many parts. */
@@ -91,6 +93,8 @@ export function createTreeEngine(
     Object.hasOwn(roots, id) ? roots[id] : undefined;
   /** The last `number` tree, kept for its branches until the next request. */
   let last: { treeId: string; build: TreeBuild } | null = null;
+  /** Whether the last `tree` answer was a branch: its log is the number's, sent with the number. */
+  let expanded = false;
 
   return {
     tree(request, mosaicJson) {
@@ -105,9 +109,11 @@ export function createTreeEngine(
             ? last.build.expand(request.nodeId)
             : null;
         if (!branch) throw new Error("no such branch");
+        expanded = true;
         return branch;
       }
       last = null;
+      expanded = false;
       if (
         !isRecord(request) ||
         request.type !== "number" ||
@@ -131,6 +137,9 @@ export function createTreeEngine(
         build: buildTree(recording, request.character, recorder.ops),
       };
       return last.build.root;
+    },
+    log() {
+      return last?.build.chainOpen === true && !expanded ? "chainOpen" : null;
     },
     values(ids, mosaicJson) {
       if (!Array.isArray(ids) || typeof mosaicJson !== "string")

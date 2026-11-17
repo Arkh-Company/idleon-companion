@@ -34,7 +34,7 @@ export function startFormulaPipeline(deps: {
   send: (tree: FormulaTree) => void;
   sendValues: (v: LiveValues) => void;
   treeHost: (on: {
-    onTree(id: number, tree: unknown): void;
+    onTree(id: number, tree: unknown, log?: "chainOpen"): void;
     onUnavailable(id: number): void;
     onValues(id: number, values: unknown): void;
     onShape(id: number, shape: unknown): void;
@@ -241,8 +241,9 @@ export function startFormulaPipeline(deps: {
     host.request(seq, request, pair.mosaicJson);
   }
 
-  function received(id: number, raw: unknown): void {
+  function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
+    const { request } = asked;
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
@@ -250,13 +251,15 @@ export function startFormulaPipeline(deps: {
     });
     asked = null;
     if (answer.log) deps.log(answer.log);
+    // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
+    if (log) deps.log({ event: log, id: request.id });
     show(answer.tree);
   }
 
   const host = deps.treeHost({
-    onTree: (id, raw) => {
+    onTree: (id, raw, log) => {
       if (expanding?.seq === id) expanded(raw);
-      else received(id, raw);
+      else received(id, raw, log);
     },
     onUnavailable: (id) => {
       if (expanding?.seq === id) expanded(null);

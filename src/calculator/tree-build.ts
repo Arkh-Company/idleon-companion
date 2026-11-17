@@ -43,6 +43,8 @@ export interface TreeBuild {
   root: CalcTreeNode;
   /** The lazy branch `nodeId` with its rows built, or null when no lazy branch has that id. */
   expand(nodeId: string): CalcTreeNode | null;
+  /** The root's chain of steps could not be read as pools: its first level is its rows (spec 009, NFR-005). */
+  chainOpen?: boolean;
   readonly conflicts: readonly string[];
 }
 
@@ -300,6 +302,7 @@ export function buildTree(
   });
 
   const value = valueOf(top.v);
+  let chainOpen = false;
   const root: CalcTreeNode = {
     id: "root",
     ...row({
@@ -349,6 +352,7 @@ export function buildTree(
       },
     });
     root.formula = first.formula;
+    chainOpen = first.chainOpen === true;
     root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [
       top.id,
     ]);
@@ -358,5 +362,6 @@ export function buildTree(
     root,
     expand,
     conflicts: pieces.conflicts,
+    chainOpen,
   };
 }

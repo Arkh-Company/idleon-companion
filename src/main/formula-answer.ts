@@ -26,7 +26,8 @@ export const MAX_TREE_NODES = 20_000;
 export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
   | { event: "treeRejected"; id: string }
-  | { event: "treeFailed"; id: string };
+  | { event: "treeFailed"; id: string }
+  | { event: "chainOpen"; id: string };
 
 /** The tree to show for the worker's answer `raw` to `asked`, with the log entry of a refusal or a divergence. */
 export function treeAnswer(
