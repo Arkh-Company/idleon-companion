@@ -56,8 +56,38 @@ function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
   return inner.every((s) => s === inner[0]) ? (inner[0] ?? null) : null;
 }
 
+/** A group under a root with a max or a min at the top: the same rule over its sources, with its ⓘ ("max(…)"). */
+function extremeRow(s: System, rule: "max" | "min", rows: Row[]): Row {
+  const vals = rows.map(vOf);
+  const value = vals.every(Number.isFinite) ? Math[rule](...vals) : null;
+  const pair: [string, string] | null =
+    value === null
+      ? null
+      : [
+          `${rule}(${rows.map((r) => termOf(r.node)).join(", ")})`,
+          `${rule}(${vals.map(fx3).join(", ")}) = ${fx3(value)}`,
+        ];
+  const fmts = new Set(rows.map((r) => r.node.fmt));
+  const node = row({
+    pieceKey: null,
+    value,
+    code: null,
+    name: systemLabel(s),
+    role: "system",
+    combine: rule,
+    poolKind: null,
+    // the format of its sources when they share one
+    fmt: fmts.size === 1 ? (rows[0]?.node.fmt ?? null) : null,
+    flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
+    formula: pair && formulaOut(pair, termsOf(rows)),
+  });
+  return { node, open: null, group: withShares(node, pair, rows).rows };
+}
+
 /** A system's group of `rows`, its value their sum or product, its sources in the game's order (FR-002, FR-013). */
 function systemRow(s: System, combine: Combine, rows: Row[]): Row {
+  if (combine === "max" || combine === "min")
+    return extremeRow(s, combine, rows);
   const product = combine === "product";
   const vals = rows.map(vOf);
   const value = vals.every(Number.isFinite)

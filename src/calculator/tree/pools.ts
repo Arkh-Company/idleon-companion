@@ -137,6 +137,25 @@ export function poolsOf(
   return named(pools);
 }
 
+/**
+ * A root with no pool whose step is a max or a min at the top, which its rows give by that same rule: that rule, which
+ * its groups by system take (spec 009, US2 scenario 4); else null.
+ */
+export function rootExtreme(
+  rows: readonly Row[],
+  root: { value: CalcTreeNode["value"]; expr?: Expr | null },
+): "max" | "min" | null {
+  const e = root.expr ? strip(root.expr) : null;
+  const rule =
+    e?.t === "fn" && (e.name === "max" || e.name === "min") ? e.name : null;
+  const vals = rows
+    .flatMap((r) => (GROUPS.has(r.node.role) && r.group ? r.group : [r]))
+    .map(vOf);
+  if (!rule || !vals.length || !vals.every(Number.isFinite)) return null;
+  const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
+  return v !== null && near(Math[rule](...vals), v) ? rule : null;
+}
+
 /** The root's ⓘ as its two lines: how its pools give it ("Additive pool × Multi pool"); none for a single pool. */
 export function poolsPair(
   pools: readonly Pool[],
