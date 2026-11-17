@@ -18,7 +18,7 @@ export interface CacheContext {
   linksOf(n: RecNode): ReadonlyMap<string, number>;
   /** The terms of writer `w`'s steps, with its own links: the rows they make open under `seen`. */
   terms(w: RecNode, seen: readonly number[]): Terms;
-  finish(v: unknown, rows: Row[]): Row[];
+  finish(v: unknown, rows: Row[], ones: boolean): Row[];
   /** The ⓘ the game's code gives (tree/code-formulas.ts). */
   formulas: CodeFormulas;
 }

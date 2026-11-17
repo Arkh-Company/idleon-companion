@@ -75,8 +75,8 @@ export function makeCaches(ctx: CacheContext) {
   ): Row[] {
     const reads = turnReads(w, own);
     const terms = ctx.terms(w, [...seen, w.id]);
-    const { rows } = terms.rowsAt({ args: w.a, steps, at }, e, reads);
-    return ctx.finish(e.v, rows);
+    const { rows, op } = terms.rowsAt({ args: w.a, steps, at }, e, reads);
+    return ctx.finish(e.v, rows, op === "*");
   }
   /** pieces.cjs cacheStepRows: the writer's step that made the cache's value, without a lone call that says nothing. */
   const cacheStep = (
@@ -216,7 +216,7 @@ export function makeCaches(ctx: CacheContext) {
             flags: {},
           }),
           open: null,
-          group: ctx.finish(pt.d, at.tidy(rows, "*", w.a, w)),
+          group: ctx.finish(pt.d, at.tidy(rows, "*", w.a, w), true),
         };
       }
       // the turn's ⓘ: the part its step adds to the total
@@ -256,7 +256,7 @@ export function makeCaches(ctx: CacheContext) {
         ...(xf ? { xf } : {}),
       };
     });
-    return { rows: ctx.finish(value, out), f: null };
+    return { rows: ctx.finish(value, out, false), f: null };
   }
 
   /** pieces.cjs cacheRows, with writer `w` found for it; null when the depth limit or a cycle cuts it. */
@@ -289,7 +289,8 @@ export function makeCaches(ctx: CacheContext) {
     }
     // deep-2: a skill's rank opens into the levels the builder pass recorded in the entry of this path
     const ranks = skillRankRows(p, w, LL[0], value);
-    if (ranks) return { rows: ctx.finish(value, ranks.rows), f: ranks.f };
+    if (ranks)
+      return { rows: ctx.finish(value, ranks.rows, false), f: ranks.f };
     const wsteps = w ? ctx.steps(w.id) : [];
     // a cache the call being built computed in one of its own steps, not one that reads the cache itself: that step
     if (w && deep && p.startsWith("DNSM.")) {

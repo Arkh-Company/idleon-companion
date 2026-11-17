@@ -29,17 +29,11 @@ export const vOf = (r: Part): number => {
 };
 export const isCond = (r: Part) => r.node.leaf === "condition";
 /**
- * The parts at ×1 the ⓘ leaves aside, as the bench's "N more parts at ×1" does: two or more in a product. They stay in
- * their places on screen (spec 009, FR-016); only the ⓘ reads them as the 008 did, by the share mode `finish` gave.
+ * The parts at ×1 the ⓘ leaves aside, as the bench's "N more parts at ×1" does: those rows.ts `finish` marked where the
+ * 008 grouped them. They stay in their places on screen (spec 009, FR-016).
  */
-export function atOneParts(kids: readonly Row[]): ReadonlySet<Row> {
-  const one = kids.filter(
-    (k) =>
-      (k.node.shareMode === "product" || k.node.shareMode === "productZero") &&
-      Math.abs(vOf(k) - 1) < 1e-9,
-  );
-  return new Set(one.length >= 2 ? one : []);
-}
+export const atOneParts = (kids: readonly Row[]): ReadonlySet<Row> =>
+  new Set(kids.filter((k) => k.asideAtOne));
 const kidsOf = (r: Row) => r.group ?? [];
 /** What the bench's `k.name` is here: a Condition's comparison, a row's term (its name, or its path with no name). */
 const nameOf = (r: Part) => (isCond(r) && r.test ? r.test : termOf(r.node));

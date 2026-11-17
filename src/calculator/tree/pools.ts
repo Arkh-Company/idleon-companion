@@ -73,7 +73,7 @@ function additiveRows(
   const sum = rows.reduce((s, r) => s + vOf(r), 0);
   const gives = a.combine === "sum" ? sum : 1 + sum / 100;
   if (rows.length !== a.terms.length || !near(gives, v)) return null;
-  return { rows: finish(sum, rows), combine: a.combine };
+  return { rows: finish(sum, rows, false), combine: a.combine };
 }
 
 /** Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more. */

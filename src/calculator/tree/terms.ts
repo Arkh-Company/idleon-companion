@@ -9,7 +9,7 @@ import { MAX_DEPTH } from "./pieces.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
+import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
 import { branchName } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -35,8 +35,11 @@ export interface TermContext {
   read(path: string, v: V): Row;
   /** A call as a row with the value its caller took; a curve takes its input from `reads`. */
   call(k: RecNode, v: V, reads: Reads): Row;
-  /** A level's rows with their shares, under a parent of value `v`, each in its place (spec 009, FR-016). */
-  finish(v: V, rows: Row[]): Row[];
+  /**
+   * A level's rows with their shares, under a parent of value `v`, each in its place (spec 009, FR-016); `ones`: a
+   * product whose parts at ×1 the 008 grouped, which the ⓘ still leaves aside.
+   */
+  finish(v: V, rows: Row[], ones: boolean): Row[];
   /** The call whose terms these are (the bench's CUR_BLOCK). */
   block: RecNode;
   /** The cache entry whose loop turn is being walked (the bench's ENTRY_P). */
@@ -120,13 +123,16 @@ export function makeTerms(ctx: TermContext) {
       const [only] = rows;
       if (only && rows.length === 1 && near(only.node.value, v)) return only;
       // pieces.cjs stepRef tidies with no caller ({ id: -1 }): no argument names an earlier value here
-      return branch(v, op ? ctx.finish(v, tidy(rows, op, [])) : rows);
+      return branch(
+        v,
+        op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows,
+      );
     }
     return null;
   }
 
   /** A branch of the parts of an expression (exprRow0): its numbers by their role, its sources as rows. */
-  function exprRow(e: Expr, d: number, reads: Reads) {
+  function exprRow(e: Expr, d: number, reads: Reads, ones = true) {
     const rows: Row[] = [];
     (function walk(x: Expr, parent: Expr | null, side: number) {
       if (x.t === "num") rows.push(fixed(numRole(x.v, parent, side), x.v));
@@ -143,7 +149,8 @@ export function makeTerms(ctx: TermContext) {
         });
       } else if (x.t === "not") walk(x.a, x, 0);
     })(e, null, 0);
-    const out = branch(e.v, ctx.finish(e.v, tidy(rows, "*", [])));
+    // [R1-PATCH] the parts of a sum are no parts at ×1: they are left aside only when the expression adds nothing
+    const out = branch(e.v, ctx.finish(e.v, tidy(rows, "*", []), ones));
     const xf = ctx.formulas.expr(e, reads, e.v);
     return xf ? { ...out, xf } : out;
   }
@@ -332,7 +339,7 @@ export function makeTerms(ctx: TermContext) {
             : e.t === "op" && e.o === "+"
               ? `Sum of ${String(ns)} sources`
               : `Formula of ${String(ns)} sources`;
-      const r = branchName(exprRow(e, d - 1, reads2), e, byCount);
+      const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
       return own ? { ...r, r1src: own } : r;
     }
     // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the

@@ -42,6 +42,16 @@ export interface Row {
   group?: Row[];
   /** pieces.cjs "Value from an earlier step": a value of a step the recording did not link. */
   earlier?: boolean;
+  /**
+   * A part at ×1 of a product the 008 grouped under "At ×1" (two or more, in a level finished with `ones`): it stays in
+   * its place (spec 009, FR-016), and the ⓘ and the renames still leave it aside, as the bench does.
+   */
+  asideAtOne?: true;
+  /**
+   * A part at 0 of a sum the 008 grouped under "At 0" (a Condition that is no aside): it stays in its place (spec 009,
+   * FR-016), and the checks of whether a level opens into something still see it as the group they saw.
+   */
+  asideAtZero?: true;
   /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
   test?: string;
   /**
@@ -151,20 +161,41 @@ function bySource(rows: Row[]): Row[] {
 /**
  * A level's rows with its context reads gone and its proven leaves named (tree/level-renames.ts), typed, through the
  * passes after the types (tree/leaf-passes.ts), with their shares; every part in its place, at 0 or at ×1 too (spec
- * 009, FR-016: no group "At 0" nor "At ×1").
+ * 009, FR-016: no group "At 0" nor "At ×1"). The parts the 008 grouped are marked: a sum's parts at 0 `asideAtZero`,
+ * and, with `ones`, a product's parts at ×1 `asideAtOne`.
  */
-export function finish(v: unknown, rows: Row[]): Row[] {
+export function finish(v: unknown, rows: Row[], ones = false): Row[] {
   // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
   const typed = bySource(levelRenames(rows)).map((r) =>
     r.node.kids === "lazy" || r.node.leaf || r.group
       ? r
       : { ...r, node: { ...r.node, ...classify(r.node) } },
   );
-  return withShares(
+  const shared = withShares(
     { name: "", value: valueOf(v as RecValue) },
     null,
     leafPasses(typed),
-  ).rows;
+  );
+  const product = shared.mode === "product" || shared.mode === "productZero";
+  const one = (r: Row) => {
+    // (a yes/no counts as 1 or 0, as the 008's group read it)
+    const x = r.node.value;
+    const n = typeof x === "boolean" ? Number(x) : x;
+    return n !== null && Math.abs(n - 1) < 1e-9;
+  };
+  const aside = ones && product ? shared.rows.filter(one) : [];
+  const zero = (r: Row) =>
+    shared.mode === "sum" &&
+    r.node.value === 0 &&
+    r.node.leaf !== "condition" &&
+    r.node.role === "piece";
+  return shared.rows.map((r) =>
+    aside.length >= 2 && aside.includes(r)
+      ? { ...r, asideAtOne: true as const }
+      : zero(r)
+        ? { ...r, asideAtZero: true as const }
+        : r,
+  );
 }
 
 /**

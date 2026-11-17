@@ -23,7 +23,11 @@ export const fixed = (name: string, v: unknown): Row => ({
 
 /** pieces.cjs `kids.length` for a row built now: whether it opens into rows. */
 export const hasKids = (r: Row) =>
-  r.open !== null || (r.group?.length ?? 0) > 0 || r.node.kids === "lazy";
+  r.open !== null ||
+  (r.group?.length ?? 0) > 0 ||
+  r.node.kids === "lazy" ||
+  // the 008's group "At 0" was a row with rows under it (spec 009, FR-016: its parts are in their places now)
+  !!r.asideAtZero;
 
 /**
  * pieces.cjs `tidy` (with no ×1 group): a value from an earlier step that another row already shows, or that is 0

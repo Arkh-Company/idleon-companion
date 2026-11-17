@@ -88,14 +88,16 @@ export function parentPasses(
   let at = own.level;
   // the texts of every level above the rows a merge brings: the rows above, the row, then each child merged into it
   const above = [...up.map(aboveText), own.text];
-  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows (a part at 0 or
-  // at ×1 too: spec 009, FR-016); a pool or a system's group is the app's, no child to merge into
+  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a pool or a
+  // system's group is the app's, no child to merge into. A sum's one part at 0 (rows.ts `asideAtZero`) stays in its
+  // place under the row, as the 008's group "At 0" kept it (spec 009, FR-016)
   for (let i = 0; i < MERGES; i++) {
     const [c] = at.rows;
     if (
       at.rows.length !== 1 ||
       c?.node.role !== "piece" ||
-      !near(c.node.value, n.node.value)
+      !near(c.node.value, n.node.value) ||
+      c.asideAtZero
     )
       break;
     // the bench's passes after structurePass see the leaf with the row's own code
