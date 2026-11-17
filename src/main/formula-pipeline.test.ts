@@ -139,6 +139,16 @@ test("a request the host could not answer is unavailable", () => {
   expect(h.last()).toEqual({ state: "unavailable", request: DROP });
 });
 
+test("a tree the worker failed to build (its mould too) leaves one log line with a label and the id (spec 009, NFR-005)", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.unavailable();
+  expect(h.log).toHaveBeenCalledExactlyOnceWith({
+    event: "treeFailed",
+    id: "dropRate",
+  });
+});
+
 test("an answer to an older request is dropped", () => {
   const h = setup();
   h.p.request({ id: "dropRate", character: null });
