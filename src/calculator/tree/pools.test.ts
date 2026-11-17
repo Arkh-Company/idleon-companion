@@ -68,6 +68,14 @@ test("rows that both add up and multiply to the root follow the step's top: a su
     "Multi pool 2",
     "Multi pool 3",
   ]);
+  // with no step, the level's own rule decides: its rows' share in a sum
+  const summed = rows.map((r) => ({
+    ...r,
+    node: { ...r.node, shareMode: "sum" as const },
+  }));
+  expect(poolsOf(summed, { value: 6 })?.map((p) => p.name)).toEqual([
+    "Additive pool",
+  ]);
 });
 
 test("a root that multiplies has a Multi pool per factor, numbered in the game's order", () => {

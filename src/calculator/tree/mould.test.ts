@@ -5,7 +5,12 @@ import { bySystem, mould, poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { branch, fixed, kidsOf, ones, placed, read } from "./tree-fixture.ts";
+import { branch, fixed, ones, placed, read } from "./tree-fixture.ts";
+import type { CalcTreeNode } from "../tree-contract.ts";
+
+/** A placed row's own rows, the pools and groups among them (tree-fixture.ts `kidsOf` goes through them). */
+const ownKids = (n: CalcTreeNode | undefined) =>
+  n && Array.isArray(n.kids) ? n.kids : [];
 
 const brief = (r: Row) => [r.node.name, r.node.value, r.node.flags];
 
@@ -285,7 +290,7 @@ test("pools and groups have no piece, and their ids are the path of their names"
     ["root/Multi pool 1", "pool", null, "multi", "product", 2],
     ["root/Multi pool 2", "pool", null, "multi", "product", 3],
   ]);
-  const [alchemy] = kidsOf(placedRows[0]);
+  const [alchemy] = ownKids(placedRows[0]);
   expect([
     alchemy?.id,
     alchemy?.role,
@@ -294,7 +299,7 @@ test("pools and groups have no piece, and their ids are the path of their names"
   ]).toEqual(["root/Additive pool/🃏 Cards", "system", null, 80]);
   // the pools multiply to the root; a Multi pool of one source shows it alone
   expect(placedRows.reduce((p, n) => p * Number(n.value), 1)).toBeCloseTo(10.8);
-  expect(kidsOf(placedRows[1]).map((n) => n.code)).toEqual([
+  expect(ownKids(placedRows[1]).map((n) => n.code)).toEqual([
     "GetTalentNumber(1, 209)",
   ]);
 });
@@ -323,4 +328,32 @@ test("under a root with a max at the top, each group is the max of its sources, 
   ]);
   const [low] = bySystem([card(8), card(5, 11)], "min", writerOf);
   expect([low?.node.value, low?.node.combine]).toEqual([5, "min"]);
+});
+
+test("a pool or group has its own ⓘ, the sum or product of its rows, and none for one row: never a guess", () => {
+  const pools: Pool[] = [
+    {
+      name: "Multi pool 1",
+      kind: "multi",
+      combine: "product",
+      value: 0,
+      rows: [card(0)],
+    },
+    {
+      name: "Multi pool 2",
+      kind: "multi",
+      combine: "product",
+      value: 6,
+      rows: [talent(2), talent(3, 208)],
+    },
+  ];
+  const { rows } = poolRows(pools, { name: "Total", value: 0 }, writerOf);
+  const [lone, two] = placed({}, rows).rows;
+  expect(lone?.formula).toBeNull();
+  expect(two?.formula).toBeNull();
+  const [talents] = ownKids(two);
+  expect(talents?.formula).toEqual([
+    ["GetTalentNumber(1, 207)", "×", "GetTalentNumber(1, 208)"],
+    [2, 3, 6],
+  ]);
 });
