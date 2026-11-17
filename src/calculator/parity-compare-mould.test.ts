@@ -287,3 +287,46 @@ test("below the root, a level with the bench's group at 0 still checks the order
     { at: "0/0", field: "shape" },
   ]);
 });
+
+// (1 + (a + b) ÷ 100) × m: the app's Additive pool of 1 + percent holds only the bonuses' terms; the bench's factor is
+// the branch of the whole expression, with its constants 1 and 100 among its leaves (tree/shapes.test.ts).
+const PCT = app({
+  value: 3.6,
+  kids: [
+    app({
+      id: "root/Additive pool",
+      name: "Additive pool",
+      value: 1.8,
+      role: "pool",
+      combine: "onePlusPercent",
+      poolKind: "additive",
+      kids: [leafOf("pa", "A", 30), leafOf("pb", "B", 50)],
+    }),
+    pool("Multi pool", [leafOf("root/Multi pool/M", "M", 2)]),
+  ],
+});
+const pctBench = (b: number): BenchRow => ({
+  name: "Invented speed",
+  v: 3.6,
+  kids: [
+    {
+      name: "Multiplier from 2 sources",
+      v: 1.8,
+      kids: [
+        { name: "Base 1", v: 1, kind: "Valor fixo" },
+        { name: "A", v: 30, kind: "Valor fixo" },
+        { name: "B", v: b, kind: "Valor fixo" },
+        { name: "Percent to number (÷ 100)", v: 100, kind: "Valor fixo" },
+      ],
+    },
+    { name: "M", v: 2, kind: "Valor fixo" },
+  ],
+});
+
+test("an Additive pool of 1 + percent pairs with the bench's factor, its 1 and its 100 being the bench's constants", () => {
+  expect(compareTrees(PCT, pctBench(50), new Set())).toEqual([]);
+  // a bonus of another value is a difference of shape at the factor
+  expect(compareTrees(PCT, pctBench(49), new Set())).toEqual([
+    { at: "0/0", field: "shape" },
+  ]);
+});
