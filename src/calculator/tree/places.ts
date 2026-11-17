@@ -17,6 +17,7 @@ import type { Above } from "./above-renames.ts";
 import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
+import { flatten } from "./flatten.ts";
 import { baseStatue } from "./last-renames.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
@@ -100,10 +101,11 @@ export function makePlaces(ctx: PlaceContext) {
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
   function placedLevel(id: string, lv: Level) {
-    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows
+    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows; any other level
+    // has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
     const w = isMould(lv.row)
       ? { formula: lv.row.node.formula, rows: lv.rows }
-      : withFormula(lv.row, lv.rows);
+      : withFormula(lv.row, flatten(lv.rows));
     return {
       formula: w.formula,
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),

@@ -143,7 +143,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Tests for User Story 3 (write first)
 
-- [ ] T013 [P] [US3] Tests of the flattening in `src/calculator/tree/flatten.test.ts` (FR-007, FR-008; depends on T002)
+- [X] T013 [P] [US3] Tests of the flattening in `src/calculator/tree/flatten.test.ts` (FR-007, FR-008; depends on T002)
   - Files: `src/calculator/tree/flatten.test.ts`
   - Cases:
     - `Game value × Multiplier × X` with the first two unnamed → the parts go up, and the ⓘ is the whole product and closes;
@@ -155,7 +155,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] The flattening pass in `src/calculator/tree/flatten.ts`, called from `src/calculator/tree/places.ts` (FR-007; depends on T013)
+- [X] T014 [US3] The flattening pass in `src/calculator/tree/flatten.ts`, called from `src/calculator/tree/places.ts` (FR-007; depends on T013)
   - Files: `src/calculator/tree/flatten.ts`, `src/calculator/tree/places.ts`
   - Signature: `flatten(rows: Row[]): Row[]`
   - Runs with the `parentPasses` of the 008, on every level. Each file stays under 400 lines.
