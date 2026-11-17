@@ -183,7 +183,14 @@ export function compareTrees(
   function sameLeaves(a: CalcTreeNode, b: BenchRow, at: string): void {
     if (!sameValue(a.value, b.v)) out.push({ at, field: "value" });
     const left = appLeaves(a);
-    const unmatched = benchLeaves(b).filter((bl) => {
+    const leaves = benchLeaves(b);
+    // 1 + (bonuses) ÷ 100: the pool holds only the bonuses' terms, and its 1 and 100 are the bench's constants
+    if (a.combine === "onePlusPercent")
+      for (const c of [1, 100]) {
+        const k = leaves.findIndex((bl) => sameValue(c, bl.v));
+        if (k >= 0) leaves.splice(k, 1);
+      }
+    const unmatched = leaves.filter((bl) => {
       const j = left.findIndex((x) => sameValue(x.value, bl.v));
       if (j >= 0) left.splice(j, 1);
       return j < 0;
