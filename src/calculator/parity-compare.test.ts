@@ -203,3 +203,73 @@ test("the summary says each difference by its field and its place, never by a na
   expect(text).toContain("value: 0/0");
   expect(text).toContain('{"value":1,"name":1}');
 });
+
+// spec 009: the app's first level is its pools and system groups; the bench's (008, with no mould) is the steps, with
+// their groups at 0 and at ×1. The parity goes through both and pairs each bench row with the app's of its name and
+// value, then compares row by row under it; the root's ⓘ is the pools' (FR-005), not compared.
+const pool = (name: string, kids: CalcTreeNode[]): CalcTreeNode =>
+  app({
+    id: `root/${name}`,
+    name,
+    role: "pool",
+    combine: "product",
+    poolKind: "multi",
+    kids,
+  });
+const group = (name: string, kids: CalcTreeNode[]): CalcTreeNode =>
+  app({
+    id: `root/x/${name}`,
+    name,
+    role: "system",
+    combine: "sum",
+    poolKind: null,
+    kids,
+  });
+const [ALPHA = app(), BETA = app()] = Array.isArray(APP.kids) ? APP.kids : [];
+
+test("through the pools and groups, the first level pairs by name and value, in any order", () => {
+  const moulded = app({
+    formula: [
+      ["Multi pool 1", "×", "Multi pool 2"],
+      [2, 5, 10],
+    ],
+    kids: [pool("Multi pool 1", [group("🃏 Cards", [BETA, ALPHA])])],
+  });
+  expect(compareTrees(moulded, BENCH, new Set())).toEqual([]);
+});
+
+test("the bench's groups at 0 and at ×1 of the first level go through as the app's pools do", () => {
+  const zero = (name: string): CalcTreeNode =>
+    app({ id: `root/${name}`, name, value: 0, leaf: "level" });
+  const bench: BenchRow = {
+    ...NO_FORMULA,
+    v: 0,
+    kids: [
+      {
+        name: "At 0 (2)",
+        v: 0,
+        kids: [
+          { name: "Gamma", v: 0, kind: "Level" },
+          { name: "Delta", v: 0, kind: "Level" },
+        ],
+      },
+    ],
+  };
+  const moulded = app({
+    value: 0,
+    kids: [
+      pool("Additive pool", [
+        zero("Delta"),
+        group("🃏 Cards", [zero("Gamma")]),
+      ]),
+    ],
+  });
+  expect(compareTrees(moulded, bench, new Set())).toEqual([]);
+});
+
+test("a bench row of the first level with no app row of its name and value is a difference of shape", () => {
+  const moulded = app({ kids: [pool("Multi pool", [ALPHA])] });
+  expect(compareTrees(moulded, NO_FORMULA, new Set())).toEqual([
+    { at: "0/1", field: "shape" },
+  ]);
+});
