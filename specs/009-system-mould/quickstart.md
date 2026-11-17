@@ -48,6 +48,6 @@ Ela fica no scratchpad da sessão e lê o `N.js` e o `default.pak` extraídos do
 | 2 | Abrir o Additive Pool | Os sistemas com emoji, na ordem da V1; um sistema que vale 0 fica no lugar |
 | 3 | Abrir Forge stats 2 | "Additive pool" e "Multi pool"; o ⓘ da raiz diz "Additive pool × Multi pool" |
 | 4 | Ligar a fatia | Cada linha mostra só "26%", sem texto extra |
-| 5 | Ligar "Changes" e trocar uma carta no jogo | A carta, o grupo Cards e o pool ganham "▲ +N%" sem Refresh |
+| 5 | Ligar "Changes" e trocar uma carta no jogo | Em até 1 s, a carta, o grupo Cards e o pool ganham "▲ +N%" (ou "▲ +0.12" numa linha "×"), sem Refresh e sem a faixa "Game changed" |
 | 6 | Escolher uma marca em "Changes" | As setas comparam com a marca |
 | 7 | Fechar e abrir o app | Os botões voltam como estavam |

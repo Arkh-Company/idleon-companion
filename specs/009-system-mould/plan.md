@@ -11,7 +11,8 @@ O primeiro nível de toda árvore deixa de ser a cadeia de passos do jogo e pass
 A janela muda em três pontos:
 - o resumo de duas linhas acima da árvore sai;
 - a fatia passa a ficar num botão;
-- um botão "Changes" mostra setas ao vivo, contra o momento em que foi ligado ou contra uma marca. Ele substitui o "was", a linha que acende e o "mark" escrito.
+- um botão "Changes" mostra setas ao vivo, contra o momento em que foi ligado ou contra uma marca. Ele substitui o "was", a linha que acende e o "mark" escrito;
+- a árvore aberta mostra os valores em tempo real, e a faixa "Game changed · Refresh" sai.
 
 Tudo é montado no worker de árvores, depois da montagem da 008 (research R1–R3). A janela só desenha e refaz o valor dos grupos para as setas (R5).
 
@@ -100,12 +101,14 @@ src/
 
 **Structure Decision**: o mesmo app da 008. O molde é uma passada a mais na montagem do worker de árvores, e as preferências de vista ficam na janela com o `settings.json`. Não há pacote nem processo novo.
 
-## Fases propostas (para o /speckit-tasks)
+## Fases (as mesmas de tasks.md)
 
-1. **Pools e sistemas no worker** (US1 e US2): `pools.ts`, `systems.ts` e o novo `mould.ts`, mais a conferência do main. Prova no jogo inventado e no Drop Rate igual à V1 (`just parity`).
-2. **Achatamento** (US3): `flatten.ts` em todos os níveis, com o ⓘ que fecha. A sonda mostra 0 galhos sem nome.
-3. **Janela**: sem o resumo; a fatia num botão; "Changes" com setas ao vivo e contra a marca; `view:*` e `settings.json`.
-4. **Polish**: `ARCHITECTURE.md`, a tabela de sistemas completa pela sonda, as tarefas `[sessão]` com o jogo real e o teste dos 5 segundos.
+1. **Foundational**: o nó com pools e sistemas, a conferência do main e a tabela de sistemas (FR-003, FR-011, SEC-003).
+2. **US2, toda árvore agrupada por sistema**: pools do jogo e grupos por sistema em toda árvore (FR-001 a FR-006, FR-008, FR-012). Vem antes da US1, porque a US1 especializa a regra geral.
+3. **US1, de onde vem o meu Drop Rate**: os pools da V1 e a paridade com a bancada (FR-005, FR-010).
+4. **US3, nenhum degrau sem nome**: o achatamento em todo nível (FR-007).
+5. **A vista da árvore**: sem o resumo, a fatia num botão, o Changes com setas, a árvore ao vivo sem Refresh e as preferências (FR-001, FR-013 a FR-015, NFR-002 a NFR-004, SEC-005, SEC-006).
+6. **Polish**: `ARCHITECTURE.md`, a tabela de sistemas completa pela sonda e as tarefas `[sessão]` com o jogo real (SC-001 a SC-004, NFR-001).
 
 ## Complexity Tracking
 
