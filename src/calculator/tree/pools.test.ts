@@ -225,11 +225,13 @@ test("a root with a max or a min at the top has no pool, and its groups take its
 });
 
 // The chain of the game's steps (FR-005, rule Y of 17/11): each step adds to or multiplies the total the step before it
-// gave, a value with no source; a working value the game wrote and reads back is a cache, a term that opens into its
-// writer's step, as in the 008. Sums in a row are an Additive pool, single
+// gave: a value with no source, or a working value the root's own call wrote and reads back (the recording tells the two
+// apart, not the game); a cache another call wrote is a term. Sums in a row are an Additive pool, single
 // multipliers in a row one Multi pool, a factor that sums bonuses inside 1 + (…) ÷ 100 its own; each change of + to ×
 // opens a pool. A term of a step is its row as tree/terms.ts makes it: here a read is its source, a number its constant.
 const val = (v: number): Expr => ({ t: "val", v });
+/** The pools of a chain, or null for an open one or none. */
+const listOf = (p: Pool[] | "open" | null) => (Array.isArray(p) ? p : null);
 const termAt = (e: Expr): Row | null =>
   e.t === "read"
     ? src(e.p, Number(e.v))
@@ -256,7 +258,7 @@ const CHAIN: Step[] = [
 ];
 
 test("a chain of steps gives a pool per run of sums or of multipliers, in the game's order, each closing", () => {
-  const pools = chainPools(CHAIN, { value: 1407 }, termAt);
+  const pools = listOf(chainPools(CHAIN, { value: 1407 }, termAt));
   expect(pools?.map(brief)).toEqual([
     ["Additive pool 1", "additive", "sum", 39, [30, 7, 2]],
     ["Multi pool 1", "multi", "product", 6, [6]],
@@ -303,21 +305,31 @@ test("single multipliers of steps in a row share one Multi pool; a factor that s
     },
     { v: 720, e: op("*", val(180), at("Stats.g", 4), 720) },
   ];
-  expect(chainPools(steps, { value: 720 }, termAt)?.map(brief)).toEqual([
-    ["Additive pool", "additive", "sum", 20, [10, 10]],
-    ["Multi pool 1", "multi", "product", 6, [2, 3]],
-    ["Multi pool 2", "multi", "onePlusPercent", 1.5, [30, 20]],
-    ["Multi pool 3", "multi", "product", 4, [4]],
-  ]);
+  expect(listOf(chainPools(steps, { value: 720 }, termAt))?.map(brief)).toEqual(
+    [
+      ["Additive pool", "additive", "sum", 20, [10, 10]],
+      ["Multi pool 1", "multi", "product", 6, [2, 3]],
+      ["Multi pool 2", "multi", "onePlusPercent", 1.5, [30, 20]],
+      ["Multi pool 3", "multi", "product", 4, [4]],
+    ],
+  );
 });
 
-test("a working value the game wrote and reads back stays a term of its pool, where it opens: the chain stops there", () => {
+test("a working value the root's call wrote and reads back links the chain; one another call wrote stays a term", () => {
   const steps: Step[] = [
     CHAIN[0] ?? { v: 0, e: num(0) },
     { v: 39, e: op("+", at("DNSM.Run.v", 37), num(2), 39) },
     ...CHAIN.slice(2),
   ];
-  expect(chainPools(steps, { value: 1407 }, termAt)?.map(brief)).toEqual([
+  const pools = (own: boolean) =>
+    chainPools(steps, { value: 1407 }, termAt, () => own);
+  expect(listOf(pools(true))?.map(brief)).toEqual([
+    ["Additive pool 1", "additive", "sum", 39, [30, 7, 2]],
+    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+  ]);
+  expect(listOf(pools(false))?.map(brief)).toEqual([
     ["Additive pool 1", "additive", "sum", 39, [37, 2]],
     ["Multi pool 1", "multi", "product", 6, [6]],
     ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
@@ -325,9 +337,21 @@ test("a working value the game wrote and reads back stays a term of its pool, wh
   ]);
 });
 
-test("a root of one step, or a chain whose pools do not give the root, is no chain", () => {
+test("a root of one step is no chain; a chain whose pools do not give the root is open, which the caller logs", () => {
   expect(chainPools(CHAIN.slice(0, 1), { value: 37 }, termAt)).toBeNull();
+  // no step gives the root: no chain
   expect(chainPools(CHAIN, { value: 1400 }, termAt)).toBeNull();
+  // the pools of the steps do not give the root
+  const off = (e: Expr) =>
+    e.t === "num" && e.v === 2 ? fixed("Fixed +2", 3) : termAt(e);
+  expect(chainPools(CHAIN, { value: 1407 }, off)).toBe("open");
   // a term the assembly cannot make a row of
-  expect(chainPools(CHAIN, { value: 1407 }, () => null)).toBeNull();
+  expect(chainPools(CHAIN, { value: 1407 }, () => null)).toBe("open");
+  // a step that takes the total but neither adds nor multiplies (a floor)
+  const floor: Step[] = [
+    ...CHAIN.slice(0, 2),
+    { v: 39, e: { t: "fn", name: "floor", args: [val(39)], v: 39 } },
+    { v: 41, e: op("+", val(39), num(2), 41) },
+  ];
+  expect(chainPools(floor, { value: 41 }, termAt)).toBe("open");
 });

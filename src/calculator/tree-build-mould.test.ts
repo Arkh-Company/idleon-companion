@@ -74,7 +74,7 @@ test("every pool closes to the root, and only pools and groups have no piece key
 
 // The shape of the Drop Rate's chain (fake-game.js TreeChain): 37 → + 2 (when a flag is on) → × 6 → + 0.5 →
 // × (1 + (3 + 80) ÷ 100) → × 3 × 2, each step on the running total (FR-005, rule Y of 17/11); the first sum is the
-// working value the game wrote and reads back, which opens inside its pool.
+// working value the root wrote and reads back, a link of the chain: its sources are the first pool's.
 test("a root that is a chain of steps gets a pool per run, in the game's order, each closing, and the main takes it", () => {
   const build = buildTree(
     recorder.record(mosaicOf(), [["TreeChain", [0, 0, 0]]], NONE),
@@ -96,7 +96,9 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
   ]);
   expect(level.map((k) => kidsOf(k).map((r) => [r.code, r.value]))).toEqual([
     [
-      ["DNSM.TreeChain.v", 37],
+      ["TreeReads()", 8],
+      ["TreeBase", 4],
+      ["TreeLevel", 25],
       [null, 2],
     ],
     [["TreeLoop()", 6]],
@@ -127,17 +129,16 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
     ],
     [39, 6, 0.5, 1.83, 6, 2574.81],
   ]);
-  // the sum the game wrote opens inside the pool into its terms
-  const [cache] = kidsOf(level[0]);
+  // a call of the sum still opens inside its pool
+  const [reads] = kidsOf(level[0]);
   expect(
-    kidsOf(cache?.kids === "lazy" ? build.expand(cache.id) : cache).map((r) => [
+    kidsOf(reads?.kids === "lazy" ? build.expand(reads.id) : reads).map((r) => [
       r.code,
       r.value,
     ]),
   ).toEqual([
-    ["TreeReads()", 8],
-    ["TreeBase", 4],
-    ["TreeLevel", 25],
+    ["TreeStats.a", 3],
+    ["TreeStats.b", 5],
   ]);
   expect(checkTree(root, 100)).not.toBeNull();
 });

@@ -73,10 +73,16 @@ test("a turn with a function beside the running total opens into it; a write tha
   ]);
 });
 
-test("a cache the block computed in one of its own steps opens into that step", () => {
-  expect(brief(open(gameOf("TreeOwnStep"), "DNSM.TreeOwn.v"))).toEqual([
-    ["TreeBase", 4],
-    [null, 1],
+test("a cache the block computed in one of its own steps opens into that step: the chain's first pool (spec 009, rule Y)", () => {
+  // the block reads back what it wrote: a link of its chain, whose step is the Additive pool before the × 2
+  const { root } = gameOf("TreeOwnStep");
+  const [pool] = Array.isArray(root.kids) ? root.kids : [];
+  expect([pool?.name, brief(pool)]).toEqual([
+    "Additive pool",
+    [
+      ["TreeBase", 4],
+      [null, 1],
+    ],
   ]);
 });
 
