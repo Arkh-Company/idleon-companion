@@ -273,3 +273,42 @@ test("a bench row of the first level with no app row of its name and value is a 
     { at: "0/1", field: "shape" },
   ]);
 });
+
+test("below the root, the bench's groups at 0 and at ×1 go through too, and the app's parts pair in their places (FR-016)", () => {
+  const part = (id: string, name: string, value: number): CalcTreeNode =>
+    app({ id, name, value, leaf: "level" });
+  const tree = app({
+    kids: [
+      pool("Multi pool", [
+        app({
+          ...ALPHA,
+          kids: [
+            part("root/Alpha/Zed", "Zed", 0),
+            part("root/Alpha/Kept", "Kept", 2),
+          ],
+        }),
+        BETA,
+      ]),
+    ],
+  });
+  const bench: BenchRow = {
+    ...NO_FORMULA,
+    kids: [
+      {
+        name: "Alpha",
+        v: 2,
+        kind: "Level",
+        kids: [
+          { name: "Kept", v: 2, kind: "Level" },
+          {
+            name: "At 0 (1)",
+            v: 0,
+            kids: [{ name: "Zed", v: 0, kind: "Level" }],
+          },
+        ],
+      },
+      { name: "Beta", v: 5, kind: "Condição", sub: "possui" },
+    ],
+  };
+  expect(compareTrees(tree, bench, new Set())).toEqual([]);
+});
