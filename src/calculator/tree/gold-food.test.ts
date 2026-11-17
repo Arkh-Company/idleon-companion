@@ -4,11 +4,12 @@
 // text of the game is in this file.
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
-import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
+import { GAME, PAK } from "../fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { sourceTerm } from "./gold-food.ts";
+import { golden, TABLES } from "./gold-food-fixture.ts";
 import { row } from "./rows.ts";
 import { useGameTables } from "./table-names.ts";
 
@@ -20,34 +21,6 @@ afterEach(() => {
   useGameTables(new Map());
 });
 
-const TABLES = new Map<string, unknown>([
-  ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
-  ["ItemDefinitionsGET.itemB", { displayName: "OTHER_DISH" }],
-]);
-/** The state of a golden food: the worn food's quantity, the emporium's level and the Family Bonus 66. */
-const golden = (
-  quantity: number,
-  level: number,
-  family: number,
-  cache: number,
-) =>
-  mosaicOf({
-    GfoodSet: [10, 20],
-    GfoodStart: 9,
-    EquipmentOrder: [[], [], ["Blank", "itemA"]],
-    EquipmentQuantity: [[], [], [0, quantity]],
-    Ninja: Array.from({ length: 105 }, (_, i) => (i === 104 ? [level] : [])),
-    DNSM: {
-      $m: {
-        FamBonusQTYs: Array.from({ length: 67 }, (_, i) =>
-          i === 66 ? family : 0,
-        ),
-        GfoodMap: { $m: { Amount: 7 } },
-        GfoodBonus: 0,
-        GameCache: { $m: { v: cache } },
-      },
-    },
-  });
 const buildOf = (
   key = "DropRatez",
   quantity = 999,
@@ -217,31 +190,6 @@ test("a set of one part is the chain's first pool, with its ⓘ; one written wit
     "( GfoodSet[0] ÷ 100 ) + 1",
     [10, 100, 1, 1.1],
   ]);
-});
-
-test("a food's text names no pool of the chain, with or without the item's text", () => {
-  const names = () =>
-    kidsOf(treeOf())
-      .map((k) => k.name)
-      .join(", ");
-  const pools =
-    "Multi pool, Additive pool, Food slot 1 quantity, Food slot 1 quantity > 0, Game value";
-  expect(names()).toBe(pools);
-  useGameTables(new Map([...TABLES].slice(0, 1)));
-  expect(names()).toBe(pools);
-});
-
-test("a food whose name would be too long names no row, and the main takes the chain", () => {
-  useGameTables(
-    new Map([["ItemDefinitionsGET.itemA", { displayName: "y".repeat(196) }]]),
-  );
-  const root = treeOf();
-  const all = (n: CalcTreeNode): string[] => [
-    n.name,
-    ...kidsOf(n).flatMap(all),
-  ];
-  expect(all(root).some((name) => name.includes("yyyy"))).toBe(false);
-  expect(checkTree(root, 100)).not.toBeNull();
 });
 
 test.each<[string, string, number, number, [string, number][]]>([

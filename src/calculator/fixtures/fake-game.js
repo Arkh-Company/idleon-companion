@@ -566,6 +566,10 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeChainOpen.h.v = d.TreeChainOpen.h.v + 2;
     return d.TreeChainOpen.h.v;
   };
+  // A golden food opened as a branch, as in the Drop Rate: its pass names its rows (spec 009).
+  Blocks._customBlock_TreeGoldOf = function (t) {
+    return Blocks._customBlock_GoldFoodBonuses(t) * 2;
+  };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
