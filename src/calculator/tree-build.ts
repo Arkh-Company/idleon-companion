@@ -22,6 +22,7 @@ import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
 import { firstLevel, mould } from "./tree/mould.ts";
+import { v1Level } from "./tree/v1-pools.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { makePlaces } from "./tree/places.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
@@ -48,13 +49,15 @@ export interface TreeBuild {
 
 /**
  * The tree of the recording's first root call, for the character asked (its index, in every piece key); `ops` are
- * the instrumentation's steps the recording's `x` refers to; `bugs` are the game's known bugs (FR-016).
+ * the instrumentation's steps the recording's `x` refers to; `bugs` are the game's known bugs (FR-016); `id` is the
+ * catalog id asked, whose first level may be a V1 mould of the bench (tree/v1-pools.ts).
  */
 export function buildTree(
   rec: Recording,
   character: number,
   ops: readonly Op[] = [],
   bugs: readonly GameBugRule[] = GAME_BUGS,
+  id?: string,
 ): TreeBuild {
   const { nodes, writes } = rec;
   const linked = linkReads(rec);
@@ -322,15 +325,30 @@ export function buildTree(
     const last = steps.of(top.id).steps.at(-1);
     const terms = termsOf(top);
     const reads: Reads = new Map((top.r ?? []).map(([p, v]) => [p, v]));
-    const first = firstLevel(mould(own?.rows ?? rows), root, {
-      expr: last && near(last.v, top.v) ? last.e : null,
-      term: (e) => terms.term(e, "+", reads),
-      writerOf: (r) => {
-        const o = r.open;
-        const w = o !== null && typeof o === "object" ? nodes[o.writer] : null;
-        return w ? callText(w) : undefined;
-      },
-    });
+    const writerOf = (r: Row) => {
+      const o = r.open;
+      const w = o !== null && typeof o === "object" ? nodes[o.writer] : null;
+      return w ? callText(w) : undefined;
+    };
+    const all = steps.of(top.id).steps;
+    // spec 009 FR-010: the Drop Rate's first level is the bench's V1 when its steps have that shape
+    const v1 =
+      id === undefined
+        ? null
+        : v1Level(id, {
+            steps: all,
+            termAt: (e, op, at) =>
+              terms.term(e, op, reads, { args: top.a, steps: all, at }),
+            writerOf,
+            root,
+          });
+    const first =
+      v1 ??
+      firstLevel(mould(own?.rows ?? rows), root, {
+        expr: last && near(last.v, top.v) ? last.e : null,
+        term: (e) => terms.term(e, "+", reads),
+        writerOf,
+      });
     root.formula = first.formula;
     root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [
       top.id,

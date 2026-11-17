@@ -148,7 +148,7 @@ export function bySystem(
 }
 
 /** A pool's row (FR-005): its name and value, how its rows give it, and its rows by system. */
-function poolRow(p: Pool, writerOf: WriterOf): Row {
+export function poolRow(p: Pool, writerOf: WriterOf): Row {
   const level = [...bySystem(p.rows, p.combine, writerOf)];
   const pct = p.combine === "onePlusPercent";
   // 1 + (its groups) ÷ 100: the ⓘ the parts' own sum or product would not give
