@@ -2,3 +2,4 @@ feature: 009-system-mould
 phases:
   brainstorm: {status: done, date: 2026-11-17}
   specify: {status: done, date: 2026-11-17}
+  clarify: {status: done, date: 2026-11-17, rounds: 1, open: 0, to_plan: 0}
