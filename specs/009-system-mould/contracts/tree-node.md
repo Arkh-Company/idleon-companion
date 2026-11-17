@@ -12,6 +12,8 @@ O mesmo `CalcTreeNode` da 008, com estes campos a mais (`data-model.md`):
 
 O primeiro nível de uma árvore de número é a lista de `pool` (FR-005). O nó `expand` de um pool ou grupo ainda fechado segue a regra de expand da 008: o worker manda o nível guardado.
 
+- `log` (no `treeResult`, opcional): `"chainOpen"`, só na resposta de um pedido `number`, quando a raiz tem mais de um passo e a corrente não fecha (NFR-005). O main só repassa esse valor exato e grava `{ event: "chainOpen", id }`, sem nome nem valor; qualquer outro valor é ignorado. Fica fora do contrato `tree-worker.md` da 008, que está congelada.
+
 ## A conferência do main (`tree-check.ts`, FR-010b da 008)
 
 - Aceita os papéis novos e os campos novos com estes valores, e nenhum outro.
