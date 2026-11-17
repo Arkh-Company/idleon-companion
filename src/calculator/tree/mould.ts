@@ -206,7 +206,7 @@ export interface FirstLevelContext {
 /**
  * The root's first level (spec 009, FR-001, FR-005): the steps (`rows`, named by `mould`) in the game's pools, by
  * system; with no pool and a max or a min at the top, the steps by system under that rule (US2 scenario 4); else the
- * steps as they are. The root's ⓘ is how its pools or groups give it, when it has none of its own.
+ * steps as they are. The root's ⓘ is how its pools or groups give it, over the step's own.
  */
 export function firstLevel(
   rows: Row[],
@@ -230,8 +230,10 @@ export function firstLevel(
     `${rule}(${level.map((r) => termOf(r.node)).join(", ")})`,
     `${rule}(${level.map((r) => fx3(vOf(r))).join(", ")}) = ${fx3(v)}`,
   ];
+  // the groups' ⓘ over the step's own, as the pools' (each group's name kept whole)
+  const names = level.map((r) => termOf(r.node));
   return {
     rows: withShares(root, pair, [...level]).rows,
-    formula: root.formula ?? formulaOut(pair, termsOf(level)),
+    formula: formulaOut(pair, [...termsOf(level), ...names]) ?? root.formula,
   };
 }
