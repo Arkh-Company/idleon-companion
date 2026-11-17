@@ -54,17 +54,25 @@ export const SYSTEM_TAGS: readonly {
   ] satisfies [RegExp, Tag][]
 ).map(([test, tag]) => ({ test, tag, proof: "bench pieces.cjs tagOf" }));
 
-/** The tag of the call written `code` (tree/rows.ts `callText`); "" for any other call, a read or no code. */
-export function tagOf(code: string | null): string {
+/** The call written `code` (tree/rows.ts `callText`) as its key "block mode" and its arguments; null for a read or no code. */
+export function callKey(
+  code: string | null,
+): { key: string; args: unknown[] } | null {
   const m = /^(\w+)\((.*)\)$/s.exec(code ?? "");
-  if (!m) return "";
+  if (!m) return null;
   let a: unknown;
   try {
     a = JSON.parse(`[${m[2] ?? ""}]`);
   } catch {
-    return "";
+    return null;
   }
-  if (!Array.isArray(a)) return "";
-  const key = `${m[1] ?? ""} ${String(a[0])}`;
-  return SYSTEM_TAGS.find((t) => t.test.test(key))?.tag(a) ?? "";
+  if (!Array.isArray(a)) return null;
+  return { key: `${m[1] ?? ""} ${String(a[0])}`, args: a };
+}
+
+/** The tag of the call written `code` (tree/rows.ts `callText`); "" for any other call, a read or no code. */
+export function tagOf(code: string | null): string {
+  const c = callKey(code);
+  if (!c) return "";
+  return SYSTEM_TAGS.find((t) => t.test.test(c.key))?.tag(c.args) ?? "";
 }

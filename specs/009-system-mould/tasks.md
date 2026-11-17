@@ -32,7 +32,7 @@
 - [ ] T003 Accept the new roles and fields in `src/main/tree-check.ts` (FR-011, SEC-003; depends on T001, T002)
   - Files: `src/main/tree-check.ts`
   - Rules: the `NODE` field checks gain `combine` and `poolKind` (the lists above, or null); a `pool`/`system` node MUST have `pieceKey: null`.
-- [ ] T004 [P] Tests first, then the system table in `src/calculator/tree/systems.ts` (FR-003, FR-004)
+- [X] T004 [P] Tests first, then the system table in `src/calculator/tree/systems.ts` (FR-003, FR-004)
   - Files: `src/calculator/tree/systems.test.ts`, `src/calculator/tree/systems.ts`
   - Signatures: `systemOf(code: string | null, writerBlock?: string): { name: string; emoji: string } | null`; `SYSTEM_ORDER: readonly string[]` (the V1 list of `build-v1mold.cjs` `V1`, in order); `systemLabel(s): string` (`"⚗️ Alchemy"`).
   - Built from `tagOf` (`src/calculator/tree/tags.ts`). Every entry has a proof by reference (the `rules.test.ts` format). A cache read goes to its writer's block. Unknown → null (the caller files it under "🔹 Other").
