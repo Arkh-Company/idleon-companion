@@ -1,7 +1,8 @@
-// The game's pools of a tree's first level (spec 009, FR-005, FR-008, research R1): the root's sum is one Additive
-// pool; each factor of its product is a pool, an Additive one when it sums bonuses of two sources or more before it
-// multiplies, else a Multi one; a root no sum and no product gives (a max at the top) has no pool. Invented paths and
-// values, apart from the game's own block names the system rules read.
+// The game's pools of a tree's first level (spec 009, FR-005, FR-008, research R1, revised on 17/11): the root's sum
+// is one Additive pool; in its product, a factor that sums two sources or more is an Additive pool, one that sums
+// bonuses inside 1 + (…) ÷ 100 its own Multi pool, and the single multipliers in a row share one Multi pool; a root no
+// sum and no product gives (a max at the top) has no pool. Invented paths and values, apart from the game's own block
+// names the system rules read.
 import { expect, test } from "vitest";
 import { poolsFormula, poolsOf, rootExtreme } from "./pools.ts";
 import type { Pool } from "./pools.ts";
@@ -64,9 +65,7 @@ test("rows that both add up and multiply to the root follow the step's top: a su
     ["Additive pool", "additive", "sum", 6, [1, 2, 3]],
   ]);
   expect(poolsOf(rows, { value: 6 })?.map((p) => p.name)).toEqual([
-    "Multi pool 1",
-    "Multi pool 2",
-    "Multi pool 3",
+    "Multi pool",
   ]);
   // with no step, the level's own rule decides: its rows' share in a sum
   const summed = rows.map((r) => ({
@@ -78,21 +77,17 @@ test("rows that both add up and multiply to the root follow the step's top: a su
   ]);
 });
 
-test("a root that multiplies has a Multi pool per factor, numbered in the game's order", () => {
+test("a root that multiplies single multipliers has one Multi pool of its factors, in the game's order", () => {
   const rows = [src("Stats.a", 2), src("Stats.b", 3), src("Stats.c", 4)];
   expect(poolsOf(rows, { value: 24 })?.map(brief)).toEqual([
-    ["Multi pool 1", "multi", "product", 2, [2]],
-    ["Multi pool 2", "multi", "product", 3, [3]],
-    ["Multi pool 3", "multi", "product", 4, [4]],
+    ["Multi pool", "multi", "product", 24, [2, 3, 4]],
   ]);
 });
 
 test("the parts at ×1 and at 0 are factors and terms like the others, in their places (FR-016)", () => {
   const ones = [src("Stats.a", 2), src("Stats.b", 1), src("Stats.c", 1)];
   expect(poolsOf(ones, { value: 2 })?.map(brief)).toEqual([
-    ["Multi pool 1", "multi", "product", 2, [2]],
-    ["Multi pool 2", "multi", "product", 1, [1]],
-    ["Multi pool 3", "multi", "product", 1, [1]],
+    ["Multi pool", "multi", "product", 2, [2, 1, 1]],
   ]);
   const zero = [src("Stats.a", 5), src("Stats.c", 0)];
   expect(poolsOf(zero, { value: 5 })?.map(brief)).toEqual([
@@ -135,7 +130,7 @@ test("a factor that sums two sources is an Additive pool of its terms; one of a 
   ]);
 });
 
-test("a factor 1 + (bonuses) ÷ 100 is an Additive pool of its percents; the rest Multi pools", () => {
+test("a factor 1 + (bonuses) ÷ 100 is its own Multi pool of its percents; the single multipliers share the next", () => {
   // Prod Spd Bonus: (1 + (s + 2 × a) ÷ 100) × b × p × g
   const pct = op(
     "+",
@@ -170,26 +165,16 @@ test("a factor 1 + (bonuses) ÷ 100 is an Additive pool of its percents; the res
   ];
   const pools = poolsOf(rows, { value: 6.48, expr }, term);
   expect(pools?.map(brief)).toEqual([
-    ["Additive pool", "additive", "onePlusPercent", 1.8, [30, 50]],
-    ["Multi pool 1", "multi", "product", 2, [2]],
-    ["Multi pool 2", "multi", "product", 1.5, [1.5]],
-    ["Multi pool 3", "multi", "product", 1.2, [1.2]],
+    ["Multi pool 1", "multi", "onePlusPercent", 1.8, [30, 50]],
+    ["Multi pool 2", "multi", "product", expect.closeTo(3.6, 9), [2, 1.5, 1.2]],
   ]);
   expect(pools && poolsFormula(pools, 6.48)).toEqual([
-    [
-      "Additive pool",
-      "×",
-      "Multi pool 1",
-      "×",
-      "Multi pool 2",
-      "×",
-      "Multi pool 3",
-    ],
-    [1.8, 2, 1.5, 1.2, 6.48],
+    ["Multi pool 1", "×", "Multi pool 2"],
+    [1.8, 3.6, 6.48],
   ]);
 });
 
-test("a factor the step's expression does not give stays a Multi pool of its row", () => {
+test("a factor the step's expression does not give stays a single multiplier of its row", () => {
   // the step's first factor is 760 (480 + 180 + 100), never this row's 700
   const rows = [
     branch(700, [read("Stats.x", 96)]),
@@ -197,8 +182,7 @@ test("a factor the step's expression does not give stays a Multi pool of its row
   ];
   const pools = poolsOf(rows, { value: 11200, expr: forge }, term);
   expect(pools?.map(brief)).toEqual([
-    ["Multi pool 1", "multi", "product", 700, [700]],
-    ["Multi pool 2", "multi", "product", 16, [16]],
+    ["Multi pool", "multi", "product", 11200, [700, 16]],
   ]);
 });
 

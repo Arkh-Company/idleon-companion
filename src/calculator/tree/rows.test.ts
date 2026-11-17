@@ -146,17 +146,13 @@ test("in a product, two or more parts at ×1 stay in their places, each at ×1 (
     ["Big()", "piece", 6],
     ["One(2)", "piece", 1],
   ]);
-  // each factor its own Multi pool, in the game's order (spec 009, FR-005)
+  // the single multipliers share one Multi pool, each in its place (spec 009, FR-005, revised on 17/11)
   expect(
     (Array.isArray(build.root.kids) ? build.root.kids : []).map((p) => [
       p.id,
       p.value,
     ]),
-  ).toEqual([
-    ["root/Multi pool 1", 1],
-    ["root/Multi pool 2", 6],
-    ["root/Multi pool 3", 1],
-  ]);
+  ).toEqual([["root/Multi pool", 6]]);
 });
 
 test("in a sum, parts at 1 each add 1 and stay in the list", () => {
@@ -220,11 +216,12 @@ test("outside a sum, a part at 0 stays in the list, and its pool zeroes the prod
     ["Zero()", "piece", 0],
     ["Big()", "piece", 6],
   ]);
-  // the factors' share of the root is their pools' (spec 009, FR-005)
+  // the factors share one Multi pool, which the part at 0 zeroes (spec 009, FR-005, revised on 17/11)
   const pools = Array.isArray(root.kids) ? root.kids : [];
-  expect(pools.map((p) => [p.role, p.shareMode])).toEqual([
-    ["pool", "productZero"],
-    ["pool", "productZero"],
+  expect(pools.map((p) => [p.role, p.value])).toEqual([["pool", 0]]);
+  expect(kidsOf(root).map((k) => k.shareMode)).toEqual([
+    "productZero",
+    "productZero",
   ]);
 });
 

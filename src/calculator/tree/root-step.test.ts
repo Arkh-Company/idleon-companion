@@ -63,22 +63,21 @@ const prod = (v = 12, more: Partial<RecNode> = {}) =>
     more,
   );
 
-test("a root of only the reads of its step shows them, in its pools; its ⓘ is the pools' (spec 009, FR-005), which the main lets through", () => {
+test("a root of only the reads of its step shows them, in its one pool; its ⓘ is its step's (spec 009, FR-005), which the main lets through", () => {
   const root = rootOf(prod());
+  // one pool needs no ⓘ of pools: the root keeps its step's
   expect(root.formula).toEqual([
-    ["Multi pool 1", "×", "Multi pool 2"],
+    ["A", "×", "B"],
     [3, 4, 12],
   ]);
   expect(kidsOf(root).map((k) => [k.code, k.value])).toEqual([
     ["A", 3],
     ["B", 4],
   ]);
-  // each read's share of the product is its pool's
+  // the single multipliers share one Multi pool, and each read's share is of the product (revised on 17/11)
   const pools = Array.isArray(root.kids) ? root.kids : [];
-  expect(pools.map((p) => [p.role, p.value, p.shareMode])).toEqual([
-    ["pool", 3, "product"],
-    ["pool", 4, "product"],
-  ]);
+  expect(pools.map((p) => [p.role, p.value])).toEqual([["pool", 12]]);
+  expect(kidsOf(root).map((k) => k.shareMode)).toEqual(["product", "product"]);
   expect(checkTree(windowNode({ formula: root.formula }), 1)?.formula).toEqual(
     root.formula,
   );
@@ -155,13 +154,8 @@ test("a root with a row that is no read of its step, or that opens, keeps its ro
       [["A", 3, 0]],
     ),
   );
-  expect([two.formula, codes(two)]).toEqual([
-    [
-      ["Multi pool 1", "×", "Multi pool 2"],
-      [3, 2, 6],
-    ],
-    ["A", null],
-  ]);
+  // one Multi pool of both factors (revised on 17/11): no ⓘ of pools, and none of the step
+  expect([two.formula, codes(two)]).toEqual([null, ["A", null]]);
   const extra = rootOf(
     prod(12, {
       r: [
@@ -188,13 +182,7 @@ test("a root with a row that is no read of its step, or that opens, keeps its ro
     [{ b: "W", v: 4, r: [["Lv", 4]] }],
     [{ path: "DNSM.B.v", node: 2, v: 4, seq: 1, xi: 0 }],
   );
-  expect([opens.formula, codes(opens)]).toEqual([
-    [
-      ["Multi pool 1", "×", "Multi pool 2"],
-      [3, 4, 12],
-    ],
-    ["A", "DNSM.B.v"],
-  ]);
+  expect([opens.formula, codes(opens)]).toEqual([null, ["A", "DNSM.B.v"]]);
 });
 
 test("a root whose step has another value has no ⓘ", () => {
