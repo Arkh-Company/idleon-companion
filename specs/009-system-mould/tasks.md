@@ -91,6 +91,11 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
   - Files: `src/renderer/FormulaTree.tsx`, `src/renderer/FormulaTree.test.tsx` (test first)
   - Cases: on open, every `pool` and `system` row is closed (FR-012); a `system` row shows its emoji name and its value in the format of the parts (`"×45,582"`, `"+80%"`).
 
+- [ ] T009a [US2] No automatic grouping of parts at any level (FR-016; decision of 17/11, during implementation)
+  - Files: `src/calculator/tree/rows.ts` (`timesOne`, `atZero`), `src/renderer/tree-parts.ts` (`partition`: "Small" and "Show all"), `src/renderer/FormulaTree.tsx`, and the passes that read those groups (`one-of-each.ts`, `term-passes.ts`, `tree-fixture.ts`); tests first.
+  - Cases: a sum with parts at 0 keeps them in place, in the game's order, value greyed; a product with two or more parts at ×1 keeps them in place; a product with a part at 0 keeps the "zeroes the total" tag; a level with more than 10 parts shows them all, with no "Small" row and no "Show all" button.
+  - The 008 tests that pin "At 0", "At ×1", "Small" or "Show all" change to pin the parts in place (the Vinicius's decision); none is deleted without a replacement that checks the same parts.
+
 **Checkpoint**: `just check` passes.
 
 Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-one src/calculator/tree/mould.test.ts` - passes; `just check` - passes.
