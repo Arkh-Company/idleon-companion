@@ -105,15 +105,15 @@ test("a number of the name is a part's value as the name writes it; the sum take
 });
 
 test("the parts at ×1 a product leaves aside are no parts, in their places; the parts at 0 are (spec 009, FR-016)", () => {
-  const inProduct = (r: Row): Row => ({
+  const asideAtOne = (r: Row): Row => ({
     ...r,
-    node: { ...r.node, shareMode: "product" },
+    asideAtOne: true,
   });
   expect(
     shaped(PCT, [
       ...pctParts(),
-      inProduct(part("X", 1)),
-      inProduct(part("Y", 1)),
+      asideAtOne(part("X", 1)),
+      asideAtOne(part("Y", 1)),
     ]),
   ).toBe("Multiplier");
   const zero = op("+", num(1), op("/", read("A", 0), num(100), 0), 1);

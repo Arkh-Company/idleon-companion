@@ -157,14 +157,16 @@ test.each([
 });
 
 test("in a product, the fixed numbers at ×1 keep their names, and the one at 0 is named by the call above, all in their places (spec 009, FR-016)", () => {
-  const inProduct = (r: Row): Row => ({
+  const asideAtOne = (r: Row): Row => ({
     ...r,
-    node: { ...r.node, shareMode: "product" },
+    asideAtOne: true,
   });
   const out = aboveRenames(
-    [fixed("Fixed ×1", 1), fixed("Fixed ×1", 1), fixed("Fixed ×0", 0)].map(
-      inProduct,
-    ),
+    [
+      asideAtOne(fixed("Fixed ×1", 1)),
+      asideAtOne(fixed("Fixed ×1", 1)),
+      fixed("Fixed ×0", 0),
+    ],
     above("DNSM.MonumentROGbonuses[2]"),
   );
   expect(out.map((r) => [r.node.name, r.node.value])).toEqual([

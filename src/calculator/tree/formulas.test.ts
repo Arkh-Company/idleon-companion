@@ -11,10 +11,10 @@ import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, read } from "./tree-fixture.ts";
 
-/** A part of a product level (rows.ts `finish` gives its share mode): two or more at ×1 are left aside by the ⓘ. */
-const inProduct = (r: Row): Row => ({
+/** A part at ×1 of a product level the 008 grouped (rows.ts `finish` marks it): the ⓘ leaves it aside. */
+const asideAtOne = (r: Row): Row => ({
   ...r,
-  node: { ...r.node, shareMode: "product" },
+  asideAtOne: true,
 });
 
 const tok = token;
@@ -55,8 +55,8 @@ test.each<[string, number, Row[], [string, string] | null]>([
     [
       fixed("Base 5", 5),
       read("Stats.a", 3),
-      inProduct(read("Stats.o", 1)),
-      inProduct(read("Stats.p", 1)),
+      asideAtOne(read("Stats.o", 1)),
+      asideAtOne(read("Stats.p", 1)),
     ],
     ["Base 5 + Stats.a", "5 + 3 = 8"],
   ],
@@ -114,7 +114,7 @@ test("a curve part with the row's value gives its own ⓘ", () => {
 test("a row with its pair keeps it; one of only the parts at ×1 a product leaves aside has none (spec 009, FR-016)", () => {
   const ab = [read("Stats.a", 1), read("Stats.b", 1)];
   expect(formulaFor(at(7, { f: ["a", "b"] }), ab)).toEqual(["a", "b"]);
-  expect(formulaFor(at(1), ab.map(inProduct))).toBeNull();
+  expect(formulaFor(at(1), ab.map(asideAtOne))).toBeNull();
 });
 
 test.each<[string, string, Row[], string]>([
