@@ -44,8 +44,7 @@ test("a doubler of 2 under ArcadeBonus is the maxed doubler, at the level its ca
 
 test("a monument's cache opens into its parts, renamed by the cache: its fixed number, not the two at ×1 the bench keeps aside", () => {
   const build = gameOf("TreeMonument");
-  // the block reads back the cache it wrote: a link of its chain, whose step is the first pool, under the cache's name
-  // rules as in the 008 (spec 009, rule Y)
+  // the cache it wrote and reads back links its chain: its step is the first pool (spec 009, rule Y)
   const cache = Array.isArray(build.root.kids) ? build.root.kids[0] : null;
   expect(named(cache)).toEqual([
     [expect.any(String), "unknown", expect.any(Object)],
@@ -60,7 +59,6 @@ test("a monument's cache opens into its parts, renamed by the cache: its fixed n
 
 test("a bubble's scratch number is named by the bubble above: under its cache, under a call and in a branch below it", () => {
   const build = gameOf("TreeBubble");
-  // the block reads back the bubble it wrote: a link of its chain, whose step is the first pool (spec 009, rule Y)
   const bubble = Array.isArray(build.root.kids) ? build.root.kids[0] : null;
   const scratch = kidsOf(bubble).find((k) => k.code === "DNSM.CalcTalentDN2");
   // OPUS3-F5: right under the bubble, its factor, with its ⓘ
