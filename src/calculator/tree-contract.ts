@@ -80,6 +80,8 @@ export interface CalcTreeNode {
     | null;
   code: string | null;
   role: (typeof CALC_NODE_ROLES)[number];
+  combine?: "sum" | "product" | "onePlusPercent" | null;
+  poolKind?: "additive" | "multi" | null;
   share: number | null;
   shareMode:
     | "sum"

@@ -3,10 +3,12 @@ export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export {
   CAP_KINDS,
+  COMBINE_KINDS,
   CONDITION_KINDS,
   LEAF_FAMILY,
   LEAF_KINDS,
   NODE_ROLES,
+  POOL_KINDS,
   SHARE_MODES,
   VALUE_FORMATS,
 } from "./formula-tree.ts";

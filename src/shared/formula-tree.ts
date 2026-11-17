@@ -68,6 +68,11 @@ export const SHARE_MODES = [
 ] as const;
 export type ShareMode = (typeof SHARE_MODES)[number];
 
+/** How the rows of a pool or a system group give its value (spec 009, data-model.md). */
+export const COMBINE_KINDS = ["sum", "product", "onePlusPercent"] as const;
+/** A pool that adds its bonuses first, or one that multiplies everything (spec 009, FR-005). */
+export const POOL_KINDS = ["additive", "multi"] as const;
+
 /** How a row writes its value: × for a multiplier, % and + for what adds (design.md §3.6). */
 export const VALUE_FORMATS = ["x", "%", "+"] as const;
 /** A row over its cap, or under it (FR-015). */
@@ -113,6 +118,10 @@ export interface TreeNode {
   /** Block and arguments or path, only in "Game details". */
   code: string | null;
   role: NodeRole;
+  /** Only in `pool` and `system`: how the rows inside give its value; absent in every other row. */
+  combine?: (typeof COMBINE_KINDS)[number] | null;
+  /** Only in `pool` and `system`: the pool's kind, null in a `system`; absent in every other row. */
+  poolKind?: (typeof POOL_KINDS)[number] | null;
   /** Weight in the parent, 0..1. */
   share: number | null;
   shareMode: ShareMode | null;
