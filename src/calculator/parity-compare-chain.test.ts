@@ -105,6 +105,50 @@ test("a leaf of another value inside the chain is still a difference", () => {
   expect(compareTrees(APP, benchOf(31), new Set())).not.toEqual([]);
 });
 
+/** The tree with the row named `name` changed, at any depth. */
+const swap = <T extends { name?: string; kids?: unknown }>(
+  t: T,
+  name: string,
+  f: (x: T) => T,
+): T => {
+  const here = t.name === name ? f(t) : t;
+  return Array.isArray(here.kids)
+    ? { ...here, kids: (here.kids as T[]).map((k) => swap(k, name, f)) }
+    : here;
+};
+
+test("an Additive pool of the chain pairs row by row through the bench's steps: a leaf's type and a middle row's ⓘ count", () => {
+  // Beta, a quantity in the bench, is a level in the app
+  const typed = swap(benchOf(30), "Beta", (b) => ({
+    ...b,
+    kind: "Quantidade",
+  }));
+  expect(compareTrees(APP, typed, new Set())).toEqual([
+    { at: "0/0/0/0/0/1", field: "type" },
+  ]);
+  // Alpha is a product of two parts, whose ⓘ the bench writes with other numbers
+  const app = swap(APP, "Alpha", (a) => ({
+    ...a,
+    leaf: null,
+    formula: [
+      ["Ax", "×", "Ay"],
+      [5, 6, 30],
+    ] as [string[], number[]],
+    kids: [leaf("Ax", 5), leaf("Ay", 6)],
+  }));
+  const parts = (numbers: string): BenchRow =>
+    swap(benchOf(30), "Alpha", () => ({
+      name: "Alpha",
+      v: 30,
+      formula: ["Ax × Ay", numbers],
+      kids: [lv("Ax", 5), lv("Ay", 6)],
+    }));
+  expect(compareTrees(app, parts("5 × 6 = 30"), new Set())).toEqual([]);
+  expect(compareTrees(app, parts("6 × 5 = 30"), new Set())).toEqual([
+    { at: "0/0/0/0/0/0", field: "formula" },
+  ]);
+});
+
 test("a 1 + percent pool that is a Multi pool pairs whole with the bench's factor, as an Additive one did", () => {
   const pct = node({
     name: "Total",
