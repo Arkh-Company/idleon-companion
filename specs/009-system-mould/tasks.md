@@ -87,7 +87,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 - [ ] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts` (FR-001, FR-002, FR-004, FR-005, FR-006; depends on T004, T006, T007)
   - Files: `src/calculator/tree/mould.ts`, `src/calculator/tree-build.ts` (where `mould` is called)
   - The first level becomes the pool rows with the system groups inside (`systems.ts`). Names: `"Additive pool"`, `"Multi pool N"` (FR-005). A root the pools rule cannot read gives the sources grouped by system with no pool (US2, scenario 4). A failure of the mould leaves the tree unavailable and one log line with a label and the catalog id, never a name or a value (NFR-005). Each file stays under 400 lines.
-- [ ] T009 [US2] All pools and groups closed on open in `src/renderer/FormulaTree.tsx` (FR-002, FR-012, NFR-004; depends on T002)
+- [X] T009 [US2] All pools and groups closed on open in `src/renderer/FormulaTree.tsx` (FR-002, FR-012, NFR-004; depends on T002)
   - Files: `src/renderer/FormulaTree.tsx`, `src/renderer/FormulaTree.test.tsx` (test first)
   - Cases: on open, every `pool` and `system` row is closed (FR-012); a `system` row shows its emoji name and its value in the format of the parts (`"×45,582"`, `"+80%"`).
 
