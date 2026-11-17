@@ -12,7 +12,7 @@ execution:
   phases:
     - {name: "Foundational (T001-T004)", status: done, commits: afb17c8..5195c6f}
     - {name: "US2 (T005-T009)", status: done, commits: 6642eb0..a8ffac2}
-    - {name: "US1 (T010-T012)", status: pending}
+    - {name: "US1 (T010-T012)", status: done, commits: 85965ba..78c6566}
     - {name: "US3 (T013-T014)", status: pending}
     - {name: "Vista da árvore (T015-T020)", status: pending}
     - {name: "Polish (T021-T024)", status: pending}
