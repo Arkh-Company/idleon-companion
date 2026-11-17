@@ -76,6 +76,24 @@ function sameFormula(
   return b.length === a.length && b.every((x, i) => close(x, a[i] ?? NaN));
 }
 
+/** The app's rows of the mould (spec 009): its pools, its system groups and its groups at 0 and at ×1. */
+const MOULD = new Set<CalcTreeNode["role"]>([
+  "pool",
+  "system",
+  "atZero",
+  "atOne",
+]);
+const appThrough = (ks: readonly CalcTreeNode[]): CalcTreeNode[] =>
+  ks.flatMap((k) =>
+    MOULD.has(k.role) && Array.isArray(k.kids) ? appThrough(k.kids) : [k],
+  );
+/** The bench's groups at 0 and at ×1 have the app's 008 names (the 008 parity compared them). */
+const BENCH_GROUP = /^At (?:0|×1) \(\d+\)$/;
+const benchThrough = (ks: readonly BenchRow[]): BenchRow[] =>
+  ks.flatMap((k) =>
+    BENCH_GROUP.test(k.name ?? "") ? benchThrough(k.kids ?? []) : [k],
+  );
+
 export function compareTrees(
   app: CalcTreeNode,
   bench: BenchRow,
@@ -103,10 +121,27 @@ export function compareTrees(
       add("unknown");
     else if (kind !== a.leaf || (kind === "condition" && sub !== a.condition))
       add("type");
-    if (!sameFormula(a.formula, b.formula)) add("formula");
-    if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
     const ak = Array.isArray(a.kids) ? a.kids : [];
     const bk = b.kids ?? [];
+    // spec 009: the root's ⓘ is its pools' (FR-005), and its rows pair by name and value through the groups
+    const moulded = root && ak.some((k) => MOULD.has(k.role));
+    if (!moulded && !sameFormula(a.formula, b.formula)) add("formula");
+    if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
+    if (moulded) {
+      const left = appThrough(ak);
+      benchThrough(bk).forEach((bi, i) => {
+        const j = left.findIndex(
+          (k) => k.name === bi.name && sameValue(k.value, bi.v),
+        );
+        const k = j >= 0 ? j : left.findIndex((x) => sameValue(x.value, bi.v));
+        const [found] = k >= 0 ? left.splice(k, 1) : [];
+        const place = `${at}/${String(i)}`;
+        if (found) walk(found, bi, `${path} › ${bi.name ?? "?"}`, place, false);
+        else out.push({ at: place, field: "shape" });
+      });
+      if (left.length) add("shape");
+      return;
+    }
     if (ak.length !== bk.length) {
       add("shape");
       return;
