@@ -104,32 +104,34 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ## Phase 3: User Story 1 - De onde vem o meu Drop Rate, por sistema (Priority: P1)
 
-**Goal**: the Drop Rate's first level is V1's pools (LUK Scaling, Additive Pool, Total Sum, Post-Processing) with V1's groups (FR-005, FR-010).
+**Goal**: every tree's pools follow the game's chain of steps (rule Y, FR-005, revised on 17/11); the Drop Rate gets its pools from that general rule, with no V1 structure (FR-010).
 
-**Independent Test**: on the invented Drop Rate the pools are V1's; on the Vinicius's machine, `just parity` shows 0 differences with the bench's V1.
+**Independent Test**: on the invented game, a root that is a chain of steps (sum, then +, then ×, then +, then ×…) gets Additive pool 1, Multi pool 1, Additive pool 2, Multi pool 2… in the game's order, each closing with the game's value; consecutive single multipliers share one Multi pool; a multiplier that sums bonuses inside gets its own Multi pool. On the Vinicius's machine, `just parity` shows 0 differences on the Drop Rate.
 
 ### Tests for User Story 1 (write first)
 
-- [X] T010 [P] [US1] Test the Drop Rate's V1 pools in `src/calculator/tree/mould.test.ts` (FR-005, FR-010; depends on T008)
-  - Files: `src/calculator/tree/mould.test.ts`
+- [ ] T010 [US1] Test the chain rule in `src/calculator/tree/pools.test.ts` and `src/calculator/tree/tree-build-mould.test.ts` (FR-005; depends on T008)
   - Cases:
-    - `dropRate` gets the four V1 pools, in V1's order and with V1's names, by a table with proof keyed by the catalog id;
-    - any other id never gets them.
-- [X] T011 [P] [US1] The V1 parity in `src/calculator/parity.integration.test.ts` (a new `describe`, run by the existing `just parity`) (FR-010; depends on T008)
-  - Files: `src/calculator/parity.integration.test.ts`, `src/calculator/parity-compare.ts`
-  - Signature: `compareMould(app: CalcTreeNode, bench: BenchRow): Difference[]` compares pools, groups, order, values and each group's sources by piece key, two levels deep (research R4).
-  - Skips by itself without `PARITY_BENCH_DIR/parity/dropRate-v1.json`.
-  - Prints only counts and places, never a name or a value (FR-032 of the 008).
+    - a chain `sum → +c → ×m1 → +d → ×m2 × m3` gives Additive pool 1 (the sum and +c), Multi pool 1 (m1), Additive pool 2 (d), Multi pool 2 (m2 and m3 together), each value closing with the step's value and the root's ⓘ showing how they join;
+    - consecutive steps that each multiply by single sources share one Multi pool, grouped by system;
+    - a factor `1 + (a + b) ÷ 100` with two or more sources inside a product is its own Multi pool (`combine: "onePlusPercent"`), never merged with the single multipliers;
+    - a root of one step keeps today's behaviour for a sum, and for a product its single multipliers share one Multi pool (the Phase 2 tests that expected "Multi pool 1, 2, 3…", one per factor, change to this: the Vinicius's decision of 17/11);
+    - a factor at ×1 stays in place, greyed, as a source inside its Multi pool;
+    - a fake-game block with the Drop Rate's shape of chain (`src/calculator/fixtures/fake-game.js`) built by `buildTree(..., "dropRate")` gets the chain's pools and passes `checkTree` of the main.
+- [ ] T011 [US1] The Drop Rate through the 008 parity (FR-010, SC-002; depends on T010)
+  - Files: `src/calculator/parity-compare.ts`, `src/calculator/parity.integration.test.ts`, their tests
+  - The 008 parity goes through the chain's pools as through the Phase 2 pools; the V1 comparison (`compareMould`, its `describe` and its tests) goes out with the V1 structure.
 
 ### Implementation for User Story 1
 
-- [X] T012 [US1] The V1 pools table in `src/calculator/tree/mould.ts` (FR-005, FR-010; depends on T010)
-  - Files: `src/calculator/tree/mould.ts` (or a sibling `v1-pools.ts` if `mould.ts` passes 400 lines)
-  - Each pool's rule has a proof by reference to `build-v1mold.cjs`.
+- [ ] T012 [US1] The chain rule in `src/calculator/tree/pools.ts` and `src/calculator/tree/mould.ts` (FR-005; depends on T010)
+  - Remove the V1 pools (`src/calculator/tree/v1-pools.ts`, its test and the call in `tree-build.ts`).
+  - Each pool closes with the game's value and has a `combine` from the list (no pool without a rule).
+  - Each file stays under 400 lines.
 
 **Checkpoint**: `just check` passes.
 
-Verify: `just test-one src/calculator/tree/mould.test.ts` - passes; `just check` - passes; `just parity` (Vinicius's machine) - 0 differences in the V1 describe.
+Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-one src/calculator/tree/tree-build-mould.test.ts` - passes; `just check` - passes; `just parity` (Vinicius's machine) - 0 differences on the Drop Rate.
 
 ---
 

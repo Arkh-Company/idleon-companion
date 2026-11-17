@@ -4,18 +4,19 @@ Sem protótipo. A clarify fechou sem pergunta `to plan`. As decisões abaixo sã
 
 ## R1. Como achar os pools do jogo numa árvore qualquer
 
-- **Decision:** os pools saem da expressão da raiz, que a montagem da 008 já lê (`tree-build.ts`, os passos e termos do bloco raiz).
-  - **Fator de produto:** cada fator do produto de topo é um pool.
-    - Um fator que soma bônus antes de entrar na conta é um **Additive pool**: por exemplo `1 + (a + b) ÷ 100`, ou uma soma de termos com mais de uma fonte.
-    - Um fator que é uma única fonte, ou uma conta de uma única fonte, é um **Multi pool**.
-  - **Soma de topo:** os termos de uma soma de topo formam um Additive pool.
-  - **Ordem e números:** os pools seguem a ordem da conta. Quando há mais de um do mesmo tipo, levam número: "Multi pool 1", "Multi pool 2".
-  - **Drop Rate:** usa os pools da V1 por uma tabela com prova, ligada ao id do catálogo (`dropRate`). A bancada a monta à mão em `build-v1mold.cjs`: LUK Scaling, Additive Pool, Total Sum e Post-Processing.
-- **Rationale:** o jogador precisa ver se um multiplicador multiplica tudo ou se é diluído numa soma (spec, Clarifications de 17/11). A estrutura da expressão diz isso sem exigir um molde feito à mão por árvore.
+- **Decision (revista em 17/11, durante a implementação, decisão do Vinicius):** os pools seguem a **corrente de passos** do jogo, lida da montagem da 008 (`tree-build.ts`, os passos do bloco raiz), e não só a expressão do último passo.
+  - **Somas seguidas** (passos que somam ao resultado anterior, e os termos somados de um passo) formam um **Additive pool**.
+  - **Multiplicadores soltos seguidos** (cada fator é uma fonte que multiplica sozinha; a ordem não muda nada) se juntam num **único Multi pool**, com os grupos por sistema dentro.
+  - **Multiplicador que soma bônus dentro** (um fator como `1 + (a + b) ÷ 100`, com mais de uma fonte) é o **seu próprio Multi pool**, com os bônus somados dentro (`combine: "onePlusPercent"`), porque ali eles se diluem.
+  - **Troca de operação:** cada troca de + para × na corrente abre um pool novo.
+  - **Números:** com mais de um pool do mesmo tipo, os nomes levam número na ordem da conta ("Additive pool 1", "Multi pool 2").
+  - **Raiz de um passo só:** é o caso mais simples da mesma regra. Num produto de um passo, o fator que soma bônus é o Additive pool; os soltos formam o Multi pool.
+  - **Drop Rate:** segue a mesma regra. A corrente dele (soma 846 → +2 → ×1.281 → +0.3 → ×1.2 → três passos de multiplicadores) dá Additive pool 1, Multi pool 1, Additive pool 2 e os Multi pools seguintes.
+- **Rationale:** o jogador precisa ver a ordem em que o jogo calcula e onde um bônus é diluído numa soma. A regra lê a estrutura da conta sem molde à mão, e vale para toda árvore, inclusive as que têm corrente de passos (que a leitura só do último passo deixava sem pool).
 - **Alternatives considered:**
-  - **Nome pelo papel genérico ("Added"/"Multiplied"):** o Vinicius trocou pelo modelo de pools do jogo.
-  - **Nome pela fonte que mais pesa:** foi descartado na mesma rodada.
-  - **Molde à mão para cada uma das 716 árvores:** não escala; fica só no Drop Rate.
+  - **Pools da V1 no Drop Rate (LUK Scaling, Total Sum, Post-Processing):** foi feito na Fase 3 e descartado pelo Vinicius: estrutura só do Drop Rate, com dois pools sem regra de conta.
+  - **Um Multi pool por fator:** descartado; multiplicadores soltos seguidos não mudam nada pela ordem, e o topo ficaria com dezenas de pools.
+  - **Um pool por passo do jogo:** descartado; repetia Multi pools seguidos e dividia um sistema entre eles.
 
 ## R2. Sistema de cada fonte
 
@@ -35,13 +36,11 @@ Sem protótipo. A clarify fechou sem pergunta `to plan`. As decisões abaixo sã
 - **Rationale:** é o mesmo mecanismo do `structurePass` (filho único), aplicado ao passo sem nome. As regras de nome e de ⓘ da 008 continuam valendo.
 - **Alternatives considered:** achatar só na janela. Foi descartado: o ⓘ e a soma até o pai saem da montagem.
 
-## R4. Prova de que o Drop Rate é igual à V1 (SC-002)
+## R4. Prova do Drop Rate (SC-002)
 
-- **Decision:**
-  - **Export da bancada:** a bancada exporta a V1 sobre o mesmo retrato, com `TREE=<gravação> OUT=<arquivo> node screen-proposal/build-v1mold.cjs`, em `PARITY_BENCH_DIR/parity/dropRate-v1.json`.
-  - **Teste novo:** um teste de integração da receita `just parity` compara só o primeiro e o segundo nível: pools, grupos, ordem, valores e as fontes de cada grupo por chave de peça.
-- **Rationale:** a paridade linha a linha da 008 compara a árvore sem molde. A V1 é um molde, então precisa da sua própria comparação, que é o critério da spec.
-- **Alternatives considered:** comparar a árvore inteira da V1. Foi descartado: abaixo das fontes, a V1 pula linhas que só repassam valor. A paridade da 008 já cobre esse nível.
+- **Decision (revista em 17/11):** o Drop Rate é conferido pela paridade da 008 (`just parity`), que atravessa pools e grupos e compara fontes e valores com a bancada. A comparação de pools com a V1 (`compareMould`) sai, junto com a estrutura da V1.
+- **Rationale:** os pools agora vêm da regra geral; a referência da bancada que continua valendo são as fontes e os valores.
+- **Alternatives considered:** manter uma comparação de pools com a V1; não faz sentido sem a estrutura da V1.
 
 ## R5. O botão "Changes" e as setas ao vivo
 
