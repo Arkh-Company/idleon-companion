@@ -3,8 +3,14 @@
 import { expect, test } from "vitest";
 import { COMBINE_KINDS, NODE_ROLES, POOL_KINDS } from "./formula-tree.ts";
 
-test("a pool or a group combines its rows by a sum, a product or 1 + percent", () => {
-  expect(COMBINE_KINDS).toEqual(["sum", "product", "onePlusPercent"]);
+test("a pool or a group combines its rows by a sum, a product, 1 + percent, or the root's max or min", () => {
+  expect(COMBINE_KINDS).toEqual([
+    "sum",
+    "product",
+    "onePlusPercent",
+    "max",
+    "min",
+  ]);
 });
 
 test("a pool is additive or multi", () => {
