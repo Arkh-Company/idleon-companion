@@ -153,3 +153,17 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
   ]);
   expect(level[2]?.code).toBe("TreeLevel");
 });
+
+test("a chain a step of which neither adds nor multiplies is open: the build says so, for the log (NFR-005)", () => {
+  const build = (block: string) =>
+    buildTree(
+      recorder.record(mosaicOf(), [[block, [0, 0, 0]]], NONE),
+      0,
+      recorder.ops,
+    );
+  const open = build("TreeChainOpen");
+  expect([open.chainOpen, open.root.value]).toEqual([true, 9]);
+  // the tree is still built, from the rows
+  expect(kidsOf(open.root).length).toBeGreaterThan(0);
+  expect(build("TreeChain").chainOpen).toBe(false);
+});

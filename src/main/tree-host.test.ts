@@ -45,6 +45,18 @@ test("after ready the request goes with its id and mosaic, and its tree reaches 
   expect(t.onTree).toHaveBeenCalledExactlyOnceWith(1, { id: "root", value: 2 });
 });
 
+test("a tree's log label (spec 009, NFR-005) reaches onTree with it", async () => {
+  const t = await running();
+  const tree = { id: "root" };
+  t.worker.emit("message", {
+    type: "treeResult",
+    id: 1,
+    tree,
+    log: "chainOpen",
+  });
+  expect(t.onTree).toHaveBeenCalledExactlyOnceWith(1, tree, "chainOpen");
+});
+
 test.each([
   ["refused", { refused: "unknownNumber" }],
   ["failed", { failed: true }],

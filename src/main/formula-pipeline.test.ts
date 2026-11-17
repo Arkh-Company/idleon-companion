@@ -149,6 +149,17 @@ test("a tree the worker failed to build (its mould too) leaves one log line with
   });
 });
 
+test("a tree whose chain of steps is open is shown, and leaves one log line with a label and the id (spec 009, NFR-005)", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(node({ value: CALCULATED.dropRate }), "chainOpen");
+  expect(h.last()).toMatchObject({ state: "ready" });
+  expect(h.log).toHaveBeenCalledExactlyOnceWith({
+    event: "chainOpen",
+    id: "dropRate",
+  });
+});
+
 test("an answer to an older request is dropped", () => {
   const h = setup();
   h.p.request({ id: "dropRate", character: null });
