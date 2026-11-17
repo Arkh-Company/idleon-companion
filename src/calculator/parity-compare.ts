@@ -146,33 +146,41 @@ export function compareTrees(
     if (!moulded && !sameFormula(a.formula, b.formula)) add("formula");
     if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
     if (moulded || bk.some((k) => BENCH_GROUP.test(k.name ?? ""))) {
-      // an Additive pool inside a product holds the step's terms built again, never the bench's branch of the
-      // expression's parts: it pairs whole, by value, and its leaves by value
+      // an Additive pool, or a 1 + percent one, among others holds the step's terms built again, never the bench's
+      // branch of the expression's parts: it pairs whole, by value, and its leaves by value
       const pools = ak.filter((k) => k.role === "pool").length;
       const whole = (k: CalcTreeNode) =>
-        moulded && pools > 1 && k.role === "pool" && k.poolKind === "additive";
+        moulded &&
+        pools > 1 &&
+        k.role === "pool" &&
+        (k.poolKind === "additive" || k.combine === "onePlusPercent");
       const cands = ak.flatMap((k) => (whole(k) ? [k] : appThrough([k])));
       const used = new Set<number>();
       const free = (fits: (x: CalcTreeNode) => boolean) =>
         cands.findIndex((x, j) => !used.has(j) && fits(x));
       // the app's place of each bench row outside its groups, which keeps the game's order below the root
       const order: number[] = [];
-      benchThrough(bk).forEach(([bi, grouped], i) => {
-        const named = free(
-          (x) => !whole(x) && x.name === bi.name && sameValue(x.value, bi.v),
-        );
-        const j = named >= 0 ? named : free((x) => sameValue(x.value, bi.v));
-        const place = `${at}/${String(i)}`;
-        const found = cands[j];
-        if (!found) {
-          out.push({ at: place, field: "shape" });
-          return;
-        }
-        used.add(j);
-        if (!grouped) order.push(j);
-        if (whole(found)) sameLeaves(found, bi, place);
-        else walk(found, bi, `${path} › ${bi.name ?? "?"}`, place, false);
-      });
+      const pair = (rows: readonly BenchRow[], over: string, here: string) => {
+        benchThrough(rows).forEach(([bi, grouped], i) => {
+          const named = free(
+            (x) => !whole(x) && x.name === bi.name && sameValue(x.value, bi.v),
+          );
+          const j = named >= 0 ? named : free((x) => sameValue(x.value, bi.v));
+          const place = `${here}/${String(i)}`;
+          const below = `${over} › ${bi.name ?? "?"}`;
+          const found = cands[j];
+          // spec 009, rule Y: an earlier step of the chain, which the app's pools took apart, pairs through its rows
+          if (!found && moulded && bi.kids?.length) pair(bi.kids, below, place);
+          else if (!found) out.push({ at: place, field: "shape" });
+          else {
+            used.add(j);
+            if (!grouped) order.push(j);
+            if (whole(found)) sameLeaves(found, bi, place);
+            else walk(found, bi, below, place, false);
+          }
+        });
+      };
+      pair(bk, path, at);
       if (used.size < cands.length) add("shape");
       if (!moulded && order.some((j, i) => i > 0 && j < (order[i - 1] ?? 0)))
         add("shape");
