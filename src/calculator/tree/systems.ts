@@ -106,6 +106,13 @@ export const SYSTEM_RULES: readonly {
     proof: TAG_OF,
     read: true as const,
   })),
+  // Dream[2 + i] is the level of Equinox upgrade i: the V1 files 5 × Dream[10] (Faux Jewels) under Dreams
+  {
+    test: /^Dream\[\d+\]$/,
+    system: "Dreams",
+    proof: "bench build-v1mold.cjs adds (Faux Jewels, Equinox upgrade 8)",
+    read: true,
+  },
 ];
 
 const BY_NAME = new Map(V1_SYSTEMS.map((s) => [s.name, s]));

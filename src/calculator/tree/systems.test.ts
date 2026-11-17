@@ -34,6 +34,12 @@ test.each<[string, string | null, string | undefined, string | null]>([
     undefined,
     "⚗️ Alchemy",
   ],
+  [
+    "an Equinox upgrade's level, which the V1 files under Dreams",
+    "Dream[10]",
+    undefined,
+    "💭 Dreams",
+  ],
   ["an unknown block", 'InventedBlock("Mode", 0)', undefined, null],
   [
     "a known block in a mode no rule names",
