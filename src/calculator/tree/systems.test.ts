@@ -4,6 +4,7 @@
 // rules read.
 import { expect, test } from "vitest";
 import { isNameText } from "./names.ts";
+import { SYSTEM_TAGS } from "./tags.ts";
 import {
   SYSTEM_ORDER,
   SYSTEM_RULES,
@@ -119,6 +120,14 @@ test("every system a rule gives is in the V1 list", () => {
   for (const r of SYSTEM_RULES)
     expect([String(r.test), SYSTEM_ORDER.includes(r.system)]).toEqual([
       String(r.test),
+      true,
+    ]);
+});
+
+test("every system a tagged call gives is in the V1 list", () => {
+  for (const t of SYSTEM_TAGS)
+    expect([String(t.test), SYSTEM_ORDER.includes(t.system)]).toEqual([
+      String(t.test),
       true,
     ]);
 });

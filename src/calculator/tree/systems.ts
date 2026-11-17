@@ -2,7 +2,7 @@
 // source calls (written "block mode", as tree/tags.ts reads it) or the path it reads; a cache read with no rule of its
 // own goes to the block that writes it. No rule, no system: the caller files the source under "🔹 Other", never by a
 // guess. The order and the emoji are the V1's (bench build-v1mold.cjs V1, the site's lib/dropRate/systems.ts).
-import { callKey } from "./tags.ts";
+import { callKey, SYSTEM_TAGS } from "./tags.ts";
 
 export interface System {
   name: string;
@@ -67,7 +67,10 @@ export const SYSTEM_ORDER: readonly string[] = V1_SYSTEMS.map((s) => s.name);
 
 const TAG_OF = "bench pieces.cjs tagOf";
 
-/** Each rule reads a call's "block mode" or a read's path, as pieces.cjs `tagOf` does; the first that matches decides. */
+/**
+ * The rules beyond the tagged calls (tree/tags.ts SYSTEM_TAGS carries each tagged call's system): the calls with no
+ * tag and the reads by path. Each reads a call's "block mode" or a read's path, as pieces.cjs `tagOf` does.
+ */
 export const SYSTEM_RULES: readonly {
   test: RegExp;
   system: string;
@@ -77,46 +80,9 @@ export const SYSTEM_RULES: readonly {
 }[] = [
   ...(
     [
-      [/^GetTalentNumber /, "Talents"],
-      [/^Companions /, "Companions"],
-      [/^CardBonusREAL /, "Cards"],
-      [/^CardSetBonuses /, "Cards"],
-      [/^RunCodeOfTypeXforThingY CardLv$/, "Cards"],
-      [/^Shrine /, "Shrines"],
-      [/^prayersReal /, "Prayers"],
-      [/^GuildBonuses /, "Guild"],
-      [/^ArcadeBonus /, "Arcade"],
-      [/^StampBonusOfTypeX /, "Stamps"],
-      [/^ResearchStuff /, "Researching"],
-      [/^AchieveStatus /, "Achievements"],
-      [/^GetSetBonus /, "Set Bonuses"],
-      [/^EtcBonuses /, "Equipment"],
       [/^GoldFoodBonuses /, "Golden Food"],
       [/^ArcaneType /, "Arcane Map"],
-      [/^RoyalG /, "Royal Guardian"],
-      [/^MenagerieStuff /, "Menagerie"],
-      [/^SushiStuff /, "Sushi"],
-      [/^Ninja /, "Pristine Charms"],
-      [/^Dreamstuff /, "Dreams"],
-      [/^Labb SigilBonus$/, "Sigils"],
-      [/^Breeding /, "Shiny Pets"],
-      [/^Summoning WinBonus$/, "Summoning"],
-      [/^Summoning TomeBonus$/, "Tome"],
-      [/^Summoning OwlBonuses$/, "Owl"],
-      [/^Summoning VotingBonusz$/, "Voting"],
-      [/^Summoning GrimoireUpgBonus$/, "Grimoire"],
-      [/^Summoning VaultUpgBonus$/, "Vault"],
-      [
-        /^FarmingStuffs (?:LankRankUpgBonus|CropSCbonus|ExoticBonusQTY)$/,
-        "Farming",
-      ],
-      [/^Holes (?:B_UPG|MeasurementBonusTOTAL|MonumentROGbonuses)$/, "Holes"],
-      [/^Thingies EmperorBon$/, "Emperor"],
-      [/^Thingies FriendBonusStatz$/, "Friends"],
-      [/^Thingies LegendPTS_bonus$/, "Legend Talents"],
-      [/^Spelunk ShopUpgBonus$/, "Spelunk Shop"],
       [/^Minehead GlimboDRmulti$/, "Glimbo"],
-      [/^Minehead BonusQTY$/, "Minehead"],
     ] as const
   ).map(([test, system]) => ({ test, system, proof: TAG_OF })),
   // the bubbles' cache is written by the cauldron's block, Alchemy's (tree/loop-parts.ts LOOP_ENTRY_CACHES)
@@ -154,8 +120,10 @@ export function systemOf(
 ): System | null {
   if (code === null) return null;
   const call = callKey(code);
-  const rule = SYSTEM_RULES.find((r) =>
-    call ? !r.read && r.test.test(call.key) : r.read && r.test.test(code),
+  const rule = [...SYSTEM_TAGS, ...SYSTEM_RULES].find((r) =>
+    call
+      ? !("read" in r) && r.test.test(call.key)
+      : "read" in r && r.test.test(code),
   );
   if (rule) return BY_NAME.get(rule.system) ?? null;
   return call || writerBlock === undefined ? null : systemOf(writerBlock);
