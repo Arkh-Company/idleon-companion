@@ -58,7 +58,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 
 ### Tests for User Story 2 (write first)
 
-- [ ] T005 [P] [US2] Tests of the pools from the root's sum in `src/calculator/tree/pools.test.ts` (FR-001, FR-005, FR-008; depends on T002)
+- [X] T005 [P] [US2] Tests of the pools from the root's sum in `src/calculator/tree/pools.test.ts` (FR-001, FR-005, FR-008; depends on T002)
   - Files: `src/calculator/tree/pools.test.ts`
   - Cases:
     - `(a + b + c)` → one Additive pool;
@@ -81,7 +81,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] The pools from the root's sum in `src/calculator/tree/pools.ts` (FR-005; depends on T005)
+- [X] T007 [US2] The pools from the root's sum in `src/calculator/tree/pools.ts` (FR-005; depends on T005)
   - Files: `src/calculator/tree/pools.ts`
   - Signature: `poolsOf(rows: readonly Row[], rootFormula): Pool[]` with `Pool = { kind: "additive" | "multi"; rows: Row[]; combine }` (research R1).
 - [ ] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts` (FR-001, FR-002, FR-004, FR-005, FR-006; depends on T004, T006, T007)
