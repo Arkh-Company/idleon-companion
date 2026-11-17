@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.7.0...v0.8.0) (2026-11-17)
+
+
+### Features
+
+* **008:** formula trees for every Stats and catalog number ([#35](https://github.com/Arkh-Company/idleon-companion/issues/35)) ([06d2d02](https://github.com/Arkh-Company/idleon-companion/commit/06d2d0248062b2a46995f20fa189cd7b35f75ac5))
+* **names:** name 54 game calls and the game state paths in the trees ([#37](https://github.com/Arkh-Company/idleon-companion/issues/37)) ([6d1c106](https://github.com/Arkh-Company/idleon-companion/commit/6d1c10641fc420984e9af526abf710b8bd1741c2))
+
 ## [0.7.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.6.1...v0.7.0) (2026-11-14)
 
 
