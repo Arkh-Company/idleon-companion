@@ -7,6 +7,7 @@ import { TARGETS } from "./targets.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { createTreeEngine, shapeOf } from "./tree-engine.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
+import { kidsOf as rowsOf } from "./tree/tree-fixture.ts";
 
 let trees: ReturnType<typeof createTreeEngine>;
 beforeAll(() => {
@@ -115,23 +116,44 @@ test("the root of the Drop Rate", () => {
     share: null,
     shareMode: null,
     flags: {},
+    // spec 009 (FR-005): the root's one row is its one pool, and the row is inside it
     kids: [
       {
-        id: "root/Game value",
-        pieceKey: '[0,"Stats.Drop_Rarity"]',
-        name: "Game value",
+        id: "root/Multi pool",
+        pieceKey: null,
+        name: "Multi pool",
         value: 2.5,
-        fmt: null,
-        leaf: "tier", // the bench's rule on a code with "rarity" in it
+        fmt: "x",
+        leaf: null,
         condition: null,
         why: null,
         formula: null,
-        code: "Stats.Drop_Rarity",
-        role: "piece",
+        code: null,
+        role: "pool",
+        combine: "product",
+        poolKind: "multi",
         share: 1,
         shareMode: "sum",
-        flags: { unnamed: true },
-        kids: [],
+        flags: { closed: true },
+        kids: [
+          {
+            id: "root/Multi pool/Game value",
+            pieceKey: '[0,"Stats.Drop_Rarity"]',
+            name: "Game value",
+            value: 2.5,
+            fmt: null,
+            leaf: "tier", // the bench's rule on a code with "rarity" in it
+            condition: null,
+            why: null,
+            formula: null,
+            code: "Stats.Drop_Rarity",
+            role: "piece",
+            share: 1,
+            shareMode: "sum",
+            flags: { unnamed: true },
+            kids: [],
+          },
+        ],
       },
     ],
   });
@@ -164,7 +186,7 @@ const expand = (treeId: string, nodeId: string) => ({
   nodeId,
 });
 const kidsOf = (n: CalcTreeNode | "unknownNumber") =>
-  n !== "unknownNumber" && Array.isArray(n.kids) ? n.kids : [];
+  n === "unknownNumber" ? [] : rowsOf(n);
 
 test("an expand opens a branch of the last tree, with no mosaic: nothing is recorded again", () => {
   const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));

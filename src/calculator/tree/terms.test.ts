@@ -5,7 +5,7 @@ import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
-import { recordingOf } from "./tree-fixture.ts";
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -16,8 +16,6 @@ const NONE = { recompute: [], builders: [] };
 const treeOf = (block: string, args: number[] = [0, 0, 0]) =>
   buildTree(recorder.record(mosaicOf(), [[block, args]], NONE), 0, recorder.ops)
     .root;
-const kidsOf = (n: CalcTreeNode | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 /** Each row as [code, value, its rows or "lazy"]. */
 const brief = (n: CalcTreeNode): unknown[] => [
   n.code,

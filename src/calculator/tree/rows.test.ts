@@ -3,13 +3,10 @@
 // the parts at 0 of a sum go into closed groups, and a Condition that is "no" stays in the list. Hand-written
 // recordings with invented blocks and paths.
 import { expect, test } from "vitest";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { row, withShares } from "./rows.ts";
-import { recordingOf } from "./tree-fixture.ts";
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 /** The root's first level of a block `Total` with these calls under it. */
 function rootOf(
   calls: Parameters<typeof recordingOf>[0],

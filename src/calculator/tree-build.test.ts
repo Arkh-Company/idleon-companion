@@ -5,6 +5,7 @@ import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
+import { kidsOf } from "./tree/tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -18,7 +19,6 @@ const treeOf = (block: string, mosaic = mosaicOf(), character = 0) =>
     character,
     recorder.ops,
   ).root;
-const kidsOf = (n: CalcTreeNode) => (n.kids === "lazy" ? [] : n.kids);
 const rows = (n: CalcTreeNode) =>
   kidsOf(n).map((k) => [
     k.code,
@@ -84,7 +84,10 @@ test("a state read is a leaf of unknown kind, keyed by its path", () => {
 
 test("a piece called twice is the same piece, with its own row id", () => {
   const [a, b] = kidsOf(treeOf("TreeTwice"));
-  expect([a?.id, b?.id]).toEqual(["root/Game value", "root/Game value#2"]);
+  expect([a?.id, b?.id]).toEqual([
+    "root/Additive pool/Game value",
+    "root/Additive pool/Game value#2",
+  ]);
   expect(a?.pieceKey).toBe(b?.pieceKey);
 });
 

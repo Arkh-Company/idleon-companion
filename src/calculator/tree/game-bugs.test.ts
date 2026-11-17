@@ -6,10 +6,7 @@ import { checkTree } from "../../main/tree-check.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { buildTree } from "../tree-build.ts";
-import { recordingOf } from "./tree-fixture.ts";
-
-const kidsOf = (n: CalcTreeNode | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 test("the rule tests the call the rows come from, also behind a call that only passes its value on", () => {
   const rec = recordingOf(
