@@ -298,3 +298,29 @@ test("pools and groups have no piece, and their ids are the path of their names"
     "GetTalentNumber(1, 209)",
   ]);
 });
+
+test("under a root with a max at the top, each group is the max of its sources, with its ⓘ, and the root their max", () => {
+  const rows = [card(8), talent(3), card(5, 11), other(2), talent(7, 208)];
+  const out = bySystem(rows, "max", writerOf);
+  expect(level(out)).toEqual([
+    ["🎯 Talents", 7],
+    ["🃏 Cards", 8],
+    ["InventedBlock(1)", 2],
+  ]);
+  expect(Math.max(...out.map((r) => Number(r.node.value)))).toBe(8);
+  const [talents] = out;
+  expect([talents?.node.combine, talents?.node.fmt]).toEqual(["max", null]);
+  expect(talents?.node.formula).toEqual([
+    [
+      "max",
+      "(",
+      "GetTalentNumber(1, 207)",
+      ",",
+      "GetTalentNumber(1, 208)",
+      ")",
+    ],
+    [3, 7, 7],
+  ]);
+  const [low] = bySystem([card(8), card(5, 11)], "min", writerOf);
+  expect([low?.node.value, low?.node.combine]).toEqual([5, "min"]);
+});

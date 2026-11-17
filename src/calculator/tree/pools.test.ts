@@ -3,7 +3,7 @@
 // multiplies, else a Multi one; a root no sum and no product gives (a max at the top) has no pool. Invented paths and
 // values, apart from the game's own block names the system rules read.
 import { expect, test } from "vitest";
-import { poolsFormula, poolsOf } from "./pools.ts";
+import { poolsFormula, poolsOf, rootExtreme } from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -223,4 +223,25 @@ test("one pool needs no ⓘ at the root", () => {
   const rows = [src("Stats.a", 1), src("Stats.b", 2)];
   const pools = poolsOf(rows, { value: 3 });
   expect(pools && poolsFormula(pools, 3)).toBeNull();
+});
+
+const fn = (name: string, args: Expr[], v: number): Expr => ({
+  t: "fn",
+  name,
+  args,
+  v,
+});
+
+test("a root with a max or a min at the top has no pool, and its groups take its max or its min", () => {
+  const rows = [src("Stats.a", 8), src("Stats.b", 6), src("Stats.c", 4)];
+  const args = [at("Stats.a", 8), at("Stats.b", 6), at("Stats.c", 4)];
+  expect(rootExtreme(rows, { value: 8, expr: fn("max", args, 8) })).toBe("max");
+  expect(rootExtreme(rows, { value: 4, expr: fn("min", args, 4) })).toBe("min");
+  // the rows must give the root by that same rule
+  expect(rootExtreme(rows, { value: 9, expr: fn("max", args, 9) })).toBeNull();
+  // no step, or a step whose top is no max nor min
+  expect(rootExtreme(rows, { value: 8 })).toBeNull();
+  expect(
+    rootExtreme(rows, { value: 8, expr: fn("floor", args, 8) }),
+  ).toBeNull();
 });
