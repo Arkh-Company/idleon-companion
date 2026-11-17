@@ -222,3 +222,5 @@ A verificação da 009 termina quando todas estas condições valem:
 | A faixa "Game changed · Refresh" continua? | resolved | Não; a árvore mostra os valores em tempo real, e o "live" guarda a árvore do clique (Vinicius, 17/11) (FR-013, FR-015) |
 | A marca escolhida no Changes fica salva? | resolved | Não; o Changes ligado começa em "live" (Vinicius, 17/11) (FR-013) |
 | O que acontece quando o jogo muda a forma da árvore aberta (uma fonte aparece ou some)? | resolved | Padrão do agente: a árvore se refaz sozinha, sem botão (FR-015) |
+| Os campos combine e poolKind são obrigatórios em toda linha ou opcionais? | resolved | durante a implementação: opcionais, só em pool e system, como was, cap e feeds da 008; nas outras linhas eles não aparecem (Vinicius, 17/11) |
+| O filtro de nomes do main deve recusar um caminho como DNSM.X? | resolved | durante a implementação: o filtro fica como está (recusar texto com ponto derrubaria nomes do jogo como "Lv. 5"); um caminho do jogo como DNSM.X não deve chegar a nome, e as regras de nome não o produzem (Vinicius, 17/11) |
