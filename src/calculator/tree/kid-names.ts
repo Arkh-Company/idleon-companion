@@ -118,9 +118,12 @@ function bySystem(r: Row, above: readonly string[]): Row {
     : r;
 }
 
-/** A group of the parts at 0 or at ×1 (FR-014): its name is the app's. */
+/** A group of the parts at 0 or at ×1 (FR-014), a pool or a system's group (spec 009): its name is the app's. */
 export const isGroup = (r: Row): boolean =>
-  r.node.role === "atZero" || r.node.role === "atOne";
+  r.node.role === "atZero" || r.node.role === "atOne" || isMould(r);
+/** A pool or a system's group (spec 009): its rows keep the names they had at the level above it. */
+export const isMould = (r: Row): boolean =>
+  r.node.role === "pool" || r.node.role === "system";
 
 /** A row's text as the levels under it see it: its name and its tag. */
 export const aboveText = (a: { name: string; code: string | null }) =>

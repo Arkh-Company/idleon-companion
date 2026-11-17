@@ -67,7 +67,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
     - `(1 + (s + 2×a) ÷ 100) × b × p × g` (Prod Spd Bonus) → `Additive pool` with two systems, then `Multi pool 1..3`;
     - the root's ⓘ is `"Additive pool × Multi pool"` and closes with the numbers;
     - each pool's `combine` and `poolKind` are set.
-- [ ] T006 [P] [US2] Tests of the system groups in `src/calculator/tree/mould.test.ts` (FR-002, FR-004, FR-006, FR-008, FR-009, FR-013; depends on T002, T004)
+- [X] T006 [P] [US2] Tests of the system groups in `src/calculator/tree/mould.test.ts` (FR-002, FR-004, FR-006, FR-008, FR-009, FR-013; depends on T002, T004)
   - Files: `src/calculator/tree/mould.test.ts` (rewritten cases; the 008 cases that pinned the steps as the first level are replaced, by the approved spec change FR-001)
   - Cases:
     - sources grouped by system in V1 order, new systems after, "🔹 Other" last;

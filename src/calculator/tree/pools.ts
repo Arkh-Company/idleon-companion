@@ -137,18 +137,29 @@ export function poolsOf(
   return named(pools);
 }
 
-/** The root's ⓘ: how its pools give it ("Additive pool × Multi pool"); none for a single pool. */
+/** The root's ⓘ as its two lines: how its pools give it ("Additive pool × Multi pool"); none for a single pool. */
+export function poolsPair(
+  pools: readonly Pool[],
+  value: number,
+): [names: string, numbers: string] | null {
+  if (pools.length < 2) return null;
+  return [
+    pools.map((p) => p.name).join(" × "),
+    `${pools.map((p) => fx3(p.value)).join(" × ")} = ${fx3(value)}`,
+  ];
+}
+
+/** The root's ⓘ as the contract writes it (atoms). */
 export function poolsFormula(
   pools: readonly Pool[],
   value: number,
 ): CalcTreeNode["formula"] {
-  if (pools.length < 2) return null;
-  const names = pools.map((p) => p.name);
-  return formulaOut(
-    [
-      names.join(" × "),
-      `${pools.map((p) => fx3(p.value)).join(" × ")} = ${fx3(value)}`,
-    ],
-    names,
+  const pair = poolsPair(pools, value);
+  return (
+    pair &&
+    formulaOut(
+      pair,
+      pools.map((p) => p.name),
+    )
   );
 }
