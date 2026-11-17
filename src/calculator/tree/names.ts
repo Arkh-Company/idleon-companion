@@ -7,6 +7,7 @@ import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
 import type { NamePart, NameRecipe } from "./names-table.ts";
 import { clean, isNameText, transformText } from "./name-text.ts";
 import { renameOf } from "./renames.ts";
+import { STATE_NAMES } from "./state-names.ts";
 
 export {
   clean,
@@ -66,7 +67,8 @@ export const NAMES_BY_LABEL: readonly (readonly [
   ["cardLvCalco", "Card stars"],
 ];
 
-/** The rules by shape (names-008 rule 6), each with its proof by reference: the first whose test matches decides. */
+/** The rules by shape (names-008 rule 6), each with its proof by reference: the first whose test matches and that
+ * names the row decides (a rule whose table has no text leaves the row to the next, as a game cache to its label). */
 export const SHAPE_NAMES: readonly {
   test: RegExp;
   proof: string;
@@ -79,6 +81,9 @@ export const SHAPE_NAMES: readonly {
     proof: "bench pieces.cjs NAMES_BY_LABEL",
     name: () => name,
   })),
+  // the game state paths' families of 16/11 (tree/state-names.ts), before the calls' rules: a path of a helper actor
+  // holds a call
+  ...STATE_NAMES,
   {
     test: /^getLOG\(/,
     proof: "bench pieces.cjs CALL_NAMES; N.js getLOG",
@@ -129,8 +134,17 @@ export function nameOf(code: string): string | null {
   const known = STATIC_NAMES.get(code);
   if (known) return known.name;
   if (RECIPE_KEYS.has(code)) return gameNames.get(code) ?? null;
+  return shapeName(code)?.name ?? null;
+}
+
+/** The first rule by shape that names `code`, with its name. */
+function shapeName(code: string): { name: string; generic: boolean } | null {
   const call = callOf(code);
-  return SHAPE_NAMES.find((r) => r.test.test(code))?.name(code, call) ?? null;
+  for (const r of SHAPE_NAMES) {
+    const name = r.test.test(code) ? r.name(code, call) : null;
+    if (name !== null) return { name, generic: !!r.generic };
+  }
+  return null;
 }
 
 /** Whether `code`'s name, if any, is only the recorder's label of a game's working value: it counts as no name yet
@@ -139,7 +153,7 @@ export const isGeneric = (code: string): boolean =>
   renameOf(code) === null &&
   !STATIC_NAMES.has(code) &&
   !RECIPE_KEYS.has(code) &&
-  !!SHAPE_NAMES.find((r) => r.test.test(code))?.generic;
+  !!shapeName(code)?.generic;
 
 /** A term of the ⓘ for `code`: its name, else the game's path or call as it is (FR-012a). */
 export const termName = (code: string): string | null =>
