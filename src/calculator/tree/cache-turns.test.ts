@@ -41,7 +41,7 @@ test("a turn's found item is a yes/no part with nothing under it; a turn that re
   ]);
 });
 
-test("[OPUS4-10] a cache whose every write is 0 is the last turn's read of 0, its one part of its value (pieces.cjs structurePass, spec 009 FR-016); that read names nothing", () => {
+test("[OPUS4-10] a cache whose every write is 0 opens into the last turn's step; a turn read of 0 names nothing", () => {
   const rec = loopOf(
     [
       [0, 0],
@@ -53,15 +53,8 @@ test("[OPUS4-10] a cache whose every write is 0 is the last turn's read of 0, it
       ["Z", 0, 5],
     ],
   );
-  // the last turn read B at 0, the cache's one part with its value, which the row takes (no At 0 group holds it apart
-  // any more); the read names nothing, so the row keeps the cache's own
-  const cache = loopRows(rec);
-  expect([cache?.code, cache?.value, cache?.kids, cache?.flags]).toEqual([
-    "DNSM.Acc.v",
-    0,
-    [],
-    { unnamed: true },
-  ]);
+  // the last turn read B, in its place under the cache (spec 009, FR-016); the writer's own first step read A
+  expect(brief(loopRows(rec))).toEqual([["B", 0]]);
 });
 
 test("a write that does not add to the running total replaces it: the parts start again", () => {

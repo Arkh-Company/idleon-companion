@@ -1,8 +1,9 @@
 // The first level of a tree (spec 008, FR-006; T017 "a step never named fixed"): the game's steps in its order, each
 // with its bonus's name; a step the assembly would name by its shape has no proven name: `no name yet`.
 import { expect, test } from "vitest";
-import { bySystem, mould, poolRows } from "./mould.ts";
+import { bySystem, firstLevel, mould, poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
+import type { Expr } from "./steps.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { branch, fixed, placed, read } from "./tree-fixture.ts";
@@ -347,5 +348,37 @@ test("a pool or group has its own ⓘ, the sum or product of its rows, and none 
   expect(talents?.formula).toEqual([
     ["GetTalentNumber(1, 207)", "×", "GetTalentNumber(1, 208)"],
     [2, 3, 6],
+  ]);
+});
+
+test("a root with a max at the top: its first level is its groups, each the max of its sources, and its ⓘ max of the groups over the step's own", () => {
+  const rows = [talent(3), card(8), talent(7, 208), card(5, 11)];
+  const at = (p: string, v: number): Expr => ({ t: "read", p, v });
+  const expr: Expr = {
+    t: "fn",
+    name: "max",
+    args: rows.map((r) => at(r.node.code ?? "", Number(r.node.value))),
+    v: 8,
+  };
+  const own: CalcTreeNode["formula"] = { rule: ["max of the step", "= 8"] };
+  const out = firstLevel(
+    rows,
+    { name: "Total", value: 8, formula: own },
+    { expr, term: () => null, writerOf },
+  );
+  expect(level(out.rows)).toEqual([
+    ["🎯 Talents", 7],
+    ["🃏 Cards", 8],
+  ]);
+  expect(out.formula).toEqual([
+    ["max", "(", "🎯 Talents", ",", "🃏 Cards", ")"],
+    [7, 8, 8],
+  ]);
+  // the group that gives the max weighs it all; the other does not move it now
+  expect(
+    out.rows.map((r) => [r.node.shareMode, r.node.share, r.node.cap]),
+  ).toEqual([
+    ["cap", 0, "overTheCap"],
+    ["cap", 1, undefined],
   ]);
 });

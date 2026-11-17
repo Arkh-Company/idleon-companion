@@ -3,10 +3,13 @@
 import { expect, test } from "vitest";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
-import { token } from "./formulas.ts";
+import { formulaFor, token } from "./formulas.ts";
+import { finish } from "./rows.ts";
+import { at, read as part } from "./tree-fixture.ts";
 import {
   brief,
   call,
+  finished,
   fn,
   num,
   op,
@@ -170,6 +173,30 @@ test("the parts of an expression, one that adds or a product, stay in their plac
     "C()",
     "Fixed +1",
   ]);
+});
+
+test("the parts of an expression that adds are no parts at ×1 to leave aside; a product's are", () => {
+  finished.length = 0;
+  const sum = op("+", call(1, 3), call(2, 2), 5);
+  rowsOf([{ v: 6, e: op("+", op("*", sum, num(1), 5), num(1), 6) }]);
+  const product = op("*", call(1, 3), call(2, 2), 6);
+  rowsOf([{ v: 7, e: op("+", product, num(1), 7) }]);
+  expect(finished).toEqual([false, true]);
+});
+
+test("the ⓘ keeps the parts at ×1 of a level the 008 never grouped; it leaves aside a product's (spec 009, FR-016)", () => {
+  const parts = () => [
+    part("Stats.a", 3),
+    part("Stats.o", 1),
+    part("Stats.p", 1),
+  ];
+  expect(formulaFor(at(3), finish(3, parts(), false))).toEqual([
+    "Stats.a × Stats.o × Stats.p",
+    "3 × 1 × 1 = 3",
+  ]);
+  expect(
+    JSON.stringify(formulaFor(at(3), finish(3, parts(), true))),
+  ).not.toContain("Stats.o");
 });
 test("a number cut out of a text the block read is a fixed value", () => {
   const [fixed] = rowsOf(

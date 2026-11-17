@@ -312,3 +312,128 @@ test("below the root, the bench's groups at 0 and at ×1 go through too, and the
   };
   expect(compareTrees(tree, bench, new Set())).toEqual([]);
 });
+
+// Forge stats 2: (5 × x + 30 × y + 100) × (1 + m ÷ 100). The app's Additive pool holds the step's terms built again,
+// the bench's factor is one branch of the expression's parts: they pair by value, and their leaves by value too.
+const leafOf = (id: string, name: string, value: number): CalcTreeNode =>
+  app({ id, name, value, leaf: "fixedValue" });
+const FORGE = app({
+  value: 12160,
+  kids: [
+    app({
+      id: "root/Additive pool",
+      name: "Additive pool",
+      value: 760,
+      role: "pool",
+      combine: "sum",
+      poolKind: "additive",
+      kids: [
+        app({
+          id: "root/Additive pool/x",
+          name: "Sum part x",
+          value: 480,
+          kids: [leafOf("a1", "× 5", 5), leafOf("a2", "X", 96)],
+        }),
+        app({
+          id: "root/Additive pool/y",
+          name: "Sum part y",
+          value: 180,
+          kids: [leafOf("b1", "× 30", 30), leafOf("b2", "Y", 6)],
+        }),
+        leafOf("root/Additive pool/c", "Fixed +100", 100),
+      ],
+    }),
+    pool("Multi pool", [
+      app({
+        id: "root/Multi pool/M",
+        name: "Multiplier",
+        value: 16,
+        kids: [leafOf("m1", "M", 1500)],
+      }),
+    ]),
+  ],
+});
+const FORGE_BENCH: BenchRow = {
+  name: "Forge stats 2",
+  v: 12160,
+  kids: [
+    {
+      name: "Sum of 2 sources",
+      v: 760,
+      kids: [
+        { name: "× 5", v: 5, kind: "Valor fixo" },
+        { name: "X", v: 96, kind: "Valor fixo" },
+        { name: "× 30", v: 30, kind: "Valor fixo" },
+        { name: "Y", v: 6, kind: "Valor fixo" },
+        { name: "Base 100", v: 100, kind: "Valor fixo" },
+      ],
+    },
+    {
+      name: "Multiplier",
+      v: 16,
+      kids: [{ name: "M", v: 1500, kind: "Valor fixo" }],
+    },
+  ],
+};
+
+test("an Additive pool inside a product pairs with the bench's factor by value, and its leaves by value", () => {
+  expect(compareTrees(FORGE, FORGE_BENCH, new Set())).toEqual([]);
+  // a leaf of another value is a difference of shape at the factor
+  const [sum, multi] = FORGE_BENCH.kids ?? [];
+  const off: BenchRow = {
+    ...FORGE_BENCH,
+    kids: [
+      {
+        ...sum,
+        kids: [...(sum?.kids ?? []).slice(0, 4), { name: "Base 99", v: 99 }],
+      },
+      multi ?? {},
+    ],
+  };
+  expect(compareTrees(FORGE, off, new Set())).toEqual([
+    { at: "0/0", field: "shape" },
+  ]);
+});
+
+test("below the root, a level with the bench's group at 0 still checks the order of its other parts", () => {
+  const part = (id: string, name: string, value: number): CalcTreeNode =>
+    app({ id, name, value, leaf: "level" });
+  const tree = app({
+    kids: [
+      pool("Multi pool", [
+        app({
+          ...ALPHA,
+          kids: [
+            part("a/Other", "Other", 3),
+            part("a/Zed", "Zed", 0),
+            part("a/Kept", "Kept", 2),
+          ],
+        }),
+        BETA,
+      ]),
+    ],
+  });
+  const bench: BenchRow = {
+    ...NO_FORMULA,
+    kids: [
+      {
+        name: "Alpha",
+        v: 2,
+        kind: "Level",
+        kids: [
+          { name: "Kept", v: 2, kind: "Level" },
+          { name: "Other", v: 3, kind: "Level" },
+          {
+            name: "At 0 (1)",
+            v: 0,
+            kids: [{ name: "Zed", v: 0, kind: "Level" }],
+          },
+        ],
+      },
+      { name: "Beta", v: 5, kind: "Condição", sub: "possui" },
+    ],
+  };
+  expect(compareTrees(tree, bench, new Set())).toEqual([
+    { at: "0/0", field: "shape" },
+  ]);
+});
