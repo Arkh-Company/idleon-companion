@@ -16,7 +16,7 @@ import { makeCaches } from "./tree/caches.ts";
 import { makeConditions } from "./tree/conditions.ts";
 import { entriesOf, makeWriters } from "./tree/entries.ts";
 import { GAME_BUGS } from "./tree/game-bugs.ts";
-import { GOLD_FOOD, goldFood } from "./tree/gold-food.ts";
+import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
@@ -322,8 +322,8 @@ export function buildTree(
     const last = steps.of(top.id).steps.at(-1);
     const terms = termsOf(top);
     const reads: Reads = new Map((top.r ?? []).map(([p, v]) => [p, v]));
-    // spec 009, rule Y: the pools of a chain of steps come from its steps; a golden food keeps the rows its pass names
-    const all = GOLD_FOOD.test.test(top.b) ? [] : steps.of(top.id).steps;
+    // spec 009, rule Y: the pools of a chain of steps come from its steps
+    const all = steps.of(top.id).steps;
     const first = firstLevel(mould(own?.rows ?? rows), root, {
       expr: last && near(last.v, top.v) ? last.e : null,
       term: (e) => terms.term(e, "+", reads),
@@ -337,8 +337,7 @@ export function buildTree(
           steps: all,
           at,
         })?.open;
-        if (typeof o !== "object" || o === null || o.writer !== top.id)
-          return false;
+        if (typeof o !== "object" || o?.writer !== top.id) return false;
         // out of a loop: a loop's step is recorded once, for its last turn, and its cache opens into its turns
         const turns = entries.get(`${String(top.id)}|${o.path}`) ?? [];
         return turns.every((t) => all.some((st) => near(st.v, t.v)));
