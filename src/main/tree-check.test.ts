@@ -145,6 +145,72 @@ test.each<[string, Partial<TreeNode>]>([
   expect(checkTree(node(over), MAX)).toBe(null);
 });
 
+// spec 009 (FR-011, SEC-003, contracts/tree-node.md): a pool and a system group carry how they combine, and no piece
+const pool = (over: Partial<TreeNode> = {}) =>
+  node({
+    id: "root/Additive pool",
+    name: "Additive pool",
+    role: "pool",
+    pieceKey: null,
+    code: null,
+    combine: "sum",
+    poolKind: "additive",
+    ...over,
+  });
+const group = (over: Partial<TreeNode> = {}) =>
+  pool({
+    id: "root/Additive pool/⚗️ Alchemy",
+    name: "⚗️ Alchemy",
+    role: "system",
+    poolKind: null,
+    ...over,
+  });
+/** The node with the field left out, as the worker's JSON sends a field it has not. */
+const without = (n: TreeNode, field: "combine" | "poolKind") => {
+  const { combine, poolKind, ...rest } = n;
+  return field === "combine" ? { ...rest, poolKind } : { ...rest, combine };
+};
+
+test.each<[string, TreeNode]>([
+  ["an additive pool that sums", pool()],
+  [
+    "a multi pool that multiplies",
+    pool({ name: "Multi pool 1", poolKind: "multi", combine: "product" }),
+  ],
+  ["a pool of 1 + percent", pool({ combine: "onePlusPercent" })],
+  ["a system group with no pool kind", group()],
+  ["a system group that multiplies", group({ combine: "product" })],
+  ["a tree of a pool with a group inside", pool({ kids: [group()] })],
+])("%s passes", (_name, tree) => {
+  expect(checkTree(tree, MAX)).toEqual(tree);
+});
+
+test.each<[string, unknown]>([
+  ["a combine outside the list", pool({ combine: "average" as never })],
+  ["a pool kind outside the list", pool({ poolKind: "other" as never })],
+  ["a pool with no combine", without(pool(), "combine")],
+  ["a pool with no pool kind", without(pool(), "poolKind")],
+  ["a pool whose pool kind is null", pool({ poolKind: null })],
+  ["a pool whose combine is null", pool({ combine: null })],
+  ["a system group with no combine", without(group(), "combine")],
+  ["a system group with no pool kind", without(group(), "poolKind")],
+  ["a system group with a pool kind", group({ poolKind: "multi" })],
+  ["a pool with a piece key", pool({ pieceKey: '[0,"InventedBlock"]' })],
+  ["a system group with a piece key", group({ pieceKey: '[0,"Invented"]' })],
+  ["a piece row with a combine", node({ role: "piece", combine: "sum" })],
+  ["a piece row with a null combine", node({ role: "piece", combine: null })],
+  ["a step with a pool kind", node({ role: "step", poolKind: "additive" })],
+  ["a root with a null pool kind", node({ poolKind: null })],
+  [
+    "a pool among the kids of a root",
+    node({ kids: [pool({ combine: "x" as never })] }),
+  ],
+  ["a pool name with the game's code", pool({ name: "_customBlock_X" })],
+  ["a group name with the game's code", group({ name: "⚗️ _customBlock_X" })],
+])("%s gives null", (_name, raw) => {
+  expect(checkTree(raw, MAX)).toBe(null);
+});
+
 test("more nodes than the limit gives null, and the limit itself passes", () => {
   const kids = (n: number) =>
     Array.from({ length: n }, (_, i) => node({ id: `root/${String(i)}` }));

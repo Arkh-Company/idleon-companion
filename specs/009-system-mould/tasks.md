@@ -16,7 +16,7 @@
 
 **Independent Test**: a hand-built tree with a `pool` and a `system` node passes the main's check and draws in the window; one with a piece key on a pool is refused.
 
-- [ ] T001 [P] Tests first: the node's new roles and fields in `src/main/tree-check.test.ts` and `src/shared/formula-tree.test.ts` (FR-011, SEC-003)
+- [X] T001 [P] Tests first: the node's new roles and fields in `src/main/tree-check.test.ts` and `src/shared/formula-tree.test.ts` (FR-011, SEC-003)
   - Files: `src/main/tree-check.test.ts`, `src/shared/formula-tree.test.ts`
   - Cases:
     - `role: "pool"` with `poolKind: "additive" | "multi"` and `combine: "sum" | "product" | "onePlusPercent"` passes;
@@ -25,11 +25,11 @@
     - a `pool` or `system` with a non-null `pieceKey` is refused (contracts/tree-node.md);
     - `combine`/`poolKind` other than null on a piece row is refused;
     - a pool name with game code (`DNSM.X`) is refused by the same text sieve as names.
-- [ ] T002 Add the roles and fields in `src/shared/formula-tree.ts` and `src/calculator/tree-contract.ts` (FR-005, FR-009; depends on T001)
+- [X] T002 Add the roles and fields in `src/shared/formula-tree.ts` and `src/calculator/tree-contract.ts` (FR-005, FR-009; depends on T001)
   - Files: `src/shared/formula-tree.ts`, `src/calculator/tree-contract.ts`
   - Signatures: `NODE_ROLES` gains `"pool"` and `"system"`; `TreeNode` and `CalcTreeNode` gain `combine: "sum" | "product" | "onePlusPercent" | null` and `poolKind: "additive" | "multi" | null` ("Only in `pool` and `system`"; null in every other row, data-model.md).
   - Every existing row builder sets both to null; existing tests pass unchanged.
-- [ ] T003 Accept the new roles and fields in `src/main/tree-check.ts` (FR-011, SEC-003; depends on T001, T002)
+- [X] T003 Accept the new roles and fields in `src/main/tree-check.ts` (FR-011, SEC-003; depends on T001, T002)
   - Files: `src/main/tree-check.ts`
   - Rules: the `NODE` field checks gain `combine` and `poolKind` (the lists above, or null); a `pool`/`system` node MUST have `pieceKey: null`.
 - [X] T004 [P] Tests first, then the system table in `src/calculator/tree/systems.ts` (FR-003, FR-004)
