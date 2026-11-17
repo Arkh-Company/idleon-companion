@@ -11,7 +11,6 @@ import {
   WIDE_CAP,
 } from "./LeafTag.tsx";
 import type { Visible } from "./tree-keys.ts";
-import { isGroup } from "./tree-parts.ts";
 import {
   reachedText,
   rowChange,
@@ -22,10 +21,10 @@ import {
 import { valueText } from "../shared/index.ts";
 import { truthTags, TruthTags } from "./TruthTag.tsx";
 
-/** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7); a group has none. */
+/** The phrases of a row's detail, by key: its type's (design.md C4), then its honesty tags' (C7). */
 export const phrasesOf = (n: TreeNode): [key: string, phrase: string][] => [
   ...(n.leaf ? [["type", leafPhrase(n)] as [string, string]] : []),
-  ...(isGroup(n) ? [] : truthTags(n)).flatMap((t, i): [string, string][] =>
+  ...truthTags(n).flatMap((t, i): [string, string][] =>
     t.phrase ? [[`truth${String(i)}`, t.phrase]] : [],
   ),
 ];
@@ -138,15 +137,14 @@ export function partLine(
     onFeeds: () => void;
   },
 ): { label: string; line: ReactNode; was: boolean | undefined } {
-  const group = isGroup(n);
   const value = root ? rootText : valueText(n);
-  const tags = group ? [] : truthTags(n);
-  const share = group ? null : shareText(n);
+  const tags = truthTags(n);
+  const share = shareText(n);
   const reached = reachedText(n);
   const change = rowChange(root ? undefined : n.was, n.fmt, closedChange);
   const label = [
     name,
-    group ? "" : root ? rootText.replace(/x$/, " times") : spokenValue(n),
+    root ? rootText.replace(/x$/, " times") : spokenValue(n),
     share,
     change?.spoken,
     reached,
@@ -164,7 +162,7 @@ export function partLine(
       <LeafTag n={n} />
       <TruthTags tags={tags} />
       {n.feeds !== undefined && <FeedsBadge count={n.feeds} onTap={onFeeds} />}
-      {!group && <span className={valueClass(n)}>{value}</span>}
+      <span className={valueClass(n)}>{value}</span>
       {change && <span className="was">{change.text}</span>}
       {share && <span className="share">{share}</span>}
       {share &&

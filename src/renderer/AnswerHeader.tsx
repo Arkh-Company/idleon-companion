@@ -3,7 +3,6 @@
 import type { FormulaTree, TreeNode } from "../shared/index.ts";
 import { LastReading } from "./StatsPanel.tsx";
 import { plain } from "../shared/index.ts";
-import { isGroup } from "./tree-parts.ts";
 
 type Ready = Extract<FormulaTree, { state: "ready" }>;
 
@@ -20,7 +19,7 @@ export function shortAnswer(root: TreeNode): string[] {
   const queue = [root];
   for (let n = queue.shift(); n; n = queue.shift()) {
     if (!Array.isArray(n.kids)) continue;
-    const parts = n.kids.filter((k) => !isGroup(k) && k.share !== null);
+    const parts = n.kids.filter((k) => k.share !== null);
     added ??= largest(parts.filter((k) => k.shareMode === "sum"));
     multiplier ??= largest(
       parts.filter(
