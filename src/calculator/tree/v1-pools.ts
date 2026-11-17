@@ -16,11 +16,14 @@ import type { Expr, Step } from "./steps.ts";
 export interface V1Context {
   steps: readonly Step[];
   /** A term of step `at` as the assembly makes it (tree/terms.ts `term`, in that step's turn). */
-  termAt(e: Expr, op: "*" | "+", at: number): Row | null;
+  termAt: (e: Expr, op: "*" | "+", at: number) => Row | null;
   writerOf: WriterOf;
   root: { name: string; value: Node["value"] };
 }
-type Level = { rows: Row[]; formula: Node["formula"] };
+interface Level {
+  rows: Row[];
+  formula: Node["formula"];
+}
 interface V1Mould {
   /** The V1's pools, in its order, each with the proof of its rule. */
   pools: readonly { name: string; proof: string }[];
