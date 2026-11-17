@@ -7,14 +7,15 @@ Muda o contrato `specs/008-formula-trees/contracts/tree-worker.md`, mensagem `tr
 O mesmo `CalcTreeNode` da 008, com estes campos a mais (`data-model.md`):
 
 - `role`: além dos papéis da 008, aceita `"pool"` e `"system"`.
-- `combine`: `"sum"`, `"product"` ou `"onePlusPercent"` em `pool` e `system`; null nas outras linhas.
-- `poolKind`: `"additive"` ou `"multi"` em `pool`; null nas outras linhas.
+- `combine`: `"sum"`, `"product"` ou `"onePlusPercent"` em `pool` e `system`; nas outras linhas o campo não aparece, nem como null.
+- `poolKind`: `"additive"` ou `"multi"` em `pool`, null em `system`; nas outras linhas o campo não aparece.
 
 O primeiro nível de uma árvore de número é a lista de `pool` (FR-005). O nó `expand` de um pool ou grupo ainda fechado segue a regra de expand da 008: o worker manda o nível guardado.
 
 ## A conferência do main (`tree-check.ts`, FR-010b da 008)
 
 - Aceita os papéis novos e os campos novos com estes valores, e nenhum outro.
+- Recusa `combine` ou `poolKind` numa linha que não é `pool` nem `system`, mesmo como null (são opcionais, como `was`, `cap` e `feeds` da 008).
 - O nome de um `pool` passa pelo mesmo crivo de texto dos outros nomes.
 - O nome de um `system` passa pelo mesmo crivo, com o emoji no começo.
 - `pieceKey` de `pool` e `system` MUST ser null. Um pool ou grupo com peça é recusado, porque não pode entrar em pin, marca nem radar.

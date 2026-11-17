@@ -27,8 +27,8 @@
     - a pool name with game code (`DNSM.X`) is refused by the same text sieve as names.
 - [X] T002 Add the roles and fields in `src/shared/formula-tree.ts` and `src/calculator/tree-contract.ts` (FR-005, FR-009; depends on T001)
   - Files: `src/shared/formula-tree.ts`, `src/calculator/tree-contract.ts`
-  - Signatures: `NODE_ROLES` gains `"pool"` and `"system"`; `TreeNode` and `CalcTreeNode` gain `combine: "sum" | "product" | "onePlusPercent" | null` and `poolKind: "additive" | "multi" | null` ("Only in `pool` and `system`"; null in every other row, data-model.md).
-  - Every existing row builder sets both to null; existing tests pass unchanged.
+  - Signatures: `NODE_ROLES` gains `"pool"` and `"system"`; `TreeNode` and `CalcTreeNode` gain `combine: "sum" | "product" | "onePlusPercent" | null` and `poolKind: "additive" | "multi" | null` ("Only in `pool` and `system`"; optional like `was`, `cap` and `feeds`, absent from every other row, never null there; decision of 17/11, data-model.md).
+  - No existing row builder changes; existing tests pass unchanged.
 - [X] T003 Accept the new roles and fields in `src/main/tree-check.ts` (FR-011, SEC-003; depends on T001, T002)
   - Files: `src/main/tree-check.ts`
   - Rules: the `NODE` field checks gain `combine` and `poolKind` (the lists above, or null); a `pool`/`system` node MUST have `pieceKey: null`.
