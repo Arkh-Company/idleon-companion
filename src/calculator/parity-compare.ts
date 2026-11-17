@@ -146,14 +146,33 @@ export function compareTrees(
     if (!moulded && !sameFormula(a.formula, b.formula)) add("formula");
     if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
     if (moulded || bk.some((k) => BENCH_GROUP.test(k.name ?? ""))) {
-      // an Additive pool, or a 1 + percent one, among others holds the step's terms built again, never the bench's
-      // branch of the expression's parts: it pairs whole, by value, and its leaves by value
+      // a 1 + percent pool, or an Additive pool of a factor of one step, holds the factor's terms built again, never
+      // the bench's branch of the expression's parts: it pairs whole, by value, and its leaves by value. An Additive
+      // pool of a chain's sums pairs row by row, through the bench's steps (spec 009 r1): the bench has no row of its
+      // value here, or one whose rows are the pool's
       const pools = ak.filter((k) => k.role === "pool").length;
+      const here = benchThrough(bk).map(([b]) => b);
+      const sameRows = (k: CalcTreeNode, b: BenchRow) => {
+        const left = (Array.isArray(k.kids) ? k.kids : []).map((x) => x.value);
+        const rows = benchThrough(b.kids ?? []);
+        return (
+          rows.length === left.length &&
+          rows.every(([x]) => {
+            const j = left.findIndex((v) => sameValue(v, x.v));
+            return j >= 0 && left.splice(j, 1).length > 0;
+          })
+        );
+      };
+      const factor = (k: CalcTreeNode) =>
+        here.some(
+          (b) => sameValue(k.value, b.v) && !!b.kids?.length && !sameRows(k, b),
+        );
       const whole = (k: CalcTreeNode) =>
         moulded &&
         pools > 1 &&
         k.role === "pool" &&
-        (k.poolKind === "additive" || k.combine === "onePlusPercent");
+        (k.combine === "onePlusPercent" ||
+          (k.poolKind === "additive" && factor(k)));
       const cands = ak.flatMap((k) => (whole(k) ? [k] : appThrough([k])));
       const used = new Set<number>();
       const free = (fits: (x: CalcTreeNode) => boolean) =>
