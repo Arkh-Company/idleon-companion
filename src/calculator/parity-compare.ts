@@ -76,18 +76,16 @@ function sameFormula(
   return b.length === a.length && b.every((x, i) => close(x, a[i] ?? NaN));
 }
 
-/** The app's rows of the mould (spec 009): its pools, its system groups and its groups at 0 and at ×1. */
-const MOULD = new Set<CalcTreeNode["role"]>([
-  "pool",
-  "system",
-  "atZero",
-  "atOne",
-]);
+/** The app's rows of the mould (spec 009): its pools and its system groups. */
+const MOULD = new Set<CalcTreeNode["role"]>(["pool", "system"]);
 const appThrough = (ks: readonly CalcTreeNode[]): CalcTreeNode[] =>
   ks.flatMap((k) =>
     MOULD.has(k.role) && Array.isArray(k.kids) ? appThrough(k.kids) : [k],
   );
-/** The bench's groups at 0 and at ×1 have the app's 008 names (the 008 parity compared them). */
+/**
+ * The bench's groups at 0 and at ×1, at any level, which the app no longer has (spec 009, FR-016); they have the app's
+ * 008 names (the 008 parity compared them).
+ */
 const BENCH_GROUP = /^At (?:0|×1) \(\d+\)$/;
 const benchThrough = (ks: readonly BenchRow[]): BenchRow[] =>
   ks.flatMap((k) =>
@@ -123,11 +121,12 @@ export function compareTrees(
       add("type");
     const ak = Array.isArray(a.kids) ? a.kids : [];
     const bk = b.kids ?? [];
-    // spec 009: the root's ⓘ is its pools' (FR-005), and its rows pair by name and value through the groups
+    // spec 009: the root's ⓘ is its pools' (FR-005); its rows, and a level where the bench has groups at 0 or ×1
+    // (FR-016), pair by name and value through the groups
     const moulded = root && ak.some((k) => MOULD.has(k.role));
     if (!moulded && !sameFormula(a.formula, b.formula)) add("formula");
     if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
-    if (moulded) {
+    if (moulded || bk.some((k) => BENCH_GROUP.test(k.name ?? ""))) {
       const left = appThrough(ak);
       benchThrough(bk).forEach((bi, i) => {
         const j = left.findIndex(
