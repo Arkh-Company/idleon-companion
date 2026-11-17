@@ -1,0 +1,1377 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "IdleOn Companion depois da 009 (molde por sistema)",
+    "output": "specs/009-system-mould/diagramas/local/arquitetura-depois.html",
+    "quality_profile": "showcase",
+    "locale": "pt-BR"
+  },
+  "components": [
+    {
+      "id": "steam",
+      "type": "external",
+      "label": "Steam",
+      "sublabel": "opção de inicialização",
+      "pos": [
+        340,
+        650
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "exe",
+      "type": "backend",
+      "label": "IdleOn Companion.exe",
+      "sublabel": "src/start/ · roleFor",
+      "tag": "um executável",
+      "pos": [
+        940,
+        650
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "njs",
+      "type": "database",
+      "label": "N.js + default.pak",
+      "sublabel": "instalação do jogo",
+      "pos": [
+        40,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "update",
+      "type": "backend",
+      "label": "Vigia de update",
+      "sublabel": "update-watch.ts",
+      "tag": "hash · marcadores",
+      "pos": [
+        340,
+        60
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "keeper",
+      "type": "backend",
+      "label": "Guardião (--keeper)",
+      "sublabel": "keeper.ts · runKeeper",
+      "tag": "publica gameFiles",
+      "pos": [
+        640,
+        60
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "reader",
+      "type": "backend",
+      "label": "Leitor",
+      "sublabel": "reader.ts · a cada 1 s",
+      "pos": [
+        640,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "state-reader",
+      "type": "backend",
+      "label": "Leitor de estado",
+      "sublabel": "state-reader.ts · 250 ms",
+      "tag": "+ peça @actors na lenta",
+      "pos": [
+        340,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "vars-reader",
+      "type": "backend",
+      "label": "vars-reader.ts",
+      "sublabel": "_vars da lista fechada",
+      "tag": "27 chaves",
+      "pos": [
+        940,
+        60
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "game",
+      "type": "external",
+      "label": "Legends of Idleon",
+      "sublabel": "--remote-debugging-pipe",
+      "pos": [
+        40,
+        210
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "game-tables",
+      "type": "backend",
+      "label": "game-tables.ts",
+      "sublabel": "texto do N.js, nunca executa",
+      "tag": "mapas · monstros · itens · classes",
+      "pos": [
+        940,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "link-server",
+      "type": "backend",
+      "label": "Servidor do elo",
+      "sublabel": "último gameFiles ao cliente",
+      "pos": [
+        640,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "readjs",
+      "type": "security",
+      "label": "read.js",
+      "sublabel": "só leitura de propriedades",
+      "tag": "sem mudança na 008",
+      "pos": [
+        940,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "state-slice",
+      "type": "security",
+      "label": "state-slice.js",
+      "sublabel": "uma fatia, até 25 KB",
+      "tag": "+ readActors (@actors)",
+      "pos": [
+        940,
+        210
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "state-list",
+      "type": "security",
+      "label": "state-list.js",
+      "sublabel": "lista as chaves",
+      "tag": "só propriedades",
+      "pos": [
+        340,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "screens",
+      "type": "backend",
+      "label": "src/shared/screens/",
+      "sublabel": "regras com prova",
+      "tag": "identifyScreen · KNOWN_WINDOWS",
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        170,
+        72
+      ]
+    },
+    {
+      "id": "link",
+      "type": "messagebus",
+      "label": "Elo (named pipe)",
+      "sublabel": "reading · state · tables · gameFiles",
+      "tag": "\\\\.\\pipe\\idleon-companion",
+      "pos": [
+        640,
+        650
+      ],
+      "size": [
+        185,
+        64
+      ]
+    },
+    {
+      "id": "catalog",
+      "type": "database",
+      "label": "reading-catalog.md",
+      "sublabel": "src/shared · fonte única",
+      "tag": "+ linha @actors",
+      "pos": [
+        40,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "calculator",
+      "type": "security",
+      "label": "Worker da Stats",
+      "sublabel": "calculator.js · boot.ts · engine.ts",
+      "tag": "1 GB · ignoreActors",
+      "pos": [
+        940,
+        1870
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "game-copy",
+      "type": "database",
+      "label": "Cópia do código do jogo",
+      "sublabel": "contexto node:vm",
+      "tag": "rede só em stubs que lançam",
+      "pos": [
+        940,
+        2020
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tree-catalog",
+      "type": "database",
+      "label": "tree-catalog.ts",
+      "sublabel": "number-catalog.json · 716 ids",
+      "tag": "src/shared · isCatalogId",
+      "pos": [
+        40,
+        650
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tree-worker",
+      "type": "security",
+      "label": "Worker de árvores",
+      "sublabel": "tree-engine.ts · tree-roots.ts",
+      "tag": "2 GB · tree · values · shape",
+      "pos": [
+        340,
+        1870
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tree-build",
+      "type": "backend",
+      "label": "tree-build.ts · tree/ · inactive.ts",
+      "sublabel": "pools do jogo e sistemas, achatado",
+      "tag": "pools.ts · systems.ts · flatten.ts",
+      "pos": [
+        40,
+        1870
+      ],
+      "size": [
+        225,
+        64
+      ]
+    },
+    {
+      "id": "tree-copy",
+      "type": "database",
+      "label": "Cópia instrumentada",
+      "sublabel": "node:vm · recorder.js · recorder-pass.js",
+      "tag": "só em memória",
+      "pos": [
+        640,
+        1870
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "instrument",
+      "type": "backend",
+      "label": "instrument.ts",
+      "sublabel": "acorn, no N.js original",
+      "tag": "_customBlock_ → __X",
+      "pos": [
+        340,
+        2020
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "game-names",
+      "type": "backend",
+      "label": "game-names.ts · names-reader.js",
+      "sublabel": "nomes das tabelas do jogo instalado",
+      "tag": "hash por tabela · names-*.json",
+      "pos": [
+        40,
+        2020
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "context",
+      "type": "backend",
+      "label": "context.ts",
+      "sublabel": "GameContext · panelOf",
+      "pos": [
+        640,
+        800
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "link-client",
+      "type": "backend",
+      "label": "Cliente do elo",
+      "sublabel": "link-client.ts · link-routes.ts",
+      "pos": [
+        340,
+        800
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "state-store",
+      "type": "backend",
+      "label": "state-store.ts",
+      "sublabel": "mosaico: attrs · vars · actors",
+      "tag": "sentinela · changedSinceCalc",
+      "pos": [
+        40,
+        1100
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "calculator-host",
+      "type": "backend",
+      "label": "calculator-host.ts",
+      "sublabel": "worker, limites, reinício",
+      "tag": "resultado + mosaico",
+      "pos": [
+        340,
+        1250
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "stats",
+      "type": "backend",
+      "label": "stats-pipeline.ts · stats.ts",
+      "sublabel": "formato, confere StatList",
+      "tag": "pair() · última leitura",
+      "pos": [
+        40,
+        1250
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "formula-pipeline",
+      "type": "backend",
+      "label": "formula-pipeline.ts",
+      "sublabel": "pedido, paridade, expand",
+      "tag": "Game changed · marca",
+      "pos": [
+        40,
+        1400
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tree-host",
+      "type": "backend",
+      "label": "tree-host.ts",
+      "sublabel": "createTreeHost",
+      "tag": "vida longa · 1 em voo",
+      "pos": [
+        40,
+        1550
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "saved-files",
+      "type": "backend",
+      "label": "saved-files.ts",
+      "sublabel": "marks · pins · tree-shapes",
+      "tag": "JSON em userData · .bad",
+      "pos": [
+        640,
+        1550
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "version-band",
+      "type": "backend",
+      "label": "version-band.ts",
+      "sublabel": "sha256 do N.js no main",
+      "tag": "RULES_GAME_SHA",
+      "pos": [
+        640,
+        1400
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "game-files",
+      "type": "backend",
+      "label": "game-files.ts",
+      "sublabel": "fs do Electron, entende asar",
+      "pos": [
+        40,
+        800
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "farm",
+      "type": "backend",
+      "label": "farm.ts",
+      "sublabel": "XP, gold e itens por hora",
+      "tag": "farm:update · só memória",
+      "pos": [
+        640,
+        1700
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "app-main",
+      "type": "backend",
+      "label": "App (processo principal)",
+      "sublabel": "src/main/index.ts",
+      "tag": "view:get · view:set",
+      "pos": [
+        340,
+        950
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "pipelines",
+      "type": "backend",
+      "label": "pipelines.ts",
+      "sublabel": "junta Stats e árvores",
+      "tag": "payloads.ts valida cada canal",
+      "pos": [
+        340,
+        1100
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tree-check",
+      "type": "security",
+      "label": "tree-check.ts",
+      "sublabel": "forma, teto de nós, só átomos",
+      "tag": "aceita pool e system",
+      "pos": [
+        340,
+        1400
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "live-values",
+      "type": "backend",
+      "label": "live-values.ts",
+      "sublabel": "só o que está à vista",
+      "tag": "formula:liveValues",
+      "pos": [
+        640,
+        1250
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "feeds-index",
+      "type": "backend",
+      "label": "feeds-index.ts",
+      "sublabel": "varre as formas em segundo plano",
+      "tag": "feeds:list",
+      "pos": [
+        40,
+        1700
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "radar",
+      "type": "backend",
+      "label": "radar.ts",
+      "sublabel": "compara formas por versão",
+      "tag": "radar:update",
+      "pos": [
+        340,
+        1550
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "characters",
+      "type": "backend",
+      "label": "characters.ts",
+      "sublabel": "lista para o seletor",
+      "tag": "formula:characters · nome só na tela",
+      "pos": [
+        640,
+        950
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "side-panel-main",
+      "type": "backend",
+      "label": "side-panel.ts",
+      "sublabel": "alarga a janela",
+      "tag": "window:sidePanel",
+      "pos": [
+        640,
+        1100
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "preload",
+      "type": "frontend",
+      "label": "Preload",
+      "sublabel": "api.ts · window.companion",
+      "pos": [
+        940,
+        800
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "window",
+      "type": "frontend",
+      "label": "Janela (React)",
+      "sublabel": "App.tsx",
+      "tag": "abas: Screen map · Stats · Formulas · Panel",
+      "pos": [
+        940,
+        1400
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "strips",
+      "type": "frontend",
+      "label": "Faixas",
+      "sublabel": "PatchBand · PinStrip · FarmStrip",
+      "tag": "sob a barra de status",
+      "pos": [
+        940,
+        1550
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "stats-panel",
+      "type": "frontend",
+      "label": "Aba Stats",
+      "sublabel": "StatsPanel.tsx",
+      "tag": "valor vira botão",
+      "pos": [
+        940,
+        1700
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "side-panel",
+      "type": "frontend",
+      "label": "Painel lateral",
+      "sublabel": "SidePanel · FormulaTree · MarkBar",
+      "tag": "Changes (setas) · fatia num botão",
+      "pos": [
+        940,
+        1250
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "formulas-tab",
+      "type": "frontend",
+      "label": "Aba Formulas",
+      "sublabel": "FormulasTab.tsx",
+      "tag": "grupos na ordem do jogo",
+      "pos": [
+        940,
+        950
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "system-panels",
+      "type": "frontend",
+      "label": "Painéis por sistema",
+      "sublabel": "SystemPanel · modules/system-panels.ts",
+      "tag": "CompanionModule.matches",
+      "pos": [
+        940,
+        1100
+      ],
+      "size": [
+        195,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Guardião: src/keeper/",
+      "wraps": [
+        "update",
+        "keeper",
+        "reader",
+        "state-reader",
+        "vars-reader",
+        "game-tables",
+        "link-server",
+        "readjs",
+        "state-slice",
+        "state-list"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Worker da Stats, sem rede",
+      "wraps": [
+        "calculator",
+        "game-copy"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Worker de árvores, sem rede",
+      "wraps": [
+        "tree-worker",
+        "tree-build",
+        "tree-copy",
+        "instrument",
+        "game-names"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "App Electron",
+      "wraps": [
+        "context",
+        "link-client",
+        "state-store",
+        "calculator-host",
+        "stats",
+        "formula-pipeline",
+        "tree-host",
+        "saved-files",
+        "version-band",
+        "game-files",
+        "farm",
+        "app-main",
+        "pipelines",
+        "tree-check",
+        "live-values",
+        "feeds-index",
+        "radar",
+        "characters",
+        "side-panel-main",
+        "preload",
+        "window",
+        "strips",
+        "stats-panel",
+        "side-panel",
+        "formulas-tab",
+        "system-panels"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Sandbox da janela",
+      "wraps": [
+        "preload",
+        "window",
+        "strips",
+        "stats-panel",
+        "side-panel",
+        "formulas-tab",
+        "system-panels"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "steam-runs-exe",
+      "from": "steam",
+      "to": "exe",
+      "label": "--keeper %command%",
+      "variant": "emphasis"
+    },
+    {
+      "id": "exe-runs-keeper",
+      "from": "exe",
+      "to": "keeper",
+      "label": "--keeper",
+      "variant": "emphasis"
+    },
+    {
+      "id": "keeper-checks",
+      "from": "keeper",
+      "to": "update",
+      "label": "antes de lançar"
+    },
+    {
+      "id": "update-reads",
+      "from": "update",
+      "to": "njs",
+      "label": "lê como texto"
+    },
+    {
+      "id": "keeper-tables",
+      "from": "keeper",
+      "to": "game-tables",
+      "label": "mesmo texto"
+    },
+    {
+      "id": "tables-screens",
+      "from": "game-tables",
+      "to": "screens",
+      "label": "KNOWN_WINDOWS"
+    },
+    {
+      "id": "keeper-launches",
+      "from": "keeper",
+      "to": "game",
+      "label": "lança com o pipe"
+    },
+    {
+      "id": "keeper-reader",
+      "from": "keeper",
+      "to": "reader",
+      "label": "inicia"
+    },
+    {
+      "id": "reader-readjs",
+      "from": "reader",
+      "to": "readjs",
+      "label": "texto"
+    },
+    {
+      "id": "reader-game",
+      "from": "reader",
+      "to": "game",
+      "label": "CDP · 1 s"
+    },
+    {
+      "id": "reader-state",
+      "from": "reader",
+      "to": "state-reader",
+      "label": "inicia · ref. do motor",
+      "variant": "emphasis"
+    },
+    {
+      "id": "state-game",
+      "from": "state-reader",
+      "to": "game",
+      "label": "CDP · 12 por segundo",
+      "variant": "emphasis"
+    },
+    {
+      "id": "state-slice-text",
+      "from": "state-reader",
+      "to": "state-slice",
+      "label": "texto da fatia · @actors"
+    },
+    {
+      "id": "state-list-text",
+      "from": "state-reader",
+      "to": "state-list",
+      "label": "lista as chaves"
+    },
+    {
+      "id": "state-vars",
+      "from": "state-reader",
+      "to": "vars-reader",
+      "label": "a cada ciclo"
+    },
+    {
+      "id": "vars-game",
+      "from": "vars-reader",
+      "to": "game",
+      "label": "CDP · só a lista"
+    },
+    {
+      "id": "state-publish",
+      "from": "state-reader",
+      "to": "link-server",
+      "label": "state",
+      "variant": "emphasis"
+    },
+    {
+      "id": "keeper-publishes",
+      "from": "keeper",
+      "to": "link-server",
+      "label": "tables · gameFiles"
+    },
+    {
+      "id": "server-link",
+      "from": "link-server",
+      "to": "link",
+      "label": "JSON por linha",
+      "variant": "emphasis"
+    },
+    {
+      "id": "link-to-client",
+      "from": "link",
+      "to": "link-client",
+      "label": "mensagens",
+      "variant": "emphasis"
+    },
+    {
+      "id": "client-app",
+      "from": "link-client",
+      "to": "app-main",
+      "label": "routeLink",
+      "variant": "emphasis"
+    },
+    {
+      "id": "app-context",
+      "from": "app-main",
+      "to": "context",
+      "label": "toContext · panelOf"
+    },
+    {
+      "id": "context-screens",
+      "from": "context",
+      "to": "screens",
+      "label": "identifyScreen"
+    },
+    {
+      "id": "context-catalog",
+      "from": "context",
+      "to": "tree-catalog",
+      "label": "panelSystems"
+    },
+    {
+      "id": "app-files",
+      "from": "app-main",
+      "to": "game-files",
+      "label": "readGameFiles"
+    },
+    {
+      "id": "files-read",
+      "from": "game-files",
+      "to": "njs",
+      "label": "lê N.js e default.pak"
+    },
+    {
+      "id": "client-farm",
+      "from": "link-client",
+      "to": "farm",
+      "label": "fatias · mapa · itens",
+      "toSide": "left"
+    },
+    {
+      "id": "client-characters",
+      "from": "link-client",
+      "to": "characters",
+      "label": "tables: classes"
+    },
+    {
+      "id": "app-pipelines",
+      "from": "app-main",
+      "to": "pipelines",
+      "label": "startPipelines · handlers",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pipelines-stats",
+      "from": "pipelines",
+      "to": "stats",
+      "label": "onPair",
+      "fromSide": "top"
+    },
+    {
+      "id": "stats-store",
+      "from": "stats",
+      "to": "state-store",
+      "label": "fatias",
+      "variant": "emphasis"
+    },
+    {
+      "id": "store-host",
+      "from": "state-store",
+      "to": "calculator-host",
+      "label": "peça rápida ou @actors mudou",
+      "variant": "emphasis",
+      "fromSide": "right"
+    },
+    {
+      "id": "host-worker",
+      "from": "calculator-host",
+      "to": "calculator",
+      "label": "init · calc",
+      "variant": "emphasis"
+    },
+    {
+      "id": "worker-host",
+      "from": "calculator",
+      "to": "calculator-host",
+      "label": "result"
+    },
+    {
+      "id": "worker-copy",
+      "from": "calculator",
+      "to": "game-copy",
+      "label": "roda sobre o mosaico"
+    },
+    {
+      "id": "host-stats",
+      "from": "calculator-host",
+      "to": "stats",
+      "label": "números + mosaico",
+      "variant": "emphasis"
+    },
+    {
+      "id": "stats-tab",
+      "from": "stats",
+      "to": "stats-panel",
+      "label": "stats:update",
+      "variant": "emphasis",
+      "toSide": "bottom"
+    },
+    {
+      "id": "stats-formula",
+      "from": "stats",
+      "to": "formula-pipeline",
+      "label": "par mosaico × Stats",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pipelines-characters",
+      "from": "pipelines",
+      "to": "characters",
+      "label": "mosaico do par",
+      "fromSide": "right"
+    },
+    {
+      "id": "formula-host",
+      "from": "formula-pipeline",
+      "to": "tree-host",
+      "label": "number · expand",
+      "variant": "emphasis"
+    },
+    {
+      "id": "host-tree-worker",
+      "from": "tree-host",
+      "to": "tree-worker",
+      "label": "init tree · tree · values · shape",
+      "variant": "emphasis"
+    },
+    {
+      "id": "tree-worker-host",
+      "from": "tree-worker",
+      "to": "tree-host",
+      "label": "treeResult · valuesResult · shapeResult"
+    },
+    {
+      "id": "tree-worker-build",
+      "from": "tree-worker",
+      "to": "tree-build",
+      "label": "monta"
+    },
+    {
+      "id": "tree-worker-copy",
+      "from": "tree-worker",
+      "to": "tree-copy",
+      "label": "grava"
+    },
+    {
+      "id": "instrument-copy",
+      "from": "instrument",
+      "to": "tree-copy",
+      "label": "__X"
+    },
+    {
+      "id": "names-copy",
+      "from": "game-names",
+      "to": "tree-copy",
+      "label": "lê tabelas como JSON"
+    },
+    {
+      "id": "names-build",
+      "from": "game-names",
+      "to": "tree-build",
+      "label": "nomes conferidos por hash"
+    },
+    {
+      "id": "host-version",
+      "from": "tree-host",
+      "to": "version-band",
+      "label": "bytes do N.js → sha",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "formula-check",
+      "from": "formula-pipeline",
+      "to": "tree-check",
+      "label": "checkTree",
+      "variant": "emphasis"
+    },
+    {
+      "id": "formula-live",
+      "from": "formula-pipeline",
+      "to": "live-values",
+      "label": "à vista + pins + árvore aberta",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "live-host",
+      "from": "live-values",
+      "to": "tree-host",
+      "label": "values"
+    },
+    {
+      "id": "formula-feeds",
+      "from": "formula-pipeline",
+      "to": "feeds-index",
+      "label": "mosaico · sha · count",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "feeds-host",
+      "from": "feeds-index",
+      "to": "tree-host",
+      "label": "shape, uma por vez"
+    },
+    {
+      "id": "feeds-saved",
+      "from": "feeds-index",
+      "to": "saved-files",
+      "label": "tree-shapes.json"
+    },
+    {
+      "id": "feeds-radar",
+      "from": "feeds-index",
+      "to": "radar",
+      "label": "patched · shaped · done"
+    },
+    {
+      "id": "radar-saved",
+      "from": "radar",
+      "to": "saved-files",
+      "label": "patch aberto · dismissed",
+      "toSide": "top"
+    },
+    {
+      "id": "formula-catalog",
+      "from": "pipelines",
+      "to": "tree-catalog",
+      "label": "isCatalogId (payloads.ts)"
+    },
+    {
+      "id": "app-preload",
+      "from": "app-main",
+      "to": "preload",
+      "label": "context:update · panel:update"
+    },
+    {
+      "id": "preload-window",
+      "from": "preload",
+      "to": "window",
+      "label": "contextBridge"
+    },
+    {
+      "id": "window-tab",
+      "from": "window",
+      "to": "stats-panel",
+      "label": "aba Stats"
+    },
+    {
+      "id": "window-panels",
+      "from": "window",
+      "to": "system-panels",
+      "label": "panel:update troca a aba"
+    },
+    {
+      "id": "formula-side",
+      "from": "formula-pipeline",
+      "to": "side-panel",
+      "label": "formula:update",
+      "variant": "emphasis"
+    },
+    {
+      "id": "side-formula",
+      "from": "side-panel",
+      "to": "pipelines",
+      "label": "formula:request · close · feeds:list",
+      "fromSide": "top"
+    },
+    {
+      "id": "side-marks",
+      "from": "side-panel",
+      "to": "saved-files",
+      "label": "marks:list · save · clear"
+    },
+    {
+      "id": "characters-side",
+      "from": "characters",
+      "to": "side-panel",
+      "label": "formula:characters"
+    },
+    {
+      "id": "live-tab",
+      "from": "live-values",
+      "to": "formulas-tab",
+      "label": "formula:liveValues"
+    },
+    {
+      "id": "tab-values",
+      "from": "formulas-tab",
+      "to": "pipelines",
+      "label": "formula:values"
+    },
+    {
+      "id": "panels-values",
+      "from": "system-panels",
+      "to": "pipelines",
+      "label": "formula:values"
+    },
+    {
+      "id": "strips-pins",
+      "from": "strips",
+      "to": "saved-files",
+      "label": "pins:get · pins:set"
+    },
+    {
+      "id": "farm-strips",
+      "from": "farm",
+      "to": "strips",
+      "label": "farm:update"
+    },
+    {
+      "id": "radar-strips",
+      "from": "radar",
+      "to": "strips",
+      "label": "radar:update · radar:dismiss"
+    },
+    {
+      "id": "window-sidepanel",
+      "from": "window",
+      "to": "side-panel-main",
+      "label": "window:sidePanel",
+      "toSide": "right"
+    },
+    {
+      "id": "catalog-reader",
+      "from": "catalog",
+      "to": "state-reader",
+      "label": "o que vai na rápida"
+    },
+    {
+      "id": "catalog-store",
+      "from": "catalog",
+      "to": "state-store",
+      "label": "peças da rápida"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Dois workers, um calculator.js",
+      "items": [
+        "A Stats no worker de 1 GB, sem os campos de ator; as árvores no de 2 GB, com tree, values e shape",
+        "Um trabalho por vez no worker de árvores: árvore antes de valores, valores antes de forma",
+        "Falha ou prazo: só aquele pedido fica unavailable; a Stats não é tocada",
+        "009: o primeiro nível são os pools do jogo (Additive e Multi), com os sistemas dentro"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Gravação e nomes só em memória",
+      "items": [
+        "instrument.ts reescreve com __X; recorder.js grava dentro do node:vm",
+        "Os nomes de tabela são lidos do jogo instalado e conferidos por hash; o repositório leva só receitas e nomes provados",
+        "tree-check.ts confere forma, tamanho e textos antes da janela"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Ao vivo só o que está à vista",
+      "items": [
+        "formula:values traz o painel e o grupo abertos; o main soma os pins e a árvore aberta",
+        "feeds-index varre as formas em segundo plano e alimenta a bolinha e o radar"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Arquivos salvos e leitura",
+      "items": [
+        "marks.json, pins.json e tree-shapes.json em userData, por .tmp, com .bad quando ilegíveis",
+        "Só o state-slice.js ganhou a leitura de atores (@actors); read.js não mudou",
+        "O farm mede das fatias, só em memória"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Janela",
+      "items": [
+        "side-panel.ts alarga para 840 px, para o lado com espaço",
+        "As faixas do radar, do Pin e do farm ficam no App, em todas as abas",
+        "Os painéis por sistema usam o CompanionModule e trocam com panel:update",
+        "Sem o resumo de duas linhas; o botão Changes mostra setas ao vivo e a fatia fica num botão"
+      ]
+    }
+  ]
+}
