@@ -45,15 +45,15 @@ O Vinicius quer que o jogador veja **de onde vem o número, por sistema** (Alche
 
 ### User Story 1 - De onde vem o meu Drop Rate, por sistema (Priority: P1)
 
-O jogador abre o Drop Rate na Stats. Logo no topo da árvore, em vez de uma cadeia de passos sem nome, ele vê os grupos da V1: os pools da conta (LUK Scaling, Additive Pool, Total Sum, Post-Processing) e, dentro deles, um grupo por sistema com emoji ("🃏 Cards", "⚗️ Alchemy", "🐾 Companions"...), cada um com o seu valor. Abrindo um grupo, vê as fontes daquele sistema; abrindo uma fonte, vê a conta dela como hoje.
+O jogador abre o Drop Rate na Stats. Logo no topo da árvore, em vez de uma cadeia de passos sem nome, ele vê os pools do jogo na ordem da conta (FR-005: "Additive pool 1", "Multi pool 1", "Additive pool 2", "Multi pool 2"…) e, dentro deles, um grupo por sistema com emoji ("🃏 Cards", "⚗️ Alchemy", "🐾 Companions"...), cada um com o seu valor. Abrindo um grupo, vê as fontes daquele sistema; abrindo uma fonte, vê a conta dela como hoje.
 
 **Why this priority**: É a árvore mais aberta e a que mostrou o problema; a V1 da bancada é a referência que o Vinicius aprovou.
 
-**Independent Test**: Com o retrato do personagem 9 sobre o jogo instalado, a árvore do Drop Rate tem no primeiro nível os mesmos pools e grupos da página V1 da bancada, na mesma ordem e com os mesmos valores, e nenhuma linha `no name yet` de passo de conta.
+**Independent Test**: Com o retrato do personagem 9 sobre o jogo instalado, a árvore do Drop Rate tem no primeiro nível os pools da corrente do jogo (FR-005), cada pool fecha com o valor do jogo, as fontes são as mesmas da bancada, e nenhuma linha `no name yet` de passo de conta.
 
 **Acceptance Scenarios**:
 
-1. **Given** o Drop Rate aberto, **When** a árvore aparece, **Then** o jogador vê no primeiro nível os pools da V1, fechados, e dentro deles os grupos por sistema na ordem da V1, cada um com o seu valor.
+1. **Given** o Drop Rate aberto, **When** a árvore aparece, **Then** o jogador vê no primeiro nível os pools da corrente do jogo, fechados, e dentro deles os grupos por sistema na ordem da V1, cada um com o seu valor.
 2. **Given** um grupo de sistema, **When** o jogador o abre, **Then** as fontes daquele sistema aparecem na ordem do jogo, e a soma (ou o produto) delas dá o valor do grupo.
 3. **Given** um grupo com uma única fonte de mesmo valor, **When** a árvore aparece, **Then** só a fonte aparece, sem o grupo em volta (regra "Friends" da V1).
 4. **Given** o worker não consegue montar a árvore do Drop Rate, **When** o jogador a abre, **Then** ele vê "unavailable" como na 008, e nunca uma árvore parcial com pools vazios.
@@ -70,7 +70,7 @@ O jogador abre qualquer número do catálogo, como o HP máximo, um número de S
 
 **Acceptance Scenarios**:
 
-1. **Given** uma árvore cuja raiz só multiplica fontes, **When** ela aparece, **Then** cada fator do jogo é um pool ("Multi pool N" quando multiplica tudo, "Additive pool" quando soma bônus antes), com os sistemas dentro (FR-005).
+1. **Given** uma árvore cuja raiz só multiplica fontes, **When** ela aparece, **Then** os multiplicadores soltos ficam juntos num Multi pool, e cada multiplicador que soma bônus dentro fica no seu próprio Multi pool, com os sistemas dentro (FR-005).
 2. **Given** uma árvore cuja raiz soma e depois multiplica, **When** ela aparece, **Then** o topo tem um Additive pool e um Multi pool na ordem da conta, o ⓘ da raiz diz "Additive pool × Multi pool", e os grupos por sistema ficam dentro de cada pool.
 3. **Given** uma fonte cujo sistema o app não conhece, **When** a árvore aparece, **Then** ela fica no grupo "🔹 Other", no fim.
 4. **Given** uma raiz cuja conta a regra dos pools não consegue ler (por exemplo, um `max` ou uma condição no topo), **When** a árvore aparece, **Then** o jogador vê as fontes direto no primeiro nível, agrupadas por sistema, sem pool inventado e sem árvore vazia. Num `max` ou `min` no topo, cada grupo faz a mesma conta da raiz sobre as suas fontes (o maior, ou o menor, de dentro), e a raiz é essa conta sobre os grupos, então o valor fecha até o pai.
@@ -113,12 +113,12 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 - **FR-002**: Cada grupo de sistema MUST levar o nome do sistema com o seu emoji (por exemplo, "⚗️ Alchemy") e o seu valor (a fatia só aparece com o botão da FR-014), e a soma ou o produto das fontes de dentro MUST dar o valor do grupo. O valor do grupo MUST sair no mesmo formato das partes da 008 ("×1.06" para o que multiplica, "+80%" para o que soma). O leitor de tela MUST anunciar a linha de um pool ou grupo com o nome, o valor, a fatia quando ela está ligada e "N sources", como as linhas da treeview da 008.
 - **FR-003**: O sistema de uma fonte MUST vir de uma regra com prova por referência (o bloco do jogo que a fonte chama ou o que escreve o cache que ela lê). Uma fonte sem regra MUST ir para "🔹 Other". Uma fonte nunca vai para um sistema por palpite.
 - **FR-004**: Os grupos MUST seguir a ordem da V1 da bancada. Os sistemas fora da V1 vêm depois, na ordem em que aparecem na conta, e "Other" por último. Um grupo de sistema que soma 0 ou multiplica ×1 MUST ficar no lugar dele nessa ordem, com o valor 0 ou ×1, e não vai para "At 0"/"At ×1". Dentro de um grupo, MUST valer a ordem do jogo (FR-016).
-- **FR-005**: O primeiro nível de toda árvore MUST ser os pools do próprio jogo, na ordem em que o jogo calcula, com os grupos por sistema dentro de cada pool. Um pool cujos bônus o jogo soma antes de a soma entrar na conta MUST se chamar "Additive pool"; um pool que multiplica tudo MUST se chamar "Multi pool"; com mais de um do mesmo tipo, eles levam um número na ordem da conta ("Multi pool 1", "Multi pool 2"). O ⓘ da raiz MUST mostrar como os pools se juntam (por exemplo, "Additive pool × Multi pool 1 × Multi pool 2"). Vale também quando a raiz só soma ou só multiplica. No Drop Rate, os pools MUST ser os da V1 (LUK Scaling, Additive Pool, Total Sum, Post-Processing). Um fator do jogo que soma bônus de dois sistemas antes de multiplicar é um Additive pool com os dois sistemas dentro. O nome nunca usa código do jogo.
+- **FR-005**: O primeiro nível de toda árvore MUST ser os pools do próprio jogo, na ordem em que o jogo calcula, com os grupos por sistema dentro de cada pool. Um pool cujos bônus o jogo soma antes de a soma entrar na conta MUST se chamar "Additive pool"; um pool que multiplica tudo MUST se chamar "Multi pool"; com mais de um do mesmo tipo, eles levam um número na ordem da conta ("Multi pool 1", "Multi pool 2"). O ⓘ da raiz MUST mostrar como os pools se juntam (por exemplo, "Additive pool × Multi pool 1 × Multi pool 2"). Vale também quando a raiz só soma ou só multiplica. Os pools MUST seguir a corrente de passos do jogo (regra Y, decisão do Vinicius, 17/11, durante a implementação): somas seguidas formam um Additive pool; multiplicadores soltos seguidos (cada bônus multiplica sozinho, a ordem não muda nada) se juntam num único Multi pool, agrupado por sistema; um multiplicador que soma bônus dentro antes de multiplicar, como ×(1 + (a + b) ÷ 100), MUST ser o seu próprio Multi pool, com os bônus somados dentro, porque ali eles se diluem; cada troca de + para × abre um pool novo. Uma fórmula de um passo só é o caso mais simples da mesma regra. Toda árvore segue esta regra, o Drop Rate também; nenhuma usa molde feito à mão. O nome nunca usa código do jogo.
 - **FR-006**: Um grupo com uma única fonte de mesmo valor MUST mostrar só a fonte.
 - **FR-007**: Em qualquer nível, um galho de conta sem nome provado (sem código do jogo e sem nome provado) MUST NOT virar linha: as partes dele sobem para a linha de cima, e o ⓘ dessa linha MUST mostrar a conta inteira e fechar com os números das partes. Um nome só por forma (como "Multiplier" ou "Fixed +2") não segura a linha.
 - **FR-008**: Cada nível MUST somar (ou multiplicar) até o pai, como na 008. Nenhuma fonte e nenhum valor MUST sumir da tela por causa do molde.
 - **FR-009**: As chaves de peça e de número que os Pins, as marcas, o radar de patch e "Where this goes" usam MUST continuar as mesmas da 008.
-- **FR-010**: A árvore do Drop Rate MUST sair igual à V1 da bancada sobre o mesmo retrato: os mesmos pools, os mesmos grupos na mesma ordem e com os mesmos valores, e as mesmas fontes em cada grupo. A comparação MUST ser um teste rodado pela receita de paridade da 008, fora da CI.
+- **FR-010**: A árvore do Drop Rate MUST ter as mesmas fontes da bancada, com os mesmos valores, conferidas pela paridade da 008 (receita `just parity`, fora da CI), que atravessa os pools e os grupos. A estrutura de pools da V1 (LUK Scaling, Total Sum, Post-Processing) não é mais a referência (decisão do Vinicius, 17/11, durante a implementação).
 - **FR-011**: Os grupos e os pools MUST seguir as regras de honestidade e de texto da 008: nenhum código do jogo no nome (FR-012a), nenhum nome de personagem, só átomos na saída do worker (FR-010) e a conferência do main antes da janela (FR-010b).
 - **FR-012**: Quando a árvore abre, todos os pools e grupos de sistema MUST começar fechados; o jogador abre cada um.
 - **FR-013**: A árvore MUST ter um botão "Changes", desligado por padrão. Ligado, cada linha (pool, grupo, fonte e partes) MUST mostrar uma seta com quanto o valor mudou: verde para cima e vermelha para baixo; numa linha "+%", a diferença em pontos ("▲ +10%"); numa linha "×", a diferença no multiplicador ("▲ +0.12"). O jogador escolhe contra o que comparar: "live", que guarda a árvore como estava no clique e compara a partir dali, ou uma marca gravada ("Mark before" da 008). A escolha da marca MUST NOT ficar salva: ao abrir o app, o Changes ligado começa em "live". Desligado, nenhuma marca de mudança aparece. Isso substitui, na árvore, o "was …" depois do Refresh, a linha que acende com "Game changed" e o "mark …" escrito da 008. Quando uma fonte de dentro não pôde ser calculada, o grupo MUST ficar "unavailable" e o resto da árvore segue, como na 008.
@@ -145,7 +145,7 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 
 ### Key Entities
 
-- **Pool:** uma etapa da conta do jogo: um Additive pool (soma os bônus antes) ou um Multi pool (multiplica tudo), na ordem da conta. Tem um nome (os da V1 no Drop Rate; nas outras árvores, "Additive pool"/"Multi pool N", FR-005), um valor, uma fatia e os grupos de sistema dentro.
+- **Pool:** uma etapa da conta do jogo: um Additive pool (soma os bônus antes) ou um Multi pool (multiplica tudo), na ordem da conta. Tem um nome ("Additive pool"/"Multi pool", com número na ordem da conta quando há mais de um do mesmo tipo, FR-005), um valor, uma fatia e os grupos de sistema dentro.
 - **Grupo de sistema:** um sistema do jogo, com emoji e nome, dentro da raiz ou de um pool. Tem um valor (a soma ou o produto das suas fontes), uma fatia e as fontes.
 - **Regra de sistema:** liga um bloco do jogo, ou uma leitura, a um sistema, com prova por referência.
 
@@ -154,7 +154,7 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 ### Measurable Outcomes
 
 - **SC-001**: Medido no jogo instalado, nas 716 árvores do catálogo, 0 linhas de galho de conta mostram `no name yet` (hoje são 1.625).
-- **SC-002**: O Drop Rate sobre o retrato do personagem 9 tem 0 diferenças com a V1 da bancada em pools, grupos, ordem, valores e fontes por grupo.
+- **SC-002**: O Drop Rate sobre o retrato do personagem 9 tem 0 diferenças com a bancada na paridade da 008 (fontes e valores), e cada pool da corrente fecha com o valor do jogo.
 - **SC-003**: Nas 716 árvores, cada nível soma (ou multiplica) até o pai, com 0 exceções, e nenhuma fonte some.
 - **SC-004**: Em 5 segundos, um jogador que nunca viu o app diz qual sistema mais pesa no Drop Rate dele, pelo primeiro nível da árvore. É o teste dos 5 segundos da 008, repetido.
 
@@ -197,7 +197,7 @@ A verificação da 009 termina quando todas estas condições valem:
 - **Nomes novos para leituras soltas:** continuam como trabalho separado, que não é desta spec.
 - **Números da Stats:** nada muda neles.
 - **ⓘ com caminho do jogo:** a regra da FR-012a da 008 continua. Quando uma parte não tem nome, o ⓘ mostra o caminho do jogo.
-- **Molde feito à mão por árvore:** só o Drop Rate segue a V1 exatamente. As outras árvores seguem a regra geral.
+- **Molde feito à mão por árvore:** nenhuma árvore tem molde à mão; o Drop Rate segue a regra geral da corrente (FR-005), como as outras.
 
 ## Open Questions *(mandatory)*
 
@@ -229,3 +229,4 @@ A verificação da 009 termina quando todas estas condições valem:
 | Numa raiz com max ou min no topo, as fontes ficam soltas ou agrupadas? | resolved | durante a implementação: agrupadas por sistema; o grupo faz a mesma conta da raiz sobre as suas fontes (combine "max" ou "min"), e a raiz é essa conta sobre os grupos. Uma condição no topo espera a medida da sonda da T022 (Vinicius, 17/11) |
 | Um fator ×1 do produto vira o seu próprio Multi pool ou vai para "At ×1"? | resolved | durante a implementação: cada um fica no lugar, na ordem da conta, com o valor ×1, como os grupos neutros (Vinicius, 17/11) |
 | Os grupos "At 0", "At ×1" e "Small" e o botão "Show all" da 008 continuam dentro das fontes? | resolved | durante a implementação: não, saem de todos os níveis; toda parte aparece no seu lugar, na ordem da conta (Vinicius, 17/11) (FR-016) |
+| Os pools do Drop Rate seguem a V1 (LUK Scaling, Total Sum, Post-Processing) ou a regra geral? | resolved | durante a implementação: a regra geral, que passa a seguir a corrente de passos (regra Y): somas seguidas = Additive pool; multiplicadores soltos seguidos = um Multi pool; multiplicador que soma bônus dentro = Multi pool próprio. Vale para toda árvore; a estrutura da V1 sai (Vinicius, 17/11) (FR-005, FR-010, SC-002) |
