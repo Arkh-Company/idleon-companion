@@ -25,7 +25,8 @@ export const MAX_TREE_NODES = 20_000;
 /** A structured log entry: a label and a catalog id, never a value of the math or a name (FR-019, FR-010a). */
 export type FormulaLog =
   | { event: "treeDiverged"; label: string; id: string }
-  | { event: "treeRejected"; id: string };
+  | { event: "treeRejected"; id: string }
+  | { event: "treeFailed"; id: string };
 
 /** The tree to show for the worker's answer `raw` to `asked`, with the log entry of a refusal or a divergence. */
 export function treeAnswer(

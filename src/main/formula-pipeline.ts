@@ -263,6 +263,8 @@ export function startFormulaPipeline(deps: {
       if (asked?.seq !== id) return;
       const { request } = asked;
       asked = null;
+      // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
+      deps.log({ event: "treeFailed", id: request.id });
       show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
