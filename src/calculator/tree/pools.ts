@@ -8,6 +8,8 @@ import { fx3 } from "./curves.ts";
 import { flat, topOp } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
+import { aboveRenames } from "./above-renames.ts";
+import type { Above } from "./above-renames.ts";
 import { finish } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -222,33 +224,47 @@ export function poolsFormula(
   );
 }
 
-/** A step of the root's chain: its operation, and its terms but the running total it takes. */
+/**
+ * A step of the root's chain: its operation, its terms but the running total it takes, and the working values its rows
+ * were read back from (the caches above them in the 008).
+ */
 interface Link {
   at: number;
   op: "*" | "+";
   terms: Expr[];
+  up: Above[];
 }
+/** Whether a read of a step is a working value the root's own call wrote (its cache's writer is the root). */
+export type OwnCache = (e: Expr, at: number) => boolean;
 /**
- * The root's chain of steps, first to last, from the step that gives `value`: each step takes the total of the step
- * before it as a value with no source, back to the first, which takes none. A working value the game wrote and reads
- * back is a cache: it stays a term, which opens into what its writer computed, as in the 008. Null for a root of one
- * step.
+ * The root's chain of steps, first to last, from the step that gives `value`: each step takes the total of an earlier
+ * one, back to the first, which takes none. The total comes as a value with no source or as a working value the root's
+ * own call wrote and reads back: the recording tells the two apart, not the game (tree/steps.ts). Null for a root of one
+ * step; "open" for a chain a step of which neither adds nor multiplies.
  */
-function chainOf(steps: readonly Step[], value: number): Link[] | null {
+function chainOf(
+  steps: readonly Step[],
+  value: number,
+  ownCache: OwnCache,
+): Link[] | "open" | null {
   const out: Link[] = [];
+  let up: Above[] = [];
   for (let k = steps.findLastIndex((s) => near(s.v, value)); k >= 0;) {
     const e = steps[k]?.e;
     const op = topOp(e);
-    if (!e || !op) return null;
+    if (!e || !op) return out.length ? "open" : null;
     const ts = flat(e, op);
     let prev = -1;
     const run = ts.findIndex((x) => {
-      if (x.t !== "val") return false;
+      if (x.t !== "val" && !(x.t === "read" && x.p.startsWith("DNSM.")))
+        return false;
       prev = steps.findLastIndex((p, j) => j < k && near(p.v, Number(x.v)));
-      return prev >= 0;
+      return prev >= 0 && (x.t === "val" || ownCache(x, k));
     });
-    out.unshift({ at: k, op, terms: ts.filter((_, i) => i !== run) });
-    if (run < 0) break;
+    out.unshift({ at: k, op, terms: ts.filter((_, i) => i !== run), up });
+    const via = ts[run];
+    if (!via) break;
+    if (via.t === "read") up = [...up, { code: via.p, name: via.p }];
     k = prev;
   }
   return out.length > 1 ? out : null;
@@ -257,18 +273,24 @@ function chainOf(steps: readonly Step[], value: number): Link[] | null {
 /**
  * The pools of a root whose steps are a chain (spec 009, FR-005, rule Y of 17/11): sums in a row are an Additive pool,
  * single multipliers in a row one Multi pool, a factor that sums bonuses inside its own pool (`additive`); each change
- * of + to × opens a pool. Null for a root of one step (`poolsOf` reads it), or when the pools do not give the root.
+ * of + to × opens a pool. Null for a root of one step (`poolsOf` reads it); "open" for a chain the pools cannot read or
+ * that does not give the root, which the caller logs (NFR-005).
  */
 export function chainPools(
   steps: readonly Step[],
   root: { value: CalcTreeNode["value"] },
   termAt: TermAt,
-): Pool[] | null {
+  ownCache: OwnCache = () => false,
+): Pool[] | "open" | null {
   const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
-  const chain = v === null ? null : chainOf(steps, v);
-  if (v === null || !chain) return null;
+  const chain = v === null ? null : chainOf(steps, v, ownCache);
+  if (v === null || chain === null) return null;
+  if (chain === "open") return "open";
   const pools: Omit<Pool, "name">[] = [];
-  for (const { at, op, terms } of chain) {
+  for (const { at, op, terms, up } of chain) {
+    // rows read back from a working value are renamed under it, as in the 008, and open under it
+    const under = (rows: Row[]) =>
+      up.length ? aboveRenames(rows, up).map((r) => ({ ...r, up })) : rows;
     // the added terms or the single multipliers of a step are one level, finished together as in the 008
     let batch: Row[] = [];
     const flush = () => {
@@ -277,7 +299,7 @@ export function chainPools(
         (a, r) => (op === "*" ? a * vOf(r) : a + vOf(r)),
         op === "*" ? 1 : 0,
       );
-      const rows = finish(value, batch, op === "*");
+      const rows = under(finish(value, batch, op === "*"));
       const last = pools.at(-1);
       batch = [];
       if (op === "+" && last?.combine === "sum" && last.join === "+")
@@ -306,12 +328,13 @@ export function chainPools(
           kind: kindOf(factor.combine),
           value: Number(e.v),
           join: "*",
-          ...factor,
+          combine: factor.combine,
+          rows: under(factor.rows),
         });
         continue;
       }
       const r = termAt(e, op, at);
-      if (!r) return null;
+      if (!r) return "open";
       batch.push(r);
     }
     flush();
@@ -322,5 +345,5 @@ export function chainPools(
       i === 0 ? p.value : p.join === "+" ? acc + p.value : acc * p.value,
     0,
   );
-  return near(total, v) ? named(out) : null;
+  return near(total, v) ? named(out) : "open";
 }

@@ -59,7 +59,11 @@ export function makePlaces(ctx: PlaceContext) {
   /** The level under row `r`, placed at `at`: its call's rows or its cache's, renamed by the rows above them. */
   function below(r: Row, at: At): Level | null {
     const seen = r.seen ?? at.seen;
-    const up = [...at.up, { code: r.node.code, name: r.node.name }];
+    const up = [
+      ...at.up,
+      ...(r.up ?? []),
+      { code: r.node.code, name: r.node.name },
+    ];
     const o = r.open;
     if (o === null) return null;
     // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench

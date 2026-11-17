@@ -1,5 +1,6 @@
 // The rows of one level before they have a place (spec 008): a row of the game and the curve block as a branch, each with
 // its share in the parent; the parts at 0 and at ×1 stay in their places (spec 009, FR-016).
+import type { Above } from "./above-renames.ts";
 import type { RecNode, RecValue } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import {
@@ -65,6 +66,11 @@ export interface Row {
   writerF?: "sameValue" | "never";
   /** formulas.cjs `r1src`: the name of the first source of a branch around a call, which tells two such branches apart. */
   r1src?: string;
+  /**
+   * The caches above the row in the 008 that its place no longer shows (spec 009, rule Y): a term of an earlier step of
+   * a chain, read back from a working value the root wrote. Its own rows are renamed under them, as they were.
+   */
+  up?: readonly Above[];
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

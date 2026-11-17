@@ -7,7 +7,7 @@ import { fx3 } from "./curves.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
 import { chainPools, poolsOf, poolsPair, rootExtreme } from "./pools.ts";
-import type { Combine, Pool, TermAt, TermRow } from "./pools.ts";
+import type { Combine, OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -206,6 +206,7 @@ export interface FirstLevelContext {
   writerOf: WriterOf;
   steps?: readonly Step[];
   termAt?: TermAt;
+  ownCache?: OwnCache;
 }
 
 /**
@@ -216,10 +217,14 @@ export interface FirstLevelContext {
 export function firstLevel(
   rows: Row[],
   root: Pick<Node, "name" | "value" | "formula">,
-  { expr, term, writerOf, steps, termAt }: FirstLevelContext,
-): { rows: Row[]; formula: Node["formula"] } {
+  { expr, term, writerOf, steps, termAt, ownCache }: FirstLevelContext,
+): { rows: Row[]; formula: Node["formula"]; chainOpen?: true } {
   // a chain of steps gives its pools from the steps (rule Y); a root of one step, from its rows
-  const chain = steps && termAt ? chainPools(steps, root, termAt) : null;
+  const read =
+    steps && termAt ? chainPools(steps, root, termAt, ownCache) : null;
+  // a chain the pools cannot read falls back to the rows, and says so (NFR-005)
+  const open = read === "open" ? ({ chainOpen: true } as const) : {};
+  const chain = read === "open" ? null : read;
   const pools = chain ?? poolsOf(rows, { value: root.value, expr }, term);
   if (pools) {
     // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
@@ -233,11 +238,12 @@ export function firstLevel(
     return {
       rows: [...out.rows, ...checks],
       formula: out.formula ?? root.formula,
+      ...open,
     };
   }
   const rule = rootExtreme(rows, { value: root.value, expr });
   const level = rule ? bySystem(rows, rule, writerOf) : rows;
-  if (!rule || level === rows) return { rows, formula: root.formula };
+  if (!rule || level === rows) return { rows, formula: root.formula, ...open };
   const v = vOf({ node: root as Node });
   const pair: [string, string] = [
     `${rule}(${level.map((r) => termOf(r.node)).join(", ")})`,
@@ -248,5 +254,6 @@ export function firstLevel(
   return {
     rows: withShares(root, pair, [...level]).rows,
     formula: formulaOut(pair, [...termsOf(level), ...names]) ?? root.formula,
+    ...open,
   };
 }

@@ -330,6 +330,19 @@ export function buildTree(
       steps: all,
       termAt: (e, op, at) =>
         terms.term(e, op, reads, { args: top.a, steps: all, at }),
+      // a working value the root's own call wrote: its cache's writer is the root
+      ownCache: (e, at) => {
+        const o = terms.term(e, "+", reads, {
+          args: top.a,
+          steps: all,
+          at,
+        })?.open;
+        if (typeof o !== "object" || o === null || o.writer !== top.id)
+          return false;
+        // out of a loop: a loop's step is recorded once, for its last turn, and its cache opens into its turns
+        const turns = entries.get(`${String(top.id)}|${o.path}`) ?? [];
+        return turns.every((t) => all.some((st) => near(st.v, t.v)));
+      },
       writerOf: (r) => {
         const o = r.open;
         const w = o !== null && typeof o === "object" ? nodes[o.writer] : null;
