@@ -128,13 +128,7 @@ export function createTreeEngine(
       );
       last = {
         treeId: request.id,
-        build: buildTree(
-          recording,
-          request.character,
-          recorder.ops,
-          undefined,
-          request.id,
-        ),
+        build: buildTree(recording, request.character, recorder.ops),
       };
       return last.build.root;
     },
@@ -164,7 +158,7 @@ export function createTreeEngine(
       if (!root) return "unknownNumber";
       // Its own build, never `last`: the open tree's branches still open after it.
       const recording = recorder.record(mosaicJson, [root], recipe);
-      return shapeOf(buildTree(recording, 0, recorder.ops, undefined, id));
+      return shapeOf(buildTree(recording, 0, recorder.ops));
     },
   };
 }

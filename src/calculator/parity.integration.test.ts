@@ -5,9 +5,7 @@
 //   `vars-*.json` beside it, as the bench loads it;
 // - PARITY_BENCH_DIR: a folder with `parity/dropRate.json`, the bench's Drop Rate tree without compaction
 //   (`NO_COMPACT=1 TREE=<recording> OUT=<that file> node screen-proposal/build-v1mold.cjs`), and, when there is one,
-//   `parity/reviewed-names.json`, the paths of the rows whose names wait on the 007 index; and, for the V1 parity of
-//   the 009 (FR-010, research R4), `parity/dropRate-v1.json`, the bench's V1 over the same snapshot
-//   (`TREE=<recording> OUT=<that file> node screen-proposal/build-v1mold.cjs`), compared without it.
+//   `parity/reviewed-names.json`, the paths of the rows whose names wait on the 007 index.
 // It prints counts and the places of the rows only, never a name, a value nor anything of the snapshot (FR-032).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -16,7 +14,6 @@ import type { BenchRow } from "./parity-compare.ts";
 import {
   activeCharacter,
   codeValueConflicts,
-  compareMould,
   compareTrees,
   mosaicOfSnapshot,
   summary,
@@ -101,54 +98,3 @@ describe.skipIf(!READY)("parity of the Drop Rate tree with the bench", () => {
     BUILD_MS,
   );
 });
-
-const V1_FILE = join(BENCH, "parity", `${ID}-v1.json`);
-
-/** The app's Drop Rate over the snapshot, built `depth` levels down (the pools, their groups and their sources). */
-function moulded(depth: number): CalcTreeNode {
-  const snap = readJson(SNAPSHOT) as { attrs: unknown; skipped?: unknown };
-  const dir = dirname(SNAPSHOT);
-  const varsFile = readdirSync(dir)
-    .filter((f) => f.startsWith("vars-"))
-    .sort()
-    .at(-1);
-  const engine = createTreeEngine(
-    readFileSync(join(GAME, "N.js"), "utf8"),
-    new Uint8Array(readFileSync(join(GAME, "lib", "default.pak"))),
-  );
-  const root = engine.tree(
-    { type: "number", id: ID, character: activeCharacter(snap) },
-    mosaicOfSnapshot(snap, varsFile ? readJson(join(dir, varsFile)) : {}),
-  );
-  if (root === "unknownNumber") throw new Error("the Drop Rate has no root");
-  const open = (n: CalcTreeNode, left: number): CalcTreeNode => {
-    if (left === 0) return n;
-    const built =
-      n.kids === "lazy"
-        ? engine.tree({ type: "expand", treeId: ID, nodeId: n.id }, null)
-        : n;
-    if (built === "unknownNumber") throw new Error("the branch was refused");
-    return {
-      ...built,
-      kids: Array.isArray(built.kids)
-        ? built.kids.map((k) => open(k, left - 1))
-        : [],
-    };
-  };
-  return open(root, depth);
-}
-
-describe.skipIf(!READY || !existsSync(V1_FILE))(
-  "the Drop Rate's pools and groups match the bench's V1 (spec 009, FR-010)",
-  () => {
-    test(
-      "the same pools, groups, order, values and sources of each group",
-      () => {
-        const bench = (readJson(V1_FILE) as { tree: BenchRow }).tree;
-        const found = compareMould(moulded(3), bench);
-        expect(found.length, summary(found)).toBe(0);
-      },
-      BUILD_MS,
-    );
-  },
-);

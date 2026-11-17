@@ -375,9 +375,9 @@ export function makeTerms(ctx: TermContext) {
     /** pieces.cjs `exprRow` with no step around it: the branch of an expression's parts ([F2-TOP]). */
     branchOf: (e: Expr, reads: Reads) =>
       withTurn(null, () => exprRow(e, 0, reads)),
-    /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms), or in turn `t`. */
-    term: (e: Expr, op: "*" | "+", reads: Reads, t: Turn | null = null) =>
-      withTurn(t, () => rowOfTerm(e, op, 1, reads)),
+    /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms). */
+    term: (e: Expr, op: "*" | "+", reads: Reads) =>
+      withTurn(null, () => rowOfTerm(e, op, 1, reads)),
     /** The rows of the terms of the block's step `at` (its top sum or product). */
     stepTerms(t: Turn, op: "*" | "+", reads: Reads): Row[] {
       const st = t.steps[t.at];
