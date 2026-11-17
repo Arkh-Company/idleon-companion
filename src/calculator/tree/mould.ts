@@ -33,6 +33,20 @@ export function mould(rows: readonly Row[]): Row[] {
   });
 }
 
+/** The read paths an expression shows, at any depth. */
+const readsOf = (e: Expr): string[] =>
+  e.t === "read"
+    ? [e.p]
+    : e.t === "op"
+      ? [...readsOf(e.l), ...readsOf(e.r)]
+      : e.t === "fn"
+        ? e.args.flatMap(readsOf)
+        : e.t === "def"
+          ? readsOf(e.e)
+          : e.t === "not"
+            ? readsOf(e.a)
+            : [];
+
 /** The block that writes the cache a row reads (its call, written as tree/rows.ts `callText`), when it has one. */
 export type WriterOf = (r: Row) => string | undefined;
 
@@ -233,10 +247,19 @@ export function firstLevel(
       root,
       writerOf,
     );
-    // FR-008: the root's checks, which no step of the chain shows, stay after its pools
-    const checks = chain ? rows.filter((r) => r.node.leaf === "condition") : [];
+    // FR-008: the rows of the 008 no step of the chain shows (its checks, its data rows) stay after its pools
+    const shown = new Set((steps ?? []).flatMap((st) => readsOf(st.e)));
+    const rest = chain
+      ? rows.filter(
+          (r) =>
+            r.node.leaf === "condition" ||
+            (r.node.code !== null &&
+              !r.node.code.includes("(") &&
+              !shown.has(r.node.code)),
+        )
+      : [];
     return {
-      rows: [...out.rows, ...checks],
+      rows: [...out.rows, ...rest],
       formula: out.formula ?? root.formula,
       ...open,
     };

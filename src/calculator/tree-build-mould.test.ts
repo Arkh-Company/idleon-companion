@@ -142,3 +142,14 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
   ]);
   expect(checkTree(root, 100)).not.toBeNull();
 });
+
+test("a chain keeps after its pools the rows no step of it shows: the block's data rows, as any block's (FR-008)", () => {
+  // (TreeBase + 1) × TreeArg(TreeLevel): the level the call took is a data row of the block
+  const level = kidsOf(treeOf("TreeChainData"));
+  expect(level.map((k) => [k.name, k.role, k.value])).toEqual([
+    ["Additive pool", "pool", 5],
+    ["Multi pool", "pool", 100],
+    [expect.any(String), "piece", 25],
+  ]);
+  expect(level[2]?.code).toBe("TreeLevel");
+});

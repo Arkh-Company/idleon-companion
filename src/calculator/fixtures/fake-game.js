@@ -546,6 +546,16 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeChain.h.v = d.TreeChain.h.v * s.TreeTwins[0] * s.TreeList[1];
     return d.TreeChain.h.v;
   };
+  // A chain whose call takes a read no step shows: the block's data row (spec 009, FR-008).
+  Blocks._customBlock_TreeChainData = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeChainData = new StringMap();
+    d.TreeChainData.h.v = s.TreeBase + 1;
+    d.TreeChainData.h.v =
+      d.TreeChainData.h.v * Blocks._customBlock_TreeArg(s.TreeLevel);
+    return d.TreeChainData.h.v;
+  };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
