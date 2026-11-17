@@ -47,11 +47,10 @@ Sem protótipo. A clarify fechou sem pergunta `to plan`. As decisões abaixo sã
 
 - **Decision:**
   - **Onde vive:** o botão fica na janela, desligado por padrão.
-  - **Base da comparação:** ao ligar, a base é o valor de cada peça naquele momento (`pieceValues` da árvore aberta mais os valores ao vivo). Com uma marca escolhida, a base são os valores da marca.
+  - **Base da comparação:** ao ligar em "live", a janela guarda a árvore como estava no clique: o valor de cada peça naquele momento (`pieceValues` da árvore aberta mais os valores ao vivo). Com uma marca escolhida, a base são os valores da marca. Uma marca apagada durante a comparação faz a base voltar para "live".
   - **Valores ao vivo:** as linhas com peça usam os valores que o main já manda para as partes abertas (`partsOf`, até 200 peças, desde a correção da 008). Um pool ou grupo não tem peça. O valor dele é refeito na janela a partir das fontes de dentro, pela regra de combinação que o nó traz (`combine`, em `data-model.md`).
-  - **Seta:** usa a unidade da própria linha: em "+%", pontos percentuais ("▲ +10%"); em "×", variação relativa ("▲ +10%").
-  - **O que sai da árvore:** o "was", a linha que acende e o "mark" escrito.
-  - **O que fica:** "Game changed · Refresh" continua como faixa, porque a spec tira só a marcação por linha.
+  - **Seta:** usa a unidade da própria linha: em "+%", pontos percentuais ("▲ +10%"); em "×", a diferença no multiplicador ("▲ +0.12"). Decisão do Vinicius na revisão da spec.
+  - **O que sai da árvore:** o "was", a linha que acende, o "mark" escrito e a faixa "Game changed · Refresh". A árvore aberta mostra os valores ao vivo, e uma mudança na forma da árvore faz o main pedir a árvore de novo sozinho (FR-015).
 - **Rationale:** a decisão é do Vinicius (FR-013). Refazer o valor do grupo na janela não pede chamada nova ao jogo nem peça nova no catálogo.
 - **Alternatives considered:**
   - **Valores de grupo pedidos ao worker:** foi descartado, porque o grupo não é uma chamada do jogo.

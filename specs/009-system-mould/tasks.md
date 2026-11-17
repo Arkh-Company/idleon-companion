@@ -16,7 +16,7 @@
 
 **Independent Test**: a hand-built tree with a `pool` and a `system` node passes the main's check and draws in the window; one with a piece key on a pool is refused.
 
-- [ ] T001 [P] Tests first: the node's new roles and fields in `src/main/tree-check.test.ts` and `src/shared/formula-tree.test.ts`
+- [ ] T001 [P] Tests first: the node's new roles and fields in `src/main/tree-check.test.ts` and `src/shared/formula-tree.test.ts` (FR-011, SEC-003)
   - Files: `src/main/tree-check.test.ts`, `src/shared/formula-tree.test.ts`
   - Cases:
     - `role: "pool"` with `poolKind: "additive" | "multi"` and `combine: "sum" | "product" | "onePlusPercent"` passes;
@@ -25,14 +25,14 @@
     - a `pool` or `system` with a non-null `pieceKey` is refused (contracts/tree-node.md);
     - `combine`/`poolKind` other than null on a piece row is refused;
     - a pool name with game code (`DNSM.X`) is refused by the same text sieve as names.
-- [ ] T002 Add the roles and fields in `src/shared/formula-tree.ts` and `src/calculator/tree-contract.ts`
+- [ ] T002 Add the roles and fields in `src/shared/formula-tree.ts` and `src/calculator/tree-contract.ts` (FR-005, FR-009; depends on T001)
   - Files: `src/shared/formula-tree.ts`, `src/calculator/tree-contract.ts`
   - Signatures: `NODE_ROLES` gains `"pool"` and `"system"`; `TreeNode` and `CalcTreeNode` gain `combine: "sum" | "product" | "onePlusPercent" | null` and `poolKind: "additive" | "multi" | null` ("Only in `pool` and `system`"; null in every other row, data-model.md).
   - Every existing row builder sets both to null; existing tests pass unchanged.
-- [ ] T003 Accept the new roles and fields in `src/main/tree-check.ts`
+- [ ] T003 Accept the new roles and fields in `src/main/tree-check.ts` (FR-011, SEC-003; depends on T001, T002)
   - Files: `src/main/tree-check.ts`
   - Rules: the `NODE` field checks gain `combine` and `poolKind` (the lists above, or null); a `pool`/`system` node MUST have `pieceKey: null`.
-- [ ] T004 [P] Tests first, then the system table in `src/calculator/tree/systems.ts`
+- [ ] T004 [P] Tests first, then the system table in `src/calculator/tree/systems.ts` (FR-003, FR-004)
   - Files: `src/calculator/tree/systems.test.ts`, `src/calculator/tree/systems.ts`
   - Signatures: `systemOf(code: string | null, writerBlock?: string): { name: string; emoji: string } | null`; `SYSTEM_ORDER: readonly string[]` (the V1 list of `build-v1mold.cjs` `V1`, in order); `systemLabel(s): string` (`"⚗️ Alchemy"`).
   - Built from `tagOf` (`src/calculator/tree/tags.ts`). Every entry has a proof by reference (the `rules.test.ts` format). A cache read goes to its writer's block. Unknown → null (the caller files it under "🔹 Other").
@@ -50,7 +50,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 
 ---
 
-## Phase 2: User Story 2 - Toda árvore pelos pools do jogo (Priority: P2, built first because US1 builds on it)
+## Phase 2: User Story 2 - Toda árvore agrupada por sistema (Priority: P2; built before US1, which specializes it)
 
 **Goal**: the first level of every tree is the game's pools in the order of the sum, with the system groups inside (FR-001–FR-006, FR-008, FR-011).
 
@@ -58,7 +58,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 
 ### Tests for User Story 2 (write first)
 
-- [ ] T005 [P] [US2] Tests of the pools from the root's sum in `src/calculator/tree/pools.test.ts`
+- [ ] T005 [P] [US2] Tests of the pools from the root's sum in `src/calculator/tree/pools.test.ts` (FR-001, FR-005, FR-008; depends on T002)
   - Files: `src/calculator/tree/pools.test.ts`
   - Cases:
     - `(a + b + c)` → one Additive pool;
@@ -67,7 +67,7 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
     - `(1 + (s + 2×a) ÷ 100) × b × p × g` (Prod Spd Bonus) → `Additive pool` with two systems, then `Multi pool 1..3`;
     - the root's ⓘ is `"Additive pool × Multi pool"` and closes with the numbers;
     - each pool's `combine` and `poolKind` are set.
-- [ ] T006 [P] [US2] Tests of the system groups in `src/calculator/tree/mould.test.ts`
+- [ ] T006 [P] [US2] Tests of the system groups in `src/calculator/tree/mould.test.ts` (FR-002, FR-004, FR-006, FR-008, FR-009, FR-013; depends on T002, T004)
   - Files: `src/calculator/tree/mould.test.ts` (rewritten cases; the 008 cases that pinned the steps as the first level are replaced, by the approved spec change FR-001)
   - Cases:
     - sources grouped by system in V1 order, new systems after, "🔹 Other" last;
@@ -81,13 +81,13 @@ Verify: `just test-one src/main/tree-check.test.ts` - passes; `just test-one src
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] The pools from the root's sum in `src/calculator/tree/pools.ts`
+- [ ] T007 [US2] The pools from the root's sum in `src/calculator/tree/pools.ts` (FR-005; depends on T005)
   - Files: `src/calculator/tree/pools.ts`
   - Signature: `poolsOf(rows: readonly Row[], rootFormula): Pool[]` with `Pool = { kind: "additive" | "multi"; rows: Row[]; combine }` (research R1).
-- [ ] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts`
+- [ ] T008 [US2] Rewrite the first level in `src/calculator/tree/mould.ts` (FR-001, FR-002, FR-004, FR-005, FR-006; depends on T004, T006, T007)
   - Files: `src/calculator/tree/mould.ts`, `src/calculator/tree-build.ts` (where `mould` is called)
-  - The first level becomes the pool rows with the system groups inside (`systems.ts`). Names: `"Additive pool"`, `"Multi pool N"` (FR-005). Each file stays under 400 lines.
-- [ ] T009 [US2] All pools and groups closed on open in `src/renderer/FormulaTree.tsx`
+  - The first level becomes the pool rows with the system groups inside (`systems.ts`). Names: `"Additive pool"`, `"Multi pool N"` (FR-005). A root the pools rule cannot read gives the sources grouped by system with no pool (US2, scenario 4). A failure of the mould leaves the tree unavailable and one log line with a label and the catalog id, never a name or a value (NFR-005). Each file stays under 400 lines.
+- [ ] T009 [US2] All pools and groups closed on open in `src/renderer/FormulaTree.tsx` (FR-002, FR-012, NFR-004; depends on T002)
   - Files: `src/renderer/FormulaTree.tsx`, `src/renderer/FormulaTree.test.tsx` (test first)
   - Cases: on open, every `pool` and `system` row is closed (FR-012); a `system` row shows its emoji name and its value in the format of the parts (`"×45,582"`, `"+80%"`).
 
@@ -97,7 +97,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ---
 
-## Phase 3: User Story 1 - O Drop Rate igual à V1 (Priority: P1)
+## Phase 3: User Story 1 - De onde vem o meu Drop Rate, por sistema (Priority: P1)
 
 **Goal**: the Drop Rate's first level is V1's pools (LUK Scaling, Additive Pool, Total Sum, Post-Processing) with V1's groups (FR-005, FR-010).
 
@@ -105,12 +105,12 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Tests for User Story 1 (write first)
 
-- [ ] T010 [P] [US1] Test the Drop Rate's V1 pools in `src/calculator/tree/mould.test.ts`
+- [ ] T010 [P] [US1] Test the Drop Rate's V1 pools in `src/calculator/tree/mould.test.ts` (FR-005, FR-010; depends on T008)
   - Files: `src/calculator/tree/mould.test.ts`
   - Cases:
     - `dropRate` gets the four V1 pools, in V1's order and with V1's names, by a table with proof keyed by the catalog id;
     - any other id never gets them.
-- [ ] T011 [P] [US1] The V1 parity in `src/calculator/parity.integration.test.ts` (a new `describe`, run by the existing `just parity`)
+- [ ] T011 [P] [US1] The V1 parity in `src/calculator/parity.integration.test.ts` (a new `describe`, run by the existing `just parity`) (FR-010; depends on T008)
   - Files: `src/calculator/parity.integration.test.ts`, `src/calculator/parity-compare.ts`
   - Signature: `compareMould(app: CalcTreeNode, bench: BenchRow): Difference[]` compares pools, groups, order, values and each group's sources by piece key, two levels deep (research R4).
   - Skips by itself without `PARITY_BENCH_DIR/parity/dropRate-v1.json`.
@@ -118,7 +118,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] The V1 pools table in `src/calculator/tree/mould.ts`
+- [ ] T012 [US1] The V1 pools table in `src/calculator/tree/mould.ts` (FR-005, FR-010; depends on T010)
   - Files: `src/calculator/tree/mould.ts` (or a sibling `v1-pools.ts` if `mould.ts` passes 400 lines)
   - Each pool's rule has a proof by reference to `build-v1mold.cjs`.
 
@@ -136,7 +136,7 @@ Verify: `just test-one src/calculator/tree/mould.test.ts` - passes; `just check`
 
 ### Tests for User Story 3 (write first)
 
-- [ ] T013 [P] [US3] Tests of the flattening in `src/calculator/tree/flatten.test.ts`
+- [ ] T013 [P] [US3] Tests of the flattening in `src/calculator/tree/flatten.test.ts` (FR-007, FR-008; depends on T002)
   - Files: `src/calculator/tree/flatten.test.ts`
   - Cases:
     - `Game value × Multiplier × X` with the first two unnamed → the parts go up, and the ⓘ is the whole product and closes;
@@ -148,7 +148,7 @@ Verify: `just test-one src/calculator/tree/mould.test.ts` - passes; `just check`
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] The flattening pass in `src/calculator/tree/flatten.ts`, called from `src/calculator/tree/places.ts`
+- [ ] T014 [US3] The flattening pass in `src/calculator/tree/flatten.ts`, called from `src/calculator/tree/places.ts` (FR-007; depends on T013)
   - Files: `src/calculator/tree/flatten.ts`, `src/calculator/tree/places.ts`
   - Signature: `flatten(rows: Row[]): Row[]`
   - Runs with the `parentPasses` of the 008, on every level. Each file stays under 400 lines.
@@ -159,7 +159,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 
 ---
 
-## Phase 5: A vista da árvore (FR-001, FR-013, FR-014)
+## Phase 5: A vista da árvore (FR-001, FR-013, FR-014, FR-015)
 
 **Goal**:
 - the two-line summary leaves;
@@ -171,41 +171,46 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 
 ### Tests for the view (write first)
 
-- [ ] T015 [P] Tests of the arrows and the bases in `src/renderer/tree-changes.test.ts`
+- [ ] T015 [P] Tests of the arrows and the bases in `src/renderer/tree-changes.test.ts` (FR-013, NFR-003; depends on T002)
   - Files: `src/renderer/tree-changes.test.ts`
   - Signatures (in `tree-changes.ts`): `baseOf(tree, live): Record<string, number>`; `groupValue(node, values): number | null` (by `combine`); `arrowOf(fmt, before, now): { up: boolean; text: string } | null`.
   - Cases:
     - a `+%` row shows points ("▲ +10%");
-    - a `×` row shows the relative change;
+    - a `×` row shows the difference in the multiplier ("▲ +0.12" for ×1.20 → ×1.32);
+    - "live" freezes the tree's values at the click and compares from there;
+    - a mark deleted while compared against falls back to "live";
     - no change shows no arrow;
     - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`);
     - against a mark, the base is the mark's piece values;
     - an unavailable source makes the group's arrow absent.
-- [ ] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx`
+- [ ] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx` (FR-001, FR-013, FR-014, FR-015, NFR-004; depends on T002)
   - Files: `src/renderer/FormulaTree.test.tsx`, `src/renderer/SidePanel.test.tsx` (the 008 cases of the summary, of "was" after Refresh, of the row that lights up and of "mark" written are replaced, by the approved spec change FR-001/FR-013)
   - Cases:
     - no summary above the tree;
     - share off by default, on shows "26%" only;
     - Changes off shows no mark of change;
     - Changes on with "live" or a mark shows arrows;
+    - the "Game changed · Refresh" band is gone, and a live value change updates the row without any button (FR-015);
+    - a change in the tree's shape (a source appears or leaves) rebuilds the tree by itself (FR-015);
+    - both toggles are reached by keyboard and read with their state (NFR-004);
     - the screen reader reads the name, the value, the share when on, and "N sources".
-- [ ] T017 [P] Tests of the `view:*` channels in `src/main/payloads.test.ts` and `src/main/settings.test.ts`
+- [ ] T017 [P] Tests of the `view:*` channels in `src/main/payloads.test.ts` and `src/main/settings.test.ts` (SEC-005, SEC-006)
   - Files: `src/main/payloads.test.ts`, `src/main/settings.test.ts`
   - Cases:
     - `view:set` accepts only `{ changes: boolean, share: boolean }`, refusing any other key or type;
-    - `view:get` gives both false when the file is missing or bad;
+    - `view:get` gives both false when the file is missing or bad, and never deletes the file;
     - a write goes through `.tmp` + rename like the zoom.
 
 ### Implementation for the view
 
-- [ ] T018 The `view:get` / `view:set` channels in `src/main/payloads.ts`, `src/main/settings.ts`, `src/main/index.ts`, `src/preload/api.ts`
+- [ ] T018 The `view:get` / `view:set` channels in `src/main/payloads.ts`, `src/main/settings.ts`, `src/main/index.ts`, `src/preload/api.ts` (SEC-005, SEC-006; depends on T017)
   - Files: as listed, plus the IPC names in `src/shared/`
   - Contract: `contracts/ipc.md`.
-- [ ] T019 The arrows and bases in `src/renderer/tree-changes.ts`
+- [ ] T019 The arrows and bases in `src/renderer/tree-changes.ts` (FR-013, NFR-002, NFR-003; depends on T015)
   - Files: `src/renderer/tree-changes.ts`
   - Uses the live part values the main already sends (`partsOf`, at most 200 pieces) and the marks of the 008 (research R5).
-- [ ] T020 The toggles in `src/renderer/ViewToggles.tsx`; the summary out of `src/renderer/SidePanel.tsx`; arrows and share in `src/renderer/FormulaTree.tsx`
-  - Files: `src/renderer/ViewToggles.tsx`, `src/renderer/SidePanel.tsx`, `src/renderer/FormulaTree.tsx`, `src/renderer/ChangeBadge.tsx` (the "Game changed · Refresh" band stays; the per-row "was" and lighting leave)
+- [ ] T020 The toggles in `src/renderer/ViewToggles.tsx`; the summary out of `src/renderer/SidePanel.tsx`; arrows and share in `src/renderer/FormulaTree.tsx` (FR-001, FR-013, FR-014, FR-015; depends on T016, T018, T019)
+  - Files: `src/renderer/ViewToggles.tsx`, `src/renderer/SidePanel.tsx`, `src/renderer/FormulaTree.tsx`, `src/renderer/ChangeBadge.tsx`, `src/main/formula-pipeline.ts` (the "Game changed · Refresh" band, the per-row "was" and the lighting leave; the open tree's rows take the live values, and a change of shape asks the tree again by itself, FR-015)
   - Each file stays under 400 lines.
 
 **Checkpoint**: `just check` passes.
@@ -218,17 +223,17 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
 
 **Independent Test**: the probe of the 716 trees on the installed game shows 0 unnamed math branches and 0 levels that do not close; `ARCHITECTURE.md` describes the pools and the toggles.
 
-- [ ] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle
+- [ ] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle (all FR)
   - Files: `ARCHITECTURE.md`
   - The new files (`pools.ts`, `systems.ts`, `flatten.ts`, `tree-changes.ts`, `ViewToggles.tsx`) enter the Code folders table.
-- [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other"
+- [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
     - 0 unnamed math branches (SC-001);
     - 0 levels that do not close (SC-003);
     - the count of "Other" sources goes in `registro.md`.
-- [ ] T023 [sessão] Run `just parity` with the bench's V1 export (quickstart.md) - 0 differences (SC-002)
-- [ ] T024 [sessão] The quickstart with the packaged app on the real game (steps 1–7) and the 5-second test (SC-004), with the result in `registro.md`
+- [ ] T023 [sessão] Run `just parity` with the bench's V1 export (quickstart.md) - 0 differences (SC-002) (FR-010, SC-002; depends on T012)
+- [ ] T024 [sessão] The quickstart with the packaged app on the real game (steps 1–7) and the 5-second test (SC-004), with the result in `registro.md` (NFR-001, NFR-002, SC-004; depends on T020, T022)
 
 **Checkpoint**: `just check` passes.
 
@@ -245,7 +250,9 @@ Verify: `just check` - passes; the probe - 0 unnamed math branches; `just parity
 - **Phase 5:** needs Phase 1, for the `combine` field.
 - **Phase 6:** last.
 
-Parallel: T001 and T004; T005 and T006; T010 and T011; T015, T016 and T017.
+Task dependencies are on each task line ("depends on …"). Parallel: T001 and T004; T005 and T006; T010 and T011; T015, T016 and T017.
+
+Requirement coverage: every FR, NFR and SEC of the spec is cited by at least one task above (see the spec's "How each requirement is checked").
 
 ## Implementation Strategy
 

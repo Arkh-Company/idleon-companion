@@ -35,11 +35,17 @@ O Vinicius quer que o jogador veja **de onde vem o número, por sistema** (Alche
 - Q: Como a fatia de cada linha aparece? → A: Escondida por padrão; um botão mostra ou esconde, e ligada aparece só o número ("26%"), sem "of total" (FR-014).
 - Q: Como o app mostra o que mudou (Refresh, jogo, marca)? → A: Um botão "Changes", desligado por padrão. Ligado, cada linha mostra uma seta com quanto mudou ("▲ +10%" ou "▼ −3%"), ao vivo, contra o momento em que foi ligado ou contra uma marca escolhida. O "was …" depois do Refresh, a linha que acende sozinha e o "mark …" escrito saem (FR-013).
 
+### Session 2026-11-17 (revisão da spec)
+
+- Q: Numa linha "×", a seta do Changes mostra o quê? → A: A diferença no multiplicador ("▲ +0.12" quando ×1.20 vira ×1.32); nas linhas "+%", a diferença em pontos ("▲ +10%") (FR-013).
+- Q: A faixa "Game changed · Refresh" continua? → A: Não. A árvore mostra os valores em tempo real, então não precisa de Refresh; ao ligar o Changes em "live", o app guarda a árvore como estava no clique e compara a partir dali (FR-013, FR-015).
+- Q: A marca escolhida no Changes fica salva quando o app fecha? → A: Não; ao abrir o app, o Changes ligado começa em "live" (FR-013).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - De onde vem o meu Drop Rate, por sistema (Priority: P1)
 
-O jogador abre o Drop Rate na Stats. Logo abaixo da resposta curta, em vez de uma cadeia de passos sem nome, vê os grupos da V1: os pools da conta (LUK Scaling, Additive Pool, Total Sum, Post-Processing) e, dentro deles, um grupo por sistema com emoji ("🃏 Cards", "⚗️ Alchemy", "🐾 Companions"...), cada um com o seu valor. Abrindo um grupo, vê as fontes daquele sistema; abrindo uma fonte, vê a conta dela como hoje.
+O jogador abre o Drop Rate na Stats. Logo no topo da árvore, em vez de uma cadeia de passos sem nome, ele vê os grupos da V1: os pools da conta (LUK Scaling, Additive Pool, Total Sum, Post-Processing) e, dentro deles, um grupo por sistema com emoji ("🃏 Cards", "⚗️ Alchemy", "🐾 Companions"...), cada um com o seu valor. Abrindo um grupo, vê as fontes daquele sistema; abrindo uma fonte, vê a conta dela como hoje.
 
 **Why this priority**: É a árvore mais aberta e a que mostrou o problema; a V1 da bancada é a referência que o Vinicius aprovou.
 
@@ -47,9 +53,10 @@ O jogador abre o Drop Rate na Stats. Logo abaixo da resposta curta, em vez de um
 
 **Acceptance Scenarios**:
 
-1. **Given** o Drop Rate aberto, **When** a árvore aparece, **Then** o primeiro nível tem os pools da V1, e dentro deles os grupos por sistema na ordem da V1, cada um com valor e fatia.
+1. **Given** o Drop Rate aberto, **When** a árvore aparece, **Then** o jogador vê no primeiro nível os pools da V1, fechados, e dentro deles os grupos por sistema na ordem da V1, cada um com o seu valor.
 2. **Given** um grupo de sistema, **When** o jogador o abre, **Then** as fontes daquele sistema aparecem na ordem do jogo, e a soma (ou o produto) delas dá o valor do grupo.
 3. **Given** um grupo com uma única fonte de mesmo valor, **When** a árvore aparece, **Then** só a fonte aparece, sem o grupo em volta (regra "Friends" da V1).
+4. **Given** o worker não consegue montar a árvore do Drop Rate, **When** o jogador a abre, **Then** ele vê "unavailable" como na 008, e nunca uma árvore parcial com pools vazios.
 
 ---
 
@@ -66,6 +73,7 @@ O jogador abre qualquer número do catálogo, como o HP máximo, um número de S
 1. **Given** uma árvore cuja raiz só multiplica fontes, **When** ela aparece, **Then** cada fator do jogo é um pool ("Multi pool N" quando multiplica tudo, "Additive pool" quando soma bônus antes), com os sistemas dentro (FR-005).
 2. **Given** uma árvore cuja raiz soma e depois multiplica, **When** ela aparece, **Then** o topo tem um Additive pool e um Multi pool na ordem da conta, o ⓘ da raiz diz "Additive pool × Multi pool", e os grupos por sistema ficam dentro de cada pool.
 3. **Given** uma fonte cujo sistema o app não conhece, **When** a árvore aparece, **Then** ela fica no grupo "🔹 Other", no fim.
+4. **Given** uma raiz cuja conta a regra dos pools não consegue ler (por exemplo, um `max` ou uma condição no topo), **When** a árvore aparece, **Then** o jogador vê as fontes direto no primeiro nível, agrupadas por sistema, sem pool inventado e sem árvore vazia.
 
 ---
 
@@ -81,15 +89,21 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 
 1. **Given** uma fonte cuja conta tem passos intermediários sem nome, **When** o jogador a abre, **Then** vê só as partes com nome (ou as leituras), e o ⓘ da fonte mostra a conta inteira.
 2. **Given** um passo de conta que tem nome provado, **When** a árvore aparece, **Then** ele continua como linha.
+3. **Given** um passo sem nome que guarda uma parte com selo de bug do jogo ou de corte, **When** o passo é achatado, **Then** o jogador continua vendo o selo na parte que subiu.
 
 ### Edge Cases
 
-- **Mesmo sistema nos dois lados:** uma fonte aparece numa soma e noutra fonte num produto, e as duas são do mesmo sistema. Cada pool tem o seu grupo daquele sistema.
+- **Mesmo sistema nos dois lados:** uma fonte aparece numa soma e noutra fonte num produto, e as duas são do mesmo sistema. Cada pool MUST ter o seu próprio grupo daquele sistema.
 - **Grupo com valor neutro:** um grupo que soma 0 ou multiplica ×1 fica no lugar dele na ordem dos grupos, com o valor 0 ou ×1 (FR-004).
-- **Passo achatado com nome por forma:** um passo achatado tinha um nome só por forma (como "Multiplier"). O nome por forma não segura a linha. Ele só segura quando é um nome provado.
-- **Fonte de cache:** uma fonte lida de um cache do jogo vai para o sistema do bloco que escreve o cache. Quando ninguém escreve o cache, vai para "Other".
+- **Passo achatado com nome por forma:** um nome só por forma (como "Multiplier") MUST NOT segurar a linha; só um nome provado segura.
+- **Fonte de cache:** uma fonte lida de um cache do jogo MUST ir para o sistema do bloco que escreve o cache; sem escritor, MUST ir para "Other".
 - **Pins, marcas e radar:** usam chaves de peça e de número do catálogo, que continuam iguais. Uma marca feita antes da 009 ainda compara os valores das mesmas peças.
-- **Número que precisa do jogo vivo:** sem o ator no mapa, ele continua "Needs the live map" (FR-023 da 008), sem grupos.
+- **Número que precisa do jogo vivo:** sem o ator no mapa, ele MUST continuar "Needs the live map" (FR-023 da 008), sem grupos.
+- **Raiz que a regra dos pools não lê:** o primeiro nível MUST mostrar as fontes agrupadas por sistema, sem pool (US2, cenário 4).
+- **Falha do worker no meio do molde:** a árvore MUST ficar "unavailable" como na 008; nunca sai uma árvore parcial.
+- **Preferências ilegíveis:** um arquivo de preferências que falta ou não abre MUST deixar os dois botões desligados, sem aviso e sem apagar o arquivo.
+- **Marca apagada com o Changes ligado contra ela:** a comparação MUST voltar para "live", guardando a árvore daquele momento.
+- **Mais de 200 partes abertas com o Changes ligado:** as partes além do limite ao vivo da 008 MUST NOT mostrar seta, nem uma seta falsa (NFR-003).
 
 ## Requirements *(mandatory)*
 
@@ -107,8 +121,26 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 - **FR-010**: A árvore do Drop Rate MUST sair igual à V1 da bancada sobre o mesmo retrato: os mesmos pools, os mesmos grupos na mesma ordem e com os mesmos valores, e as mesmas fontes em cada grupo. A comparação MUST ser um teste rodado pela receita de paridade da 008, fora da CI.
 - **FR-011**: Os grupos e os pools MUST seguir as regras de honestidade e de texto da 008: nenhum código do jogo no nome (FR-012a), nenhum nome de personagem, só átomos na saída do worker (FR-010) e a conferência do main antes da janela (FR-010b).
 - **FR-012**: Quando a árvore abre, todos os pools e grupos de sistema MUST começar fechados; o jogador abre cada um.
-- **FR-013**: A árvore MUST ter um botão "Changes", desligado por padrão. Ligado, cada linha (pool, grupo, fonte e partes) MUST mostrar uma seta com quanto o valor mudou, verde para cima ("▲ +10%") e vermelha para baixo ("▼ −3%"), atualizada ao vivo enquanto o jogo muda, sem Refresh. O jogador escolhe contra o que comparar: o momento em que ligou o botão ("live") ou uma marca gravada ("Mark before" da 008). Desligado, nenhuma marca de mudança aparece. Isso substitui, na árvore, o "was …" depois do Refresh, a linha que acende com "Game changed" e o "mark …" escrito da 008. Quando uma fonte de dentro não pôde ser calculada, o grupo MUST ficar "unavailable" e o resto da árvore segue, como na 008.
+- **FR-013**: A árvore MUST ter um botão "Changes", desligado por padrão. Ligado, cada linha (pool, grupo, fonte e partes) MUST mostrar uma seta com quanto o valor mudou: verde para cima e vermelha para baixo; numa linha "+%", a diferença em pontos ("▲ +10%"); numa linha "×", a diferença no multiplicador ("▲ +0.12"). O jogador escolhe contra o que comparar: "live", que guarda a árvore como estava no clique e compara a partir dali, ou uma marca gravada ("Mark before" da 008). A escolha da marca MUST NOT ficar salva: ao abrir o app, o Changes ligado começa em "live". Desligado, nenhuma marca de mudança aparece. Isso substitui, na árvore, o "was …" depois do Refresh, a linha que acende com "Game changed" e o "mark …" escrito da 008. Quando uma fonte de dentro não pôde ser calculada, o grupo MUST ficar "unavailable" e o resto da árvore segue, como na 008.
 - **FR-014**: A fatia de cada linha MUST ficar escondida por padrão; um botão mostra ou esconde. Ligada, cada linha mostra só o número da fatia ("26%"), sem texto extra.
+- **FR-015**: Os valores da árvore aberta MUST se atualizar em tempo real, sem botão de Refresh. A faixa "Game changed · Refresh" da 008 MUST sair. Quando o jogo muda a forma da árvore (uma fonte aparece ou some), a árvore MUST se refazer sozinha.
+
+### Non-Functional Requirements
+
+- **NFR-001 (tempo)**: Com o molde, a árvore do Drop Rate MUST abrir em até 5 s, o mesmo limite da SC-005 da 008, e a Stats MUST continuar abaixo de 1 s com a árvore aberta (SC-004 da 008).
+- **NFR-002 (ao vivo)**: Os valores e as setas da árvore aberta MUST se atualizar a cada leitura do jogo (1 s), como os valores ao vivo da 008.
+- **NFR-003 (limite)**: O app MUST acompanhar ao vivo até 200 partes da árvore aberta, o limite da 008; além disso, a parte mostra o último valor montado e nenhuma seta.
+- **NFR-004 (acessibilidade)**: Os botões "Changes" e fatia MUST ser alcançáveis pelo teclado e lidos pelo leitor de tela com o nome e o estado (ligado ou desligado); as linhas seguem a FR-002.
+- **NFR-005 (registro)**: Uma falha do molde MUST deixar uma linha de log com um rótulo e o id do catálogo, nunca um nome nem um valor (como o `treeRejected` da 008).
+
+### Security & Privacy
+
+- **SEC-001 (só leitura)**: O molde MUST NOT chamar função do jogo nem gravar no save; ele só reorganiza a árvore já gravada.
+- **SEC-002 (sem rede)**: Nada desta feature MUST usar a rede.
+- **SEC-003 (sem código do jogo)**: O nome de um pool ou de um grupo MUST NOT ter código do jogo (FR-012a da 008); a conferência do main recusa a árvore que tiver.
+- **SEC-004 (sem nome de personagem)**: Nenhum nome de personagem MUST aparecer em pool, grupo, log, preferência salva, teste ou documento.
+- **SEC-005 (preferências)**: As preferências salvas MUST ser só os dois estados dos botões (ligado ou desligado), nesta máquina; nenhum valor da árvore, nenhuma marca escolhida.
+- **SEC-006 (entrada da janela)**: O main MUST aceitar da janela, para as preferências, só esses dois estados e nada mais.
 
 ### Key Entities
 
@@ -124,6 +156,33 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 - **SC-002**: O Drop Rate sobre o retrato do personagem 9 tem 0 diferenças com a V1 da bancada em pools, grupos, ordem, valores e fontes por grupo.
 - **SC-003**: Nas 716 árvores, cada nível soma (ou multiplica) até o pai, com 0 exceções, e nenhuma fonte some.
 - **SC-004**: Em 5 segundos, um jogador que nunca viu o app diz qual sistema mais pesa no Drop Rate dele, pelo primeiro nível da árvore. É o teste dos 5 segundos da 008, repetido.
+
+### How each requirement is checked
+
+| Requisito | Como é conferido |
+| --- | --- |
+| FR-001, FR-005, FR-006 | Teste de unidade dos pools e do molde no jogo inventado: os pools, os nomes e a ordem; a fonte única; tudo em "Other" |
+| FR-002, FR-004, FR-012 | Teste do molde (ordem, valor, grupo neutro) e teste da janela (fechados, formato do valor, leitor de tela) |
+| FR-003 | Teste da tabela de sistemas: cada entrada com prova, bloco desconhecido vai para "Other"; a sonda conta as fontes em "Other" |
+| FR-007 | Teste do achatamento: o ⓘ fecha, nome por forma não segura, nome provado segura; SC-001 pela sonda |
+| FR-008 | Teste de que cada nível fecha com o pai; SC-003 pela sonda |
+| FR-009 | Teste de que pool e grupo não têm peça, e de que uma marca da 008 compara por peça |
+| FR-010 | Teste de paridade com a V1 (`just parity`, fora da CI); SC-002 |
+| FR-011, SEC-001 a SEC-006 | Teste da conferência do main (papéis, campos, sem peça em pool, sem código no nome) e do canal de preferências |
+| FR-013, FR-014, FR-015 | Teste das setas (formatos, base "live" e marca, fonte sem cálculo), dos botões e da árvore ao vivo sem Refresh |
+| NFR-001, NFR-002 | Medido no jogo real (quickstart, com o jogo aberto) |
+| NFR-003 | Teste: parte além do limite sem seta |
+| NFR-004 | Teste da janela: os botões no teclado e o leitor de tela |
+| NFR-005 | Teste: a falha do molde gera a linha de log sem nome nem valor |
+
+### Definition of Done
+
+A verificação da 009 termina quando todas estas condições valem:
+1. `just check` verde, com todos os testes acima.
+2. `just parity` com 0 diferenças na V1 (SC-002).
+3. A sonda das 716 árvores com 0 galhos de conta sem nome (SC-001) e 0 níveis que não fecham (SC-003).
+4. O roteiro com o jogo aberto (`quickstart.md`) feito com o app empacotado, incluindo a NFR-001 e a NFR-002.
+5. O teste dos 5 segundos (SC-004), com o resultado no `registro.md`.
 
 ## Assumptions
 
@@ -159,3 +218,7 @@ Em qualquer nível, uma conta intermediária que o jogo não nomeia, como "Game 
 | Como a fatia de cada linha aparece? | resolved | Escondida por padrão, num botão; ligada, só o número ("26%") (Vinicius, 17/11) (FR-014) |
 | O que aparece quando todas as fontes caem em "Other" (CHK017)? | resolved | Padrão do agente: as fontes direto no primeiro nível, sem o grupo "Other" (FR-001) |
 | E uma fonte que não pôde ser calculada dentro de um grupo (CHK018)? | resolved | Padrão do agente: o grupo fica "unavailable" e o resto segue, como na 008 (FR-013) |
+| Numa linha "×", a seta do Changes mostra o quê? | resolved | A diferença no multiplicador, "▲ +0.12" (Vinicius, 17/11) (FR-013) |
+| A faixa "Game changed · Refresh" continua? | resolved | Não; a árvore mostra os valores em tempo real, e o "live" guarda a árvore do clique (Vinicius, 17/11) (FR-013, FR-015) |
+| A marca escolhida no Changes fica salva? | resolved | Não; o Changes ligado começa em "live" (Vinicius, 17/11) (FR-013) |
+| O que acontece quando o jogo muda a forma da árvore aberta (uma fonte aparece ou some)? | resolved | Padrão do agente: a árvore se refaz sozinha, sem botão (FR-015) |
