@@ -21,20 +21,13 @@ afterEach(() => {
   useGameTables(new Map());
 });
 
-/** The build of TreeGoldOf over the golden food of `key`. */
-const buildOf = (
-  key: string,
-  quantity = 999,
-  level = 3,
-  family = 2,
-  cache = 5,
-) =>
+/** The build of TreeGoldOf over the golden food of `key`: its quantity, its level, its family and its cache. */
+const buildOf = (key: string, q = 999, l = 3, f = 2, c = 5) =>
   buildTree(
-    recorder.record(
-      golden(quantity, level, family, cache),
-      [["TreeGoldOf", [key]]],
-      { recompute: [], builders: [] },
-    ),
+    recorder.record(golden(q, l, f, c), [["TreeGoldOf", [key]]], {
+      recompute: [],
+      builders: [],
+    }),
     0,
     recorder.ops,
   );
