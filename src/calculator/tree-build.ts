@@ -66,7 +66,7 @@ export function buildTree(
   const steps = makeSteps(rec, ops);
   const entries = entriesOf(rec, linked, steps.turn);
   const writers = makeWriters(nodes, entries);
-  const conditions = makeConditions(nodes);
+  const conditions = makeConditions(nodes, writers.writersOf);
   const codeFormulas = makeCodeFormulas(nodes, (id) => steps.of(id).steps);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");

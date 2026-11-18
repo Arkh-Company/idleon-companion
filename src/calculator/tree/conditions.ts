@@ -14,6 +14,7 @@ import { callText, row } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
+import { tableText } from "./table-names.ts";
 import type { BlockSteps, Expr } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { firstSrc } from "./expr.ts";
@@ -129,8 +130,35 @@ export const BAN_FLAG = {
   proof: "bench pieces.cjs mergeTests H1-MERGE; N.js RunCodeOfTypeXforThingY",
 };
 
-export function makeConditions(nodes: readonly RecNode[]) {
+export function makeConditions(
+  nodes: readonly RecNode[],
+  /** The calls that write each path (tree/entries.ts), to tell a block's own cache of its search. */
+  writersOf: ReadonlyMap<string, readonly number[]> = new Map(),
+) {
   const t1 = new Set<number>();
+  /**
+   * pieces.cjs `ownSearchName` and `searchLabel` (spec 009 T030): a cache block `n` fills with the answer of its one
+   * search (HaveW6Trophy: the cache = Cards[1] contains the trophy) is said by what it found, "Found <item>"; null for
+   * any other read, or an item with no name in the game's table (never its raw id).
+   */
+  function searchName(p: string, n: RecNode): string | null {
+    if (!p.startsWith("DNSM.") || !writersOf.get(p)?.includes(n.id))
+      return null;
+    const own = n.r?.find(([q]) => q === p);
+    const want = own ? !!Number(own[1]) : null;
+    const found = (n.r ?? []).filter(
+      ([q, v]) =>
+        q.includes(" contains ") &&
+        typeof v === "boolean" &&
+        (want === null || v === want),
+    );
+    const m =
+      found.length === 1
+        ? /^Cards\[1\] contains (?:value )?(.*)$/.exec(found[0]?.[0] ?? "")
+        : null;
+    const item = m?.[1] === undefined ? null : tableText("item", m[1]);
+    return item === null ? null : `Found ${item}`;
+  }
   /** The text of a side; with `named`, null when a term of it has no name (the row then keeps the generic name). */
   function condText(
     e: Expr,
@@ -161,7 +189,7 @@ export function makeConditions(nodes: readonly RecNode[]) {
     }
     if (e.t === "num") return num(e.v);
     if (e.t === "val") return e.v == null ? null : num(e.v);
-    if (e.t === "read") return side(e.p);
+    if (e.t === "read") return searchName(e.p, n) ?? side(e.p);
     if (e.t === "call") {
       const k = nodes[e.id];
       return k ? side(callText(k)) : null;
@@ -224,7 +252,18 @@ export function makeConditions(nodes: readonly RecNode[]) {
         if (!l || !r) return [];
         const named =
           !!condText(c.l, n, own, true) && !!condText(c.r, n, own, true);
-        return [{ text: `${l} ${CMP[c.o] ?? c.o} ${r}`, named }];
+        const op = CMP[c.o] ?? c.o;
+        // a search is a yes/no: "Found Heroic Spirit = 1" is "Found Heroic Spirit" (pieces.cjs condRows, 11/11)
+        const search =
+          /^(Found |Red Tome Pages added)/.test(l) &&
+          op === "=" &&
+          (r === "1" || r === "0");
+        const text = !search
+          ? `${l} ${op} ${r}`
+          : r === "0"
+            ? `Not ${l.charAt(0).toLowerCase()}${l.slice(1)}`
+            : l;
+        return [{ text, named }];
       });
       const parts = said.map((x) => x.text);
       const allNamed = said.every((x) => x.named);
@@ -238,6 +277,11 @@ export function makeConditions(nodes: readonly RecNode[]) {
       if (seen.has(txt)) continue;
       seen.add(txt);
       const condition = condSub(first, txt);
+      // the game marks a finished achievement or dream with -1 (pieces.cjs condRows): it is said done
+      const meant =
+        condition === "done"
+          ? txt.replace(/ = -1$/, " completed").replace(/ ≤ 0$/, " reached")
+          : txt;
       out.push({
         node: row({
           pieceKey: null,
@@ -245,10 +289,10 @@ export function makeConditions(nodes: readonly RecNode[]) {
           code: null,
           leaf: "condition",
           condition,
-          ...(allNamed && isNameText(txt) ? { name: txt } : {}),
+          ...(allNamed && isNameText(meant) ? { name: meant } : {}),
         }),
         open: null,
-        test: txt,
+        test: meant,
       });
     }
     return out;
