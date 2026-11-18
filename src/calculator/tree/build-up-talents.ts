@@ -5,6 +5,7 @@
 import { curveFormula, curveOf, fx3 } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
+import type { Row } from "./rows.ts";
 import {
   built,
   codeOf,
@@ -77,7 +78,43 @@ export function legendTalent(lv: Level): BuiltUp | null {
   );
 }
 
-/** The All-talent levels of a talent: its sources. */
+const SUPER_LIST = /^Spelunk\[\d+\]\[\d+\]$/;
+const SUPER_GIVEN = 'Thingies("SuperTalentPTS_LVgiven"';
+
+/**
+ * The All-talent levels of a talent (N.js RunCodeOfTypeXforThingY "AllTalentLV": `floor(min(AllTalMaxCapFR, the sum of
+ * its sources) + AllTalMaxSUPERdn)`, the last the Super Talent levels when the talent is on the preset's list): its
+ * sources; the checks (the talent's points > 0.5, banned), the preset in use, its list of Super Talents and the
+ * talent's own points (its Points invested, above) are in the ⓘ only.
+ */
 export function allTalentLevels(lv: Level): BuiltUp | null {
-  return lv.call ? null : null;
+  const call = lv.call;
+  const v = vOf(lv.row);
+  if (
+    call?.b !== "RunCodeOfTypeXforThingY" ||
+    !/^AllTalentLVz?$/.test(String(call.a[0])) ||
+    !v
+  )
+    return null;
+  const t = Number(String(call.a[1]).split("|")[0]);
+  const list = lv.rows.filter(
+    (r) => r.node.leaf === "choice" && SUPER_LIST.test(codeOf(r)),
+  );
+  const aside = (r: Row) =>
+    list.includes(r) ||
+    codeOf(r) === "PlayerStuff[1]" ||
+    codeOf(r) === `SkillLevels[${String(t)}]`;
+  const sources = parts(lv.rows).filter((r) => !aside(r));
+  const given = sources.find((r) => codeOf(r).startsWith(SUPER_GIVEN));
+  const isSuper = list.some((r) => vOf(r) === t);
+  const rows = sources.map((r) =>
+    r === given && !isSuper
+      ? renamed(r, `${r.node.name} (not a Super Talent here)`)
+      : r,
+  );
+  const extra = isSuper && given ? vOf(given) : 0;
+  return built(lv, rows, [
+    "floor(min(Cap, sum of the sources) + Super Talent levels)",
+    `Super Talent levels ${fx3(extra)} → ${fx3(v)}`,
+  ]);
 }
