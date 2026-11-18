@@ -56,6 +56,11 @@ function short(r: Part): string {
 /** The names the assembly gives a constant of the code by its place (terms.ts), never a bonus name. */
 const CONSTANT_NAME =
   /^(?:(?:Base|Minus|Cap|Divided by|Exponent|Minimum|Fixed value|Percent to number)\b|Fixed [+×]|× )/;
+/** The names terms.ts `numRole` gives a constant that multiplies or divides what it stands beside (009 r2). */
+const SCALING_NAME = /^(?:× |Divided by |Percent to number \(÷ 100\)$|Fixed ×)/;
+/** A constant of the code that only multiplies or divides: "× 2", "Divided by 3", "Percent to number (÷ 100)", "Fixed ×2". */
+export const isScaling = (n: Pick<Row["node"], "leaf" | "code" | "name">) =>
+  isConstant(n) && SCALING_NAME.test(n.name);
 /** A constant of the code named by its place: a fixed value with no code of its own, never a bonus's proven name. */
 export const isConstant = (n: Pick<Row["node"], "leaf" | "code" | "name">) =>
   n.leaf === "fixedValue" && n.code === null && CONSTANT_NAME.test(n.name);

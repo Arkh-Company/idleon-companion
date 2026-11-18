@@ -4,7 +4,7 @@
 // an unnamed branch of that same shape too. Two sources, a count (a quantity, a level: how many, not which bonus), or a
 // source whose name is vague or only its shape, name nothing: the branch keeps the generic name, never a guess.
 import { byShapeOnly } from "./flatten.ts";
-import { isCond } from "./formulas.ts";
+import { isCond, isScaling } from "./formulas.ts";
 import { MERGES, ONE_CHILD } from "./one-child.ts";
 import type { Level } from "./places.ts";
 import { withName } from "./row-checks.ts";
@@ -22,14 +22,18 @@ const noSource = (r: Row): boolean =>
   r.node.leaf === "fixedValue" ||
   (r.node.code !== null && isHelper(r.node.code));
 
-/** Whether the level only multiplies its rows (their shares, or the branch's own step `op`). */
+/**
+ * Whether the level only multiplies its rows: their shares, the branch's own step `op`, or, with neither (a division,
+ * tree/terms.ts exprRow), every part but the sources a constant that multiplies or divides (009 r2).
+ */
 const multiplies = (at: Level, op: Row["op"]): boolean =>
   op === "*" ||
   (at.rows.length > 0 &&
     at.rows.every(
       (r) =>
         r.node.shareMode === "product" || r.node.shareMode === "productZero",
-    ));
+    )) ||
+  at.rows.every((r) => !noSource(r) || isScaling(r.node));
 
 /**
  * The proven name of the one source among the rows of `at`, a branch of step `op`, through an unnamed branch of the same
