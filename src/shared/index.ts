@@ -26,7 +26,9 @@ export {
   changes,
   compareTrees,
   compareValues,
+  partsOf,
   pieceValues,
+  preorder,
 } from "./formula-tree-compare.ts";
 export { modulesFor } from "./modules.ts";
 export { MINUS, plain, valueText } from "./row-text.ts";

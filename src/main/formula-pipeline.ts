@@ -2,7 +2,7 @@
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019, formula-answer.ts).
 // The live values of what is in view go over the same pair (FR-008, plan B). Each part carries how many catalog numbers
 // use it, from the index the shapes fill in the background (FR-027). No electron import, so tests can load it.
-import { pieceValues } from "../shared/index.ts";
+import { partsOf, pieceValues } from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
@@ -22,7 +22,7 @@ import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
 import { gameChangedBy, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
 import type { FormulaLog } from "./formula-answer.ts";
-import { partsOf, withBranch } from "./tree-walk.ts";
+import { withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
 type TreeHost = Pick<

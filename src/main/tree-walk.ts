@@ -2,29 +2,6 @@
 // has nodes.
 import type { TreeNode } from "../shared/index.ts";
 
-// ponytail: the first parts in the tree's order; a bigger tree's later parts do not light "Game changed" (FR-024).
-const MAX_LIVE_PARTS = 200;
-
-/** The parts the band follows (FR-024): every built row but the root, with a piece and a number, one per piece. */
-export function partsOf(root: TreeNode): Map<string, TreeNode> {
-  const parts = new Map<string, TreeNode>();
-  const pending = Array.isArray(root.kids) ? root.kids.toReversed() : [];
-  for (
-    let n = pending.pop();
-    n && parts.size < MAX_LIVE_PARTS;
-    n = pending.pop()
-  ) {
-    if (
-      n.pieceKey !== null &&
-      typeof n.value === "number" &&
-      !parts.has(n.pieceKey)
-    )
-      parts.set(n.pieceKey, n);
-    if (Array.isArray(n.kids)) pending.push(...n.kids.toReversed());
-  }
-  return parts;
-}
-
 /** Walked without recursion: a checked tree can be as deep as it has nodes. */
 export function countNodes(root: TreeNode): number {
   let count = 0;

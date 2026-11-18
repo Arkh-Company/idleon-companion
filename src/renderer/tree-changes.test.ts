@@ -78,7 +78,7 @@ test.each<
     "▲ +10%",
   ],
 ])("%s: %s → %s", (_name, fmt, combine, before, now, text) => {
-  expect(arrowOf({ fmt, combine }, before, now)).toEqual({
+  expect(arrowOf({ fmt, combine: combine ?? null }, before, now)).toEqual({
     up: now > before,
     text,
   });
@@ -219,4 +219,19 @@ test("a part beyond the live limit of 200 parts shows no arrow, nor moves its gr
   expect(arrows.has("p204")).toBe(false);
   // The group follows only what is followed: 200 parts went down by one.
   expect(arrows.get("g")).toEqual({ up: false, text: "▼ −200%" });
+});
+
+test("the root, followed live with its number, shows its own arrow", () => {
+  const root = (value: number) =>
+    node({
+      id: "root",
+      role: "root",
+      pieceKey: '[0,"Total"]',
+      value,
+      fmt: "x",
+    });
+  expect(arrowsOf(root(2.5), baseOf(root(2)).values).get("root")).toEqual({
+    up: true,
+    text: "▲ +0.5",
+  });
 });

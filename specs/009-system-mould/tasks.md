@@ -188,7 +188,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 
 ### Tests for the view (write first)
 
-- [ ] T015 [P] Tests of the arrows and the bases in `src/renderer/tree-changes.test.ts` (FR-013, NFR-003; depends on T002)
+- [X] T015 [P] Tests of the arrows and the bases in `src/renderer/tree-changes.test.ts` (FR-013, NFR-003; depends on T002)
   - Files: `src/renderer/tree-changes.test.ts`
   - Signatures (in `tree-changes.ts`): `baseOf(tree, live): Record<string, number>`; `groupValue(node, values): number | null` (by `combine`); `arrowOf(fmt, before, now): { up: boolean; text: string } | null`.
   - Cases:
@@ -223,7 +223,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 - [X] T018 The `view:get` / `view:set` channels in `src/main/payloads.ts`, `src/main/settings.ts`, `src/main/index.ts`, `src/preload/api.ts` (SEC-005, SEC-006; depends on T017)
   - Files: as listed, plus the IPC names in `src/shared/`
   - Contract: `contracts/ipc.md`.
-- [ ] T019 The arrows and bases in `src/renderer/tree-changes.ts` (FR-013, NFR-002, NFR-003; depends on T015)
+- [X] T019 The arrows and bases in `src/renderer/tree-changes.ts` (FR-013, NFR-002, NFR-003; depends on T015)
   - Files: `src/renderer/tree-changes.ts`
   - Uses the live part values the main already sends (`partsOf`, at most 200 pieces) and the marks of the 008 (research R5).
 - [ ] T020 The toggles in `src/renderer/ViewToggles.tsx`; the summary out of `src/renderer/SidePanel.tsx`; arrows and share in `src/renderer/FormulaTree.tsx` (FR-001, FR-013, FR-014, FR-015; depends on T016, T018, T019)
