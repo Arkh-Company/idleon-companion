@@ -11,6 +11,8 @@ interface Side<T> {
   row: T;
   system: string | null;
   place: string;
+  /** The bench's names from its root down to the source, for the reviewed names (the app's side has none). */
+  path?: string;
   /** A V1 group of one source, written with its code: its name is the V1's label, no name of the source. */
   label?: true;
 }
@@ -33,24 +35,38 @@ const rowsOf = (a: CalcTreeNode) => (Array.isArray(a.kids) ? a.kids : []);
 /** The bench's sources: the V1's pools (the root's rows) and system groups gone through, each with its group's system. */
 function benchSources(root: BenchRow): Side<BenchRow>[] {
   const out: Side<BenchRow>[] = [];
-  const add = (row: BenchRow, system: string | null, label = false) =>
+  const add = (
+    row: BenchRow,
+    system: string | null,
+    above: string,
+    label = false,
+  ) =>
     out.push({
       row,
       system,
       place: `0/${String(out.length)}`,
+      path: `${above} › ${row.name ?? "?"}`,
       ...(label ? { label: true as const } : {}),
     });
-  const visit = (rows: readonly BenchRow[], system: string | null) => {
+  const visit = (
+    rows: readonly BenchRow[],
+    system: string | null,
+    above: string,
+  ) => {
     for (const k of rows) {
       const own = systemOfGroup(k.name);
       if (benchConstant(k)) continue;
-      if (own === null) add(k, system);
-      else if (k.code === undefined && k.kids?.length) visit(k.kids, own);
-      else add(k, own, true);
+      if (own === null) add(k, system, above);
+      else if (k.code === undefined && k.kids?.length)
+        visit(k.kids, own, `${above} › ${k.name ?? "?"}`);
+      else add(k, own, above, true);
     }
   };
+  const top = root.name ?? "?";
   for (const p of root.kids ?? [])
-    visit(systemOfGroup(p.name) === null ? (p.kids ?? []) : [p], null);
+    if (systemOfGroup(p.name) === null)
+      visit(p.kids ?? [], null, `${top} › ${p.name ?? "?"}`);
+    else visit([p], null, top);
   return out;
 }
 
@@ -143,6 +159,7 @@ export function compareSources(
               row,
               system: b.system,
               place: `${b.place}/${String(j)}`,
+              path: `${b.path ?? "?"} › ${row.name ?? "?"}`,
             }))
         : [b],
     );
@@ -172,7 +189,7 @@ export function compareSources(
     walk(
       a.row,
       b.label ? { ...b.row, name: a.row.name } : b.row,
-      b.row.name ?? "?",
+      b.path ?? b.row.name ?? "?",
       b.place,
     );
   }
