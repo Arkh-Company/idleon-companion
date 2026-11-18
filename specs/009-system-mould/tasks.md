@@ -160,7 +160,7 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
   - Signature: `flatten(rows: Row[]): Row[]`
   - Runs with the `parentPasses` of the 008, on every level. Each file stays under 400 lines.
 
-- [ ] T014a [US3] Systems at any level inside a pool, and a chain source that opens as a chain (FR-017; depends on T014)
+- [X] T014a [US3] Systems at any level inside a pool, and a chain source that opens as a chain (FR-017; depends on T014)
   - Files: `src/calculator/tree/flatten.ts`, `src/calculator/tree/mould.ts`, `src/calculator/tree/pools.ts`, their tests (tests first)
   - Cases:
     - inside a pool, an unnamed sum ("Multiplier from N sources") and a cache the root itself wrote that only joins sources dissolve; their sources move up into the pool and are grouped by system;
