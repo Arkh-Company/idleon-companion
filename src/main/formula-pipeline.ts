@@ -1,6 +1,7 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019, formula-answer.ts).
-// The live values of what is in view go over the same pair (FR-008, plan B). Each part carries how many catalog numbers
+// The live values of what is in view go over the same pair (FR-008, plan B), and the open tree takes its own (spec 009
+// FR-015). Each part carries how many catalog numbers
 // use it, from the index the shapes fill in the background (FR-027). No electron import, so tests can load it.
 import { partsOf, pieceValues } from "../shared/index.ts";
 import type {
@@ -20,7 +21,7 @@ import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
 import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
-import { gameChangedBy, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
+import { liveTree, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
 import type { FormulaLog } from "./formula-answer.ts";
 import { withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
@@ -77,11 +78,7 @@ export function startFormulaPipeline(deps: {
     request: Extract<TreeRequest, { type: "number" }>;
     pair: StatsPair;
     active: number;
-    /** The tree on screen before a Refresh: the new one shows "was …" against it (FR-024). */
-    before: TreeNode | null;
   } | null = null;
-  /** Set by a Refresh, taken by the next ask. */
-  let refreshFrom: TreeNode | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
   /** The other rows opened meanwhile: each one asked after the branch before it answers (the host keeps one waiting). */
@@ -94,6 +91,9 @@ export function startFormulaPipeline(deps: {
   let pinIds: string[] = [];
   /** The parts of the open tree asked live, by piece; only of the active character's tree (FR-024). */
   let parts = new Map<string, TreeNode>();
+  /** The parts that had a live value: one that loses it asks the tree again (FR-015). A piece is the same call in any
+   * tree, so the set outlives the tree. */
+  const hadLive = new Set<string>();
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -104,14 +104,21 @@ export function startFormulaPipeline(deps: {
         ([k]) => !k.startsWith("["),
       );
       deps.sendValues({ ...v, values: Object.fromEntries(values) });
-      changedInGame(v);
+      liveInTree(v);
     },
   });
 
-  /** "Game changed · Refresh" (FR-024), once, over the open tree. */
-  function changedInGame(v: LiveValues): void {
-    if (last.state === "ready" && gameChangedBy(last, v, parts))
-      show({ ...last, gameChanged: true });
+  /** spec 009 FR-015: the open tree takes the live values; a change of its shape asks it again, the tree kept on screen
+   * meanwhile (and none while a tree is asked). */
+  function liveInTree(v: LiveValues): void {
+    if (last.state !== "ready" || asked) return;
+    const next = liveTree(last, v, parts, hadLive);
+    for (const k of parts.keys())
+      if (typeof v.values[k] === "number") hadLive.add(k);
+    if (next === "rebuild") {
+      drop();
+      ask(true);
+    } else if (next) show(next);
   }
 
   const index = feedsIndex({
@@ -218,7 +225,8 @@ export function startFormulaPipeline(deps: {
     return pair && active !== null ? { pair, active } : null;
   }
 
-  function ask(): void {
+  /** `quiet`: the tree on screen stays until the new one comes (a rebuild, FR-015). */
+  function ask(quiet = false): void {
     if (!open) return;
     const now = current();
     if (!now) {
@@ -227,8 +235,6 @@ export function startFormulaPipeline(deps: {
       return;
     }
     const { pair, active } = now;
-    const before = refreshFrom;
-    refreshFrom = null;
     openFor = active;
     const request = {
       type: "number" as const,
@@ -236,8 +242,8 @@ export function startFormulaPipeline(deps: {
       character: open.character ?? active,
     };
     seq++;
-    asked = { seq, request, pair, active, before };
-    show({ state: "calculating", request });
+    asked = { seq, request, pair, active };
+    if (!quiet) show({ state: "calculating", request });
     host.request(seq, request, pair.mosaicJson);
   }
 
@@ -284,14 +290,6 @@ export function startFormulaPipeline(deps: {
         expand(r);
         return;
       }
-      // The same number again over its tree is a Refresh: the new tree is compared with this one.
-      refreshFrom =
-        last.state === "ready" &&
-        last.request.type === "number" &&
-        last.request.id === r.id &&
-        (r.character ?? last.activeCharacter) === last.character
-          ? last.root
-          : null;
       drop();
       open = { id: r.id, character: r.character };
       view();

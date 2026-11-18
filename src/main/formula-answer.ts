@@ -1,13 +1,11 @@
-// What the tree worker's answer to a `number` request becomes on screen (spec 008, data-model.md), and when the band
-// "Game changed · Refresh" lights over it (FR-024). The root is checked against the Stats number (FR-019) and what the
+// What the tree worker's answer to a `number` request becomes on screen (spec 008, data-model.md), and what a newer
+// reading writes into it (spec 009 FR-015, in place of the 008's "Game changed · Refresh"). The root is checked against the Stats number (FR-019) and what the
 // worker sends is checked before it reaches the window (FR-010b). No electron import, so tests can load it.
 import {
   catalogName,
-  compareTrees,
   isLiveNumber,
   rootText,
   statsNumber,
-  valueText,
 } from "../shared/index.ts";
 import type {
   FormulaTree,
@@ -17,7 +15,7 @@ import type {
 } from "../shared/index.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { checkTree } from "./tree-check.ts";
-import { countNodes } from "./tree-walk.ts";
+import { countNodes, withValues } from "./tree-walk.ts";
 
 /** Drop Rate without compaction is about 5,000 rows (plan, Scale). */
 export const MAX_TREE_NODES = 20_000;
@@ -36,8 +34,6 @@ export function treeAnswer(
     request: Extract<TreeRequest, { type: "number" }>;
     pair: StatsPair;
     active: number;
-    /** The tree on screen before a Refresh: the new one shows "was …" against it (FR-024). */
-    before: TreeNode | null;
   },
   on: {
     /** The tree with the counts of Where this goes (FR-027). */
@@ -46,7 +42,7 @@ export function treeAnswer(
     stale: boolean;
   },
 ): { tree: FormulaTree; log?: FormulaLog } {
-  const { request, pair, active, before } = asked;
+  const { request, pair, active } = asked;
   const checked = checkTree(raw, MAX_TREE_NODES);
   if (!checked)
     return {
@@ -67,7 +63,7 @@ export function treeAnswer(
       tree: { state: "diverged", request, statsText: textOf(statsValue) },
       log: { event: "treeDiverged", label: stats.label, id: request.id },
     };
-  const root = on.fed(before ? compareTrees(before, checked).withWas : checked);
+  const root = on.fed(checked);
   return {
     tree: {
       state: "ready",
@@ -78,7 +74,6 @@ export function treeAnswer(
       character: request.character,
       activeCharacter: active,
       calculatedAt: pair.calculatedAt,
-      gameChanged: false,
       checkedOnThisGame: on.checkedOnThisGame,
       stale: on.stale,
       comparingWith: null,
@@ -88,35 +83,45 @@ export function treeAnswer(
   };
 }
 
+type Ready = Extract<FormulaTree, { state: "ready" }>;
+
 /**
- * "Game changed · Refresh" (FR-024): in a reading newer than the tree's, the open number's text or the text of one of
- * its open parts is not the tree's; a counter that moves none of them changes nothing. Only the active character's tree,
- * the live values being the active character's; never twice, nor over a closed game.
+ * The open tree with a reading newer than it (spec 009 FR-015): the number's value and text and each followed part's
+ * value written in place; "rebuild" when the shape may have changed (the number moved with no followed part moving, or a
+ * part that had a live value, in `had`, lost it); null when nothing moved, or with no number at the root (values that
+ * failed ask nothing again, or a failing worker would be asked each second). Only the active character's tree, the live
+ * values being the active character's, and never over a closed game.
  */
-export function gameChangedBy(
-  tree: Extract<FormulaTree, { state: "ready" }>,
+export function liveTree(
+  tree: Ready,
   v: LiveValues,
   parts: ReadonlyMap<string, TreeNode>,
-): boolean {
+  had: ReadonlySet<string>,
+): Ready | "rebuild" | null {
   if (
     tree.request.type !== "number" ||
     tree.character !== tree.activeCharacter ||
-    tree.gameChanged ||
     tree.stale ||
     v.calculatedAt <= tree.calculatedAt
   )
-    return false;
+    return null;
   const { id } = tree.request;
   const now = v.values[id];
-  const moved = ([key, n]: [string, TreeNode]) => {
-    const value = v.values[key];
-    return (
-      typeof value === "number" &&
-      valueText({ value, fmt: n.fmt }) !== valueText(n)
-    );
+  if (typeof now !== "number") return null;
+  const rootMoved = now !== tree.root.value;
+  const moved = new Map<string, number>();
+  let lost = false;
+  for (const [key, n] of parts) {
+    const x = v.values[key];
+    if (typeof x === "number") {
+      if (x !== n.value) moved.set(key, x);
+    } else if (x === null && had.has(key)) lost = true;
+  }
+  if (lost || (rootMoved && moved.size === 0)) return "rebuild";
+  if (moved.size === 0) return null;
+  return {
+    ...tree,
+    root: withValues(tree.root, moved, rootMoved ? now : undefined),
+    ...(rootMoved ? { rootText: rootText(id, now) } : {}),
   };
-  return (
-    (typeof now === "number" && rootText(id, now) !== tree.rootText) ||
-    [...parts].some(moved)
-  );
 }

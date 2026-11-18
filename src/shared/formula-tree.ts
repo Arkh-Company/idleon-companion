@@ -168,7 +168,6 @@ export type FormulaTree =
       character: number;
       activeCharacter: number;
       calculatedAt: number;
-      gameChanged: boolean;
       /** False shows the version band (FR-018). */
       checkedOnThisGame: boolean;
       /** The game is closed: the last reading (FR-022). */
