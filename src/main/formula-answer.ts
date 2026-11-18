@@ -130,3 +130,30 @@ export function liveTree(
     lost,
   };
 }
+
+/** spec 009 FR-015, NFR-002: at most one silent rebuild in this time since the last tree came, so the worker stays free
+ * for the live values of each reading (decision of 18/11). */
+export const REBUILD_EVERY_MS = 10_000;
+
+/** When the open tree is asked again in silence: after a change, at most every `REBUILD_EVERY_MS` since a tree came. */
+export function rebuildClock(now: () => number = Date.now) {
+  let due = false;
+  let at = 0;
+  return {
+    /** A live value moved: the tree waits to be asked again. */
+    changed() {
+      due = true;
+    },
+    /** A tree came: the time starts again. A change written while it was asked still waits: the tree may be of an
+     * older reading, and the next one says so anyway. */
+    came() {
+      at = now();
+    },
+    /** True, once, when a change waits, the pipeline is `free` and the time is past: the caller asks the tree. */
+    take(free: boolean): boolean {
+      if (!due || !free || now() - at < REBUILD_EVERY_MS) return false;
+      due = false;
+      return true;
+    },
+  };
+}

@@ -1,8 +1,8 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019, formula-answer.ts).
 // The live values of what is in view go over the same pair (FR-008, plan B), and the open tree takes its own (spec 009
-// FR-015). Each part carries how many catalog numbers
-// use it, from the index the shapes fill in the background (FR-027). No electron import, so tests can load it.
+// FR-015). Each part carries how many catalog numbers use it, from the index the shapes fill in the background (FR-027).
+// No electron import, so tests can load it.
 import { partsOf, pieceValues } from "../shared/index.ts";
 import type {
   FormulaTree,
@@ -21,7 +21,12 @@ import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
 import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
-import { liveTree, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
+import {
+  liveTree,
+  MAX_TREE_NODES,
+  rebuildClock,
+  treeAnswer,
+} from "./formula-answer.ts";
 import type { FormulaLog } from "./formula-answer.ts";
 import { withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
@@ -94,6 +99,8 @@ export function startFormulaPipeline(deps: {
   /** The parts that had a live value: one that loses it asks the tree again (FR-015). A piece is the same call in any
    * tree, so the set outlives the tree. */
   const hadLive = new Set<string>();
+  /** A change since the last tree came asks it again in silence, at most every 10 s (FR-015, NFR-002). */
+  const rebuild = rebuildClock();
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -108,19 +115,26 @@ export function startFormulaPipeline(deps: {
     },
   });
 
-  /** spec 009 FR-015: the open tree takes the live values at once, and a change asks it again in silence (its ⓘ, its
-   * shares, a source that came or left), the tree kept on screen meanwhile; one request at a time. */
+  /** spec 009 FR-015: the open tree takes the live values at each reading, and a change asks it again in silence (its
+   * ⓘ, its shares, a source that came or left), the tree kept on screen meanwhile. */
   function liveInTree(v: LiveValues): void {
-    if (last.state !== "ready" || asked) return;
+    if (last.state !== "ready") return;
     const next = liveTree(last, v, parts, hadLive);
     for (const k of parts.keys())
       if (typeof v.values[k] === "number") hadLive.add(k);
-    if (!next) return;
-    // A part lost counts once: still without a value on the new tree, it asks nothing more.
-    for (const k of next.lost) hadLive.delete(k);
-    if (next.tree !== last) show(next.tree);
-    drop();
-    ask(true);
+    if (next) {
+      // A part lost counts once: still without a value on the new tree, it asks nothing more.
+      for (const k of next.lost) hadLive.delete(k);
+      if (next.tree !== last) show(next.tree);
+      rebuild.changed();
+    }
+    rebuildIfDue();
+  }
+
+  /** The silent rebuild: one at a time, never over a branch asked (the host keeps one waiting job; a branch waiting in
+   * `queued` is asked as the one before it comes, so `expanding` covers it). */
+  function rebuildIfDue(): void {
+    if (rebuild.take(!asked && !expanding)) ask(true);
   }
 
   const index = feedsIndex({
@@ -201,6 +215,7 @@ export function startFormulaPipeline(deps: {
     if (target) branched(target, raw);
     const next = queued.shift();
     if (next) expand(next);
+    else rebuildIfDue();
   }
 
   /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
@@ -254,6 +269,7 @@ export function startFormulaPipeline(deps: {
   function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
     const { request } = asked;
+    rebuild.came();
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
