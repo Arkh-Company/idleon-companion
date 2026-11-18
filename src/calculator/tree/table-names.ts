@@ -56,6 +56,22 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js StarSigns (the bonus text of the sign)",
   ),
+  /** The bonus of sigil i at the tier of column col (spec 009 T031), a number read by `tableNumber`. */
+  sigilTier: text(
+    "CustomLists.SigilDesc",
+    (s, col) => [s, col],
+    null,
+    "raw",
+    "N.js Labb SigilBonus (the bonus of the sigil at a tier)",
+  ),
+  /** The max level of Legend Talent i (spec 009 T031), a number read by `tableNumber`. */
+  legendMax: text(
+    "CustomLists.LegendTalents",
+    (l) => [l, 1],
+    null,
+    "raw",
+    "N.js Thingies LegendTalent_MaxLV (the max level of the talent)",
+  ),
   /** The bonus of the Meritocracy vote t (spec 009 T031), a number of the table, read by `tableNumber`. */
   vote: text(
     "CustomLists.NinjaInfo",
@@ -314,17 +330,11 @@ export function tableNumber(
   ...i: (string | number)[]
 ): number | null {
   const t = TABLE_TEXTS[kind];
-  const v = t.at(...i).reduce<unknown>(
-    step,
-    gameTables.get(
-      partTable({
-        table: t.table,
-        index: t.at(...i),
-        field: null,
-        transform: t.transform,
-      }),
-    ),
-  );
+  const index = t.at(...i);
+  const p = { table: t.table, index, field: null, transform: t.transform };
+  // as in partText: an item's or a monster's first index is its entry, the id of its table
+  const inside = t.table.includes(".") ? index : index.slice(1);
+  const v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
   const x = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
   return Number.isFinite(x) ? x : null;
 }

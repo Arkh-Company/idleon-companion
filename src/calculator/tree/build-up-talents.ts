@@ -6,6 +6,7 @@ import { curveFormula, curveOf, fx3 } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
+import { tableNumber } from "./table-names.ts";
 import {
   built,
   codeOf,
@@ -47,6 +48,15 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   return level && f ? built(lv, [level, ...constRows(c, roles)], f) : null;
 }
 
+/**
+ * The Legend Talents whose max level grows past the table's (N.js Thingies "LegendTalent_MaxLV": a Research grid bonus
+ * for 20 of them, 3 more with a Menagerie unlock for 9).
+ */
+const GROWN_MAX = new Set([
+  2, 13, 3, 18, 5, 9, 23, 33, 1, 16, 20, 31, 19, 27, 8, 34, 30, 29, 6, 26, 35,
+  36, 0, 15, 32,
+]);
+
 /** A Legend Talent: its Points (with their max when the game read it) and its Bonus per point. */
 export function legendTalent(lv: Level): BuiltUp | null {
   const call = lv.call;
@@ -54,7 +64,12 @@ export function legendTalent(lv: Level): BuiltUp | null {
   const table = `CustomLists.LegendTalents[${String(call.a[1])}]`;
   const read = (p: string) => (call.r ?? []).find(([q]) => q === p)?.[1];
   const per = Number(read(`${table}[2]`));
-  const max = read(`${table}[1]`);
+  // the table's max is the talent's own only when no Research grid bonus nor the Menagerie raises it
+  const max = GROWN_MAX.has(Number(call.a[1]))
+    ? undefined
+    : (read(`${table}[1]`) ??
+      tableNumber("legendMax", Number(call.a[1])) ??
+      undefined);
   const [pts, ...more] = parts(lv.rows);
   const v = vOf(lv.row);
   if (!pts || more.length || !Number.isFinite(per)) return null;

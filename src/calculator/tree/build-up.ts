@@ -22,6 +22,7 @@ import type { Pair } from "./formulas.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
+import { tableNumber } from "./table-names.ts";
 import {
   built,
   codeOf,
@@ -166,6 +167,30 @@ function sigilMulti(r: Row, lv: Level, ctx: BuildUpContext): Row {
   return r;
 }
 
+/** The columns of SigilDesc the tier ladder picks, tier 0 to 4 (N.js Labb SigilBonus). */
+const TIER_COLUMNS = [3, 4, 8, 10, 12];
+/** The sigil's tier with the bonus of each tier in its ⓘ, from the checked table; as it is with no table. */
+function tierRow(tier: Row, lv: Level, at: number): Row {
+  const sigil = Number(
+    lv.call?.a[2] ??
+      /^Labb\("SigilBonus", "[^"]*", (\d+)/.exec(lv.row.node.code ?? "")?.[1],
+  );
+  const tiers = TIER_COLUMNS.map((c) => tableNumber("sigilTier", sigil, c));
+  if (!Number.isInteger(sigil) || tiers.some((x) => x === null)) return tier;
+  return {
+    ...tier,
+    node: {
+      ...tier.node,
+      formula: {
+        rule: [
+          `tiers: ${tiers.map((x) => fx3(Number(x))).join(" / ")}`,
+          `tier ${fx3(vOf(tier))} → ${fx3(at)}`,
+        ],
+      },
+    },
+  };
+}
+
 const SIGIL_CELL = /^CustomLists\.SigilDesc\[\d+\]\[\d+\]$/;
 const SIGIL_TIER = /^CauldronP2W\[4\]\[\d+\]$/;
 
@@ -180,7 +205,11 @@ function sigil(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   const ms = multis.map((r) => sigilMulti(r, lv, ctx));
   return built(
     lv,
-    [renamed(tier, "Sigil tier", "tier"), renamed(at, "Bonus at tier"), ...ms],
+    [
+      tierRow(renamed(tier, "Sigil tier", "tier"), lv, vOf(at)),
+      renamed(at, "Bonus at tier"),
+      ...ms,
+    ],
     [
       ["Bonus at tier", ...ms.map((r) => termOf(r.node))].join(" × "),
       `${[vOf(at), ...ms.map(vOf)].map(fx3).join(" × ")} = ${fx3(v)}`,
