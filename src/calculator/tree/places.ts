@@ -18,6 +18,7 @@ import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
+import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
@@ -101,11 +102,23 @@ export function makePlaces(ctx: PlaceContext) {
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
   function placedLevel(id: string, lv: Level) {
-    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows; any other level
-    // has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
+    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows, and so are those
+    // of a source computed as a chain, which opens into its pools: its ⓘ is how they join, the step its call takes
+    // (FR-017); any other level has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
+    const pools = lv.rows.filter((r) => r.node.role === "pool");
     const w = isMould(lv.row)
       ? { formula: lv.row.node.formula, rows: lv.rows }
-      : withFormula(lv.row, flatten(lv.rows));
+      : pools.length
+        ? {
+            formula: lv.row.xf
+              ? formulaOut(
+                  lv.row.xf,
+                  pools.map((p) => p.node.name),
+                )
+              : null,
+            rows: lv.rows,
+          }
+        : withFormula(lv.row, flatten(lv.rows));
     return {
       formula: w.formula,
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),

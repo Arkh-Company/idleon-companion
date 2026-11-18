@@ -4,6 +4,8 @@
 // The mould (spec 009, FR-001, FR-002, FR-004 to FR-006): those rows in the game's pools (tree/pools.ts), and inside
 // each pool by system (tree/systems.ts), in the V1 order of the bench (build-v1mold.cjs), "🔹 Other" last.
 import { fx3 } from "./curves.ts";
+import { dissolve } from "./flatten.ts";
+import type { Joins } from "./flatten.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
 import { chainPools, poolsOf, poolsPair, rootExtreme } from "./pools.ts";
@@ -161,9 +163,19 @@ export function bySystem(
     .flatMap(([s, rs]) => (rs.length === 1 ? rs : [systemRow(s, combine, rs)]));
 }
 
-/** A pool's row (FR-005): its name and value, how its rows give it, and its rows by system. */
-function poolRow(p: Pool, writerOf: WriterOf): Row {
-  const level = [...bySystem(p.rows, p.combine, writerOf)];
+/**
+ * A pool's row (FR-005): its name and value, how its rows give it, and its rows by system, with no unnamed sum nor any
+ * working value of the root that only joins sources in the way (`joins`, FR-017).
+ */
+function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
+  const op =
+    p.combine === "product"
+      ? "*"
+      : p.combine === "sum" || p.combine === "onePlusPercent"
+        ? "+"
+        : null;
+  const rows = op ? dissolve(p.rows, op, joins) : p.rows;
+  const level = [...bySystem(rows, p.combine, writerOf)];
   const pct = p.combine === "onePlusPercent";
   // 1 + (its groups) ÷ 100: the ⓘ the parts' own sum or product would not give
   const pair: [string, string] | null = pct
@@ -192,13 +204,14 @@ export function poolRows(
   pools: readonly Pool[],
   root: { name: string; value: Node["value"] },
   writerOf: WriterOf,
+  joins?: Joins,
 ): { rows: Row[]; formula: Node["formula"] } {
   const v = root.value;
   const pair = poolsPair(
     pools,
     typeof v === "boolean" ? Number(v) : (v ?? NaN),
   );
-  const rows = pools.map((p) => poolRow(p, writerOf));
+  const rows = pools.map((p) => poolRow(p, writerOf, joins));
   return {
     rows: withShares(root, pair, rows).rows,
     formula:
@@ -221,6 +234,57 @@ export interface FirstLevelContext {
   steps?: readonly Step[];
   termAt?: TermAt;
   ownCache?: OwnCache;
+  /** A working value the root's own call wrote, as its writer's rows (FR-017). */
+  joins?: Joins;
+}
+
+/** The pools' rows (`chain`: a chain's) with, after a chain's, the rows of the 008 no step of it shows (FR-008). */
+function pooledLevel(
+  rows: Row[],
+  root: Pick<Node, "name" | "value">,
+  pools: readonly Pool[],
+  chain: boolean,
+  { steps, writerOf, joins }: FirstLevelContext,
+): { rows: Row[]; formula: Node["formula"] } {
+  // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
+  const out = poolRows(
+    chain ? pools : pools.map((p) => ({ ...p, rows: mould(p.rows) })),
+    root,
+    writerOf,
+    joins,
+  );
+  // its checks and its data rows stay after a chain's pools
+  const shown = new Set((steps ?? []).flatMap((st) => readsOf(st.e)));
+  const rest = chain
+    ? rows.filter(
+        (r) =>
+          r.node.leaf === "condition" ||
+          (r.node.code !== null &&
+            !r.node.code.includes("(") &&
+            !shown.has(r.node.code)),
+      )
+    : [];
+  return { rows: [...out.rows, ...rest], formula: out.formula };
+}
+
+/**
+ * The level of a source that is itself a system computed as a chain (spec 009, FR-017): the pools of its own chain (FR-005)
+ * by system, its block's other rows after them (`rows`, its 008 rows), and how its pools give it; null for no chain.
+ */
+export function chainLevel(
+  rows: Row[],
+  value: Node["value"],
+  ctx: FirstLevelContext,
+): { rows: Row[]; pair: [string, string] | null } | null {
+  const { steps, termAt, ownCache } = ctx;
+  const pools =
+    steps && termAt ? chainPools(steps, { value }, termAt, ownCache) : null;
+  if (!Array.isArray(pools)) return null;
+  const v = typeof value === "boolean" ? Number(value) : (value ?? NaN);
+  return {
+    rows: pooledLevel(rows, { name: "", value }, pools, true, ctx).rows,
+    pair: poolsPair(pools, v),
+  };
 }
 
 /**
@@ -231,8 +295,9 @@ export interface FirstLevelContext {
 export function firstLevel(
   rows: Row[],
   root: Pick<Node, "name" | "value" | "formula">,
-  { expr, term, writerOf, steps, termAt, ownCache }: FirstLevelContext,
+  ctx: FirstLevelContext,
 ): { rows: Row[]; formula: Node["formula"]; chainOpen?: true } {
+  const { expr, term, writerOf, steps, termAt, ownCache } = ctx;
   // a chain of steps gives its pools from the steps (rule Y); a root of one step, from its rows
   const read =
     steps && termAt ? chainPools(steps, root, termAt, ownCache) : null;
@@ -241,25 +306,9 @@ export function firstLevel(
   const chain = read === "open" ? null : read;
   const pools = chain ?? poolsOf(rows, { value: root.value, expr }, term);
   if (pools) {
-    // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
-    const out = poolRows(
-      chain ? pools : pools.map((p) => ({ ...p, rows: mould(p.rows) })),
-      root,
-      writerOf,
-    );
-    // FR-008: the rows of the 008 no step of the chain shows (its checks, its data rows) stay after its pools
-    const shown = new Set((steps ?? []).flatMap((st) => readsOf(st.e)));
-    const rest = chain
-      ? rows.filter(
-          (r) =>
-            r.node.leaf === "condition" ||
-            (r.node.code !== null &&
-              !r.node.code.includes("(") &&
-              !shown.has(r.node.code)),
-        )
-      : [];
+    const out = pooledLevel(rows, root, pools, !!chain, ctx);
     return {
-      rows: [...out.rows, ...rest],
+      rows: out.rows,
       formula: out.formula ?? root.formula,
       ...open,
     };

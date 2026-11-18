@@ -15,6 +15,18 @@ export function flat(e: Expr, op: string, out: Expr[] = []): Expr[] {
   } else out.push(e);
   return out;
 }
+/** The one operation of an expression that only adds, or only multiplies, its sources and numbers; else null. */
+export function onlyOp(e: Expr): "+" | "*" | null {
+  const ops = new Set<string>();
+  const pure = (x: Expr): boolean => {
+    if (x.t !== "op") return ["num", "val", "read", "call"].includes(x.t);
+    ops.add(x.o);
+    return pure(x.l) && pure(x.r);
+  };
+  const ok = pure(e);
+  const [o] = ok && ops.size === 1 ? ops : [];
+  return o === "+" || o === "*" ? o : null;
+}
 export function firstSrc(e: Expr | undefined): Expr | null {
   if (!e) return null;
   if (e.t === "def") return firstSrc(e.e);

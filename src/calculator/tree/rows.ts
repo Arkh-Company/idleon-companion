@@ -71,6 +71,8 @@ export interface Row {
    * a chain, read back from a working value the root wrote. Its own rows are renamed under them, as they were.
    */
   up?: readonly Above[];
+  /** A branch whose expression only adds, or only multiplies, its rows (tree/flatten.ts: a step that may give them up). */
+  op?: "+" | "*";
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

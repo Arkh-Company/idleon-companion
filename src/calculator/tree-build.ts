@@ -21,12 +21,14 @@ import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
-import { firstLevel, mould } from "./tree/mould.ts";
+import { chainContext } from "./tree/chain-context.ts";
+import { chainLevel, firstLevel, mould } from "./tree/mould.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { makePlaces } from "./tree/places.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
 import type { Row } from "./tree/rows.ts";
 import { makeSteps } from "./tree/steps.ts";
+import { systemOf } from "./tree/systems.ts";
 import { near } from "./tree/math.ts";
 import { firstSrc, noSource, topOp } from "./tree/expr.ts";
 import { makeCodeFormulas } from "./tree/code-formulas.ts";
@@ -286,12 +288,38 @@ export function buildTree(
     const all = conditions.mergeTests(n, rows, data, conds, own);
     return finish(n.v, terms.tidy(all, op ?? "*", n.a, n), true);
   }
-  const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
-    JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
-  );
-
   /** [NR-G 2b] the ⓘ a call takes from the one cache it returns, by piece, once its rows are built. */
   const openXf = new Map<string, [string, string]>();
+  // spec 009, rule Y: what a call's chain of steps reads for its pools
+  const chainOf = (n: RecNode, depth: number, seen: ReadonlySet<number>) =>
+    chainContext(
+      {
+        nodes,
+        steps: (id) => steps.of(id).steps,
+        terms: termsOf,
+        turns: (key) => entries.get(key) ?? [],
+        opened: (o, d, s) => caches.opened(o, d, s),
+      },
+      n,
+      depth,
+      seen,
+    );
+  // FR-017: below the root, a system computed as a chain opens with its own chain's pools, its ⓘ how they join
+  const pieces = makePieces(
+    rec,
+    links,
+    (id, depth, seen) => {
+      const rows = raw(id, depth, seen);
+      const n = nodes[id];
+      if (!n || id === top.id || !systemOf(callText(n))) return rows;
+      const chain = chainLevel(rows, valueOf(n.v), chainOf(n, depth, seen));
+      if (chain?.pair) openXf.set(keyOf(n), chain.pair);
+      return chain?.rows ?? rows;
+    },
+    keyOf,
+    (rows) =>
+      JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
+  );
   const { place, expand } = makePlaces({
     nodes,
     bugs,
@@ -321,36 +349,13 @@ export function buildTree(
       opens: (r) => caches.opens(r, 0, new Set([top.id])),
     });
     root.formula = own?.formula ?? null;
-    // FR-006: the game steps, never named by their shape; spec 009: in the game's pools, by system
-    const last = steps.of(top.id).steps.at(-1);
-    const terms = termsOf(top);
-    const reads: Reads = new Map((top.r ?? []).map(([p, v]) => [p, v]));
-    // spec 009, rule Y: the pools of a chain of steps come from its steps
-    const all = steps.of(top.id).steps;
-    const first = firstLevel(mould(own?.rows ?? rows), root, {
-      expr: last && near(last.v, top.v) ? last.e : null,
-      term: (e) => terms.term(e, "+", reads),
-      steps: all,
-      termAt: (e, op, at) =>
-        terms.term(e, op, reads, { args: top.a, steps: all, at }),
-      // a working value the root's own call wrote: its cache's writer is the root
-      ownCache: (e, at) => {
-        const o = terms.term(e, "+", reads, {
-          args: top.a,
-          steps: all,
-          at,
-        })?.open;
-        if (typeof o !== "object" || o?.writer !== top.id) return false;
-        // out of a loop: a loop's step is recorded once, for its last turn, and its cache opens into its turns
-        const turns = entries.get(`${String(top.id)}|${o.path}`) ?? [];
-        return turns.every((t) => all.some((st) => near(st.v, t.v)));
-      },
-      writerOf: (r) => {
-        const o = r.open;
-        const w = o !== null && typeof o === "object" ? nodes[o.writer] : null;
-        return w ? callText(w) : undefined;
-      },
-    });
+    // FR-006: the game steps, never named by their shape; spec 009: in the game's pools (rule Y: a chain's from its
+    // steps), by system
+    const first = firstLevel(
+      mould(own?.rows ?? rows),
+      root,
+      chainOf(top, 0, new Set()),
+    );
     root.formula = first.formula;
     chainOpen = first.chainOpen === true;
     root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [

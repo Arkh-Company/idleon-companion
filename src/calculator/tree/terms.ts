@@ -9,7 +9,15 @@ import { MAX_DEPTH } from "./pieces.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
+import {
+  adds,
+  firstSrc,
+  flat,
+  onlyOp,
+  readValueIn,
+  stateSrc,
+  topOp,
+} from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
 import { branchName } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -123,10 +131,10 @@ export function makeTerms(ctx: TermContext) {
       const [only] = rows;
       if (only && rows.length === 1 && near(only.node.value, v)) return only;
       // pieces.cjs stepRef tidies with no caller ({ id: -1 }): no argument names an earlier value here
-      return branch(
-        v,
-        op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows,
-      );
+      return {
+        ...branch(v, op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows),
+        ...(op ? { op } : {}),
+      };
     }
     return null;
   }
@@ -152,7 +160,8 @@ export function makeTerms(ctx: TermContext) {
     // [R1-PATCH] the parts of a sum are no parts at ×1: they are left aside only when the expression adds nothing
     const out = branch(e.v, ctx.finish(e.v, tidy(rows, "*", []), ones));
     const xf = ctx.formulas.expr(e, reads, e.v);
-    return xf ? { ...out, xf } : out;
+    const op = onlyOp(e);
+    return { ...out, ...(xf ? { xf } : {}), ...(op ? { op } : {}) };
   }
 
   /** A value with no source of its own (pieces.cjs rowOfTerm, "val"). */
