@@ -135,6 +135,10 @@ const TABLE_RULES: readonly StateRule[] = [
     "N.js MainframeBonus",
     (m) => with_(tableText("lab", n(m)), (t) => `${t} connected`),
   ),
+  // spec 009 T030: a Cosmo upgrade's level, which CosmoBonusQTY(t, i) multiplies by the upgrade's own bonus
+  rule(/^Holes\[([4-6])\]\[(\d+)\]$/, "N.js Holes CosmoBonusQTY", (m) =>
+    with_(tableText("cosmo", n(m) - 4, n(m, 2)), (t) => `${t} level`),
+  ),
   rule(/^Dream\[(\d+)\]$/, "N.js Dreamstuff; N.js TotalStats", (m) =>
     with_(tableText("dream", n(m) - 2), (t) => `${t} LV`),
   ),

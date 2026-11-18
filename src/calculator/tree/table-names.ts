@@ -77,6 +77,13 @@ export const TABLE_TEXTS = {
     "clean",
     "bench pieces.cjs itemName",
   ),
+  cosmo: text(
+    "CustomLists.CosmoUpgrades",
+    (t, i) => [t, i, 2],
+    null,
+    "clean",
+    "N.js Holes CosmoBonusQTY, the level of the Cosmo upgrade t, i",
+  ),
   god: text(
     "CustomLists.GodsInfo",
     (g) => [g, 0],

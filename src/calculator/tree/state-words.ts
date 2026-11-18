@@ -109,6 +109,17 @@ const CAVERNS = ["Motherlode", "Eternal Hive", "Evertree Cavern", "4th cavern"];
 
 /** The rules in words, the first that matches decides. */
 export const WORD_RULES: readonly StateRule[] = [
+  // spec 009 T030: the bench's names of two counters, never a raw path
+  rule(
+    /^OptionsListAccount\[139\]$/,
+    "bench names-other.cjs; N.js WorkbenchStuff AdditionExtraEXPnDR reads its log",
+    () => "Plunderous Kills (account total)",
+  ),
+  rule(
+    /^OptionsListAccount\[189\]$/,
+    "bench build-v1mold.cjs G6b; N.js TotalStats Drop_Rarity, the talent 655 times it",
+    () => "Weekly boss difficulties defeated this week",
+  ),
   rule(
     /^DNSM\.FishTKdl\[([1-3])\]$/,
     "N.js FishingToolkit modes D1, D2, D3, the depths of IDforETCbonus",
