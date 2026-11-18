@@ -1,7 +1,9 @@
-// The full build-up of a talent (spec 009, FR-018; tree/build-up.ts), by the game's code:
-// - N.js GetTalentNumber: `0 >= SkillLevels[t] ? 0 : curve(TalentDescriptions[t][1], SkillLevels[t] + AllTalentLV(t))`,
-//   50 in a dungeon: Talent level = Points invested + All-talent levels, and the curve's two constants;
-// - N.js Thingies "LegendPTS_bonus": `round(Spelunk[18][i] × LegendTalents[i][2])`: Points and Bonus per point.
+// The full build-up of a talent (spec 009, FR-018; tree/build-up.ts), in our words:
+// - a talent (N.js GetTalentNumber): 0 with no points invested, else bonus = curve(L), with the level L = points invested
+//   + all-talent levels (L = 50 in a dungeon): Talent level = Points invested + All-talent levels, and the curve's two
+//   constants;
+// - a Legend Talent (N.js Thingies "LegendPTS_bonus"): bonus = round(points × bonus per point): Points and Bonus per
+//   point, the Points opening into the talent's max level.
 import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3, maxReachedOf } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";

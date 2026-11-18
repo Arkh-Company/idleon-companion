@@ -1,8 +1,8 @@
 // Two more families of the full build-up (spec 009, FR-018; tree/build-up.ts):
 // - a row with a name of its own that is a curve (a cache whose writer is one curve, as the family bonus of
 //   FamBonusQTYs): its two constants by their role, its level, the curve in the ⓘ;
-// - the Prisma multi (N.js ArcaneType "PrismaBonusMult": the min of 5 and 2 + the sum of its sources ÷ 100, the purple
-//   sigils counting 0.2 each and the Rift Hivemind companion 50 times): its sources, with their weights in the ⓘ.
+// - the Prisma multi (N.js ArcaneType "PrismaBonusMult"): multi = min(5, 2 + S ÷ 100), S the sum of its sources, a
+//   purple sigil counting 0.2 and the Rift Hivemind companion 50 times its bonus: its sources, their weights in the ⓘ.
 import { curveFormula, curvePart, fx3, maxReachedOf } from "./curves.ts";
 import type { Curve } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";

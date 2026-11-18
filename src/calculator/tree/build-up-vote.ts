@@ -1,8 +1,7 @@
 // A Meritocracy vote's bonus that is not the week's (spec 009, FR-018, decision of 18/11: every value a system feeds shows
-// that system as its child, even at 0). N.js Summoning2 "MeritocBonusz": while the vote t is the week's vote
-// (OptionsListAccount[453]), the bonus of the vote in the table (NinjaInfo[41][1 + 3t]) × the Meritocracy bonus
-// multiplier (Summoning "MeritocBonuszMulti"), else 0. The game does not call the multiplier then; the recording calls it
-// beside the root (tree-recipe.ts `EXTRA_ROOTS`), so its systems open here.
+// that system as its child, even at 0). N.js Summoning2 "MeritocBonusz", in our words: bonus = (the vote's bonus in the
+// Meritocracy table) × (Meritocracy bonus multiplier) while the vote is the week's, else 0. The game does not call the
+// multiplier then; the recording calls it beside the root (tree-recipe.ts EXTRA_ROOTS), so its systems open here.
 import { fx3 } from "./curves.ts";
 import { vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";

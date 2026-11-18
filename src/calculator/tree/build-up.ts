@@ -4,12 +4,13 @@
 // never rows, and each multiplier is its own × row. Each rule is a family of the game's code, with its proof:
 // - a talent and a Legend Talent (tree/build-up-talents.ts); a row that is a curve, and the Prisma multi
 //   (tree/build-up-curves.ts);
-// - a level that is a curve times its multipliers (N.js CauldronStats "BubbleBonus": `curve(AlchemyDescription[c][i],
-//   CauldronInfo[c][i]) × max(1, PrismaBonusMult)` when the bubble is Prisma): no "Curve" row, its level and constants;
-// - a bubble times its class's bubble (N.js TalentCalc, the cache DNSM.AlchBubbles: `× max(1, AlchBubbles.Opassz)`);
-// - a sigil (N.js Labb "SigilBonus": the table's value at the tier `CauldronP2W[4][1 + 2i]` picks, × (1 + Chilled
-//   Yarn) × (1 + MeritocBonusz(21) ÷ 100)); the artifact is its base × its rarity (N.js Sailing "ArtifactBonus");
-// - a card's bonus (N.js TotalStats: `min(1.5 × CardLv("mini5a"), 10)`): Card level and Bonus per level, the cap in the ⓘ.
+// - a level that is a curve times its multipliers (N.js CauldronStats "BubbleBonus"): bubble bonus = curve(bubble
+//   level) × Prisma multi for a Prisma bubble, else curve(bubble level): no "Curve" row, its level and constants;
+// - a bubble times its class's bubble (N.js TalentCalc, the bubbles' cache): bonus × the class's multi, at least 1;
+// - a sigil (N.js Labb "SigilBonus"): bonus = (bonus at its tier) × (1 + Chilled Yarn) × (1 + vote bonus ÷ 100), the
+//   tier picking the table's column; the artifact = its base × its rarity's multiplier (N.js Sailing "ArtifactBonus");
+// - a card's bonus (N.js TotalStats): bonus = min(bonus per level × card level, cap): Card level and Bonus per level,
+//   the cap in the ⓘ.
 import {
   curveFormula,
   curveOf,
