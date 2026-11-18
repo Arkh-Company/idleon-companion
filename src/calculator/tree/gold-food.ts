@@ -99,6 +99,25 @@ function foodTexts(reads: Reads): {
 export const emporiumName = (reads: Reads): string | null =>
   foodName("Emporium", foodTexts(reads).emText);
 
+/**
+ * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(Family Bonus 66, 1) +
+ * Sources ÷ 100), when the step gives it; else null.
+ */
+export function multiFormula(s0: Step, reads: Reads): Pair | null {
+  const [secret, rest] = flat(s0.e, "*");
+  const div =
+    rest?.t === "op" && rest.r.t === "op" && rest.r.o === "/" ? rest.r : null;
+  const sumE = div?.l ?? null;
+  const famV = Math.max(Number(reads.get("DNSM.FamBonusQTYs[66]")) || 0, 1);
+  const sumV = Number(sumE?.v);
+  return sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
+    ? [
+        "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+        `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
+      ]
+    : null;
+}
+
 /** The rows of a Golden Food block with its four steps or more, or null for any other block. */
 export function goldFood(
   n: RecNode,
@@ -140,15 +159,8 @@ export function goldFood(
   const qtyKey = quantityKey(reads);
   const { foodText, emText } = foodTexts(reads);
   // the ⓘ of these rows, from the steps of the block
-  const famV = Math.max(Number(fam) || 0, 1);
   const sumV = Number(sumE?.v);
-  const multiF: Pair | null =
-    sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
-      ? [
-          "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
-          `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
-        ]
-      : null;
+  const multiF = multiFormula(s0, reads);
   // the sources as the step adds them, before a level groups those at 0
   const sourcesF: Pair | null =
     sources.length >= 2 &&

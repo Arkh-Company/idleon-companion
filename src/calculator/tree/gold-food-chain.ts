@@ -7,8 +7,8 @@ import type { RecNode } from "../recording.ts";
 import { fx3 } from "./curves.ts";
 import { flat } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
-import { emporiumName, GOLD_FOOD } from "./gold-food.ts";
-import { near } from "./math.ts";
+import { emporiumName, GOLD_FOOD, multiFormula } from "./gold-food.ts";
+import { formulaOut, near } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import { finish, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -18,7 +18,10 @@ import type { Reads } from "./val-path.ts";
 /** Each name by its role, with its proof by reference (the worn food's factor; the shared multiplier). */
 export const GOLD_FOOD_TERMS = {
   quantity: { name: "Quantity multiplier", proof: "N.js GoldFoodBonuses" },
-  multiplier: { name: "Golden food multiplier", proof: "N.js GoldFoodBonuses" },
+  multiplier: {
+    name: "GFood Multi",
+    proof: "N.js GoldFoodBonuses; bench pieces.cjs goldFood",
+  },
 };
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
@@ -81,6 +84,20 @@ export function goldFoodTerm(
   );
   if (parts.some((p) => !p)) return null;
   const name = emporiumName(reads);
+  // the shared multiplier is a value its own steps prove (the chain's first pools), with the 008's ⓘ: never a "?"
+  const pair = multiFormula({ v: Number(multi.v), e: strip(multi) }, reads);
+  const proven = (r: Row): Row =>
+    r.node.name === GOLD_FOOD_TERMS.multiplier.name && r.node.code === null
+      ? {
+          ...r,
+          node: {
+            ...r.node,
+            leaf: null,
+            why: null,
+            formula: pair && formulaOut(pair),
+          },
+        }
+      : r;
   return {
     node: row({
       pieceKey: null,
@@ -93,6 +110,6 @@ export function goldFoodTerm(
       e.v,
       parts.flatMap((p) => p ?? []),
       true,
-    ),
+    ).map(proven),
   };
 }
