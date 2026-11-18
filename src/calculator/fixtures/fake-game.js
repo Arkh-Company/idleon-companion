@@ -838,8 +838,10 @@ lime.$scripts.N = function (_exports, $global) {
   // A golden food's bonus in steps of the shape pieces.cjs goldFood reads: the shared multiplier (a set's multi × (the
   // family's, at least 1, + its sources ÷ 100)), the worn food's part with its logs when one is worn, a level and a
   // whole number, and the emporium's part added to the bonus when its level is above 0, each log a call of its own. A
-  // level below 0 ends the block after its third step. The key picks how a step is written, one shape per test. (No
-  // quote mark in its comments: instrument.ts finds the end of a block by its braces, outside quotes.)
+  // level below 0 ends the block after its third step. The key picks how a step is written, one shape per test; a key
+  // ending in Local (percentLocal) takes the shared multiplier of its start and keeps the worn food in the block, as the
+  // key local does. (No quote mark in its comments: instrument.ts finds the end of a block by its braces, outside
+  // quotes.)
   Blocks._customBlock_getLOG = function (x) {
     return Math.log(x) / Math.LN10;
   };
@@ -850,27 +852,27 @@ lime.$scripts.N = function (_exports, $global) {
     var multi;
     if (s.EquipmentOrder[2][1] === "") return 0;
     // the sum of the sources taken as a percent by a product, not a division
-    if (t === "percent")
+    if (t === "percent" || t === "percentLocal")
       multi =
         (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) *
             0.01);
     // a set of one part, then one written with its number last
-    else if (t === "oneSet")
+    else if (t === "oneSet" || t === "oneSetLocal")
       multi =
         (1 + s.GfoodSet[0] / 100) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
-    else if (t === "setLast")
+    else if (t === "setLast" || t === "setLastLocal")
       multi =
         (s.GfoodSet[0] / 100 + 1) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
     // a family of at least 2, which the ⓘ of the bench does not read
-    else if (t === "atTwo")
+    else if (t === "atTwo" || t === "atTwoLocal")
       multi =
         (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
         (Math.max(d.FamBonusQTYs[66], 2) +
@@ -883,7 +885,10 @@ lime.$scripts.N = function (_exports, $global) {
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
     // the part of the worn food: kept in the block, rounded, added to the bonus, or the bonus itself
-    if (s.EquipmentQuantity[2][1] > 0 && t === "local")
+    if (
+      s.EquipmentQuantity[2][1] > 0 &&
+      (t === "local" || t.slice(-5) === "Local")
+    )
       worn =
         d.GfoodMap.h.Amount *
         multi *
@@ -922,7 +927,7 @@ lime.$scripts.N = function (_exports, $global) {
       return d.GfoodBonus + worn + whole * Blocks._customBlock_TreeReads() * 0;
     // the part of the emporium: added to a value of the block, to another read, times 1, inside a max, twice, or to the
     // bonus
-    if (t === "local")
+    if (t === "local" || t.slice(-5) === "Local")
       return (
         worn +
         d.GfoodMap.h.Amount *
