@@ -9,6 +9,7 @@ import {
   arrowsOf,
   baseOf,
   groupValue,
+  growBase,
   valuesOf,
 } from "./tree-changes.ts";
 
@@ -223,4 +224,18 @@ test("the root, followed live with its number, shows its own arrow", () => {
     up: true,
     text: "▲ +0.5",
   });
+});
+
+test("live grows with the pieces it did not have, at their value then, and never changes those it has; a mark's never grows", () => {
+  const live = baseOf(tree(20));
+  const extra = node({
+    id: "root/Gem",
+    role: "root",
+    kids: [tree(30), piece("Gem", 5)],
+  });
+  const grown = growBase(live, extra);
+  expect(grown.values).toEqual({ ...live.values, '[0,"Gem"]': 5 });
+  expect(growBase(grown, extra)).toBe(grown);
+  const m = baseOf(tree(20), mark("Mark 1", { '[0,"Ring"]': 25 }));
+  expect(growBase(m, extra)).toBe(m);
 });

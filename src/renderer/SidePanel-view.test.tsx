@@ -264,3 +264,50 @@ test("a tree rebuilt by itself keeps open what was open; only the new rows come 
   expect(onExpand).toHaveBeenCalledTimes(2);
   expect(onExpand).toHaveBeenLastCalledWith(`${ALCHEMY}/Ring`);
 });
+
+test("a rebuilt tree that drops the focused row keeps the Tab stop and the focus in the tree, on the nearest row left", async () => {
+  const cards = node({
+    id: `${POOL}/🃏 Cards`,
+    name: "🃏 Cards",
+    value: 5,
+    fmt: "%",
+  });
+  const { update } = await draw(tree(20, {}, [cards]));
+  open(/^Additive pool/);
+  open(/^🃏 Cards/);
+  expect(document.activeElement).toBe(item(/^🃏 Cards/));
+  update(tree(20, { calculatedAt: 2_000 }));
+  const stops = screen.getAllByRole("treeitem").filter((i) => i.tabIndex === 0);
+  expect(stops).toHaveLength(1);
+  expect(stops[0]).toBe(item(/^Additive pool/));
+  expect(document.activeElement).toBe(item(/^Additive pool/));
+});
+
+test("Changes on, live: a part that comes after the click, in a branch opened later, gets its arrow from its first value", async () => {
+  const { update } = await draw(tree(20));
+  fireEvent.click(toggle("Changes"));
+  open(/^Additive pool/);
+  open(/^⚗️ Alchemy/);
+  open(/^Ring/);
+  const withGem = (gem: number) => {
+    const copy = structuredClone(tree(20));
+    const pool = Array.isArray(copy.root.kids) ? copy.root.kids[0] : undefined;
+    const alchemy = Array.isArray(pool?.kids) ? pool.kids[0] : undefined;
+    const ring = Array.isArray(alchemy?.kids) ? alchemy.kids[1] : undefined;
+    if (ring)
+      ring.kids = [
+        node({
+          id: `${ALCHEMY}/Ring/Gem`,
+          pieceKey: '[1,"Gem"]',
+          name: "Gem",
+          value: gem,
+          fmt: "%",
+        }),
+      ];
+    return copy;
+  };
+  update(withGem(20));
+  expect(arrow(/^Gem/)).toBe(null);
+  update(withGem(30));
+  expect(arrow(/^Gem/)).toBe("▲ +10%");
+});
