@@ -8,7 +8,7 @@ import type { RecNode } from "../recording.ts";
 import { BAN_FLAG, makeConditions } from "./conditions.ts";
 import { classify } from "./kinds.ts";
 import { nameOf } from "./names.ts";
-import { NAME_RECIPES, STATIC_NAMES } from "./names-table.ts";
+import { NAME_RECIPES, STATIC_NAMES, TABLE_HASHES } from "./names-table.ts";
 import { TABLES } from "./gold-food-fixture.ts";
 import { useGameTables } from "./table-names.ts";
 import { callText, row } from "./rows.ts";
@@ -327,4 +327,13 @@ test("a cache the block fills with its one search is said by what it found: Foun
       ?.test,
   ).toBe("DNSM.InventedFound = 1");
   useGameTables(new Map());
+});
+
+test("every item of the game has its entry checked, so a search says the item it found (009 T030)", () => {
+  // the World 6 trophy a block searches for (Cards[1] contains Trophy23), and 2480 items at 0e47e87b
+  expect(TABLE_HASHES.has("ItemDefinitionsGET.Trophy23")).toBe(true);
+  expect(
+    [...TABLE_HASHES.keys()].filter((t) => t.startsWith("ItemDefinitionsGET."))
+      .length,
+  ).toBeGreaterThanOrEqual(2480);
 });
