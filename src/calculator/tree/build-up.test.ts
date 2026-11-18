@@ -211,9 +211,10 @@ test("[FR-018] a bubble: its level, the curve's constants and the Prisma multi, 
     ["Prisma Bubble bonus multi", 4.10249739853905, null],
   ]);
   expect(lines(n)).toMatchObject({
+    // the curve alone reached 79.68 of its max 80 (decision of 18/11): said in the ⓘ, which is then a rule
     names:
-      "Max bonus × Bubble level ÷ (Bubble level + Level at half) × Prisma Bubble bonus multi",
-    numbers: "80 × 10,058 ÷ (10,058 + 40) × 4.1 = 327",
+      "Max bonus × Bubble level ÷ (Bubble level + Level at half) × Prisma Bubble bonus multi (the curve is at 99.6% of its max 80)",
+    numbers: "80 × 10058 ÷ (10058 + 40) × 4.102 = 326.9",
   });
 });
 
