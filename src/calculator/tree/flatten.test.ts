@@ -12,8 +12,16 @@ import { read, recNode } from "./tree-fixture.ts";
 /** A level's rows with their shares in a parent of value `v`, as rows.ts `finish` leaves them. */
 const level = (v: number, rows: Row[]): Row[] =>
   withShares({ name: "", value: v }, null, rows).rows;
-/** A branch of parts with no code; `name` undefined is the generic one, `unnamed`. */
-const branch = (value: number, parts: Row[], name?: string): Row => ({
+/**
+ * A branch of parts with no code, whose expression only does `op` to them (tree/terms.ts exprRow); `name` undefined is
+ * the generic one, `unnamed`; `op` null is an expression that does more (a max, a division).
+ */
+const branch = (
+  op: "+" | "*" | null,
+  value: number,
+  parts: Row[],
+  name?: string,
+): Row => ({
   node: row({
     pieceKey: null,
     value,
@@ -22,6 +30,7 @@ const branch = (value: number, parts: Row[], name?: string): Row => ({
   }),
   open: null,
   group: level(value, parts),
+  ...(op ? { op } : {}),
 });
 const codes = (rows: readonly Row[]) => rows.map((r) => r.node.code);
 const kidsOf = (n: CalcTreeNode | null | undefined) =>
@@ -30,8 +39,13 @@ const kidsOf = (n: CalcTreeNode | null | undefined) =>
 /** Game value (2 × 3) × Multiplier (2 × 2) × Invented.x 5 = 120. */
 const product = () =>
   level(120, [
-    branch(6, [read("Invented.a", 2), read("Invented.b", 3)]),
-    branch(4, [read("Invented.c", 2), read("Invented.d", 2)], "Multiplier"),
+    branch("*", 6, [read("Invented.a", 2), read("Invented.b", 3)]),
+    branch(
+      "*",
+      4,
+      [read("Invented.c", 2), read("Invented.d", 2)],
+      "Multiplier",
+    ),
     read("Invented.x", 5),
   ]);
 
@@ -95,7 +109,7 @@ test.each(["Multiplier", "Fixed +2", "Multiplier from 3 sources", "Value"])(
   (name) => {
     const rows = flatten(
       level(10, [
-        branch(7, [read("Invented.a", 3), read("Invented.b", 4)], name),
+        branch("+", 7, [read("Invented.a", 3), read("Invented.b", 4)], name),
         read("Invented.x", 3),
       ]),
     );
@@ -112,7 +126,7 @@ test("a proven name holds the row, and so does a row with a code of the game", (
   };
   const rows = flatten(
     level(17, [
-      branch(7, parts(), "Bonus per kill"),
+      branch("+", 7, parts(), "Bonus per kill"),
       coded,
       read("Invented.x", 3),
     ]),
@@ -127,9 +141,9 @@ test("a proven name holds the row, and so does a row with a code of the game", (
 test("nested unnamed steps flatten all the way, and the level still sums to its parent", () => {
   const rows = flatten(
     level(10, [
-      branch(9, [
+      branch("+", 9, [
         read("Invented.a", 2),
-        branch(7, [read("Invented.b", 3), read("Invented.c", 4)]),
+        branch("+", 7, [read("Invented.b", 3), read("Invented.c", 4)]),
       ]),
       read("Invented.x", 1),
     ]),
@@ -144,7 +158,7 @@ test("nested unnamed steps flatten all the way, and the level still sums to its 
 });
 
 test("a step that sums inside a product stays: its parts would not multiply to the parent (FR-008)", () => {
-  const sum = branch(5, [read("Invented.a", 2), read("Invented.b", 3)]);
+  const sum = branch("+", 5, [read("Invented.a", 2), read("Invented.b", 3)]);
   const rows = flatten(level(20, [sum, read("Invented.x", 4)]));
   expect(rows.map((r) => [r.node.value, r.group?.length ?? 0])).toEqual([
     [5, 2],
@@ -152,8 +166,17 @@ test("a step that sums inside a product stays: its parts would not multiply to t
   ]);
 });
 
+test("a step whose expression does more than add stays, even when its parts add up to it (max(0, x))", () => {
+  const max = branch(null, 5, [read("Invented.a", 0), read("Invented.b", 5)]);
+  const rows = flatten(level(8, [max, read("Invented.x", 3)]));
+  expect(rows.map((r) => [r.node.value, r.group?.length ?? 0])).toEqual([
+    [5, 2],
+    [3, 0],
+  ]);
+});
+
 test("a step whose parts do not give its value stays, as does one with a check among its parts", () => {
-  const off = branch(8, [read("Invented.a", 2), read("Invented.b", 3)]);
+  const off = branch("+", 8, [read("Invented.a", 2), read("Invented.b", 3)]);
   const check: Row = {
     node: row({
       pieceKey: null,
@@ -165,7 +188,7 @@ test("a step whose parts do not give its value stays, as does one with a check a
     open: null,
     test: "Invented.flag = 1",
   };
-  const guarded = branch(7, [read("Invented.c", 7), check]);
+  const guarded = branch("+", 7, [read("Invented.c", 7), check]);
   const rows = flatten(level(16, [off, guarded, read("Invented.x", 1)]));
   expect(rows.map((r) => r.group?.length ?? 0)).toEqual([2, 2, 0]);
 });

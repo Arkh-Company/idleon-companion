@@ -2,6 +2,7 @@
 // itself wrote that only joins sources dissolve, their sources move up into the pool and go by system; every level still
 // closes and no source leaves (FR-008).
 import { expect, test } from "vitest";
+import type { Joins } from "./flatten.ts";
 import { poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
 import { row, withShares } from "./rows.ts";
@@ -27,6 +28,7 @@ const unnamedSum = (): Row => ({
   }),
   open: null,
   group: level(30, [card(20), talent(6), card(4, 11)]),
+  op: "+",
 });
 /** A working value the root wrote, read back in its sum. */
 const own: Row = {
@@ -44,6 +46,10 @@ const own: Row = {
     opening: [],
   },
 };
+/** The rows of a step of the root that adds them (tree/flatten.ts `Joins`). */
+const sum = (rows: Row[]) => ({ op: "+" as const, rows });
+/** The working value, wherever its level placed it (a level's rows are new objects). */
+const isOwn = (r: Row) => r.node.code === own.node.code;
 const pool = (rows: Row[], value: number): Pool => ({
   kind: "additive",
   name: "Additive pool",
@@ -59,16 +65,13 @@ const brief = (rows: readonly Row[]) =>
     r.node.value,
     (r.group ?? []).map((k) => k.node.code),
   ]);
-const poolOf = (
-  rows: Row[],
-  value: number,
-  joins = (_r: Row) => null as Row[] | null,
-) =>
+const poolOf = (rows: Row[], value: number, joins: Joins = () => null) =>
   poolRows([pool(rows, value)], { name: "Total", value }, noWriter, joins)
     .rows[0]?.group ?? [];
 
 test("an unnamed sum and a working value of the root that only joins sources dissolve into the pool, by system", () => {
-  const joins = (r: Row) => (r === own ? [talent(5, 208), other(4, 1)] : null);
+  const joins = (r: Row) =>
+    isOwn(r) ? sum([talent(5, 208), other(4, 1)]) : null;
   const rows = poolOf([other(2, 2), unnamedSum(), own], 41, joins);
   expect(brief(rows)).toEqual([
     ["🎯 Talents", 11, ["GetTalentNumber(1, 207)", "GetTalentNumber(1, 208)"]],
@@ -79,9 +82,11 @@ test("an unnamed sum and a working value of the root that only joins sources dis
   expect(rows.reduce((s, r) => s + Number(r.node.value), 0)).toBe(41);
 });
 
-test("a working value whose rows do not give it, or that the root did not write, stays a source", () => {
-  const off = (r: Row) => (r === own ? [talent(5, 208)] : null);
-  for (const joins of [off, () => null]) {
+test("a working value whose rows do not give it, that a step of the root multiplied, or that the root did not write, stays a source", () => {
+  const off = (r: Row) => (isOwn(r) ? sum([talent(5, 208)]) : null);
+  const times = (r: Row) =>
+    isOwn(r) ? { op: "*" as const, rows: [talent(9, 208)] } : null;
+  for (const joins of [off, times, () => null]) {
     const rows = poolOf([other(2, 2), own], 11, joins);
     expect(rows.map((r) => [r.node.code, r.node.value])).toEqual([
       ["InventedBlock(2)", 2],
@@ -96,7 +101,7 @@ test("a sum the root wrote inside an unnamed sum dissolves too, all the way", ()
     node: { ...unnamedSum().node, value: 39 },
     group: level(39, [card(20), talent(6), card(4, 11), own]),
   };
-  const joins = (r: Row) => (r === own ? [talent(9, 208)] : null);
+  const joins = (r: Row) => (isOwn(r) ? sum([talent(9, 208)]) : null);
   const rows = poolOf([nested], 39, joins);
   expect(brief(rows)).toEqual([
     ["🎯 Talents", 15, ["GetTalentNumber(1, 207)", "GetTalentNumber(1, 208)"]],
