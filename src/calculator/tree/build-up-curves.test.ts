@@ -2,11 +2,12 @@
 // family bonus of FamBonusQTYs[66], and the Prisma multi with the weights of its sources (N.js ArcaneType
 // "PrismaBonusMult": min(5, 2 + (… + 0.2 × purple sigils + … + 50 × Rift Hivemind) ÷ 100)). Rows written by hand.
 import { expect, test } from "vitest";
+import { makePlaces } from "./places.ts";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { fixed, placed } from "./tree-fixture.ts";
+import { fixed, placed, recNode } from "./tree-fixture.ts";
 
 const leaf = (
   name: string,
@@ -132,6 +133,59 @@ test("[FR-018] a cache whose one row is the curve block keeps its own name, and 
     },
   ]);
   expect(kidsOf(rows[0]).map((k) => k.name)).toEqual([
+    "Max bonus",
+    "Level at half",
+    "Level the curve uses",
+  ]);
+});
+
+test("[FR-018] a cache opened into its writer's curve has the curve's constants by role, the row placed by its own name", () => {
+  // a game cache whose writer computed it as one curve (the family bonus TalentCalc fills): the cache opens into the
+  // writer's rows, the curve block's branch, and its level's row is that branch, "Curve: …" (tree/places.ts `below`)
+  const v = 1 + (0.4 * 1902) / (1902 + 100);
+  const CODE = 'ArbitraryCode5Inputs("decayMulti", 0.4, 100, 1902, 0, 0)';
+  const curve = branch(
+    "Curve: 1 + 0.4 × 1902 ÷ (1902 + 100)",
+    v,
+    [
+      fixed("Max bonus of the curve", 0.4),
+      fixed("Level at half of the max", 100),
+      leaf("Level the curve uses", 1902, null, "level"),
+    ],
+    CODE,
+  );
+  const places = makePlaces({
+    nodes: [recNode(0, "TalentCalc", { a: [-3] })],
+    bugs: [],
+    keyOf: (n) => String(n.id),
+    openXf: new Map(),
+    explain: () => null,
+    opened: () => ({ rows: [curve], f: null }),
+  });
+  const [fam] = places.place(
+    { id: "root", code: "Root()" },
+    [
+      {
+        node: row({
+          pieceKey: "f",
+          value: v,
+          code: "DNSM.FamBonusQTYs[66]",
+          name: "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)",
+          kids: "lazy",
+        }),
+        open: {
+          path: "DNSM.FamBonusQTYs[66]",
+          value: v,
+          writer: 0,
+          entry: null,
+          opening: [],
+        },
+      },
+    ],
+    1,
+    [],
+  );
+  expect(kidsOf(fam).map((k) => k.name)).toEqual([
     "Max bonus",
     "Level at half",
     "Level the curve uses",
