@@ -98,8 +98,9 @@ test("a source the app files under another system than the bench's is a differen
       ]),
     ],
   });
+  // spec 009 T029: each bench source has its place in the list of sources
   expect(compareTrees(moulded, BENCH, new Set())).toEqual([
-    { at: "0/0/2", field: "name" },
+    { at: "0/2", field: "name" },
   ]);
 });
 
@@ -178,4 +179,151 @@ test("a source the app keeps whole, which the V1 opened into its rows, pairs thr
     compareTrees(app({ value: 17, kids: [pool([signs])] }), off, new Set())
       .length,
   ).toBeGreaterThan(0);
+});
+
+// spec 009 T029 (decision of 18/11): the bench is the reference of the sources and their names, the format the 009's;
+// the parity compares source by source and no longer the V1's own structure (its pools, LUK Scaling, Total Sum, the
+// order of the factors)
+const V1: BenchRow = {
+  name: "Invented total",
+  v: 33.6,
+  kids: [
+    {
+      name: "LUK Scaling",
+      v: 1.12,
+      kids: [
+        { name: "LUK curve", v: 0.8, kids: [benchSource("LUK", 4)] },
+        { name: "× 1.4", v: 1.12, kind: "Valor fixo" },
+      ],
+    },
+    {
+      name: "Additive Pool",
+      v: 30,
+      kids: [
+        {
+          name: "🃏 Cards",
+          v: 30,
+          kids: [benchSource("Card A", 10), benchSource("Card B", 20)],
+        },
+      ],
+    },
+    {
+      name: "Total Sum",
+      v: 33.6,
+      kids: [{ name: "Fixed 1", v: 1, kind: "Valor fixo" }],
+    },
+  ],
+};
+const luk = (curve = 0.8) =>
+  app({
+    id: "root/x/Game value",
+    name: "Game value",
+    value: 1.4 * curve,
+    role: "piece",
+    kids: [
+      app({
+        id: "root/x/1.4",
+        name: "× 1.4",
+        value: 1.4,
+        role: "piece",
+        leaf: "fixedValue",
+      }),
+      app({
+        id: "root/x/LUK curve",
+        name: "LUK curve",
+        value: curve,
+        role: "piece",
+        kids: [source("LUK", 4)],
+      }),
+    ],
+  });
+const cards = (b = 20) =>
+  group("🃏 Cards", [source("Card A", 10), source("Card B", b)], 10 + b);
+
+test("the V1's pools, its constants and the order of its factors are not compared: the sources pair, whatever holds them", () => {
+  const moulded = app({
+    value: 33.6,
+    kids: [pool([luk(), cards()])],
+  });
+  expect(compareTrees(moulded, V1, new Set())).toEqual([]);
+});
+
+test("a source missing, extra, or of another value or type is a difference", () => {
+  const missing = app({
+    value: 33.6,
+    kids: [pool([luk(), group("🃏 Cards", [source("Card A", 10)], 10)])],
+  });
+  expect(compareTrees(missing, V1, new Set())).toEqual([
+    { at: "0/2", field: "shape" },
+  ]);
+  const extra = app({
+    value: 33.6,
+    kids: [pool([luk(), cards(), source("Invented extra", 7)])],
+  });
+  expect(compareTrees(extra, V1, new Set())).toEqual([
+    { at: "0", field: "shape" },
+  ]);
+  const other = app({ value: 33.6, kids: [pool([luk(), cards(21)])] });
+  expect(compareTrees(other, V1, new Set()).map((d) => d.field)).toContain(
+    "value",
+  );
+  const typed = app({
+    value: 33.6,
+    kids: [
+      pool([
+        luk(),
+        group(
+          "🃏 Cards",
+          [
+            source("Card A", 10),
+            app({ ...source("Card B", 20), leaf: "quantity" }),
+          ],
+          30,
+        ),
+      ]),
+    ],
+  });
+  expect(compareTrees(typed, V1, new Set())).toEqual([
+    { at: "0/2", field: "type" },
+  ]);
+  // below a source, a row of another value still counts
+  expect(
+    compareTrees(
+      app({ value: 33.6, kids: [pool([luk(0.9), cards()])] }),
+      V1,
+      new Set(),
+    ).length,
+  ).toBeGreaterThan(0);
+});
+
+test("a V1 group of one source, written with the source's code, is that source: its label is no name", () => {
+  const bench: BenchRow = {
+    name: "Invented total",
+    v: 17,
+    kids: [
+      {
+        name: "Additive Pool",
+        v: 17,
+        kids: [
+          {
+            name: "⭐ Star Signs",
+            v: 17,
+            code: "DNSM.InventedSigns",
+            kids: [benchSource("Sign A", 5), benchSource("Sign B", 12)],
+          } as BenchRow,
+        ],
+      },
+    ],
+  };
+  const signs = app({
+    id: "root/Signs total",
+    name: "Signs total",
+    value: 17,
+    role: "piece",
+    code: "DNSM.InventedSigns",
+    kids: [source("Sign A", 5), source("Sign B", 12)],
+  });
+  expect(
+    compareTrees(app({ value: 17, kids: [pool([signs])] }), bench, new Set()),
+  ).toEqual([]);
 });
