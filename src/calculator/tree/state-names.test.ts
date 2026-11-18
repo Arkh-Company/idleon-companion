@@ -152,6 +152,13 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["CustomLists.BubbaUpg[0][1]", "1st Slice cost base"],
   ["QuestComplete.Cactolyte3", "Cactolyte quest 3 completed"],
   ["QuestComplete.Lord_of_the_Hunt2", "Lord of the Hunt quest 2 completed"],
+  // spec 009 T030 (decision of 18/11: never a raw path as a name): a Cosmo upgrade's level, by its name in the table
+  ["Holes[4][0]", "Monumental Vibes level"],
+  ["Holes[5][3]", "Lengthmeister level"],
+  ["Holes[6][3]", "Voter Integrity level"],
+  // the bench's names of two counters (names-other.cjs; build-v1mold.cjs [G6b])
+  ["OptionsListAccount[139]", "Plunderous Kills (account total)"],
+  ["OptionsListAccount[189]", "Weekly boss difficulties defeated this week"],
 ];
 
 /** The shape rule that names `code`. */

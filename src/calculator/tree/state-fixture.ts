@@ -14,6 +14,14 @@ const item = (displayName: string, UQ1txt = "0", UQ2txt = "0") => ({
 
 export const GAME = new Map<string, unknown>([
   [
+    "CustomLists.CosmoUpgrades",
+    [
+      list({ 0: ["25", "0", "Monumental_Vibes"] }),
+      list({ 3: ["25", "0", "Lengthmeister"] }),
+      list({ 3: ["6", "0", "Voter_Integrity"] }),
+    ],
+  ],
+  [
     "CustomLists.CompassUpg",
     list({
       39: ["Circle_Supremacy"],
