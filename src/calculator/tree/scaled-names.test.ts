@@ -56,10 +56,21 @@ test("a branch of one source and constants takes the source's name", () => {
 
 test("through an unnamed branch of the same shape, the one source's name", () => {
   const inner = branch(6, [fixed("× 2", 2), source("Claws", 3)]);
-  expect(nameOf(branch(10, [inner, fixed("Fixed +4", 4)]))).toEqual([
+  expect(nameOf(branch(12, [inner, fixed("× 2", 2)]))).toEqual([
     "Claws",
     false,
   ]);
+});
+
+test("a constant added to the source names nothing: part of the value is not the source's (009 r1)", () => {
+  const inner = branch(6, [fixed("× 2", 2), source("Claws", 3)]);
+  expect(nameOf(branch(10, [inner, fixed("Fixed +4", 4)]))).toEqual([
+    GENERIC_NAME,
+    true,
+  ]);
+  expect(
+    nameOf(branch(13, [fixed("Base 10", 10), source("Claws", 3)])),
+  ).toEqual([GENERIC_NAME, true]);
 });
 
 test("two sources, a count, or one with a vague name, name nothing", () => {
