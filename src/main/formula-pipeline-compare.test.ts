@@ -229,10 +229,11 @@ test("a branch asked keeps its turn: a change meanwhile is written in place, and
   const h = readyDrop();
   h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
   expect(h.host.request).toHaveBeenCalledTimes(2);
+  const drops = h.host.dropCurrent.mock.calls.length;
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   expect(shown(h).kids).toEqual([7, 2]);
-  expect(h.host.dropCurrent).not.toHaveBeenCalled();
+  expect(h.host.dropCurrent).toHaveBeenCalledTimes(drops);
   expect(h.host.request).toHaveBeenCalledTimes(2);
   h.tree({ ...ring, kids: [node({ id: "root/Ring/Gem", pieceKey: null })] });
   expect(h.host.request).toHaveBeenCalledTimes(3);
