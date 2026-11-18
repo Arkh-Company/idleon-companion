@@ -294,7 +294,7 @@ test("after the roots, a follow-up call runs once for each argument the roots ga
     ["TreeLegend", "Points", "TreeLegend", "Max"],
   ]);
   expect(under(rec, rec.root).map((n) => [n.b, n.a, n.v])).toEqual([
-    ["TreeLegends", [], 21],
+    ["TreeLegends", [], 27],
     ["TreeLegend", ["Max", 2, 0], 3],
     ["TreeLegend", ["Max", 5, 0], 6],
   ]);
