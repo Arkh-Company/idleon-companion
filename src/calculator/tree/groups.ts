@@ -10,6 +10,7 @@ import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import {
   isHelper,
+  scaledTalent,
   SYSTEM_ORDER,
   systemLabel,
   systemOf,
@@ -30,6 +31,9 @@ function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
   // a helper's (a curve, a log) is its sources' (T028)
   if (r.node.code !== null && !isHelper(r.node.code))
     return systemOf(r.node.code, writerOf(r));
+  // a talent multiplied by a count is the talent's (009 T029)
+  const talent = r.op === "*" ? scaledTalent(r.group ?? []) : null;
+  if (talent) return systemOfRow(talent, writerOf);
   const inner = (r.group ?? [])
     .map((k) => systemOfRow(k, writerOf))
     .filter((s) => s !== undefined);

@@ -9,7 +9,7 @@ import { MERGES, ONE_CHILD } from "./one-child.ts";
 import type { Level } from "./places.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { isHelper } from "./systems.ts";
+import { isHelper, scaledTalent } from "./systems.ts";
 
 type Under = (r: Row, at: Level) => Level | null;
 
@@ -24,7 +24,8 @@ const noSource = (r: Row): boolean =>
 
 /**
  * Whether the level only multiplies its rows: their shares, the branch's own step `op`, or, with neither (a division,
- * tree/terms.ts exprRow), every part but the sources a constant that multiplies or divides (009 r2).
+ * tree/terms.ts exprRow), every part but the sources a constant that multiplies or divides, one at least (009 r2; with
+ * none, nothing says the sources multiply, 009 T029).
  */
 const multiplies = (at: Level, op: Row["op"]): boolean =>
   op === "*" ||
@@ -33,7 +34,8 @@ const multiplies = (at: Level, op: Row["op"]): boolean =>
       (r) =>
         r.node.shareMode === "product" || r.node.shareMode === "productZero",
     )) ||
-  at.rows.every((r) => !noSource(r) || isScaling(r.node));
+  (at.rows.some((r) => noSource(r) && isScaling(r.node)) &&
+    at.rows.every((r) => !noSource(r) || isScaling(r.node)));
 
 /**
  * The proven name of the one source among the rows of `at`, a branch of step `op`, through an unnamed branch of the same
@@ -47,6 +49,9 @@ function sourceName(
   depth: number,
 ): string | null {
   if (!multiplies(at, op)) return null;
+  // a talent multiplied by a count is the talent's (009 T029, decision of 18/11)
+  const talent = scaledTalent(at.rows.filter((r) => !noSource(r)));
+  if (talent && !talent.node.flags.unnamed) return talent.node.name;
   const parts = at.rows.filter((r) => !noSource(r));
   const [p] = parts;
   if (!p || parts.length !== 1) return null;
@@ -64,6 +69,8 @@ function sourceName(
 
 /** Row `r` (with its level `at`) named after its one source, when it has no proven name; else as it is. */
 export function scaledName(r: Row, at: Level | null, under: Under): Row {
-  if (!at || !r.node.flags.unnamed || r.node.role !== "piece") return r;
+  // a name by shape only ("Multiplier from 2 sources") is none (FR-007)
+  const none = !!r.node.flags.unnamed || byShapeOnly(r.node.name);
+  if (!at || !none || r.node.role !== "piece") return r;
   return withName(r, sourceName(at, r.op, under, 0));
 }

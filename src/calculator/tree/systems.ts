@@ -205,5 +205,19 @@ export function systemOf(
   return call || writerBlock === undefined ? null : systemOf(writerBlock);
 }
 
+/**
+ * The one talent of a product's parts (spec 009 T029, decision of 18/11): a talent multiplied by a count is the talent's,
+ * its name and its system, as in the V1 (bench build-v1mold.cjs: a term is its first source's); else null.
+ */
+export function scaledTalent<T extends { node: { code: string | null } }>(
+  parts: readonly T[],
+): T | null {
+  const talents = parts.filter(
+    (k) => k.node.code !== null && systemOf(k.node.code)?.name === "Talents",
+  );
+  const [only] = talents;
+  return parts.length > 1 && talents.length === 1 ? (only ?? null) : null;
+}
+
 /** The group's name: its emoji, then its system ("⚗️ Alchemy"). */
 export const systemLabel = (s: System): string => `${s.emoji} ${s.name}`;
