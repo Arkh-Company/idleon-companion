@@ -5,8 +5,9 @@
 import { curveFormula, curveOf, fx3, maxReachedOf } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
+import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { tableNumber } from "./table-names.ts";
+import { termOf } from "./share.ts";
 import {
   built,
   codeOf,
@@ -54,28 +55,18 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   };
 }
 
-/**
- * The Legend Talents whose max level grows past the table's (N.js Thingies "LegendTalent_MaxLV": a Research grid bonus
- * for 20 of them, 3 more with a Menagerie unlock for 9).
- */
-const GROWN_MAX = new Set([
-  2, 13, 3, 18, 5, 9, 23, 33, 1, 16, 20, 31, 19, 27, 8, 34, 30, 29, 6, 26, 35,
-  36, 0, 15, 32,
-]);
+const MAX_CALL = "LegendTalent_MaxLV";
 
-/** A Legend Talent: its Points (with their max when the game read it) and its Bonus per point. */
-export function legendTalent(lv: Level): BuiltUp | null {
+/**
+ * A Legend Talent: its Points, with the game's max of the talent (N.js Thingies "LegendTalent_MaxLV", recorded beside the
+ * root: tree-recipe.ts `legendMaxRoots`) that opens into what makes it, and its Bonus per point.
+ */
+export function legendTalent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   const call = lv.call;
   if (call?.b !== "Thingies" || call.a[0] !== "LegendPTS_bonus") return null;
-  const table = `CustomLists.LegendTalents[${String(call.a[1])}]`;
-  const read = (p: string) => (call.r ?? []).find(([q]) => q === p)?.[1];
-  const per = Number(read(`${table}[2]`));
-  // the table's max is the talent's own only when no Research grid bonus nor the Menagerie raises it
-  const max = GROWN_MAX.has(Number(call.a[1]))
-    ? undefined
-    : (read(`${table}[1]`) ??
-      tableNumber("legendMax", Number(call.a[1])) ??
-      undefined);
+  const t = Number(call.a[1]);
+  const table = `CustomLists.LegendTalents[${String(t)}]`;
+  const per = Number((call.r ?? []).find(([q]) => q === `${table}[2]`)?.[1]);
   const [pts, ...more] = parts(lv.rows);
   const v = vOf(lv.row);
   if (!pts || more.length || !Number.isFinite(per)) return null;
@@ -84,18 +75,84 @@ export function legendTalent(lv: Level): BuiltUp | null {
   const round = near(Math.round(p * per), v);
   if (!round && !near(p * per, v)) return null;
   const nums = `${fx3(p)} × ${fx3(per)}`;
+  const maxCall = ctx.nodes.find(
+    (n) =>
+      n.b === "Thingies" &&
+      n.a[0] === MAX_CALL &&
+      Number(n.a[1]) === t &&
+      typeof n.v === "number",
+  );
+  const capped =
+    maxCall && renamed(pts, `Points (max ${fx3(Number(maxCall.v))})`);
+  const points =
+    capped && maxCall && ctx.keyOf
+      ? {
+          ...capped,
+          node: { ...capped.node, leaf: null },
+          // the max caps the points the player spends: the systems that make it are the Points' own
+          group: [
+            {
+              node: row({
+                pieceKey: ctx.keyOf(maxCall),
+                value: Number(maxCall.v),
+                code: callText(maxCall),
+                name: "Max points",
+                kids: "lazy",
+              }),
+              open: maxCall.id,
+            },
+          ],
+        }
+      : renamed(pts, "Points");
   return built(
     lv,
-    [
-      renamed(
-        pts,
-        max === undefined ? "Points" : `Points (max ${String(max)})`,
-      ),
-      fixedRow("Bonus per point", per, `${table}[2]`),
-    ],
+    [points, fixedRow("Bonus per point", per, `${table}[2]`)],
     round
       ? ["round(Points × Bonus per point)", `round(${nums}) = ${fx3(v)}`]
       : ["Points × Bonus per point", `${nums} = ${fx3(v)}`],
+  );
+}
+
+/**
+ * A Legend Talent's max level (N.js Thingies "LegendTalent_MaxLV"): the table's max, the Research grid bonus rounded
+ * down, and 3 more with the Menagerie's unlock, for the systems the game called for this talent; each one a row. Null
+ * when they do not give the max: the rows stay as they are.
+ */
+export function legendMax(lv: Level): BuiltUp | null {
+  const call = lv.call;
+  if (call?.b !== "Thingies" || call.a[0] !== MAX_CALL) return null;
+  const path = `CustomLists.LegendTalents[${String(call.a[1])}][1]`;
+  const base = Number((call.r ?? []).find(([q]) => q === path)?.[1]);
+  const grid = lv.rows.find((r) =>
+    codeOf(r).startsWith('ResearchStuff("Grid_Bonus"'),
+  );
+  const unlock = lv.rows.find((r) =>
+    codeOf(r).startsWith('MenagerieStuff("UnlockOwned"'),
+  );
+  const v = vOf(lv.row);
+  const sum =
+    base + (grid ? Math.floor(vOf(grid)) : 0) + (unlock ? 3 * vOf(unlock) : 0);
+  if (!Number.isFinite(sum) || !near(sum, v)) return null;
+  const terms = [
+    ["Max points of the table", fx3(base)],
+    ...(grid
+      ? [[`floor(${termOf(grid.node)})`, `floor(${fx3(vOf(grid))})`]]
+      : []),
+    ...(unlock
+      ? [[`3 × ${termOf(unlock.node)}`, `3 × ${fx3(vOf(unlock))}`]]
+      : []),
+  ];
+  return built(
+    lv,
+    [
+      fixedRow("Max points of the table", base, path),
+      ...(grid ? [grid] : []),
+      ...(unlock ? [unlock] : []),
+    ],
+    [
+      terms.map((x) => x[0]).join(" + "),
+      `${terms.map((x) => x[1]).join(" + ")} = ${fx3(v)}`,
+    ],
   );
 }
 

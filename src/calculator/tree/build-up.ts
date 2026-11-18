@@ -35,7 +35,12 @@ import {
   unwrap,
 } from "./build-up-rows.ts";
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
-import { allTalentLevels, legendTalent, talent } from "./build-up-talents.ts";
+import {
+  allTalentLevels,
+  legendMax,
+  legendTalent,
+  talent,
+} from "./build-up-talents.ts";
 import { curveSelf, prisma } from "./build-up-curves.ts";
 import { meritocVote } from "./build-up-vote.ts";
 
@@ -264,7 +269,8 @@ function cardBonus(lv: Level): BuiltUp | null {
 export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   return (
     talent(lv, ctx) ??
-    legendTalent(lv) ??
+    legendTalent(lv, ctx) ??
+    legendMax(lv) ??
     allTalentLevels(lv) ??
     prisma(lv) ??
     meritocVote(lv, ctx) ??

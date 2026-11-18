@@ -10,9 +10,9 @@ import type { TreeBuild } from "./tree-build.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { readGameNames } from "./game-names.ts";
 import { useGameNames } from "./tree/names.ts";
-import { useGameTables } from "./tree/table-names.ts";
+import { tableRows, useGameTables } from "./tree/table-names.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
-import { EXTRA_ROOTS, TREE_RECIPE } from "./tree-recipe.ts";
+import { EXTRA_ROOTS, legendMaxRoots, TREE_RECIPE } from "./tree-recipe.ts";
 import type { Recipe } from "./recording.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
 import type { TreeRoot } from "./tree-roots.ts";
@@ -89,6 +89,11 @@ export function createTreeEngine(
   useGameNames(game.names);
   useGameTables(game.tables);
   const lazyDnsm = lazyDnsmKeys(code);
+  // the calls recorded beside every root, the Legend Talents' max by the boot's checked table
+  const extraRoots = () => [
+    ...EXTRA_ROOTS,
+    ...legendMaxRoots(tableRows("legendMax")),
+  ];
   const rootOf = (id: string) =>
     Object.hasOwn(roots, id) ? roots[id] : undefined;
   /** The last `number` tree, kept for its branches until the next request. */
@@ -128,7 +133,7 @@ export function createTreeEngine(
       const inactive = inactiveMosaic(mosaicJson, request.character);
       const recording = recorder.record(
         inactive ?? mosaicJson,
-        [root, ...EXTRA_ROOTS],
+        [root, ...extraRoots()],
         recipe,
         inactive !== null,
       );
@@ -168,7 +173,7 @@ export function createTreeEngine(
       // Its own build, never `last`: the open tree's branches still open after it.
       const recording = recorder.record(
         mosaicJson,
-        [root, ...EXTRA_ROOTS],
+        [root, ...extraRoots()],
         recipe,
       );
       return shapeOf(buildTree(recording, 0, recorder.ops));

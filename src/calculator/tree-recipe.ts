@@ -89,3 +89,13 @@ export const TREE_RECIPE: Recipe = {
 export const EXTRA_ROOTS: readonly TreeRoot[] = [
   ["Summoning", ["MeritocBonuszMulti", 0, 0]],
 ];
+
+/**
+ * The max level of each Legend Talent, the game's own call (N.js Thingies "LegendTalent_MaxLV", which the game's screen
+ * shows as the talent's points out of its max): `count` the talents of the checked table, none without it.
+ */
+export const legendMaxRoots = (count: number | null): TreeRoot[] =>
+  Array.from({ length: count ?? 0 }, (_, t) => [
+    "Thingies",
+    ["LegendTalent_MaxLV", t, 0],
+  ]);
