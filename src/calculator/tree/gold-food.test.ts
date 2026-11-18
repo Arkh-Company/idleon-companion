@@ -175,8 +175,15 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     ["Working value of the game (FamBonusQTYs)", 0, "unknown"],
     ["Minimum 1", 1, "fixedValue"],
   ]);
+  // max(family, 1) is the family's row, with its read's name and code, never a row with no name (FR-007)
+  const fam = kidsOf(family)[0];
+  expect([fam?.code, fam?.name, fam?.value]).toEqual([
+    "DNSM.FamBonusQTYs[66]",
+    "Working value of the game (FamBonusQTYs)",
+    1,
+  ]);
   expect(family?.formula).toEqual([
-    ["Game value", "+", "🔹 Other"],
+    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
     [1, 0.2, 1.2],
   ]);
   // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools
@@ -189,6 +196,7 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     ["Working value of the game (FamBonusQTYs)", 0, "unknown"],
     ["Minimum 2", 2, "fixedValue"],
   ]);
+  expect(kidsOf(pools[1])[0]?.code).toBe("DNSM.FamBonusQTYs[66]");
 });
 
 test("sources taken as a percent by a product are a product of their sum by 0.01, in the chain's pool", () => {
