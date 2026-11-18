@@ -33,6 +33,8 @@ test("IPC holds the fixed channel names", () => {
     radarDismiss: "radar:dismiss",
     formulaCharacters: "formula:characters",
     sidePanel: "window:sidePanel",
+    viewGet: "view:get",
+    viewSet: "view:set",
   });
 });
 
