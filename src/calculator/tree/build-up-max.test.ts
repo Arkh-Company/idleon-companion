@@ -105,3 +105,55 @@ test("[FR-015a] a family bonus that is one curve keeps how much of its max it re
   expect(n?.maxReached?.max).toBeCloseTo(1.4, 9);
   expect(n?.maxReached?.share).toBeCloseTo(0.38001998 / 0.4, 6);
 });
+
+test("[FR-015a] a talent keeps how much of its curve's max it reached (Haungry For Gold: decay 55, 49.19)", () => {
+  const nodes = [
+    recNode(0, "GetTalentNumber", {
+      a: [1, 99],
+      v: 49.187582562747686,
+      c: [1, 2],
+    }),
+    recNode(1, "ArbitraryCode5Inputs", {
+      a: ["decay", 55, 80, 677, 0, 0],
+      v: 49.187582562747686,
+    }),
+    recNode(2, "RunCodeOfTypeXforThingY", { a: ["AllTalentLV", "99"], v: 268 }),
+  ];
+  const ALL = 'RunCodeOfTypeXforThingY("AllTalentLV", "99")';
+  const { rows, expand } = placed(
+    {
+      0: [
+        {
+          node: row({
+            pieceKey: ALL,
+            value: 268,
+            code: ALL,
+            name: "All-talent levels",
+            kids: "lazy",
+          }),
+          open: 2,
+        },
+        leaf("Level", 409, "SkillLevels[99]"),
+        check("Level ≤ 0", false),
+      ],
+      2: [],
+    },
+    [
+      {
+        node: row({
+          pieceKey: "t",
+          value: 49.187582562747686,
+          code: "GetTalentNumber(1, 99)",
+          name: "Haungry For Gold",
+          kids: "lazy",
+        }),
+        open: 0,
+      },
+    ],
+    nodes,
+  );
+  const n = expand(rows[0]?.id ?? "");
+  expect(kidsOf(n).map((k) => k.name)).toContain("Talent level");
+  expect(n?.maxReached?.max).toBe(55);
+  expect(n?.maxReached?.share).toBeCloseTo(49.187582562747686 / 55, 9);
+});
