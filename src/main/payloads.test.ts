@@ -12,6 +12,7 @@ import {
   linkStatus,
   linkTables,
   settingsPayload,
+  viewPayload,
 } from "./payloads.ts";
 
 test("a settings payload with the three booleans passes, unknown keys dropped", () => {
@@ -26,6 +27,23 @@ test.each([
   ["a key of the wrong type", { ...DEFAULT_SETTINGS, closeWithGame: "no" }],
 ])("a settings payload with %s is refused", (_name, payload) => {
   expect(settingsPayload(payload)).toBeNull();
+});
+
+test("a view payload is the two booleans of Changes and the share (spec 009, SEC-006)", () => {
+  expect(viewPayload({ changes: true, share: false })).toEqual({
+    changes: true,
+    share: false,
+  });
+});
+
+test.each([
+  ["no object", null],
+  ["a missing key", { changes: true }],
+  ["another key", { changes: true, share: false, mark: "Mark 1" }],
+  ["a key of the wrong type", { changes: "yes", share: false }],
+  ["a share of the wrong type", { changes: false, share: 1 }],
+])("a view payload with %s is refused (SEC-005, SEC-006)", (_name, payload) => {
+  expect(viewPayload(payload)).toBeNull();
 });
 
 const reading: Reading = {
@@ -300,5 +318,15 @@ test("reader:confirm-attach refuses a body before it acts", () => {
   const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
   expect(source).toMatch(
     /handle\(IPC\.confirmAttach, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
+});
+
+test("view:get refuses a body before it answers, and view:set saves only a checked payload", () => {
+  const source = readFileSync(join(import.meta.dirname, "index.ts"), "utf8");
+  expect(source).toMatch(
+    /handle\(IPC\.viewGet, \(payload\) => \{\s+if \(!emptyPayload\(payload\)\)\s+throw /,
+  );
+  expect(source).toMatch(
+    /handle\(IPC\.viewSet, \(payload\) => \{\s+const v = viewPayload\(payload\);\s+if \(!v\) throw [^;]+;\s+saveView\(settingsFile, v\);/,
   );
 });

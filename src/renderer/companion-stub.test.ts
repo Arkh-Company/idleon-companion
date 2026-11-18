@@ -20,6 +20,8 @@ test.each([
   "dismissRadar",
   "onCharacters",
   "setSidePanel",
+  "getView",
+  "setView",
 ])("the stub has %s", (method) => {
   const stub = stubCompanion() as unknown as Record<string, unknown>;
   expect(typeof stub[method]).toBe("function");
