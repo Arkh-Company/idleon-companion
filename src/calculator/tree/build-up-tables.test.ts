@@ -94,3 +94,23 @@ test("[FR-018] a Legend Talent's Points say their max, from the table", () => {
   );
   expect(kidsOf(expand(rows[0]?.id ?? ""))[0]?.name).toBe("Points (max 3)");
 });
+
+test("[FR-018] a Legend Talent whose max a Research grid bonus or the Menagerie raises says no max of the table", () => {
+  useGameTables(
+    new Map([
+      ["CustomLists.LegendTalents", list({ 36: ["Wowa_Woowa", "5", "3"] })],
+    ]),
+  );
+  const { rows, expand } = placed(
+    { 0: [leaf("Level", 8, "Spelunk[18][36]", "level")] },
+    [lazy("Wowa Woowa", 24, 'Thingies("LegendPTS_bonus", 36, 0)')],
+    [
+      recNode(0, "Thingies", {
+        a: ["LegendPTS_bonus", 36, 0],
+        v: 24,
+        r: [["CustomLists.LegendTalents[36][2]", 3]],
+      }),
+    ],
+  );
+  expect(kidsOf(expand(rows[0]?.id ?? ""))[0]?.name).toBe("Points");
+});
