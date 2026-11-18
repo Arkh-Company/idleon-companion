@@ -7,6 +7,7 @@ import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
+import { golden } from "./tree/gold-food-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -152,6 +153,53 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
     [expect.any(String), "piece", 25],
   ]);
   expect(level[2]?.code).toBe("TreeLevel");
+});
+
+// The shape of the Drop Rate's first sum (fake-game.js TreeDrop, FR-017): TreeBase + a step kept in a variable, of
+// ArcadeBonus(0), CardBonusREAL(3), CardBonusREAL(1) and a working value the block wrote, the golden food + TreeLevel;
+// then × TreeLoop(). The golden food: its worn food 7.218 and its emporium's 6.006 (gold-food.test.ts).
+test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the golden food among them, which opens as its own chain", () => {
+  const build = buildTree(
+    recorder.record(golden(999, 3, 2, 5), [["TreeDrop", [0, 0, 0]]], NONE),
+    0,
+    recorder.ops,
+  );
+  const [add, multi] = kidsOf(build.root);
+  expect([add?.name, multi?.name]).toEqual(["Additive pool", "Multi pool"]);
+  const groups = kidsOf(add);
+  expect(
+    groups.map((k) => [k.role === "system" ? k.name : k.code, k.value]),
+  ).toEqual([
+    ["🃏 Cards", 16],
+    ["ArcadeBonus(0)", 8],
+    ['GoldFoodBonuses("DropRatez")', expect.closeTo(13.224273879686, 9)],
+    ["🔹 Other", 29],
+  ]);
+  expect(groups.map((g) => kidsOf(g).map((k) => k.code))).toEqual([
+    ["CardBonusREAL(3)", "CardBonusREAL(1)"],
+    [],
+    [],
+    ["TreeBase", "TreeLevel"],
+  ]);
+  // every level closes: the groups to the pool, each group's sources to it (FR-008)
+  const sum = (ns: readonly CalcTreeNode[]) =>
+    ns.reduce((s, k) => s + Number(k.value), 0);
+  expect(sum(groups)).toBeCloseTo(Number(add?.value), 9);
+  for (const g of groups.filter((k) => k.role === "system"))
+    expect(sum(kidsOf(g))).toBeCloseTo(Number(g.value), 9);
+  // the golden food opens with its own chain's pools, its block's own rows after them
+  const gold = groups[2];
+  const opened = gold?.kids === "lazy" ? build.expand(gold.id) : gold;
+  expect(
+    kidsOf(opened)
+      .filter((k) => k.role === "pool")
+      .map((k) => [k.name, k.poolKind, k.value]),
+  ).toEqual([
+    ["Multi pool", "multi", expect.closeTo(7.218273444957685, 9)],
+    ["Additive pool", "additive", expect.closeTo(6.006000434728559, 9)],
+  ]);
+  expect(checkTree(build.root, 100)).not.toBeNull();
+  expect(checkTree(opened, 100)).not.toBeNull();
 });
 
 test("a chain a step of which neither adds nor multiplies is open: the build says so, for the log (NFR-005)", () => {

@@ -570,6 +570,28 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeGoldOf = function (t) {
     return Blocks._customBlock_GoldFoodBonuses(t) * 2;
   };
+  // The shape of the Drop Rate (spec 009, FR-017): its first sum holds a sum the block keeps in a variable (a step with
+  // no name) of sources of two systems and of a working value the block writes that only joins sources, a golden food
+  // among them; then the running total is multiplied.
+  Blocks._customBlock_CardBonusREAL = function (t) {
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeDrop = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDrop = new StringMap();
+    d.TreeDropPart = new StringMap();
+    d.TreeDropPart.h.v =
+      Blocks._customBlock_GoldFoodBonuses("DropRatez") + s.TreeLevel;
+    var mix =
+      Blocks._customBlock_ArcadeBonus(0) +
+      Blocks._customBlock_CardBonusREAL(3) +
+      Blocks._customBlock_CardBonusREAL(1) +
+      d.TreeDropPart.h.v;
+    d.TreeDrop.h.v = s.TreeBase + mix;
+    d.TreeDrop.h.v = d.TreeDrop.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeDrop.h.v;
+  };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
