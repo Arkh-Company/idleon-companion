@@ -113,16 +113,18 @@ test("a golden food that reads its worn food back opens as its chain: its shared
   ]);
   // the emporium's: the food's amount, the multiplier's sources again, and its log of 6
   const [emp] = kidsOf(emporium);
-  expect(
-    kidsOf(emp?.kids === "lazy" ? build.expand(emp.id) : emp).map((k) => [
-      k.name,
-      k.value,
-    ]),
-  ).toEqual([
+  const parts = kidsOf(emp?.kids === "lazy" ? build.expand(emp.id) : emp);
+  expect(emp?.name).toBe("Emporium: Other Dish");
+  expect(parts.map((k) => [k.name, k.value])).toEqual([
     ["Amount of the golden food (item table)", 7],
-    ["× 0.05", 0.05],
+    ["Golden food multiplier", near(MULTI)],
+    ["Fixed ×0.05", 0.05],
     ["log₁₀", near(6.000000434294264)],
   ]);
+  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
+    EMPORIUM,
+    9,
+  );
   // its ⓘ is how its pools join
   expect(food?.formula).toEqual([
     [

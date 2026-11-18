@@ -102,15 +102,25 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["TreeBase", 4],
     ["DNSM.GameCache.v", 5],
   ]);
+  // the emporium's row: its food's name, and its parts with the shared multiplier, which multiply to it (FR-007, FR-008)
   const [emp] = kidsOf(emporium);
-  expect(emp?.value).toBeCloseTo(EMPORIUM, 9);
-  expect(
-    rowsOf(emp?.kids === "lazy" ? (build.expand(emp.id) ?? undefined) : emp),
-  ).toEqual([
-    ["Amount of the golden food (item table)", 7, "fixedValue"],
-    ["× 0.05", 0.05, "fixedValue"],
-    ["log₁₀", near(6.000000434294264), "rawBonus"],
+  expect([emp?.name, emp?.value]).toEqual([
+    "Emporium: Other Dish",
+    near(EMPORIUM),
   ]);
+  const parts = kidsOf(
+    emp?.kids === "lazy" ? (build.expand(emp.id) ?? undefined) : emp,
+  );
+  expect(parts.map((k) => [k.name, k.value])).toEqual([
+    ["Amount of the golden food (item table)", 7],
+    ["Golden food multiplier", near(MULTI)],
+    ["Fixed ×0.05", 0.05],
+    ["log₁₀", near(6.000000434294264)],
+  ]);
+  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
+    EMPORIUM,
+    9,
+  );
   expect(checkTree(root, 100)).not.toBeNull();
 });
 
@@ -157,14 +167,11 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "log₁₀", "(", "quantity", "+", "10", ")", "÷", "2.14"],
     [1, 999, 10, 2.14, 2.404],
   ]);
-  const multiOf =
-    "(1 + ((GfoodSet[0] + GfoodSet[1]) ÷ 100)) × (max(DNSM.FamBonusQTYs[66], 1) + ((((TreeReads() + TreeBase) + DNSM.GameCache.v) + 3) ÷ 100))";
-  const numsOf =
-    "(1 + ((10 + 20) ÷ 100)) × (max(2, 1) + ((((8 + 4) + 5) + 3) ÷ 100))";
+  // the emporium's: its parts' product, the shared multiplier among them
   expect(kidsOf(emporium)[0]?.formula).toEqual({
     rule: [
-      `((Amount of the golden food × (${multiOf})) × 0.05) × log₁₀`,
-      `((7 × (${numsOf})) × 0.05) × 6 = 6.006`,
+      "Amount of the golden food (item table) × Golden food multiplier × Fixed ×0.05 × log₁₀",
+      "7 × 2.86 × 0.05 × 6 = 6.006",
     ],
   });
 });
