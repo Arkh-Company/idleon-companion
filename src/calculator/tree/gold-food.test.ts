@@ -111,12 +111,19 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   const parts = kidsOf(
     emp?.kids === "lazy" ? (build.expand(emp.id) ?? undefined) : emp,
   );
-  expect(parts.map((k) => [k.name, k.value])).toEqual([
-    ["Amount of the golden food (item table)", 7],
-    ["Golden food multiplier", near(MULTI)],
-    ["Fixed ×0.05", 0.05],
-    ["log₁₀", near(6.000000434294264)],
+  // each part with its name, value and type; the shared multiplier a value its own steps prove, never a "?"
+  expect(parts.map((k) => [k.name, k.value, k.leaf, k.why])).toEqual([
+    ["Amount of the golden food (item table)", 7, "fixedValue", null],
+    ["GFood Multi", near(MULTI), null, null],
+    ["Fixed ×0.05", 0.05, "fixedValue", null],
+    ["log₁₀", near(6.000000434294264), "rawBonus", null],
   ]);
+  expect(parts[1]?.formula).toEqual({
+    rule: [
+      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+      "1.3 × (2 + 0.2) = 2.86",
+    ],
+  });
   expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
     EMPORIUM,
     9,
@@ -170,7 +177,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
   // the emporium's: its parts' product, the shared multiplier among them
   expect(kidsOf(emporium)[0]?.formula).toEqual({
     rule: [
-      "Amount of the golden food × Golden food multiplier × 0.05 × log₁₀",
+      "Amount of the golden food × GFood Multi × 0.05 × log₁₀",
       "7 × 2.86 × 0.05 × 6 = 6.006",
     ],
   });

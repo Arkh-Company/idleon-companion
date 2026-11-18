@@ -115,11 +115,11 @@ test("a golden food that reads its worn food back opens as its chain: its shared
   const [emp] = kidsOf(emporium);
   const parts = kidsOf(emp?.kids === "lazy" ? build.expand(emp.id) : emp);
   expect(emp?.name).toBe("Emporium: Other Dish");
-  expect(parts.map((k) => [k.name, k.value])).toEqual([
-    ["Amount of the golden food (item table)", 7],
-    ["Golden food multiplier", near(MULTI)],
-    ["Fixed ×0.05", 0.05],
-    ["log₁₀", near(6.000000434294264)],
+  expect(parts.map((k) => [k.name, k.value, k.leaf])).toEqual([
+    ["Amount of the golden food (item table)", 7, "fixedValue"],
+    ["GFood Multi", near(MULTI), null],
+    ["Fixed ×0.05", 0.05, "fixedValue"],
+    ["log₁₀", near(6.000000434294264), "rawBonus"],
   ]);
   expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
     EMPORIUM,
