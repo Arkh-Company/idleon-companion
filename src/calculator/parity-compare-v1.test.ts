@@ -327,3 +327,15 @@ test("a V1 group of one source, written with the source's code, is that source: 
     compareTrees(app({ value: 17, kids: [pool([signs])] }), bench, new Set()),
   ).toEqual([]);
 });
+
+test("the checks and reads the app shows after its pools are the format's, no extra sources", () => {
+  const check = app({
+    id: "root/check",
+    name: "Invented check = 1",
+    value: 1,
+    role: "piece",
+    leaf: "condition",
+  });
+  const moulded = app({ value: 33.6, kids: [pool([luk(), cards()]), check] });
+  expect(compareTrees(moulded, V1, new Set())).toEqual([]);
+});
