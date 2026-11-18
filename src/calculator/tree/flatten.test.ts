@@ -138,6 +138,21 @@ test("a proven name holds the row, and so does a row with a code of the game", (
   ]);
 });
 
+test("a step named only after its first source holds no name of its own: it gives its parts too (009 T029)", () => {
+  // tree/terms.ts names a variable's step after its first source; a proven name of the source is none of the step's
+  const step: Row = {
+    ...branch(
+      "+",
+      7,
+      [read("Invented.a", 3), read("Invented.b", 4)],
+      "Invented A",
+    ),
+    bySource: true,
+  };
+  const rows = flatten(level(10, [step, read("Invented.x", 3)]));
+  expect(codes(rows)).toEqual(["Invented.a", "Invented.b", "Invented.x"]);
+});
+
 test("nested unnamed steps flatten all the way, and the level still sums to its parent", () => {
   const rows = flatten(
     level(10, [
