@@ -79,40 +79,62 @@ test("[FR-018] a sigil's tier says the bonus of each tier, the ladder's columns 
   });
 });
 
-test("[FR-018] a Legend Talent's Points say their max, from the table", () => {
-  useGameTables(TABLES);
+/**
+ * A Legend Talent opened, its max the game's own call (N.js Thingies "LegendTalent_MaxLV", recorded beside the root): the
+ * call's value `max`, and its rows `maxRows` (what the game added to the table's max).
+ */
+function legend(
+  t: number,
+  points: number,
+  per: number,
+  max: number,
+  maxRows: Row[],
+) {
   const { rows, expand } = placed(
-    { 0: [leaf("Level", 3, "Spelunk[18][25]", "level")] },
-    [lazy("Midusian Appetite", 1500, 'Thingies("LegendPTS_bonus", 25, 0)')],
+    {
+      0: [leaf("Level", points, `Spelunk[18][${String(t)}]`, "level")],
+      1: maxRows,
+    },
+    [
+      lazy(
+        "Legend Talent",
+        Math.round(points * per),
+        `Thingies("LegendPTS_bonus", ${String(t)}, 0)`,
+      ),
+    ],
     [
       recNode(0, "Thingies", {
-        a: ["LegendPTS_bonus", 25, 0],
-        v: 1500,
-        r: [["CustomLists.LegendTalents[25][2]", 500]],
+        a: ["LegendPTS_bonus", t, 0],
+        v: Math.round(points * per),
+        r: [[`CustomLists.LegendTalents[${String(t)}][2]`, per]],
+      }),
+      recNode(1, "Thingies", {
+        a: ["LegendTalent_MaxLV", t, 0],
+        v: max,
+        r: [[`CustomLists.LegendTalents[${String(t)}][1]`, String(max)]],
       }),
     ],
   );
-  expect(kidsOf(expand(rows[0]?.id ?? ""))[0]?.name).toBe("Points (max 3)");
+  return kidsOf(expand(rows[0]?.id ?? ""));
+}
+
+test("[FR-018] a Legend Talent's Points say their max, the game's max level of the talent (the table's alone)", () => {
+  // Midusian Appetite: no Research grid bonus nor the Menagerie raises its max
+  expect(legend(25, 3, 500, 3, [])[0]?.name).toBe("Points (max 3)");
 });
 
-test("[FR-018] a Legend Talent whose max a Research grid bonus or the Menagerie raises says no max of the table", () => {
-  useGameTables(
-    new Map([
-      ["CustomLists.LegendTalents", list({ 36: ["Wowa_Woowa", "5", "3"] })],
-    ]),
-  );
-  const { rows, expand } = placed(
-    { 0: [leaf("Level", 8, "Spelunk[18][36]", "level")] },
-    [lazy("Wowa Woowa", 24, 'Thingies("LegendPTS_bonus", 36, 0)')],
-    [
-      recNode(0, "Thingies", {
-        a: ["LegendPTS_bonus", 36, 0],
-        v: 24,
-        r: [["CustomLists.LegendTalents[36][2]", 3]],
-      }),
-    ],
-  );
-  expect(kidsOf(expand(rows[0]?.id ?? ""))[0]?.name).toBe("Points");
+test("[FR-018] a Legend Talent whose max the Menagerie raises says the game's max", () => {
+  // Wowa Woowa: the table's 5, and 3 more with the Menagerie's unlock 19
+  const menagerie: Row = {
+    node: row({
+      pieceKey: "m",
+      value: 1,
+      code: 'MenagerieStuff("UnlockOwned", 19, 0)',
+      name: "Menagerie unlock 19",
+    }),
+    open: null,
+  };
+  expect(legend(36, 8, 3, 8, [menagerie])[0]?.name).toBe("Points (max 8)");
 });
 
 test("[FR-018] a sigil's tier whose table bonus is not the bonus at its tier says no tiers", () => {
