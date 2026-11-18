@@ -260,30 +260,30 @@ function chainOf(
     const op = topOp(e);
     if (!e || !op) return out.length ? "open" : null;
     const ts = flat(e, op);
-    let prev = -1;
-    // a multiplier the block keeps in a variable set by an earlier step (`def`, tree/steps.ts) is that step's value
-    // too, when the step is its expression: the golden food's shared multiplier (spec 009, FR-017); a variable that is
-    // added stays a term, which the pool takes apart as any unnamed sum (tree/flatten.ts)
-    const run = ts.findIndex((x) => {
-      if (
-        x.t !== "val" &&
-        !(x.t === "def" && op === "*") &&
-        !(x.t === "read" && x.p.startsWith("DNSM."))
-      )
-        return false;
-      prev = steps.findLastIndex(
+    // the earlier step a term takes the value of: a value with no source, or a working value of the root's own call
+    const prevOf = (x: Expr): number => {
+      const i = steps.findLastIndex(
         (p, j) =>
           j < k &&
           near(p.v, Number(x.v)) &&
           (x.t !== "def" || exprText(p.e) === exprText(x.e)),
       );
-      return prev >= 0 && (x.t !== "read" || ownCache(x, k));
-    });
+      return i >= 0 && (x.t !== "read" || ownCache(x, k)) ? i : -1;
+    };
+    const first = (fits: (x: Expr) => boolean) =>
+      ts.findIndex((x) => fits(x) && prevOf(x) >= 0);
+    let run = first(
+      (x) => x.t === "val" || (x.t === "read" && x.p.startsWith("DNSM.")),
+    );
+    // only when no running total links it: a multiplier the block keeps in a variable set by an earlier step (`def`,
+    // tree/steps.ts) is that step's value too, when the step is its expression, the golden food's shared multiplier
+    // (spec 009, FR-017); a variable that is added stays a term, which the pool takes apart as any unnamed sum
+    if (run < 0 && op === "*") run = first((x) => x.t === "def");
     out.unshift({ at: k, op, terms: ts.filter((_, i) => i !== run), up });
     const via = ts[run];
     if (!via) break;
     if (via.t === "read") up = [...up, { code: via.p, name: via.p }];
-    k = prev;
+    k = prevOf(via);
   }
   return out.length > 1 ? out : null;
 }
