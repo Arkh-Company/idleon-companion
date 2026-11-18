@@ -307,13 +307,18 @@ const step = (v: unknown, k: string | number): unknown =>
 
 /** The text of a part over the installed game's checked table, transformed; null when it has none that may be a name. */
 export function partText(p: NamePart): string | null {
-  // a list's index starts inside the list; an item's or a monster's first index is its entry, the id of its table
-  const inside = p.table.includes(".") ? p.index : p.index.slice(1);
-  let v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
-  if (p.field !== null) v = step(v, p.field);
+  const v = cellOf(p);
   if (typeof v !== "string") return null;
   const name = transformText(p.transform, v);
   return name && isNameText(name) ? name : null;
+}
+
+/** The cell a part reads over the installed game's checked table, its field too; undefined with none. */
+function cellOf(p: NamePart): unknown {
+  // a list's index starts inside the list; an item's or a monster's first index is its entry, the id of its table
+  const inside = p.table.includes(".") ? p.index : p.index.slice(1);
+  const v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
+  return p.field === null ? v : step(v, p.field);
 }
 
 /** The number in the cell of row `i` of a table text, over the installed game's checked table; null with none. */
@@ -322,11 +327,12 @@ export function tableNumber(
   ...i: (string | number)[]
 ): number | null {
   const t = TABLE_TEXTS[kind];
-  const index = t.at(...i);
-  const p = { table: t.table, index, field: null, transform: t.transform };
-  // as in partText: an item's or a monster's first index is its entry, the id of its table
-  const inside = t.table.includes(".") ? index : index.slice(1);
-  const v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
+  const v = cellOf({
+    table: t.table,
+    index: t.at(...i),
+    field: t.field,
+    transform: t.transform,
+  });
   const x = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
   return Number.isFinite(x) ? x : null;
 }
