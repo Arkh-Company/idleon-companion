@@ -189,3 +189,32 @@ function appSourcesOf(
     system: s.system ?? system,
   }));
 }
+
+/**
+ * The app's rows below a source paired with the bench's: by name and value, then by value, then by name; each pair is
+ * an app row and the bench row's index, and `left` says whether a row of either side has no pair.
+ */
+export function pairRows(
+  ak: readonly CalcTreeNode[],
+  bk: readonly BenchRow[],
+): { pairs: [CalcTreeNode, number][]; left: boolean } {
+  const of = new Map<number, CalcTreeNode>();
+  const taken = new Set<CalcTreeNode>();
+  const take = (fits: (a: CalcTreeNode, b: BenchRow) => boolean) => {
+    bk.forEach((b, i) => {
+      if (of.has(i)) return;
+      const a = ak.find((x) => !taken.has(x) && fits(x, b));
+      if (a) {
+        of.set(i, a);
+        taken.add(a);
+      }
+    });
+  };
+  take((a, b) => a.name === b.name && sameValue(a.value, b.v));
+  take((a, b) => sameValue(a.value, b.v));
+  take((a, b) => a.name === b.name);
+  return {
+    pairs: [...of].map(([i, a]) => [a, i]),
+    left: of.size < bk.length || taken.size < ak.length,
+  };
+}

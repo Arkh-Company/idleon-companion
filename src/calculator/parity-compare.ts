@@ -10,7 +10,7 @@ import {
   systemOfGroup,
 } from "./parity-values.ts";
 import type { BenchRow, Difference } from "./parity-values.ts";
-import { compareSources, isV1 } from "./parity-sources.ts";
+import { compareSources, isV1, pairRows } from "./parity-sources.ts";
 
 export type { BenchRow, Difference } from "./parity-values.ts";
 export {
@@ -91,6 +91,7 @@ export function compareTrees(
   reviewedNames: ReadonlySet<string>,
 ): Difference[] {
   const out: Difference[] = [];
+  let anyOrder = false;
   /** `path` is the bench's names, only to find a reviewed name; `at` is what leaves. */
   const walk = (
     a: CalcTreeNode,
@@ -248,6 +249,17 @@ export function compareTrees(
         add("shape");
       return;
     }
+    // spec 009 T029: against the V1, the rows below a source pair by name and value in any order (its order is the
+    // format's); a row missing or extra is a difference of shape
+    if (anyOrder) {
+      const { pairs, left } = pairRows(ak, bk);
+      if (left) add("shape");
+      for (const [k, i] of pairs) {
+        const bi = bk[i] ?? {};
+        walk(k, bi, `${path} › ${bi.name ?? "?"}`, `${at}/${String(i)}`, false);
+      }
+      return;
+    }
     if (ak.length !== bk.length) {
       add("shape");
       return;
@@ -305,7 +317,8 @@ export function compareTrees(
     if (unmatched.length || left.length) out.push({ at, field: "shape" });
   }
   // spec 009 T029: against the bench's V1 mould, source by source; against a bench with no mould, row by row
-  if (isV1(bench))
+  anyOrder = isV1(bench);
+  if (anyOrder)
     compareSources(app, bench, out, (a, b, path, at) => {
       walk(a, b, path, at, false);
     });
