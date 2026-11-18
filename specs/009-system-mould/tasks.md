@@ -250,9 +250,9 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
 - [ ] T026 The remaining unnamed math branches (SC-001; FR-007)
   - The probe found 306 unnamed branches in 59,508 rows: 272 with no game code, the rest game caches (`DNSM.CalcTalentMAP.arenaCruc`, `DNSM.StarSigns[…]`, `Ninja(…)`…).
   - Flatten or name them by the 008/009 rules; tests first.
-- [ ] T027 Constants are never sources of a system group (FR-002, FR-004)
+- [X] T027 Constants are never sources of a system group (FR-002, FR-004)
   - The probe found constants ("Fixed ×2", 376 rows; "Fixed +1", "Multiplier"…) in "🔹 Other" groups. A constant of the game's math stays as its own row in its pool, never inside a system group; tests first.
-- [ ] T028 Grow `src/calculator/tree/systems.ts` from the probe's "Other" list (FR-003; the code part of T022)
+- [X] T028 Grow `src/calculator/tree/systems.ts` from the probe's "Other" list (FR-003; the code part of T022)
   - Every source whose block names a known system leaves "Other" (Research, Stamps, Cooking, Bribes, Jelly Operator, Menagerie, Farming, Companions, Atom Collider, Windwalker, Gaming, Spelunking, Summoning, Owl…), each rule with its proof by reference; a generic helper block (`ArbitraryCode5Inputs`, `getLOG`) takes its caller's system or stays out of the groups.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
