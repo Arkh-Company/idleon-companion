@@ -3776,18 +3776,18 @@
       "transform": "clean-keep-case",
       "template": "{0} (family bonus)",
       "keys": [
-        ["DNSM.FamBonusQTYs[14]", [14, 0]],
-        ["DNSM.FamBonusQTYs[16]", [16, 0]],
-        ["DNSM.FamBonusQTYs[18]", [18, 0]],
-        ["DNSM.FamBonusQTYs[20]", [20, 0]],
-        ["DNSM.FamBonusQTYs[24]", [24, 0]],
-        ["DNSM.FamBonusQTYs[28]", [28, 0]],
-        ["DNSM.FamBonusQTYs[32]", [32, 0]],
-        ["DNSM.FamBonusQTYs[38]", [38, 0]],
-        ["DNSM.FamBonusQTYs[40]", [40, 0]],
-        ["DNSM.FamBonusQTYs[4]", [4, 0]],
-        ["DNSM.FamBonusQTYs[6]", [6, 0]],
-        ["DNSM.FamBonusQTYs[8]", [8, 0]]
+        ["DNSM.FamBonusQTYs[14]", [7, 0]],
+        ["DNSM.FamBonusQTYs[16]", [8, 0]],
+        ["DNSM.FamBonusQTYs[18]", [9, 0]],
+        ["DNSM.FamBonusQTYs[20]", [10, 0]],
+        ["DNSM.FamBonusQTYs[24]", [12, 0]],
+        ["DNSM.FamBonusQTYs[28]", [14, 0]],
+        ["DNSM.FamBonusQTYs[32]", [16, 0]],
+        ["DNSM.FamBonusQTYs[38]", [19, 0]],
+        ["DNSM.FamBonusQTYs[40]", [20, 0]],
+        ["DNSM.FamBonusQTYs[4]", [2, 0]],
+        ["DNSM.FamBonusQTYs[6]", [3, 0]],
+        ["DNSM.FamBonusQTYs[8]", [4, 0]]
       ]
     },
     {
