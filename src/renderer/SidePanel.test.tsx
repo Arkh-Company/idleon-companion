@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The side panel (spec 008 FR-001, FR-005, FR-006, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the Stats value is a
-// button that opens the tree beside the window, ✕ closes it and gives the focus back, and the short answer has the lines
-// that exist. Every value and name is invented.
+// button that opens the tree beside the window, ✕ closes it and gives the focus back, and no short answer sits above the
+// tree (spec 009 FR-001). Every value and name is invented.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -281,24 +281,12 @@ const mults = node({
   ],
 });
 
-test("the short answer has two lines: the largest part that adds, with its share, and the largest multiplier (FR-006)", () => {
+test("no short answer above the tree, even with a part that adds and a multiplier: the title keeps its number (spec 009 FR-001)", () => {
   drawPanel(ready(node({ kids: [adds, mults] })));
-  expect(lines()).toEqual([
-    "Largest added bonus: Golden (66%).",
-    "Largest multiplier: Equip ×31.8.",
-  ]);
+  expect(lines()).toEqual([]);
   expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
     "Drop Rate 1,234x",
   );
-});
-
-test.each([
-  ["no multiplier", [adds], ["Largest added bonus: Golden (66%)."]],
-  ["no sum", [mults], ["Largest multiplier: Equip ×31.8."]],
-  ["neither", [node({ id: "root/X", name: "X" })], []],
-])("a tree with %s shows only the line it has", (_name, kids, expected) => {
-  drawPanel(ready(node({ kids })));
-  expect(lines()).toEqual(expected);
 });
 
 test.each<[string, FormulaTree, string]>([
