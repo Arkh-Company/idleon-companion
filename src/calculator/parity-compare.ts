@@ -38,10 +38,10 @@ const appThrough = (
     return [k];
   });
 /**
- * The bench's groups at 0 and at ×1, at any level, which the app no longer has (spec 009, FR-016); they have the app's
- * 008 names (the 008 parity compared them).
+ * The bench's groups at 0 and at ×1, at any level, which the app no longer has (spec 009, FR-016): the app's 008 names
+ * (the 008 parity compared them), or the bench's later "N more parts at ×1" (009 T029).
  */
-const BENCH_GROUP = /^At (?:0|×1) \(\d+\)$/;
+const BENCH_GROUP = /^(?:At (?:0|×1) \(\d+\)|\d+ more parts at (?:0|×1))$/;
 /**
  * The bench's rows through its groups at 0 and ×1 and its V1 system groups (spec 009 T023: the bench's Drop Rate is its
  * V1 mould), each with whether it was inside one and the system of the group it was in.
