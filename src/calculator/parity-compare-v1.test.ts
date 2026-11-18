@@ -339,3 +339,42 @@ test("the checks and reads the app shows after its pools are the format's, no ex
   const moulded = app({ value: 33.6, kids: [pool([luk(), cards()]), check] });
   expect(compareTrees(moulded, V1, new Set())).toEqual([]);
 });
+
+test("below a source, the rows pair by name and value, in any order; a row missing is still a difference", () => {
+  const bench: BenchRow = {
+    ...V1,
+    kids: [
+      {
+        name: "Additive Pool",
+        v: 30,
+        kids: [
+          {
+            name: "🃏 Cards",
+            v: 30,
+            kids: [
+              {
+                name: "Card A",
+                v: 30,
+                kids: [benchSource("Stars", 3), benchSource("Per star", 10)],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const card = (kids: CalcTreeNode[]) =>
+    app({ id: "root/Card A", name: "Card A", value: 30, role: "piece", kids });
+  const flipped = app({
+    value: 33.6,
+    kids: [pool([card([source("Per star", 10), source("Stars", 3)])])],
+  });
+  expect(compareTrees(flipped, bench, new Set())).toEqual([]);
+  const short = app({
+    value: 33.6,
+    kids: [pool([card([source("Stars", 3)])])],
+  });
+  expect(compareTrees(short, bench, new Set()).map((d) => d.field)).toEqual([
+    "shape",
+  ]);
+});
