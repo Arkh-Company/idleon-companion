@@ -47,7 +47,8 @@ export function through(e: Expr, v: number): Expr {
   const clamp = ["max", "min"].includes(x.name) && x.args.length === 2;
   if (!inner || vars.length !== 1 || !(round ? x.args.length === 1 : clamp))
     return x;
-  return near(Number(inner.v), v) ? through(inner, v) : x;
+  // exactly: a tolerance would let the round of a big number pass, and hide it (FR-008)
+  return Number(inner.v) === v ? through(inner, v) : x;
 }
 /** The sources an expression reads or calls (a value of an earlier step is one too). */
 const sources = (e: Expr): number =>
