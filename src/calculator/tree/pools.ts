@@ -5,7 +5,7 @@
 // pool: its rows stay as they are.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
-import { flat, topOp } from "./expr.ts";
+import { exprText, flat, topOp } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
 import { aboveRenames } from "./above-renames.ts";
@@ -296,11 +296,23 @@ function chainOf(
     if (!e || !op) return out.length ? "open" : null;
     const ts = flat(e, op);
     let prev = -1;
+    // a multiplier the block keeps in a variable set by an earlier step (`def`, tree/steps.ts) is that step's value
+    // too, when the step is its expression: the golden food's shared multiplier (spec 009, FR-017); a variable that is
+    // added stays a term, which the pool takes apart as any unnamed sum (tree/flatten.ts)
     const run = ts.findIndex((x) => {
-      if (x.t !== "val" && !(x.t === "read" && x.p.startsWith("DNSM.")))
+      if (
+        x.t !== "val" &&
+        !(x.t === "def" && op === "*") &&
+        !(x.t === "read" && x.p.startsWith("DNSM."))
+      )
         return false;
-      prev = steps.findLastIndex((p, j) => j < k && near(p.v, Number(x.v)));
-      return prev >= 0 && (x.t === "val" || ownCache(x, k));
+      prev = steps.findLastIndex(
+        (p, j) =>
+          j < k &&
+          near(p.v, Number(x.v)) &&
+          (x.t !== "def" || exprText(p.e) === exprText(x.e)),
+      );
+      return prev >= 0 && (x.t !== "read" || ownCache(x, k));
     });
     out.unshift({ at: k, op, terms: ts.filter((_, i) => i !== run), up });
     const via = ts[run];
