@@ -355,3 +355,29 @@ test("a root of one step is no chain; a chain whose pools do not give the root i
   ];
   expect(chainPools(floor, { value: 41 }, termAt)).toBe("open");
 });
+
+test("a running total links the chain before a multiplier kept in a variable, whatever the order of the factors", () => {
+  const set = op("*", at("Stats.x", 2), at("Stats.y", 2.5), 5);
+  const def: Expr = { t: "def", e: set, v: 5 };
+  const steps = (e: Expr): Step[] => [
+    { v: 5, e: set },
+    { v: 20, e: op("+", at("Stats.a", 10), at("Stats.b", 10), 20) },
+    { v: 100, e },
+  ];
+  // the variable is a factor of its own: its row as the assembly makes it
+  const terms = (e: Expr) =>
+    e.t === "def" ? src("Stats.m", Number(e.v)) : termAt(e);
+  const both = [op("*", def, val(20), 100), op("*", val(20), def, 100)].map(
+    (e) => listOf(chainPools(steps(e), { value: 100 }, terms))?.map(brief),
+  );
+  expect(both).toEqual([
+    [
+      ["Additive pool", "additive", "sum", 20, [10, 10]],
+      ["Multi pool", "multi", "product", 5, [5]],
+    ],
+    [
+      ["Additive pool", "additive", "sum", 20, [10, 10]],
+      ["Multi pool", "multi", "product", 5, [5]],
+    ],
+  ]);
+});
