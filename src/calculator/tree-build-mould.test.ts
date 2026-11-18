@@ -202,6 +202,57 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   expect(checkTree(opened, 100)).not.toBeNull();
 });
 
+// The Drop Rate's first sum as the game writes it (fake-game.js TreeDropPercent, FR-017): TreeBase + (ArcadeBonus(0) +
+// CardBonusREAL(3) + CardBonusREAL(1) + 5 × TreeLevel + a working value the block wrote, the golden food + TreeLevel)
+// ÷ 100 + 2; then × TreeLoop(). The bonuses in % go by system in % groups, the golden food among them.
+test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its Additive pool shows the systems in %, and every level closes", () => {
+  const build = buildTree(
+    recorder.record(
+      golden(999, 3, 2, 5),
+      [["TreeDropPercent", [0, 0, 0]]],
+      NONE,
+    ),
+    0,
+    recorder.ops,
+  );
+  const [add] = kidsOf(build.root);
+  const groups = kidsOf(add);
+  const gold = 13.224273879686;
+  expect(
+    groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
+  ).toEqual([
+    ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
+    ["🎮 Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
+    ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
+    ["🔹 Other", "system", "sum", "+", 6],
+    ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
+  ]);
+  // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it
+  const sum = (ns: readonly CalcTreeNode[]) =>
+    ns.reduce((s, k) => s + Number(k.value), 0);
+  expect(sum(groups)).toBeCloseTo(Number(add?.value), 9);
+  expect(Number(add?.value)).toBeCloseTo(
+    4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
+    9,
+  );
+  for (const g of groups)
+    expect(sum(kidsOf(g)) / (g.combine === "percent" ? 100 : 1)).toBeCloseTo(
+      Number(g.value),
+      9,
+    );
+  // the golden food in its group opens as its own chain
+  const [food] = kidsOf(groups[2]);
+  expect(food?.code).toBe('GoldFoodBonuses("DropRatez")');
+  const opened = food?.kids === "lazy" ? build.expand(food.id) : food;
+  expect(
+    kidsOf(opened)
+      .filter((k) => k.role === "pool")
+      .map((k) => k.name),
+  ).toEqual(["Multi pool", "Additive pool"]);
+  expect(checkTree(build.root, 200)).not.toBeNull();
+  expect(checkTree(opened, 100)).not.toBeNull();
+});
+
 test("a chain a step of which neither adds nor multiplies is open: the build says so, for the log (NFR-005)", () => {
   const build = (block: string) =>
     buildTree(

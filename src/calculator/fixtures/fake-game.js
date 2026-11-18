@@ -592,6 +592,27 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeDrop.h.v = d.TreeDrop.h.v * Blocks._customBlock_TreeLoop();
     return d.TreeDrop.h.v;
   };
+  // The Drop Rate first sum as the game writes it (spec 009, FR-017): bonuses in % summed and divided by 100, among them
+  // a product and a working value the block writes that only joins sources, a golden food among them.
+  Blocks._customBlock_TreeDropPercent = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDropPct = new StringMap();
+    d.TreeDropPctPart = new StringMap();
+    d.TreeDropPctPart.h.v =
+      Blocks._customBlock_GoldFoodBonuses("DropRatez") + s.TreeLevel;
+    d.TreeDropPct.h.v =
+      s.TreeBase +
+      (Blocks._customBlock_ArcadeBonus(0) +
+        Blocks._customBlock_CardBonusREAL(3) +
+        Blocks._customBlock_CardBonusREAL(1) +
+        5 * s.TreeLevel +
+        d.TreeDropPctPart.h.v) /
+        100 +
+      2;
+    d.TreeDropPct.h.v = d.TreeDropPct.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeDropPct.h.v;
+  };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
     return s.TreeBase + (s.TreeOwned > 0 ? 5 : 0);
