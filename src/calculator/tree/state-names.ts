@@ -251,15 +251,14 @@ const TABLE_RULES: readonly StateRule[] = [
   ),
   // spec 009 T031: a star sign's own total, the sign's bonus added once for each set of signs it is in (N.js StarSigns,
   // while the list of equipped signs holds it), by its bonus's words and its name
-  rule(/^DNSM\.StarSigns\[(\d+)\]$/, "N.js StarSigns cache by sign", (m) =>
-    with_(tableText("sign", n(m)), (sign) =>
-      with_(tableText("signBonus", n(m)), (bonus) => {
-        const more = tableText("signBonusMore", n(m));
-        const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
-        return `${words} (${sign})`;
-      }),
-    ),
-  ),
+  rule(/^DNSM\.StarSigns\[(\d+)\]$/, "N.js StarSigns cache by sign", (m) => {
+    const sign = tableText("sign", n(m));
+    const bonus = tableText("signBonus", n(m));
+    if (sign === null || bonus === null) return null;
+    const more = tableText("signBonusMore", n(m));
+    const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
+    return `${words} (${sign})`;
+  }),
   // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
   // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
   rule(
