@@ -1,7 +1,7 @@
 // The open tree live in the formula pipeline (spec 009 FR-015, replacing the 008's "Game changed · Refresh"): a newer
-// reading writes the open number's value and its parts' into the tree on screen, with no button; a change the parts
-// followed do not explain asks the tree again by itself. A mark still takes the tree's values by piece. The tree host is
-// a fake; every value and name is invented.
+// reading writes the open number's value and its parts' into the tree on screen, with no button, and a change asks the
+// tree again in silence, one request at a time, so its ⓘ and shares close with the live values. A mark still takes the
+// tree's values by piece. The tree host is a fake; every value and name is invented.
 import { expect, test } from "vitest";
 import { node, pairOf, pipeline as setup } from "./formula-fixture.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
@@ -39,7 +39,7 @@ const shown = (h: ReturnType<typeof setup>) => {
   };
 };
 
-test("a newer reading writes the open number's value and text and its parts' into the tree, asking nothing again", () => {
+test("a newer reading writes the open number's value and text and its parts' into the tree at once, and asks the tree again in silence", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
@@ -49,8 +49,33 @@ test("a newer reading writes the open number's value and text and its parts' int
     kids: [7, 2],
     calculatedAt: 1_000,
   });
-  expect(h.host.request).toHaveBeenCalledOnce();
+  expect(h.host.request).toHaveBeenCalledTimes(2);
   expect(h.last()).not.toHaveProperty("gameChanged");
+});
+
+test("the tree asked again comes with its ⓘ closing on the new value; a change while it is asked opens no other request, and after it comes only a new change asks again", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.setPair(pairAt(3, 10));
+  h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  const formula: [string[], number[]] = [
+    ["Sword", "+", "Ring"],
+    [7, 2, 9],
+  ];
+  h.tree({ ...dropTree(9, 7), formula });
+  const t = h.last();
+  expect(t?.state === "ready" && t.root.formula).toEqual(formula);
+  expect(shown(h).calculatedAt).toBe(2_000);
+  // The values of a reading the new tree already has ask nothing.
+  h.setPair(pairAt(4, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.setPair(pairAt(5, 10));
+  h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
 });
 
 test("another character's tree never takes them: the live values are the active character's", () => {
@@ -95,6 +120,10 @@ test("the number moving with no part followed moving asks the tree again by itse
   h.values({ dropRate: 9, [SWORD]: 4, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(2);
   expect(h.last()?.state).toBe("ready");
+  // A newer change while the tree is asked opens no second request.
+  h.setPair(pairAt(3, 10));
+  h.values({ dropRate: 10, [SWORD]: 4, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
   h.tree(dropTree(9, 7));
   const t = h.last();
   if (t?.state !== "ready" || !Array.isArray(t.root.kids))
@@ -139,4 +168,14 @@ test("a mark takes the open tree's values by piece, with the characters' names t
   expect(h.p.markOf(1)).toBe(null);
   h.p.close();
   expect(h.p.markOf(0)).toBe(null);
+});
+
+test("a branch opened while the tree is asked again waits for the new one: the window asks it again then", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
+  // One waiting job in the host: an expand sent now would replace the tree asked, which would never come.
+  expect(h.host.request).toHaveBeenCalledTimes(2);
 });

@@ -60,11 +60,38 @@ test("a part that moves below its text is written as it is; one that comes unava
   h.setPair(pairAt(2));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4.0001 });
   expect(rows(h.last())?.kids).toEqual([4.0001, 2.5]);
+  // The change asks the tree again in silence (FR-015); it comes with the part's new value.
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree(
+    node({
+      value: CALCULATED.dropRate,
+      kids: [{ ...sword, value: 4.0001 }, lazy],
+    }),
+  );
+  h.setPair(pairAt(3));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  expect(h.last()?.state).toBe("ready");
+});
+
+test("a part with no live value that never had one asks nothing again", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
   expect(h.host.request).toHaveBeenCalledOnce();
+});
+
+test("a part still without value after the new tree asks the tree only once", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4 });
   h.setPair(pairAt(3));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
   expect(h.host.request).toHaveBeenCalledTimes(2);
-  expect(h.last()?.state).toBe("ready");
+  h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  h.setPair(pairAt(4));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
 });
 
 test("another character's tree asks no part: the live values are the active character's", () => {
