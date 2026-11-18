@@ -2,6 +2,7 @@
 // 009, FR-018): the row whose value is the curve's own keeps "x% reached · max …"; a curve times a multiplier says
 // nothing (the Vinicius decides later). Rows written by hand, with the recording's shapes.
 import { expect, test } from "vitest";
+import { formulaLines } from "../../renderer/tree-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { cond, fixed, kidsOf, placed, recNode } from "./tree-fixture.ts";
@@ -156,4 +157,40 @@ test("[FR-015a] a talent keeps how much of its curve's max it reached (Haungry F
   expect(kidsOf(n).map((k) => k.name)).toContain("Talent level");
   expect(n?.maxReached?.max).toBe(55);
   expect(n?.maxReached?.share).toBeCloseTo(49.187582562747686 / 55, 9);
+});
+
+test("[FR-018] a curve that grows from 1, times a factor, says in its ⓘ how much of its max the curve reached", () => {
+  // the Warriors Rule bubble: 1 + 2 × 21742 ÷ (21742 + 50) = 2.995, of its max 3, × the Prisma multi
+  const CODE = 'ArbitraryCode5Inputs("decayMulti", 2, 50, 21742, 0, 0)';
+  const curveV = 1 + (2 * 21742) / (21742 + 50);
+  const n = bubble(curveV * 4.10249739853905, [
+    {
+      node: row({
+        pieceKey: "p",
+        value: 4.10249739853905,
+        code: 'ArcaneType("PrismaBonusMult", 0, 0)',
+        name: "Prisma Bubble bonus multi",
+        kids: "lazy",
+      }),
+      open: 5,
+    },
+    {
+      node: row({
+        pieceKey: CODE,
+        value: curveV,
+        code: CODE,
+        name: "Curve: 1 + 2 × 21742 ÷ (21742 + 50)",
+      }),
+      open: null,
+      group: [
+        fixed("Max bonus of the curve", 2),
+        fixed("Level at half of the max", 50),
+        leaf("WARRIORS RULE bubble level", 21742, "CauldronInfo[0][1]"),
+      ],
+    },
+  ]);
+  expect(n?.formula && formulaLines(n.formula).names).toMatch(
+    /\(the curve is at 99\.8% of its max 3\)$/,
+  );
+  expect(n?.maxReached).toBeUndefined();
 });
