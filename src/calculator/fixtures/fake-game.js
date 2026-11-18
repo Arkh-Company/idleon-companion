@@ -822,6 +822,20 @@ lime.$scripts.N = function (_exports, $global) {
       return false;
     },
   };
+  // The game's search of a list (D.contains): the block caches its answer and tests the cache (HaveW6Trophy, spec 009).
+  A["com.stencyl.utils.Utils"].contains = function (list, value) {
+    return list.indexOf(value) >= 0;
+  };
+  Blocks._customBlock_TreeHaveItem = function () {
+    var d = dnsm();
+    d.TreeHaveItem = A["com.stencyl.utils.Utils"].contains(
+      state().Cards[1],
+      "itemA",
+    )
+      ? 1
+      : 0;
+    return d.TreeHaveItem == 1 ? 10 : 0;
+  };
   Blocks._customBlock_TreeSearchForever = function () {
     return A["com.stencyl.utils.Utils"].mapContainsValue(
       state().TreeBig,

@@ -8,6 +8,8 @@ import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
+import { TABLES } from "./tree/gold-food-fixture.ts";
+import { useGameTables } from "./tree/table-names.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -141,4 +143,22 @@ test("a chain the game floors keeps its chain's pools, the floor around them in 
   );
   expect(numbers).toMatch(/ 75$/);
   expect(checkTree(root, 100)).not.toBeNull();
+});
+
+// fake-game.js TreeHaveItem: the block caches whether Cards[1] contains itemA, then tests the cache (HaveW6Trophy)
+test("a block's cache of its own search is said by the item it found, from the items' table (009 T030)", () => {
+  useGameTables(TABLES);
+  const root = buildTree(
+    recorder.record(
+      mosaicOf({ Cards: [[], ["itemA"], [], []] }),
+      [["TreeHaveItem", [0, 0, 0]]],
+      NONE,
+    ),
+    0,
+    recorder.ops,
+  ).root;
+  const names = (n: CalcTreeNode): string[] =>
+    kidsOf(n).flatMap((k) => [k.name, ...names(k)]);
+  expect(names(root)).toContain("Found Invented Charm");
+  useGameTables(new Map());
 });
