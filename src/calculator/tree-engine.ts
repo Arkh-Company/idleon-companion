@@ -1,5 +1,6 @@
 // The tree worker's engine (research R1, R4): the game instrumented in memory with the recorder, one recording per
-// `number` request with the root called at the game's arity, and the root with its first level built from it. An
+// `number` request with the root called at the game's arity, then the extra calls and the follow-up calls of
+// tree-recipe.ts (spec 009, FR-018: systems the game skips at 0), and the root with its first level built from it. An
 // `expand` builds a lazy branch over the build of the last `number` request, without recording again. `values` only
 // calculates the numbers in view, with the recorder off (research R4). `shape` lists every part of a number's tree, its
 // branches opened, for Where this goes (FR-027), and leaves the last `number` request's build in place.
