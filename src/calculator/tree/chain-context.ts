@@ -6,12 +6,13 @@ import { aboveRenames } from "./above-renames.ts";
 import type { Opened } from "./cache-formulas.ts";
 import { readsPath } from "./cache-picks.ts";
 import { topOp } from "./expr.ts";
+import { goldFoodTerm } from "./gold-food-chain.ts";
 import { near } from "./math.ts";
 import type { FirstLevelContext } from "./mould.ts";
 import type { TermAt } from "./pools.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
-import type { Step } from "./steps.ts";
+import type { Expr, Step } from "./steps.ts";
 import type { Terms } from "./terms.ts";
 import type { Reads } from "./val-path.ts";
 
@@ -39,8 +40,15 @@ export function chainContext(
   const last = all.at(-1);
   const terms = termsOf(n);
   const reads: Reads = new Map((n.r ?? []).map(([p, v]) => [p, v]));
-  const termAt: TermAt = (e, op, at) =>
-    terms.term(e, op, reads, { args: n.a, steps: all, at });
+  // a golden food's terms named by their role (tree/gold-food-chain.ts), else the assembly's
+  const termAt: TermAt = (e, op, at) => {
+    const term = (t: Expr, o: "*" | "+") =>
+      terms.term(t, o, reads, { args: n.a, steps: all, at });
+    return (
+      goldFoodTerm(e, op, { block: n, nodes, steps: all, reads, term }) ??
+      term(e, op)
+    );
+  };
   // a working value the call's own block wrote: its cache's writer is the call
   const own = (r: Row | null | undefined) =>
     r && typeof r.open === "object" && r.open?.writer === n.id ? r.open : null;

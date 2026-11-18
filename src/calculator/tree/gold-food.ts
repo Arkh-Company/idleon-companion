@@ -75,6 +75,30 @@ function foodName(what: string, text: string | null): string | null {
   return name !== null && isNameText(name) ? name : null;
 }
 
+const quantityKey = (reads: Reads) =>
+  [...reads.keys()].find((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k));
+/** The texts of the worn food and of the emporium's (the worn food's when it has none), from the block's reads. */
+function foodTexts(reads: Reads): {
+  foodText: string | null;
+  emText: string | null;
+} {
+  const qtyKey = quantityKey(reads);
+  const slot = qtyKey && /\[(\d+)\]$/.exec(qtyKey)?.[1];
+  const food = slot ? reads.get(`EquipmentOrder[2][${slot}]`) : undefined;
+  const foodText = typeof food === "string" ? tableText("item", food) : null;
+  const niKey = [...reads.keys()].find((k) => /^Ninja\[104\]\[\d+\]$/.test(k));
+  const ni = niKey && /\[(\d+)\]$/.exec(niKey)?.[1];
+  const emFood = ni
+    ? reads.get(`CustomLists.NinjaInfo[29][${String(2 + 3 * Number(ni))}]`)
+    : undefined;
+  const emText =
+    (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
+  return { foodText, emText };
+}
+/** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
+export const emporiumName = (reads: Reads): string | null =>
+  foodName("Emporium", foodTexts(reads).emText);
+
 /** The rows of a Golden Food block with its four steps or more, or null for any other block. */
 export function goldFood(
   n: RecNode,
@@ -113,19 +137,8 @@ export function goldFood(
       ? flat(secret.r.l, "+").flatMap((x) => ctx.term(x, "+", new Map()) ?? [])
       : [];
   const amount = reads.get("DNSM.GfoodMap.Amount");
-  const qtyKey = [...reads.keys()].find((k) =>
-    /^EquipmentQuantity\[2\]\[\d+\]$/.test(k),
-  );
-  const slot = qtyKey && /\[(\d+)\]$/.exec(qtyKey)?.[1];
-  const food = slot ? reads.get(`EquipmentOrder[2][${slot}]`) : undefined;
-  const foodText = typeof food === "string" ? tableText("item", food) : null;
-  const niKey = [...reads.keys()].find((k) => /^Ninja\[104\]\[\d+\]$/.test(k));
-  const ni = niKey && /\[(\d+)\]$/.exec(niKey)?.[1];
-  const emFood = ni
-    ? reads.get(`CustomLists.NinjaInfo[29][${String(2 + 3 * Number(ni))}]`)
-    : undefined;
-  const emText =
-    (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
+  const qtyKey = quantityKey(reads);
+  const { foodText, emText } = foodTexts(reads);
   // the ⓘ of these rows, from the steps of the block
   const famV = Math.max(Number(fam) || 0, 1);
   const sumV = Number(sumE?.v);
