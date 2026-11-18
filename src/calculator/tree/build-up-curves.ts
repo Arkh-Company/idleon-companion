@@ -10,7 +10,7 @@ import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { built, constRows, rolesOf } from "./build-up-rows.ts";
-import type { BuiltUp } from "./build-up-rows.ts";
+import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 
 const KINDS = [
   "decay",
@@ -22,7 +22,7 @@ const KINDS = [
 ];
 
 /** A row that is a curve: its constants named by their role in the curve, and the curve in its ⓘ by those names. */
-export function curveSelf(lv: Level): BuiltUp | null {
+export function curveSelf(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   const input = lv.rows.at(-1);
   const consts = lv.rows.slice(0, -1);
   const v = vOf(lv.row);
@@ -31,7 +31,7 @@ export function curveSelf(lv: Level): BuiltUp | null {
     !input ||
     !consts.length ||
     consts.length > 2 ||
-    lv.row.node.name.startsWith("Curve: ")
+    (ctx.name ?? lv.row.node.name).startsWith("Curve: ")
   )
     return null;
   for (const k of KINDS) {

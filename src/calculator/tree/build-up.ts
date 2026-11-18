@@ -220,7 +220,7 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     legendTalent(lv) ??
     allTalentLevels(lv) ??
     prisma(lv) ??
-    curveSelf(lv) ??
+    curveSelf(lv, ctx) ??
     curveLevel(lv) ??
     bubbleClass(lv) ??
     sigil(lv, ctx) ??

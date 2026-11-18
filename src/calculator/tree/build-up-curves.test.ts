@@ -107,3 +107,33 @@ test("[FR-018] a Prisma multi at its cap of 5 keeps its ⓘ, the min giving the 
   expect(lines(rows[0])).toMatchObject({ result: "5" });
   expect(lines(rows[0])?.numbers).toMatch(/^min\(5, 2 \+ /);
 });
+
+test("[FR-018] a cache whose one row is the curve block keeps its own name, and the curve's constants by their role", () => {
+  const curve = branch(
+    "Curve: 1 + 0.4 × 1902 ÷ (1902 + 100)",
+    1.3800199800199802,
+    [
+      fixed("Max bonus of the curve", 0.4),
+      fixed("Level at half of the max", 100),
+      leaf("Level the curve uses", 1902, null, "level"),
+    ],
+    'ArbitraryCode5Inputs("decayMulti", 0.4, 100, 1902, 0, 0)',
+  );
+  const { rows } = placed({ 1: [curve] }, [
+    {
+      node: row({
+        pieceKey: "DNSM.FamBonusQTYs[66]",
+        value: 1.3800199800199802,
+        code: "DNSM.FamBonusQTYs[66]",
+        name: "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)",
+        kids: "lazy",
+      }),
+      open: 1,
+    },
+  ]);
+  expect(kidsOf(rows[0]).map((k) => k.name)).toEqual([
+    "Max bonus",
+    "Level at half",
+    "Level the curve uses",
+  ]);
+});

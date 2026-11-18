@@ -109,13 +109,17 @@ export function makePlaces(ctx: PlaceContext) {
    * The ⓘ and rows of a level of a source (FR-007, FR-018): its family's full build-up when it has one, the whole sum or
    * product with no unnamed step, and the constants of the code and the branch checks in the ⓘ only.
    */
-  function builtUp(lv: Level): {
+  function builtUp(
+    lv: Level,
+    name: string,
+  ): {
     formula: CalcTreeNode["formula"];
     rows: Row[];
   } {
     const up = buildUp(lv, {
       nodes,
       under: (k, l) => levelOf(k, l.at, l.code),
+      name,
     });
     const l = up?.level ?? lv;
     const w = withFormula(l.row, flatten(l.rows));
@@ -133,7 +137,7 @@ export function makePlaces(ctx: PlaceContext) {
   }
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
-  function placedLevel(id: string, lv: Level) {
+  function placedLevel(id: string, lv: Level, name: string) {
     // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows, and so are those
     // of a source computed as a chain, which opens into its pools: its ⓘ is how they join, the step its call takes
     // (FR-017); any other level has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
@@ -150,7 +154,7 @@ export function makePlaces(ctx: PlaceContext) {
               : null,
             rows: lv.rows,
           }
-        : builtUp(lv);
+        : builtUp(lv, name);
     return {
       formula: w.formula,
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
@@ -195,7 +199,7 @@ export function makePlaces(ctx: PlaceContext) {
         id,
         ...node,
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
-        ...(group ? placedLevel(id, group) : {}),
+        ...(group ? placedLevel(id, group, node.name) : {}),
       };
       if (open !== null) places.set(id, { node: placed, level });
       return placed;
@@ -218,7 +222,7 @@ export function makePlaces(ctx: PlaceContext) {
       const { node, level } = p;
       if (!level)
         return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
-      return { ...node, ...placedLevel(node.id, level) };
+      return { ...node, ...placedLevel(node.id, level, node.name) };
     },
   };
 }
