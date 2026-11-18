@@ -314,19 +314,17 @@ export function tableNumber(
   ...i: (string | number)[]
 ): number | null {
   const t = TABLE_TEXTS[kind];
-  const v = t
-    .at(...i)
-    .reduce<unknown>(
-      step,
-      gameTables.get(
-        partTable({
-          table: t.table,
-          index: t.at(...i),
-          field: null,
-          transform: t.transform,
-        }),
-      ),
-    );
+  const v = t.at(...i).reduce<unknown>(
+    step,
+    gameTables.get(
+      partTable({
+        table: t.table,
+        index: t.at(...i),
+        field: null,
+        transform: t.transform,
+      }),
+    ),
+  );
   const x = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
   return Number.isFinite(x) ? x : null;
 }
