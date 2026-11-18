@@ -378,3 +378,45 @@ test("below a source, the rows pair by name and value, in any order; a row missi
     "shape",
   ]);
 });
+
+test('the bench\'s group of its parts at ×1, written "N more parts at ×1", goes through: the app has each part in its place', () => {
+  const bench: BenchRow = {
+    ...V1,
+    kids: [
+      {
+        name: "Additive Pool",
+        v: 30,
+        kids: [
+          {
+            name: "🃏 Cards",
+            v: 30,
+            kids: [
+              {
+                name: "Card A",
+                v: 30,
+                kids: [
+                  benchSource("Stars", 30),
+                  {
+                    name: "2 more parts at ×1",
+                    v: 1,
+                    kids: [benchSource("One", 1), benchSource("Also one", 1)],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const card = app({
+    id: "root/Card A",
+    name: "Card A",
+    value: 30,
+    role: "piece",
+    kids: [source("Also one", 1), source("Stars", 30), source("One", 1)],
+  });
+  expect(
+    compareTrees(app({ value: 33.6, kids: [pool([card])] }), bench, new Set()),
+  ).toEqual([]);
+});
