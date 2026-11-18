@@ -339,6 +339,20 @@ export function FormulaTree({
 
   const body = branch(tree.root, 1, [1, 1], null);
 
+  // spec 009 FR-015: a rebuilt tree may drop the row of the Tab stop. It goes to the nearest row left (up the path of
+  // names), or the root, and the focus with it when it was on that row (gone, it left the focus to the page).
+  useEffect(() => {
+    const keys = new Set(visible.map((v) => v.key));
+    if (keys.has(active)) return;
+    let to = active;
+    while (!keys.has(to)) {
+      const cut = Math.max(to.lastIndexOf("/"), to.lastIndexOf("::"));
+      to = cut > 0 ? to.slice(0, cut) : tree.root.id;
+    }
+    setActive(to);
+    if (document.activeElement === document.body) setFocusKey(to);
+  });
+
   function onKeyDown(e: KeyboardEvent<HTMLUListElement>): void {
     const key = (e.target as HTMLElement).closest<HTMLElement>(
       '[role="treeitem"]',

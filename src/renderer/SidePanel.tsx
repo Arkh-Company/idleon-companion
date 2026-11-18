@@ -18,7 +18,7 @@ import { AnswerHeader } from "./AnswerHeader.tsx";
 import { CharacterPicker } from "./CharacterPicker.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
 import { MarkBar } from "./MarkBar.tsx";
-import { arrowsOf, baseOf } from "./tree-changes.ts";
+import { arrowsOf, baseOf, growBase } from "./tree-changes.ts";
 import type { Arrow, Base } from "./tree-changes.ts";
 import { VersionBand } from "./VersionBand.tsx";
 import { ViewToggles } from "./ViewToggles.tsx";
@@ -118,6 +118,11 @@ export function SidePanel({
   // Derived during the render (React's "state from the previous render"): Changes on with no base for this tree.
   if (view.changes && ready && base?.key !== treeKey(ready))
     freeze(ready, mark);
+  else if (ready && base?.key === treeKey(ready)) {
+    // "Live" takes each part that comes later (a branch opened after the click) at its first value.
+    const grown = growBase(base, ready.root);
+    if (grown !== base) setBase(grown);
+  }
   const arrows = useMemo(
     (): ReadonlyMap<string, Arrow> | null =>
       view.changes && ready && base?.key === treeKey(ready)

@@ -31,6 +31,18 @@ export function baseOf(root: TreeNode, mark: Mark | null = null): Base {
     : { mark: null, values: pieceValues(root) };
 }
 
+/** "Live" grows with the pieces it did not have, at their value now (a branch opened after the click), and never changes
+ * those it has; a mark's base never grows. The same base when nothing is new. */
+export function growBase<B extends Base>(base: B, root: TreeNode): B {
+  if (base.mark !== null) return base;
+  const added = Object.entries(pieceValues(root)).filter(
+    ([k]) => !Object.hasOwn(base.values, k),
+  );
+  return added.length === 0
+    ? base
+    : { ...base, values: { ...base.values, ...Object.fromEntries(added) } };
+}
+
 /** A pool's or group's value from its rows' `values` (by id), by its `combine`; null when a row has none. A group
  * whose rows are not built yet keeps its own value. */
 export function groupValue(
