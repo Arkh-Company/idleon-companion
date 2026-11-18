@@ -2,6 +2,7 @@
 // compaction, row by row in the same place, in value, type, ⓘ and "?", plus the names outside the reviewed list, and the
 // bench's code × value check. Only the parity test and its own test use it: no file is read here.
 import type { CalcTreeNode } from "./tree-contract.ts";
+import { EXTRA_SYSTEMS, V1_SYSTEMS } from "./tree/systems.ts";
 
 /** A row of the bench's assembled tree (build-v1mold.cjs `{ tree }`), in the fields the parity reads. */
 export interface BenchRow {
@@ -78,25 +79,49 @@ function sameFormula(
 
 /** The app's rows of the mould (spec 009): its pools and its system groups. */
 const MOULD = new Set<CalcTreeNode["role"]>(["pool", "system"]);
-const appThrough = (ks: readonly CalcTreeNode[]): CalcTreeNode[] =>
-  ks.flatMap((k) =>
-    MOULD.has(k.role) && Array.isArray(k.kids) ? appThrough(k.kids) : [k],
-  );
+const SYSTEMS = new Set([...V1_SYSTEMS, ...EXTRA_SYSTEMS].map((s) => s.name));
+/** A system group's system, by its name "<emoji> <system>", the bench's V1 group's and the app's alike; else null. */
+function systemOfGroup(name: string | undefined): string | null {
+  const m = /^\S+ (.+)$/u.exec(name ?? "");
+  return m?.[1] !== undefined && SYSTEMS.has(m[1]) ? m[1] : null;
+}
+/** The system of the app's group each source went through (spec 009 T023), to check the bench's against. */
+const appGroup = new WeakMap<CalcTreeNode, string>();
+const appThrough = (
+  ks: readonly CalcTreeNode[],
+  group?: string,
+): CalcTreeNode[] =>
+  ks.flatMap((k) => {
+    if (MOULD.has(k.role) && Array.isArray(k.kids))
+      return appThrough(
+        k.kids,
+        k.role === "system" ? (systemOfGroup(k.name) ?? group) : group,
+      );
+    if (group !== undefined) appGroup.set(k, group);
+    return [k];
+  });
 /**
  * The bench's groups at 0 and at ×1, at any level, which the app no longer has (spec 009, FR-016); they have the app's
  * 008 names (the 008 parity compared them).
  */
 const BENCH_GROUP = /^At (?:0|×1) \(\d+\)$/;
-/** The bench's rows through its groups at 0 and ×1, each with whether it was inside one. */
+/**
+ * The bench's rows through its groups at 0 and ×1 and its V1 system groups (spec 009 T023: the bench's Drop Rate is its
+ * V1 mould), each with whether it was inside one and the system of the group it was in.
+ */
 const benchThrough = (
   ks: readonly BenchRow[],
   inside = false,
-): [BenchRow, boolean][] =>
-  ks.flatMap((k): [BenchRow, boolean][] =>
-    BENCH_GROUP.test(k.name ?? "")
-      ? benchThrough(k.kids ?? [], true)
-      : [[k, inside]],
-  );
+  system: string | null = null,
+): [BenchRow, boolean, string | null][] =>
+  ks.flatMap((k): [BenchRow, boolean, string | null][] => {
+    if (BENCH_GROUP.test(k.name ?? ""))
+      return benchThrough(k.kids ?? [], true, system);
+    const own = systemOfGroup(k.name);
+    return own !== null && k.kids?.length
+      ? benchThrough(k.kids, true, own)
+      : [[k, inside, system]];
+  });
 /**
  * A constant of an Additive pool, which pairs by value only: the app's terms built again name it "Fixed +N"
  * (tree/terms.ts rowOfTerm), the bench's expression parts "Base N" and "Percent to number (÷ 100)" (numRole).
@@ -193,14 +218,44 @@ export function compareTrees(
         cands.findIndex((x, j) => !used.has(j) && fits(x));
       // the app's place of each bench row outside its groups, which keeps the game's order below the root
       const order: number[] = [];
+      // the bench rows no app row pairs, and the app row of each bench row paired, by its place in `cands`
+      const missing: { bi: BenchRow; place: string; below: string }[] = [];
+      const check = (
+        found: CalcTreeNode,
+        bi: BenchRow,
+        system: string | null,
+        place: string,
+        below: string,
+      ) => {
+        // a source the app files under another system than the bench's V1 group
+        const filed = appGroup.get(found);
+        if (system !== null && filed !== undefined && filed !== system)
+          out.push({ at: place, field: "name" });
+        if (whole(found)) sameLeaves(found, bi, place);
+        else walk(found, bi, below, place, false);
+      };
       const pair = (rows: readonly BenchRow[], over: string, here: string) => {
-        benchThrough(rows).forEach(([bi, grouped], i) => {
-          const named = free(
-            (x) => !whole(x) && x.name === bi.name && sameValue(x.value, bi.v),
-          );
-          const j = named >= 0 ? named : free((x) => sameValue(x.value, bi.v));
-          const place = `${here}/${String(i)}`;
-          const below = `${over} › ${bi.name ?? "?"}`;
+        const items = benchThrough(rows).map(([bi, grouped, system], i) => ({
+          bi,
+          grouped,
+          system,
+          place: `${here}/${String(i)}`,
+          below: `${over} › ${bi.name ?? "?"}`,
+          j: -1,
+        }));
+        // by name and value first, every row of the level, and only then by value (spec 009 T023)
+        const take = (fits: (x: CalcTreeNode, b: BenchRow) => boolean) => {
+          for (const it of items)
+            if (it.j < 0) {
+              it.j = free((x) => fits(x, it.bi));
+              if (it.j >= 0) used.add(it.j);
+            }
+        };
+        take(
+          (x, b) => !whole(x) && x.name === b.name && sameValue(x.value, b.v),
+        );
+        take((x, b) => sameValue(x.value, b.v));
+        for (const { bi, grouped, system, place, below, j } of items) {
           const found = cands[j];
           // spec 009, rule Y: an earlier step of the chain, which the app's pools took apart, pairs through its rows; a
           // sum ÷ 100 the app took apart into % groups (FR-017) too, its ÷ 100 left aside
@@ -210,16 +265,47 @@ export function compareTrees(
               below,
               place,
             );
-          else if (!found) out.push({ at: place, field: "shape" });
+          else if (!found) missing.push({ bi, place, below });
           else {
-            used.add(j);
             if (!grouped) order.push(j);
-            if (whole(found)) sameLeaves(found, bi, place);
-            else walk(found, bi, below, place, false);
+            check(found, bi, system, place, below);
           }
-        });
+        }
       };
       pair(bk, path, at);
+      // spec 009 T023: an app source the V1 opened into its rows (a cache read of the star signs) pairs the bench rows
+      // left through its own rows, by name and value, then by value; a row of it with no bench row is a difference
+      cands.forEach((c, j) => {
+        const rows = Array.isArray(c.kids) ? appThrough(c.kids) : [];
+        if (used.has(j) || !rows.length || !missing.length) return;
+        const match = (fits: (x: CalcTreeNode, b: BenchRow) => boolean) =>
+          rows.map((x) => missing.findIndex((m) => fits(x, m.bi)));
+        const named = match(
+          (x, b) => x.name === b.name && sameValue(x.value, b.v),
+        );
+        const pairs = named.map((k, i) =>
+          k >= 0
+            ? k
+            : missing.findIndex(
+                (m, n) =>
+                  !named.includes(n) &&
+                  sameValue(rows[i]?.value ?? null, m.bi.v),
+              ),
+        );
+        if (!pairs.some((k) => k >= 0)) return;
+        used.add(j);
+        if (pairs.some((k) => k < 0)) add("shape");
+        const done = new Set<number>();
+        pairs.forEach((k, i) => {
+          const m = missing[k];
+          const x = rows[i];
+          if (!m || !x || done.has(k)) return;
+          done.add(k);
+          check(x, m.bi, null, m.place, m.below);
+        });
+        for (const k of [...done].sort((p, q) => q - p)) missing.splice(k, 1);
+      });
+      for (const m of missing) out.push({ at: m.place, field: "shape" });
       if (used.size < cands.length) add("shape");
       if (!moulded && order.some((j, i) => i > 0 && j < (order[i - 1] ?? 0)))
         add("shape");
