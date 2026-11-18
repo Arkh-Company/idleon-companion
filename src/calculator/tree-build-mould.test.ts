@@ -226,8 +226,11 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
     ["🎮 Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
     ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
-    ["🔹 Other", "system", "sum", "+", 6],
+    // TreeBase, alone in Other once the constant left the group (T027)
+    ["Game value", "piece", undefined, null, 4],
     ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
+    // the constant of the game's math, its own row after the groups (T027)
+    ["Fixed +2", "piece", undefined, null, 2],
   ]);
   // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it
   const sum = (ns: readonly CalcTreeNode[]) =>
@@ -237,7 +240,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
     9,
   );
-  for (const g of groups)
+  for (const g of groups.filter((k) => k.role === "system"))
     expect(sum(kidsOf(g)) / (g.combine === "percent" ? 100 : 1)).toBeCloseTo(
       Number(g.value),
       9,

@@ -181,7 +181,8 @@ function ownPair(
 /**
  * The rows of a pool (or of the root, with no pool) by system (FR-002, FR-004, FR-006): one group per system in the V1
  * order, "🔹 Other" last, a group at 0 or ×1 in its place; a lone source stands alone; when every source is in "Other",
- * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems.
+ * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems. A constant of the game's math (a
+ * row with no source) is no system's: it stays its own row, after the groups (T027), but for one in %.
  */
 export function bySystem(
   rows: readonly Row[],
@@ -190,28 +191,39 @@ export function bySystem(
 ): readonly Row[] {
   // the bonuses in % a sum ÷ 100 gives (FR-017) are a group of their own in their system, after its other sources
   const groups = new Map<string, { s: System; pct: boolean; rows: Row[] }>();
+  const constants: Row[] = [];
   for (const r of rows) {
-    const s = systemOfRow(r, writerOf) ?? OTHER;
+    const found = systemOfRow(r, writerOf);
+    // a constant in % adds a hundredth of its value only inside a group in % (FR-017), so it stays in "Other"'s
+    if (found === undefined && !r.percent) {
+      constants.push(r);
+      continue;
+    }
+    const s = found ?? OTHER;
     const pct = !!r.percent;
     const key = `${s.name}|${String(pct)}`;
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
   const [only] = groups.values();
-  if (groups.size === 1 && only?.s === OTHER && !only.pct) return rows;
+  if (groups.size <= 1 && (!only || (only.s === OTHER && !only.pct)))
+    return rows;
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     (s === OTHER ? SYSTEM_ORDER.length : SYSTEM_ORDER.indexOf(s.name)) * 2 +
     Number(pct);
   // a lone bonus in % stays a group: it adds a hundredth of its value
-  return [...groups.values()]
-    .sort((a, b) => rank(a) - rank(b))
-    .flatMap(({ s, pct, rows: rs }) =>
-      pct
-        ? [systemRow(s, "percent", rs)]
-        : rs.length === 1
-          ? rs
-          : [systemRow(s, combine, rs)],
-    );
+  return [
+    ...[...groups.values()]
+      .sort((a, b) => rank(a) - rank(b))
+      .flatMap(({ s, pct, rows: rs }) =>
+        pct
+          ? [systemRow(s, "percent", rs)]
+          : rs.length === 1
+            ? rs
+            : [systemRow(s, combine, rs)],
+      ),
+    ...constants,
+  ];
 }
 
 /**
