@@ -243,11 +243,11 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
 - [X] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle (all FR)
   - Files: `ARCHITECTURE.md`
   - The new files (`pools.ts`, `systems.ts`, `flatten.ts`, `tree-changes.ts`, `ViewToggles.tsx`) enter the Code folders table.
-- [ ] T025 Every tree gets the mould: a root with no readable formula (STR, HP, Accuracy, AFK Gains, Extra Inventory…) (FR-005, US2 scenario 4; decision of 18/11, after the probe of the 716 trees)
+- [X] T025 Every tree gets the mould: a root with no readable formula (STR, HP, Accuracy, AFK Gains, Extra Inventory…) (FR-005, US2 scenario 4; decision of 18/11, after the probe of the 716 trees)
   - The probe found 435 of 716 trees with no pool and no system group: their root has no ⓘ, so `firstLevel` leaves the 008 list.
   - Find why the root has no readable formula (the root step, the chain, the conditions on top) and fix it so those trees get their chain's pools; when the game's expression truly cannot be read, the sources are at least grouped by system with no pool (US2 scenario 4).
   - Tests first, with fake-game blocks of those shapes; every level closes (SC-003) and no source disappears (FR-008).
-- [ ] T026 The remaining unnamed math branches (SC-001; FR-007)
+- [X] T026 The remaining unnamed math branches (SC-001; FR-007)
   - The probe found 306 unnamed branches in 59,508 rows: 272 with no game code, the rest game caches (`DNSM.CalcTalentMAP.arenaCruc`, `DNSM.StarSigns[…]`, `Ninja(…)`…).
   - Flatten or name them by the 008/009 rules; tests first.
 - [X] T027 Constants are never sources of a system group (FR-002, FR-004)
