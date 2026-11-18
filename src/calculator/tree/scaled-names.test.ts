@@ -135,3 +135,50 @@ test("two sources, a count, or one with a vague name, name nothing", () => {
     true,
   ]);
 });
+
+// spec 009 T029 (decision of 18/11): a talent multiplied by a count is the talent's, as in the V1
+test("a talent multiplied by a count takes the talent's name, a name by shape too", () => {
+  const talent: Row = {
+    node: row({
+      pieceKey: "GetTalentNumber(1, 655)",
+      value: 12.5,
+      code: "GetTalentNumber(1, 655)",
+      name: "Invented Talent",
+    }),
+    open: null,
+  };
+  const count: Row = {
+    node: row({
+      pieceKey: "OptionsListAccount[189]",
+      value: 5,
+      code: "OptionsListAccount[189]",
+      leaf: "unknown",
+    }),
+    open: null,
+  };
+  const other: Row = {
+    node: row({
+      pieceKey: 'RoyalG("TotalStatz", 0, 0)',
+      value: 5,
+      code: 'RoyalG("TotalStatz", 0, 0)',
+      name: "Invented total",
+    }),
+    open: null,
+  };
+  expect(nameOf(times(62.5, [talent, count]))).toEqual([
+    "Invented Talent",
+    false,
+  ]);
+  const byShape: Row = {
+    ...times(62.5, [talent, other]),
+    node: row({
+      pieceKey: null,
+      value: 62.5,
+      code: null,
+      name: "Multiplier from 2 sources",
+    }),
+  };
+  expect(nameOf(byShape)).toEqual(["Invented Talent", false]);
+  // a sum of a talent and a count is no talent scaled
+  expect(nameOf(plus(17.5, [talent, count]))).toEqual([GENERIC_NAME, true]);
+});

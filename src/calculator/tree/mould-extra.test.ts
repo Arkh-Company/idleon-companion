@@ -61,3 +61,33 @@ test("a helper takes the system of the sources in it; with none, it stands as it
     ['ArbitraryCode5Inputs("add", 1, 0, 101, 0, 0)', 3],
   ]);
 });
+
+test("a talent multiplied by a count goes to the talent's system (009 T029, decision of 18/11)", () => {
+  const times = (value: number, group: Row[]): Row => ({
+    node: row({ pieceKey: null, value, code: null }),
+    open: null,
+    group,
+    op: "*",
+  });
+  const out = bySystem(
+    [
+      src("GetTalentNumber(1, 207)", 4),
+      times(62.5, [
+        src("GetTalentNumber(1, 655)", 12.5),
+        src("OptionsListAccount[189]", 5),
+      ]),
+      times(0, [
+        src("GetTalentNumber(1, 239)", 0),
+        src('RoyalG("TotalStatz", 0, 0)', 4044),
+      ]),
+      src("InventedBlock(1)", 1),
+      src("InventedBlock(2)", 2),
+    ],
+    "sum",
+    writerOf,
+  );
+  expect(level(out)).toEqual([
+    ["🎯 Talents", 66.5],
+    ["🔹 Other", 3],
+  ]);
+});
