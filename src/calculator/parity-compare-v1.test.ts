@@ -310,7 +310,7 @@ test("a V1 group of one source, written with the source's code, is that source: 
             v: 17,
             code: "DNSM.InventedSigns",
             kids: [benchSource("Sign A", 5), benchSource("Sign B", 12)],
-          } as BenchRow,
+          },
         ],
       },
     ],
