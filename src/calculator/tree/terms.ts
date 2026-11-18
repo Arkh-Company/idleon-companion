@@ -252,10 +252,15 @@ export function makeTerms(ctx: TermContext) {
       }
       // the branch of an expression is named by its first source; with none, by its shape
       const src = firstSrc(x);
+      const named = src ? sourceName(src) : null;
       const r = src
-        ? withName(exprRow(x, d, reads), sourceName(src))
+        ? withName(exprRow(x, d, reads), named)
         : branchName(exprRow(x, d, reads), x, null);
-      return { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
+      return {
+        ...r,
+        node: { ...r.node, value: valueOf(e.v ?? null) },
+        ...(named === null ? {} : { bySource: true as const }),
+      };
     }
     if (e.t === "num")
       return fixed(

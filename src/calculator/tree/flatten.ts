@@ -59,7 +59,7 @@ function isStep(r: Row, op: Op): boolean {
     n.role === "piece" &&
     !isCond(r) &&
     !n.flags.truncated &&
-    (!!n.flags.unnamed || byShapeOnly(n.name)) &&
+    (!!n.flags.unnamed || byShapeOnly(n.name) || !!r.bySource) &&
     r.op === op &&
     gives(r.group ?? [], r, op)
   );
