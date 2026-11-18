@@ -358,3 +358,20 @@ test("a block that reads back the cache an earlier call of the same block filled
   ).toBe("Found Invented Charm");
   useGameTables(new Map());
 });
+
+test("with no writer of the cache in the recording, the block's own search right beside it says the item (009 T030)", () => {
+  useGameTables(TABLES);
+  const block: RecNode = {
+    ...node(5, "InventedSearch", [], 1),
+    r: [
+      ["Cards[1] contains itemA", true],
+      ["DNSM.InventedFound", 1],
+    ],
+  };
+  const { condRows: rows } = makeConditions([...NODES, block], new Map());
+  expect(
+    rows(block, own([cmp("==", read("DNSM.InventedFound", 1), num(1))]))[0]
+      ?.test,
+  ).toBe("Found Invented Charm");
+  useGameTables(new Map());
+});
