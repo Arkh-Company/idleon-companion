@@ -142,11 +142,19 @@ export function makeConditions(
    * any other read, or an item with no name in the game's table (never its raw id).
    */
   function searchName(p: string, n: RecNode): string | null {
-    if (!p.startsWith("DNSM.") || !writersOf.get(p)?.includes(n.id))
-      return null;
+    // the block's own cache: written by this call, or by an earlier call of the same block that made the search (the
+    // later one reads it back)
+    const fillers = p.startsWith("DNSM.")
+      ? (writersOf.get(p) ?? []).flatMap((id) => {
+          const w = nodes[id];
+          return w && (w === n || w.b === n.b) ? [w] : [];
+        })
+      : [];
+    if (!fillers.length) return null;
     const own = n.r?.find(([q]) => q === p);
     const want = own ? !!Number(own[1]) : null;
-    const found = (n.r ?? []).filter(
+    const reads = [...new Set([n, ...fillers])].flatMap((x) => x.r ?? []);
+    const found = reads.filter(
       ([q, v]) =>
         q.includes(" contains ") &&
         typeof v === "boolean" &&
