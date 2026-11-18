@@ -58,6 +58,12 @@ included.
 Bad: the same change turns `[name, value, leaf]` into `[k.name, k.value]` and adds a part typed `"unknown"`, so the
 false "?" passes unseen.
 
+### A test changes before its code, in a commit of its own
+
+A test's fixture or expectation that changes after its failing-test commit goes in a commit of its own, before the code, saying why it changed.
+Good: `test(tree): the sigil's artifact comes wrapped in its "Multiplier" branch, as the recording gives it`, committed before `feat(tree): each bonus shows its full build-up…`.
+Bad: a commit that rewrites the fixtures and the expectations in the same commit as the code that makes them pass, so no one sees the test fail first.
+
 ### Rules wired in the Electron entry are tested
 
 Every decision in `src/main/index.ts` (a shared lock, a memory of the last state) lives in a function that a test reaches and that fails when the wiring is removed.
