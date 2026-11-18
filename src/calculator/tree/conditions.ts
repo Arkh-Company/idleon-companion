@@ -143,13 +143,15 @@ export function makeConditions(
    */
   function searchName(p: string, n: RecNode): string | null {
     // the block's own cache: written by this call, or by an earlier call of the same block that made the search (the
-    // later one reads it back)
-    const fillers = p.startsWith("DNSM.")
-      ? (writersOf.get(p) ?? []).flatMap((id) => {
+    // later one reads it back); a big recording keeps no write of it, and then the block's own search says it
+    if (!p.startsWith("DNSM.")) return null;
+    const writers = writersOf.get(p) ?? [];
+    const fillers = writers.length
+      ? writers.flatMap((id) => {
           const w = nodes[id];
           return w && (w === n || w.b === n.b) ? [w] : [];
         })
-      : [];
+      : [n];
     if (!fillers.length) return null;
     const own = n.r?.find(([q]) => q === p);
     const want = own ? !!Number(own[1]) : null;
