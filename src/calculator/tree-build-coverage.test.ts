@@ -136,9 +136,9 @@ test("a chain the game floors keeps its chain's pools, the floor around them in 
   ]);
   expect(root.value).toBe(75);
   const [names, numbers] = lines(root.formula);
-  expect(names).toMatch(
-    /^floor\(.*Additive pool 1.*Multi pool.*Additive pool 2.*\)$/,
+  expect(names?.replace(/\s/g, "")).toBe(
+    "floor(Additivepool1×Multipool+Additivepool2)",
   );
-  expect(numbers).toMatch(/= 75$/);
+  expect(numbers).toMatch(/ 75$/);
   expect(checkTree(root, 100)).not.toBeNull();
 });

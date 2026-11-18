@@ -11,6 +11,9 @@ import { formulaOut } from "./math.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { added, addedRows } from "./percent.ts";
+import { through } from "./tops.ts";
+
+export { through } from "./tops.ts";
 import { finish } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -34,22 +37,6 @@ export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 
-/**
- * A step's expression under a top its value passes through (T025): a round, a floor or a ceil that changes nothing, or
- * a clamp (a max or a min with a number) that does not bite; else the expression itself.
- */
-export function through(e: Expr, v: number): Expr {
-  const x = strip(e);
-  if (x.t !== "fn" || !x.name) return x;
-  const vars = x.args.filter((a) => strip(a).t !== "num");
-  const [inner] = vars;
-  const round = ["round", "floor", "ceil"].includes(x.name);
-  const clamp = ["max", "min"].includes(x.name) && x.args.length === 2;
-  if (!inner || vars.length !== 1 || !(round ? x.args.length === 1 : clamp))
-    return x;
-  // exactly: a tolerance would let the round of a big number pass, and hide it (FR-008)
-  return Number(inner.v) === v ? through(inner, v) : x;
-}
 /** The sources an expression reads or calls (a value of an earlier step is one too). */
 const sources = (e: Expr): number =>
   e.t === "call" || e.t === "read" || e.t === "val"

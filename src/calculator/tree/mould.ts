@@ -15,6 +15,8 @@ import {
   rootExtreme,
   through,
 } from "./pools.ts";
+import { roundingOf } from "./tops.ts";
+import type { Rounding } from "./tops.ts";
 import type { OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
@@ -191,6 +193,66 @@ export function chainLevel(
   };
 }
 
+/** The ⓘ of a rounded root: the rounding around how its pools give the value before it ("floor(Additive pool)"). */
+export function roundedPair(
+  r: Rounding,
+  pools: readonly Pool[],
+  v: number,
+): [names: string, numbers: string] {
+  const pair = poolsPair(pools, r.inner);
+  const names = pair?.[0] ?? pools[0]?.name ?? "";
+  const numbers = pair
+    ? pair[1].replace(/ = [^=]*$/, "")
+    : fx3(pools[0]?.value ?? r.inner);
+  return [`${r.fn}(${names})`, `${r.fn}(${numbers}) = ${fx3(v)}`];
+}
+
+/**
+ * The root's pools (spec 009, FR-005; T025): a chain's from its steps (rule Y), else from its rows, its step read through
+ * a top that changes nothing, else from the rows its step shows, else from its one step's terms; null when none gives
+ * the root. `open` says the chain could not be read (NFR-005).
+ */
+function pooled(
+  rows: Row[],
+  root: Pick<Node, "name" | "value" | "formula">,
+  ctx: FirstLevelContext,
+): {
+  rows: Row[];
+  formula: Node["formula"];
+  pools: readonly Pool[];
+  open: boolean;
+} | null {
+  const { expr, term, steps, termAt, ownCache } = ctx;
+  const read =
+    steps && termAt ? chainPools(steps, root, termAt, ownCache) : null;
+  const open = read === "open";
+  const out = (pools: readonly Pool[], chain: boolean, keep = chain) => ({
+    ...pooledLevel(rows, root, pools, chain, ctx, keep),
+    pools,
+    open,
+  });
+  if (Array.isArray(read)) return out(read, true);
+  // T025: a round or a clamp at the top that changes nothing is read through
+  const v = vOf({ node: root as Node });
+  const step = expr && Number.isFinite(v) ? through(expr, v) : expr;
+  const own = poolsOf(rows, { value: root.value, expr: step }, term);
+  if (own) return out(own, false);
+  // T025: the rows no step shows (its checks, its reads) stay after the pools the others give
+  const rest = new Set(restOf(rows, steps));
+  const held = rows.filter((r) => !rest.has(r));
+  const kept =
+    rest.size && held.length
+      ? poolsOf(held, { value: root.value, expr: step }, term)
+      : null;
+  if (kept) return out(kept, false, true);
+  // T025: a root of one step whose rows do not give it (a coefficient times a source): its step's terms
+  const one =
+    read === null && steps && termAt && !ctx.passed
+      ? chainPools(steps, root, termAt, ownCache, true)
+      : null;
+  return Array.isArray(one) ? out(one, true) : null;
+}
+
 /**
  * The root's first level (spec 009, FR-001, FR-005): the steps (`rows`, named by `mould`) in the game's pools, by
  * system; with no pool and a max or a min at the top, the steps by system under that rule (US2 scenario 4); else the
@@ -201,38 +263,35 @@ export function firstLevel(
   root: Pick<Node, "name" | "value" | "formula">,
   ctx: FirstLevelContext,
 ): { rows: Row[]; formula: Node["formula"]; chainOpen?: true } {
-  const { expr, term, writerOf, steps, termAt, ownCache } = ctx;
-  // a chain of steps gives its pools from the steps (rule Y); a root of one step, from its rows
-  const read =
-    steps && termAt ? chainPools(steps, root, termAt, ownCache) : null;
-  // a chain the pools cannot read falls back to the rows, and says so (NFR-005)
-  const open = read === "open" ? ({ chainOpen: true } as const) : {};
-  const chain = read === "open" ? null : read;
-  const done = (out: { rows: Row[]; formula: Node["formula"] }) => ({
-    rows: out.rows,
-    formula: out.formula ?? root.formula,
-    ...open,
-  });
-  if (chain) return done(pooledLevel(rows, root, chain, true, ctx));
-  // T025: a round or a clamp at the top that changes nothing is read through
+  const { expr, writerOf, steps } = ctx;
   const v = vOf({ node: root as Node });
-  const step = expr && Number.isFinite(v) ? through(expr, v) : expr;
-  const own = poolsOf(rows, { value: root.value, expr: step }, term);
-  if (own) return done(pooledLevel(rows, root, own, false, ctx));
-  // T025: the rows no step shows (its checks, its reads) stay after the pools the others give
-  const rest = new Set(restOf(rows, steps));
-  const held = rows.filter((r) => !rest.has(r));
-  const kept =
-    rest.size && held.length
-      ? poolsOf(held, { value: root.value, expr: step }, term)
-      : null;
-  if (kept) return done(pooledLevel(rows, root, kept, false, ctx, true));
-  // T025: a root of one step whose rows do not give it (a coefficient times a source): its step's terms
-  const one =
-    read === null && steps && termAt && !ctx.passed
-      ? chainPools(steps, root, termAt, ownCache, true)
-      : null;
-  if (Array.isArray(one)) return done(pooledLevel(rows, root, one, true, ctx));
+  // T030 (decision of 18/11): a root its last step rounds (floor(…), STR) has the pools of the value before the
+  // rounding, and the rounding stays in sight in its ⓘ (FR-008): "floor(Additive pool × Multi pool)"
+  const rounding = Number.isFinite(v) ? roundingOf(expr, steps, v) : null;
+  const rounded =
+    rounding &&
+    pooled(
+      rows,
+      { ...root, value: rounding.inner },
+      {
+        ...ctx,
+        expr: rounding.e,
+        ...(rounding.steps ? { steps: rounding.steps } : {}),
+      },
+    );
+  if (rounding && rounded)
+    return {
+      rows: rounded.rows,
+      formula: formulaOut(
+        roundedPair(rounding, rounded.pools, v),
+        rounded.pools.map((p) => p.name),
+      ),
+      ...(rounded.open ? { chainOpen: true as const } : {}),
+    };
+  const own = pooled(rows, root, ctx);
+  const open = own?.open ? ({ chainOpen: true } as const) : {};
+  if (own)
+    return { rows: own.rows, formula: own.formula ?? root.formula, ...open };
   const rule = rootExtreme(rows, { value: root.value, expr });
   const level = rule ? bySystem(rows, rule, writerOf) : rows;
   if (!rule || level === rows) return { rows, formula: root.formula, ...open };
