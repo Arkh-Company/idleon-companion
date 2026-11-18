@@ -117,3 +117,69 @@ test("an Additive pool with % groups that pairs whole with the bench's factor le
     field: "shape",
   });
 });
+
+// A source that is itself a chain (the golden food inside the Drop Rate, spec 009, FR-017) opens into pools below the
+// root: the parity goes through them as through the root's, and pairs the bench's 008 rows with the sources inside.
+const food = app({
+  id: "root/Additive pool/Food",
+  name: "Food",
+  value: 7,
+  code: "Food()",
+  kids: [
+    app({
+      id: "root/Additive pool/Food/Multi pool",
+      name: "Multi pool",
+      value: 6,
+      role: "pool",
+      combine: "product",
+      poolKind: "multi",
+      kids: [leaf("A", 2), leaf("B", 3)],
+    }),
+    app({
+      id: "root/Additive pool/Food/Additive pool",
+      name: "Additive pool",
+      value: 1,
+      role: "pool",
+      combine: "sum",
+      poolKind: "additive",
+      kids: [leaf("C", 1)],
+    }),
+  ],
+});
+const CHAIN = app({
+  value: 7,
+  kids: [
+    app({
+      id: "root/Additive pool",
+      name: "Additive pool",
+      value: 7,
+      role: "pool",
+      combine: "sum",
+      poolKind: "additive",
+      kids: [food],
+    }),
+  ],
+});
+
+test("a source whose rows are pools, below the root, pairs through them with the bench's rows", () => {
+  const bench = (c: number): BenchRow => ({
+    name: "Invented drop",
+    v: 6 + c,
+    kids: [
+      {
+        name: "Food",
+        v: 6 + c,
+        kids: [
+          { name: "Game value", v: 6, kids: [fixed("A", 2), fixed("B", 3)] },
+          fixed("C", c),
+        ],
+      },
+    ],
+  });
+  expect(compareTrees(CHAIN, bench(1), new Set())).toEqual([]);
+  // a source of another value is still a difference
+  expect(compareTrees(CHAIN, bench(2), new Set())).toContainEqual({
+    at: "0/0/1",
+    field: "shape",
+  });
+});
