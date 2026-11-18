@@ -420,3 +420,33 @@ test('the bench\'s group of its parts at ×1, written "N more parts at ×1", goe
     compareTrees(app({ value: 33.6, kids: [pool([card])] }), bench, new Set()),
   ).toEqual([]);
 });
+
+test("a reviewed name is said by its whole bench path, from the root through the V1's pools and groups (009 T030)", () => {
+  const renamed = app({
+    value: 33.6,
+    kids: [
+      pool([
+        luk(),
+        group(
+          "🃏 Cards",
+          [source("Card A", 10), source("Cards: Card B", 20)],
+          30,
+        ),
+      ]),
+    ],
+  });
+  expect(compareTrees(renamed, V1, new Set())).toEqual([
+    { at: "0/2", field: "name" },
+  ]);
+  expect(
+    compareTrees(
+      renamed,
+      V1,
+      new Set(["Invented total › Additive Pool › 🃏 Cards › Card B"]),
+    ),
+  ).toEqual([]);
+  // the bare name is no path: another source of that name still counts
+  expect(compareTrees(renamed, V1, new Set(["Card B"]))).toEqual([
+    { at: "0/2", field: "name" },
+  ]);
+});
