@@ -20,6 +20,7 @@ import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
+import { asideInFormula, buildUp } from "./build-up.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -39,6 +40,8 @@ export interface Level {
   rows: Row[];
   at: At;
   code: string | null;
+  /** The call the rows come from, when they are a call's own (spec 009, FR-018: its family's build-up). */
+  call?: RecNode;
 }
 
 export interface PlaceContext {
@@ -89,6 +92,7 @@ export function makePlaces(ctx: PlaceContext) {
       rows: aboveRenames(rows, up),
       at: { depth: at.depth + 1, seen: [...seen, o], up },
       code: from ? callText(from) : null,
+      ...(from ? { call: from } : {}),
     };
   }
 
@@ -98,6 +102,24 @@ export function makePlaces(ctx: PlaceContext) {
     return r.group
       ? { row: r, rows: r.group, at: { ...at, seen: r.seen ?? at.seen }, code }
       : null;
+  }
+
+  /**
+   * The ⓘ and rows of a level of a source (FR-007, FR-018): its family's full build-up when it has one, the whole sum or
+   * product with no unnamed step, and the constants of the code and the branch checks in the ⓘ only.
+   */
+  function builtUp(lv: Level): {
+    formula: CalcTreeNode["formula"];
+    rows: Row[];
+  } {
+    const up = buildUp(lv, {
+      nodes,
+      under: (k, l) => levelOf(k, l.at, l.code),
+    });
+    const l = up?.level ?? lv;
+    const w = withFormula(l.row, flatten(l.rows));
+    const formula = up?.rule && l.row.f ? { rule: l.row.f } : w.formula;
+    return { formula, rows: asideInFormula(w.rows, formula !== null) };
   }
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
@@ -118,7 +140,7 @@ export function makePlaces(ctx: PlaceContext) {
               : null,
             rows: lv.rows,
           }
-        : withFormula(lv.row, flatten(lv.rows));
+        : builtUp(lv);
     return {
       formula: w.formula,
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),

@@ -264,7 +264,8 @@ test.each([
       v: 0,
       r: [["SkillLevels[5]", 0]],
     }),
-    ["Points in the talent > 0", "Points in the talent"],
+    // spec 009, FR-018: the check is in the talent's ⓘ ("0 while Points in the talent ≤ 0"), never a row
+    ["Points in the talent"],
   ],
   [
     "[Breeding] a shiny pet's level",

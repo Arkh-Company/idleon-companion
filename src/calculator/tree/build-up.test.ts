@@ -84,7 +84,7 @@ test("[FR-018] a talent: its Talent level (Points invested + All-talent levels) 
   ]);
   expect(lines(n)).toMatchObject({
     names: "Max bonus × Talent level ÷ (Talent level + Level at half)",
-    numbers: "55 × 677 ÷ (677 + 80) = 49.188",
+    numbers: "55 × 677 ÷ (677 + 80) = 49.2",
   });
   const [level] = kidsOf(n);
   expect(brief(kidsOf(level))).toEqual([
@@ -157,7 +157,7 @@ test("[FR-018] a Legend Talent: its Points and its Bonus per point, the round in
   ]);
   expect(lines(n)).toMatchObject({
     names: "round(Points × Bonus per point)",
-    numbers: "round(3 × 500) = 1500",
+    numbers: "round(3 × 500) = 1,500",
   });
 });
 
@@ -213,7 +213,7 @@ test("[FR-018] a bubble: its level, the curve's constants and the Prisma multi, 
   expect(lines(n)).toMatchObject({
     names:
       "Max bonus × Bubble level ÷ (Bubble level + Level at half) × Prisma Bubble bonus multi",
-    numbers: "80 × 10058 ÷ (10058 + 40) × 4.102 = 326.9",
+    numbers: "80 × 10,058 ÷ (10,058 + 40) × 4.1 = 327",
   });
 });
 
@@ -239,12 +239,15 @@ test("[FR-018] a bubble times its class's bubble: Bubble bonus × the class mult
     {
       1: [
         lazy("SHIMMERON bubble", 2, 326.899733289806, BUBBLE),
-        lazy(
-          "Warriors Rule bubble",
-          3,
-          12.288666491695809,
-          "DNSM.AlchBubbles.Opassz",
-        ),
+        // the cache's step wraps the class's bubble in a branch of its one row, as the recording gives it
+        branch("Multiplier", 12.288666491695809, [
+          lazy(
+            "Warriors Rule bubble",
+            3,
+            12.288666491695809,
+            "DNSM.AlchBubbles.Opassz",
+          ),
+        ]),
       ],
     },
     lazy("Shimmeron bubble", 1, 4017.161798622736, "DNSM.AlchBubbles.GFoodz"),
@@ -255,7 +258,7 @@ test("[FR-018] a bubble times its class's bubble: Bubble bonus × the class mult
   ]);
   expect(lines(n)).toMatchObject({
     names: "Bubble bonus × Warriors Rule multi",
-    numbers: "326.9 × 12.289 = 4017.162",
+    numbers: "327 × 12.3 = 4,017",
   });
 });
 
@@ -298,7 +301,7 @@ test("[FR-018] a sigil: its tier, the Bonus at tier and each multiplier as its o
       0: sigilLevel,
       1: [
         leaf("Artifact 16", 1, "CustomLists.ArtifactInfo[16][3]", null),
-        fixed("Fixed ×7", 7),
+        branch("Multiplier", 7, [fixed("Fixed ×7", 7)]),
       ],
       2: [check("Meritocracy vote of the week = 21", false)],
     },
@@ -358,7 +361,7 @@ test("[FR-018] a card under its cap: the ⓘ has no (capped)", () => {
   expect(lines(rows[0])?.numbers).toBe("min(1.5 × 4, 10) = 6");
 });
 
-test("[FR-018] a constant of the code and a check of a row beside it are in the ⓘ only, never rows", () => {
+test("[FR-018] a check of a row beside it is in the ⓘ only, never a row; a constant of the code stays (decision pending)", () => {
   const { rows } = placed({}, [
     branch("Some bonus", 12, [
       fixed("× 2", 2),
@@ -367,16 +370,22 @@ test("[FR-018] a constant of the code and a check of a row beside it are in the 
     ]),
   ]);
   const [n] = rows;
-  expect(kidsOf(n).map((k) => k.name)).toEqual(["Bonus level"]);
-  expect(lines(n)?.numbers).toContain("2");
+  expect(kidsOf(n).map((k) => k.name)).toEqual(["× 2", "Bonus level"]);
+  expect(lines(n)?.names).toContain("Bonus level > 0");
 });
 
-test("[FR-018] a constant stays a row when the level has no ⓘ to keep it", () => {
+test("[FR-018] a check stays a row when the level has no ⓘ to say it", () => {
   const { rows } = placed({}, [
     branch("Some bonus", 99, [
-      fixed("× 2", 2),
       leaf("Bonus level", 6, "Stats.lv", "level"),
+      leaf("Other level", 7, "Stats.other", "level"),
+      check("Bonus level > 0", false),
     ]),
   ]);
-  expect(kidsOf(rows[0]).map((k) => k.name)).toEqual(["× 2", "Bonus level"]);
+  expect(rows[0]?.formula).toBeNull();
+  expect(kidsOf(rows[0]).map((k) => k.name)).toEqual([
+    "Bonus level",
+    "Other level",
+    "Bonus level > 0",
+  ]);
 });

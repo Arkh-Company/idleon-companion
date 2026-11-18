@@ -43,40 +43,39 @@ export function curveText([k, x1, x2, x3]: Curve): string {
   return k;
 }
 
-/** pieces.cjs `curveFormula`: [the curve with the input's name, the curve with its numbers = value], when it gives v. */
+/**
+ * pieces.cjs `curveFormula`: [the curve with the input's name, the curve with its numbers = value], when it gives v; with
+ * `consts`, its two constants by those names too (spec 009, FR-018), else by their numbers.
+ */
 export function curveFormula(
   c: Curve,
   v: number,
   input: string,
+  consts?: readonly [string, string],
 ): [string, string] | null {
   const [k, x1, x2, x3] = c;
   const L = input;
+  const [A, B] = consts ?? [fx3(x1), fx3(x2)];
   const forms: Record<string, [number, string] | undefined> = {
-    decay: [(x1 * x3) / (x3 + x2), `${fx3(x1)} × ${L} ÷ (${L} + ${fx3(x2)})`],
-    decayMulti: [
-      1 + (x1 * x3) / (x3 + x2),
-      `1 + ${fx3(x1)} × ${L} ÷ (${L} + ${fx3(x2)})`,
-    ],
-    intervalAdd: [
-      x1 + Math.floor(x3 / x2),
-      `${fx3(x1)} + floor(${L} ÷ ${fx3(x2)})`,
-    ],
+    decay: [(x1 * x3) / (x3 + x2), `${A} × ${L} ÷ (${L} + ${B})`],
+    decayMulti: [1 + (x1 * x3) / (x3 + x2), `1 + ${A} × ${L} ÷ (${L} + ${B})`],
+    intervalAdd: [x1 + Math.floor(x3 / x2), `${A} + floor(${L} ÷ ${B})`],
     add:
       x2 === 0
-        ? [x1 * x3, `${fx3(x1)} × ${L}`]
+        ? [x1 * x3, `${A} × ${L}`]
         : [
             x3 * (x1 + (x2 * (x3 + 1)) / 2),
-            `${L} × (${fx3(x1)} + ${fx3(x2)} × (${L} + 1) ÷ 2)`,
+            `${L} × (${A} + ${B} × (${L} + 1) ÷ 2)`,
           ],
-    bigBase: [x1 + x2 * x3, `${fx3(x1)} + ${fx3(x2)} × ${L}`],
-    reduce: [x1 - x2 * x3, `${fx3(x1)} − ${fx3(x2)} × ${L}`],
+    bigBase: [x1 + x2 * x3, `${A} + ${B} × ${L}`],
+    reduce: [x1 - x2 * x3, `${A} − ${B} × ${L}`],
     addDECAY:
       x3 < 50001
-        ? [x1 * x3, `${fx3(x1)} × ${L}`]
+        ? [x1 * x3, `${A} × ${L}`]
         : [
             x1 * Math.min(5e4, x3) +
               ((x3 - 5e4) / (x3 - 5e4 + 15e4)) * x1 * 5e4,
-            `${fx3(x1)} × min(50000, ${L}) + (${L} − 50000) ÷ (${L} + 100000) × ${fx3(x1)} × 50000`,
+            `${A} × min(50000, ${L}) + (${L} − 50000) ÷ (${L} + 100000) × ${A} × 50000`,
           ],
   };
   const form = Object.hasOwn(forms, k) ? forms[k] : undefined;
