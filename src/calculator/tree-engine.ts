@@ -12,7 +12,7 @@ import { readGameNames } from "./game-names.ts";
 import { useGameNames } from "./tree/names.ts";
 import { useGameTables } from "./tree/table-names.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
-import { TREE_RECIPE } from "./tree-recipe.ts";
+import { EXTRA_ROOTS, TREE_RECIPE } from "./tree-recipe.ts";
 import type { Recipe } from "./recording.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
 import type { TreeRoot } from "./tree-roots.ts";
@@ -128,7 +128,7 @@ export function createTreeEngine(
       const inactive = inactiveMosaic(mosaicJson, request.character);
       const recording = recorder.record(
         inactive ?? mosaicJson,
-        [root],
+        [root, ...EXTRA_ROOTS],
         recipe,
         inactive !== null,
       );
@@ -166,7 +166,11 @@ export function createTreeEngine(
       const root = rootOf(id);
       if (!root) return "unknownNumber";
       // Its own build, never `last`: the open tree's branches still open after it.
-      const recording = recorder.record(mosaicJson, [root], recipe);
+      const recording = recorder.record(
+        mosaicJson,
+        [root, ...EXTRA_ROOTS],
+        recipe,
+      );
       return shapeOf(buildTree(recording, 0, recorder.ops));
     },
   };

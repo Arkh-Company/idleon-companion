@@ -56,6 +56,14 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js StarSigns (the bonus text of the sign)",
   ),
+  /** The bonus of the Meritocracy vote t (spec 009 T031), a number of the table, read by `tableNumber`. */
+  vote: text(
+    "CustomLists.NinjaInfo",
+    (t) => [41, 1 + 3 * Number(t)],
+    null,
+    "raw",
+    "N.js Summoning2 MeritocBonusz (the bonus of the vote t)",
+  ),
   /** A class's family bonus (spec 009 T031), as the recipes of FamilyBonsuesREAL read it. */
   family: text(
     "CustomLists.ClassFamilyBonuses",
@@ -298,6 +306,29 @@ export function partText(p: NamePart): string | null {
   if (typeof v !== "string") return null;
   const name = transformText(p.transform, v);
   return name && isNameText(name) ? name : null;
+}
+
+/** The number in the cell of row `i` of a table text, over the installed game's checked table; null with none. */
+export function tableNumber(
+  kind: keyof typeof TABLE_TEXTS,
+  ...i: (string | number)[]
+): number | null {
+  const t = TABLE_TEXTS[kind];
+  const v = t
+    .at(...i)
+    .reduce<unknown>(
+      step,
+      gameTables.get(
+        partTable({
+          table: t.table,
+          index: t.at(...i),
+          field: null,
+          transform: t.transform,
+        }),
+      ),
+    );
+  const x = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
+  return Number.isFinite(x) ? x : null;
 }
 
 /** The text that names row `i` of a table text, or null. */

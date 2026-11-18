@@ -30,6 +30,7 @@ import {
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 import { allTalentLevels, legendTalent, talent } from "./build-up-talents.ts";
 import { curveSelf, prisma } from "./build-up-curves.ts";
+import { meritocVote } from "./build-up-vote.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
@@ -220,6 +221,7 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     legendTalent(lv) ??
     allTalentLevels(lv) ??
     prisma(lv) ??
+    meritocVote(lv, ctx) ??
     curveSelf(lv, ctx) ??
     curveLevel(lv) ??
     bubbleClass(lv) ??

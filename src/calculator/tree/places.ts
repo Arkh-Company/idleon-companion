@@ -120,6 +120,7 @@ export function makePlaces(ctx: PlaceContext) {
       nodes,
       under: (k, l) => levelOf(k, l.at, l.code),
       name,
+      keyOf: ctx.keyOf,
     });
     const l = up?.level ?? lv;
     const w = withFormula(l.row, flatten(l.rows));

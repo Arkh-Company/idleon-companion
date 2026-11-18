@@ -20,6 +20,8 @@ export interface BuildUpContext {
   under(r: Row, lv: Level): Level | null;
   /** The name the level's row has where it is placed (a cache that is one curve keeps its own). */
   name?: string;
+  /** The piece key of a call (tree/places.ts). */
+  keyOf?: (n: RecNode) => string;
 }
 
 /** The two constants of a curve by their role in the game's curve (FR-018: "Max bonus", "Level at half"). */
