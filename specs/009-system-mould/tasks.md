@@ -211,7 +211,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
     - a change in the tree's shape (a source appears or leaves) rebuilds the tree by itself (FR-015);
     - both toggles are reached by keyboard and read with their state (NFR-004);
     - the screen reader reads the name, the value, the share when on, and "N sources".
-- [ ] T017 [P] Tests of the `view:*` channels in `src/main/payloads.test.ts` and `src/main/settings.test.ts` (SEC-005, SEC-006)
+- [X] T017 [P] Tests of the `view:*` channels in `src/main/payloads.test.ts` and `src/main/settings.test.ts` (SEC-005, SEC-006)
   - Files: `src/main/payloads.test.ts`, `src/main/settings.test.ts`
   - Cases:
     - `view:set` accepts only `{ changes: boolean, share: boolean }`, refusing any other key or type;
@@ -220,7 +220,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 
 ### Implementation for the view
 
-- [ ] T018 The `view:get` / `view:set` channels in `src/main/payloads.ts`, `src/main/settings.ts`, `src/main/index.ts`, `src/preload/api.ts` (SEC-005, SEC-006; depends on T017)
+- [X] T018 The `view:get` / `view:set` channels in `src/main/payloads.ts`, `src/main/settings.ts`, `src/main/index.ts`, `src/preload/api.ts` (SEC-005, SEC-006; depends on T017)
   - Files: as listed, plus the IPC names in `src/shared/`
   - Contract: `contracts/ipc.md`.
 - [ ] T019 The arrows and bases in `src/renderer/tree-changes.ts` (FR-013, NFR-002, NFR-003; depends on T015)

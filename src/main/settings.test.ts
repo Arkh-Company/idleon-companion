@@ -123,7 +123,9 @@ test("the toggles are saved and loaded, and no save loses the settings, the zoom
 test("only the two toggles are saved: no other key of the view reaches the file", () => {
   const file = fileWith();
   saveView(file, { changes: true, share: true, mark: "Mark 1" } as never);
-  expect(Object.keys(JSON.parse(readFileSync(file, "utf8")) as object)).not.toContain("mark");
+  expect(
+    Object.keys(JSON.parse(readFileSync(file, "utf8")) as object),
+  ).not.toContain("mark");
 });
 
 test("a write goes to .tmp and is renamed over the file: a failed write leaves the file whole", () => {

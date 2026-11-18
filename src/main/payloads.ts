@@ -18,6 +18,7 @@ import type {
   StatePath,
   StateSlice,
   Status,
+  ViewPrefs,
 } from "../shared/index.ts";
 
 /** `settings:set`: the three booleans, nothing else kept. */
@@ -120,6 +121,14 @@ export function pinsPayload(v: unknown): Pin[] | null {
     pins.push({ treeId: p.treeId, nodeId: null });
   }
   return new Set(pins.map((p) => p.treeId)).size === pins.length ? pins : null;
+}
+
+/** `view:set` (spec 009, contracts/ipc.md, SEC-006): only `{ changes, share }`, two booleans, and no other key. */
+export function viewPayload(v: unknown): ViewPrefs | null {
+  if (!isObject(v) || !onlyKeys(v, ["changes", "share"])) return null;
+  const { changes, share } = v;
+  if (typeof changes !== "boolean" || typeof share !== "boolean") return null;
+  return { changes, share };
 }
 
 /** `window:sidePanel` (contracts/ipc.md): only `{ open }`, a yes or no. */

@@ -132,6 +132,14 @@ export const DEFAULT_SETTINGS: Settings = {
   alwaysOnTop: false,
 };
 
+/** The tree's two toggles, kept in settings.json (spec 009, contracts/ipc.md): "Changes" and the share. */
+export interface ViewPrefs {
+  changes: boolean;
+  share: boolean;
+}
+
+export const DEFAULT_VIEW: ViewPrefs = { changes: false, share: false };
+
 /** A feature of the companion (spec §6.3). v1 has no `service` (plan, Kit decision 4). */
 export interface CompanionModule {
   id: string;
@@ -178,6 +186,9 @@ export const IPC = {
   radarDismiss: "radar:dismiss",
   formulaCharacters: "formula:characters",
   sidePanel: "window:sidePanel",
+  // Spec 009 (specs/009-system-mould/contracts/ipc.md).
+  viewGet: "view:get",
+  viewSet: "view:set",
 } as const;
 
 /** `formula:request`: a catalog number (the active character when `character` is absent), or a branch to open. */
@@ -357,4 +368,7 @@ export interface CompanionApi {
   onCharacters(cb: (c: Characters) => void): () => void;
   dismissRadar(): Promise<void>;
   setSidePanel(r: { open: boolean }): Promise<void>;
+  // Spec 009 (contracts/ipc.md).
+  getView(): Promise<ViewPrefs>;
+  setView(v: ViewPrefs): Promise<void>;
 }

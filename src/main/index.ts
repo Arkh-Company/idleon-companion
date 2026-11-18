@@ -29,8 +29,15 @@ import {
 import type { LifecycleAction, LifecycleEvent, TrayItem } from "./lifecycle.ts";
 import { connectLink } from "./link-client.ts";
 import { routeLink } from "./link-routes.ts";
-import { emptyPayload, settingsPayload } from "./payloads.ts";
-import { loadSettings, loadZoom, saveSettings, saveZoom } from "./settings.ts";
+import { emptyPayload, settingsPayload, viewPayload } from "./payloads.ts";
+import {
+  loadSettings,
+  loadView,
+  loadZoom,
+  saveSettings,
+  saveView,
+  saveZoom,
+} from "./settings.ts";
 import { startPipelines } from "./pipelines.ts";
 import { savedFiles } from "./saved-files.ts";
 import { setupStoreIn } from "./setup-store.ts";
@@ -231,6 +238,16 @@ function start(): void {
     settings = s;
     saveSettings(settingsFile, s);
     win.setAlwaysOnTop(s.alwaysOnTop);
+  });
+  // spec 009 (contracts/ipc.md): the tree's two toggles, read from and written to settings.json as they come.
+  handle(IPC.viewGet, (payload) => {
+    if (!emptyPayload(payload)) throw new Error("view:get: no body expected");
+    return loadView(settingsFile);
+  });
+  handle(IPC.viewSet, (payload) => {
+    const v = viewPayload(payload);
+    if (!v) throw new Error("view:set: invalid view");
+    saveView(settingsFile, v);
   });
   handle(IPC.confirmAttach, (payload) => {
     if (!emptyPayload(payload))

@@ -71,6 +71,7 @@ export {
 export type { CatalogNumber } from "./tree-catalog.ts";
 export {
   DEFAULT_SETTINGS,
+  DEFAULT_VIEW,
   GAME_UPDATED,
   IPC,
   MARKS_FULL,
@@ -104,4 +105,5 @@ export type {
   Status,
   SteamState,
   UpdateState,
+  ViewPrefs,
 } from "./types.ts";
