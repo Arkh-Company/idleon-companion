@@ -2,7 +2,8 @@
 // (tree/places.ts): the level that enters the math is a row with the ⓘ of its sum, the curve is in the ⓘ with its
 // constants named by their role, a constant is a row only when it is the bonus the game's screen shows, branch checks are
 // never rows, and each multiplier is its own × row. Each rule is a family of the game's code, with its proof:
-// - a talent and a Legend Talent (tree/build-up-talents.ts);
+// - a talent and a Legend Talent (tree/build-up-talents.ts); a row that is a curve, and the Prisma multi
+//   (tree/build-up-curves.ts);
 // - a level that is a curve times its multipliers (N.js CauldronStats "BubbleBonus": `curve(AlchemyDescription[c][i],
 //   CauldronInfo[c][i]) × max(1, PrismaBonusMult)` when the bubble is Prisma): no "Curve" row, its level and constants;
 // - a bubble times its class's bubble (N.js TalentCalc, the cache DNSM.AlchBubbles: `× max(1, AlchBubbles.Opassz)`);
@@ -28,6 +29,7 @@ import {
 } from "./build-up-rows.ts";
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 import { allTalentLevels, legendTalent, talent } from "./build-up-talents.ts";
+import { curveSelf, prisma } from "./build-up-curves.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
@@ -217,6 +219,8 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     talent(lv, ctx) ??
     legendTalent(lv) ??
     allTalentLevels(lv) ??
+    prisma(lv) ??
+    curveSelf(lv) ??
     curveLevel(lv) ??
     bubbleClass(lv) ??
     sigil(lv, ctx) ??

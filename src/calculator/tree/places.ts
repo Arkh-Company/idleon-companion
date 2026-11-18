@@ -7,7 +7,8 @@
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
-import { withFormula } from "./formulas.ts";
+import { termsOf, withFormula } from "./formulas.ts";
+import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
 import { gameBugOf } from "./game-bugs.ts";
@@ -118,7 +119,16 @@ export function makePlaces(ctx: PlaceContext) {
     });
     const l = up?.level ?? lv;
     const w = withFormula(l.row, flatten(l.rows));
-    const formula = up?.rule && l.row.f ? { rule: l.row.f } : w.formula;
+    // a built-up ⓘ names its rows whole, a name with a colon too ("Arcade: Prisma Bonuses")
+    const f = up && l.row.f;
+    const formula = f
+      ? up.rule
+        ? { rule: f }
+        : formulaOut(f, [
+            ...termsOf(w.rows, f),
+            ...w.rows.map((r) => termOf(r.node)),
+          ])
+      : w.formula;
     return { formula, rows: asideInFormula(w.rows, formula !== null) };
   }
 
