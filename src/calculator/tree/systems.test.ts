@@ -165,6 +165,10 @@ test.each<[string, string, string]>([
   ["trapping", 'TrappingStuffs("TrapMGbonus", 2)', "🪤 Trapping"],
   ["sailing", 'Sailing("SlabboBonus", 6, 0)', "⛵ Sailing"],
   ["the lab's mainframe", "MainframeBonus(122)", "🧪 Lab"],
+  ["a chip", 'chipBonuses("acc")', "💎 Chips"],
+  ["a captain", "CaptBonusCalc(3, 5)", "⛵ Sailing"],
+  ["a sailing cell", "Sailing[3][1]", "⛵ Sailing"],
+  ["an atom's level", "Atoms[4]", "⚛️ Atom Collider"],
 ])("%s", (_name, code, label) => {
   const s = systemOf(code);
   expect(s && systemLabel(s)).toBe(label);

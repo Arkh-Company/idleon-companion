@@ -146,6 +146,8 @@ export const SYSTEM_RULES: readonly {
       [/^TrappingStuffs /, "Trapping", "N.js TrappingStuffs"],
       [/^Sailing /, "Sailing", "N.js Sailing"],
       [/^MainframeBonus /, "Lab", "N.js MainframeBonus"],
+      [/^chipBonuses /, "Chips", "N.js chipBonuses"],
+      [/^CaptBonusCalc /, "Sailing", "N.js Sailing (calls CaptBonusCalc)"],
     ] as const
   ).map(([test, system, proof]) => ({ test, system, proof })),
   // T028: a read of the table or cache the system's block reads or writes
@@ -161,6 +163,8 @@ export const SYSTEM_RULES: readonly {
       [/Owlz/, "Owl", "N.js Summoning (reads CustomLists.Owlz)"],
       [/MealBonusesS/, "Meals", "N.js MealBonus (reads MealBonusesS)"],
       [/^Spelunk\[/, "Spelunking", "N.js Spelunk (reads Spelunk)"],
+      [/^Sailing\[/, "Sailing", "N.js Sailing (reads Sailing)"],
+      [/^Atoms\[/, "Atom Collider", "N.js AtomCollider (reads Atoms)"],
     ] as const
   ).map(([test, system, proof]) => ({
     test,
