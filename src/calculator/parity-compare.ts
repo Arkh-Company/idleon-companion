@@ -105,6 +105,18 @@ const isConstant = (name: string | undefined) =>
   /^(?:Fixed \+|Base )-?\d[\d.]*(?:e[+-]?\d+)?$|^Percent to number \(÷ 100\)$/i.test(
     name ?? "",
   );
+/**
+ * Whether rows hold, through the pools and groups, a group of bonuses in % the game divides by 100 (spec 009, FR-017):
+ * the app has dissolved that sum and its ÷ 100, which the bench keeps as a constant.
+ */
+const hasPercent = (ks: readonly CalcTreeNode[]): boolean =>
+  ks.some(
+    (k) =>
+      k.combine === "percent" ||
+      (MOULD.has(k.role) && Array.isArray(k.kids) && hasPercent(k.kids)),
+  );
+const isPercentConstant = (b: BenchRow) =>
+  b.name === "Percent to number (÷ 100)" && sameValue(100, b.v);
 /** The leaves under a row, all the way down. */
 const appLeaves = (n: CalcTreeNode): CalcTreeNode[] =>
   Array.isArray(n.kids) && n.kids.length ? n.kids.flatMap(appLeaves) : [n];
@@ -151,6 +163,7 @@ export function compareTrees(
       // pool of a chain's sums pairs row by row, through the bench's steps (spec 009 r1): the bench has no row of its
       // value here, or one whose rows are the pool's
       const pools = ak.filter((k) => k.role === "pool").length;
+      const percent = hasPercent(ak);
       const here = benchThrough(bk).map(([b]) => b);
       const sameRows = (k: CalcTreeNode, b: BenchRow) => {
         const left = (Array.isArray(k.kids) ? k.kids : []).map((x) => x.value);
@@ -188,8 +201,14 @@ export function compareTrees(
           const place = `${here}/${String(i)}`;
           const below = `${over} › ${bi.name ?? "?"}`;
           const found = cands[j];
-          // spec 009, rule Y: an earlier step of the chain, which the app's pools took apart, pairs through its rows
-          if (!found && moulded && bi.kids?.length) pair(bi.kids, below, place);
+          // spec 009, rule Y: an earlier step of the chain, which the app's pools took apart, pairs through its rows; a
+          // sum ÷ 100 the app took apart into % groups (FR-017) too, its ÷ 100 left aside
+          if (!found && moulded && bi.kids?.length)
+            pair(
+              percent ? bi.kids.filter((x) => !isPercentConstant(x)) : bi.kids,
+              below,
+              place,
+            );
           else if (!found) out.push({ at: place, field: "shape" });
           else {
             used.add(j);
@@ -230,6 +249,18 @@ export function compareTrees(
         );
         if (k >= 0) leaves.splice(k, 1);
       }
+    // a pool with % groups: the ÷ 100 of each sum it took apart is the bench's constant, never a leaf of the app's
+    if (hasPercent([a])) {
+      let extra =
+        leaves.filter(isPercentConstant).length -
+        left.filter((x) => isPercentConstant({ name: x.name, v: x.value }))
+          .length;
+      for (let k = leaves.length - 1; k >= 0 && extra > 0; k--)
+        if (isPercentConstant(leaves[k] ?? {})) {
+          leaves.splice(k, 1);
+          extra--;
+        }
+    }
     let renamed = 0;
     const unmatched = leaves.filter((bl) => {
       const fits = (x: CalcTreeNode) => sameValue(x.value, bl.v);
