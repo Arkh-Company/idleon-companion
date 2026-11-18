@@ -224,7 +224,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
   ).toEqual([
     ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
-    ["🎮 Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
+    ["🕹️ Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
     ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
     // TreeBase, alone in Other once the constant left the group (T027)
     ["Game value", "piece", undefined, null, 4],

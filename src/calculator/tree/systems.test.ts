@@ -160,7 +160,7 @@ test.each<[string, string, string]>([
     "⚛️ Atom Collider",
   ],
   ["a compass bonus", 'Windwalker("CompassBonus", 76, 0)', "🧭 Compass"],
-  ["gaming", 'GamingStatType("PaletteBonus", 23, 0)', "🕹️ Gaming"],
+  ["gaming", 'GamingStatType("PaletteBonus", 23, 0)', "🎮 Gaming"],
   ["a spelunking cell", "Spelunk[4][0]", "🔦 Spelunking"],
   ["trapping", 'TrappingStuffs("TrapMGbonus", 2)', "🪤 Trapping"],
   ["sailing", 'Sailing("SlabboBonus", 6, 0)', "⛵ Sailing"],
@@ -183,6 +183,13 @@ test("a block the game only calls as a curve or a log is a helper, of no system 
   expect(isHelper("CardBonusREAL(10, 0)")).toBe(false);
   expect(isHelper("DNSM.Invented")).toBe(false);
   expect(systemOf('ArbitraryCode5Inputs("add", 1, 0, 101, 0, 0)')).toBeNull();
+});
+
+test("no two systems share an emoji: Arcade is 🕹️, Gaming 🎮 (Vinicius, 18/11)", () => {
+  const all = [...V1_SYSTEMS, ...EXTRA_SYSTEMS];
+  expect(new Set(all.map((s) => s.emoji)).size).toBe(all.length);
+  const arcade = systemOf("ArcadeBonus(0)");
+  expect(arcade && systemLabel(arcade)).toBe("🕹️ Arcade");
 });
 
 test("the systems beyond the V1 have a label the host takes, and none is a V1 name", () => {
