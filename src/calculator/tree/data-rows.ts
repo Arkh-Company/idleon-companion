@@ -5,6 +5,7 @@ import type { RecNode } from "../recording.ts";
 import { near } from "./math.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
+import { systemOf } from "./systems.ts";
 import { lastReads } from "./steps.ts";
 import type { Expr } from "./steps.ts";
 
@@ -29,7 +30,7 @@ export function dataRows(
   readRow: (path: string, value: number) => Row,
   writersOf: ReadonlyMap<string, readonly number[]>,
   opens: (r: Row) => boolean,
-  aside: ReadonlySet<string> = new Set(),
+  aside: ReadonlySet<string>,
 ): Row[] {
   const used = new Set<string>();
   stepsRead.forEach((e) => readsIn(e, used));
@@ -64,4 +65,28 @@ export function dataRows(
     out.push(r);
   }
   return out;
+}
+
+/**
+ * The caches call `n` read that stay out of its data rows (spec 009, FR-018): those it, or a call under it, wrote, and
+ * those of no system; a system's cache (a family bonus, a bubble's…) is a row, as every value a system feeds shows that
+ * system. `wroteBy` gives the calls that wrote each path.
+ */
+export function asideCaches(
+  n: RecNode,
+  nodes: readonly RecNode[],
+  wroteBy: ReadonlyMap<string, readonly number[]>,
+): Set<string> {
+  const under = (w: number) => {
+    for (let x = nodes[w]; x; x = x.p === null ? undefined : nodes[x.p])
+      if (x.id === n.id) return true;
+    return false;
+  };
+  const system = (p: string) =>
+    p.startsWith("DNSM.FamBonusQTYs[") || systemOf(p) !== null;
+  return new Set(
+    (n.r ?? [])
+      .map(([p]) => p)
+      .filter((p) => !system(p) || (wroteBy.get(p) ?? []).some(under)),
+  );
 }
