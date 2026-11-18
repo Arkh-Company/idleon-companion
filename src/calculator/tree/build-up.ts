@@ -176,7 +176,15 @@ function tierRow(tier: Row, lv: Level, at: number): Row {
       /^Labb\("SigilBonus", "[^"]*", (\d+)/.exec(lv.row.node.code ?? "")?.[1],
   );
   const tiers = TIER_COLUMNS.map((c) => tableNumber("sigilTier", sigil, c));
-  if (!Number.isInteger(sigil) || tiers.some((x) => x === null)) return tier;
+  // the ladder is said only when the table gives the bonus at the sigil's tier
+  const here = tiers[vOf(tier)];
+  if (
+    !Number.isInteger(sigil) ||
+    tiers.some((x) => x === null) ||
+    here == null ||
+    !near(here, at)
+  )
+    return tier;
   return {
     ...tier,
     node: {
