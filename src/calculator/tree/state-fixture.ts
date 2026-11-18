@@ -14,6 +14,16 @@ const item = (displayName: string, UQ1txt = "0", UQ2txt = "0") => ({
 
 export const GAME = new Map<string, unknown>([
   [
+    "CustomLists.StarSigns",
+    list({ 69: ["Beanbie_Major", "+20%_Golden_Food", "bonuses", "_"] }),
+  ],
+  [
+    "CustomLists.ClassFamilyBonuses",
+    list({
+      33: ["{千@HIGHER_BONUSES|FROM_GOLDEN_FOODS", "0.4", "100", "decayMulti"],
+    }),
+  ],
+  [
     "CustomLists.CosmoUpgrades",
     [
       list({ 0: ["25", "0", "Monumental_Vibes"] }),
