@@ -114,3 +114,68 @@ test("through the bench's groups, a source of another value is still a differenc
   });
   expect(compareTrees(moulded, BENCH, new Set()).length).toBeGreaterThan(0);
 });
+
+test("the sources pair by name and value first, all of them, and only then by value", () => {
+  // two sources at 0: a greedy pairing by value would take the named one for the first bench row
+  const bench: BenchRow = {
+    name: "Invented total",
+    v: 0,
+    kids: [
+      {
+        name: "🃏 Cards",
+        v: 0,
+        kids: [benchSource("Card C", 0), benchSource("Card D", 0)],
+      },
+    ],
+  };
+  const moulded = app({
+    value: 0,
+    kids: [
+      pool([group("🃏 Cards", [source("Card D", 0), source("Card E", 0)], 0)]),
+    ],
+  });
+  expect(compareTrees(moulded, bench, new Set())).toEqual([
+    { at: "0/0", field: "name" },
+  ]);
+});
+
+test("a source the app keeps whole, which the V1 opened into its rows, pairs through its rows", () => {
+  // the app's one cache read of the signs; the bench's group has the signs themselves
+  const signs = app({
+    id: "root/Signs total",
+    name: "Signs total",
+    value: 17,
+    role: "piece",
+    code: "DNSM.InventedSigns",
+    kids: [source("Sign A", 5), source("Sign B", 12)],
+  });
+  const bench: BenchRow = {
+    name: "Invented total",
+    v: 17,
+    kids: [
+      {
+        name: "⭐ Star Signs",
+        v: 17,
+        kids: [benchSource("Sign A", 5), benchSource("Sign B", 12)],
+      },
+    ],
+  };
+  expect(
+    compareTrees(app({ value: 17, kids: [pool([signs])] }), bench, new Set()),
+  ).toEqual([]);
+  // a sign of another value is still a difference
+  const off: BenchRow = {
+    ...bench,
+    kids: [
+      {
+        name: "⭐ Star Signs",
+        v: 17,
+        kids: [benchSource("Sign A", 6), benchSource("Sign B", 12)],
+      },
+    ],
+  };
+  expect(
+    compareTrees(app({ value: 17, kids: [pool([signs])] }), off, new Set())
+      .length,
+  ).toBeGreaterThan(0);
+});
