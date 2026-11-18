@@ -347,13 +347,29 @@ test("a root of one step is no chain; a chain whose pools do not give the root i
   expect(chainPools(CHAIN, { value: 1407 }, off)).toBe("open");
   // a term the assembly cannot make a row of
   expect(chainPools(CHAIN, { value: 1407 }, () => null)).toBe("open");
-  // a step that takes the total but neither adds nor multiplies (a floor)
+  // a step that takes the total but neither adds nor multiplies (a floor that changes it)
   const floor: Step[] = [
+    ...CHAIN.slice(0, 1),
+    { v: 39.5, e: op("+", val(37), num(2.5), 39.5) },
+    { v: 39, e: { t: "fn", name: "floor", args: [val(39.5)], v: 39 } },
+    { v: 41, e: op("+", val(39), num(2), 41) },
+  ];
+  expect(chainPools(floor, { value: 41 }, termAt)).toBe("open");
+  // T025: a floor that changes nothing is read through, to the step it takes
+  const same: Step[] = [
     ...CHAIN.slice(0, 2),
     { v: 39, e: { t: "fn", name: "floor", args: [val(39)], v: 39 } },
     { v: 41, e: op("+", val(39), num(2), 41) },
   ];
-  expect(chainPools(floor, { value: 41 }, termAt)).toBe("open");
+  expect(listOf(chainPools(same, { value: 41 }, termAt))?.map(brief)).toEqual([
+    ["Additive pool", "additive", "sum", 41, [30, 7, 2, 2]],
+  ]);
+  // with `single`, a root of one step is its step's terms
+  expect(
+    listOf(
+      chainPools(CHAIN.slice(0, 1), { value: 37 }, termAt, undefined, true),
+    )?.map(brief),
+  ).toEqual([["Additive pool", "additive", "sum", 37, [30, 7]]]);
 });
 
 test("a running total links the chain before a multiplier kept in a variable, whatever the order of the factors", () => {

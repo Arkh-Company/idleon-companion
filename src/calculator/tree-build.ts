@@ -202,6 +202,8 @@ export function buildTree(
     formulas: codeFormulas,
   });
 
+  /** The calls whose rows a pass of the game's own gives, not their steps (tree/gold-food.ts, tree/raw-passes.ts). */
+  const passed = new Set<number>();
   function raw(id: number, depth: number, seen: ReadonlySet<number>): Row[] {
     const n = nodes[id];
     if (!n) return [];
@@ -225,6 +227,7 @@ export function buildTree(
         finish,
         formulas: codeFormulas,
       }) ?? rawPasses(n, nodes, reads);
+    if (special) passed.add(id);
     const op = indexStep || special ? null : topOp(last?.e);
     const rows =
       special ??
@@ -351,11 +354,10 @@ export function buildTree(
     root.formula = own?.formula ?? null;
     // FR-006: the game steps, never named by their shape; spec 009: in the game's pools (rule Y: a chain's from its
     // steps), by system
-    const first = firstLevel(
-      mould(own?.rows ?? rows),
-      root,
-      chainOf(top, 0, new Set()),
-    );
+    const first = firstLevel(mould(own?.rows ?? rows), root, {
+      ...chainOf(top, 0, new Set()),
+      passed: passed.has(top.id),
+    });
     root.formula = first.formula;
     chainOpen = first.chainOpen === true;
     root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [

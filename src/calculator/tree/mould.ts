@@ -8,20 +8,23 @@ import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
-import { chainPools, poolsOf, poolsPair, rootExtreme } from "./pools.ts";
-import type { Combine, OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
+import {
+  chainPools,
+  poolsOf,
+  poolsPair,
+  rootExtreme,
+  through,
+} from "./pools.ts";
+import type { OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
-import {
-  isHelper,
-  SYSTEM_ORDER,
-  systemLabel,
-  systemOf,
-  V1_SYSTEMS,
-} from "./systems.ts";
-import type { System } from "./systems.ts";
 import type { Expr, Step } from "./steps.ts";
+import { bySystem, ownPair } from "./groups.ts";
+import type { WriterOf } from "./groups.ts";
+
+export { bySystem } from "./groups.ts";
+export type { WriterOf } from "./groups.ts";
 
 /** The root's rows as its steps: a step named by its shape loses that name; a branch's own rows are its parts, with
  * their names by shape for its ⓘ. */
@@ -54,191 +57,6 @@ const readsOf = (e: Expr): string[] =>
           : e.t === "not"
             ? readsOf(e.a)
             : [];
-
-/** The block that writes the cache a row reads (its call, written as tree/rows.ts `callText`), when it has one. */
-export type WriterOf = (r: Row) => string | undefined;
-
-const OTHER = V1_SYSTEMS.at(-1) ?? { name: "Other", emoji: "🔹" };
-
-/**
- * The system of a row (spec 009, FR-003): its source's, by tree/systems.ts; a branch's, when every source in it has the
- * same one. Undefined for a row with no source (a constant of the code); null for an unknown or a mixed one.
- */
-function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
-  // a helper's (a curve, a log) is its sources' (T028)
-  if (r.node.code !== null && !isHelper(r.node.code))
-    return systemOf(r.node.code, writerOf(r));
-  const inner = (r.group ?? [])
-    .map((k) => systemOfRow(k, writerOf))
-    .filter((s) => s !== undefined);
-  if (!inner.length) return undefined;
-  return inner.every((s) => s === inner[0]) ? (inner[0] ?? null) : null;
-}
-
-/** A group under a root with a max or a min at the top: the same rule over its sources, with its ⓘ ("max(…)"). */
-function extremeRow(s: System, rule: "max" | "min", rows: Row[]): Row {
-  const vals = rows.map(vOf);
-  const value = vals.every(Number.isFinite) ? Math[rule](...vals) : null;
-  const pair: [string, string] | null =
-    value === null
-      ? null
-      : [
-          `${rule}(${rows.map((r) => termOf(r.node)).join(", ")})`,
-          `${rule}(${vals.map(fx3).join(", ")}) = ${fx3(value)}`,
-        ];
-  const fmts = new Set(rows.map((r) => r.node.fmt));
-  const node = row({
-    pieceKey: null,
-    value,
-    code: null,
-    name: systemLabel(s),
-    role: "system",
-    combine: rule,
-    poolKind: null,
-    // the format of its sources when they share one
-    fmt: fmts.size === 1 ? (rows[0]?.node.fmt ?? null) : null,
-    flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
-    formula: pair && formulaOut(pair, termsOf(rows)),
-  });
-  return { node, open: null, group: withShares(node, pair, rows).rows };
-}
-
-/**
- * A system's group of bonuses in % the game sums and divides by 100 (FR-017): its value their sum ÷ 100, what it adds
- * to its pool, with that ⓘ; each bonus's share is of their sum.
- */
-function percentRow(s: System, rows: Row[]): Row {
-  const vals = rows.map(vOf);
-  const sum = vals.every(Number.isFinite)
-    ? vals.reduce((a, x) => a + x, 0)
-    : null;
-  const value = sum === null ? null : sum / 100;
-  const node = row({
-    pieceKey: null,
-    value,
-    code: null,
-    name: systemLabel(s),
-    role: "system",
-    combine: "percent",
-    poolKind: null,
-    fmt: "%",
-    flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
-  });
-  const group = withShares({ name: node.name, value: sum }, null, rows).rows;
-  const one = rows.length === 1;
-  const pair: [string, string] | null =
-    value === null
-      ? null
-      : [
-          `${one ? "" : "("}${group.map((r) => termOf(r.node)).join(" + ")}${one ? "" : ")"} ÷ 100`,
-          `${one ? "" : "("}${vals.map(fx3).join(" + ")}${one ? "" : ")"} ÷ 100 = ${fx3(value)}`,
-        ];
-  return {
-    node: { ...node, formula: pair && formulaOut(pair, termsOf(group)) },
-    open: null,
-    group,
-  };
-}
-
-/** A system's group of `rows`, its value their sum or product, its sources in the game's order (FR-002, FR-013). */
-function systemRow(s: System, combine: Combine, rows: Row[]): Row {
-  if (combine === "max" || combine === "min")
-    return extremeRow(s, combine, rows);
-  if (combine === "percent") return percentRow(s, rows);
-  const product = combine === "product";
-  const vals = rows.map(vOf);
-  const value = vals.every(Number.isFinite)
-    ? vals.reduce((a, x) => (product ? a * x : a + x), product ? 1 : 0)
-    : null;
-  const node = row({
-    pieceKey: null,
-    value,
-    code: null,
-    name: systemLabel(s),
-    role: "system",
-    combine: product ? "product" : "sum",
-    poolKind: null,
-    // FR-002: the format of the parts, a multiplier's or a bonus's (a percent in 1 + (bonuses) ÷ 100)
-    fmt: product ? "x" : combine === "onePlusPercent" ? "%" : "+",
-    flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
-  });
-  // every source in its place (FR-016)
-  const group = withShares(node, null, rows).rows;
-  const pair = value === null ? null : ownPair(group, product, value);
-  return {
-    node: { ...node, formula: pair && formulaOut(pair, termsOf(group)) },
-    open: null,
-    group,
-  };
-}
-
-/** The ⓘ of a pool or group from its rows: their sum or product; none for a single row (it is the row's). */
-function ownPair(
-  rows: readonly Row[],
-  product: boolean,
-  value: number,
-): [string, string] | null {
-  if (rows.length < 2) return null;
-  const op = product ? " × " : " + ";
-  return [
-    rows.map((r) => termOf(r.node)).join(op),
-    `${rows.map((r) => fx3(vOf(r))).join(op)} = ${fx3(value)}`,
-  ];
-}
-
-/**
- * The rows of a pool (or of the root, with no pool) by system (FR-002, FR-004, FR-006): one group per system in the V1
- * order, "🔹 Other" last, a group at 0 or ×1 in its place; a lone source stands alone; when every source is in "Other",
- * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems. A constant of the game's math (a
- * row with no source) is no system's: it stays its own row, after the groups (T027), but for one in %.
- */
-export function bySystem(
-  rows: readonly Row[],
-  combine: Combine,
-  writerOf: WriterOf,
-): readonly Row[] {
-  // the bonuses in % a sum ÷ 100 gives (FR-017) are a group of their own in their system, after its other sources
-  const groups = new Map<string, { s: System; pct: boolean; rows: Row[] }>();
-  const constants: Row[] = [];
-  for (const r of rows) {
-    const found = systemOfRow(r, writerOf);
-    // a constant in % adds a hundredth of its value only inside a group in % (FR-017), so it stays in "Other"'s
-    if (found === undefined && !r.percent) {
-      constants.push(r);
-      continue;
-    }
-    const s = found ?? OTHER;
-    const pct = !!r.percent;
-    const key = `${s.name}|${String(pct)}`;
-    const g = groups.get(key) ?? { s, pct, rows: [] };
-    groups.set(key, { ...g, rows: [...g.rows, r] });
-  }
-  const [only] = groups.values();
-  if (groups.size <= 1 && (!only || (only.s === OTHER && !only.pct)))
-    return rows;
-  // a system beyond the V1 after the V1's, in the order of the sum (the sort keeps it), "Other" last (FR-004)
-  const at = (s: System) =>
-    s === OTHER
-      ? SYSTEM_ORDER.length
-      : SYSTEM_ORDER.includes(s.name)
-        ? SYSTEM_ORDER.indexOf(s.name)
-        : SYSTEM_ORDER.length - 1;
-  const rank = ({ s, pct }: { s: System; pct: boolean }) =>
-    at(s) * 2 + Number(pct);
-  // a lone bonus in % stays a group: it adds a hundredth of its value
-  return [
-    ...[...groups.values()]
-      .sort((a, b) => rank(a) - rank(b))
-      .flatMap(({ s, pct, rows: rs }) =>
-        pct
-          ? [systemRow(s, "percent", rs)]
-          : rs.length === 1
-            ? rs
-            : [systemRow(s, combine, rs)],
-      ),
-    ...constants,
-  ];
-}
 
 /**
  * A pool's row (FR-005): its name and value, how its rows give it, and its rows by system, with no unnamed sum nor any
@@ -313,15 +131,33 @@ export interface FirstLevelContext {
   ownCache?: OwnCache;
   /** A working value the root's own call wrote, as its writer's rows (FR-017). */
   joins?: Joins;
+  /** The call's rows are a pass of the game's own, not its steps' terms (tree/raw-passes.ts, tree/gold-food.ts). */
+  passed?: boolean;
 }
 
-/** The pools' rows (`chain`: a chain's) with, after a chain's, the rows of the 008 no step of it shows (FR-008). */
+/** The rows of the 008 no step of the call shows: its checks and its data rows (FR-008). */
+function restOf(rows: readonly Row[], steps?: readonly Step[]): Row[] {
+  const shown = new Set((steps ?? []).flatMap((st) => readsOf(st.e)));
+  return rows.filter(
+    (r) =>
+      r.node.leaf === "condition" ||
+      (r.node.code !== null &&
+        !r.node.code.includes("(") &&
+        !shown.has(r.node.code)),
+  );
+}
+
+/**
+ * The pools' rows (`chain`: a chain's, from its steps' terms) with, after a chain's or when `keep`, the rows of the 008 no
+ * step shows (FR-008).
+ */
 function pooledLevel(
   rows: Row[],
   root: Pick<Node, "name" | "value">,
   pools: readonly Pool[],
   chain: boolean,
   { steps, writerOf, joins }: FirstLevelContext,
+  keep = chain,
 ): { rows: Row[]; formula: Node["formula"] } {
   // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
   const out = poolRows(
@@ -330,17 +166,8 @@ function pooledLevel(
     writerOf,
     joins,
   );
-  // its checks and its data rows stay after a chain's pools
-  const shown = new Set((steps ?? []).flatMap((st) => readsOf(st.e)));
-  const rest = chain
-    ? rows.filter(
-        (r) =>
-          r.node.leaf === "condition" ||
-          (r.node.code !== null &&
-            !r.node.code.includes("(") &&
-            !shown.has(r.node.code)),
-      )
-    : [];
+  // its checks and its data rows stay after the pools
+  const rest = keep ? restOf(rows, steps) : [];
   return { rows: [...out.rows, ...rest], formula: out.formula };
 }
 
@@ -381,19 +208,34 @@ export function firstLevel(
   // a chain the pools cannot read falls back to the rows, and says so (NFR-005)
   const open = read === "open" ? ({ chainOpen: true } as const) : {};
   const chain = read === "open" ? null : read;
-  const pools = chain ?? poolsOf(rows, { value: root.value, expr }, term);
-  if (pools) {
-    const out = pooledLevel(rows, root, pools, !!chain, ctx);
-    return {
-      rows: out.rows,
-      formula: out.formula ?? root.formula,
-      ...open,
-    };
-  }
+  const done = (out: { rows: Row[]; formula: Node["formula"] }) => ({
+    rows: out.rows,
+    formula: out.formula ?? root.formula,
+    ...open,
+  });
+  if (chain) return done(pooledLevel(rows, root, chain, true, ctx));
+  // T025: a round or a clamp at the top that changes nothing is read through
+  const v = vOf({ node: root as Node });
+  const step = expr && Number.isFinite(v) ? through(expr, v) : expr;
+  const own = poolsOf(rows, { value: root.value, expr: step }, term);
+  if (own) return done(pooledLevel(rows, root, own, false, ctx));
+  // T025: the rows no step shows (its checks, its reads) stay after the pools the others give
+  const rest = new Set(restOf(rows, steps));
+  const held = rows.filter((r) => !rest.has(r));
+  const kept =
+    rest.size && held.length
+      ? poolsOf(held, { value: root.value, expr: step }, term)
+      : null;
+  if (kept) return done(pooledLevel(rows, root, kept, false, ctx, true));
+  // T025: a root of one step whose rows do not give it (a coefficient times a source): its step's terms
+  const one =
+    read === null && steps && termAt && !ctx.passed
+      ? chainPools(steps, root, termAt, ownCache, true)
+      : null;
+  if (Array.isArray(one)) return done(pooledLevel(rows, root, one, true, ctx));
   const rule = rootExtreme(rows, { value: root.value, expr });
   const level = rule ? bySystem(rows, rule, writerOf) : rows;
   if (!rule || level === rows) return { rows, formula: root.formula, ...open };
-  const v = vOf({ node: root as Node });
   const pair: [string, string] = [
     `${rule}(${level.map((r) => termOf(r.node)).join(", ")})`,
     `${rule}(${level.map((r) => fx3(vOf(r))).join(", ")}) = ${fx3(v)}`,

@@ -566,6 +566,31 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeChainOpen.h.v = d.TreeChainOpen.h.v + 2;
     return d.TreeChainOpen.h.v;
   };
+  // The roots the probe of the 716 trees found with no pool (spec 009, T025): a rounded sum of a coefficient times a
+  // source; a chain the game clamps at the end, which does not bite; a product with a check and a read no step shows.
+  Blocks._customBlock_TreeRoundSum = function () {
+    var s = state();
+    return Math.round(
+      3 * Blocks._customBlock_CardBonusREAL(1) +
+        Blocks._customBlock_ArcadeBonus(0) +
+        s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreeClamped = function () {
+    var d = dnsm();
+    d.TreeClamp = new StringMap();
+    d.TreeClamp.h.v = Blocks._customBlock_TreeReads() + state().TreeBase;
+    d.TreeClamp.h.v = d.TreeClamp.h.v * Blocks._customBlock_TreeLoop();
+    return Math.max(0.01, d.TreeClamp.h.v);
+  };
+  Blocks._customBlock_TreeChecked = function () {
+    var s = state();
+    var level = s.TreeLevel;
+    if (level > 100) return 0;
+    var v = Blocks._customBlock_TreeReads() * Blocks._customBlock_TreeLoop();
+    if (s.TreeOwned > 0) v = v * 2;
+    return v;
+  };
   // A golden food opened as a branch, as in the Drop Rate: its pass names its rows (spec 009).
   Blocks._customBlock_TreeGoldOf = function (t) {
     return Blocks._customBlock_GoldFoodBonuses(t) * 2;

@@ -158,7 +158,7 @@ export const SYSTEM_RULES: readonly {
         "N.js StampBonusOfTypeX (writes Stamp_TOTAL_bonus_of_type_X)",
       ],
       [/^Menagerie\[/, "Menagerie", "N.js MenagerieStuff (reads Menagerie)"],
-      [/Owlz/, "Owl", "N.js Summoning OwlBonuses (reads CustomLists.Owlz)"],
+      [/Owlz/, "Owl", "N.js Summoning (reads CustomLists.Owlz)"],
       [/MealBonusesS/, "Meals", "N.js MealBonus (reads MealBonusesS)"],
       [/^Spelunk\[/, "Spelunking", "N.js Spelunk (reads Spelunk)"],
     ] as const

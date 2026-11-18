@@ -33,6 +33,22 @@ export type TermRow = (e: Expr, op: "+") => Row | null;
 export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
+
+/**
+ * A step's expression under a top its value passes through (T025): a round, a floor or a ceil that changes nothing, or
+ * a clamp (a max or a min with a number) that does not bite; else the expression itself.
+ */
+export function through(e: Expr, v: number): Expr {
+  const x = strip(e);
+  if (x.t !== "fn" || !x.name) return x;
+  const vars = x.args.filter((a) => strip(a).t !== "num");
+  const [inner] = vars;
+  const round = ["round", "floor", "ceil"].includes(x.name);
+  const clamp = ["max", "min"].includes(x.name) && x.args.length === 2;
+  if (!inner || vars.length !== 1 || !(round ? x.args.length === 1 : clamp))
+    return x;
+  return near(Number(inner.v), v) ? through(inner, v) : x;
+}
 /** The sources an expression reads or calls (a value of an earlier step is one too). */
 const sources = (e: Expr): number =>
   e.t === "call" || e.t === "read" || e.t === "val"
@@ -246,20 +262,20 @@ export type OwnCache = (e: Expr, at: number) => boolean;
  * The root's chain of steps, first to last, from the step that gives `value`: each step takes the total of an earlier
  * one, back to the first, which takes none. The total comes as a value with no source or as a working value the root's
  * own call wrote and reads back: the recording tells the two apart, not the game (tree/steps.ts). Null for a root of one
- * step; "open" for a chain a step of which neither adds nor multiplies.
+ * step, unless `single` (T025: its one step's terms are its pools); "open" for a chain a step of which neither adds nor
+ * multiplies.
  */
 function chainOf(
   steps: readonly Step[],
   value: number,
   ownCache: OwnCache,
+  single = false,
 ): Link[] | "open" | null {
   const out: Link[] = [];
   let up: Above[] = [];
   for (let k = steps.findLastIndex((s) => near(s.v, value)); k >= 0;) {
-    const e = steps[k]?.e;
-    const op = topOp(e);
-    if (!e || !op) return out.length ? "open" : null;
-    const ts = flat(e, op);
+    const step = steps[k];
+    const e = step && through(step.e, step.v);
     // the earlier step a term takes the value of: a value with no source, or a working value of the root's own call
     const prevOf = (x: Expr): number => {
       const i = steps.findLastIndex(
@@ -270,6 +286,17 @@ function chainOf(
       );
       return i >= 0 && (x.t !== "read" || ownCache(x, k)) ? i : -1;
     };
+    // a step that only clamps or rounds an earlier one, which it leaves as it is: that step (T025)
+    if (step && e !== strip(step.e) && (e?.t === "val" || e?.t === "read")) {
+      const i = prevOf(e);
+      if (i >= 0) {
+        k = i;
+        continue;
+      }
+    }
+    const op = topOp(e);
+    if (!e || !op) return out.length ? "open" : null;
+    const ts = flat(e, op);
     const first = (fits: (x: Expr) => boolean) =>
       ts.findIndex((x) => fits(x) && prevOf(x) >= 0);
     let run = first(
@@ -285,7 +312,7 @@ function chainOf(
     if (via.t === "read") up = [...up, { code: via.p, name: via.p }];
     k = prevOf(via);
   }
-  return out.length > 1 ? out : null;
+  return out.length > (single ? 0 : 1) ? out : null;
 }
 
 /**
@@ -299,9 +326,10 @@ export function chainPools(
   root: { value: CalcTreeNode["value"] },
   termAt: TermAt,
   ownCache: OwnCache = () => false,
+  single = false,
 ): Pool[] | "open" | null {
   const v = typeof root.value === "boolean" ? Number(root.value) : root.value;
-  const chain = v === null ? null : chainOf(steps, v, ownCache);
+  const chain = v === null ? null : chainOf(steps, v, ownCache, single);
   if (v === null || chain === null) return null;
   if (chain === "open") return "open";
   const pools: Omit<Pool, "name">[] = [];
