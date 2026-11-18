@@ -337,3 +337,24 @@ test("every item of the game has its entry checked, so a search says the item it
       .length,
   ).toBeGreaterThanOrEqual(2480);
 });
+
+test("a block that reads back the cache an earlier call of the same block filled with its search says the item too (009 T030)", () => {
+  useGameTables(TABLES);
+  const first: RecNode = {
+    ...node(5, "InventedSearch", [], 1),
+    r: [["Cards[1] contains itemA", true]],
+  };
+  const later: RecNode = {
+    ...node(6, "InventedSearch", [], 1),
+    r: [["DNSM.InventedFound", 1]],
+  };
+  const { condRows: rows } = makeConditions(
+    [...NODES, first, later],
+    new Map([["DNSM.InventedFound", [5]]]),
+  );
+  expect(
+    rows(later, own([cmp("==", read("DNSM.InventedFound", 1), num(1))]))[0]
+      ?.test,
+  ).toBe("Found Invented Charm");
+  useGameTables(new Map());
+});
