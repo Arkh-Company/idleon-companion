@@ -82,10 +82,32 @@ const SUPER_LIST = /^Spelunk\[\d+\]\[\d+\]$/;
 const SUPER_GIVEN = 'Thingies("SuperTalentPTS_LVgiven"';
 
 /**
- * The All-talent levels of a talent (N.js RunCodeOfTypeXforThingY "AllTalentLV": `floor(min(AllTalMaxCapFR, the sum of
- * its sources) + AllTalMaxSUPERdn)`, the last the Super Talent levels when the talent is on the preset's list): its
- * sources; the checks (the talent's points > 0.5, banned), the preset in use, its list of Super Talents and the
- * talent's own points (its Points invested, above) are in the ⓘ only.
+ * What a source adds to the sum of the All-talent levels (N.js RunCodeOfTypeXforThingY "AllTalentLV"): a minor link of
+ * Divinity rounded up, the family bonus rounded down, 5 per 100 Sneaking masteries over the first 3, the Universe
+ * Talent up to 5, the class levels over 500 by the Super Bit 47; the slot and the class level alone add nothing.
+ */
+function addsToSum(r: Row, rows: readonly Row[]): number {
+  const code = codeOf(r);
+  const x = vOf(r);
+  if (code.startsWith('Divinity("Bonus_Minor"')) return Math.ceil(x);
+  if (code.startsWith("DNSM.FamBonusQTYs[")) return Math.floor(x);
+  if (code === "OptionsListAccount[232]") return 5 * Math.floor((97 + x) / 100);
+  if (code.startsWith('ArcaneType("ArcaneUpgBonus", 57,'))
+    return Math.min(5, x);
+  if (code.startsWith('GamingStatType("SuperBitType", 47,')) {
+    const lv = rows.find((k) => codeOf(k) === "Lv0[0]");
+    return lv ? Math.max(0, Math.floor(((vOf(lv) - 500) / 100) * x)) : NaN;
+  }
+  if (code === "Lv0[0]" || code === "DNSM.AllTalWhichPlayer") return 0;
+  return x;
+}
+
+/**
+ * The All-talent levels of a talent (N.js RunCodeOfTypeXforThingY "AllTalentLV": the floor of the min of its cap and
+ * the sum of its sources, plus the Super Talent levels when the talent is on the preset's list): its sources, the Super
+ * Talent levels at what the game counted; the checks (the talent's points > 0.5, banned), the preset in use, its list of
+ * Super Talents and the talent's own points (its Points invested, above) are in the ⓘ only. Null when the sum does not
+ * give the value: the rows stay as they are.
  */
 export function allTalentLevels(lv: Level): BuiltUp | null {
   const call = lv.call;
@@ -96,25 +118,40 @@ export function allTalentLevels(lv: Level): BuiltUp | null {
     !v
   )
     return null;
+  const read = (p: string) => Number(call.r?.find(([q]) => q === p)?.[1]);
+  const cap = read("DNSM.AllTalMaxCapFR");
+  const extra = read("DNSM.AllTalMaxSUPERdn");
   const t = Number(String(call.a[1]).split("|")[0]);
-  const list = lv.rows.filter(
-    (r) => r.node.leaf === "choice" && SUPER_LIST.test(codeOf(r)),
-  );
   const aside = (r: Row) =>
-    list.includes(r) ||
+    (r.node.leaf === "choice" && SUPER_LIST.test(codeOf(r))) ||
     codeOf(r) === "PlayerStuff[1]" ||
     codeOf(r) === `SkillLevels[${String(t)}]`;
   const sources = parts(lv.rows).filter((r) => !aside(r));
   const given = sources.find((r) => codeOf(r).startsWith(SUPER_GIVEN));
-  const isSuper = list.some((r) => vOf(r) === t);
-  const rows = sources.map((r) =>
-    r === given && !isSuper
-      ? renamed(r, `${r.node.name} (not a Super Talent here)`)
-      : r,
-  );
-  const extra = isSuper && given ? vOf(given) : 0;
+  const sum = sources
+    .filter((r) => r !== given)
+    .reduce((a, r) => a + addsToSum(r, sources), 0);
+  if (
+    !Number.isFinite(cap) ||
+    !Number.isFinite(extra) ||
+    !Number.isFinite(sum) ||
+    Math.floor(Math.min(cap, sum) + extra) !== v
+  )
+    return null;
+  // off the list, the Super Talent levels count 0, and the row says what they would give
+  const off = (r: Row): Row =>
+    groupRow(
+      `Super Talent levels (would give ${fx3(vOf(r))})`,
+      0,
+      [r],
+      [
+        "Super Talent levels given, while the talent is on the preset's list of Super Talents",
+        "not on the list → 0",
+      ],
+    );
+  const rows = sources.map((r) => (r === given && extra === 0 ? off(r) : r));
   return built(lv, rows, [
     "floor(min(Cap, sum of the sources) + Super Talent levels)",
-    `Super Talent levels ${fx3(extra)} → ${fx3(v)}`,
+    `floor(min(${fx3(cap)}, ${fx3(sum)}) + ${fx3(extra)}) = ${fx3(v)}`,
   ]);
 }
