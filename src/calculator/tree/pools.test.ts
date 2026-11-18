@@ -10,6 +10,7 @@ import {
   poolsOf,
   poolsPair,
   rootExtreme,
+  through,
 } from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
@@ -370,6 +371,35 @@ test("a root of one step is no chain; a chain whose pools do not give the root i
       chainPools(CHAIN.slice(0, 1), { value: 37 }, termAt, undefined, true),
     )?.map(brief),
   ).toEqual([["Additive pool", "additive", "sum", 37, [30, 7]]]);
+});
+
+test("a round, a floor or a clamp is read through only when it changes nothing at all, in a big number too (009 r1)", () => {
+  // floor(1234567.9) = 1234567: within a millionth, yet the floor cuts 0.9
+  const big = op("+", at("Stats.a", 1234567.4), at("Stats.b", 0.5), 1234567.9);
+  const floor: Expr = { t: "fn", name: "floor", args: [big], v: 1234567 };
+  expect(through(floor, 1234567)).toBe(floor);
+  const steps: Step[] = [
+    { v: 1234567.9, e: big },
+    {
+      v: 1234567,
+      e: { t: "fn", name: "floor", args: [val(1234567.9)], v: 1234567 },
+    },
+    { v: 1234569, e: op("+", val(1234567), num(2), 1234569) },
+  ];
+  expect(chainPools(steps, { value: 1234569 }, termAt)).toBe("open");
+  // a clamp that cuts a little is no clamp read through either
+  const max: Expr = {
+    t: "fn",
+    name: "max",
+    args: [num(1234567.5), big],
+    v: 1234567.9,
+  };
+  expect(through(max, 1234567.5)).toBe(max);
+  // one that changes nothing is
+  const whole = op("+", at("Stats.a", 1234567), at("Stats.b", 2), 1234569);
+  expect(
+    through({ t: "fn", name: "floor", args: [whole], v: 1234569 }, 1234569),
+  ).toBe(whole);
 });
 
 test("a running total links the chain before a multiplier kept in a variable, whatever the order of the factors", () => {
