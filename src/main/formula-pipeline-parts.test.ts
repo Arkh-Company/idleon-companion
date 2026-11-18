@@ -1,7 +1,7 @@
 // The parts of an open node live (spec 008 FR-024; spec 009 FR-015): the pipeline asks the live values of the open tree's
 // parts with the numbers in view and writes each one into its row; a part that loses its value asks the tree again. The
 // live values channel carries only the catalog numbers. The tree host is a fake; every value and name is invented.
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type { FormulaTree } from "../shared/index.ts";
 import { node, pairOf, pipeline as setup } from "./formula-fixture.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
@@ -26,10 +26,24 @@ const rows = (t: FormulaTree | undefined) =>
     ? { rootText: t.rootText, kids: t.root.kids.map((k) => k.value) }
     : null;
 
+// The 10 s between two silent rebuilds are counted on a fake clock (FR-015, NFR-002).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(0);
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+const seconds = (n: number) => {
+  vi.setSystemTime(Date.now() + n * 1_000);
+};
+
+/** The Drop Rate's tree, 10 s after it came: a change may ask it again at once. */
 function readyDrop(character: number | null = null) {
   const h = setup();
   h.p.request({ id: "dropRate", character });
   h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  seconds(10);
   return h;
 }
 
@@ -68,6 +82,7 @@ test("a part that moves below its text is written as it is; one that comes unava
       kids: [{ ...sword, value: 4.0001 }, lazy],
     }),
   );
+  seconds(10);
   h.setPair(pairAt(3));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
   expect(h.host.request).toHaveBeenCalledTimes(3);
@@ -89,6 +104,7 @@ test("a part still without value after the new tree asks the tree only once", ()
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
   expect(h.host.request).toHaveBeenCalledTimes(2);
   h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  seconds(10);
   h.setPair(pairAt(4));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
   expect(h.host.request).toHaveBeenCalledTimes(2);

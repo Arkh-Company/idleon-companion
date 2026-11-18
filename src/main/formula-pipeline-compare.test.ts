@@ -1,8 +1,9 @@
 // The open tree live in the formula pipeline (spec 009 FR-015, replacing the 008's "Game changed · Refresh"): a newer
 // reading writes the open number's value and its parts' into the tree on screen, with no button, and a change asks the
-// tree again in silence, one request at a time, so its ⓘ and shares close with the live values. A mark still takes the
-// tree's values by piece. The tree host is a fake; every value and name is invented.
-import { expect, test } from "vitest";
+// tree again in silence, one request at a time and at most every 10 s since the last tree came, so its ⓘ and shares close
+// with the live values. A mark still takes the tree's values by piece. The tree host is a fake; every value and name is
+// invented.
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { node, pairOf, pipeline as setup } from "./formula-fixture.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
@@ -21,10 +22,24 @@ const pairAt = (n: number, dropRate = CALCULATED.dropRate): StatsPair => ({
   numbers: { ...CALCULATED, dropRate },
 });
 
+// The 10 s between two silent rebuilds are counted on a fake clock (FR-015, NFR-002).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(0);
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+const seconds = (n: number) => {
+  vi.setSystemTime(Date.now() + n * 1_000);
+};
+
+/** The Drop Rate's tree, 10 s after it came: a change may ask it again at once. */
 function readyDrop() {
   const h = setup();
   h.p.request({ id: "dropRate", character: null });
   h.tree(dropTree(CALCULATED.dropRate, 4));
+  seconds(10);
   return h;
 }
 const shown = (h: ReturnType<typeof setup>) => {
@@ -73,7 +88,13 @@ test("the tree asked again comes with its ⓘ closing on the new value; a change
   h.setPair(pairAt(4, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(2);
+  // A new change within 10 s of the new tree is written in place, and asks the tree only once the 10 s are past.
   h.setPair(pairAt(5, 10));
+  h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
+  expect(shown(h).kids).toEqual([8, 2]);
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  seconds(10);
+  h.setPair(pairAt(6, 10));
   h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(3);
 });
@@ -178,4 +199,42 @@ test("a branch opened while the tree is asked again waits for the new one: the w
   h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
   // One waiting job in the host: an expand sent now would replace the tree asked, which would never come.
   expect(h.host.request).toHaveBeenCalledTimes(2);
+});
+
+test("a change at each reading asks the tree once in 10 s: the values are asked and written at each reading, and the tree after the 10 s", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(dropTree(CALCULATED.dropRate, 4));
+  for (let n = 1; n <= 9; n++) {
+    seconds(1);
+    const asked = h.host.values.mock.calls.length;
+    h.setPair(pairAt(n + 1, 10 + n));
+    expect(h.host.values).toHaveBeenCalledTimes(asked + 1);
+    h.values({ dropRate: 10 + n, [SWORD]: 4 + n, [RING]: 2 });
+    expect(shown(h).kids).toEqual([4 + n, 2]);
+  }
+  expect(h.host.request).toHaveBeenCalledOnce();
+  seconds(1);
+  h.setPair(pairAt(11, 20));
+  h.values({ dropRate: 20, [SWORD]: 14, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  expect(h.host.request.mock.lastCall?.[1]).toEqual({
+    type: "number",
+    id: "dropRate",
+    character: 0,
+  });
+});
+
+test("a branch asked keeps its turn: a change meanwhile is written in place, and the tree is asked only after the branch comes", () => {
+  const h = readyDrop();
+  h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(shown(h).kids).toEqual([7, 2]);
+  expect(h.host.dropCurrent).not.toHaveBeenCalled();
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree({ ...ring, kids: [node({ id: "root/Ring/Gem", pieceKey: null })] });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
 });
