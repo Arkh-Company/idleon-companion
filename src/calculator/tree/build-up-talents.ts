@@ -63,7 +63,6 @@ function withMax(pts: Row, max: RecNode, key: string): Row {
   const named = renamed(pts, `Points (max ${fx3(Number(max.v))})`);
   return {
     ...named,
-    node: { ...named.node, leaf: null },
     group: [
       {
         node: row({
@@ -74,6 +73,7 @@ function withMax(pts: Row, max: RecNode, key: string): Row {
           kids: "lazy",
         }),
         open: max.id,
+        ceiling: true,
       },
     ],
   };

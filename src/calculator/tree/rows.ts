@@ -80,6 +80,11 @@ export interface Row {
    * a hundredth of its value, in its system's group of `combine: "percent"` (tree/mould.ts).
    */
   percent?: true;
+  /**
+   * A ceiling of the row above, not a part of its value (spec 009, FR-018: a Legend Talent's max, an exception to
+   * FR-008): the row above never merges into it nor takes its ⓘ (tree/parent-passes.ts).
+   */
+  ceiling?: true;
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

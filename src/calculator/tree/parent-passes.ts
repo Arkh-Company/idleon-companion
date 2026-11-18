@@ -61,7 +61,7 @@ function nameLevel(
       rows = under(k, at);
       return (rows?.rows.length ?? 0) > 0;
     });
-    if (!c || !rows) break;
+    if (!c || !rows || c.ceiling) break;
     n = absorb(n, c);
     lv = rows;
   }
@@ -122,7 +122,9 @@ export function parentPasses(
       at.rows.length !== 1 ||
       c?.node.role !== "piece" ||
       !near(c.node.value, n.node.value) ||
-      c.asideAtZero
+      c.asideAtZero ||
+      // a ceiling is no part of the row: the row keeps its own name, ⓘ and rows (FR-018)
+      c.ceiling
     )
       break;
     // the bench's passes after structurePass see the leaf with the row's own code
