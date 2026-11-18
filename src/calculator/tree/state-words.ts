@@ -120,6 +120,13 @@ export const WORD_RULES: readonly StateRule[] = [
     "bench build-v1mold.cjs G6b; N.js TotalStats Drop_Rarity, the talent 655 times it",
     () => "Weekly boss difficulties defeated this week",
   ),
+  // spec 009 T031: the slot the All-talent levels read the Super Talents of, this character's place in the account's
+  // list of characters, or the one the call is given for another character's talent
+  rule(
+    /^DNSM\.AllTalWhichPlayer$/,
+    "N.js RunCodeOfTypeXforThingY AllTalentLV and AllTalentLVz, the slot of the Spelunk list of Super Talents",
+    () => "Character slot (whose Super Talents count)",
+  ),
   rule(
     /^DNSM\.FishTKdl\[([1-3])\]$/,
     "N.js FishingToolkit modes D1, D2, D3, the depths of IDforETCbonus",

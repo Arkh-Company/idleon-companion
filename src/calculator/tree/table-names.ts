@@ -41,6 +41,29 @@ export const TABLE_TEXTS = {
     "clean",
     "bench pieces.cjs entryRows turnName, sign; N.js StarSigns",
   ),
+  /** The words of a star sign's bonus, and the word after them (spec 009 T031). */
+  signBonus: text(
+    "CustomLists.StarSigns",
+    (s) => [s, 1],
+    null,
+    "clean",
+    "N.js StarSigns (the bonus text of the sign)",
+  ),
+  signBonusMore: text(
+    "CustomLists.StarSigns",
+    (s) => [s, 2],
+    null,
+    "clean",
+    "N.js StarSigns (the bonus text of the sign)",
+  ),
+  /** A class's family bonus (spec 009 T031), as the recipes of FamilyBonsuesREAL read it. */
+  family: text(
+    "CustomLists.ClassFamilyBonuses",
+    (c) => [c, 0],
+    null,
+    "clean-keep-case",
+    "N.js FamilyBonsuesREAL (the family bonus of class c)",
+  ),
   artifact: text(
     "CustomLists.ArtifactInfo",
     (a) => [a, 0],

@@ -249,6 +249,28 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       `${(m[1] ?? "").replace(/_/g, " ")} quest ${String(n(m, 2))} completed`,
   ),
+  // spec 009 T031: a star sign's own total, the sign's bonus added once for each set of signs it is in (N.js StarSigns,
+  // while the list of equipped signs holds it), by its bonus's words and its name
+  rule(/^DNSM\.StarSigns\[(\d+)\]$/, "N.js StarSigns cache by sign", (m) =>
+    with_(tableText("sign", n(m)), (sign) =>
+      with_(tableText("signBonus", n(m)), (bonus) => {
+        const more = tableText("signBonusMore", n(m));
+        const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
+        return `${words} (${sign})`;
+      }),
+    ),
+  ),
+  // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
+  // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
+  rule(
+    /^DNSM\.FamBonusQTYs\[(\d+)\]$/,
+    "N.js TalentCalc FamBonusQTYs; N.js FamilyBonsuesREAL",
+    (m) =>
+      with_(
+        tableText("family", Math.floor(n(m) / 2)),
+        (t) => `${t.replace(/^@\s*/, "")} (family bonus)`,
+      ),
+  ),
 ];
 
 /** The rules of the game state paths: by a table first, then in words. */
