@@ -115,6 +115,7 @@ export function makePlaces(ctx: PlaceContext) {
   ): {
     formula: CalcTreeNode["formula"];
     rows: Row[];
+    maxReached?: CalcTreeNode["maxReached"];
   } {
     const up = buildUp(lv, {
       nodes,
@@ -134,7 +135,11 @@ export function makePlaces(ctx: PlaceContext) {
             ...w.rows.map((r) => termOf(r.node)),
           ])
       : w.formula;
-    return { formula, rows: asideInFormula(w.rows, formula !== null) };
+    return {
+      formula,
+      rows: asideInFormula(w.rows, formula !== null),
+      ...(up?.maxReached ? { maxReached: up.maxReached } : {}),
+    };
   }
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
@@ -158,6 +163,9 @@ export function makePlaces(ctx: PlaceContext) {
         : builtUp(lv, name);
     return {
       formula: w.formula,
+      ...("maxReached" in w && w.maxReached
+        ? { maxReached: w.maxReached }
+        : {}),
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
     };
   }

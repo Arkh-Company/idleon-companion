@@ -13,6 +13,8 @@ import type { Row } from "./rows.ts";
 export interface BuiltUp {
   level: Level;
   rule?: true;
+  /** How much of its maximum the curve reached, when the row's value is the curve's own (spec 008, FR-015a). */
+  maxReached?: { share: number; max: number };
 }
 export interface BuildUpContext {
   nodes: readonly RecNode[];

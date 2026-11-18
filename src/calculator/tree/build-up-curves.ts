@@ -3,7 +3,7 @@
 //   FamBonusQTYs): its two constants by their role, its level, the curve in the ⓘ;
 // - the Prisma multi (N.js ArcaneType "PrismaBonusMult": the min of 5 and 2 + the sum of its sources ÷ 100, the purple
 //   sigils counting 0.2 each and the Rift Hivemind companion 50 times): its sources, with their weights in the ⓘ.
-import { curveFormula, curvePart, fx3 } from "./curves.ts";
+import { curveFormula, curvePart, fx3, maxReachedOf } from "./curves.ts";
 import type { Curve } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
@@ -47,7 +47,12 @@ export function curveSelf(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     const c: Curve = [k, vOf(first), second ? vOf(second) : 0, vOf(input)];
     const roles = rolesOf(c);
     const f = roles && curveFormula(c, v, termOf(input.node), roles);
-    if (roles && f) return built(lv, [...constRows(c, roles), input], f);
+    const reached = maxReachedOf(c, v);
+    if (roles && f)
+      return {
+        ...built(lv, [...constRows(c, roles), input], f),
+        ...(reached ? { maxReached: reached } : {}),
+      };
   }
   return null;
 }

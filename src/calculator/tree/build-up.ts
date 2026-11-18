@@ -10,7 +10,13 @@
 // - a sigil (N.js Labb "SigilBonus": the table's value at the tier `CauldronP2W[4][1 + 2i]` picks, × (1 + Chilled
 //   Yarn) × (1 + MeritocBonusz(21) ÷ 100)); the artifact is its base × its rarity (N.js Sailing "ArtifactBonus");
 // - a card's bonus (N.js TotalStats: `min(1.5 × CardLv("mini5a"), 10)`): Card level and Bonus per level, the cap in the ⓘ.
-import { curveFormula, curveOf, curveText, fx3 } from "./curves.ts";
+import {
+  curveFormula,
+  curveOf,
+  curveText,
+  fx3,
+  maxReachedOf,
+} from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
 import type { Level } from "./places.ts";
@@ -76,11 +82,14 @@ function curveLevel(lv: Level): BuiltUp | null {
     [w(base[0]), ...others.map((r) => termOf(r.node))].join(" × "),
     `${[w(curveText(c)), ...others.map((r) => fx3(vOf(r)))].join(" × ")} = ${fx3(v)}`,
   ];
-  return built(
+  const up = built(
     lv,
     [renamed(input, name), ...constRows(c, roles), ...others],
     f,
   );
+  // FR-015a: the share of the max only when the row is the curve alone (a curve × Prisma is no curve's value)
+  const reached = others.length ? null : maxReachedOf(c, v);
+  return reached ? { ...up, maxReached: reached } : up;
 }
 
 /** A bubble times its class's bubble (the cache of the bubbles): Bubble bonus × the class's multi. */
