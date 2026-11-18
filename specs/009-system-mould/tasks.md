@@ -240,7 +240,7 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
 
 **Independent Test**: the probe of the 716 trees on the installed game shows 0 unnamed math branches and 0 levels that do not close; `ARCHITECTURE.md` describes the pools and the toggles.
 
-- [ ] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle (all FR)
+- [X] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle (all FR)
   - Files: `ARCHITECTURE.md`
   - The new files (`pools.ts`, `systems.ts`, `flatten.ts`, `tree-changes.ts`, `ViewToggles.tsx`) enter the Code folders table.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
