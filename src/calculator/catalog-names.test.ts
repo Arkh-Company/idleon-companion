@@ -100,7 +100,8 @@ const BENCH_NAMES: readonly (readonly [
 
 test("the roots no rule names have the bench's names, each with its proof", () => {
   for (const [id, name, proof] of BENCH_NAMES) {
-    expect(ruleName(id)).toBe(null);
+    // spec 009 T029: the 007 catalog names some of them now, with the bench's same name
+    expect([null, name]).toContain(ruleName(id));
     expect(TREE_CATALOG.find((n) => n.id === id)?.name).toBe(name);
     expect(proof).not.toBe("");
   }
