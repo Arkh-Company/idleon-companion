@@ -83,7 +83,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["Amount of the golden food (item table)", 7, "fixedValue"],
     ["Fixed ×0.05", 0.05, "fixedValue"],
     ["log₁₀", near(3), "rawBonus"],
-    ["Multiplier", near(2.403687460858369), null],
+    ["Quantity multiplier", near(2.403687460858369), null],
   ]);
   // the shared multiplier's pools: the set's bonuses, one row each; the family, and the sources in % by system
   expect(sourcesOf(set)).toEqual([
@@ -132,7 +132,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
   ]);
   expect(worn?.formula).toEqual({
     rule: [
-      "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Multiplier",
+      "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Quantity multiplier",
       "7 × 0.05 × 3 × 2.404 = 2.524",
     ],
   });
@@ -152,9 +152,11 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
       "(8 + 4 + 5 + 3) ÷ 100 = 0.2",
     ],
   });
-  expect(factor?.formula).toEqual({
-    rule: ["1 + (log₁₀ ÷ 2.14)", "1 + (3.004 ÷ 2.14) = 2.404"],
-  });
+  // the worn food's quantity factor, named by its role, with the quantity in its ⓘ (FR-007)
+  expect(factor?.formula).toEqual([
+    ["1", "+", "log₁₀", "(", "quantity", "+", "10", ")", "÷", "2.14"],
+    [1, 999, 10, 2.14, 2.404],
+  ]);
   const multiOf =
     "(1 + ((GfoodSet[0] + GfoodSet[1]) ÷ 100)) × (max(DNSM.FamBonusQTYs[66], 1) + ((((TreeReads() + TreeBase) + DNSM.GameCache.v) + 3) ÷ 100))";
   const numsOf =

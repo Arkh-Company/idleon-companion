@@ -109,7 +109,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["Amount of the golden food (item table)", 7],
     ["Fixed ×0.05", 0.05],
     ["log₁₀", near(3)],
-    ["Multiplier", near(2.403687460858369)],
+    ["Quantity multiplier", near(2.403687460858369)],
   ]);
   // the emporium's: the food's amount, the multiplier's sources again, and its log of 6
   const [emp] = kidsOf(emporium);
