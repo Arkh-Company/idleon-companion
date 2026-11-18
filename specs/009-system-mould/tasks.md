@@ -259,6 +259,14 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
   - The app takes the names the bench has and the app lacks (about 315 in the Drop Rate, as "Pristine Bon 17, 0" → "Liqorice Rolle"), by the app's name tables with their proof; game text may enter the repo, game code never.
   - A talent multiplied by a count ("Boss Battle Spillover", "Graded Rate") goes to the talent's system with the talent's name.
   - Tests first; `parity-compare.ts` back under 400 lines.
+- [ ] T030 Port the bench's current rules the app lacks (FR-010, SC-002; decision of 18/11)
+  - The app's tree came from the bench's BASELINE-4; the bench's `pieces.cjs` (and the files it uses) gained rules after it. Port them family by family, each with its test first and its proof by reference, for every tree:
+    - row rules: the rows the bench shows and the app does not ("Bonus per level", "Curve (decay): a and b", "Endless win, slot N…"), and the code constants and checks the app shows and the bench hides ("× 1.5", "Cap 10", "Sigil level < N");
+    - name rules: "Achievement = -1" → "Achievement completed", "Owned" → "<item> owned", "Level" → "<source> level", "Shiny level" → "Shiny level (pet <name>)"…;
+    - type rules: the calls the bench types "Bônus cru" and the bit conditions it types;
+    - the two odd points: "Cape Vine Bonus Multi, vine 0" (a likely wrong pair) and "Graded Rate" still under Other in one place.
+  - The 009 format stays (chain pools, system groups); the V1's hand-made names with no rule ("LUK curve", "Friend factor") are not ported.
+  - Measure with the local parity probe after each family; the goal is 0 differences outside the V1's hand-made structure.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
