@@ -267,6 +267,12 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
     - the two odd points: "Cape Vine Bonus Multi, vine 0" (a likely wrong pair) and "Graded Rate" still under Other in one place.
   - The 009 format stays (chain pools, system groups); the V1's hand-made names with no rule ("LUK curve", "Friend factor") are not ported.
   - Measure with the local parity probe after each family; the goal is 0 differences outside the V1's hand-made structure.
+- [ ] T031 The full build-up of every bonus (FR-018; decision of 18/11)
+  - Talents (`GetTalentNumber`, Legend Talents): Talent level = Points invested + All-talent levels (with its sources); Max bonus and Level at half (or Bonus per point) as lines, the curve in the ⓘ.
+  - Bubbles: Bubble bonus (level, Max bonus, Level at half, Prisma multi) × the class multi (Warriors Rule…); Prisma multi and every multiplier open into their own sources.
+  - Sigils: Sigil tier, Bonus at tier, Chilled Yarn multi (Artifact base × Rarity), Meritocracy multi (opening into its sources); the tier ladder is no line.
+  - Cards with a cap: Card level (with the stars) and "Bonus per level" as a line; "min(…, Cap)" and "(capped)" in the ⓘ.
+  - A constant is a line only when it is the bonus the game's screen shows (a talent's bonus per level, a card's level-1 bonus); the rest stay in the ⓘ. Branch checks are never lines. Tests first, for every tree; the research is in `.superpowers/implementar/009-system-mould/pesquisa-contas.md`.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
