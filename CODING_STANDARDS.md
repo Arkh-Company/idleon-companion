@@ -49,6 +49,15 @@ Good: a retry test that keeps `setupSteam` pending and asserts that the old aler
 Bad: a retry test that ends in the screen's final line, which returns before the alert is drawn, so removing the reset
 changes nothing.
 
+### A rewritten expectation keeps what it pinned
+
+When a test's expected value changes, the new assertion still checks every field the old one checked (name, value,
+type, flags), unless the spec removes that field.
+Good: after the emporium gains a part, `rowsOf(emp)` still checks `[name, value, leaf]` of every part, the new one
+included.
+Bad: the same change turns `[name, value, leaf]` into `[k.name, k.value]` and adds a part typed `"unknown"`, so the
+false "?" passes unseen.
+
 ### Rules wired in the Electron entry are tested
 
 Every decision in `src/main/index.ts` (a shared lock, a memory of the last state) lives in a function that a test reaches and that fails when the wiring is removed.
