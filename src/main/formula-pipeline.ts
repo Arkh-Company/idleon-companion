@@ -108,17 +108,19 @@ export function startFormulaPipeline(deps: {
     },
   });
 
-  /** spec 009 FR-015: the open tree takes the live values; a change of its shape asks it again, the tree kept on screen
-   * meanwhile (and none while a tree is asked). */
+  /** spec 009 FR-015: the open tree takes the live values at once, and a change asks it again in silence (its ⓘ, its
+   * shares, a source that came or left), the tree kept on screen meanwhile; one request at a time. */
   function liveInTree(v: LiveValues): void {
     if (last.state !== "ready" || asked) return;
     const next = liveTree(last, v, parts, hadLive);
     for (const k of parts.keys())
       if (typeof v.values[k] === "number") hadLive.add(k);
-    if (next === "rebuild") {
-      drop();
-      ask(true);
-    } else if (next) show(next);
+    if (!next) return;
+    // A part lost counts once: still without a value on the new tree, it asks nothing more.
+    for (const k of next.lost) hadLive.delete(k);
+    if (next.tree !== last) show(next.tree);
+    drop();
+    ask(true);
   }
 
   const index = feedsIndex({
@@ -180,7 +182,9 @@ export function startFormulaPipeline(deps: {
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
-    if (last.state !== "ready" || r.treeId !== open?.id) return;
+    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The new tree
+    // has another time, and the window asks its open branches again then (FR-015).
+    if (last.state !== "ready" || r.treeId !== open?.id || asked) return;
     if (expanding && expanding.nodeId !== r.nodeId) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
       return;

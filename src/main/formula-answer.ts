@@ -86,18 +86,18 @@ export function treeAnswer(
 type Ready = Extract<FormulaTree, { state: "ready" }>;
 
 /**
- * The open tree with a reading newer than it (spec 009 FR-015): the number's value and text and each followed part's
- * value written in place; "rebuild" when the shape may have changed (the number moved with no followed part moving, or a
- * part that had a live value, in `had`, lost it); null when nothing moved, or with no number at the root (values that
- * failed ask nothing again, or a failing worker would be asked each second). Only the active character's tree, the live
- * values being the active character's, and never over a closed game.
+ * What a reading newer than the open tree changes in it (spec 009 FR-015): the tree with the number's value and text and
+ * each followed part's value written in place, and the parts that had a live value (in `had`) and lost it; null when
+ * nothing moved, or with no number at the root (values that failed ask nothing again, or a failing worker would be asked
+ * each second). Any change asks the tree again in silence, so its ⓘ and shares close with the live values. Only the active
+ * character's tree, the live values being the active character's, and never over a closed game.
  */
 export function liveTree(
   tree: Ready,
   v: LiveValues,
   parts: ReadonlyMap<string, TreeNode>,
   had: ReadonlySet<string>,
-): Ready | "rebuild" | null {
+): { tree: Ready; lost: string[] } | null {
   if (
     tree.request.type !== "number" ||
     tree.character !== tree.activeCharacter ||
@@ -110,18 +110,23 @@ export function liveTree(
   if (typeof now !== "number") return null;
   const rootMoved = now !== tree.root.value;
   const moved = new Map<string, number>();
-  let lost = false;
+  const lost: string[] = [];
   for (const [key, n] of parts) {
     const x = v.values[key];
     if (typeof x === "number") {
       if (x !== n.value) moved.set(key, x);
-    } else if (x === null && had.has(key)) lost = true;
+    } else if (x === null && had.has(key)) lost.push(key);
   }
-  if (lost || (rootMoved && moved.size === 0)) return "rebuild";
-  if (moved.size === 0) return null;
+  if (!rootMoved && moved.size === 0 && lost.length === 0) return null;
   return {
-    ...tree,
-    root: withValues(tree.root, moved, rootMoved ? now : undefined),
-    ...(rootMoved ? { rootText: rootText(id, now) } : {}),
+    tree:
+      rootMoved || moved.size > 0
+        ? {
+            ...tree,
+            root: withValues(tree.root, moved, rootMoved ? now : undefined),
+            ...(rootMoved ? { rootText: rootText(id, now) } : {}),
+          }
+        : tree,
+    lost,
   };
 }
