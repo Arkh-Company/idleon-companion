@@ -76,6 +76,29 @@ function nameLevel(
   };
 }
 
+/**
+ * The level with no working value of the game at 0 beside one branch of the row's value, the loop's one turn: that branch
+ * alone. A turn that is a call keeps the running total at 0 in its place (FR-016, the 008's loop turns).
+ */
+function startless(r: Row, at: Level): Level {
+  if (at.rows.length !== 2) return at;
+  const zero = at.rows.find(
+    (k) =>
+      k.node.code?.startsWith("DNSM.") === true &&
+      k.node.value === 0 &&
+      !!k.node.flags.unnamed &&
+      !k.group?.length,
+  );
+  const [turn] = at.rows.filter((k) => k !== zero);
+  return zero &&
+    turn &&
+    turn.node.code === null &&
+    !!turn.group?.length &&
+    near(turn.node.value, r.node.value)
+    ? { ...at, rows: [turn] }
+    : at;
+}
+
 /** Row `r` and its level, once the passes over them ran; `up` the rows above `r`. */
 export function parentPasses(
   r: Row,
@@ -86,7 +109,9 @@ export function parentPasses(
   if (!level) return { row: r, level };
   const own = nameLevel(r, level, under, up.map(aboveText));
   let n = own.row;
-  let at = own.level;
+  // spec 009 T030 (decision of 18/11): a loop's working value that starts at 0 beside its one turn adds nothing, so the
+  // row is the turn, and structurePass below gives it the turn's parts (the bench's Cape Vine: 1.32 and 40)
+  let at = startless(n, own.level);
   // the texts of every level above the rows a merge brings: the rows above, the row, then each child merged into it
   const above = [...up.map(aboveText), own.text];
   // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a pool or a
