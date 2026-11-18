@@ -152,9 +152,10 @@ export function compareTrees(
       add("type");
     const ak = Array.isArray(a.kids) ? a.kids : [];
     const bk = b.kids ?? [];
-    // spec 009: the root's ⓘ is its pools' (FR-005); its rows, and a level where the bench has groups at 0 or ×1
-    // (FR-016), pair by name and value through the groups
-    const moulded = root && ak.some((k) => MOULD.has(k.role));
+    // spec 009: a row whose rows are pools or groups, the root or a source computed as a chain below it (FR-017), has
+    // its pools' ⓘ (FR-005); its rows, and a level where the bench has groups at 0 or ×1 (FR-016), pair by name and
+    // value through the groups
+    const moulded = ak.some((k) => MOULD.has(k.role));
     if (!moulded && !sameFormula(a.formula, b.formula)) add("formula");
     if (!root && b.name !== a.name && !reviewedNames.has(path)) add("name");
     if (moulded || bk.some((k) => BENCH_GROUP.test(k.name ?? ""))) {
