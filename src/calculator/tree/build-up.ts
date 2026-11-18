@@ -84,16 +84,22 @@ function curveLevel(lv: Level): BuiltUp | null {
   const wrap =
     others.length > 0 && !(c[0] === "decay" || (c[0] === "add" && c[2] === 0));
   const w = (s: string) => (wrap ? `(${s})` : s);
+  // a curve times a factor: the ⓘ says how much of its max the curve alone reached (decision of 18/11), so it is a rule
+  const share = others.length ? maxReachedOf(c, vOf(cr)) : null;
+  const note = share
+    ? ` (the curve is at ${(share.share * 100).toFixed(1)}% of its max ${fx3(share.max)})`
+    : "";
   const f: Pair = [
-    [w(base[0]), ...others.map((r) => termOf(r.node))].join(" × "),
+    [w(base[0]), ...others.map((r) => termOf(r.node))].join(" × ") + note,
     `${[w(curveText(c)), ...others.map((r) => fx3(vOf(r)))].join(" × ")} = ${fx3(v)}`,
   ];
   const up = built(
     lv,
     [renamed(input, name), ...constRows(c, roles), ...others],
     f,
+    share !== null,
   );
-  // FR-015a: the share of the max only when the row is the curve alone (a curve × Prisma is no curve's value)
+  // FR-015a: the share of the max on the row only when the row is the curve alone
   const reached = others.length ? null : maxReachedOf(c, v);
   return reached ? { ...up, maxReached: reached } : up;
 }
