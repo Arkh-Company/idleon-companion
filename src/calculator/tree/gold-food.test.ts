@@ -170,7 +170,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
   // the emporium's: its parts' product, the shared multiplier among them
   expect(kidsOf(emporium)[0]?.formula).toEqual({
     rule: [
-      "Amount of the golden food (item table) × Golden food multiplier × Fixed ×0.05 × log₁₀",
+      "Amount of the golden food × Golden food multiplier × 0.05 × log₁₀",
       "7 × 2.86 × 0.05 × 6 = 6.006",
     ],
   });
