@@ -105,7 +105,6 @@ h2 {
   --set-fg: #3f3f46;
   --set-bg: #e4e4e7;
   --changed: #fef9c3;
-  --fade: 2400ms;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -243,10 +242,6 @@ h2 {
   width: 1em;
 }
 
-.row meter {
-  width: 56px;
-}
-
 .lvl-1 {
   padding-left: 20px;
 }
@@ -345,27 +340,29 @@ h2 {
   color: var(--muted);
 }
 
-/* A row that changed on Refresh (design.md C11): its background fades; "was …" says it without color. */
-.row.changed {
-  animation: changed var(--fade) ease-out;
-}
-
-@keyframes changed {
-  from {
-    background: var(--changed);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .row.changed {
-    animation: none;
-    background: var(--changed);
-  }
-}
-
-.was {
+/* "Changes" (spec 009 FR-013): green up, red down, and the arrow and sign say it without color. */
+.arrow {
   font-size: 12px;
-  color: var(--muted);
+}
+
+.arrow--up {
+  color: var(--add);
+}
+
+.arrow--down {
+  color: var(--danger);
+}
+
+.view-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 8px;
+}
+
+.view-toggles [aria-pressed="true"] {
+  background: var(--surface);
+  font-weight: 600;
 }
 
 /* Antes/depois (FR-037): wraps at 210 px CSS, no sideways scroll. */
@@ -481,9 +478,6 @@ h2 {
   }
   .lvl-tag--narrow {
     display: inline;
-  }
-  .row meter {
-    display: none;
   }
 }
 

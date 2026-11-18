@@ -35,7 +35,6 @@ export const ready = (
   character: 1,
   activeCharacter: 1,
   calculatedAt: 1_000,
-  gameChanged: false,
   checkedOnThisGame: true,
   stale: false,
   comparingWith: null,

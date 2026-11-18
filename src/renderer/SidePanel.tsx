@@ -1,24 +1,27 @@
 // The side panel (spec 008 FR-005, FR-019, FR-034, FR-039; design.md C1, C9, §3.5): the tree of the number the player
 // tapped, beside the window. It changes only when the player taps another number or ✕, never with the game's screen.
-// With a mark chosen, each row shows the mark's value beside the current one (FR-025). Pin keeps the number in the strip
-// under the status bar (FR-036). A number of a part's "Feeds N numbers" list opens its own tree here (FR-027). The
-// character picker asks another character's tree of the same number (FR-020).
+// Spec 009: the tree is live (FR-015), the share and "Changes" toggles sit over it (FR-013, FR-014), and with Changes on
+// each row has its arrow against the tree frozen at the click ("live") or a mark chosen (FR-025). Pin keeps the number in
+// the strip under the status bar (FR-036). A number of a part's "Feeds N numbers" list opens its own tree here (FR-027).
+// The character picker asks another character's tree of the same number (FR-020).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { changes, compareValues, LIVE_MAP_TEXT } from "../shared/index.ts";
+import { DEFAULT_VIEW, LIVE_MAP_TEXT } from "../shared/index.ts";
 import type {
   Characters,
   FormulaTree as Tree,
-  LiveValues,
   Mark,
   Pin,
+  ViewPrefs,
 } from "../shared/index.ts";
 import { AnswerHeader } from "./AnswerHeader.tsx";
-import { bandText, ChangeBadge, rootWas } from "./ChangeBadge.tsx";
 import { CharacterPicker } from "./CharacterPicker.tsx";
 import { FormulaTree } from "./FormulaTree.tsx";
 import { MarkBar } from "./MarkBar.tsx";
+import { arrowsOf, baseOf } from "./tree-changes.ts";
+import type { Arrow, Base } from "./tree-changes.ts";
 import { VersionBand } from "./VersionBand.tsx";
+import { ViewToggles } from "./ViewToggles.tsx";
 
 /** What the panel shows: the row tapped, its trees (Damage has two) and the one chosen. */
 export interface Side {
@@ -30,19 +33,13 @@ export interface Side {
 
 type Ready = Extract<Tree, { state: "ready" }>;
 
-/** The sentence after a Refresh (design.md C11): the new number, how much it moved and how many parts changed. */
-function updated(tree: Ready): string {
-  const change = rootWas(tree)?.change;
-  const parts = [...changes(tree.root).ids].filter(
-    (id) => id !== tree.root.id,
-  ).length;
-  return `${tree.title} updated: ${tree.rootText}${change ? `, ${change}` : ""}. ${String(parts)} ${parts === 1 ? "part" : "parts"} changed.`;
-}
+/** The number and character a tree is of: the base of "Changes" belongs to one. */
+const treeKey = (t: Ready) =>
+  `${t.request.type === "number" ? t.request.id : ""}:${String(t.character)}`;
 
 export function SidePanel({
   side,
   tree,
-  live,
   onClose,
   onPick,
   onExpand,
@@ -55,7 +52,6 @@ export function SidePanel({
 }: {
   side: Side;
   tree: Tree;
-  live: LiveValues | null;
   onClose: () => void;
   onPick: (id: string) => void;
   onExpand: (nodeId: string) => void;
@@ -77,42 +73,30 @@ export function SidePanel({
     heading.current?.focus();
   }, [side.label, side.id]);
 
-  /** The tree on screen when Refresh now was tapped: the next ready one is its answer. */
-  const refreshed = useRef<Tree | null>(null);
-  /** The tree whose band was said: once per tree, not at each live value. */
-  const bandSaid = useRef<string | null>(null);
   /** The character picked: its first ready tree is said once (design.md C19). */
   const picked = useRef<number | null>(null);
   useEffect(() => {
-    // A Refresh or a pick answered with no tree is over: a later tree is no answer to it.
-    if (["unavailable", "diverged", "none"].includes(tree.state)) {
-      refreshed.current = null;
+    // A pick answered with no tree is over: a later tree is no answer to it.
+    if (["unavailable", "diverged", "none"].includes(tree.state))
       picked.current = null;
-    }
     if (tree.state !== "ready") return;
-    if (refreshed.current && refreshed.current !== tree) {
-      refreshed.current = null;
-      announce(updated(tree));
-      return;
-    }
     if (picked.current === tree.character) {
       picked.current = null;
       announce(`Breakdown for ${characters?.names[tree.character] ?? ""}`);
-      return;
     }
-    const key = `${tree.title}:${String(tree.calculatedAt)}`;
-    const band = bandText(tree, live);
-    if (band && bandSaid.current !== key) {
-      bandSaid.current = key;
-      announce(band);
-    }
-  }, [tree, live, announce, characters]);
-  function refresh(): void {
-    if (!side.id) return;
-    refreshed.current = tree;
-    // The band and its button go: the focus goes to the title (design.md C11).
-    heading.current?.focus();
-    onPick(side.id);
+  }, [tree, announce, characters]);
+
+  /** The two toggles, as saved in settings.json (spec 009, contracts/ipc.md). */
+  const [view, setViewPrefs] = useState<ViewPrefs>(DEFAULT_VIEW);
+  useEffect(() => {
+    // An answer that never comes, or a refusal, leaves both off (contracts/ipc.md).
+    window.companion.getView().then(setViewPrefs, () => undefined);
+  }, []);
+  function flipView(k: keyof ViewPrefs): void {
+    const next = { ...view, [k]: !view[k] };
+    setViewPrefs(next);
+    // A file that cannot be written keeps the toggle for this session.
+    window.companion.setView(next).catch(() => undefined);
   }
 
   /** The mark the tree compares with, for the character it was chosen on: another character's never applies. */
@@ -124,16 +108,22 @@ export function SidePanel({
     tree.state === "ready" && chosen?.character === tree.character
       ? chosen.mark
       : null;
-  const compared = useMemo(
-    (): Tree =>
-      tree.state === "ready" && mark
-        ? {
-            ...tree,
-            comparingWith: mark.name,
-            root: compareValues(mark.values, tree.root).withWas,
-          }
-        : tree,
-    [tree, mark],
+  /** What the arrows compare with, for one tree: frozen when Changes is turned on, a mark chosen or cleared, or another
+   * tree comes (FR-013). */
+  const [base, setBase] = useState<(Base & { key: string }) | null>(null);
+  const ready = tree.state === "ready" ? tree : null;
+  const freeze = (t: Ready, m: Mark | null) => {
+    setBase({ key: treeKey(t), ...baseOf(t.root, m) });
+  };
+  // Derived during the render (React's "state from the previous render"): Changes on with no base for this tree.
+  if (view.changes && ready && base?.key !== treeKey(ready))
+    freeze(ready, mark);
+  const arrows = useMemo(
+    (): ReadonlyMap<string, Arrow> | null =>
+      view.changes && ready && base?.key === treeKey(ready)
+        ? arrowsOf(ready.root, base.values)
+        : null,
+    [view.changes, ready, base],
   );
 
   const { id } = side;
@@ -145,7 +135,7 @@ export function SidePanel({
       tree.request.type === "number" &&
       tree.request.id === side.id);
   const shown: Tree | null =
-    side.id === null ? null : mine ? compared : { state: "none" };
+    side.id === null ? null : mine ? tree : { state: "none" };
   /** The character of the tree shown or asked; the active one otherwise. */
   const character =
     shown && "request" in shown && shown.request.type === "number"
@@ -215,20 +205,31 @@ export function SidePanel({
       {shown && (
         <Body
           tree={shown}
-          live={live}
           onExpand={onExpand}
           onOpenNumber={onOpenNumber}
-          onRefresh={refresh}
           announce={announce}
+          share={view.share}
+          arrows={arrows}
           marks={(character) => (
-            <MarkBar
-              character={character}
-              chosen={mark}
-              onChoose={(m) => {
-                setChosen(m && { character, mark: m });
-              }}
-              announce={announce}
-            />
+            <>
+              <ViewToggles
+                view={view}
+                onFlip={(k) => {
+                  if (k === "changes") setBase(null);
+                  flipView(k);
+                }}
+              />
+              <MarkBar
+                character={character}
+                chosen={mark}
+                onChoose={(m) => {
+                  setChosen(m && { character, mark: m });
+                  // A mark chosen, or "Live" (cleared too): the tree as it is now (spec 009, Edge Cases).
+                  if (ready) freeze(ready, m);
+                }}
+                announce={announce}
+              />
+            </>
           )}
         />
       )}
@@ -238,19 +239,19 @@ export function SidePanel({
 
 function Body({
   tree,
-  live,
   onExpand,
   onOpenNumber,
-  onRefresh,
   marks,
   announce,
+  share,
+  arrows,
 }: {
   tree: Tree;
-  live: LiveValues | null;
   onExpand: (nodeId: string) => void;
   onOpenNumber: (id: string) => void;
-  onRefresh: () => void;
   announce: (text: string) => void;
+  share: boolean;
+  arrows: ReadonlyMap<string, Arrow> | null;
   /** The marks bar, for the tree's character. */
   marks: (character: number) => ReactNode;
 }) {
@@ -268,15 +269,17 @@ function Body({
     case "ready":
       return (
         <>
-          <ChangeBadge tree={tree} live={live} onRefresh={onRefresh} />
           <AnswerHeader tree={tree} />
           {marks(tree.character)}
+          {/* No calculatedAt in the key: a tree rebuilt by itself keeps open what was open (FR-015). */}
           <FormulaTree
-            key={`${tree.request.type === "number" ? tree.request.id : ""}:${String(tree.calculatedAt)}`}
+            key={treeKey(tree)}
             tree={tree}
             onExpand={onExpand}
             onOpenNumber={onOpenNumber}
             announce={announce}
+            share={share}
+            arrows={arrows}
           />
         </>
       );

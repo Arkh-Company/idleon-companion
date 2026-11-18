@@ -11,12 +11,13 @@ import {
   WIDE_CAP,
 } from "./LeafTag.tsx";
 import type { Visible } from "./tree-keys.ts";
+import type { Arrow } from "./tree-changes.ts";
 import {
   reachedText,
-  rowChange,
   shareText,
   spokenValue,
   valueClass,
+  ZEROES,
 } from "./tree-text.ts";
 import { valueText } from "../shared/index.ts";
 import { truthTags, TruthTags } from "./TruthTag.tsx";
@@ -53,7 +54,6 @@ export function treeItem(
   /** Drawn only when open: the rows inside are visible only then. */
   inside: (() => ReactNode) | null,
   expandable: boolean,
-  changed = false,
   activate?: () => void,
 ): ReactNode {
   const expanded = expandable && ctx.isOpen(key);
@@ -71,7 +71,7 @@ export function treeItem(
       tabIndex={key === ctx.active ? 0 : -1}
     >
       <div
-        className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}${changed ? " changed" : ""}`}
+        className={`row lvl-${String(Math.min(level - 1, WIDE_CAP))}`}
         onClick={() => {
           ctx.focus(key);
           if (activate) activate();
@@ -110,7 +110,6 @@ export function treeLines(
           line,
           null,
           false,
-          false,
           activate,
         ),
       )}
@@ -118,35 +117,52 @@ export function treeLines(
   );
 }
 
-/** A part's line and what the reader says of it: name, value, share, change, reach, uses, type and tags. */
+/** "▲ +10%" read aloud: "up 10%" (never by color nor symbol alone, design.md §3.8). */
+const spokenArrow = (a: Arrow) =>
+  `${a.up ? "up" : "down"} ${a.text.replace(/^[▲▼] [+−]/, "")}`;
+
+/** A pool's or group's "N sources" (spec 009 FR-002). */
+function sourcesText(n: TreeNode): string {
+  if ((n.role !== "pool" && n.role !== "system") || !Array.isArray(n.kids))
+    return "";
+  const k = n.kids.length;
+  return `${String(k)} ${k === 1 ? "source" : "sources"}`;
+}
+
+/** A part's line and what the reader says of it: name, value, share when on, arrow, sources, reach, uses, type and
+ * tags. */
 export function partLine(
   n: TreeNode,
   {
     name,
     root,
     rootText,
-    closedChange,
+    share: shareOn,
+    arrow,
     onFeeds,
   }: {
     name: string;
-    /** The root's value is the Stats text the main sends (FR-019); its `was` is in the header. */
+    /** The root's value is the Stats text the main sends (FR-019). */
     root: boolean;
     rootText: string;
-    /** Closed with a change below it: `changed inside` (design.md C11). */
-    closedChange: boolean;
+    /** The share toggle (spec 009 FR-014); "zeroes the total" shows either way. */
+    share: boolean;
+    /** The row's change with "Changes" on (spec 009 FR-013). */
+    arrow: Arrow | null;
     onFeeds: () => void;
   },
-): { label: string; line: ReactNode; was: boolean | undefined } {
+): { label: string; line: ReactNode } {
   const value = root ? rootText : valueText(n);
   const tags = truthTags(n);
-  const share = shareText(n);
+  const all = shareText(n);
+  const share = shareOn || all === ZEROES ? all : null;
   const reached = reachedText(n);
-  const change = rowChange(root ? undefined : n.was, n.fmt, closedChange);
   const label = [
     name,
     root ? rootText.replace(/x$/, " times") : spokenValue(n),
     share,
-    change?.spoken,
+    arrow && spokenArrow(arrow),
+    sourcesText(n),
     reached,
     n.feeds === undefined ? "" : feedsText(n.feeds),
     leafLabel(n),
@@ -163,14 +179,13 @@ export function partLine(
       <TruthTags tags={tags} />
       {n.feeds !== undefined && <FeedsBadge count={n.feeds} onTap={onFeeds} />}
       <span className={valueClass(n)}>{value}</span>
-      {change && <span className="was">{change.text}</span>}
+      {arrow && (
+        <span className={`arrow arrow--${arrow.up ? "up" : "down"}`}>
+          {arrow.text}
+        </span>
+      )}
       {share && <span className="share">{share}</span>}
-      {share &&
-        n.share !== null &&
-        (n.shareMode === "sum" || n.shareMode === "product") && (
-          <meter min={0} max={1} value={n.share} aria-hidden="true" />
-        )}
     </>
   );
-  return { label, line, was: change?.was };
+  return { label, line };
 }

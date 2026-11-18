@@ -1,5 +1,5 @@
 // Antes/depois (spec 008 FR-025, FR-037, FR-041): "Mark before" saves the open tree's values under a name, a picker
-// chooses the mark the tree compares with, and the chosen mark has Clear. The marks are the main's, by the character's
+// chooses what "Changes" compares with ("Live" or a mark, spec 009 FR-013), and the chosen mark has Clear. The marks are the main's, by the character's
 // number; the focus never drops on the page, and each message goes once to the page's live region.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SubmitEvent } from "react";
@@ -125,7 +125,7 @@ export function MarkBar({
               onChoose(marks.find((m) => m.name === e.target.value) ?? null);
             }}
           >
-            <option value="">Nothing</option>
+            <option value="">Live</option>
             {marks.map((m) => (
               <option key={m.name} value={m.name}>
                 {m.name}

@@ -15,12 +15,15 @@ export function spokenValue(
     .replace(/^—$/, "unavailable");
 }
 
-/** The row's weight in its parent (C15): only in a sum or a product, "≈" in a mixed one. */
+/** "zeroes the total": a 0 in a product, shown with the share hidden too (spec 009 FR-016). */
+export const ZEROES = "zeroes the total";
+
+/** The row's weight in its parent (C15), only its number ("26%", spec 009 FR-014): in a sum, a product or a mixed one. */
 export function shareText(
   n: Pick<TreeNode, "share" | "shareMode" | "value">,
 ): string | null {
   const { share, shareMode: mode } = n;
-  if (mode === "productZero" && n.value === 0) return "zeroes the total";
+  if (mode === "productZero" && n.value === 0) return ZEROES;
   if (
     share === null ||
     !mode ||
@@ -29,7 +32,7 @@ export function shareText(
     return null;
   const pct =
     share > 0 && share < 0.01 ? "<1" : String(Math.round(share * 100));
-  return mode === "mixed" ? `≈ ${pct}%` : `${pct}% of this list`;
+  return `${pct}%`;
 }
 
 /** FR-015a: "62% reached · max +40%", with the maximum written like the row's value. */
@@ -96,31 +99,4 @@ export function valueClass(n: Pick<TreeNode, "value" | "fmt">): string {
     return "num num--zero";
   if (n.fmt === "x") return "num num--mult";
   return n.fmt === "%" || n.fmt === "+" ? "num num--add" : "num";
-}
-
-/** How much a number moved since `was` (design.md C11): "up 0.27%" or "down 1.2%"; null when it did not or from 0. */
-export function changeText(was: number, now: number): string | null {
-  if (was === 0 || was === now) return null;
-  const pct = ((now - was) / Math.abs(was)) * 100;
-  return `${pct > 0 ? "up" : "down"} ${plain(Math.abs(pct))}%`;
-}
-
-/** A row's change since the tree before or the mark (C11): `was …` written and read aloud, or `changed inside` on a
- * closed branch with a change below it; never by color alone. */
-export function rowChange(
-  was: TreeNode["was"],
-  fmt: TreeNode["fmt"],
-  changedInside: boolean,
-): { text: string; spoken: string; was: boolean } | null {
-  if (was !== undefined) {
-    const v = { value: was, fmt };
-    return {
-      text: `was ${valueText(v)}`,
-      spoken: `was ${spokenValue(v)}`,
-      was: true,
-    };
-  }
-  return changedInside
-    ? { text: "changed inside", spoken: "changed inside", was: false }
-    : null;
 }

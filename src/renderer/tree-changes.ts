@@ -31,17 +31,6 @@ export function baseOf(root: TreeNode, mark: Mark | null = null): Base {
     : { mark: null, values: pieceValues(root) };
 }
 
-/** The base, or "live" from the tree now when its mark is no longer saved (spec 009, Edge Cases). */
-export function keepBase(
-  base: Base,
-  marks: readonly Mark[],
-  root: TreeNode,
-): Base {
-  return base.mark !== null && !marks.some((m) => m.name === base.mark)
-    ? baseOf(root)
-    : base;
-}
-
 /** A pool's or group's value from its rows' `values` (by id), by its `combine`; null when a row has none. A group
  * whose rows are not built yet keeps its own value. */
 export function groupValue(
