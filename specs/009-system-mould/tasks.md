@@ -267,7 +267,7 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
     - the two odd points: "Cape Vine Bonus Multi, vine 0" (a likely wrong pair) and "Graded Rate" still under Other in one place.
   - The 009 format stays (chain pools, system groups); the V1's hand-made names with no rule ("LUK curve", "Friend factor") are not ported.
   - Measure with the local parity probe after each family; the goal is 0 differences outside the V1's hand-made structure.
-- [ ] T031 The full build-up of every bonus (FR-018; decision of 18/11)
+- [X] T031 The full build-up of every bonus (FR-018; decision of 18/11)
   - Talents (`GetTalentNumber`, Legend Talents): Talent level = Points invested + All-talent levels (with its sources); Max bonus and Level at half (or Bonus per point) as lines, the curve in the ⓘ.
   - Bubbles: Bubble bonus (level, Max bonus, Level at half, Prisma multi) × the class multi (Warriors Rule…); Prisma multi and every multiplier open into their own sources.
   - Sigils: Sigil tier, Bonus at tier, Chilled Yarn multi (Artifact base × Rarity), Meritocracy multi (opening into its sources); the tier ladder is no line.
