@@ -195,8 +195,10 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
       .filter((k) => k.role === "pool")
       .map((k) => [k.name, k.poolKind, k.value]),
   ).toEqual([
-    ["Multi pool", "multi", expect.closeTo(7.218273444957685, 9)],
-    ["Additive pool", "additive", expect.closeTo(6.006000434728559, 9)],
+    ["Multi pool 1", "multi", expect.closeTo(1.3, 9)],
+    ["Additive pool 1", "additive", expect.closeTo(2.2, 9)],
+    ["Multi pool 2", "multi", expect.closeTo(7.218273444957685 / 2.86, 9)],
+    ["Additive pool 2", "additive", expect.closeTo(6.006000434728559, 9)],
   ]);
   expect(checkTree(build.root, 100)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();
@@ -248,7 +250,12 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     kidsOf(opened)
       .filter((k) => k.role === "pool")
       .map((k) => k.name),
-  ).toEqual(["Multi pool", "Additive pool"]);
+  ).toEqual([
+    "Multi pool 1",
+    "Additive pool 1",
+    "Multi pool 2",
+    "Additive pool 2",
+  ]);
   expect(checkTree(build.root, 200)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();
 });
