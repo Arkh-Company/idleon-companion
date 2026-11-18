@@ -63,6 +63,37 @@ test("a branch of one source and constants takes the source's name", () => {
   ]);
 });
 
+test("a source multiplied or divided by the code's constants, with no step of its own, keeps its name (009 r2)", () => {
+  // Claws ÷ 100, as tree/terms.ts exprRow gives it: no `op`, no product share
+  expect(
+    nameOf(
+      branch(3, [
+        fixed("Percent to number (÷ 100)", 100),
+        source("Claws", 300),
+      ]),
+    ),
+  ).toEqual(["Claws", false]);
+  // Claws × 2 ÷ 3
+  expect(
+    nameOf(
+      branch(200, [
+        source("Claws", 300),
+        fixed("× 2", 2),
+        fixed("Divided by 3", 3),
+      ]),
+    ),
+  ).toEqual(["Claws", false]);
+  expect(nameOf(branch(6, [fixed("Fixed ×2", 2), source("Claws", 3)]))).toEqual(
+    ["Claws", false],
+  );
+  // a base, a fixed sum or a minus is a part of the value that is not the source's
+  for (const name of ["Base 10", "Fixed +4", "Minus 1"])
+    expect(nameOf(branch(13, [fixed(name, 10), source("Claws", 3)]))).toEqual([
+      GENERIC_NAME,
+      true,
+    ]);
+});
+
 test("through an unnamed branch of the same shape, the one source's name", () => {
   const inner = times(6, [fixed("× 2", 2), source("Claws", 3)]);
   expect(nameOf(times(12, [inner, fixed("× 2", 2)]))).toEqual(["Claws", false]);
