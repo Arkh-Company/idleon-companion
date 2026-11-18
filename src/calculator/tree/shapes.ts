@@ -84,7 +84,8 @@ export function boundRead(e: Expr, read: Row, r: Row): Row {
     x.args.filter((a) => a.t === "read").length === 1 &&
     x.args.every((a) => a.t === "read" || a.t === "num");
   if (!bound) return r;
-  const { unnamed: _, ...flags } = r.node.flags;
+  const flags = { ...r.node.flags };
+  delete flags.unnamed;
   return {
     ...r,
     node: {
