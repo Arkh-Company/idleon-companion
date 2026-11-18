@@ -2,7 +2,7 @@
 // - N.js GetTalentNumber: `0 >= SkillLevels[t] ? 0 : curve(TalentDescriptions[t][1], SkillLevels[t] + AllTalentLV(t))`,
 //   50 in a dungeon: Talent level = Points invested + All-talent levels, and the curve's two constants;
 // - N.js Thingies "LegendPTS_bonus": `round(Spelunk[18][i] × LegendTalents[i][2])`: Points and Bonus per point.
-import { curveFormula, curveOf, fx3 } from "./curves.ts";
+import { curveFormula, curveOf, fx3, maxReachedOf } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
@@ -45,7 +45,13 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
           ? fixedRow("Talent level (in a dungeon)", 50)
           : null;
   const f = level && curveFormula(c, v, level.node.name, roles);
-  return level && f ? built(lv, [level, ...constRows(c, roles)], f) : null;
+  if (!level || !f) return null;
+  // FR-015a: how much of the curve's max the talent reached
+  const reached = maxReachedOf(c, v);
+  return {
+    ...built(lv, [level, ...constRows(c, roles)], f),
+    ...(reached ? { maxReached: reached } : {}),
+  };
 }
 
 /**
