@@ -200,7 +200,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
     - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`, `max`, `min`, `percent`);
     - against a mark, the base is the mark's piece values;
     - an unavailable source makes the group's arrow absent.
-- [ ] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx` (FR-001, FR-013, FR-014, FR-015, NFR-004; depends on T002)
+- [X] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx` (FR-001, FR-013, FR-014, FR-015, NFR-004; depends on T002)
   - Files: `src/renderer/FormulaTree.test.tsx`, `src/renderer/SidePanel.test.tsx` (the 008 cases of the summary, of "was" after Refresh, of the row that lights up and of "mark" written are replaced, by the approved spec change FR-001/FR-013)
   - Cases:
     - no summary above the tree;
@@ -226,7 +226,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
 - [X] T019 The arrows and bases in `src/renderer/tree-changes.ts` (FR-013, NFR-002, NFR-003; depends on T015)
   - Files: `src/renderer/tree-changes.ts`
   - Uses the live part values the main already sends (`partsOf`, at most 200 pieces) and the marks of the 008 (research R5).
-- [ ] T020 The toggles in `src/renderer/ViewToggles.tsx`; the summary out of `src/renderer/SidePanel.tsx`; arrows and share in `src/renderer/FormulaTree.tsx` (FR-001, FR-013, FR-014, FR-015; depends on T016, T018, T019)
+- [X] T020 The toggles in `src/renderer/ViewToggles.tsx`; the summary out of `src/renderer/SidePanel.tsx`; arrows and share in `src/renderer/FormulaTree.tsx` (FR-001, FR-013, FR-014, FR-015; depends on T016, T018, T019)
   - Files: `src/renderer/ViewToggles.tsx`, `src/renderer/SidePanel.tsx`, `src/renderer/FormulaTree.tsx`, `src/renderer/ChangeBadge.tsx`, `src/main/formula-pipeline.ts` (the "Game changed · Refresh" band, the per-row "was" and the lighting leave; the open tree's rows take the live values, and a change of shape asks the tree again by itself, FR-015)
   - Each file stays under 400 lines.
 
