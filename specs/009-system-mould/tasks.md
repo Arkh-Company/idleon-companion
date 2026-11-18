@@ -243,6 +243,17 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
 - [X] T021 [P] `ARCHITECTURE.md`: one paragraph on the pools, the system table and the Changes toggle (all FR)
   - Files: `ARCHITECTURE.md`
   - The new files (`pools.ts`, `systems.ts`, `flatten.ts`, `tree-changes.ts`, `ViewToggles.tsx`) enter the Code folders table.
+- [ ] T025 Every tree gets the mould: a root with no readable formula (STR, HP, Accuracy, AFK Gains, Extra Inventory…) (FR-005, US2 scenario 4; decision of 18/11, after the probe of the 716 trees)
+  - The probe found 435 of 716 trees with no pool and no system group: their root has no ⓘ, so `firstLevel` leaves the 008 list.
+  - Find why the root has no readable formula (the root step, the chain, the conditions on top) and fix it so those trees get their chain's pools; when the game's expression truly cannot be read, the sources are at least grouped by system with no pool (US2 scenario 4).
+  - Tests first, with fake-game blocks of those shapes; every level closes (SC-003) and no source disappears (FR-008).
+- [ ] T026 The remaining unnamed math branches (SC-001; FR-007)
+  - The probe found 306 unnamed branches in 59,508 rows: 272 with no game code, the rest game caches (`DNSM.CalcTalentMAP.arenaCruc`, `DNSM.StarSigns[…]`, `Ninja(…)`…).
+  - Flatten or name them by the 008/009 rules; tests first.
+- [ ] T027 Constants are never sources of a system group (FR-002, FR-004)
+  - The probe found constants ("Fixed ×2", 376 rows; "Fixed +1", "Multiplier"…) in "🔹 Other" groups. A constant of the game's math stays as its own row in its pool, never inside a system group; tests first.
+- [ ] T028 Grow `src/calculator/tree/systems.ts` from the probe's "Other" list (FR-003; the code part of T022)
+  - Every source whose block names a known system leaves "Other" (Research, Stamps, Cooking, Bribes, Jelly Operator, Menagerie, Farming, Companions, Atom Collider, Windwalker, Gaming, Spelunking, Summoning, Owl…), each rule with its proof by reference; a generic helper block (`ArbitraryCode5Inputs`, `getLOG`) takes its caller's system or stays out of the groups.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
