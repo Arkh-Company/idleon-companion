@@ -254,12 +254,12 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
   - The probe found constants ("Fixed ×2", 376 rows; "Fixed +1", "Multiplier"…) in "🔹 Other" groups. A constant of the game's math stays as its own row in its pool, never inside a system group; tests first.
 - [X] T028 Grow `src/calculator/tree/systems.ts` from the probe's "Other" list (FR-003; the code part of T022)
   - Every source whose block names a known system leaves "Other" (Research, Stamps, Cooking, Bribes, Jelly Operator, Menagerie, Farming, Companions, Atom Collider, Windwalker, Gaming, Spelunking, Summoning, Owl…), each rule with its proof by reference; a generic helper block (`ArbitraryCode5Inputs`, `getLOG`) takes its caller's system or stays out of the groups.
-- [ ] T029 The Drop Rate's sources match the bench's, the format the 009's (FR-010, SC-002; decision of 18/11)
+- [X] T029 The Drop Rate's sources match the bench's, the format the 009's (FR-010, SC-002; decision of 18/11)
   - The parity compares source by source (name, value, type, system) and no longer the structure of the bench's V1; a source missing, extra, or with another value, type or system is a difference.
   - The app takes the names the bench has and the app lacks (about 315 in the Drop Rate, as "Pristine Bon 17, 0" → "Liqorice Rolle"), by the app's name tables with their proof; game text may enter the repo, game code never.
   - A talent multiplied by a count ("Boss Battle Spillover", "Graded Rate") goes to the talent's system with the talent's name.
   - Tests first; `parity-compare.ts` back under 400 lines.
-- [ ] T030 Port the bench's current rules the app lacks (FR-010, SC-002; decision of 18/11)
+- [X] T030 Port the bench's current rules the app lacks (FR-010, SC-002; decision of 18/11)
   - The app's tree came from the bench's BASELINE-4; the bench's `pieces.cjs` (and the files it uses) gained rules after it. Port them family by family, each with its test first and its proof by reference, for every tree:
     - row rules: the rows the bench shows and the app does not ("Bonus per level", "Curve (decay): a and b", "Endless win, slot N…"), and the code constants and checks the app shows and the bench hides ("× 1.5", "Cap 10", "Sigil level < N");
     - name rules: "Achievement = -1" → "Achievement completed", "Owned" → "<item> owned", "Level" → "<source> level", "Shiny level" → "Shiny level (pet <name>)"…;
