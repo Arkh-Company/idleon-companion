@@ -165,6 +165,8 @@ Verify: `just test-one src/calculator/tree/pools.test.ts` - passes; `just test-o
   - Cases:
     - inside a pool, an unnamed sum ("Multiplier from N sources") and a cache the root itself wrote that only joins sources dissolve; their sources move up into the pool and are grouped by system;
     - a source that is itself a system computed as a chain (the golden food inside the Drop Rate, a fake-game block like `TreeGoldOf`) opens with the pools of its own chain, the systems that feed it grouped inside each pool, and its own numbers (amount, constants) in their pool;
+    - a sum of percent bonuses the game divides by 100 ("Multiplier from 23 sources") dissolves too: its systems show in the pool in %, their groups with `combine: "percent"` (the sum ÷ 100), accepted by `tree-check.ts`;
+    - the 12 tests of the golden food opened as a branch (`gold-food-branch.test.ts`) change to its chain's pools, same sources and values (the Vinicius's decision of 17/11);
     - every level still closes with the game's value, and no source disappears (FR-008);
     - a fake-game Drop-Rate-shaped chain whose Additive pool 1 holds an unnamed sum and a golden food shows the system groups, the golden food among them, and passes `checkTree`.
 
@@ -195,7 +197,7 @@ Verify: `just test-one src/calculator/tree/flatten.test.ts` - passes; `just chec
     - "live" freezes the tree's values at the click and compares from there;
     - a mark deleted while compared against falls back to "live";
     - no change shows no arrow;
-    - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`, `max`, `min`);
+    - a group's value is rebuilt from its sources by `combine` (`sum`, `product`, `onePlusPercent`, `max`, `min`, `percent`);
     - against a mark, the base is the mark's piece values;
     - an unavailable source makes the group's arrow absent.
 - [ ] T016 [P] Tests of the toggles and the summary in `src/renderer/FormulaTree.test.tsx` and `src/renderer/SidePanel.test.tsx` (FR-001, FR-013, FR-014, FR-015, NFR-004; depends on T002)
