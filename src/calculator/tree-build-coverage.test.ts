@@ -101,3 +101,44 @@ test("a product with a check and a read no step shows is its Multi pool, the che
   ]);
   expect(checkTree(root, 100)).not.toBeNull();
 });
+
+/** A root's ⓘ as its two lines of text, its names and its numbers. */
+const lines = (f: CalcTreeNode["formula"]): string[] =>
+  Array.isArray(f) ? f.map((line) => line.join(" ")) : (f?.rule ?? []);
+
+// spec 009 T030 (decision of 18/11): a root the game floors keeps its pools, and the floor stays in sight in the
+// root's ⓘ (FR-008). fake-game.js TreeFloored: floor(TreeReads() + TreeBase + 0.5) = floor(12.5) = 12
+test("a root the game floors keeps its pools, the floor in its ⓘ", () => {
+  const root = treeOf("TreeFloored");
+  const [pool, ...rest] = kidsOf(root);
+  expect(rest).toEqual([]);
+  expect([pool?.name, pool?.combine, pool?.value]).toEqual([
+    "Additive pool",
+    "sum",
+    12.5,
+  ]);
+  expect(sum(kidsOf(pool))).toBe(12.5);
+  expect(root.value).toBe(12);
+  const [names, numbers] = lines(root.formula);
+  expect(names?.replace(/\s/g, "")).toBe("floor(Additivepool)");
+  expect(numbers).toMatch(/12\.5.*12$/);
+  expect(checkTree(root, 100)).not.toBeNull();
+});
+
+// fake-game.js TreeFloorChain: floor((TreeReads() + TreeBase) × TreeLoop() × 1.05 + 0.3) = floor(75.9) = 75
+test("a chain the game floors keeps its chain's pools, the floor around them in the root's ⓘ", () => {
+  const root = treeOf("TreeFloorChain");
+  const level = kidsOf(root);
+  expect(level.map((k) => [k.name, k.combine, k.value])).toEqual([
+    ["Additive pool 1", "sum", 12],
+    ["Multi pool", "product", expect.closeTo(6.3, 9)],
+    ["Additive pool 2", "sum", 0.3],
+  ]);
+  expect(root.value).toBe(75);
+  const [names, numbers] = lines(root.formula);
+  expect(names).toMatch(
+    /^floor\(.*Additive pool 1.*Multi pool.*Additive pool 2.*\)$/,
+  );
+  expect(numbers).toMatch(/= 75$/);
+  expect(checkTree(root, 100)).not.toBeNull();
+});

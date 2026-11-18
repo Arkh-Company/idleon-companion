@@ -591,6 +591,18 @@ lime.$scripts.N = function (_exports, $global) {
     if (s.TreeOwned > 0) v = v * 2;
     return v;
   };
+  // A root the game floors, which cuts a fraction (spec 009, T030; STR, AGI, WIS, LUK): one step, and a chain.
+  Blocks._customBlock_TreeFloored = function () {
+    return Math.floor(Blocks._customBlock_TreeReads() + state().TreeBase + 0.5);
+  };
+  Blocks._customBlock_TreeFloorChain = function () {
+    var d = dnsm();
+    d.TreeFloorChain = new StringMap();
+    d.TreeFloorChain.h.v = Blocks._customBlock_TreeReads() + state().TreeBase;
+    d.TreeFloorChain.h.v =
+      d.TreeFloorChain.h.v * Blocks._customBlock_TreeLoop() * 1.05;
+    return Math.floor(d.TreeFloorChain.h.v + 0.3);
+  };
   // A golden food opened as a branch, as in the Drop Rate: its pass names its rows (spec 009).
   Blocks._customBlock_TreeGoldOf = function (t) {
     return Blocks._customBlock_GoldFoodBonuses(t) * 2;
