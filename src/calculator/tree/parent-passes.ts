@@ -91,8 +91,7 @@ function startless(r: Row, at: Level): Level {
   );
   const [turn] = at.rows.filter((k) => k !== zero);
   return zero &&
-    turn &&
-    turn.node.code === null &&
+    turn?.node.code === null &&
     !!turn.group?.length &&
     near(turn.node.value, r.node.value)
     ? { ...at, rows: [turn] }
