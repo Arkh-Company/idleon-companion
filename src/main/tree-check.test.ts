@@ -182,6 +182,7 @@ test.each<[string, TreeNode]>([
   ["a system group that multiplies", group({ combine: "product" })],
   ["a system group of a max at the root", group({ combine: "max" })],
   ["a system group of a min at the root", group({ combine: "min" })],
+  ["a system group of bonuses in % ÷ 100", group({ combine: "percent" })],
   ["a tree of a pool with a group inside", pool({ kids: [group()] })],
 ])("%s passes", (_name, tree) => {
   expect(checkTree(tree, MAX)).toEqual(tree);

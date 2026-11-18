@@ -75,6 +75,29 @@ test("every pool and system group starts closed when the tree opens", () => {
   expect(screen.queryByRole("treeitem", { name: /^Source 1/ })).toBe(null);
 });
 
+test("a group of bonuses in % the game divides by 100 shows its bonuses' sum in %, not the part it adds (FR-017)", () => {
+  const cards = node({
+    id: "root/Additive pool/🃏 Cards",
+    name: "🃏 Cards",
+    value: 0.16,
+    fmt: "%",
+    role: "system",
+    combine: "percent",
+    poolKind: null,
+    flags: { closed: true },
+    kids: [source("1", 12), source("2", 4)],
+  });
+  const tree = node({
+    kids: [{ ...pool("root/Additive pool", 4.16, [cards]), fmt: null }],
+  });
+  render(<FormulaTree tree={ready(tree)} onExpand={vi.fn()} />);
+  open(/^Additive pool/);
+  expect(item(/^🃏 Cards/).textContent).toContain("+16%");
+  expect(item(/^🃏 Cards/).getAttribute("aria-label")).toMatch(
+    /^🃏 Cards, plus 16%/,
+  );
+});
+
 test("a system group shows its emoji name and its value in the format of the parts", () => {
   render(<FormulaTree tree={ready(ROOT)} onExpand={vi.fn()} />);
   open(/^Additive pool/);
