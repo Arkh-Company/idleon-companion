@@ -254,6 +254,11 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
   - The probe found constants ("Fixed ×2", 376 rows; "Fixed +1", "Multiplier"…) in "🔹 Other" groups. A constant of the game's math stays as its own row in its pool, never inside a system group; tests first.
 - [X] T028 Grow `src/calculator/tree/systems.ts` from the probe's "Other" list (FR-003; the code part of T022)
   - Every source whose block names a known system leaves "Other" (Research, Stamps, Cooking, Bribes, Jelly Operator, Menagerie, Farming, Companions, Atom Collider, Windwalker, Gaming, Spelunking, Summoning, Owl…), each rule with its proof by reference; a generic helper block (`ArbitraryCode5Inputs`, `getLOG`) takes its caller's system or stays out of the groups.
+- [ ] T029 The Drop Rate's sources match the bench's, the format the 009's (FR-010, SC-002; decision of 18/11)
+  - The parity compares source by source (name, value, type, system) and no longer the structure of the bench's V1; a source missing, extra, or with another value, type or system is a difference.
+  - The app takes the names the bench has and the app lacks (about 315 in the Drop Rate, as "Pristine Bon 17, 0" → "Liqorice Rolle"), by the app's name tables with their proof; game text may enter the repo, game code never.
+  - A talent multiplied by a count ("Boss Battle Spillover", "Graded Rate") goes to the talent's system with the talent's name.
+  - Tests first; `parity-compare.ts` back under 400 lines.
 - [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
