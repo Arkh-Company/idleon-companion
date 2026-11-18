@@ -114,3 +114,25 @@ test("[FR-018] a Legend Talent whose max a Research grid bonus or the Menagerie 
   );
   expect(kidsOf(expand(rows[0]?.id ?? ""))[0]?.name).toBe("Points");
 });
+
+test("[FR-018] a sigil's tier whose table bonus is not the bonus at its tier says no tiers", () => {
+  useGameTables(TABLES);
+  const { rows, expand } = placed(
+    {
+      0: [
+        leaf(
+          "Sigil bonus at its current tier",
+          75,
+          "CustomLists.SigilDesc[14][12]",
+          "fixedValue",
+        ),
+        leaf("Sigil level", 4, "CauldronP2W[4][29]", "level"),
+      ],
+    },
+    [lazy("Emoji Veggie", 75, 'Labb("SigilBonus", "Blank", 14, 0)')],
+    [recNode(0, "Labb", { a: ["SigilBonus", "Blank", 14, 0], v: 75 })],
+  );
+  const [tier] = kidsOf(expand(rows[0]?.id ?? ""));
+  expect(tier?.name).toBe("Sigil tier");
+  expect(tier?.formula).toBeNull();
+});
