@@ -504,6 +504,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTwice = function () {
     return Blocks._customBlock_TreeReads() + Blocks._customBlock_TreeReads();
   };
+  // spec 009 T031: a block with a mode, its first argument, as the game's Thingies; "Points" of t is t × 3, "Max" of t
+  // is t + 1; TreeLegends calls the points of 2 and of 5, the 2 twice
+  Blocks._customBlock_TreeLegend = function (mode, t) {
+    return mode === "Points" ? t * 3 : mode === "Max" ? t + 1 : 0;
+  };
+  Blocks._customBlock_TreeLegends = function () {
+    return (
+      Blocks._customBlock_TreeLegend("Points", 2, 0) +
+      Blocks._customBlock_TreeLegend("Points", 5, 0) +
+      Blocks._customBlock_TreeLegend("Points", 2, 0)
+    );
+  };
   Blocks._customBlock_TreeSources = function () {
     return (
       Blocks._customBlock_TreeReads() * Blocks._customBlock_TreeLoop() +
