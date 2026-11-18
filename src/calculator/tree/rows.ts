@@ -73,6 +73,11 @@ export interface Row {
   up?: readonly Above[];
   /** A branch whose expression only adds, or only multiplies, its rows (tree/flatten.ts: a step that may give them up). */
   op?: "+" | "*";
+  /**
+   * A bonus in % the game sums with others and divides by 100 before the sum enters its pool (spec 009, FR-017): it adds
+   * a hundredth of its value, in its system's group of `combine: "percent"` (tree/mould.ts).
+   */
+  percent?: true;
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

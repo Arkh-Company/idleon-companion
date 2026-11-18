@@ -66,18 +66,24 @@ function isStep(r: Row, op: Op): boolean {
 }
 
 /**
+ * The parts of row `r` in its place: each opens under the calls `r` opened under, and is a bonus in % when `r` is one
+ * (rows.ts `percent`).
+ */
+const movedUp = (r: Row, parts: Row[]): Row[] =>
+  parts.map((k) => ({
+    ...k,
+    ...(r.seen && !k.seen ? { seen: r.seen } : {}),
+    ...(r.percent ? { percent: true as const } : {}),
+  }));
+
+/**
  * A level's rows with each unnamed step replaced by its parts, all the way down, with their shares in the level;
  * `op` is how the rows give their parent (read from their shares when not given). The rows as they are when none moves.
  */
 export function flatten(rows: Row[], op: Op | null = opOf(rows)): Row[] {
   if (!op || !rows.some((r) => isStep(r, op))) return rows;
   const out = rows.flatMap((r) =>
-    isStep(r, op)
-      ? // a part opens under the calls its step opened under
-        flatten(r.group ?? [], op).map((k) =>
-          r.seen && !k.seen ? { ...k, seen: r.seen } : k,
-        )
-      : [r],
+    isStep(r, op) ? movedUp(r, flatten(r.group ?? [], op)) : [r],
   );
   return withShares({ name: "", value: total(out, op) }, null, out).rows;
 }
@@ -105,7 +111,10 @@ export function dissolve(
   const codes = out.flatMap((r, i) =>
     got[i] && r.node.code !== null ? [r.node.code] : [],
   );
-  const next = out.flatMap((r, i) => got[i] ?? [r]);
+  const next = out.flatMap((r, i) => {
+    const parts = got[i];
+    return parts ? movedUp(r, parts) : [r];
+  });
   const level = dissolve(next, op, joins, new Set([...done, ...codes]));
   return withShares({ name: "", value: total(level, op) }, null, level).rows;
 }

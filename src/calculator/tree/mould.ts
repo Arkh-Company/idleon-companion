@@ -95,10 +95,48 @@ function extremeRow(s: System, rule: "max" | "min", rows: Row[]): Row {
   return { node, open: null, group: withShares(node, pair, rows).rows };
 }
 
+/**
+ * A system's group of bonuses in % the game sums and divides by 100 (FR-017): its value their sum ÷ 100, what it adds
+ * to its pool, with that ⓘ; each bonus's share is of their sum.
+ */
+function percentRow(s: System, rows: Row[]): Row {
+  const vals = rows.map(vOf);
+  const sum = vals.every(Number.isFinite)
+    ? vals.reduce((a, x) => a + x, 0)
+    : null;
+  const value = sum === null ? null : sum / 100;
+  const node = row({
+    pieceKey: null,
+    value,
+    code: null,
+    name: systemLabel(s),
+    role: "system",
+    combine: "percent",
+    poolKind: null,
+    fmt: "%",
+    flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
+  });
+  const group = withShares({ name: node.name, value: sum }, null, rows).rows;
+  const one = rows.length === 1;
+  const pair: [string, string] | null =
+    value === null
+      ? null
+      : [
+          `${one ? "" : "("}${group.map((r) => termOf(r.node)).join(" + ")}${one ? "" : ")"} ÷ 100`,
+          `${one ? "" : "("}${vals.map(fx3).join(" + ")}${one ? "" : ")"} ÷ 100 = ${fx3(value)}`,
+        ];
+  return {
+    node: { ...node, formula: pair && formulaOut(pair, termsOf(group)) },
+    open: null,
+    group,
+  };
+}
+
 /** A system's group of `rows`, its value their sum or product, its sources in the game's order (FR-002, FR-013). */
 function systemRow(s: System, combine: Combine, rows: Row[]): Row {
   if (combine === "max" || combine === "min")
     return extremeRow(s, combine, rows);
+  if (combine === "percent") return percentRow(s, rows);
   const product = combine === "product";
   const vals = rows.map(vOf);
   const value = vals.every(Number.isFinite)
@@ -150,17 +188,30 @@ export function bySystem(
   combine: Combine,
   writerOf: WriterOf,
 ): readonly Row[] {
-  const groups = new Map<System, Row[]>();
+  // the bonuses in % a sum ÷ 100 gives (FR-017) are a group of their own in their system, after its other sources
+  const groups = new Map<string, { s: System; pct: boolean; rows: Row[] }>();
   for (const r of rows) {
     const s = systemOfRow(r, writerOf) ?? OTHER;
-    groups.set(s, [...(groups.get(s) ?? []), r]);
+    const pct = !!r.percent;
+    const key = `${s.name}|${String(pct)}`;
+    const g = groups.get(key) ?? { s, pct, rows: [] };
+    groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  if (groups.size === 1 && groups.has(OTHER)) return rows;
-  const rank = (s: System) =>
-    s === OTHER ? Infinity : SYSTEM_ORDER.indexOf(s.name);
-  return [...groups]
-    .sort(([a], [b]) => rank(a) - rank(b))
-    .flatMap(([s, rs]) => (rs.length === 1 ? rs : [systemRow(s, combine, rs)]));
+  const [only] = groups.values();
+  if (groups.size === 1 && only?.s === OTHER && !only.pct) return rows;
+  const rank = ({ s, pct }: { s: System; pct: boolean }) =>
+    (s === OTHER ? SYSTEM_ORDER.length : SYSTEM_ORDER.indexOf(s.name)) * 2 +
+    Number(pct);
+  // a lone bonus in % stays a group: it adds a hundredth of its value
+  return [...groups.values()]
+    .sort((a, b) => rank(a) - rank(b))
+    .flatMap(({ s, pct, rows: rs }) =>
+      pct
+        ? [systemRow(s, "percent", rs)]
+        : rs.length === 1
+          ? rs
+          : [systemRow(s, combine, rs)],
+    );
 }
 
 /**

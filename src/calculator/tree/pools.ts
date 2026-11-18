@@ -46,6 +46,42 @@ const sources = (e: Expr): number =>
             ? sources(e.a)
             : 0;
 
+/** What a row adds to its pool: its value, or a hundredth of it for a bonus in % (rows.ts `percent`). */
+const added = (r: Row): number => (r.percent ? vOf(r) / 100 : vOf(r));
+
+/** A sum of bonuses in % the game divides by 100 ((a + b) ÷ 100, FR-017): its terms; else null. */
+function percentTerms(e: Expr): Expr[] | null {
+  const x = strip(e);
+  if (x.t !== "op" || x.o !== "/") return null;
+  const d = strip(x.r);
+  const s = strip(x.l);
+  return d.t === "num" && Number(d.v) === 100 && s.t === "op" && s.o === "+"
+    ? flat(s, "+")
+    : null;
+}
+
+/**
+ * The rows of a term of a sum (spec 009, FR-017): a sum of bonuses in % the game divides by 100 gives its bonuses,
+ * each in %, when they give it; any other term its own row. Null when a row cannot be read.
+ */
+function addedRows(e: Expr, term: (t: Expr) => Row | null): Row[] | null {
+  const terms = percentTerms(e);
+  const rows = terms?.map(term) ?? [];
+  const bonuses = rows.flatMap((r) =>
+    r ? [{ ...r, percent: true as const }] : [],
+  );
+  if (
+    bonuses.length === terms?.length &&
+    near(
+      bonuses.reduce((a, r) => a + added(r), 0),
+      Number(e.v),
+    )
+  )
+    return bonuses;
+  const own = term(e);
+  return own ? [own] : null;
+}
+
 /** A factor that sums the bonuses of two sources or more: its terms and how they give it. */
 function additive(e: Expr): { terms: Expr[]; combine: Combine } | null {
   const x = strip(e);
@@ -75,10 +111,15 @@ function additiveRows(
 ): { rows: Row[]; combine: Combine } | null {
   const a = additive(e);
   if (!a) return null;
-  const rows = a.terms.flatMap((t) => term(t, "+") ?? []);
-  const sum = rows.reduce((s, r) => s + vOf(r), 0);
+  // the bonuses inside 1 + (…) ÷ 100 are percents already
+  const parts = a.terms.map((t) =>
+    a.combine === "sum" ? addedRows(t, (x) => term(x, "+")) : term(t, "+"),
+  );
+  if (parts.some((p) => !p)) return null;
+  const rows = parts.flatMap((p) => p ?? []);
+  const sum = rows.reduce((s, r) => s + added(r), 0);
   const gives = a.combine === "sum" ? sum : 1 + sum / 100;
-  if (rows.length !== a.terms.length || !near(gives, v)) return null;
+  if (!near(gives, v)) return null;
   return { rows: finish(sum, rows, false), combine: a.combine };
 }
 
@@ -296,7 +337,7 @@ export function chainPools(
     const flush = () => {
       if (!batch.length) return;
       const value = batch.reduce(
-        (a, r) => (op === "*" ? a * vOf(r) : a + vOf(r)),
+        (a, r) => (op === "*" ? a * vOf(r) : a + added(r)),
         op === "*" ? 1 : 0,
       );
       const rows = under(finish(value, batch, op === "*"));
@@ -333,9 +374,11 @@ export function chainPools(
         });
         continue;
       }
-      const r = termAt(e, op, at);
-      if (!r) return "open";
-      batch.push(r);
+      const rs = (op === "+"
+        ? addedRows(e, (t) => termAt(t, "+", at))
+        : [termAt(e, op, at)]) ?? [null];
+      if (rs.some((r) => r === null)) return "open";
+      batch.push(...rs.filter((r): r is Row => r !== null));
     }
     flush();
   }
