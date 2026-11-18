@@ -171,8 +171,9 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
   // 1.3 × (max(0, 1) + 0.2) = 1.56, by its pools
   const [set, family] = kidsOf(treeOf("DropRatez", 999, 3, 0));
   expect(Number(set?.value) * Number(family?.value)).toBeCloseTo(1.56, 9);
+  // under it, the read without the name the row above says (the 008's rename by the row above) and its minimum
   expect(rowsOf(kidsOf(family)[0])).toEqual([
-    ["Working value of the game (FamBonusQTYs)", 0, "unknown"],
+    ["Working value of the game", 0, "unknown"],
     ["Minimum 1", 1, "fixedValue"],
   ]);
   // max(family, 1) is the family's row, with its read's name and code, never a row with no name (FR-007)
@@ -193,7 +194,7 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     ["Additive pool 1", near(2.2)],
   ]);
   expect(rowsOf(kidsOf(pools[1])[0])).toEqual([
-    ["Working value of the game (FamBonusQTYs)", 0, "unknown"],
+    ["Working value of the game", 0, "unknown"],
     ["Minimum 2", 2, "fixedValue"],
   ]);
   expect(kidsOf(pools[1])[0]?.code).toBe("DNSM.FamBonusQTYs[66]");
