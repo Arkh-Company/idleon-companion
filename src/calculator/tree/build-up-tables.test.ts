@@ -81,13 +81,13 @@ test("[FR-018] a sigil's tier says the bonus of each tier, the ladder's columns 
 
 /**
  * A Legend Talent opened, its max the game's own call (N.js Thingies "LegendTalent_MaxLV", recorded beside the root): the
- * call's value `max`, and its rows `maxRows` (what the game added to the table's max).
+ * call's value `max`, the table's max `base` it read, and its rows `maxRows` (what the game added to the table's max).
  */
 function legend(
   t: number,
   points: number,
   per: number,
-  max: number,
+  [max, base]: [number, number],
   maxRows: Row[],
 ) {
   const { rows, expand } = placed(
@@ -111,7 +111,7 @@ function legend(
       recNode(1, "Thingies", {
         a: ["LegendTalent_MaxLV", t, 0],
         v: max,
-        r: [[`CustomLists.LegendTalents[${String(t)}][1]`, String(max)]],
+        r: [[`CustomLists.LegendTalents[${String(t)}][1]`, String(base)]],
       }),
     ],
   );
@@ -120,7 +120,7 @@ function legend(
 
 test("[FR-018] a Legend Talent's Points say their max, the game's max level of the talent (the table's alone)", () => {
   // Midusian Appetite: no Research grid bonus nor the Menagerie raises its max
-  expect(legend(25, 3, 500, 3, [])[0]?.name).toBe("Points (max 3)");
+  expect(legend(25, 3, 500, [3, 3], [])[0]?.name).toBe("Points (max 3)");
 });
 
 test("[FR-018] a Legend Talent whose max the Menagerie raises says the game's max", () => {
@@ -134,7 +134,7 @@ test("[FR-018] a Legend Talent whose max the Menagerie raises says the game's ma
     }),
     open: null,
   };
-  expect(legend(36, 8, 3, 8, [menagerie])[0]?.name).toBe("Points (max 8)");
+  expect(legend(36, 8, 3, [8, 5], [menagerie])[0]?.name).toBe("Points (max 8)");
 });
 
 test("[FR-018] a sigil's tier whose table bonus is not the bonus at its tier says no tiers", () => {
