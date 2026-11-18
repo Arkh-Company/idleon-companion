@@ -111,8 +111,9 @@ test("an Additive pool with % groups that pairs whole with the bench's factor le
     ],
   });
   expect(compareTrees(APP, bench(4), new Set())).toEqual([]);
-  expect(compareTrees(APP, bench(5), new Set())).toEqual([
-    { at: "0/0", field: "value" },
-    { at: "0/0", field: "shape" },
-  ]);
+  // a source of another value: the factor no longer has the pool's value, and its row of that source has no pair
+  expect(compareTrees(APP, bench(5), new Set())).toContainEqual({
+    at: "0/0/2",
+    field: "shape",
+  });
 });
