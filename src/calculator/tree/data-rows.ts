@@ -18,8 +18,8 @@ function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {
 
 /**
  * pieces.cjs `dataRows`: what the block read and did not already show (a table, a length or a text stays out); `readRow`
- * makes a read's row, `writersOf` the calls that wrote each cache path in loop turns, and `opens` tells whether a row
- * opens into rows (a cache row is opened now, as the bench builds it at once).
+ * makes a read's row, `writersOf` the calls that wrote each cache path in loop turns, `opens` tells whether a row
+ * opens into rows (a cache row is opened now, as the bench builds it at once) and `aside` the caches that stay out (the block's own, or of no system).
  */
 export function dataRows(
   n: RecNode,
@@ -29,6 +29,7 @@ export function dataRows(
   readRow: (path: string, value: number) => Row,
   writersOf: ReadonlyMap<string, readonly number[]>,
   opens: (r: Row) => boolean,
+  aside: ReadonlySet<string> = new Set(),
 ): Row[] {
   const used = new Set<string>();
   stepsRead.forEach((e) => readsIn(e, used));
@@ -43,9 +44,10 @@ export function dataRows(
     // a path the call read with several values shows the last one, the state the call ended with
     const v = last.get(p) ?? v0;
     const cache = p.startsWith("DNSM.");
-    // [F1-RC1] a state read of a step that did not open is a data row (a cache stays as it was)
+    // [F1-RC1] a state read of a step that did not open is a data row; a cache too, unless it is one of `aside`
+    // (spec 009 FR-018: every value a system feeds shows that system as its child)
     if (
-      (used.has(p) && !(stepNotOpened && !cache)) ||
+      (used.has(p) && !(stepNotOpened && !(cache && aside.has(p)))) ||
       typeof v !== "number" ||
       /^Custom(Lists|Maps).|.length$|^DummyNumbers/.test(p) ||
       rows.some((r) => r.node.code === p) ||

@@ -71,6 +71,25 @@ export function buildTree(
   for (const w of rec.writes)
     if (w.node !== null)
       wroteBy.set(w.path, [...(wroteBy.get(w.path) ?? []), w.node]);
+  /**
+   * The caches call `n` read that stay out of its data rows (tree/data-rows.ts): those it, or a call under it, wrote, and
+   * those of no system; a system's cache (a family bonus, a bubble's…) is a row, as every value a system feeds shows
+   * that system (spec 009, FR-018).
+   */
+  const asideCaches = (n: RecNode) => {
+    const under = (w: number) => {
+      for (let x = nodes[w]; x; x = x.p === null ? undefined : nodes[x.p])
+        if (x.id === n.id) return true;
+      return false;
+    };
+    const system = (p: string) =>
+      p.startsWith("DNSM.FamBonusQTYs[") || systemOf(p) !== null;
+    return new Set(
+      (n.r ?? [])
+        .map(([p]) => p)
+        .filter((p) => !system(p) || (wroteBy.get(p) ?? []).some(under)),
+    );
+  };
   const conditions = makeConditions(nodes, wroteBy);
   const codeFormulas = makeCodeFormulas(nodes, (id) => steps.of(id).steps);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
@@ -255,6 +274,7 @@ export function buildTree(
       writers.writersOf,
       // the bench opens a data row's cache under this call, at its depth
       (r) => caches.opens(r, depth, new Set([...seen, id])),
+      asideCaches(n),
     );
     // a block that only returns one cache: its rows are the cache's own computation
     const cached =
