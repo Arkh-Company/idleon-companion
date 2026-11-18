@@ -2,6 +2,7 @@
 // - N.js GetTalentNumber: `0 >= SkillLevels[t] ? 0 : curve(TalentDescriptions[t][1], SkillLevels[t] + AllTalentLV(t))`,
 //   50 in a dungeon: Talent level = Points invested + All-talent levels, and the curve's two constants;
 // - N.js Thingies "LegendPTS_bonus": `round(Spelunk[18][i] × LegendTalents[i][2])`: Points and Bonus per point.
+import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3, maxReachedOf } from "./curves.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
@@ -57,6 +58,27 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
 
 const MAX_CALL = "LegendTalent_MaxLV";
 
+/** The Points with the game's max, that opens into what makes it: the max caps the points the player spends. */
+function withMax(pts: Row, max: RecNode, key: string): Row {
+  const named = renamed(pts, `Points (max ${fx3(Number(max.v))})`);
+  return {
+    ...named,
+    node: { ...named.node, leaf: null },
+    group: [
+      {
+        node: row({
+          pieceKey: key,
+          value: Number(max.v),
+          code: callText(max),
+          name: "Max points",
+          kids: "lazy",
+        }),
+        open: max.id,
+      },
+    ],
+  };
+}
+
 /**
  * A Legend Talent: its Points, with the game's max of the talent (N.js Thingies "LegendTalent_MaxLV", recorded beside the
  * root: tree-recipe.ts `legendMaxRoots`) that opens into what makes it, and its Bonus per point.
@@ -82,27 +104,9 @@ export function legendTalent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
       Number(n.a[1]) === t &&
       typeof n.v === "number",
   );
-  const capped =
-    maxCall && renamed(pts, `Points (max ${fx3(Number(maxCall.v))})`);
   const points =
-    capped && maxCall && ctx.keyOf
-      ? {
-          ...capped,
-          node: { ...capped.node, leaf: null },
-          // the max caps the points the player spends: the systems that make it are the Points' own
-          group: [
-            {
-              node: row({
-                pieceKey: ctx.keyOf(maxCall),
-                value: Number(maxCall.v),
-                code: callText(maxCall),
-                name: "Max points",
-                kids: "lazy",
-              }),
-              open: maxCall.id,
-            },
-          ],
-        }
+    maxCall && ctx.keyOf
+      ? withMax(pts, maxCall, ctx.keyOf(maxCall))
       : renamed(pts, "Points");
   return built(
     lv,
