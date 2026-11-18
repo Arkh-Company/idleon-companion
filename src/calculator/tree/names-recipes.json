@@ -1,5 +1,5 @@
 {
-  "about": "Spec 008 names table (T023), table part: the names that come from a game table, as recipes without the text, resolved in the tree worker over the installed game. Each group reads <table>[index...] (and .field) for each of its keys ([call or path, index]), applies the transform and puts the text in the template ({0}; null = the text alone); multi holds the recipes of several parts ([call or path, template, [[table, index, field, transform]...]]). A recipe resolves only when the sha256 of each table it reads equals its hash in hashes ([sha256, table]; canonical form: every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X and CustomMaps.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry). Converted from the bench's names-008 export (NAMES-008-table-recipes.json, NAMES-008-table-hashes.json). Then the entries of every item of the game in hashes (spec 009 T030): 2261 more ItemDefinitionsGET.<id>, hashed in the same canonical form over the installed game at 0e47e87b, the bench's own version (the 219 the bench hashed match), so a row that names an item by the game's table (a search, Found <item>) says it.",
+  "about": "Spec 008 names table (T023), table part: the names that come from a game table, as recipes without the text, resolved in the tree worker over the installed game. Each group reads <table>[index...] (and .field) for each of its keys ([call or path, index]), applies the transform and puts the text in the template ({0}; null = the text alone); multi holds the recipes of several parts ([call or path, template, [[table, index, field, transform]...]]). A recipe resolves only when the sha256 of each table it reads equals its hash in hashes ([sha256, table]; canonical form: every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X and CustomMaps.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry). Converted from the bench's names-008 export (NAMES-008-table-recipes.json, NAMES-008-table-hashes.json). Then the entries of every item of the game in hashes (spec 009 T030): 2261 more ItemDefinitionsGET.<id>, hashed in the same canonical form over the installed game at 0e47e87b, the bench's own version (the 219 the bench hashed match), so a row that names an item by the game's table (a search, Found <item>) says it. Then (spec 009 T031, decision of 18/11) the group of the 12 family bonuses DNSM.FamBonusQTYs[k] left: the bench read ClassFamilyBonuses[k], and the game keeps the family bonus of class c under the key 2c (N.js TalentCalc -3, FamilyBonsuesREAL); the rule of tree/state-names.ts names every key by ClassFamilyBonuses[k / 2].",
   "baseline": "BASELINE-4 (bench git 99d1772)",
   "njsIndex": "0e47e87bbe36198cbecc41943ea3cd8949f51e9350a4c125d67e3b7de9771ba4",
   "sources": {
@@ -3768,26 +3768,6 @@
         ["DNSM.EmperorBon[7]", [0, 7]],
         ["DNSM.EmperorBon[8]", [0, 8]],
         ["DNSM.EmperorBon[9]", [0, 9]]
-      ]
-    },
-    {
-      "table": "CustomLists.ClassFamilyBonuses",
-      "field": null,
-      "transform": "clean-keep-case",
-      "template": "{0} (family bonus)",
-      "keys": [
-        ["DNSM.FamBonusQTYs[14]", [7, 0]],
-        ["DNSM.FamBonusQTYs[16]", [8, 0]],
-        ["DNSM.FamBonusQTYs[18]", [9, 0]],
-        ["DNSM.FamBonusQTYs[20]", [10, 0]],
-        ["DNSM.FamBonusQTYs[24]", [12, 0]],
-        ["DNSM.FamBonusQTYs[28]", [14, 0]],
-        ["DNSM.FamBonusQTYs[32]", [16, 0]],
-        ["DNSM.FamBonusQTYs[38]", [19, 0]],
-        ["DNSM.FamBonusQTYs[40]", [20, 0]],
-        ["DNSM.FamBonusQTYs[4]", [2, 0]],
-        ["DNSM.FamBonusQTYs[6]", [3, 0]],
-        ["DNSM.FamBonusQTYs[8]", [4, 0]]
       ]
     },
     {

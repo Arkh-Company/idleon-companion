@@ -1,6 +1,7 @@
 // A family bonus by its class (spec 009 T031, decision of 18/11): the game keeps the family bonus of class c under the
 // key 2 × c of FamBonusQTYs (N.js TalentCalc -3; the family bonus screen; FamilyBonsuesREAL), so the key k is named by
-// ClassFamilyBonuses[k ÷ 2], by the recipes and by the rule alike. The table holds only the cells read, game text.
+// ClassFamilyBonuses[k ÷ 2], by the rule of tree/state-names.ts (no recipe names a key any more). The table holds only the
+// cells read, game text.
 import { afterEach, expect, test } from "vitest";
 import { nameOf, resolveNames, useGameNames } from "./names.ts";
 import { NAME_RECIPES } from "./names-table.ts";
