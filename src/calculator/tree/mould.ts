@@ -13,7 +13,13 @@ import type { Combine, OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
-import { SYSTEM_ORDER, systemLabel, systemOf, V1_SYSTEMS } from "./systems.ts";
+import {
+  isHelper,
+  SYSTEM_ORDER,
+  systemLabel,
+  systemOf,
+  V1_SYSTEMS,
+} from "./systems.ts";
 import type { System } from "./systems.ts";
 import type { Expr, Step } from "./steps.ts";
 
@@ -59,7 +65,9 @@ const OTHER = V1_SYSTEMS.at(-1) ?? { name: "Other", emoji: "🔹" };
  * same one. Undefined for a row with no source (a constant of the code); null for an unknown or a mixed one.
  */
 function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
-  if (r.node.code !== null) return systemOf(r.node.code, writerOf(r));
+  // a helper's (a curve, a log) is its sources' (T028)
+  if (r.node.code !== null && !isHelper(r.node.code))
+    return systemOf(r.node.code, writerOf(r));
   const inner = (r.group ?? [])
     .map((k) => systemOfRow(k, writerOf))
     .filter((s) => s !== undefined);
@@ -208,9 +216,15 @@ export function bySystem(
   const [only] = groups.values();
   if (groups.size <= 1 && (!only || (only.s === OTHER && !only.pct)))
     return rows;
+  // a system beyond the V1 after the V1's, in the order of the sum (the sort keeps it), "Other" last (FR-004)
+  const at = (s: System) =>
+    s === OTHER
+      ? SYSTEM_ORDER.length
+      : SYSTEM_ORDER.includes(s.name)
+        ? SYSTEM_ORDER.indexOf(s.name)
+        : SYSTEM_ORDER.length - 1;
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
-    (s === OTHER ? SYSTEM_ORDER.length : SYSTEM_ORDER.indexOf(s.name)) * 2 +
-    Number(pct);
+    at(s) * 2 + Number(pct);
   // a lone bonus in % stays a group: it adds a hundredth of its value
   return [
     ...[...groups.values()]

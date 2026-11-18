@@ -65,6 +65,25 @@ export const V1_SYSTEMS: readonly System[] = (
 
 export const SYSTEM_ORDER: readonly string[] = V1_SYSTEMS.map((s) => s.name);
 
+/**
+ * The systems beyond the V1 (T028, from the probe of the 716 trees): after the V1's, in the order the sum gives them
+ * (FR-004), "Other" still last.
+ */
+export const EXTRA_SYSTEMS: readonly System[] = (
+  [
+    ["Meals", "🍲"],
+    ["Bribes", "💰"],
+    ["Jelly Operator", "🫧"],
+    ["Atom Collider", "⚛️"],
+    ["Compass", "🧭"],
+    ["Gaming", "🕹️"],
+    ["Spelunking", "🔦"],
+    ["Trapping", "🪤"],
+    ["Sailing", "⛵"],
+    ["Lab", "🧪"],
+  ] as const
+).map(([name, emoji]) => ({ name, emoji }));
+
 const TAG_OF = "bench pieces.cjs tagOf";
 
 /**
@@ -113,9 +132,55 @@ export const SYSTEM_RULES: readonly {
     proof: "bench build-v1mold.cjs adds (Faux Jewels, Equinox upgrade 8)",
     read: true,
   },
+  // T028, the probe's "Other" list: a call of the system's own block, by its name in the game's code
+  ...(
+    [
+      [/^CompLV2 /, "Companions", "N.js CompLV2 (reads CompanionLVz)"],
+      [/^FarmingStuffs /, "Farming", "N.js FarmingStuffs"],
+      [/^MealBonus /, "Meals", "N.js MealBonus"],
+      [/^GetBribeBonus /, "Bribes", "N.js GetBribeBonus"],
+      [/^JellyOperation /, "Jelly Operator", "N.js JellyOperation"],
+      [/^AtomCollider /, "Atom Collider", "N.js AtomCollider"],
+      [/^Windwalker Compass/, "Compass", "N.js Windwalker CompassBonus"],
+      [/^GamingStatType /, "Gaming", "N.js GamingStatType"],
+      [/^TrappingStuffs /, "Trapping", "N.js TrappingStuffs"],
+      [/^Sailing /, "Sailing", "N.js Sailing"],
+      [/^MainframeBonus /, "Lab", "N.js MainframeBonus"],
+    ] as const
+  ).map(([test, system, proof]) => ({ test, system, proof })),
+  // T028: a read of the table or cache the system's block reads or writes
+  ...(
+    [
+      [/^Research\[/, "Researching", "N.js ResearchStuff (reads Research)"],
+      [
+        /Stamp_TOTAL_bonus_of_type_X/,
+        "Stamps",
+        "N.js StampBonusOfTypeX (writes Stamp_TOTAL_bonus_of_type_X)",
+      ],
+      [/^Menagerie\[/, "Menagerie", "N.js MenagerieStuff (reads Menagerie)"],
+      [/Owlz/, "Owl", "N.js Summoning OwlBonuses (reads CustomLists.Owlz)"],
+      [/MealBonusesS/, "Meals", "N.js MealBonus (reads MealBonusesS)"],
+      [/^Spelunk\[/, "Spelunking", "N.js Spelunk (reads Spelunk)"],
+    ] as const
+  ).map(([test, system, proof]) => ({
+    test,
+    system,
+    proof,
+    read: true as const,
+  })),
 ];
 
-const BY_NAME = new Map(V1_SYSTEMS.map((s) => [s.name, s]));
+/**
+ * The blocks the game calls as a helper of its caller's math, a curve or a log, of no system of their own (T028): such a
+ * call takes the system of the sources in it (tree/mould.ts), or none.
+ */
+const HELPERS = new Set(["ArbitraryCode5Inputs", "getLOG", "Log2"]);
+export const isHelper = (code: string): boolean =>
+  HELPERS.has(callKey(code)?.key.split(" ")[0] ?? "");
+
+const BY_NAME = new Map(
+  [...V1_SYSTEMS, ...EXTRA_SYSTEMS].map((s) => [s.name, s]),
+);
 
 /**
  * The system of the source written `code` (tree/rows.ts `callText`, or a read's path); a read with no rule of its own

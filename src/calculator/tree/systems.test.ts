@@ -6,6 +6,8 @@ import { expect, test } from "vitest";
 import { isNameText } from "./names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import {
+  EXTRA_SYSTEMS,
+  isHelper,
   SYSTEM_ORDER,
   SYSTEM_RULES,
   systemLabel,
@@ -122,12 +124,72 @@ test("every system's label is a name the host takes, with its emoji first", () =
   expect(V1_SYSTEMS.at(-1)).toEqual({ name: "Other", emoji: "🔹" });
 });
 
-test("every system a rule gives is in the V1 list", () => {
+test("every system a rule gives is in the V1 list or among the systems beyond it", () => {
+  const known = [...SYSTEM_ORDER, ...EXTRA_SYSTEMS.map((s) => s.name)];
   for (const r of SYSTEM_RULES)
-    expect([String(r.test), SYSTEM_ORDER.includes(r.system)]).toEqual([
+    expect([String(r.test), known.includes(r.system)]).toEqual([
       String(r.test),
       true,
     ]);
+});
+
+// T028: the blocks and reads of the probe's "Other" list that name a known system (the game's own block and path
+// names, invented arguments)
+test.each<[string, string, string]>([
+  ["a research grid cell", "Research[7][2]", "🔬 Researching"],
+  [
+    "the stamps' running total",
+    "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X",
+    "📜 Stamps",
+  ],
+  ["a menagerie cell", "Menagerie[3][1]", "🪼 Menagerie"],
+  ["an owl cell", "CustomLists.Owlz[2][0]", "🦉 Owl"],
+  ["a companion's +", "CompLV2(132)", "🐾 Companions"],
+  ["any farming mode", 'FarmingStuffs("StickerDMGmulti", 0, 0)', "🌾 Farming"],
+  ["a meal", 'MealBonus("zInvented")', "🍲 Meals"],
+  ["the meals' cache", "DNSM.MealBonusesS.Invented", "🍲 Meals"],
+  ["a bribe", 'GetBribeBonus("36")', "💰 Bribes"],
+  [
+    "the jelly operator",
+    'JellyOperation("RoG_BonusQTY", 10, 0)',
+    "🫧 Jelly Operator",
+  ],
+  [
+    "the atom collider",
+    'AtomCollider("AtomBonuses", 12, 0)',
+    "⚛️ Atom Collider",
+  ],
+  ["a compass bonus", 'Windwalker("CompassBonus", 76, 0)', "🧭 Compass"],
+  ["gaming", 'GamingStatType("PaletteBonus", 23, 0)', "🕹️ Gaming"],
+  ["a spelunking cell", "Spelunk[4][0]", "🔦 Spelunking"],
+  ["trapping", 'TrappingStuffs("TrapMGbonus", 2)', "🪤 Trapping"],
+  ["sailing", 'Sailing("SlabboBonus", 6, 0)', "⛵ Sailing"],
+  ["the lab's mainframe", "MainframeBonus(122)", "🧪 Lab"],
+])("%s", (_name, code, label) => {
+  const s = systemOf(code);
+  expect(s && systemLabel(s)).toBe(label);
+});
+
+test("a block the game only calls as a curve or a log is a helper, of no system of its own", () => {
+  expect(isHelper('ArbitraryCode5Inputs("decay", 10, 100, 101, 0, 0)')).toBe(
+    true,
+  );
+  expect(isHelper("getLOG(0)")).toBe(true);
+  expect(isHelper("Log2(0)")).toBe(true);
+  expect(isHelper("CardBonusREAL(10, 0)")).toBe(false);
+  expect(isHelper("DNSM.Invented")).toBe(false);
+  expect(systemOf('ArbitraryCode5Inputs("add", 1, 0, 101, 0, 0)')).toBeNull();
+});
+
+test("the systems beyond the V1 have a label the host takes, and none is a V1 name", () => {
+  for (const s of EXTRA_SYSTEMS) {
+    const label = systemLabel(s);
+    expect([label, isNameText(label), SYSTEM_ORDER.includes(s.name)]).toEqual([
+      `${s.emoji} ${s.name}`,
+      true,
+      false,
+    ]);
+  }
 });
 
 test("every system a tagged call gives is in the V1 list", () => {
