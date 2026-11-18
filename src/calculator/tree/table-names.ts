@@ -64,14 +64,6 @@ export const TABLE_TEXTS = {
     "raw",
     "N.js Labb SigilBonus (the bonus of the sigil at a tier)",
   ),
-  /** The max level of Legend Talent i (spec 009 T031), a number read by `tableNumber`. */
-  legendMax: text(
-    "CustomLists.LegendTalents",
-    (l) => [l, 1],
-    null,
-    "raw",
-    "N.js Thingies LegendTalent_MaxLV (the max level of the talent)",
-  ),
   /** The bonus of the Meritocracy vote t (spec 009 T031), a number of the table, read by `tableNumber`. */
   vote: text(
     "CustomLists.NinjaInfo",

@@ -2,6 +2,7 @@
 // keeps them at BASELINE-4 (build-tree.cjs, step 4: `RECOMPUTE` and `BUILDERS`). Proof by reference, never game text:
 // each cache was rebuilt offline and compared entry by entry with the running game's on the bench (test of 10/11).
 import type { Recipe } from "./recording.ts";
+import type { FollowCall } from "./tree-record.ts";
 import type { TreeRoot } from "./tree-roots.ts";
 
 const block = (name: string, ...args: (string | number)[]) => ({
@@ -91,11 +92,10 @@ export const EXTRA_ROOTS: readonly TreeRoot[] = [
 ];
 
 /**
- * The max level of each Legend Talent, the game's own call (N.js Thingies "LegendTalent_MaxLV", which the game's screen
- * shows as the talent's points out of its max): `count` the talents of the checked table, none without it.
+ * The follow-up calls after the roots (tree-record.ts `FollowCall`): the max level of each Legend Talent whose bonus the
+ * roots called (N.js Thingies "LegendTalent_MaxLV", which the game's screen shows as the talent's points out of its max;
+ * tree/build-up-talents.ts).
  */
-export const legendMaxRoots = (count: number | null): TreeRoot[] =>
-  Array.from({ length: count ?? 0 }, (_, t) => [
-    "Thingies",
-    ["LegendTalent_MaxLV", t, 0],
-  ]);
+export const FOLLOW_CALLS: readonly FollowCall[] = [
+  ["Thingies", "LegendPTS_bonus", "Thingies", "LegendTalent_MaxLV"],
+];
