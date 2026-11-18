@@ -131,7 +131,6 @@ test("the live region says the picked character's breakdown once, when it is rea
     <SidePanel
       side={SIDE}
       tree={tree}
-      live={null}
       onClose={vi.fn()}
       onPick={vi.fn()}
       onExpand={vi.fn()}

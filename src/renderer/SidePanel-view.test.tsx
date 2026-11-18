@@ -101,7 +101,6 @@ async function draw(first: FormulaTree, view?: ViewPrefs) {
     <SidePanel
       side={SIDE}
       tree={t}
-      live={null}
       onClose={vi.fn()}
       onPick={vi.fn()}
       onExpand={onExpand}

@@ -62,7 +62,6 @@ async function draw(announce = vi.fn()) {
       <SidePanel
         side={SIDE}
         tree={TREE}
-        live={null}
         onClose={vi.fn()}
         onPick={vi.fn()}
         onExpand={vi.fn()}

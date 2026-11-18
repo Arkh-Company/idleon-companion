@@ -218,7 +218,6 @@ function drawPanel(tree: FormulaTree, side: Side = SIDE) {
     <SidePanel
       side={side}
       tree={tree}
-      live={null}
       onClose={vi.fn()}
       onPick={vi.fn()}
       onExpand={vi.fn()}

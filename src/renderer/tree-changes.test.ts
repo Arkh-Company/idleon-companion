@@ -9,7 +9,6 @@ import {
   arrowsOf,
   baseOf,
   groupValue,
-  keepBase,
   valuesOf,
 } from "./tree-changes.ts";
 
@@ -161,16 +160,6 @@ test("against a mark of the 008, the base is the mark's values by piece", () => 
     text: "▲ +5%",
   });
   expect(arrows.has("Card")).toBe(false);
-});
-
-test("a mark deleted while compared against falls back to live, the tree as it is then", () => {
-  const m = mark("Mark 1", { '[0,"Ring"]': 25 });
-  const base = baseOf(tree(20), m);
-  expect(keepBase(base, [m], tree(30))).toBe(base);
-  expect(keepBase(base, [mark("Mark 2", {})], tree(30))).toEqual({
-    mark: null,
-    values: baseOf(tree(30)).values,
-  });
 });
 
 test("an unavailable source leaves its group with no arrow, and the rest of the tree with theirs", () => {
