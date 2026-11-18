@@ -91,3 +91,42 @@ test("a talent multiplied by a count goes to the talent's system (009 T029, deci
     ["🔹 Other", 3],
   ]);
 });
+
+test("a talent times a count divided by a constant, with no step of a product but its shares, is the talent's too (009 T030)", () => {
+  const share = (r: Row): Row => ({
+    ...r,
+    node: { ...r.node, shareMode: "product" },
+  });
+  const graded: Row = {
+    node: row({ pieceKey: null, value: 0, code: null }),
+    open: null,
+    group: [
+      share(src("GetTalentNumber(1, 239)", 0)),
+      share(src('RoyalG("TotalStatz", 0, 0)', 4044)),
+      share({
+        node: row({
+          pieceKey: null,
+          value: 1,
+          code: null,
+          name: "Divided by 1",
+          leaf: "fixedValue",
+        }),
+        open: null,
+      }),
+    ],
+  };
+  const out = bySystem(
+    [
+      src("GetTalentNumber(1, 207)", 4),
+      graded,
+      src("InventedBlock(1)", 1),
+      src("InventedBlock(2)", 2),
+    ],
+    "sum",
+    writerOf,
+  );
+  expect(level(out)).toEqual([
+    ["🎯 Talents", 4],
+    ["🔹 Other", 3],
+  ]);
+});
