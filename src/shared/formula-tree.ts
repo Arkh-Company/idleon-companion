@@ -67,7 +67,7 @@ export type ShareMode = (typeof SHARE_MODES)[number];
 
 /**
  * How the rows of a pool or a system group give its value (spec 009, data-model.md); `max` and `min` only in the groups
- * of a root with a max or a min at the top.
+ * of a root with a max or a min at the top; `percent` the sum ÷ 100 of the bonuses in % the game divides by 100.
  */
 export const COMBINE_KINDS = [
   "sum",
@@ -75,6 +75,7 @@ export const COMBINE_KINDS = [
   "onePlusPercent",
   "max",
   "min",
+  "percent",
 ] as const;
 /** A pool that adds its bonuses first, or one that multiplies everything (spec 009, FR-005). */
 export const POOL_KINDS = ["additive", "multi"] as const;

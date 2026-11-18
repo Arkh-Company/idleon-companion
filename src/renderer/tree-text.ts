@@ -4,7 +4,9 @@ import { MINUS, plain, valueText } from "../shared/index.ts";
 import type { TreeNode } from "../shared/index.ts";
 
 /** The same value read aloud: no symbol alone (design.md §3.8, S1). */
-export function spokenValue(n: Pick<TreeNode, "value" | "fmt">): string {
+export function spokenValue(
+  n: Pick<TreeNode, "value" | "fmt"> & Partial<Pick<TreeNode, "combine">>,
+): string {
   if (n.value === null) return "unavailable";
   return valueText(n)
     .replace(/^×/, "times ")
