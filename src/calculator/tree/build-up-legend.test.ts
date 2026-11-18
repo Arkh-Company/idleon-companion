@@ -70,3 +70,62 @@ test("[FR-018] a max whose parts do not give its value keeps its rows", () => {
   const n = maxOf(36, 9, 5, [lazy("Menagerie unlock 19", 1, MENAGERIE, 2)]);
   expect(kidsOf(n).map((k) => k.name)).toEqual(["Menagerie unlock 19"]);
 });
+
+test("[FR-018] a Legend Talent's Points at their max open into Max points, which opens into its systems, with no merge", () => {
+  // Wowa Woowa: 8 points of 8, the table's 5 and 3 more with the Menagerie's unlock 19
+  const MAX = 'Thingies("LegendTalent_MaxLV", 36, 0)';
+  const { rows, expand } = placed(
+    {
+      0: [
+        {
+          node: row({
+            pieceKey: "p",
+            value: 8,
+            code: "Spelunk[18][36]",
+            name: "Level",
+            leaf: "level",
+          }),
+          open: null,
+        },
+      ],
+      1: [lazy("Menagerie unlock 19", 1, MENAGERIE, 2)],
+      2: [],
+    },
+    [lazy("Wowa Woowa", 24, 'Thingies("LegendPTS_bonus", 36, 0)', 0)],
+    [
+      recNode(0, "Thingies", {
+        a: ["LegendPTS_bonus", 36, 0],
+        v: 24,
+        r: [["CustomLists.LegendTalents[36][2]", 3]],
+      }),
+      recNode(1, "Thingies", {
+        a: ["LegendTalent_MaxLV", 36, 0],
+        v: 8,
+        c: [2],
+        r: [["CustomLists.LegendTalents[36][1]", "5"]],
+      }),
+      recNode(2, "MenagerieStuff", { a: ["UnlockOwned", 19, 0], v: 1 }),
+    ],
+  );
+  const [points] = kidsOf(expand(rows[0]?.id ?? ""));
+  expect([points?.name, points?.value, points?.code, points?.leaf]).toEqual([
+    "Points (max 8)",
+    8,
+    "Spelunk[18][36]",
+    "level",
+  ]);
+  // the max is a ceiling of the points, never their sum: the Points keep no ⓘ of the max's
+  expect(points?.formula).toBeNull();
+  const [max, ...more] = kidsOf(points);
+  expect(more).toEqual([]);
+  expect([max?.name, max?.value, max?.code, max?.kids]).toEqual([
+    "Max points",
+    8,
+    MAX,
+    "lazy",
+  ]);
+  expect(kidsOf(expand(max?.id ?? "")).map((k) => [k.name, k.value])).toEqual([
+    ["Max points of the table", 5],
+    ["Menagerie unlock 19", 1],
+  ]);
+});
