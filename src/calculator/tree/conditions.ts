@@ -132,7 +132,7 @@ export const BAN_FLAG = {
 
 export function makeConditions(
   nodes: readonly RecNode[],
-  /** The calls that write each path (tree/entries.ts), to tell a block's own cache of its search. */
+  /** The calls that wrote each path (the recording's writes), to tell a block's own cache of its search. */
   writersOf: ReadonlyMap<string, readonly number[]> = new Map(),
 ) {
   const t1 = new Set<number>();

@@ -66,7 +66,12 @@ export function buildTree(
   const steps = makeSteps(rec, ops);
   const entries = entriesOf(rec, linked, steps.turn);
   const writers = makeWriters(nodes, entries);
-  const conditions = makeConditions(nodes, writers.writersOf);
+  // every call that wrote each path, for a block's own cache of its search (tree/conditions.ts)
+  const wroteBy = new Map<string, number[]>();
+  for (const w of rec.writes)
+    if (w.node !== null)
+      wroteBy.set(w.path, [...(wroteBy.get(w.path) ?? []), w.node]);
+  const conditions = makeConditions(nodes, wroteBy);
   const codeFormulas = makeCodeFormulas(nodes, (id) => steps.of(id).steps);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
