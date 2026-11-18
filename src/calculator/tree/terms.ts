@@ -19,7 +19,7 @@ import {
   topOp,
 } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
-import { branchName } from "./shapes.ts";
+import { boundRead, branchName } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -302,10 +302,11 @@ export function makeTerms(ctx: TermContext) {
           e.t === "op" && e.o === "*"
             ? [e.l, e.r].find((x) => !(x.t === "read" && x.p === s.p))
             : undefined;
-        return branchName(
-          exprRow(e, d, reads),
+        const fallback = !other || other.t === "num" ? termName(s.p) : null;
+        return boundRead(
           e,
-          !other || other.t === "num" ? termName(s.p) : null,
+          read,
+          branchName(exprRow(e, d, reads), e, fallback),
         );
       }
       return { ...read, writerF: "sameValue" };

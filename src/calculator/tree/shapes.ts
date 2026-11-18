@@ -72,6 +72,31 @@ export function shapeName(e: Expr, r: Row): string | null {
 }
 
 /**
+ * The branch `r` of a max or a min of one read and numbers of the code (a minimum, a cap), as `max(family, 1)`: the
+ * read's own name and code, with the read and its bound under it, never a row with no name (spec 009, FR-007, 009 r2);
+ * any other branch as it is.
+ */
+export function boundRead(e: Expr, read: Row, r: Row): Row {
+  const x = e.t === "def" ? e.e : e;
+  const bound =
+    x.t === "fn" &&
+    (x.name === "max" || x.name === "min") &&
+    x.args.filter((a) => a.t === "read").length === 1 &&
+    x.args.every((a) => a.t === "read" || a.t === "num");
+  if (!bound) return r;
+  const { unnamed: _, ...flags } = r.node.flags;
+  return {
+    ...r,
+    node: {
+      ...r.node,
+      name: read.node.name,
+      code: read.node.code,
+      flags: read.node.flags.unnamed ? { ...flags, unnamed: true } : flags,
+    },
+  };
+}
+
+/**
  * The branch `r` of expression `e` with its name: its shape's (shapeName), else, when its name would be its own sum with
  * numbers, `fallback` (formulas.cjs `fallback`, the source's name); null leaves it as it is.
  */
