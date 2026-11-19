@@ -71,7 +71,8 @@ test("two unnamed steps of the same level each give their parts, and the ⓘ sti
   ]);
 });
 
-test("a step whose own ⓘ does not close stays a row, with its parts under it", () => {
+  const off = percent(5);
+  delete off.xf;
   const off: Row = { ...percent(5), xf: undefined };
   const { kids } = opened([read("Invented.a", 4), off], 4.2);
   expect(kids.map((k) => [k.name, k.value])).toEqual([
