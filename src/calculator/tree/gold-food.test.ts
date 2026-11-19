@@ -89,14 +89,18 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
-  const [fam, other] = kidsOf(family);
+  // every source in "Other": no "🔹 Other" group beside a "🔹 Other" group in %, the sources in % the pool's own rows,
+  // each as its +N%, that still add 0.2 to it (A34, option B of Vinicius's answer)
+  const [fam, ...other] = kidsOf(family);
   expect([fam?.code, fam?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
-  expect([other?.name, other?.combine, other?.value]).toEqual([
-    "🔹 Other",
-    "percent",
-    near(0.2),
-  ]);
-  expect(sourcesOf(other)).toEqual([
+  expect(other.map((k) => k.fmt)).toEqual(["%", "%", "%", "%"]);
+  expect(other.reduce((a, k) => a + Number(k.value), 0) / 100).toBeCloseTo(
+    0.2,
+    9,
+  );
+  expect(
+    other.flatMap((k) => (k.code === null ? [] : [[k.code, k.value]])),
+  ).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
     ["DNSM.GameCache.v", 5],
