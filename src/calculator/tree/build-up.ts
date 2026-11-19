@@ -13,6 +13,7 @@
 import { curveFormula, curveText, fx3, maxReachedOf } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
+import { isOperator } from "./math.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -248,17 +249,26 @@ export function branchCheck(r: Row, rows: readonly Row[]): boolean {
 }
 
 type Formula = Row["node"]["formula"];
-const OPERATOR = /^[×÷+−*/(),^:-]$/;
-/** Atoms as words, a space between two terms but inside brackets and before a comma. */
+const SIGN = /^[×÷+−*/(),^:-]$/;
+/** A function's name among the atoms ("floor", "log₁₀"), which its bracket follows with no space. */
+const isFn = (t: string | undefined) => !!t && isOperator(t) && !SIGN.test(t);
+/** Atoms as words, a space between two terms but inside brackets, before a comma and after a function's name. */
 const joined = (ts: readonly string[]) =>
-  ts.join(" ").replace(/\( /g, "(").replace(/ \)/g, ")").replace(/ ,/g, ",");
+  ts
+    .reduce(
+      (s, t, i) => (i === 0 ? t : `${s}${isFn(ts[i - 1]) ? "" : " "}${t}`),
+      "",
+    )
+    .replace(/\( /g, "(")
+    .replace(/ \)/g, ")")
+    .replace(/ ,/g, ",");
 /** The two lines of an ⓘ. */
 function linesOf(f: NonNullable<Formula>): [string, string] {
   if (!Array.isArray(f)) return f.rule;
   const [terms, numbers] = f;
   let i = 0;
   const filled = terms.map((t) =>
-    OPERATOR.test(t) ? t : fx3(numbers[i++] ?? NaN),
+    isOperator(t) ? t : fx3(numbers[i++] ?? NaN),
   );
   return [joined(terms), `${joined(filled)} = ${fx3(numbers.at(-1) ?? NaN)}`];
 }

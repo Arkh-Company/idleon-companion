@@ -9,6 +9,7 @@ import type { Joins } from "./flatten.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { inPool, isStep } from "./inline.ts";
 import { besidePools } from "./pool-rest.ts";
+import { citing } from "./build-up.ts";
 import { formulaOut } from "./math.ts";
 import {
   chainPools,
@@ -200,7 +201,8 @@ function pooledLevel(
   chain: boolean,
   { steps, writerOf, joins }: FirstLevelContext,
   keep = chain,
-): { rows: Row[]; formula: Node["formula"] } {
+  cite = true,
+): ReturnType<typeof besidePools> {
   // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
   const out = poolRows(
     chain ? pools : pools.map((p) => ({ ...p, rows: mould(p.rows) })),
@@ -211,7 +213,8 @@ function pooledLevel(
   // its checks and its data rows stay after the pools
   const rest = keep ? restOf(rows, steps) : [];
   // only pools beside each other: a read a pool shows leaves (tree/pool-rest.ts)
-  return besidePools([...out.rows, ...rest], out.formula);
+  // its checks said in its ⓘ when `cite` (A39)
+  return besidePools([...out.rows, ...rest], cite ? out.formula : null);
 }
 
 /**
@@ -228,8 +231,10 @@ export function chainLevel(
     steps && termAt ? chainPools(steps, { value }, termAt, ownCache) : null;
   if (!Array.isArray(pools)) return null;
   const v = typeof value === "boolean" ? Number(value) : (value ?? NaN);
+  // its checks stay rows here: the ⓘ that says them is the pair's, made where the level is placed (tree/places.ts)
   return {
-    rows: pooledLevel(rows, { name: "", value }, pools, true, ctx).rows,
+    rows: pooledLevel(rows, { name: "", value }, pools, true, ctx, true, false)
+      .rows,
     pair: poolsPair(pools, v),
   };
 }
@@ -323,9 +328,13 @@ export function firstLevel(
   if (rounding && rounded)
     return {
       rows: rounded.rows,
-      formula: formulaOut(
-        roundedPair(rounding, rounded.pools, v),
-        rounded.pools.map((p) => p.name),
+      // the checks beside its pools said after the rounding (A39)
+      formula: citing(
+        formulaOut(
+          roundedPair(rounding, rounded.pools, v),
+          rounded.pools.map((p) => p.name),
+        ),
+        rounded.checks,
       ),
       ...(rounded.open ? { chainOpen: true as const } : {}),
     };
