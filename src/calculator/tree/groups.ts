@@ -147,20 +147,24 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
 }
 
 /**
- * The ⓘ of a pool or group from its rows: their sum or product, a bonus in % standing alone divided by 100 (FR-017);
- * none for a single row that gives it whole (it is the row's).
+ * The ⓘ of a pool or group from its rows: their sum or product, a bonus in % standing alone divided by 100 (FR-017),
+ * and so a group in %, in the unit its row shows (+24% is 24 ÷ 100); none for a single row that gives it whole (it is
+ * the row's).
  */
 export function ownPair(
   rows: readonly Row[],
   product: boolean,
   value: number,
 ): [string, string] | null {
-  if (rows.length < 2 && !rows.some((r) => r.percent)) return null;
+  const inPercent = (r: Row) => r.node.combine === "percent";
+  const cuts = (r: Row) => !!r.percent || inPercent(r);
+  if (rows.length < 2 && !rows.some(cuts)) return null;
   const op = product ? " × " : " + ";
-  const cut = (r: Row, t: string) => (r.percent ? `${t} ÷ 100` : t);
+  const cut = (r: Row, t: string) => (cuts(r) ? `${t} ÷ 100` : t);
+  const shown = (r: Row) => (inPercent(r) ? vOf(r) * 100 : vOf(r));
   return [
     rows.map((r) => cut(r, termOf(r.node))).join(op),
-    `${rows.map((r) => cut(r, fx3(vOf(r)))).join(op)} = ${fx3(value)}`,
+    `${rows.map((r) => cut(r, fx3(shown(r)))).join(op)} = ${fx3(value)}`,
   ];
 }
 
