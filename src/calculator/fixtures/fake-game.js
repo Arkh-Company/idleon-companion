@@ -1119,6 +1119,16 @@ lime.$scripts.N = function (_exports, $global) {
     for (var j = 0; j < 2; j++) d.TreeZero[j] = d.TreeZero[j] + s.TreeOwned;
     return d.TreeZero[0] + d.TreeZero[1] + s.TreeBase;
   };
+  // A running total that starts from a source (TreeBase, 4) and whose turns add 0 (009 T023 r2)
+  Blocks._customBlock_TreeStartTotal = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeStart = [];
+    d.TreeStart.push(0);
+    d.TreeStart[0] = s.TreeBase;
+    for (var i = 0; i < 2; i++) d.TreeStart[0] = d.TreeStart[0] + s.TreeOwned;
+    return d.TreeStart[0] + s.TreeLevel;
+  };
   Blocks._customBlock_TreeArcade = function () {
     return Blocks._customBlock_ArcadeBonus(0) + 1;
   };
