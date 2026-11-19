@@ -68,12 +68,12 @@ const RULES: readonly Rule[] = [
     // 100⌋ for The Slab's bubbles, c = ⌊max(0, Tome points − 5000) ÷ 2000⌋ for the Tome's
     name: (_at, reads) =>
       reads().includes("Cards[1].length")
-        ? { name: "Base AGI and LUK per 100 items found, shown on The Slab" }
+        ? { name: "Per 100 items found, shown on The Slab" }
         : reads().some((p) => p.endsWith("._GenInfo[84]"))
-          ? { name: "% AGI for every 2000 Tome Completion Points over 5000" }
+          ? { name: "Every 2000 Tome Completion Points over 5000" }
           : undefined,
     proof:
-      "N.js TalentCalc -2 (the bubbles): the box is the cards found ÷ 100, then the Tome points over 5000 ÷ 2000; the names are AlchemyDescription SLABO_AGILITY and TOME_AGILITY",
+      "N.js TalentCalc -2 (the bubbles): the box is the cards found ÷ 100, then the Tome points over 5000 ÷ 2000; the names are the texts of AlchemyDescription SLABO_AGILITY and TOME_AGILITY without their stat, for every bubble that reads the box",
   },
   {
     path: "DNSM.TKnS_DN",
