@@ -80,8 +80,12 @@ function curveLevel(lv: Level): BuiltUp | null {
   const w = (s: string) => (wrap ? `(${s})` : s);
   // a curve times a factor: the ⓘ says how much of its max the curve alone reached (decision of 18/11), so it is a rule
   const share = others.length ? maxReachedOf(c, vOf(cr)) : null;
+  // rounded down, so that below the max never reads 100% (the max itself, within a float's error, does)
+  const percent = share
+    ? (Math.floor(share.share * 1000 + 1e-9) / 10).toFixed(1)
+    : "";
   const note = share
-    ? ` (the curve is at ${(share.share * 100).toFixed(1)}% of its max ${fx3(share.max)})`
+    ? ` (the curve is at ${percent}% of its max ${fx3(share.max)})`
     : "";
   const f: Pair = [
     [w(base[0]), ...others.map((r) => termOf(r.node))].join(" × ") + note,
