@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.8.0...v0.9.0) (2026-11-19)
+
+
+### Features
+
+* system mould for the formula trees ([#40](https://github.com/Arkh-Company/idleon-companion/issues/40)) ([26bd3c1](https://github.com/Arkh-Company/idleon-companion/commit/26bd3c110468d8d9e083415091cfa246339f9217))
+
+
+### Bug Fixes
+
+* app-followups ([#46](https://github.com/Arkh-Company/idleon-companion/issues/46)) ([7c22c5b](https://github.com/Arkh-Company/idleon-companion/commit/7c22c5b0b314a562288b3de2688384578f774653))
+* tree-names ([#44](https://github.com/Arkh-Company/idleon-companion/issues/44)) ([5db929c](https://github.com/Arkh-Company/idleon-companion/commit/5db929c1abd98202b09f1b2587e0b94b7615df1d))
+* tree-scratch-keys ([#43](https://github.com/Arkh-Company/idleon-companion/issues/43)) ([db9696e](https://github.com/Arkh-Company/idleon-companion/commit/db9696ef42e6685ad9689ba6c6f2fa031afb8950))
+* tree-shape ([#45](https://github.com/Arkh-Company/idleon-companion/issues/45)) ([3d9f61d](https://github.com/Arkh-Company/idleon-companion/commit/3d9f61d7748551df02412c76fb1d6c9848f41cef))
+
 ## [0.8.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.7.0...v0.8.0) (2026-11-17)
 
 
