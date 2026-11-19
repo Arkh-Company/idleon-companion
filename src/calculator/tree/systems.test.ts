@@ -174,6 +174,53 @@ test.each<[string, string, string]>([
   expect(s && systemLabel(s)).toBe(label);
 });
 
+// Family 15 of the audit of 19/11: the systems Vinicius named (decision 4), and the existing systems whose block had
+// no rule, each by the block a source calls (the game's own block and path names, invented arguments)
+test.each<[string, string, string]>([
+  ["a family bonus", "DNSM.FamBonusQTYs[7]", "👪 Family Bonuses"],
+  [
+    "Royal Guardian keeps its own family bonus",
+    "DNSM.FamBonusQTYs[32]",
+    "🏰 Royal Guardian",
+  ],
+  ["any Bubba mode", 'Bubbastuff("TotUpgBonus", 0, 0)', "🥩 Bubba"],
+  ["a Bubba cell", "Bubba[0][1]", "🥩 Bubba"],
+  ["the Clamworks", 'Thingies("ClamWorkBonus", 8, 0)', "🐚 Clam"],
+  ["a Clam cost", 'Thingies("Clam_Cost", 1, 1)', "🐚 Clam"],
+  ["a Rift reward", 'RiftStuff("RiftSkillBonus,19", 2)', "🌀 Rift"],
+  ["a Rift star sign unlock", 'RiftStuff("enabledStarSigns", 0)', "🌀 Rift"],
+  ["Killroy's shop", 'RandomEvent("KillroyBonuses", 3, 0)', "💀 Killroy"],
+  ["a talent's calc", "TalentCalc(328)", "🎯 Talents"],
+  ["the talents' calc cache", "DNSM.CalcTalentMAP[635]", "🎯 Talents"],
+  ["the arcade's doubler cache", "DNSM.ArcadBonDNz[14]", "🕹️ Arcade"],
+  ["a bundle received", "BundlesReceived.bun_v", "🎁 Bundles"],
+  ["a bundle the block checks", 'Thingies("Have_ban_i", 0, 0)', "🎁 Bundles"],
+  ["a Holes2 mode", 'Holes2("Fount_MarbleizeCost", 0, 1)', "🕳️ Holes"],
+  [
+    "a Holes mode no tag names",
+    'Holes("MeasurementQTYfound", 11, 99)',
+    "🕳️ Holes",
+  ],
+  ["a Minehead upgrade", 'Minehead("UpgradeQTY", 4, 0)', "⛏️ Minehead"],
+  ["a Glimbo trade", 'Minehead("GlimboTotalTrades", 0, 0)', "🎲 Glimbo"],
+  ["a Summoning upgrade", 'Summoning("SummUpgBonus", 12, 0)', "🐲 Summoning"],
+  ["a lab line", 'Labb("BonusLineWidth", 0, 0)', "🧪 Lab"],
+  ["a lab cell", "Lab[1][2]", "🧪 Lab"],
+  ["a stat of the character", 'TotalStats("Accuracy")', "🍀 LUK / Stats"],
+])("family 15: %s", (_name, code, label) => {
+  const s = systemOf(code);
+  expect(s && systemLabel(s)).toBe(label);
+});
+
+test("a Labb sigil stays a Sigil and a vote stays Voting: the mode rules come before the block's", () => {
+  const sigil = systemOf('Labb("SigilBonus", 0, 3)');
+  const vote = systemOf('Summoning("VotingBonusz", 27)');
+  expect([sigil && systemLabel(sigil), vote && systemLabel(vote)]).toEqual([
+    "🔮 Sigils",
+    "🗳️ Voting",
+  ]);
+});
+
 test("a block the game only calls as a curve or a log is a helper, of no system of its own", () => {
   expect(isHelper('ArbitraryCode5Inputs("decay", 10, 100, 101, 0, 0)')).toBe(
     true,
