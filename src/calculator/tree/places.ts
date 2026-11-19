@@ -18,6 +18,7 @@ import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
+import type { LevelOf } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
 import { byRole, inlined, isStep } from "./inline.ts";
@@ -257,7 +258,7 @@ export function makePlaces(ctx: PlaceContext) {
         { id, code: lv.code },
         [...w.rows, ...(lv.row.below ?? [])],
         lv.at,
-        vOf(lv.row),
+        { total: vOf(lv.row), formula: w.formula, aside: lv.row.below ?? [] },
       ),
     };
   }
@@ -270,17 +271,21 @@ export function makePlaces(ctx: PlaceContext) {
     parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
     at: At,
-    /** The level's value: its calls repeated are one unless they are the parts of its sum (audit family 8). */
-    total?: number,
+    /**
+     * The level's value, ⓘ and reads beside it: its rows repeated are one unless they are the parts of its sum or its
+     * ⓘ cites them each time (audit family 8, FR-008).
+     */
+    of: LevelOf = {},
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
     // FR-016: a source a game-bug rule marks stays repeated
     const marked = (code: string) =>
       gameBugOf(ctx.bugs, parent.code, code) !== null;
     // opus2Arena: the yes/no beside the arena's count is named as the count
-    const sum =
-      total !== undefined && Number.isFinite(total) ? total : undefined;
-    return besideArena(oneOfEach(rows, marked, sum)).map((x) => {
+    const { total, ...rest } = of;
+    const kept =
+      total !== undefined && Number.isFinite(total) ? { ...rest, total } : rest;
+    return besideArena(oneOfEach(rows, marked, kept)).map((x) => {
       // opus5's openStatue: the statue's base bonus, over the recording
       const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
