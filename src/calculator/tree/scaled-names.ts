@@ -66,7 +66,8 @@ function sourceName(
   if (talent && !talent.node.flags.unnamed) return talent.node.name;
   const parts = at.rows.filter((r) => !noSource(r));
   const [p] = parts;
-  if (!p || parts.length !== 1) return null;
+  // a pool or a system's group has the app's name, no source's (answer B of 20/11)
+  if (!p || parts.length !== 1 || p.node.role !== "piece") return null;
   if (!p.node.flags.unnamed) {
     const name = p.node.name;
     // a bonus names what it scales; a count (a quantity, a level, a choice) only how many
