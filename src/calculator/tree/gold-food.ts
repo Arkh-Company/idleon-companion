@@ -1,6 +1,6 @@
 // Golden Food (spec 008, T023): the port of pieces.cjs `explainRaw` `goldFood` from the bench at BASELINE-4. The block's
 // steps vary by its key: [the shared multiplier, the worn food?, …, the emporium's?]. Step 0 is the multiplier, a set's
-// multi × (the Family Bonus 66, at least 1, + its sources ÷ 100); the worn food is an op at step 1 with a log call of
+// multi × (the family bonus of key 66, at least 1, + its sources ÷ 100); the worn food is an op at step 1 with a log call of
 // its own (its quantity); the emporium's is the last op "+" after it with a log call (its level), added to the bonus
 // the block had before. Each row has the ⓘ of its step. A food is named by the item table's text (tree/table-names.ts);
 // with none, its row keeps the generic name (the bench writes the item's id).
@@ -11,6 +11,7 @@ import { flat, topOp } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
 import { near } from "./math.ts";
 import { isNameText } from "./name-text.ts";
+import { termName } from "./names.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -72,6 +73,11 @@ function part(
 }
 /** The block's literal 0.05, bonus = Amount × multi × 0.05 × … (N.js GoldFoodBonuses; the Vinicius's name of 19/11). */
 const RATE = "Base rate (× 0.05)";
+/** The family bonus the shared multiplier takes, of class 33 (N.js GoldFoodBonuses: max(FamBonusQTYs[66], 1)). */
+const FAMILY = "DNSM.FamBonusQTYs[66]";
+/** Its name by its game text, without its tag; null with no name yet (the ⓘ then writes its path, FR-012a). */
+const familyName = () =>
+  termName(FAMILY)?.replace(/\s*\(family bonus\)$/, "") ?? null;
 /** A source in the sources' ⓘ: its name without its tag in parentheses, or its code when it has no name. */
 export const sourceTerm = (r: Row) =>
   r.node.flags.unnamed
@@ -138,8 +144,9 @@ export const equippedName = (reads: Reads): string | null =>
   foodName("Equipped", foodTexts(reads).foodText);
 
 /**
- * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(Family Bonus 66, 1) +
- * Sources ÷ 100), when the step gives it; else null.
+ * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(<the family bonus>, 1)
+ * + Sources ÷ 100), when the step gives it; else null. The family bonus is FamBonusQTYs[66] by its game text (19/11),
+ * without its tag, else its path (FR-012a).
  */
 export function multiFormula(s0: Step, reads: Reads): Pair | null {
   const [secret, rest] = flat(s0.e, "*");
@@ -150,7 +157,7 @@ export function multiFormula(s0: Step, reads: Reads): Pair | null {
   const sumV = Number(sumE?.v);
   return sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
     ? [
-        "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+        `SECRET_SET multi × (max(${familyName() ?? FAMILY}, 1) + Sources ÷ 100)`,
         `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
       ]
     : null;
@@ -223,7 +230,7 @@ export function goldFood(
       "GFood Multi",
       s0.v,
       level(s0.v, [
-        part("Family Bonus 66", fam),
+        part(termName(FAMILY), fam),
         part("Sources ÷ 100", sumE ? sumV / 100 : null, level(sumV, sources), {
           f: sourcesF,
         }),

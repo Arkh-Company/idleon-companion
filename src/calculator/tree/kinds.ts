@@ -188,7 +188,7 @@ export const RULES: readonly KindRule[] = [
     "owned",
   ),
   rule(
-    /\(sign \d+\)|^Endless win|^Battle \d+ win|\(artifact \d+\)|\(palette \d+\)|^Family Bonus \d+$|^Obols$|^Equinox Symbols$/,
+    /\(sign \d+\)|^Endless win|^Battle \d+ win|\(artifact \d+\)|\(palette \d+\)|\(family bonus\)$|^Obols$|^Equinox Symbols$/,
     "rawBonus",
     "bench pieces.cjs RULES",
   ),

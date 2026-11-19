@@ -34,6 +34,19 @@ export const TOME_PATHS: ReadonlyMap<string, number> = new Map([
   [`${GEN_INFO(24, 623)}[143][9]`, 71],
 ]);
 
+/**
+ * A text of the game's capitals in title case, as clean writes them (pieces.cjs clean F2-ROMAN), the abbreviations the
+ * game writes in capitals inside its mixed-case texts kept (TaskShopDesc: "AFK Gains", "EXP Gain"); a text in mixed
+ * case as it is (19/11: "Higher Bonuses From Golden Foods").
+ */
+const KEEP = /^(?:LV|EXP|AFK|HP|MP|STR|AGI|WIS|LUK|DMG)\W*$/;
+const titleCaps = (t: string): string =>
+  t !== t.toUpperCase()
+    ? t
+    : t
+        .split(" ")
+        .map((w) => (KEEP.test(w) ? w : w.charAt(0) + w.slice(1).toLowerCase()))
+        .join(" ");
 /** `text` in `form`, or null with no text. */
 const with_ = (text: string | null, form: (t: string) => string) =>
   text === null ? null : form(text);
@@ -278,7 +291,7 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("family", Math.floor(n(m) / 2)),
-        (t) => `${t.replace(/^@\s*/, "")} (family bonus)`,
+        (t) => `${titleCaps(t.replace(/^@\s*/, ""))} (family bonus)`,
       ),
   ),
 ];
