@@ -3,6 +3,7 @@
 // "Other" and in %, they do not force a group: the rows stay as they are, each bonus in % as its +N%. Invented
 // arguments, apart from the game's own block names the rules read.
 import { expect, test } from "vitest";
+import { ownPair } from "./groups.ts";
 import { bySystem } from "./mould.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -43,7 +44,6 @@ test("a group in % of a system beyond the V1 comes right after the system's own 
 });
 
 test("when every source is in Other, in %, the % force no group: the rows stay, each bonus in % as its +N%", () => {
-  // "Other" beside "Other" in % is two groups still: their two names are a question for Vinicius (A34)
   const rows = [
     src("InventedBlock(2)", 20, true),
     src("InventedBlock(3)", 30, true),
@@ -52,5 +52,39 @@ test("when every source is in Other, in %, the % force no group: the rows stay, 
   expect(out.map((r) => [r.node.code, r.node.fmt ?? null])).toEqual([
     ["InventedBlock(2)", "%"],
     ["InventedBlock(3)", "%"],
+  ]);
+});
+
+test("when every source is in Other, Other beside Other in % is no two groups: the rows stay, each bonus in % as its +N%", () => {
+  // option B of Vinicius's answer (A34): no "🔹 Other" group and no "🔹 Other" group in %, no "Other#2"
+  const out = bySystem(
+    [
+      src("InventedBlock(1)", 2),
+      src("InventedBlock(2)", 20, true),
+      src("InventedBlock(3)", 30, true),
+    ],
+    "sum",
+    writerOf,
+  );
+  expect(out.map((r) => [r.node.code, r.node.fmt ?? null])).toEqual([
+    ["InventedBlock(1)", null],
+    ["InventedBlock(2)", "%"],
+    ["InventedBlock(3)", "%"],
+  ]);
+});
+
+test("Other beside Other in % as rows: the pool's ⓘ divides each bonus in % by 100 and closes", () => {
+  const rows = bySystem(
+    [
+      src("InventedBlock(1)", 2),
+      src("InventedBlock(2)", 20, true),
+      src("InventedBlock(3)", 30, true),
+    ],
+    "sum",
+    writerOf,
+  );
+  expect(ownPair(rows, false, 2.5)).toEqual([
+    "InventedBlock(1) + InventedBlock(2) ÷ 100 + InventedBlock(3) ÷ 100",
+    "2 + 20 ÷ 100 + 30 ÷ 100 = 2.5",
   ]);
 });
