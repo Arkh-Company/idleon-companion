@@ -4,8 +4,8 @@
 // place (tree/places.ts), after the passes over it. With no group "At 0" nor "At ×1" (spec 009, FR-016), no group
 // counts its rows. Audit family 8: identical checks with no code (the game's loop checks the same thing once per item)
 // are one too, and identical calls with the same value are one unless they are separate parts of the level's sum
-// (FR-008). A row the level's ⓘ cites more than once is a part of its math each time: it stays as many times as the ⓘ
-// cites it, a leaf or a call (FR-008, the review of the phase).
+// (FR-008). A row the level's ⓘ cites more than once among its atoms is a part of its math each time: it stays as many
+// times as the ⓘ cites it, a leaf or a call (FR-008, the review of the phase); a rule ⓘ and a check keep the rule above.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { vOf } from "./formulas.ts";
 import { near } from "./math.ts";
@@ -25,11 +25,17 @@ function keyOf(r: Row, marked: (code: string) => boolean): string | null {
   return `${bare(r) ? "leaf" : "call"}|${code}|${String(value)}`;
 }
 
-/** How many times the ⓘ `f` names the term `t`: its atoms equal to it, or its rule's line of names around it. */
-function citesOf(f: CalcTreeNode["formula"] | undefined, t: string): number {
-  if (!f || !t) return 0;
-  if (Array.isArray(f)) return f[0].filter((a) => a === t).length;
-  return f.rule[0].split(t).length - 1;
+/**
+ * How many times the ⓘ `f` names the term `t`: its atoms equal to it. A rule's text counts none (its If joins every
+ * check, the repeated ones too, and a check said after the math names its read again), nor any check (a `check|` key).
+ */
+function citesOf(
+  f: CalcTreeNode["formula"] | undefined,
+  t: string,
+  key: string,
+): number {
+  if (!Array.isArray(f) || !t || key.startsWith("check|")) return 0;
+  return f[0].filter((a) => a === t).length;
 }
 
 /** The level of a placed row: its value, its ⓘ, and its rows that are no parts of its math (the reads beside it). */
@@ -68,7 +74,7 @@ export function oneOfEach(
   return rows.filter((r) => {
     const key = keyOf(r, marked);
     if (key === null) return true;
-    const cites = citesOf(formula, termOf(r.node));
+    const cites = citesOf(formula, termOf(r.node), key);
     const n = seen.get(key) ?? 0;
     const keep =
       cites > 1 ? n < cites : n === 0 || (apart && key.startsWith("call|"));
