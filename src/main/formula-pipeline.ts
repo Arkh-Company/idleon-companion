@@ -44,8 +44,7 @@ export function startFormulaPipeline(
   } | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
-  /** The other rows opened meanwhile: each one asked after the branch, or the silent rebuild, before it answers (the
-   * host keeps one waiting). */
+  /** The rows opened meanwhile, each asked once the branch or silent rebuild before it answers (the host keeps one). */
   let queued: { treeId: string; nodeId: string }[] = [];
   /** Whether the worker keeps the build of the tree on screen, which its branches come from. It drops it when it begins
    * another tree (tree-engine.ts), so a silent rebuild that leaves the tree on screen takes it away. */
@@ -352,6 +351,7 @@ export function startFormulaPipeline(
       live.setStale(closed);
       index.pause(closed);
       if (closed) {
+        clearTimeout(timer);
         host.stop();
         // The branch in flight and the ones waiting never come: the worker ended.
         const lost = [...(expanding ? [expanding] : []), ...queued];
