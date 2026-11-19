@@ -213,10 +213,28 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     "Working value of the game (FamBonusQTYs)",
     1,
   ]);
-  // the group in % in its row's unit, +20% as 20 ÷ 100
+  // every source in "Other", no group in %: each source in % in its row's unit, +8% as 8 ÷ 100 (A34, option B)
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other", "÷", "100"],
-    [1, 20, 100, 1.2],
+    [
+      "DNSM.FamBonusQTYs[66]",
+      "+",
+      "TreeReads()",
+      "÷",
+      "100",
+      "+",
+      "TreeBase",
+      "÷",
+      "100",
+      "+",
+      "DNSM.GameCache.v",
+      "÷",
+      "100",
+      "+",
+      "Fixed +3",
+      "÷",
+      "100",
+    ],
+    [1, 8, 100, 4, 100, 5, 100, 3, 100, 1.2],
   ]);
   // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools
   const pools = kidsOf(treeOf("atTwo", 999, 3, 0));
