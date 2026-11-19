@@ -238,7 +238,7 @@ function placeOf(
  * covers) that wrote the value read, the write the read saw, by the number of the last write the recording keeps in the
  * read (`seq`), else the call's first write of that value; and the write's place among the call's writes of the box.
  * The builders' pass's writes count (`spliced`), and a field's read comes from its box's write of the object, by `seq`.
- * `reads` are the paths the writer read for that write: its logged reads after its write before it, of any path.
+ * `reads` are the paths the writer read for that write, and `source` the read it copied, if any.
  */
 export function scratchWrites(
   writes: readonly RecWrite[],
@@ -247,13 +247,25 @@ export function scratchWrites(
   const all = [...writes, ...spliced];
   const byCall = byKey(all, (w) => `${String(w.node)}|${w.path}`);
   const byNode = byKey(all, (w) => String(w.node));
-  const readsFor = (n: RecNode, w: RecWrite | undefined) => () => {
+  /** The writer's logged reads after its write before `w`, of any path, and before `w`. */
+  const logged = (n: RecNode, w: RecWrite) => {
     const mine = byNode.get(String(n.id)) ?? [];
     const from = mine[mine.findIndex((x) => x === w) - 1]?.seq ?? -Infinity;
-    return (n.rx ?? []).flatMap(([p, , , s]) =>
-      s !== undefined && s >= from && s < (w?.seq ?? -1) ? [p] : [],
+    return (n.rx ?? []).filter(
+      ([, , , s]) => s !== undefined && s >= from && s < w.seq,
     );
   };
+  const writeOf = (n: RecNode, w: RecWrite, at: number): ScratchWrite => ({
+    call: n,
+    at,
+    seq: w.seq,
+    reads: () => logged(n, w).map(([p]) => p),
+    source: () =>
+      logged(n, w).findLast(
+        ([p, v]) =>
+          SCRATCH.exec(p)?.[0] !== SCRATCH.exec(w.path)?.[0] && near(v, w.v),
+      ),
+  });
   return (
     path: string,
     value: unknown,
@@ -264,14 +276,20 @@ export function scratchWrites(
       for (const p of n ? boxPaths(path) : []) {
         const list = byCall.get(`${String(n?.id)}|${p}`) ?? [];
         const at = list.length ? placeOf(list, p === path, value, seq) : -1;
-        if (n && at >= 0) return { call: n, at, reads: readsFor(n, list[at]) };
+        const w = list[at];
+        if (n && w) return writeOf(n, w, at);
       }
     return null;
   };
 }
-/** The write a scratch read comes from: its writer, its place among the writer's writes of the box, what it read. */
+/**
+ * The write a scratch read comes from: its writer, its place among the writer's writes of the box, its number, what it
+ * read and, for a write that copies a read (the start of a box), that read.
+ */
 export interface ScratchWrite {
   call: RecNode;
   at: number;
+  seq: number;
   reads: () => readonly string[];
+  source: () => LoggedRead | undefined;
 }

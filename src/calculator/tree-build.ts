@@ -21,6 +21,7 @@ import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads, scratchKey, scratchReads } from "./tree/links.ts";
 import { EARLIER_TURNS, readAgain } from "./tree/scratch-names.ts";
+import { startSource } from "./tree/cache-open.ts";
 import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
 import { chainContext } from "./tree/chain-context.ts";
@@ -102,11 +103,15 @@ export function buildTree(
     if (progress) return progress;
     // 009 T023: named by its own write, the one the read saw (by the number of the last write before it, in the turn of
     // the loop being opened), and open in that write's writer; a read of the write being opened above it is the total
-    // of the earlier turns: never a child of itself
+    // of the earlier turns, never a child of itself, unless it saw the box's start: that read is what the start copied
     const { turn, ...now } = caches.now();
     const inTurn = turn && turn.writer === reader?.id ? turn : undefined;
     const { writer: w, own } = writeOf(path, value, reader, linked, inTurn);
     const again = readAgain(now.opening, w, path, value);
+    const start = again && own ? startSource(own, path, entries) : null;
+    const [src, v] = start ?? [];
+    if (src && own)
+      return readRow(src, valueOf(v), linksOf(own.call).get(src), own.call);
     const by = again ? null : w;
     const node = row({
       pieceKey: again ? null : scratchKey(character, path, own),
