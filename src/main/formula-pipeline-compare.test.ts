@@ -225,6 +225,23 @@ test("a change at each reading asks the tree once in 10 s: the values are asked 
   });
 });
 
+test("a change waiting its 10 s is done by a tree asked of that reading or a later one: no build more after it", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(dropTree(CALCULATED.dropRate, 4));
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledOnce();
+  // the player opens the number again: its tree is of the reading that changed
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(dropTree(9, 7));
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  seconds(10);
+  h.setPair(pairAt(3, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+});
+
 test("the game closing with the tree asked again in silence keeps the tree on screen, stale", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
