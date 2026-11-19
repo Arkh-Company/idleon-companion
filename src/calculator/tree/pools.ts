@@ -7,7 +7,6 @@ import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { exprText, flat, topOp } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
-import { formulaOut } from "./math.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { added, addedRows } from "./percent.ts";
@@ -240,21 +239,6 @@ export function poolsPair(
       { s: "", sum: false },
     ).s;
   return [line((p) => p.name), `${line((p) => fx3(p.value))} = ${fx3(value)}`];
-}
-
-/** The root's ⓘ as the contract writes it (atoms). */
-export function poolsFormula(
-  pools: readonly Pool[],
-  value: number,
-): CalcTreeNode["formula"] {
-  const pair = poolsPair(pools, value);
-  return (
-    pair &&
-    formulaOut(
-      pair,
-      pools.map((p) => p.name),
-    )
-  );
 }
 
 /**

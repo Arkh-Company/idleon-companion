@@ -10,13 +10,7 @@
 // - a sigil (N.js Labb "SigilBonus"): bonus = (bonus at its tier) × (1 + Chilled Yarn) × (1 + vote bonus ÷ 100), the
 //   tier picking the table's column; the artifact = its base × its rarity's multiplier (N.js Sailing "ArtifactBonus");
 // - a card's bonus, its level and an equipped card (tree/build-up-cards.ts).
-import {
-  curveFormula,
-  curveOf,
-  curveText,
-  fx3,
-  maxReachedOf,
-} from "./curves.ts";
+import { curveFormula, curveText, fx3, maxReachedOf } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
 import type { Level } from "./places.ts";
@@ -27,6 +21,7 @@ import {
   built,
   codeOf,
   constRows,
+  curveIn,
   groupRow,
   parts,
   product,
@@ -49,17 +44,12 @@ import { meritocracyMulti } from "./factors.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
-const CURVE_CALL = /^ArbitraryCode5Inputs\((.*)\)$/;
-
 /** A level that is one curve times its multipliers: the curve's level and constants as rows, the curve in the ⓘ. */
 function curveLevel(lv: Level): BuiltUp | null {
   const cr = lv.rows.find(
     (r) => r.node.name.startsWith("Curve: ") && (r.group?.length ?? 0) >= 2,
   );
-  const args = cr && CURVE_CALL.exec(codeOf(cr))?.[1];
-  const c = args
-    ? curveOf("ArbitraryCode5Inputs", JSON.parse(`[${args}]`) as unknown[])
-    : null;
+  const c = cr ? curveIn(cr) : null;
   const roles = c && rolesOf(c);
   const last = cr?.group?.at(-1);
   if (!cr || !c || !roles || !last) return null;

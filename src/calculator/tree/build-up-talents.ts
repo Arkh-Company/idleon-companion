@@ -15,6 +15,7 @@ import {
   built,
   codeOf,
   constRows,
+  curveIn,
   fixedRow,
   groupRow,
   parts,
@@ -56,19 +57,6 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     ...built(lv, [level, ...constRows(c, roles)], f),
     ...(reached ? { maxReached: reached } : {}),
   };
-}
-
-const CURVE_CALL = /^ArbitraryCode5Inputs\((.*)\)$/;
-/** A curve row's curve, from its call. */
-function curveIn(r: Row) {
-  const args = CURVE_CALL.exec(codeOf(r))?.[1];
-  try {
-    return args
-      ? curveOf("ArbitraryCode5Inputs", JSON.parse(`[${args}]`) as unknown[])
-      : null;
-  } catch {
-    return null;
-  }
 }
 
 /**

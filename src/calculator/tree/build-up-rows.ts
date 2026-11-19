@@ -1,6 +1,7 @@
 // The rows the full build-up of a bonus makes (spec 009, FR-018; tree/build-up.ts): a constant by its role, a row
 // renamed, a branch of its parts with its ⓘ, and the level built up with its row's new ⓘ.
 import type { RecNode } from "../recording.ts";
+import { curveOf } from "./curves.ts";
 import type { Curve } from "./curves.ts";
 import { isCond, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
@@ -77,6 +78,19 @@ export const constRows = (
   ...(c[0] === "add" && c[2] === 0 ? [] : [fixedRow(b, c[2])]),
 ];
 export const codeOf = (r: Row): string => r.node.code ?? "";
+const CURVE_CALL = /^ArbitraryCode5Inputs\((.*)\)$/;
+/** A curve row's curve, from its call (N.js ArbitraryCode5Inputs); null for any other row. */
+export function curveIn(r: Row) {
+  const args = CURVE_CALL.exec(codeOf(r))?.[1];
+  try {
+    return args
+      ? curveOf("ArbitraryCode5Inputs", JSON.parse(`[${args}]`) as unknown[])
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 /** A branch of the code with one row of its value is that row (the merge tree/one-child.ts makes once it is placed). */
 export function unwrap(r: Row): Row {
   const one = r.group?.length === 1 ? r.group[0] : undefined;

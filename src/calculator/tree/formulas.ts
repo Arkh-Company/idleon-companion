@@ -74,8 +74,6 @@ function partName(r: Row): string {
   return input ? `curve of ${short(input)}` : "curve";
 }
 const unique = (xs: string[]) => new Set(xs).size === xs.length;
-/** The row's parts, which a formula may name (those at ×1 too). */
-const poolOf = (kids: readonly Row[]) => kids;
 const COMPARE = / [=≠<>≤≥] /;
 /** A check whose text a reader cannot follow ("0 = 0 and …"). */
 const unclean = (c: Row) =>
@@ -116,32 +114,31 @@ export const token = (key: string, fallback: string): string =>
   `${TL}${key}${TM}${fallback}${TR}`;
 /** formulas.cjs `resolveParts`: each part of the game's expression named as the row that shows it. */
 function resolveParts(kids: readonly Row[], text: string): string {
-  const pool = poolOf(kids);
   const plain = (x: Row, v: number) =>
     !x.node.code && near(vOf(x), v) && !isCond(x) && !COMPARE.test(nameOf(x));
   return text.replace(TOKEN, (_m, key: string, fallback: string) => {
     if (key.startsWith("c:")) {
       const at = key.lastIndexOf("@");
       const c = at > 0 ? key.slice(2, at) : key.slice(2);
-      const k = pool.find((x) => x.node.code === c);
+      const k = kids.find((x) => x.node.code === c);
       // [NR-C] a condition is no factor: its read keeps its own term
       if (k && isCond(k)) return fallback;
       if (k) return partName(k);
       const v = Number(key.slice(at + 1));
       // [R1-PATCH] a call that is one row of the branch of its expression: that branch, when it has the value read
-      const br = pool.filter(
+      const br = kids.filter(
         (x) =>
           !x.node.code &&
           near(vOf(x), v) &&
           kidsOf(x).some((y) => y.node.code === c),
       );
       if (br.length === 1 && br[0]) return partName(br[0]);
-      const same = pool.filter((x) => plain(x, v));
+      const same = kids.filter((x) => plain(x, v));
       return same.length === 1 && same[0] ? partName(same[0]) : fallback;
     }
     const v = Number(key.slice(2));
     // a yes/no never names a number of the sum
-    const same = pool.filter(
+    const same = kids.filter(
       (x) => near(vOf(x), v) && !isCond(x) && !COMPARE.test(nameOf(x)),
     );
     return same.length === 1 && same[0] ? partName(same[0]) : fallback;
@@ -187,8 +184,7 @@ function checksFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
 
 /** formulas.cjs `ifFormula`: the value the game picks with a yes/no. */
 function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
-  const pool = poolOf(kids);
-  let conds = pool.filter((k) => isCond(k) && !kidsOf(k).length);
+  let conds = kids.filter((k) => isCond(k) && !kidsOf(k).length);
   // a check that is only the start of another is left out
   conds = conds.filter(
     (c) => !conds.some((d) => d !== c && nameOf(d).startsWith(`${nameOf(c)} `)),
@@ -198,7 +194,7 @@ function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
   const v = vOf(n);
   const said = (c: Row) => (vOf(c) !== 0 ? short(c) : `not (${short(c)})`);
   // [NR-C] D-R5: the literal the block returns when its checks pass is said with all its checks
-  const fixed = pool.filter(
+  const fixed = kids.filter(
     (k) =>
       k.node.leaf === "fixedValue" &&
       k.node.name === "Fixed value" &&
@@ -214,7 +210,7 @@ function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
     conds.length > 1 &&
     v === 1 &&
     conds.some((c) => vOf(c) === 1) &&
-    !pool.some((k) => !isCond(k) && near(vOf(k), 1))
+    !kids.some((k) => !isCond(k) && near(vOf(k), 1))
   )
     return [`If ${conds.map(said).join(" and ")}: 1`, "yes → 1"];
   const [c] = conds;
@@ -227,7 +223,7 @@ function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
     )
   )
     return null;
-  const part = pool.filter((k) => !isCond(k) && near(vOf(k), v));
+  const part = kids.filter((k) => !isCond(k) && near(vOf(k), v));
   // a whole number with no part is the code's literal (the bench's own 0/1 of the yes/no is that literal too: a check is
   // 1 when it passes, and a failed one reaches here only beside the row of its 0)
   const literal = !part.length && Number.isInteger(v) && v !== 0;
@@ -362,12 +358,11 @@ export function termsOf(
   kids: readonly Row[],
   ...lines: (Pair | null | undefined)[]
 ): string[] {
-  const pool = poolOf(kids);
   const fallbacks = lines.flatMap((l) =>
     [...(l?.[0] ?? "").matchAll(TOKEN)].map((m) => m[2] ?? ""),
   );
   return [
-    ...pool.flatMap((k) => [nameOf(k), short(k), partName(k)]),
+    ...kids.flatMap((k) => [nameOf(k), short(k), partName(k)]),
     ...fallbacks,
   ].filter((t) => /[(),[\]]/.test(t));
 }

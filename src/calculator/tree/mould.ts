@@ -28,7 +28,6 @@ import { bySystem, ownPair } from "./groups.ts";
 import type { WriterOf } from "./groups.ts";
 
 export { bySystem } from "./groups.ts";
-export type { WriterOf } from "./groups.ts";
 
 /** The root's rows as its steps: a step named by its shape loses that name; a branch's own rows are its parts, with
  * their names by shape for its ⓘ. */
