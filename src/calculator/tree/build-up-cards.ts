@@ -8,6 +8,7 @@
 //   that card;
 // - a card's level (N.js CardLv): the card lists of the account raise it to 7 or 6 when it is lower; each check is in
 //   the ⓘ, never a row.
+import { FORCED } from "./code-formulas.ts";
 import { fx3 } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
@@ -146,7 +147,7 @@ export function cardStars(lv: Level): BuiltUp | null {
     // the checks in words: the numbers line stays the level's math
     [
       // a level the list forced says its list already
-      `${base[0]}${base[0].startsWith("Forced to") ? "" : `, at least ${at.join(" and ")} by the ${lists} of the account`} (${checks.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`).join("; ")})`,
+      `${base[0]}${base[0].startsWith(FORCED) ? "" : `, at least ${at.join(" and ")} by the ${lists} of the account`} (${checks.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`).join("; ")})`,
       base[1],
     ],
     true,

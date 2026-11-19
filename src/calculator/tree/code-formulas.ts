@@ -37,6 +37,8 @@ const FN: Readonly<Record<string, (...x: number[]) => number>> = {
   pow: Math.pow,
   abs: Math.abs,
 };
+/** How the ⓘ of a card level the account's card list forced starts (N.js CardLv; tree/build-up-cards.ts reads it). */
+export const FORCED = "Forced to";
 /** A 0 of the code or of an earlier step: the start of a total. */
 export const isZero = (x: Expr) =>
   (x.t === "val" || x.t === "num") && Number(x.v) === 0;
@@ -269,7 +271,7 @@ export function makeCodeFormulas(
       if (v === 0) return ["0 while no card is collected", "0 cards → 0"];
       if (v - 1 > 4 + r + sp)
         return [
-          `Forced to ${String(v)} by the card list of the account`,
+          `${FORCED} ${String(v)} by the card list of the account`,
           `→ ${String(v)}`,
         ];
       // [NR-C] C2-3: an ⓘ is plain arithmetic a reader can recompute
