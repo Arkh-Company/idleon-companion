@@ -12,9 +12,14 @@ const upper = (value: number): Row => ({
   node: row({ pieceKey: "u", value, code: "Call1()", kids: "lazy" }),
   open: 1,
 });
-/** 1 + Invented.p ÷ 100, a branch named by its shape only, as tree/shapes.ts names it. */
-const percent = (p: number, name = "Multiplier"): Row => ({
-  node: row({ pieceKey: null, value: 1 + p / 100, code: null, name }),
+/** 1 + Invented.p ÷ 100, a branch named by its shape only, as tree/shapes.ts names it; null: the generic name. */
+const percent = (p: number, name: string | null = "Multiplier"): Row => ({
+  node: row({
+    pieceKey: null,
+    value: 1 + p / 100,
+    code: null,
+    ...(name === null ? {} : { name }),
+  }),
   open: null,
   group: [
     fixed("Base 1", 1),
@@ -46,7 +51,7 @@ test("a step 1 + x ÷ 100 inside a product gives its source to the row above, an
 
 test("two unnamed steps of the same level each give their parts, and the ⓘ still closes", () => {
   const { kids, node } = opened(
-    [percent(5, "Game value"), percent(10, "Game value")],
+    [percent(5, null), percent(10, null)],
     1.155,
   );
   expect(kids.map((k) => k.code)).toEqual(["Invented.p", "Invented.p"]);
