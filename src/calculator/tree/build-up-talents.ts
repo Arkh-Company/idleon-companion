@@ -58,6 +58,66 @@ export function talent(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   };
 }
 
+const CURVE_CALL = /^ArbitraryCode5Inputs\((.*)\)$/;
+/** A curve row's curve, from its call. */
+function curveIn(r: Row) {
+  const args = CURVE_CALL.exec(codeOf(r))?.[1];
+  try {
+    return args
+      ? curveOf("ArbitraryCode5Inputs", JSON.parse(`[${args}]`) as unknown[])
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * An account's talent (N.js getbonus2(1, talent, -1), audit families 1 and 8): the best of the characters' curves. Its
+ * Talent level is the best character's points plus the All-talent levels, each character a row by its number; the curve
+ * of each character is no row, the best one's in the ⓘ. Null when the rows do not give the value.
+ */
+export function accountTalent(lv: Level): BuiltUp | null {
+  const call = lv.call;
+  const v = vOf(lv.row);
+  if (call?.b !== "getbonus2" || call.a[2] !== -1 || !v) return null;
+  const own = new RegExp(
+    `^PlayerDATABASE\\[\\d+\\]\\.SkillLevels\\[${String(call.a[1])}\\]$`,
+  );
+  const curves = lv.rows.filter((r) => curveIn(r) !== null);
+  const chars = lv.rows.filter((r) => own.test(codeOf(r)));
+  const all = lv.rows.find((r) => ALL_TALENT.test(codeOf(r)));
+  const best = curves.find((r) => near(vOf(r), v));
+  const c = best && curveIn(best);
+  const roles = c && rolesOf(c);
+  const top = Math.max(...chars.map(vOf));
+  const rest = parts(lv.rows).filter(
+    (r) => r !== all && !curves.includes(r) && !chars.includes(r),
+  );
+  if (!c || !roles || !chars.length || rest.length) return null;
+  const add = all ? vOf(all) : 0;
+  if (!near(top + add, c[3])) return null;
+  const names = `max(${chars.map((r) => termOf(r.node)).join(", ")})`;
+  const nums = `max(${chars.map((r) => fx3(vOf(r))).join(", ")})`;
+  const level = groupRow(
+    "Talent level",
+    c[3],
+    [...chars, ...(all ? [all] : [])],
+    all
+      ? [
+          `${names} + ${termOf(all.node)}`,
+          `${nums} + ${fx3(add)} = ${fx3(c[3])}`,
+        ]
+      : [names, `${nums} = ${fx3(c[3])}`],
+  );
+  const f = curveFormula(c, v, "Talent level", roles);
+  if (!f) return null;
+  const reached = maxReachedOf(c, v);
+  return {
+    ...built(lv, [level, ...constRows(c, roles)], f),
+    ...(reached ? { maxReached: reached } : {}),
+  };
+}
+
 const MAX_CALL = "LegendTalent_MaxLV";
 
 /** The Points with the game's max, that opens into what makes it: the max caps the points the player spends. */

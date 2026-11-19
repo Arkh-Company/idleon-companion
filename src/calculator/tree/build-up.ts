@@ -36,6 +36,7 @@ import {
 } from "./build-up-rows.ts";
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 import {
+  accountTalent,
   allTalentLevels,
   legendMax,
   legendTalent,
@@ -241,6 +242,7 @@ function sigil(lv: Level, ctx: BuildUpContext): BuiltUp | null {
 export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   return (
     talent(lv, ctx) ??
+    accountTalent(lv) ??
     legendTalent(lv, ctx) ??
     legendMax(lv) ??
     allTalentLevels(lv) ??
