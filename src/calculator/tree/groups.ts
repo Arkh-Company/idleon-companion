@@ -146,17 +146,21 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
   };
 }
 
-/** The ⓘ of a pool or group from its rows: their sum or product; none for a single row (it is the row's). */
+/**
+ * The ⓘ of a pool or group from its rows: their sum or product, a bonus in % standing alone divided by 100 (FR-017);
+ * none for a single row that gives it whole (it is the row's).
+ */
 export function ownPair(
   rows: readonly Row[],
   product: boolean,
   value: number,
 ): [string, string] | null {
-  if (rows.length < 2) return null;
+  if (rows.length < 2 && !rows.some((r) => r.percent)) return null;
   const op = product ? " × " : " + ";
+  const cut = (r: Row, t: string) => (r.percent ? `${t} ÷ 100` : t);
   return [
-    rows.map((r) => termOf(r.node)).join(op),
-    `${rows.map((r) => fx3(vOf(r))).join(op)} = ${fx3(value)}`,
+    rows.map((r) => cut(r, termOf(r.node))).join(op),
+    `${rows.map((r) => cut(r, fx3(vOf(r)))).join(op)} = ${fx3(value)}`,
   ];
 }
 
@@ -199,16 +203,16 @@ export function bySystem(
         : SYSTEM_ORDER.length - 1;
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
-  // a lone bonus in % stays a group: it adds a hundredth of its value
+  // a lone bonus in % stands alone too, as its +N% (FR-006, decision of 19/11): its pool's ⓘ divides it by 100
   return [
     ...[...groups.values()]
       .sort((a, b) => rank(a) - rank(b))
       .flatMap(({ s, pct, rows: rs }) =>
-        pct
-          ? [systemRow(s, "percent", rs)]
-          : rs.length === 1
-            ? rs
-            : [systemRow(s, combine, rs)],
+        rs.length === 1
+          ? rs.map((r) =>
+              pct ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+            )
+          : [systemRow(s, pct ? "percent" : combine, rs)],
       ),
     ...constants,
   ];
