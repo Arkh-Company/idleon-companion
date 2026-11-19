@@ -225,6 +225,29 @@ test("a change at each reading asks the tree once in 10 s: the values are asked 
   });
 });
 
+test("the game closing with the tree asked again in silence keeps the tree on screen, stale", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.p.status({ game: "closed", reader: "connecting" });
+  const t = h.last();
+  expect(t?.state).toBe("ready");
+  expect(t?.state === "ready" && t.stale).toBe(true);
+  expect(shown(h).kids).toEqual([7, 2]);
+});
+
+test("a tree asked again in silence that fails keeps the tree on screen, and says so in the log with its id", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.unavailable();
+  expect(h.last()?.state).toBe("ready");
+  expect(shown(h).kids).toEqual([7, 2]);
+  expect(h.log).toHaveBeenCalledWith({ event: "treeFailed", id: "dropRate" });
+});
+
 test("a branch asked keeps its turn: a change meanwhile is written in place, and the tree is asked only after the branch comes", () => {
   const h = readyDrop();
   h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
