@@ -69,7 +69,7 @@ function isStep(r: Row, op: Op): boolean {
  * The parts of row `r` in its place: each opens under the calls `r` opened under, and is a bonus in % when `r` is one
  * (rows.ts `percent`).
  */
-const movedUp = (r: Row, parts: Row[]): Row[] =>
+export const movedUp = (r: Row, parts: Row[]): Row[] =>
   parts.map((k) => ({
     ...k,
     ...(r.seen && !k.seen ? { seen: r.seen } : {}),
