@@ -185,16 +185,11 @@
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
-    "ponytail@ponytail": true,
+    "ponytail@ponytail": false,
     "superpowers@claude-plugins-official": false,
     "superpowers@superpowers-marketplace": false,
     "mattpocock-skills@mattpocock": false,
     "caveman@caveman": false
-  },
-  "extraKnownMarketplaces": {
-    "ponytail": {
-      "source": { "source": "github", "repo": "DietrichGebert/ponytail" }
-    }
   },
   "enabledMcpjsonServers": ["codegraph"],
   "hooks": {
