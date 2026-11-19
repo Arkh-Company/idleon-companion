@@ -4,15 +4,10 @@
 // written by hand, with the shape the recording gives.
 import { expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { curveRow, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { placed, recNode } from "./tree-fixture.ts";
+import { kidsIn, lazy, placed, recNode } from "./tree-fixture.ts";
 
-const lazy = (name: string, value: number, code: string): Row => ({
-  node: row({ pieceKey: code, value, code, name, kids: "lazy" }),
-  open: 9,
-});
 const points = (i: number, value: number): Row => {
   const code = `PlayerDATABASE[${String(i)}].SkillLevels[99]`;
   return {
@@ -39,8 +34,6 @@ const curve = (level: number): Row => {
     null,
   );
 };
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 
 /** The talent 99 of the account, the first of three characters with 409 points, the All-talent levels at 393. */
 function account(v: number) {
@@ -81,7 +74,7 @@ function account(v: number) {
 
 test("[FR-018] an account's talent is the curve of its Talent level, with no curve row", () => {
   const n = account((2 * 802) / 1002);
-  expect(kidsOf(n).map((k) => [k.name, k.value])).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value])).toEqual([
     ["Talent level", 802],
     ["Max bonus", 2],
     ["Level at half", 200],
@@ -92,8 +85,8 @@ test("[FR-018] an account's talent is the curve of its Talent level, with no cur
 });
 
 test("[FR-018] an account's Talent level is the best of its characters' points plus the All-talent levels", () => {
-  const level = kidsOf(account((2 * 802) / 1002))[0];
-  expect(kidsOf(level).map((k) => [k.name, k.value])).toEqual([
+  const level = kidsIn(account((2 * 802) / 1002))[0];
+  expect(kidsIn(level).map((k) => [k.name, k.value])).toEqual([
     ["Character 1: Invented talent level", 409],
     ["Character 2: Invented talent level", 0],
     ["Character 3: Invented talent level", 0],
@@ -106,7 +99,7 @@ test("[FR-018] an account's Talent level is the best of its characters' points p
 
 test("[FR-018] an account's talent whose curves do not give its value keeps its rows", () => {
   const n = account(1.9);
-  expect(kidsOf(n).map((k) => k.name)).toContain(
+  expect(kidsIn(n).map((k) => k.name)).toContain(
     "Character 2: Invented talent level",
   );
 });

@@ -3,30 +3,8 @@
 // written by hand, with the shape the recording gives (pesquisa-contas.md, Haungry For Gold).
 import { expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
-import type { Row } from "./rows.ts";
-import { cond, placed, recNode } from "./tree-fixture.ts";
-
-const leaf = (
-  name: string,
-  value: number,
-  code: string | null,
-  kind: Row["node"]["leaf"],
-): Row => ({
-  node: row({ pieceKey: code, value, code, name, leaf: kind }),
-  open: null,
-});
-const lazy = (name: string, value: number, code: string): Row => ({
-  node: row({ pieceKey: code, value, code, name, kids: "lazy" }),
-  open: 9,
-});
-const check = (name: string, yes: boolean, code: string | null = null) => {
-  const c = cond(name, yes, code);
-  return { ...c, node: { ...c.node, name } };
-};
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
+import { check, kidsIn, lazy, leaf, placed, recNode } from "./tree-fixture.ts";
 
 /**
  * The All-talent levels of talent 99 opened, worth `v`, its preset's Super Talents being `supers` and the Super Talent
@@ -125,7 +103,7 @@ const SOURCES = [
 
 test("[FR-018] the All-talent levels: its sources, its Super Talent levels at 0 off the list, and an ⓘ that closes", () => {
   const n = allTalent([10, 120], 0, 140);
-  expect(kidsOf(n).map((k) => [k.name, k.value])).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value])).toEqual([
     ["Super Talent levels (would give 125)", 0],
     ...SOURCES,
   ]);
@@ -137,7 +115,7 @@ test("[FR-018] the All-talent levels: its sources, its Super Talent levels at 0 
 
 test("[FR-018] a Super Talent's All-talent levels count its Super Talent levels", () => {
   const n = allTalent([10, 99], 125, 265);
-  expect(kidsOf(n).map((k) => [k.name, k.value])[0]).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value])[0]).toEqual([
     "Super Talent levels given",
     125,
   ]);
@@ -148,6 +126,6 @@ test("[FR-018] a Super Talent's All-talent levels count its Super Talent levels"
 
 test("[FR-018] All-talent levels whose sources do not give its value keep their rows", () => {
   const n = allTalent([10, 120], 0, 999);
-  expect(kidsOf(n).map((k) => k.name)).toContain("Super Talent 1 (page 1)");
-  expect(kidsOf(n).map((k) => k.name)).toContain("Haungry for gold level");
+  expect(kidsIn(n).map((k) => k.name)).toContain("Super Talent 1 (page 1)");
+  expect(kidsIn(n).map((k) => k.name)).toContain("Haungry for gold level");
 });

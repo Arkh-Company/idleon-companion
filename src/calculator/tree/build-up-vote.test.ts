@@ -4,19 +4,16 @@
 // keeps the multiplier as a call of its own. Rows written by hand, the table with the game's text.
 import { afterEach, expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { list } from "./state-fixture.ts";
 import { useGameTables } from "./table-names.ts";
-import { cond, placed, recNode } from "./tree-fixture.ts";
+import { cond, kidsIn, placed, recNode } from "./tree-fixture.ts";
 
 afterEach(() => {
   useGameTables(new Map());
 });
 
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 const lazy = (
   name: string,
   open: number,
@@ -76,7 +73,7 @@ test("[FR-018] a vote that is not the week's shows the vote's bonus and the Meri
     NODES,
   );
   const n = expand(rows[0]?.id ?? "");
-  expect(kidsOf(n).map((k) => [k.name, k.value, k.code])).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value, k.code])).toEqual([
     ["Vote bonus", 40, "CustomLists.NinjaInfo[41][64]"],
     [
       "Meritocracy bonus multiplier",
@@ -85,7 +82,7 @@ test("[FR-018] a vote that is not the week's shows the vote's bonus and the Meri
     ],
     ["Meritocracy vote of the week", 1, "OptionsListAccount[453]"],
   ]);
-  expect(kidsOf(n)[1]?.kids).toBe("lazy");
+  expect(kidsIn(n)[1]?.kids).toBe("lazy");
   expect(n?.formula && formulaLines(n.formula)).toMatchObject({
     names:
       "Vote bonus × Meritocracy bonus multiplier while the vote of the week is 21, else 0",
@@ -107,7 +104,7 @@ test("a vote with no Meritocracy multiplier in the recording keeps its rows", ()
     ],
     [NODES[0] ?? recNode(0, "None")],
   );
-  expect(kidsOf(expand(rows[0]?.id ?? "")).map((k) => k.name)).toEqual([
+  expect(kidsIn(expand(rows[0]?.id ?? "")).map((k) => k.name)).toEqual([
     "Meritocracy vote of the week",
     "Meritocracy vote of the week = 21",
   ]);
@@ -151,7 +148,7 @@ test("[FR-018] the week's vote opens as any vote: its Vote bonus, the Meritocrac
     ],
   );
   const n = expand(rows[0]?.id ?? "");
-  expect(kidsOf(n).map((k) => [k.name, k.value])).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value])).toEqual([
     ["Vote bonus", 40],
     ["Meritocracy bonus multiplier", 1.85],
     ["Meritocracy vote of the week", 21],

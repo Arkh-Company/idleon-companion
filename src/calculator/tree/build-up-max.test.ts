@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { cond, fixed, kidsOf, placed, recNode } from "./tree-fixture.ts";
+import { check, fixed, kidsOf, placed, recNode } from "./tree-fixture.ts";
 
 const leaf = (name: string, value: number, code: string): Row => ({
   node: row({ pieceKey: code, value, code, name, leaf: "level" }),
@@ -26,10 +26,6 @@ const curve = (): Row => ({
     leaf("SHIMMERON bubble level", 10058, "CauldronInfo[0][18]"),
   ],
 });
-const check = (name: string, yes: boolean): Row => {
-  const c = cond(name, yes);
-  return { ...c, node: { ...c.node, name } };
-};
 const NODES = Array.from({ length: 6 }, (_, i) =>
   recNode(i, `Call${String(i)}`),
 );

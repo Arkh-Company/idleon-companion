@@ -160,6 +160,9 @@ export const kidsOf = (n: CalcTreeNode | null | undefined): CalcTreeNode[] =>
         k.role === "pool" || k.role === "system" ? kidsOf(k) : [k],
       )
     : [];
+/** A row's own rows, as they are (a pool or a group is one of them). */
+export const kidsIn = (n: CalcTreeNode | null | undefined): CalcTreeNode[] =>
+  n && Array.isArray(n.kids) ? n.kids : [];
 /** Each row as [code, value]. */
 export const brief = (n: CalcTreeNode | null | undefined) =>
   kidsOf(n).map((k) => [k.code, k.value]);

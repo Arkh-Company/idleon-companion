@@ -8,6 +8,7 @@ import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { golden } from "./tree/gold-food-fixture.ts";
+import { kidsIn } from "./tree/tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -21,12 +22,10 @@ const treeOf = (block: string) =>
     0,
     recorder.ops,
   ).root;
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 
 test("a root that sums is one Additive pool, with no piece, holding its rows", () => {
   const root = treeOf("TreeTwice");
-  const [pool, ...rest] = kidsOf(root);
+  const [pool, ...rest] = kidsIn(root);
   expect(rest).toEqual([]);
   expect(pool).toMatchObject({
     id: "root/Additive pool",
@@ -38,7 +37,7 @@ test("a root that sums is one Additive pool, with no piece, holding its rows", (
     code: null,
     value: 16,
   });
-  expect(kidsOf(pool).map((k) => [k.id, k.code, k.value])).toEqual([
+  expect(kidsIn(pool).map((k) => [k.id, k.code, k.value])).toEqual([
     ["root/Additive pool/Game value", "TreeReads()", 8],
     ["root/Additive pool/Game value#2", "TreeReads()", 8],
   ]);
@@ -46,7 +45,7 @@ test("a root that sums is one Additive pool, with no piece, holding its rows", (
 
 test("a root with a max at the top has no pool: its rows, all in Other, stay as they are", () => {
   const root = treeOf("TreeMaxOf");
-  expect(kidsOf(root).map((k) => [k.role, k.code, k.value])).toEqual([
+  expect(kidsIn(root).map((k) => [k.role, k.code, k.value])).toEqual([
     ["piece", "TreeReads()", 8],
     ["piece", "TreeLoop()", 6],
     ["piece", "TreeBase", 4],
@@ -56,7 +55,7 @@ test("a root with a max at the top has no pool: its rows, all in Other, stay as 
 test("every pool closes to the root, and only pools and groups have no piece key", () => {
   for (const block of ["TreeTwice", "TreeSources", "TreeCacheRead"]) {
     const root = treeOf(block);
-    const pools = kidsOf(root).filter((k) => k.role === "pool");
+    const pools = kidsIn(root).filter((k) => k.role === "pool");
     expect(pools.length).toBeGreaterThan(0);
     const [first] = pools;
     const total =
@@ -66,8 +65,8 @@ test("every pool closes to the root, and only pools and groups have no piece key
     expect(total).toBeCloseTo(Number(root.value));
     for (const p of pools) {
       expect(p.pieceKey).toBeNull();
-      expect(Object.hasOwn(kidsOf(p)[0] ?? {}, "combine")).toBe(
-        kidsOf(p)[0]?.role === "system",
+      expect(Object.hasOwn(kidsIn(p)[0] ?? {}, "combine")).toBe(
+        kidsIn(p)[0]?.role === "system",
       );
     }
   }
@@ -83,7 +82,7 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
     recorder.ops,
   );
   const root = build.root;
-  const level = kidsOf(root);
+  const level = kidsIn(root);
   expect(
     level.map((k) => [k.name, k.role, k.poolKind, k.combine, k.value]),
   ).toEqual([
@@ -96,7 +95,7 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
     // the check that guards the + 2 stays, after the pools: no source leaves (FR-008)
     ["Game value", "piece", undefined, undefined, 1],
   ]);
-  expect(level.map((k) => kidsOf(k).map((r) => [r.code, r.value]))).toEqual([
+  expect(level.map((k) => kidsIn(k).map((r) => [r.code, r.value]))).toEqual([
     [
       ["TreeReads()", 8],
       ["TreeBase", 4],
@@ -132,9 +131,9 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
     [39, 6, 0.5, 1.83, 6, 2574.81],
   ]);
   // a call of the sum still opens inside its pool
-  const [reads] = kidsOf(level[0]);
+  const [reads] = kidsIn(level[0]);
   expect(
-    kidsOf(reads?.kids === "lazy" ? build.expand(reads.id) : reads).map((r) => [
+    kidsIn(reads?.kids === "lazy" ? build.expand(reads.id) : reads).map((r) => [
       r.code,
       r.value,
     ]),
@@ -147,7 +146,7 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
 
 test("a chain keeps after its pools the rows no step of it shows: the block's data rows, as any block's (FR-008)", () => {
   // (TreeBase + 1) × TreeArg(TreeLevel): the level the call took is a data row of the block
-  const level = kidsOf(treeOf("TreeChainData"));
+  const level = kidsIn(treeOf("TreeChainData"));
   expect(level.map((k) => [k.name, k.role, k.value])).toEqual([
     ["Additive pool", "pool", 5],
     ["Multi pool", "pool", 100],
@@ -165,9 +164,9 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     0,
     recorder.ops,
   );
-  const [add, multi] = kidsOf(build.root);
+  const [add, multi] = kidsIn(build.root);
   expect([add?.name, multi?.name]).toEqual(["Additive pool", "Multi pool"]);
-  const groups = kidsOf(add);
+  const groups = kidsIn(add);
   expect(
     groups.map((k) => [k.role === "system" ? k.name : k.code, k.value]),
   ).toEqual([
@@ -176,7 +175,7 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     ['GoldFoodBonuses("DropRatez")', expect.closeTo(13.218813518840708, 9)],
     ["🔹 Other", 29],
   ]);
-  expect(groups.map((g) => kidsOf(g).map((k) => k.code))).toEqual([
+  expect(groups.map((g) => kidsIn(g).map((k) => k.code))).toEqual([
     ["CardBonusREAL(3)", "CardBonusREAL(1)"],
     [],
     [],
@@ -187,12 +186,12 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     ns.reduce((s, k) => s + Number(k.value), 0);
   expect(sum(groups)).toBeCloseTo(Number(add?.value), 9);
   for (const g of groups.filter((k) => k.role === "system"))
-    expect(sum(kidsOf(g))).toBeCloseTo(Number(g.value), 9);
+    expect(sum(kidsIn(g))).toBeCloseTo(Number(g.value), 9);
   // the golden food opens with its own chain's pools, its block's own rows after them
   const gold = groups[2];
   const opened = gold?.kids === "lazy" ? build.expand(gold.id) : gold;
   expect(
-    kidsOf(opened)
+    kidsIn(opened)
       .slice(0, 4)
       .map((k) => [k.role, k.name, k.poolKind, k.value]),
   ).toEqual([
@@ -229,8 +228,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     0,
     recorder.ops,
   );
-  const [add] = kidsOf(build.root);
-  const groups = kidsOf(add);
+  const [add] = kidsIn(build.root);
+  const groups = kidsIn(add);
   const gold = 13.218813518840708;
   expect(
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
@@ -263,7 +262,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     9,
   );
   for (const g of groups.filter((k) => k.role === "system"))
-    expect(sum(kidsOf(g)) / (g.combine === "percent" ? 100 : 1)).toBeCloseTo(
+    expect(sum(kidsIn(g)) / (g.combine === "percent" ? 100 : 1)).toBeCloseTo(
       Number(g.value),
       9,
     );
@@ -272,7 +271,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   expect(food?.code).toBe('GoldFoodBonuses("DropRatez")');
   const opened = food?.kids === "lazy" ? build.expand(food.id) : food;
   expect(
-    kidsOf(opened)
+    kidsIn(opened)
       .slice(0, 4)
       .map((k) => [k.role, k.role === "pool" ? k.name : k.fmt]),
   ).toEqual([
@@ -296,6 +295,6 @@ test("a chain a step of which neither adds nor multiplies is open: the build say
   const open = build("TreeChainOpen");
   expect([open.chainOpen, open.root.value]).toEqual([true, 9]);
   // the tree is still built, from the rows
-  expect(kidsOf(open.root).length).toBeGreaterThan(0);
+  expect(kidsIn(open.root).length).toBeGreaterThan(0);
   expect(build("TreeChain").chainOpen).toBe(false);
 });
