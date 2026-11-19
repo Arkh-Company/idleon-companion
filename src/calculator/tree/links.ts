@@ -190,8 +190,12 @@ function byKey(
   keyOf: (w: RecWrite) => string,
 ): Map<string, RecWrite[]> {
   const out = new Map<string, RecWrite[]>();
-  for (const w of [...list].sort((a, b) => a.seq - b.seq))
-    out.set(keyOf(w), [...(out.get(keyOf(w)) ?? []), w]);
+  for (const w of [...list].sort((a, b) => a.seq - b.seq)) {
+    const k = keyOf(w);
+    const at = out.get(k);
+    if (at) at.push(w);
+    else out.set(k, [w]);
+  }
   return out;
 }
 
