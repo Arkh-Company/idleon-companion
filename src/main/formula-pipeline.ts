@@ -127,7 +127,7 @@ export function startFormulaPipeline(deps: {
       // A part lost counts once: still without a value on the new tree, it asks nothing more.
       for (const k of next.lost) hadLive.delete(k);
       if (next.tree !== last) show(next.tree);
-      rebuild.changed();
+      rebuild.changed(v.calculatedAt);
     }
     rebuildIfDue();
   }
@@ -270,7 +270,7 @@ export function startFormulaPipeline(deps: {
   function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
     const { request } = asked;
-    rebuild.came();
+    rebuild.came(asked.pair.calculatedAt);
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),

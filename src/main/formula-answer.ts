@@ -139,15 +139,19 @@ export const REBUILD_EVERY_MS = 10_000;
 export function rebuildClock(now: () => number = Date.now) {
   let due = false;
   let at = 0;
+  /** The reading of the last change. */
+  let changedAt = 0;
   return {
-    /** A live value moved: the tree waits to be asked again. */
-    changed() {
+    /** A live value of the reading at `calculatedAt` moved: the tree waits to be asked again. */
+    changed(calculatedAt: number) {
       due = true;
+      changedAt = Math.max(changedAt, calculatedAt);
     },
-    /** A tree came: the time starts again. A change written while it was asked still waits: the tree may be of an
-     * older reading, and the next one says so anyway. */
-    came() {
+    /** A tree of the reading at `calculatedAt` came: the time starts again, and a change of that reading or an older one
+     * is done. A change of a later reading still waits. */
+    came(calculatedAt: number) {
       at = now();
+      if (calculatedAt >= changedAt) due = false;
     },
     /** True, once, when a change waits, the pipeline is `free` and the time is past: the caller asks the tree. */
     take(free: boolean): boolean {
