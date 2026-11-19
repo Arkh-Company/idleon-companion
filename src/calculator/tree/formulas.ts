@@ -352,7 +352,8 @@ export function formulaFor(n: FormulaRow, kids: readonly Row[]): Pair | null {
 
 /**
  * The terms a formula may name that have a bracket or a comma (a call, a table cell), kept whole when it is split into
- * atoms (math.ts `formulaAtoms`); any other term splits right by itself, and a constant's name ("× 2") is no term.
+ * atoms (math.ts `formulaAtoms`), and a source's name with a colon or a sign ("Arcade: …", audit family 14); any other
+ * term splits right by itself, and a constant's name ("× 2") or a check's is no term.
  */
 export function termsOf(
   kids: readonly Row[],
@@ -361,10 +362,16 @@ export function termsOf(
   const fallbacks = lines.flatMap((l) =>
     [...(l?.[0] ?? "").matchAll(TOKEN)].map((m) => m[2] ?? ""),
   );
+  const bracketed = (t: string) => /[(),[\]]/.test(t);
+  const signed = (t: string) => /[:+×÷−*/^]/.test(t) && /[A-Za-z]{2}/.test(t);
+  const source = (k: Row) => !isConstant(k.node) && !isCond(k);
   return [
-    ...kids.flatMap((k) => [nameOf(k), short(k), partName(k)]),
-    ...fallbacks,
-  ].filter((t) => /[(),[\]]/.test(t));
+    ...kids.flatMap((k) => {
+      const ts = [nameOf(k), short(k), partName(k)];
+      return ts.filter((t) => bracketed(t) || (source(k) && signed(t)));
+    }),
+    ...fallbacks.filter((t) => bracketed(t) || signed(t)),
+  ];
 }
 
 /**
