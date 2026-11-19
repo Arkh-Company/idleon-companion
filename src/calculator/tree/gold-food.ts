@@ -48,7 +48,12 @@ function part(
   name: string | null,
   value: unknown,
   group: Row[] = [],
-  ip: { f?: Pair | null; xf?: Pair | null; fmt?: "x" } = {},
+  ip: {
+    f?: Pair | null;
+    xf?: Pair | null;
+    fmt?: "x";
+    leaf?: "fixedValue";
+  } = {},
 ): Row {
   return {
     node: row({
@@ -57,6 +62,7 @@ function part(
       code: null,
       ...(name === null ? {} : { name }),
       ...(ip.fmt ? { fmt: ip.fmt } : {}),
+      ...(ip.leaf ? { leaf: ip.leaf } : {}),
     }),
     open: null,
     ...(group.length ? { group } : {}),
@@ -64,6 +70,8 @@ function part(
     ...(ip.xf ? { xf: ip.xf } : {}),
   };
 }
+/** The block's literal 0.05, bonus = Amount × multi × 0.05 × … (N.js GoldFoodBonuses; the Vinicius's name of 19/11). */
+const RATE = "Base rate (× 0.05)";
 /** A source in the sources' ⓘ: its name without its tag in parentheses, or its code when it has no name. */
 export const sourceTerm = (r: Row) =>
   r.node.flags.unnamed
@@ -204,6 +212,10 @@ export function goldFood(
         ]
       : null;
   const emE = s3?.e.t === "op" ? s3.e.r : undefined;
+  // 19/11: a log₁₀ is math, in the row's ⓘ: its leaf is what goes into it, the Beanstalk's level L of log₁₀(1 +
+  // 10³ · 10^L) (N.js GoldFoodBonuses), as the worn food's quantity of log₁₀(1 + quantity)
+  const beanstalk = (c: Expr | undefined) =>
+    c?.t === "call" ? Math.log10((Number(nodes[c.id]?.a[0]) - 1) / 1e3) : null;
   // each level's rows with their types and shares, none of them a product's
   const level = (v: unknown, rows: Row[]) => ctx.finish(v, rows, false);
   return [
@@ -229,8 +241,8 @@ export function goldFood(
             s1.v,
             level(s1.v, [
               part("Base Amount", amount),
+              part(RATE, 0.05, [], { leaf: "fixedValue" }),
               part("Quantity", qtyKey ? reads.get(qtyKey) : null),
-              part("Log Factor", logs(s1)[0]?.v),
             ]),
             { xf: ctx.formulas.expr(s1.e, reads, s1.v, 1) },
           ),
@@ -243,7 +255,8 @@ export function goldFood(
             s3.v - before3,
             level(s3.v - before3, [
               part("Base Amount", amount),
-              part("Log Factor", logs(s3)[0]?.v),
+              part(RATE, 0.05, [], { leaf: "fixedValue" }),
+              part("Beanstalk level", beanstalk(logs(s3)[0])),
             ]),
             { xf: ctx.formulas.expr(emE, reads, s3.v - before3, 1) },
           ),
