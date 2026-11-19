@@ -156,7 +156,7 @@ test("a golden food the pass reads: the shared multiplier, the worn food and the
   ]);
   const [, sources, set] = kidsOf(multi);
   expect(brief(multi)).toEqual([
-    ["Family Bonus 66", 2, "rawBonus", null, {}],
+    ["Invented Family (family bonus)", 2, "rawBonus", null, {}],
     ["Sources ÷ 100", near(0.2), null, null, {}],
     ["SECRET_SET multi", near(1.3), null, "x", {}],
   ]);
@@ -191,7 +191,7 @@ test("each row of a golden food the pass reads has the ⓘ of its step", () => {
   const [, sources, set] = kidsOf(multi);
   expect(multi?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+      "SECRET_SET multi × (max(Invented Family, 1) + Sources ÷ 100)",
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });
@@ -265,7 +265,7 @@ test("a food whose name would be too long keeps the generic name", () => {
 test("the multiplier's ⓘ counts a family below 1 as 1, and is not written when the step's family is another", () => {
   expect(goldRows(passOf("local", 999, 3, 0))[0]?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+      "SECRET_SET multi × (max(Invented Family, 1) + Sources ÷ 100)",
       "1.3 × (1 + 0.2) = 1.56",
     ],
   });

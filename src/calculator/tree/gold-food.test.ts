@@ -120,7 +120,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   ]);
   expect(parts[1]?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+      "SECRET_SET multi × (max(Invented Family, 1) + Sources ÷ 100)",
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });

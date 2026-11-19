@@ -162,7 +162,7 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   // spec 009 T031 (nothing stays with the generic name): a star sign's own total, a family bonus by its class's text
   // (FamBonusQTYs[2c] is ClassFamilyBonuses[c]) and the slot the All-talent levels read the Super Talents of
   ["DNSM.StarSigns[69]", "Golden Food bonuses (Beanbie Major)"],
-  ["DNSM.FamBonusQTYs[66]", "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)"],
+  ["DNSM.FamBonusQTYs[66]", "Higher Bonuses From Golden Foods (family bonus)"],
   ["DNSM.AllTalWhichPlayer", "Character slot (whose Super Talents count)"],
   // family 17 of the audit of 19/11: a Minehead floor's bonus by the text its screen writes, never its mode in words
   ['Minehead("BonusQTY", 21, 0)', "Hat Rack bonus multi"],
