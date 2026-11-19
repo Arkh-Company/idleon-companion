@@ -50,6 +50,19 @@ test("a static name passes the same cleaner: none keeps a marker of the game's t
   expect(marked).toEqual([]);
 });
 
+// Family 16: a list whose rows the game has not filled holds its column's header ("Name", "desc"); a header names no
+// row, or every row of the list has the same name
+test.each(["Name", "NAME", "desc", "Type", "Filler", "filler", "Blank"])(
+  "the header %s of a table's column is no name",
+  (raw) => {
+    expect([
+      transformText("clean", raw),
+      transformText("raw", raw),
+      transformText("clean-keep-case", raw),
+    ]).toEqual([null, null, null]);
+  },
+);
+
 test("a map's kills are named by the game's display list of the maps, never by the map's id", () => {
   const kills = NAME_RECIPES.filter((r) =>
     /KillsLeft2Advance\[\d+\]\[0\]$/.test(r.key),
