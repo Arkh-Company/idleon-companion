@@ -4,7 +4,7 @@
 import { expect, test } from "vitest";
 import { poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
-import { row, withShares } from "./rows.ts";
+import { curveRow, row, withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 const src = (name: string, value: number, n: number): Row => ({
@@ -33,9 +33,7 @@ const first = (p: Pool) =>
   poolRows([p], { name: "Total", value: p.value }, () => undefined).rows[0];
 
 test("a pool's ⓘ names a row with a colon whole", () => {
-  const p = first(
-    pool([src("Shop: Alpha", 2, 1), src("Shop: Beta", 3, 2)], 5),
-  );
+  const p = first(pool([src("Shop: Alpha", 2, 1), src("Shop: Beta", 3, 2)], 5));
   expect(p?.node.formula).toEqual([
     ["Shop: Alpha", "+", "Shop: Beta"],
     [2, 3, 5],
@@ -78,4 +76,26 @@ test("a step whose ⓘ does not give its value stays in the pool", () => {
     "Alpha",
     "Multiplier from 2 sources",
   ]);
+});
+
+test("a curve directly in a pool is no row: its constants and level are the pool's, the curve in its ⓘ by roles", () => {
+  const c = curveRow(
+    ["decay", 2, 200, 50],
+    {
+      pieceKey: "c",
+      code: 'ArbitraryCode5Inputs("decay", 2, 200, 50)',
+      value: 0.4,
+    },
+    src("Invented level", 50, 4),
+  );
+  const p = first(pool([src("Alpha", 2, 1), c], 0.8, "product"));
+  expect((p?.group ?? []).map((r) => r.node.name)).toEqual([
+    "Alpha",
+    "Max bonus of the curve",
+    "Level at half of the max",
+    "Invented level",
+  ]);
+  expect(Array.isArray(p?.node.formula) && p.node.formula[0]).toContain(
+    "Max bonus of the curve",
+  );
 });
