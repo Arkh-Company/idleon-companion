@@ -83,6 +83,7 @@ export function startFormulaPipeline(deps: {
     request: Extract<TreeRequest, { type: "number" }>;
     pair: StatsPair;
     active: number;
+    quiet: boolean; // a silent rebuild (FR-015): the tree on screen stays when it never comes
   } | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
@@ -261,7 +262,7 @@ export function startFormulaPipeline(deps: {
       character: open.character ?? active,
     };
     seq++;
-    asked = { seq, request, pair, active };
+    asked = { seq, request, pair, active, quiet };
     if (!quiet) show({ state: "calculating", request });
     host.request(seq, request, pair.mosaicJson);
   }
@@ -290,11 +291,11 @@ export function startFormulaPipeline(deps: {
     onUnavailable: (id) => {
       if (expanding?.seq === id) expanded(null);
       if (asked?.seq !== id) return;
-      const { request } = asked;
+      const { request, quiet } = asked;
       asked = null;
       // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
       deps.log({ event: "treeFailed", id: request.id });
-      show({ state: "unavailable", request });
+      if (!quiet) show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
       live.received(id, values);
@@ -359,11 +360,11 @@ export function startFormulaPipeline(deps: {
         expanding = null;
         queued = [];
         for (const r of lost) branched(r, null);
-        // The worker ended with the tree in flight: it will never answer (FR-022).
+        // The worker ended with the tree in flight: it will never answer (FR-022); a silent rebuild keeps its tree, stale.
         if (asked) {
-          const { request } = asked;
+          const { request, quiet } = asked;
           asked = null;
-          show({ state: "unavailable", request });
+          if (!quiet) show({ state: "unavailable", request });
         }
       }
       if (closed === stale) return;
