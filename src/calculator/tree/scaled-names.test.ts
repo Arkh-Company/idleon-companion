@@ -194,3 +194,24 @@ test("constants that multiply each other beside the source name it only when the
     nameOf(branch(18, [source("Claws", 3), fixed("× 2", 2), fixed("× 3", 3)])),
   ).toEqual(["Claws", false]);
 });
+
+// answer B of 20/11: a call of one step opens in its pools, and a pool or a system's group is the app's, no source
+test("a pool beside the constants names nothing: its name is the app's, no source's", () => {
+  const pool: Row = {
+    node: row({
+      pieceKey: null,
+      value: 5,
+      code: null,
+      name: "Additive pool",
+      role: "pool",
+      combine: "sum",
+      poolKind: "additive",
+    }),
+    open: null,
+    group: [source("Claws", 3), source("Fangs", 2)],
+  };
+  expect(nameOf(times(10, [pool, fixed("Fixed ×2", 2)]))).toEqual([
+    GENERIC_NAME,
+    true,
+  ]);
+});
