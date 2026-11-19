@@ -22,7 +22,8 @@ function read(file: string): Partial<Record<string, unknown>> {
 }
 
 /** Every key the app keeps, each as its loader reads it, with `patch` over them: no save loses another's keys. Written
- * to `.tmp` and renamed over the file (as saved-files.ts), so a failed write never leaves half a file. */
+ * to `.tmp` and renamed over the file (as saved-files.ts), so a failed write of `.tmp` never leaves half a file; only
+ * the direct write, when Windows keeps refusing the rename, is not atomic. */
 function write(file: string, patch: object): void {
   const v = {
     ...loadSettings(file),
