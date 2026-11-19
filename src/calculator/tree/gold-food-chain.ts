@@ -2,7 +2,8 @@
 // rules of names leave with no name of their own get one by their role in GoldFoodBonuses (tree/gold-food.ts), the
 // names the Vinicius chose, in English as every tree. The worn food's quantity factor, 1 + log₁₀(10 + quantity) ÷ 2.14,
 // is the "Quantity multiplier"; the emporium's term, Amount × the shared multiplier × 0.05 × log₁₀, is the emporium's
-// row, its parts with the shared multiplier among them, so they multiply to it.
+// row, and the worn food's product, Amount × the shared multiplier × … × its quantity factor, the worn food's row (009
+// T023 r3): each with its parts, the shared multiplier among them, so they multiply to it.
 import type { RecNode } from "../recording.ts";
 import { fx3 } from "./curves.ts";
 import { flat } from "./expr.ts";
