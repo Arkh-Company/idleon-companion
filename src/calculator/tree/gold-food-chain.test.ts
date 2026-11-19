@@ -2,12 +2,18 @@
 // multiplier inside the emporium's term is "GFood Multi", with no rows of its own, since its sources are in the chain's
 // pools. The game keeps it in a box the emporium's term reads back (N.js GoldFoodBonuses); the invented game keeps it
 // in a variable (gold-food-branch.test.ts).
-import { expect, test } from "vitest";
-import type { RecNode } from "../recording.ts";
+import { afterEach, expect, test } from "vitest";
+import type { RecNode, RecValue } from "../recording.ts";
+import { TABLES } from "./gold-food-fixture.ts";
 import { goldFoodTerm } from "./gold-food-chain.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
+import { useGameTables } from "./table-names.ts";
+
+afterEach(() => {
+  useGameTables(new Map());
+});
 
 const num = (v: number): Expr => ({ t: "num", v });
 const read = (p: string, v: number): Expr => ({ t: "read", p, v });
@@ -101,12 +107,12 @@ const MULTI_STEP = {
     2.86,
   ),
 };
-const inBlock = (e: Expr) =>
+const inBlock = (e: Expr, more: [string, RecValue][] = []) =>
   goldFoodTerm(e, "+", {
     block: nodes[0] ?? { id: 0, b: "?", a: [], c: [], p: null, pxi: 0 },
     nodes,
     steps: [MULTI_STEP],
-    reads: new Map([["DNSM.FamBonusQTYs[66]", 2]]),
+    reads: new Map([["DNSM.FamBonusQTYs[66]", 2], ...more]),
     term,
   });
 const isShared = (r: Row | null | undefined) => {
@@ -128,7 +134,7 @@ test("[FR-017] the box of the shared multiplier read on its own is the chain's w
   expect(inBlock(read("DNSM.GfoodBonusMULTI", 2.86))).toBeNull();
 });
 
-test("[FR-017] the worn food's product, its log only inside the quantity factor: the shared multiplier is GFood Multi", () => {
+test("[FR-017] the worn food's product, its log only inside the quantity factor: the shared multiplier is GFood Multi, the row the worn food's", () => {
   // 7 × the box × (1 + log₁₀(1009) ÷ 2.14)
   const factor = op(
     "+",
@@ -147,5 +153,12 @@ test("[FR-017] the worn food's product, its log only inside the quantity factor:
     factor,
     48.09,
   );
-  isShared(inBlock(worn)?.group?.find((k) => k.node.name === "GFood Multi"));
+  useGameTables(TABLES);
+  const r = inBlock(worn, [
+    ["EquipmentQuantity[2][1]", 999],
+    ["EquipmentOrder[2][1]", "itemA"],
+  ]);
+  isShared(r?.group?.find((k) => k.node.name === "GFood Multi"));
+  // the worn food's, named as in the pass (tree/gold-food.ts), never the emporium's (009 T023 r3)
+  expect(r?.node.name).toBe("Equipped: Invented Charm");
 });
