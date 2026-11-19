@@ -77,7 +77,6 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   pieceKey: (v) => v === null || isNodeText(v),
   name: isText,
   value: isValue,
-  was: isValue,
   fmt: orNull(oneOf(VALUE_FORMATS)),
   leaf: orNull(oneOf(LEAF_KINDS)),
   condition: orNull(oneOf(CONDITION_KINDS)),

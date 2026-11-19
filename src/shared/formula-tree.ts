@@ -110,8 +110,6 @@ export interface TreeNode {
   name: string;
   /** null = unavailable */
   value: number | boolean | null;
-  /** The value of the tree before, or of the mark (FR-024, FR-025). */
-  was?: number | boolean | null;
   fmt: (typeof VALUE_FORMATS)[number] | null;
   leaf: LeafKind | null;
   condition: ConditionKind | null;
