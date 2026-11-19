@@ -22,30 +22,41 @@ const third = (
     : `${cell} ${String(v)}`;
 };
 
+/** "<the text><tail>", or null when the text does not resolve: a name never takes the list's index (family 2). */
+const named = (text: string | null, tail: string) =>
+  text === null ? null : `${text}${tail}`;
+/**
+ * The market row of FarmUpg[j] (N.js FarmingStuffs BasketUpgQTY and ExoticBonusQTY): MarketInfo[j − 2] for
+ * 2 ≤ j ≤ 17, MarketExoticInfo[j − 20] for j ≥ 20; no row for any other j.
+ */
+const farmUpgrade = (j: number) =>
+  j >= 20
+    ? tableText("exotic", j - 20)
+    : j >= 2 && j <= 17
+      ? tableText("market", j - 2)
+      : null;
+
 /** NAMES in the bench's order. */
 export const RENAMES: readonly Rename[] = [
   rule(
     /^(?:CustomLists\.)?GodsInfo\[(\d+)\]\[14\]$/,
-    (m) => {
-      const god = tableText("god", n(m));
-      return god === null
-        ? `Blessing bonus per level (god ${String(n(m))})`
-        : `${god} blessing bonus per level`;
-    },
+    (m) => named(tableText("god", n(m)), " blessing bonus per level"),
     "fixedValue",
     "AUDIT-E N; N.js Divinity",
   ),
   rule(
     /^(?:CustomLists\.)?GodsInfo\[(\d+)\]\[3\]$/,
-    (m) => `Minor link bonus top, type ${String(n(m))}`,
+    (m) => named(tableText("god", n(m)), " minor link bonus top"),
     "fixedValue",
     "AUDIT-E N; N.js Divinity",
   ),
   ...FIXED_RENAMES.first.slice(0, 1),
   rule(
     /^(?:CustomLists\.)?RANDOlist\[92\]\[(\d+)\]$/,
-    (m) =>
-      `Shiny bonus per level (${tableText("shinyType", n(m)) ?? `type ${String(n(m))}`})`,
+    (m) => {
+      const t = tableText("shinyType", n(m));
+      return t === null ? null : `Shiny bonus per level (${t})`;
+    },
     "fixedValue",
     "AUDIT-E N; N.js Breeding",
   ),
@@ -71,8 +82,7 @@ export const RENAMES: readonly Rename[] = [
   ...FIXED_RENAMES.first.slice(1),
   rule(
     /^DNSM\.skillLvRanks\[(\d+)\]$/,
-    (m) =>
-      `${tableText("skill", n(m)) ?? `Skill ${String(n(m))}`} mastery rank`,
+    (m) => named(tableText("skill", n(m)), " mastery rank"),
     "tier",
     "deep-2; N.js RiftStuff",
   ),
@@ -97,7 +107,7 @@ export const RENAMES: readonly Rename[] = [
       return meal !== null
         ? `Ribbon tier of ${meal}`
         : r >= 0
-          ? `Ribbon tier of meal ${String(r)}`
+          ? null
           : `Ribbon shelf slot ${String(n(m))}`;
     },
     "tier",
@@ -112,7 +122,7 @@ export const RENAMES: readonly Rename[] = [
   ),
   rule(
     /^Spelunk\[9\]\[(\d+)\]$/,
-    (m) => `Palette colour ${String(n(m))} level`,
+    (m) => named(tableText("colour", n(m)), " level"),
     "level",
     "names",
   ),
@@ -124,9 +134,7 @@ export const RENAMES: readonly Rename[] = [
   ),
   rule(
     /^Summoning2?\("EventShopOwned", (\d+), 0\)$/,
-    (m) =>
-      tableText("eventShop", n(m))?.replace(/_/g, " ") ??
-      `Event Shop item ${String(n(m))}`,
+    (m) => tableText("eventShop", n(m))?.replace(/_/g, " ") ?? null,
     "condition",
     "B2-5 rule 72; N.js Summoning2",
     "owned",
@@ -135,9 +143,7 @@ export const RENAMES: readonly Rename[] = [
     /^Summon\[0\]\[(\d+)\]$/,
     (m) => {
       const up = tableText("summonUpgrade", n(m));
-      return up
-        ? `${up.replace(/_/g, " ")} level`
-        : `Summoning upgrade ${String(n(m))} level`;
+      return up ? `${up.replace(/_/g, " ")} level` : null;
     },
     "level",
     "B2-4 rule 71; N.js Summoning",
@@ -165,27 +171,6 @@ export const RENAMES: readonly Rename[] = [
         "fixedValue",
       ],
       [/_GenInfo\[84\]$/, "Tome points", "", "quantity"],
-      [/^Arcane\[(\d+)\]$/, "Arcane upgrade %", " level", "level"],
-      [/^FarmUpg\[(\d+)\]$/, "Farming upgrade %", " level", "level"],
-      [/^Meals\[0\]\[(\d+)\]$/, "Meal %", " level", "level"],
-      [
-        /^CustomLists\.TalentDescriptions\[(\d+)\]\[1\]\[\d+\]$/,
-        "Talent %",
-        " curve constant",
-        "fixedValue",
-      ],
-      [
-        /^CustomLists\.GamingPalette\[(\d+)\]\[\d+\]$/,
-        "Palette colour %",
-        " constant",
-        "fixedValue",
-      ],
-      [
-        /^CustomLists\.GodsInfo\[(\d+)\]\[\d+\]$/,
-        "God %",
-        " bonus constant",
-        "fixedValue",
-      ],
       [
         /^CustomLists\.SummonEnemies\[7\]\[(\d+)\]$/,
         "Summoning win bonus of battle %",
@@ -195,6 +180,34 @@ export const RENAMES: readonly Rename[] = [
     ] as const
   ).map(([test, head, tail, leaf]) =>
     rule(test, (m) => head.replace("%", m[1] ?? "") + tail, leaf, "names"),
+  ),
+  // family 2 (audit of 19/11): the row of a game list by the name column of the same list, never by its index
+  ...(
+    [
+      [/^Arcane\[(\d+)\]$/, (i) => tableText("arcane", i), " level", "level"],
+      [/^FarmUpg\[(\d+)\]$/, farmUpgrade, " level", "level"],
+      [/^Meals\[0\]\[(\d+)\]$/, (i) => tableText("meal", i), " level", "level"],
+      [
+        /^CustomLists\.TalentDescriptions\[(\d+)\]\[1\]\[\d+\]$/,
+        (i) => tableText("talent", i),
+        " curve constant",
+        "fixedValue",
+      ],
+      [
+        /^CustomLists\.GamingPalette\[(\d+)\]\[\d+\]$/,
+        (i) => tableText("colour", i),
+        " constant",
+        "fixedValue",
+      ],
+      [
+        /^CustomLists\.GodsInfo\[(\d+)\]\[\d+\]$/,
+        (i) => tableText("god", i),
+        " bonus constant",
+        "fixedValue",
+      ],
+    ] satisfies [RegExp, (i: number) => string | null, string, Leaf][]
+  ).map(([test, textOf, tail, leaf]) =>
+    rule(test, (m) => named(textOf(n(m)), tail), leaf, "names"),
   ),
   ...FIXED_RENAMES.shrines,
   rule(

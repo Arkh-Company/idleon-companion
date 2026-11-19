@@ -280,6 +280,28 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js Ninja GemstoneBonus",
   ),
+  // family 2 of the audit of 19/11: the name column of the lists whose index named a row
+  arcane: text(
+    "CustomLists.ArcaneUpg",
+    (n) => [n, 0],
+    null,
+    "clean",
+    "N.js ArcaneType (the level of ArcaneUpg n is Arcane n)",
+  ),
+  market: text(
+    "CustomLists.MarketInfo",
+    (k) => [k, 0],
+    null,
+    "clean",
+    "N.js FarmingStuffs BasketUpgQTY (MarketInfo k at level FarmUpg 2 + k)",
+  ),
+  exotic: text(
+    "CustomLists.MarketExoticInfo",
+    (i) => [i, 0],
+    null,
+    "clean",
+    "N.js FarmingStuffs ExoticBonusQTY (MarketExoticInfo i at level FarmUpg 20 + i)",
+  ),
   summonUpgradeName: text(
     "CustomLists.SummonUPG",
     (n) => [n, 3],
