@@ -25,7 +25,7 @@ The project constitution is in [.specify/memory/constitution.md](.specify/memory
 - New worktree (missing `node_modules/` or `.codegraph/`): run `just setup` and `just index` before anything else
 - Test one file or case: `just test-one src/main.test.ts`
 - Fast tests: `just test`
-- `just test` and `just test-one` take only `-t <name>`, and the target never starts with `-` or `@`; for any other option, run `pnpm exec vitest run` directly (not pre-approved: the user confirms it)
+- `just test` and `just test-one` take only `-t <name>`, and the target never starts with `-` or `@`; for any other option, run `pnpm exec vitest run --pool=threads` directly (not pre-approved: the user confirms it)
 - Format: `just fmt`
 - Secret scan (gitleaks, the same check as the commit hook and CI): `just secrets`
 - Security scan, warnings only (semgrep OWASP rules, needs the network): `just security`
