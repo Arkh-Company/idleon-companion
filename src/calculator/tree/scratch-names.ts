@@ -15,11 +15,25 @@ export interface ScratchName {
 interface Rule {
   path: string;
   block: string;
-  mode: string;
-  /** The name of the writer's write number `at` of the box. */
-  name: (at: number) => ScratchName;
+  mode: string | number;
+  /**
+   * The name of the writer's write number `at` of the box, by what that write read (`reads`) or by the writer's own
+   * arguments; undefined for a write the rule does not know (the name of the path).
+   */
+  name: (
+    at: number,
+    reads: () => readonly string[],
+    call: RecNode,
+  ) => ScratchName | undefined;
   proof: string;
 }
+
+/** The 9th bonus of each monument, in the game's text (HolesInfo, bonus 10 × monument + 9), by monument. */
+const MONUMENT_MULTI = [
+  "x Bravery Bonuses Multi",
+  "x Justice Bonuses Multi",
+  "x Wisdom Bonuses Multi",
+];
 
 const RULES: readonly Rule[] = [
   {
@@ -34,12 +48,32 @@ const RULES: readonly Rule[] = [
     path: "DNSM.HoleozDN",
     block: "Holes",
     mode: "MonumentROGbonuses",
-    // m = 1, then m = 1 + w ÷ 100 with w the wisdom monument's bonus, m = m + v ÷ 100 with v the Monumental Vibes
-    // bonus, m = m × (1 + f ÷ 100) with f the fountain's: only the start is a value of its own
-    name: (at) =>
-      at === 0 ? { name: "Start value", leaf: "fixedValue" } : { name: null },
+    // m = 1, then, for any bonus but the 9th, m = 1 + b ÷ 100 with b the monument's 9th bonus ("x Wisdom Bonuses
+    // Multi"), m = m + v ÷ 100 with v the Monumental Vibes bonus; and m = m × (1 + f ÷ 100) with f the fountain's: the
+    // start and the 9th bonus's multiplier are values of their own, the steps after them have no name in the game
+    name: (at, _reads, call) =>
+      at === 0
+        ? { name: "Start value", leaf: "fixedValue" }
+        : at === 1 && call.a[2] !== 9
+          ? { name: MONUMENT_MULTI[Number(call.a[1])] ?? null }
+          : { name: null },
     proof:
-      "N.js Holes MonumentROGbonuses: the multiplier of the monument starts at 1 and changes in the next writes",
+      "N.js Holes MonumentROGbonuses: the multiplier of the monument starts at 1 and changes in the next writes; HolesInfo names each monument's 9th bonus",
+  },
+  {
+    path: "DNSM.CalcTalentDN2",
+    block: "TalentCalc",
+    mode: -2,
+    // the bubbles' part counts many things in the box; two of its writes are a bubble's own number: c = ⌊cards found ÷
+    // 100⌋ for The Slab's bubbles, c = ⌊max(0, Tome points − 5000) ÷ 2000⌋ for the Tome's
+    name: (_at, reads) =>
+      reads().includes("Cards[1].length")
+        ? { name: "Base AGI and LUK per 100 items found, shown on The Slab" }
+        : reads().some((p) => p.endsWith("._GenInfo[84]"))
+          ? { name: "% AGI for every 2000 Tome Completion Points over 5000" }
+          : undefined,
+    proof:
+      "N.js TalentCalc -2 (the bubbles): the box is the cards found ÷ 100, then the Tome points over 5000 ÷ 2000; the names are AlchemyDescription SLABO_AGILITY and TOME_AGILITY",
   },
   {
     path: "DNSM.TKnS_DN",
@@ -99,15 +133,19 @@ export const scratchFields = (
       ? { name: GENERIC_NAME, flags: { unnamed: true } }
       : { name: own.name, ...(own.leaf ? { leaf: own.leaf } : {}) };
 
-/** The name of the write `at` of `path` by `call`; undefined when no rule knows the box (the path's own name). */
+/**
+ * The name of the write `at` of `path` by `call`, which read `reads`; undefined when no rule knows the box (the path's
+ * own name).
+ */
 export function scratchName(
   path: string,
   call: RecNode | undefined,
   at: number,
+  reads: () => readonly string[] = () => [],
 ): ScratchName | undefined {
   const rules = RULES.filter((r) => r.path === path);
   if (!rules.length || !call) return undefined;
   return rules
     .find((r) => r.block === call.b && r.mode === call.a[0])
-    ?.name(at);
+    ?.name(at, reads, call);
 }

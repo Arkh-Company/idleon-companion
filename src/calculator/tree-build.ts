@@ -115,7 +115,7 @@ export function buildTree(
       kids: by ? "lazy" : [],
       ...(again
         ? EARLIER_TURNS
-        : scratchFields(own && scratchName(path, own.call, own.at))),
+        : scratchFields(own && scratchName(path, own.call, own.at, own.reads))),
     });
     if (link?.[2] === "game") node.flags = { ...node.flags, fromCache: true };
     return {
