@@ -196,3 +196,30 @@ test("a read's number is its reader's last read of the path with that value, in 
     ),
   ).toBe(10);
 });
+
+test("a write's reads are its writer's logged reads after its previous write, of any path, and before it", () => {
+  const [w] = recordingOf([
+    {
+      b: "TalentCalc",
+      a: [-2],
+      rx: [
+        ["Meals[0][1]", 2, 0, 2],
+        ["Cards[1].length", 1868, 4, 4],
+        ["X", 1, 6, 5],
+      ],
+    },
+  ]).nodes;
+  const writeOf = scratchWrites(
+    [
+      { path: "DNSM.Box", node: 0, v: 1, xi: 1, seq: 3 },
+      { path: "DNSM.Other", node: 0, v: 0, xi: 3, seq: 4 },
+    ],
+    [{ path: "DNSM.Box", node: 0, v: 18, xi: 5, seq: 5 }],
+  );
+  expect(writeOf("DNSM.Box", 18, 5, w ?? null)?.reads()).toEqual([
+    "Cards[1].length",
+  ]);
+  expect(writeOf("DNSM.Box", 1, 3, w ?? null)?.reads()).toEqual([
+    "Meals[0][1]",
+  ]);
+});
