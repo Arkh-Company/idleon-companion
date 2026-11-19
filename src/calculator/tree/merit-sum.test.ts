@@ -17,8 +17,8 @@ beforeAll(() => {
   recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
 });
 /**
- * The multiplier TreeMeritMulti, opened under TreeMeritOf: (1 + 8 ÷ 100) × (min(1, max(0.25, 0.25 + 1)) + (5 × 8 + 8 +
- * 20 × 8 + 4 + 25 + 8) ÷ 100).
+ * The multiplier TreeMeritMulti, opened under TreeMeritOf: (1 + 8 ÷ 100) × (min(8, max(0.25, 8)) + (5 × 8 + 8 + 20 × 8
+ * + 4 + 25 + 8) ÷ 100).
  */
 const multi = () =>
   openPath(
@@ -47,7 +47,7 @@ test("the multiplier opens in the pools of its one step: its lone % factor × an
   const rows = kidsIn(multi());
   expect(rows.map((k) => [k.role, k.code, k.value])).toEqual([
     ["piece", null, 1.08],
-    ["pool", null, 3.45],
+    ["pool", null, 10.45],
     ["piece", "TreeOwned", 0],
   ]);
   expect(rows[0]?.fmt).toBe("x");
@@ -93,15 +93,13 @@ test("the Additive pool holds the clamp as its row, its min and max in its ⓘ, 
     below(k).some((x) => x.code === "ArcadeBonus(3)"),
   );
   expect([clamp?.value, clamp?.code, clamp?.flags.unnamed]).toEqual([
-    1,
+    8,
     null,
     undefined,
   ]);
-  expect(namesOf(clamp?.formula)).toMatch(
-    /^min \( 1 , max \( 0\.25 , 0\.25 \+ /,
-  );
+  expect(namesOf(clamp?.formula)).toMatch(/^min \( 8 , max \( 0\.25 , /);
   expect(kidsIn(clamp).map((k) => k.name)).toEqual(
-    expect.arrayContaining(["Cap 1", "Minimum 0.25", "Base 0.25"]),
+    expect.arrayContaining(["Cap 8", "Minimum 0.25"]),
   );
 });
 
@@ -126,10 +124,10 @@ test("the bonuses of the Additive pool are by system, each in %: a group of two 
 
 test("each pool closes, and the source's ⓘ is how they join, the lone factor's math in its own, the check after it", () => {
   const pf = poolOf(multi())?.formula;
-  expect(Array.isArray(pf) && pf[1].at(-1)).toBe(3.45);
+  expect(Array.isArray(pf) && pf[1].at(-1)).toBe(10.45);
   const [names, numbers] = linesOf(multi()?.formula);
   expect(names).toMatch(/ × Additive pool \(.*: yes\)$/);
-  expect(numbers).toMatch(/ = 3\.726$/);
+  expect(numbers).toMatch(/ = 11\.286$/);
   expect(namesOf(kidsIn(multi())[0]?.formula)).toBe(
     "1 + ( Base Defence ÷ 100 )",
   );
