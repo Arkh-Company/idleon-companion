@@ -1058,7 +1058,17 @@ lime.$scripts.N = function (_exports, $global) {
           multi *
           0.05 *
           Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level));
-    } else
+    } else if (t === "njs")
+      // as N.js writes it: the emporium has the quantity factor too, of its own log
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level)) *
+          (1 +
+            Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level)) / 2.14);
+    else
       d.GfoodBonus =
         d.GfoodBonus +
         d.GfoodMap.h.Amount *
