@@ -83,12 +83,12 @@ test.each<[string, string[], ReturnType<typeof scratchName>]>([
   [
     "The Slab's count, from the items found",
     ["Meals[0][99]", "Cards[1].length"],
-    { name: "Base AGI and LUK per 100 items found, shown on The Slab" },
+    { name: "Per 100 items found, shown on The Slab" },
   ],
   [
     "the Tome's, from its completion points",
     ["PixelHelperActor[4].behaviors.getBehavior(ActorEvents_229)._GenInfo[84]"],
-    { name: "% AGI for every 2000 Tome Completion Points over 5000" },
+    { name: "Every 2000 Tome Completion Points over 5000" },
   ],
   ["a turn of a counter: the name of its path", ["Meals[0][3]"], undefined],
 ])(
