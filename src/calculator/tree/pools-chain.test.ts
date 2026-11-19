@@ -143,6 +143,41 @@ test("single multipliers of steps in a row share one Multi pool; a factor that s
   );
 });
 
+test("a Multi pool of one item is its source's own × N row; the other pools are numbered by kind without it", () => {
+  // decision of 19/11 (audit family 25, answer 2): as the lone additive part, the source alone in its Multi pool
+  const steps: Step[] = [
+    { v: 20, e: op("+", at("Stats.a", 10), at("Stats.b", 10), 20) },
+    {
+      v: 60,
+      e: op(
+        "*",
+        op("*", val(20), at("Stats.m", 2), 40),
+        percent(at("Stats.c", 30), at("Stats.d", 20), 1.5),
+        60,
+      ),
+    },
+  ];
+  const pools = listOf(chainPools(steps, { value: 60 }, termAt));
+  expect(pools?.map(brief)).toEqual([
+    ["Additive pool", "additive", "sum", 20, [10, 10]],
+    ["Bonus Stats.m", "multi", "product", 2, [2]],
+    ["Multi pool", "multi", "onePlusPercent", 1.5, [30, 20]],
+  ]);
+  const first = pools && poolRows(pools, { name: "Total", value: 60 }, noWriter);
+  expect(
+    first?.rows.map((r) => [r.node.name, r.node.role, r.node.fmt, r.node.value]),
+  ).toEqual([
+    ["Additive pool", "pool", null, 20],
+    ["Bonus Stats.m", "piece", "x", 2],
+    ["Multi pool", "pool", "x", 1.5],
+  ]);
+  // the root's ⓘ names it by its term
+  expect(pools && rootFormula(pools, 60)).toEqual([
+    ["Additive pool", "×", "Bonus Stats.m", "×", "Multi pool"],
+    [20, 2, 1.5, 60],
+  ]);
+});
+
 test("a working value the root's call wrote and reads back links the chain; one another call wrote stays a term", () => {
   const steps: Step[] = [
     CHAIN[0] ?? { v: 0, e: num(0) },
