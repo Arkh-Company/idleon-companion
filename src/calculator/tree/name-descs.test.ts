@@ -2,7 +2,9 @@
 // bonus as its ⓘ, a rule of two lines (the text, then its value). Invented texts in the game's forms.
 import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
+import { withFormula } from "./formulas.ts";
 import { row } from "./rows.ts";
+import { read } from "./tree-fixture.ts";
 import { useGameNames } from "./names.ts";
 import { useGameTables } from "./table-names.ts";
 
@@ -29,11 +31,6 @@ const TABLES = new Map<string, unknown>([
 ]);
 
 test.each<[string, string, string]>([
-  [
-    'RandomEvent("KillroyBonuses", 3, 0)',
-    "Killroy: Gallery Grade chance",
-    "5% Chance for +1 Grade for your Invented Gallery!",
-  ],
   [
     "OptionsListAccount[467]",
     "Killroy: Gallery Grade chance (times bought)",
@@ -65,6 +62,38 @@ test.each<[string, string, string]>([
   const r = row({ pieceKey: "k", value: 1, code });
   expect([r.name, r.formula]).toEqual([name, { rule: [text, "= 1"] }]);
   expect(checkTree({ id: "x", ...r }, 1)).not.toBeNull();
+});
+
+test("a value that is no number writes no number after the text", () => {
+  useGameTables(TABLES);
+  for (const value of [null, true])
+    expect(
+      row({ pieceKey: "k", value, code: "OptionsListAccount[467]" }).formula,
+    ).toEqual({
+      rule: ["5% Chance for +1 Grade for your Invented Gallery!", ""],
+    });
+});
+
+// Review r1: a Killroy bonus is a call that opens into its reads (as an artifact's factor): its ⓘ is its own math with
+// its parts' shares, never the shop's text; its short name stays
+test("a Killroy bonus opened over its reads keeps the ⓘ of its math and its parts' shares, and its short name", () => {
+  useGameTables(TABLES);
+  const n = {
+    node: row({
+      pieceKey: "x",
+      value: 12,
+      code: 'RandomEvent("KillroyBonuses", 3, 0)',
+    }),
+  };
+  const r = withFormula(n, [read("Stats.a", 3), read("Stats.b", 4)]);
+  expect([n.node.name, r.formula]).toEqual([
+    "Killroy: Gallery Grade chance",
+    [
+      ["Stats.a", "×", "Stats.b"],
+      [3, 4, 12],
+    ],
+  ]);
+  expect(r.rows.map((k) => k.node.share)).not.toContain(null);
 });
 
 test("a row with no text of its bonus has no ⓘ of its own", () => {

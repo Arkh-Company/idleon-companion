@@ -195,6 +195,18 @@ test.each<[string, string, string]>([
   ["a god's minor bonus", 'Divinity("Bonus_Minor", 3, 0)', "🕊️ Divinity"],
   ["a god's blessing", 'Divinity("BlesssBonus", 2, 0)', "🕊️ Divinity"],
   ["a gem shop purchase", "GemItemsPurchased[139]", "💎 Gem Shop"],
+  // review r1: each branch of the rules above
+  ["Bubba's working value", "DNSM.Bubba_SM", "🥩 Bubba"],
+  [
+    "the next Glimbo trade's cost",
+    'Minehead("Glimbo_Cost", 0, 0)',
+    "🎲 Glimbo",
+  ],
+  [
+    "a bundle the block checks by bon",
+    'Thingies("Have_bon_x", 0, 0)',
+    "🎁 Bundles",
+  ],
   ["a talent's calc", "TalentCalc(328)", "🎯 Talents"],
   ["the talents' calc cache", "DNSM.CalcTalentMAP[635]", "🎯 Talents"],
   ["the arcade's doubler cache", "DNSM.ArcadBonDNz[14]", "🕹️ Arcade"],
