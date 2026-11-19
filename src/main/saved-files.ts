@@ -220,7 +220,8 @@ function jsonFile<T>(
       load();
       data = next;
       if (kept) return sentences.unsaved;
-      // Written whole, as settings.json (replace-file.ts): a failed write never leaves half a file.
+      // Written whole, as settings.json (replace-file.ts): to `.tmp` and renamed over the file, so a failed write of
+      // `.tmp` never leaves half a file; only the direct write, when Windows keeps refusing the rename, is not atomic.
       try {
         return replaceFile(file, JSON.stringify(toFile(next)))
           ? null

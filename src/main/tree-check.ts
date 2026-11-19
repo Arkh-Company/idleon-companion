@@ -112,8 +112,7 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   kids: (k) => k === "lazy" || Array.isArray(k),
 };
 const REQUIRED = Object.keys(NODE).filter(
-  (k) =>
-    !["was", "cap", "maxReached", "feeds", "combine", "poolKind"].includes(k),
+  (k) => !["cap", "maxReached", "feeds", "combine", "poolKind"].includes(k),
 );
 
 /** spec 009 (contracts/tree-node.md): a pool or a system group has no piece, says how it combines, and only a pool has a
