@@ -103,9 +103,13 @@ function foodTexts(reads: Reads): {
     (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
   return { foodText, emText };
 }
-/** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
+/**
+ * The emporium's row name, "Beanstalk: <the food's text>", or null with no text (spec 009, 009 r2; the Vinicius's name
+ * of 19/11). N.js GoldFoodBonuses adds the food i of NinjaInfo[29][2 + 3i] when Ninja[104][i] > 0, the level of the
+ * Jade Emporium's upgrade the game names "Gold Food Beanstalk" ("Grows a giant beanstalk behind the ninja castle!").
+ */
 export const emporiumName = (reads: Reads): string | null =>
-  foodName("Emporium", foodTexts(reads).emText);
+  foodName("Beanstalk", foodTexts(reads).emText);
 /**
  * Whether a log call of argument `arg` measures a worn food: N.js GoldFoodBonuses takes getLOG(1 + quantity) of a food
  * slot's quantity, and the emporium's getLOG(1 + 1e3·10^level) (009 T023 r4).
@@ -229,7 +233,7 @@ export function goldFood(
     ...(s3
       ? [
           part(
-            foodName("Emporium", emText),
+            foodName("Beanstalk", emText),
             s3.v - before3,
             level(s3.v - before3, [
               part("Base Amount", amount),
