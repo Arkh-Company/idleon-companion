@@ -28,7 +28,9 @@ function placed(rows: Row[], bugs: readonly GameBugRule[] = []) {
 const brief = (rows: ReturnType<typeof placed>) =>
   rows.map((r) => [r.id, r.code, r.value]);
 
-test("the leaves with the same code and value are one; another value, another code or no code stays", () => {
+test("the leaves with the same code and value are one; another value or another code stays, a check with no code is one too", () => {
+  // audit family 8: identical checks with no code on one level (the same name, the same answer) appear once; the two
+  // "Gate" checks with no code at -1 were two rows, and are one now
   expect(
     brief(
       placed([
@@ -46,7 +48,6 @@ test("the leaves with the same code and value are one; another value, another co
     ["root/Gate#2", "Dungon()", 2],
     ["root/Gate#3", "Other()", -1],
     ["root/Gate#4", null, -1],
-    ["root/Gate#5", null, -1],
   ]);
 });
 
