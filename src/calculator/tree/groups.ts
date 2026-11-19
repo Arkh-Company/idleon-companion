@@ -195,10 +195,10 @@ export function bySystem(
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  // every source in "Other", one group: the rows stay as they are (FR-001), the % forcing no group, each as its +N%
-  // (A34); "Other" beside "Other" in % is two groups still
+  // every source in "Other", in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%,
+  // its pool's ⓘ dividing it by 100 (A34, option B of 20/11)
   const all = [...groups.values()];
-  if (all.length <= 1 && all.every((g) => g.s === OTHER))
+  if (all.every((g) => g.s === OTHER))
     return all.some((g) => g.pct)
       ? rows.map((r) =>
           r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
