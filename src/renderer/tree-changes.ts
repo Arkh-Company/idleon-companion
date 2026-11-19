@@ -116,6 +116,44 @@ export function arrowOf(
   };
 }
 
+/** A scratch box's key as the 0.8.0 kept it, [character, path]; and the [character, path] of a key of now. */
+const boxOf = (key: string, length: number): string | null => {
+  try {
+    const k: unknown = JSON.parse(key);
+    return Array.isArray(k) && k.length === length
+      ? JSON.stringify(k.slice(0, 2))
+      : null;
+  } catch {
+    return null;
+  }
+};
+/**
+ * fix/tree-scratch-keys: a mark of the 0.8.0 kept a scratch box by its path; now a box read at two moments is two pieces
+ * ([character, path, writer, write]). The old key holds the box's piece when the tree has only one of that box.
+ */
+function rematched(
+  base: Readonly<Record<string, Value>>,
+  keys: ReadonlySet<string>,
+): Record<string, Value> {
+  const byBox = new Map<string, string[]>();
+  for (const k of keys) {
+    const box = boxOf(k, 4);
+    if (box) byBox.set(box, [...(byBox.get(box) ?? []), k]);
+  }
+  const out: Record<string, Value> = {};
+  for (const [k, v] of Object.entries(base)) {
+    if (keys.has(k)) {
+      out[k] = v;
+      continue;
+    }
+    const now = byBox.get(boxOf(k, 2) ?? "") ?? [];
+    const [only] = now;
+    if (only !== undefined && now.length === 1 && !Object.hasOwn(base, only))
+      out[only] = v;
+  }
+  return out;
+}
+
 /**
  * The arrow of every row of the tree against `base` (by piece). Only the parts followed live take the base (NFR-003):
  * a part past the limit shows its built value on both sides, so neither it nor its group gets a false arrow.
@@ -126,9 +164,7 @@ export function arrowsOf(
 ): Map<string, Arrow> {
   const followed = new Set(partsOf(root).keys());
   if (root.pieceKey !== null) followed.add(root.pieceKey);
-  const pieces = Object.fromEntries(
-    Object.entries(base).filter(([k]) => followed.has(k)),
-  );
+  const pieces = rematched(base, followed);
   const before = valuesOf(root, pieces);
   const now = valuesOf(root);
   const out = new Map<string, Arrow>();
