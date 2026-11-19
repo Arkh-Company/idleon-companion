@@ -155,8 +155,8 @@ test("the number moving with no part followed moving asks the tree again by itse
     kids: [7, 2],
     calculatedAt: 2_000,
   });
-  expect(t.root.was).toBe(undefined);
-  expect(t.root.kids.map((k) => k.was)).toEqual([undefined, undefined]);
+  expect(t.root).not.toHaveProperty("was");
+  for (const k of t.root.kids) expect(k).not.toHaveProperty("was");
 });
 
 test("another number, or the same after a character change, has no `was`", () => {
@@ -164,7 +164,7 @@ test("another number, or the same after a character change, has no `was`", () =>
   h.p.request({ id: "hp", character: null });
   h.tree(node({ value: CALCULATED.hp, kids: [sword(7)] }));
   const other = h.last();
-  expect(other?.state === "ready" && other.root.was).toBe(undefined);
+  expect(other?.state === "ready" && other.root).not.toHaveProperty("was");
 
   const g = readyDrop();
   g.setPair(pairOf("Other", 2));
@@ -172,8 +172,8 @@ test("another number, or the same after a character change, has no `was`", () =>
   g.tree(dropTree(CALCULATED.dropRate, 7));
   const t = g.last();
   expect(
-    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[0]?.was,
-  ).toBe(undefined);
+    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[0],
+  ).not.toHaveProperty("was");
 });
 
 test("a mark takes the open tree's values by piece, with the characters' names to keep out (FR-025, FR-010a)", () => {

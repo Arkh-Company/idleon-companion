@@ -9,7 +9,6 @@ const MAX = 50;
 
 test("a whole tree with every field passes as it is", () => {
   const tree = node({
-    was: 2,
     cap: "notReached",
     maxReached: { share: 0.62, max: 40 },
     feeds: 3,
@@ -35,6 +34,10 @@ test.each<[string, unknown]>([
   ["not an object", "a tree"],
   ["null", null],
   ["an unknown field", { ...node(), extra: 1 }],
+  [
+    "a `was`, which the 009 took out with the 008's compare",
+    { ...node(), was: 2 },
+  ],
   ["an unknown flag", node({ flags: { other: true } as never })],
   ["a flag of the wrong type", node({ flags: { closed: "yes" } as never })],
   [

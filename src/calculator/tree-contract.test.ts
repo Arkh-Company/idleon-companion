@@ -36,3 +36,8 @@ test("the types equal the shared ones", () => {
   expectTypeOf<CalcTreeNode>().toEqualTypeOf<TreeNode>();
   expectTypeOf<CalcTreeRequest>().toEqualTypeOf<TreeRequest>();
 });
+
+test("no row carries a `was`: the 009 took out the 008's compare", () => {
+  expectTypeOf<CalcTreeNode>().not.toHaveProperty("was");
+  expectTypeOf<TreeNode>().not.toHaveProperty("was");
+});
