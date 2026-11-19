@@ -8,6 +8,7 @@ import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
 import { inPool, isStep } from "./inline.ts";
+import { besidePools } from "./pool-rest.ts";
 import { formulaOut } from "./math.ts";
 import {
   chainPools,
@@ -206,7 +207,8 @@ function pooledLevel(
   );
   // its checks and its data rows stay after the pools
   const rest = keep ? restOf(rows, steps) : [];
-  return { rows: [...out.rows, ...rest], formula: out.formula };
+  // only pools beside each other: a read a pool shows leaves (tree/pool-rest.ts)
+  return besidePools([...out.rows, ...rest], out.formula);
 }
 
 /**

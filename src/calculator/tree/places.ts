@@ -23,6 +23,7 @@ import { byRole, inlined } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
 import { asideInFormula, branchCheck, buildUp, citing } from "./build-up.ts";
+import { besidePools } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -163,25 +164,27 @@ export function makePlaces(ctx: PlaceContext) {
     // of a source computed as a chain, which opens into its pools: its ⓘ is how they join, the step its call takes
     // (FR-017); any other level has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
     const pools = lv.rows.filter((r) => r.node.role === "pool");
-    const w = isMould(lv.row)
-      ? { formula: lv.row.node.formula, rows: lv.rows }
-      : pools.length
-        ? {
-            formula: lv.row.xf
+    const mould = isMould(lv.row);
+    const up = mould || pools.length ? null : builtUp(lv, name);
+    const w =
+      up ??
+      (mould
+        ? { formula: lv.row.node.formula, rows: lv.rows }
+        : // only pools beside each other (tree/pool-rest.ts)
+          besidePools(
+            lv.rows,
+            lv.row.xf
               ? // a lone part between the pools goes by its term (tree/pools.ts `lone`)
                 formulaOut(
                   lv.row.xf,
                   lv.rows.map((p) => termOf(p.node)),
                 )
               : null,
-            rows: lv.rows,
-          }
-        : builtUp(lv, name);
+          ));
+    const reached = up?.maxReached;
     return {
       formula: w.formula,
-      ...("maxReached" in w && w.maxReached
-        ? { maxReached: w.maxReached }
-        : {}),
+      ...(reached ? { maxReached: reached } : {}),
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
     };
   }
