@@ -31,6 +31,12 @@ const TABLES = new Map<string, unknown>([
 ]);
 
 test.each<[string, string, string]>([
+  // a Killroy bonus with no reads under it, a leaf: the shop's text is its ⓘ
+  [
+    'RandomEvent("KillroyBonuses", 3, 0)',
+    "Killroy: Gallery Grade chance",
+    "5% Chance for +1 Grade for your Invented Gallery!",
+  ],
   [
     "OptionsListAccount[467]",
     "Killroy: Gallery Grade chance (times bought)",
@@ -74,8 +80,8 @@ test("a value that is no number writes no number after the text", () => {
     });
 });
 
-// Review r1: a Killroy bonus is a call that opens into its reads (as an artifact's factor): its ⓘ is its own math with
-// its parts' shares, never the shop's text; its short name stays
+// Review r1 and r2: a Killroy bonus is a call that opens into its reads (as an artifact's factor): its ⓘ is its own
+// math with its parts' shares, and the shop's text a line of its own beside it; its short name stays
 test("a Killroy bonus opened over its reads keeps the ⓘ of its math and its parts' shares, and its short name", () => {
   useGameTables(TABLES);
   const n = {
@@ -91,6 +97,7 @@ test("a Killroy bonus opened over its reads keeps the ⓘ of its math and its pa
     [
       ["Stats.a", "×", "Stats.b"],
       [3, 4, 12],
+      "5% Chance for +1 Grade for your Invented Gallery!",
     ],
   ]);
   expect(r.rows.map((k) => k.node.share)).not.toContain(null);
