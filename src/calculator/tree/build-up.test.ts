@@ -74,7 +74,7 @@ test("[FR-018] a talent: its Talent level (Points invested + All-talent levels) 
   const [level] = kidsIn(n);
   expect(brief(kidsIn(level))).toEqual([
     ["Points invested", 409, "investedPoints"],
-    ["All-talent levels", 268, null],
+    ["All-talent levels", 268, "rawBonus"],
   ]);
   expect(lines(level)).toMatchObject({
     names: "Points invested + All-talent levels",
