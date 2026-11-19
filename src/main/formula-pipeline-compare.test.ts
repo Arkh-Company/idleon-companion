@@ -24,7 +24,7 @@ const pairAt = (n: number, dropRate = CALCULATED.dropRate): StatsPair => ({
 
 // The 10 s between two silent rebuilds are counted on a fake clock (FR-015, NFR-002).
 beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
   vi.setSystemTime(0);
 });
 afterEach(() => {
@@ -376,6 +376,52 @@ test("the game closing with the tree asked again in silence keeps the tree on sc
   expect(t?.state).toBe("ready");
   expect(t?.state === "ready" && t.stale).toBe(true);
   expect(shown(h).kids).toEqual([7, 2]);
+});
+
+/** A silent rebuild that failed at 10 s: the tree on screen has no build in the worker, and the 10 s start again. */
+function failedRebuild() {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  h.unavailable();
+  return h;
+}
+
+test.each<
+  [string, { game: "running" | "closed"; reader: "released" | "connecting" }]
+>([
+  ["the reader released", { game: "running", reader: "released" }],
+  ["the game closed", { game: "closed", reader: "connecting" }],
+])(
+  "with %s no reading comes: a branch with no build asks the tree when the 10 s are past, by one timer",
+  (_name, status) => {
+    const h = failedRebuild();
+    h.p.status(status);
+    h.p.request(EXPAND_SWORD);
+    h.p.request(EXPAND_SWORD);
+    expect(h.host.request).toHaveBeenCalledTimes(2);
+    expect(vi.getTimerCount()).toBe(1);
+    vi.advanceTimersByTime(9_999);
+    expect(h.host.request).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(1);
+    expect(h.host.request).toHaveBeenCalledTimes(3);
+    expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
+    h.tree(dropTree(9, 7));
+    expect(h.host.request.mock.lastCall?.[1]).toEqual({
+      type: "expand",
+      ...EXPAND_SWORD,
+    });
+  },
+);
+
+test("the timer of a branch waiting for the tree goes when the tree closes", () => {
+  const h = failedRebuild();
+  h.p.request(EXPAND_SWORD);
+  expect(vi.getTimerCount()).toBe(1);
+  h.p.close();
+  expect(vi.getTimerCount()).toBe(0);
+  vi.advanceTimersByTime(10_000);
+  expect(h.host.request).toHaveBeenCalledTimes(2);
 });
 
 test("the game closing with the tree asked again in silence: the next branch asks the tree again first, never the build the host kept", () => {
