@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { instrument } from "./instrument.ts";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
-import { scratchKeys } from "./tree/links.ts";
+import { scratchKey, scratchWrites } from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
 
 // Writer(1) writes the box twice, and each of its two readers reads one of the writes
@@ -81,21 +81,37 @@ test("a working total the reader wrote itself is keyed by the reader; any other 
     { b: "Other", v: 1 },
   ]).nodes;
   const [stamp, other] = nodes;
-  const keyOf = scratchKeys(
-    [
-      { path: "DummyNumbersStatManager.Total", node: 0, v: 0, xi: 0, seq: 0 },
-      { path: "DummyNumbersStatManager.Total", node: 0, v: 4, xi: 1, seq: 1 },
-    ],
-    0,
-  );
+  const writeOf = scratchWrites([
+    { path: "DummyNumbersStatManager.Total", node: 0, v: 0, xi: 0, seq: 0 },
+    { path: "DummyNumbersStatManager.Total", node: 0, v: 4, xi: 1, seq: 1 },
+  ]);
+  const keyOf = (path: string, value: number, ...by: (typeof stamp)[]) =>
+    scratchKey(
+      0,
+      path,
+      writeOf(path, value, undefined, ...by.map((n) => n ?? null)),
+    );
   // no writer linked (the box is no DNSM cache): the reader's own write of the value read
-  expect(keyOf("DummyNumbersStatManager.Total", 4, null, stamp ?? null)).toBe(
+  expect(keyOf("DummyNumbersStatManager.Total", 4, undefined, stamp)).toBe(
     JSON.stringify([0, "DummyNumbersStatManager.Total", 'StampTotal("X")', 1]),
   );
   // a call that never wrote that value, a box no call wrote, and a read of the player's state: the path alone
-  expect(keyOf("DummyNumbersStatManager.Total", 7, other ?? null)).toBe(
+  expect(keyOf("DummyNumbersStatManager.Total", 7, other)).toBe(
     '[0,"DummyNumbersStatManager.Total"]',
   );
-  expect(keyOf("DNSM.Saved", 5, null)).toBe('[0,"DNSM.Saved"]');
-  expect(keyOf("Stats.x", 0, stamp ?? null)).toBe('[0,"Stats.x"]');
+  expect(keyOf("DNSM.Saved", 5)).toBe('[0,"DNSM.Saved"]');
+  expect(keyOf("Stats.x", 0, stamp)).toBe('[0,"Stats.x"]');
+});
+
+test("a box written twice with the same value: the write the read saw, by the write's number the recording gives", () => {
+  const [writer] = recordingOf([{ b: "Writer", a: [1] }]).nodes;
+  const writeOf = scratchWrites([
+    { path: "DNSM.Box", node: 0, v: 1, xi: 0, seq: 0 },
+    { path: "DNSM.Box", node: 0, v: 5, xi: 1, seq: 1 },
+    { path: "DNSM.Box", node: 0, v: 1, xi: 2, seq: 2 },
+  ]);
+  expect(writeOf("DNSM.Box", 1, 2, writer ?? null)?.at).toBe(2);
+  expect(writeOf("DNSM.Box", 1, 0, writer ?? null)?.at).toBe(0);
+  // with no number, the first write of the value
+  expect(writeOf("DNSM.Box", 1, undefined, writer ?? null)?.at).toBe(0);
 });
