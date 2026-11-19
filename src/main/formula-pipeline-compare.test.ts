@@ -191,14 +191,73 @@ test("a mark takes the open tree's values by piece, with the characters' names t
   expect(h.p.markOf(0)).toBe(null);
 });
 
-test("a branch opened while the tree is asked again waits for the new one: the window asks it again then", () => {
+const EXPAND_RING = { treeId: "dropRate", nodeId: "root/Ring" };
+const gem = node({ id: "root/Ring/Gem", pieceKey: null });
+
+test("a branch opened while the tree is asked again is asked as soon as the new tree comes, and lands in it", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
+  h.p.request(EXPAND_RING);
   // One waiting job in the host: an expand sent now would replace the tree asked, which would never come.
   expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree(dropTree(9, 7));
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  expect(h.host.request.mock.lastCall?.[1]).toEqual({
+    type: "expand",
+    ...EXPAND_RING,
+  });
+  h.tree({ ...ring, kids: [gem] });
+  const t = h.last();
+  expect(
+    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[1]?.kids,
+  ).toEqual([gem]);
+  expect(shown(h).calculatedAt).toBe(2_000);
+});
+
+test("a branch opened while the tree is asked again is asked on the tree on screen when the new one fails", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  h.p.request(EXPAND_RING);
+  h.unavailable();
+  expect(h.host.request.mock.lastCall?.[1]).toEqual({
+    type: "expand",
+    ...EXPAND_RING,
+  });
+  h.tree({ ...ring, kids: [gem] });
+  const t = h.last();
+  expect(
+    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[1]?.kids,
+  ).toEqual([gem]);
+});
+
+test.each<[string, unknown, Record<string, string>]>([
+  [
+    "a tree the check refuses",
+    { id: 1 },
+    { event: "treeRejected", id: "dropRate" },
+  ],
+  [
+    "a tree whose root is not the Stats number",
+    dropTree(99, 7),
+    { event: "treeDiverged", label: "Drop Rate", id: "dropRate" },
+  ],
+])("%s, asked again in silence, keeps the tree on screen and says so in the log", (_name, raw, log) => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree(raw);
+  expect(h.last()?.state).toBe("ready");
+  expect(shown(h)).toEqual({
+    rootText: "9x",
+    root: 9,
+    kids: [7, 2],
+    calculatedAt: 1_000,
+  });
+  expect(h.log).toHaveBeenCalledWith(log);
 });
 
 test("a change at each reading asks the tree once in 10 s: the values are asked and written at each reading, and the tree after the 10 s", () => {

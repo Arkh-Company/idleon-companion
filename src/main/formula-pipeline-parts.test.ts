@@ -110,6 +110,20 @@ test("a part still without value after the new tree asks the tree only once", ()
   expect(h.host.request).toHaveBeenCalledTimes(2);
 });
 
+test("a part live in a tree left behind counts no more: opened again, its tree asks nothing for it", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4 });
+  h.p.request({ id: "hp", character: null });
+  h.tree(node({ value: CALCULATED.hp }));
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  seconds(10);
+  h.setPair(pairAt(3));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+});
+
 test("another character's tree asks no part: the live values are the active character's", () => {
   const h = readyDrop(1);
   expect(lastIds(h)).not.toContain(SWORD);
