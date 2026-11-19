@@ -295,7 +295,8 @@ export function startFormulaPipeline(deps: {
       asked = null;
       // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
       deps.log({ event: "treeFailed", id: request.id });
-      if (!quiet) show({ state: "unavailable", request });
+      if (quiet) rebuild.failed();
+      else show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
       live.received(id, values);
@@ -361,11 +362,10 @@ export function startFormulaPipeline(deps: {
         queued = [];
         for (const r of lost) branched(r, null);
         // The worker ended with the tree in flight: it will never answer (FR-022); a silent rebuild keeps its tree, stale.
-        if (asked) {
-          const { request, quiet } = asked;
-          asked = null;
-          if (!quiet) show({ state: "unavailable", request });
-        }
+        const gone = asked;
+        asked = null;
+        if (gone && !gone.quiet)
+          show({ state: "unavailable", request: gone.request });
       }
       if (closed === stale) return;
       stale = closed;

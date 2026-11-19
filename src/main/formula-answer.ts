@@ -153,6 +153,10 @@ export function rebuildClock(now: () => number = Date.now) {
       at = now();
       if (calculatedAt >= changedAt) due = false;
     },
+    /** A tree asked in silence failed: the time starts again, and the change still waits. */
+    failed() {
+      at = now();
+    },
     /** True, once, when a change waits, the pipeline is `free` and the time is past: the caller asks the tree. */
     take(free: boolean): boolean {
       if (!due || !free || now() - at < REBUILD_EVERY_MS) return false;
