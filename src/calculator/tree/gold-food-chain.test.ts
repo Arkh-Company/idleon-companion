@@ -80,3 +80,70 @@ test("[FR-017] the emporium's term that reads the shared multiplier back from it
     "DNSM.GfoodBonusMULTI",
   );
 });
+
+/** The shared multiplier's step, 1.3 × (2 + 20 ÷ 100), and the block that has it. */
+const MULTI_STEP = {
+  v: 2.86,
+  e: op(
+    "*",
+    read("Stats.set", 1.3),
+    op(
+      "+",
+      num(2),
+      op(
+        "/",
+        op("+", read("Stats.a", 12), read("Stats.b", 8), 20),
+        num(100),
+        0.2,
+      ),
+      2.2,
+    ),
+    2.86,
+  ),
+};
+const inBlock = (e: Expr) =>
+  goldFoodTerm(e, "+", {
+    block: nodes[0] ?? { id: 0, b: "?", a: [], c: [], p: null, pxi: 0 },
+    nodes,
+    steps: [MULTI_STEP],
+    reads: new Map([["DNSM.FamBonusQTYs[66]", 2]]),
+    term,
+  });
+const isShared = (r: Row | null | undefined) => {
+  expect(r?.node).toMatchObject({
+    name: "GFood Multi",
+    value: 2.86,
+    code: null,
+    pieceKey: null,
+    kids: [],
+  });
+  expect(r?.open).toBeNull();
+  expect(r?.group ?? []).toEqual([]);
+  expect(r?.node.formula).not.toBeNull();
+};
+
+test("[FR-017] the box of the shared multiplier read on its own: GFood Multi, no rows of its own, its ⓘ", () => {
+  isShared(inBlock(read("DNSM.GfoodBonusMULTI", 2.86)));
+});
+
+test("[FR-017] the worn food's product, its log only inside the quantity factor: the shared multiplier is GFood Multi", () => {
+  // 7 × the box × (1 + log₁₀(1009) ÷ 2.14)
+  const factor = op(
+    "+",
+    num(1),
+    op("/", { t: "call", id: 1, v: 3 }, num(2.14), 1.402),
+    2.402,
+  );
+  const worn = op(
+    "*",
+    op(
+      "*",
+      read("DNSM.GfoodMap.Amount", 7),
+      read("DNSM.GfoodBonusMULTI", 2.86),
+      20.02,
+    ),
+    factor,
+    48.09,
+  );
+  isShared(inBlock(worn)?.group?.find((k) => k.node.name === "GFood Multi"));
+});
