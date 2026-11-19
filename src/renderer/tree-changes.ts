@@ -43,8 +43,8 @@ export function growBase<B extends Base>(base: B, root: TreeNode): B {
     : { ...base, values: { ...base.values, ...Object.fromEntries(added) } };
 }
 
-/** A pool's or group's value from its rows' `values` (by id), by its `combine`; null when a row has none. A group
- * whose rows are not built yet keeps its own value. */
+/** A pool's or group's value from its rows' `values` (by id), by its `combine`; null when a row has none. A yes/no row
+ * counts as 1 or 0, as the worker counts it. A group whose rows are not built yet keeps its own value. */
 export function groupValue(
   n: TreeNode,
   values: ReadonlyMap<string, Value | null>,
@@ -54,8 +54,9 @@ export function groupValue(
   const vals: number[] = [];
   for (const k of n.kids) {
     const v = values.has(k.id) ? values.get(k.id) : k.value;
-    if (typeof v !== "number") return null;
-    vals.push(v);
+    if (typeof v === "boolean") vals.push(Number(v));
+    else if (typeof v === "number") vals.push(v);
+    else return null;
   }
   const sum = vals.reduce((a, x) => a + x, 0);
   switch (n.combine) {
