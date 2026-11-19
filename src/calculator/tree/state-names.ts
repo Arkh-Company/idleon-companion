@@ -259,6 +259,11 @@ const TABLE_RULES: readonly StateRule[] = [
     const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
     return `${words} (${sign})`;
   }),
+  // family 17 (audit of 19/11): Minehead BonusQTY(t) = Research[20][t] past floor t, and its screen writes the bonus as
+  // the text Research[19][t] (bench 007 catalog, proven by table)
+  rule(/^Minehead\("BonusQTY", (\d+), \d+\)$/, "N.js Minehead BonusQTY", (m) =>
+    tableText("research", 19, n(m)),
+  ),
   // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
   // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
   rule(
