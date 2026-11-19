@@ -273,14 +273,17 @@ Verify: `just test-one src/renderer/tree-changes.test.ts` - passes; `just test-o
   - Sigils: Sigil tier, Bonus at tier, Chilled Yarn multi (Artifact base × Rarity), Meritocracy multi (opening into its sources); the tier ladder is no line.
   - Cards with a cap: Card level (with the stars) and "Bonus per level" as a line; "min(…, Cap)" and "(capped)" in the ⓘ.
   - A constant is a line only when it is the bonus the game's screen shows (a talent's bonus per level, a card's level-1 bonus); the rest stay in the ⓘ. Branch checks are never lines. Tests first, for every tree; the research is in `.superpowers/implementar/009-system-mould/pesquisa-contas.md`.
-- [ ] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
+- [X] T022 [sessão] Run the probe of the 716 trees on the installed game and grow `systems.ts` until no source with a known block falls in "Other" (FR-003, SC-001, SC-003; depends on T008, T014)
   - Files: `src/calculator/tree/systems.ts` (by the Executor, from the list the probe gives); the probe stays outside the repo
   - Expected:
     - 0 unnamed math branches (SC-001);
     - 0 levels that do not close (SC-003);
     - the count of "Other" sources goes in `registro.md`.
-- [ ] T023 [sessão] Run `just parity` with the bench's V1 export (quickstart.md) - 0 differences (SC-002) (FR-010, SC-002; depends on T012)
+  - Result (19/11): 716 trees, 0 failures, 0 levels that do not close, 0 rows inside themselves, 3 pieces with two values, 146-166 "Other" sources, 514 unnamed branches; the unnamed branches and the rest go to the tree audit and the fix PR after the 009 (Vinicius, 19/11).
+- [X] T023 [sessão] Run `just parity` with the bench's V1 export (quickstart.md) - 0 differences (SC-002) (FR-010, SC-002; depends on T012)
+  - Result (19/11): 792 differences, 0 of value, 0 pieces with two values; the bench keeps the shape from before the 009, and the shape decided in the 009 stays (Vinicius, 18/11).
 - [ ] T024 [sessão] The quickstart with the packaged app on the real game (steps 1–7) and the 5-second test (SC-004), with the result in `registro.md` (NFR-001, NFR-002, SC-004; depends on T020, T022)
+  - Deferred (Vinicius, 19/11): the packaged test runs after the fix PR that follows the 009; the installer and the checklist are ready (`.superpowers/implementar/009-system-mould/teste-t024.html`).
 
 **Checkpoint**: `just check` passes.
 
