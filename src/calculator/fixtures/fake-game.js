@@ -1115,7 +1115,9 @@ lime.$scripts.N = function (_exports, $global) {
   // The rename by the rows above a row (pieces.cjs rename): a doubler under ArcadeBonus, the parts of a monument's cache
   // (two of them at x1), and a bubble's scratch number read under the bubble's cache, under a call, in a branch and under
   // a call of the branch.
-  Blocks._customBlock_ArcadeBonus = function () {
+  Blocks._customBlock_ArcadeBonus = function (t) {
+    // a bonus that is on or off, 1 while the flag is on (the vote under TreeMeritMulti's clamp)
+    if (t === 3) return state().TreeFlagOn == 1 ? 1 : 0;
     return state().TreeBase * 2;
   };
   // A running total of zeros its own block reads back (the game's FishingToolkit and its weight + line, 009 T023)
@@ -1131,16 +1133,21 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // A multiplier of one lone % times a clamp plus a sum of bonuses in % ÷ 100, two of them times a constant (audit
   // family 14): its second factor is an unnamed sum of sources of several systems; TreeMeritOf calls it as a source.
-  // One of those sources has a name with a colon ("Arcade: …"), as in the game's own block.
+  // As in the game's own block, its sources are named calls (one with a colon, "Arcade: …", the two times a constant
+  // named after their source), and the clamp is around a call of a check that gives the same value.
   Blocks._customBlock_TreeMeritMulti = function () {
     var s = state();
     return 0 >= s.TreeOwned
       ? (1 + Blocks._customBlock_ArcadeBonus(1) / 100) *
-          (Math.min(1, Math.max(0.25, 0.25 + s.TreeFlagOn)) +
-            (5 * Blocks._customBlock_TreeLoop() +
+          (Math.min(
+            1,
+            Math.max(0.25, 0.25 + Blocks._customBlock_ArcadeBonus(3)),
+          ) +
+            (5 * Blocks._customBlock_ArcadeBonus(4) +
               (Blocks._customBlock_ArcadeBonus(2) +
-                (20 * Blocks._customBlock_CardBonusREAL(1) +
-                  (s.TreeLevel + Blocks._customBlock_TreeReads())))) /
+                (20 * Blocks._customBlock_ArcadeBonus(5) +
+                  (Blocks._customBlock_CardBonusREAL(1) +
+                    (s.TreeLevel + Blocks._customBlock_TreeReads()))))) /
               100)
       : 0;
   };
