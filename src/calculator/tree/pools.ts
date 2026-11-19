@@ -38,8 +38,13 @@ export interface Pool {
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
-/** A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn). */
-export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
+/**
+ * A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn); `step`: the factors of a
+ * step, but its running total, as one row when its block names them whole (tree/gold-food-step.ts), else null.
+ */
+export type TermAt = ((e: Expr, op: "*" | "+", at: number) => Row | null) & {
+  step?: (terms: readonly Expr[], at: number) => Row | null;
+};
 
 /** A Multi pool of single multipliers, which share one pool when they come in a row (the order changes nothing). */
 const isSingles = (p: Omit<Pool, "name">) =>
@@ -328,6 +333,13 @@ export function chainPools(
         : null;
     if (scaled) {
       pools.push(...scaled.map((p) => ({ ...p, rows: under(p.rows) })));
+      continue;
+    }
+    // the factors its block names whole are one row, their math in its ⓘ (the worn food's, the rule of 19/11)
+    const whole = op === "*" ? termAt.step?.(terms, at) : null;
+    if (whole) {
+      batch.push(whole);
+      flush();
       continue;
     }
     for (const e of terms) {
