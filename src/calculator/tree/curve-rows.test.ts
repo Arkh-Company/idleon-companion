@@ -30,10 +30,11 @@ test("a curve added to a source is no row: its constants and level are rows of t
     ["Level at half of the max", null, 200],
     [expect.any(String), "Invented.lv", 50],
   ]);
+  // FR-018: the curve's constants by their role in the line of names, by their number in the line of numbers
   expect(t.expand(id)?.formula).toEqual([
     [
-      ...["Invented.a", "+", "(", "2", "×", "Invented.lv", "÷"],
-      ...["(", "Invented.lv", "+", "200", ")", ")"],
+      ...["Invented.a", "+", "(", "Max bonus of the curve", "×", "Invented.lv"],
+      ...["÷", "(", "Invented.lv", "+", "Level at half of the max", ")", ")"],
     ],
     [10, 2, 50, 50, 200, 10.4],
   ]);
