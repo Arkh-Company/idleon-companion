@@ -145,7 +145,8 @@ export function cardStars(lv: Level): BuiltUp | null {
     lv.rows.filter((r) => !checks.includes(r)),
     // the checks in words: the numbers line stays the level's math
     [
-      `${base[0]}, at least ${at.join(" and ")} by the ${lists} of the account (${checks.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`).join("; ")})`,
+      // a level the list forced says its list already
+      `${base[0]}${base[0].startsWith("Forced to") ? "" : `, at least ${at.join(" and ")} by the ${lists} of the account`} (${checks.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`).join("; ")})`,
       base[1],
     ],
     true,
