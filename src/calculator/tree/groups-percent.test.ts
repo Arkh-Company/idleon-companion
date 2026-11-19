@@ -1,7 +1,7 @@
 // The groups in % of a pool (spec 009, FR-001, FR-004, FR-006; deferred A34): a system's group in % comes right after
 // the system's own group, for the systems beyond the V1 too, in the order of the sum; and when every source is in
-// "Other", the % do not force a group: the rows stay as they are, each bonus in % as its +N%. Invented arguments, apart
-// from the game's own block names the rules read.
+// "Other" and in %, they do not force a group: the rows stay as they are, each bonus in % as its +N%. Invented
+// arguments, apart from the game's own block names the rules read.
 import { expect, test } from "vitest";
 import { bySystem } from "./mould.ts";
 import { row } from "./rows.ts";
@@ -42,15 +42,14 @@ test("a group in % of a system beyond the V1 comes right after the system's own 
   ]);
 });
 
-test("when every source is in Other, the % force no group: the rows stay, each bonus in % as its +N%", () => {
+test("when every source is in Other, in %, the % force no group: the rows stay, each bonus in % as its +N%", () => {
+  // "Other" beside "Other" in % is two groups still: their two names are a question for Vinicius (A34)
   const rows = [
-    src("InventedBlock(1)", 1),
     src("InventedBlock(2)", 20, true),
     src("InventedBlock(3)", 30, true),
   ];
   const out = bySystem(rows, "sum", writerOf);
   expect(out.map((r) => [r.node.code, r.node.fmt ?? null])).toEqual([
-    ["InventedBlock(1)", null],
     ["InventedBlock(2)", "%"],
     ["InventedBlock(3)", "%"],
   ]);
