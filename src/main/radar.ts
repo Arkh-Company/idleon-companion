@@ -9,13 +9,47 @@ import type { savedFiles } from "./saved-files.ts";
 
 type Parts = readonly (readonly [key: string, name: string])[];
 
+/** A scratch box's key as the 0.8.0 kept it, [character, path]; and the [character, path] of a key of now. */
+const boxOf = (key: string, length: number): string | null => {
+  try {
+    const k: unknown = JSON.parse(key);
+    return Array.isArray(k) && k.length === length
+      ? JSON.stringify(k.slice(0, 2))
+      : null;
+  } catch {
+    return null;
+  }
+};
+/**
+ * fix/tree-scratch-keys: a shape of the 0.8.0 kept a scratch box by its path; now a box read at two moments is two
+ * pieces ([character, path, writer, write]). The old key is the box's piece when the new shape has only one of that box.
+ */
+function rematched(before: Parts, after: Parts): Map<string, string> {
+  const now = new Set(after.map(([k]) => k));
+  const byBox = new Map<string, string[]>();
+  for (const [k] of after) {
+    const box = boxOf(k, 4);
+    if (box) byBox.set(box, [...(byBox.get(box) ?? []), k]);
+  }
+  const was = new Map(before);
+  return new Map(
+    before.map(([k, name]) => {
+      const box = now.has(k) ? [] : (byBox.get(boxOf(k, 2) ?? "") ?? []);
+      const [only] = box;
+      return only !== undefined && box.length === 1 && !was.has(only)
+        ? [only, name]
+        : [k, name];
+    }),
+  );
+}
+
 /** What changed in one tree between two shapes, by piece key, never by order; null when nothing did. */
 export function shapeChange(
   catalogId: string,
   before: Parts,
   after: Parts,
 ): RadarChange | null {
-  const was = new Map(before);
+  const was = rematched(before, after);
   const now = new Map(after);
   const added = [...now].filter(([k]) => !was.has(k)).map(([, n]) => n);
   const removed = [...was].filter(([k]) => !now.has(k)).map(([, n]) => n);
