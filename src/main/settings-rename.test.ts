@@ -6,7 +6,11 @@ import { join } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
 import { loadView, saveView } from "./settings.ts";
 
-const fails = vi.hoisted(() => ({ left: 0 }));
+const fails = vi.hoisted(() => ({ left: 0, write: "" }));
+const eperm = () =>
+  Object.assign(new Error("EPERM: operation not permitted"), {
+    code: "EPERM",
+  });
 vi.mock("node:fs", async (original) => {
   const fs = await original<typeof import("node:fs")>();
   return {
@@ -14,16 +18,20 @@ vi.mock("node:fs", async (original) => {
     renameSync: (from: string, to: string) => {
       if (fails.left > 0) {
         fails.left--;
-        throw Object.assign(new Error("EPERM: operation not permitted"), {
-          code: "EPERM",
-        });
+        throw eperm();
       }
       fs.renameSync(from, to);
+    },
+    // only the path in `fails.write` is refused: the .tmp beside it is written
+    writeFileSync: (path: string, data: string) => {
+      if (path === fails.write) throw eperm();
+      fs.writeFileSync(path, data);
     },
   };
 });
 afterEach(() => {
   fails.left = 0;
+  fails.write = "";
 });
 
 function fileWith(content: string): string {
@@ -51,4 +59,14 @@ test("a rename that keeps failing writes the file directly, removes .tmp and thr
     share: false,
   });
   expect(existsSync(`${file}.tmp`)).toBe(false);
+});
+
+test("a direct write refused too throws nothing: that save is lost, and the file stays as it was", () => {
+  const file = fileWith('{"changes":false,"share":false}');
+  fails.left = 100;
+  fails.write = file;
+  expect(() => {
+    saveView(file, { changes: true, share: true });
+  }).not.toThrow();
+  expect(loadView(file)).toEqual({ changes: false, share: false });
 });
