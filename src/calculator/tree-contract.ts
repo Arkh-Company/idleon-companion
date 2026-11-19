@@ -71,8 +71,11 @@ export interface CalcTreeNode {
   leaf: CalcLeafKind | null;
   condition: (typeof CALC_CONDITION_KINDS)[number] | null;
   why: string | null;
+  /**
+   * "How it adds up" (src/shared/formula-tree.ts): names and numbers, or a rule's two lines of text; `text`, optional,
+   * is the game's text of the row's bonus, a line before the names and the numbers.
+   */
   formula:
-    // (text: the game's text of the row's bonus, a line of its own before its math; fix/tree-names r2)
     | [names: string[], numbers: number[], text?: string]
     | { rule: [names: string, numbers: string]; text?: string }
     | null;

@@ -117,9 +117,11 @@ export interface TreeNode {
   condition: ConditionKind | null;
   /** Why a `?`, in a player's words. */
   why: string | null;
-  /** "How it adds up": names and numbers only (FR-012a); a rule ("If …: 35", "yes → 35") as its two lines of text. */
+  /**
+   * "How it adds up": names and numbers, never the game's code (FR-012a), or a rule ("If …: 35", "yes → 35") as its two
+   * lines of text; `text`, optional, is the game's text of the row's bonus, a line before the names and the numbers.
+   */
   formula:
-    // (text: the game's text of the row's bonus, a line of its own before its math; fix/tree-names r2)
     | [names: string[], numbers: number[], text?: string]
     | { rule: [names: string, numbers: string]; text?: string }
     | null;
