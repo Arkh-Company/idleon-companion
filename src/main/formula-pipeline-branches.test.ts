@@ -175,12 +175,28 @@ test("the timer of a branch waiting for the tree goes when the tree closes", () 
   expect(h.host.request).toHaveBeenCalledTimes(2);
 });
 
+test("the game closing takes the timer of a rebuild waiting its 10 s away: no tree is asked, and no worker starts, by itself", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  h.tree(dropTree(9, 7));
+  seconds(2);
+  h.setPair(pairAt(3, 10));
+  h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
+  expect(vi.getTimerCount()).toBe(1);
+  const asked = h.host.request.mock.calls.length;
+  h.p.status({ game: "closed", reader: "connecting" });
+  expect(vi.getTimerCount()).toBe(0);
+  vi.advanceTimersByTime(10_000);
+  expect(h.host.request).toHaveBeenCalledTimes(asked);
+});
+
 test("the game closing with the tree asked again in silence: the next branch asks the tree again first, never the build the host kept", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   h.p.status({ game: "closed", reader: "connecting" });
-  // With the game closed no reading comes for the clock: the tree is asked at the click, once.
+  // The 10 s since the last tree are past: the tree is asked at the click, once.
   h.p.request(EXPAND_SWORD);
   h.p.request(EXPAND_SWORD);
   expect(h.host.request).toHaveBeenCalledTimes(3);
