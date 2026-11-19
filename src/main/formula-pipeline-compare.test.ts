@@ -5,22 +5,17 @@
 // invented.
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { node, pairOf, pipeline as setup } from "./formula-fixture.ts";
-import type { StatsPair } from "./stats-pipeline.ts";
+import {
+  dropTree,
+  pairAt,
+  readyDrop,
+  RING,
+  seconds,
+  shown,
+  SWORD,
+  sword,
+} from "./formula-compare-fixture.ts";
 import { CALCULATED } from "./stats-pipeline-fixture.ts";
-
-const SWORD = '[0,"Sword"]';
-const RING = '[0,"Ring"]';
-const sword = (value: number) =>
-  node({ id: "root/Sword", pieceKey: SWORD, value, role: "piece" });
-const ring = node({ id: "root/Ring", pieceKey: RING, value: 2 });
-const dropTree = (total: number, swordValue: number) =>
-  node({ value: total, kids: [sword(swordValue), ring] });
-
-/** The Stats' next pair, at `n` seconds, with its Drop Rate. */
-const pairAt = (n: number, dropRate = CALCULATED.dropRate): StatsPair => ({
-  ...pairOf("Invented", n),
-  numbers: { ...CALCULATED, dropRate },
-});
 
 // The 10 s between two silent rebuilds are counted on a fake clock (FR-015, NFR-002).
 beforeEach(() => {
@@ -30,29 +25,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
 });
-const seconds = (n: number) => {
-  vi.setSystemTime(Date.now() + n * 1_000);
-};
-
-/** The Drop Rate's tree, 10 s after it came: a change may ask it again at once. */
-function readyDrop() {
-  const h = setup();
-  h.p.request({ id: "dropRate", character: null });
-  h.tree(dropTree(CALCULATED.dropRate, 4));
-  seconds(10);
-  return h;
-}
-const shown = (h: ReturnType<typeof setup>) => {
-  const t = h.last();
-  if (t?.state !== "ready" || !Array.isArray(t.root.kids))
-    throw new Error("not ready");
-  return {
-    rootText: t.rootText,
-    root: t.root.value,
-    kids: t.root.kids.map((k) => k.value),
-    calculatedAt: t.calculatedAt,
-  };
-};
 
 test("a newer reading writes the open number's value and text and its parts' into the tree at once, and asks the tree again in silence", () => {
   const h = readyDrop();
@@ -191,110 +163,6 @@ test("a mark takes the open tree's values by piece, with the characters' names t
   expect(h.p.markOf(0)).toBe(null);
 });
 
-const EXPAND_RING = { treeId: "dropRate", nodeId: "root/Ring" };
-const gem = node({ id: "root/Ring/Gem", pieceKey: null });
-
-test("a branch opened while the tree is asked again is asked as soon as the new tree comes, and lands in it", () => {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.p.request(EXPAND_RING);
-  // One waiting job in the host: an expand sent now would replace the tree asked, which would never come.
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.tree(dropTree(9, 7));
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-  expect(h.host.request.mock.lastCall?.[1]).toEqual({
-    type: "expand",
-    ...EXPAND_RING,
-  });
-  h.branch({ ...ring, kids: [gem] });
-  const t = h.last();
-  expect(
-    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[1]?.kids,
-  ).toEqual([gem]);
-  expect(shown(h).calculatedAt).toBe(2_000);
-});
-
-const EXPAND_SWORD = { treeId: "dropRate", nodeId: "root/Sword" };
-const kidOf = (h: ReturnType<typeof setup>, i: number) => {
-  const t = h.last();
-  return t?.state === "ready" && Array.isArray(t.root.kids)
-    ? t.root.kids[i]
-    : undefined;
-};
-
-test("a branch opened while the tree is asked again is unavailable at once when the new one fails; the next branch asks the tree again when the 10 s are past", () => {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  h.p.request(EXPAND_RING);
-  h.unavailable();
-  // The worker dropped the tree on screen when it began the new one: no branch of it is asked.
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  expect(kidOf(h, 1)).toMatchObject({ flags: { unavailable: true }, kids: [] });
-  // The branch waits, and the tree is asked by the clock of the silent rebuilds (NFR-002), never at the click.
-  h.p.request(EXPAND_SWORD);
-  h.p.request(EXPAND_SWORD);
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.setPair(pairAt(3, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  seconds(10);
-  h.setPair(pairAt(4, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
-  expect(h.last()?.state).toBe("ready");
-  h.tree(dropTree(9, 7));
-  expect(h.host.request).toHaveBeenCalledTimes(4);
-  expect(h.host.request.mock.lastCall?.[1]).toEqual({
-    type: "expand",
-    ...EXPAND_SWORD,
-  });
-  const edge = node({ id: "root/Sword/Edge", pieceKey: null });
-  h.branch({ ...sword(7), kids: [edge] });
-  expect(kidOf(h, 0)?.kids).toEqual([edge]);
-});
-
-test("a branch waiting for the tree asked again by the clock is unavailable when that tree fails too, and nothing more is asked", () => {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  h.unavailable();
-  h.p.request(EXPAND_SWORD);
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  seconds(10);
-  h.setPair(pairAt(3, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-  h.unavailable();
-  expect(kidOf(h, 0)).toMatchObject({ flags: { unavailable: true }, kids: [] });
-  h.setPair(pairAt(4, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-});
-
-test.each<[string, unknown]>([
-  ["a tree the check refuses", { id: 1 }],
-  ["a tree whose root is not the Stats number", dropTree(99, 7)],
-])(
-  "%s, asked again in silence with a branch waiting: the branch is unavailable, never asked of that build",
-  (_name, raw) => {
-    const h = readyDrop();
-    h.setPair(pairAt(2, 9));
-    h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-    h.p.request(EXPAND_RING);
-    h.tree(raw);
-    expect(h.host.request).toHaveBeenCalledTimes(2);
-    expect(kidOf(h, 1)).toMatchObject({
-      flags: { unavailable: true },
-      kids: [],
-    });
-    expect(shown(h).calculatedAt).toBe(1_000);
-  },
-);
-
 test.each<[string, unknown, Record<string, string>]>([
   [
     "a tree the check refuses",
@@ -378,70 +246,6 @@ test("the game closing with the tree asked again in silence keeps the tree on sc
   expect(shown(h).kids).toEqual([7, 2]);
 });
 
-/** A silent rebuild that failed at 10 s: the tree on screen has no build in the worker, and the 10 s start again. */
-function failedRebuild() {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  h.unavailable();
-  return h;
-}
-
-test.each<
-  [string, { game: "running" | "closed"; reader: "released" | "connecting" }]
->([
-  ["the reader released", { game: "running", reader: "released" }],
-  ["the game closed", { game: "closed", reader: "connecting" }],
-])(
-  "with %s no reading comes: a branch with no build asks the tree when the 10 s are past, by one timer",
-  (_name, status) => {
-    const h = failedRebuild();
-    h.p.status(status);
-    h.p.request(EXPAND_SWORD);
-    h.p.request(EXPAND_SWORD);
-    expect(h.host.request).toHaveBeenCalledTimes(2);
-    expect(vi.getTimerCount()).toBe(1);
-    vi.advanceTimersByTime(9_999);
-    expect(h.host.request).toHaveBeenCalledTimes(2);
-    vi.advanceTimersByTime(1);
-    expect(h.host.request).toHaveBeenCalledTimes(3);
-    expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
-    h.tree(dropTree(9, 7));
-    expect(h.host.request.mock.lastCall?.[1]).toEqual({
-      type: "expand",
-      ...EXPAND_SWORD,
-    });
-  },
-);
-
-test("the timer of a branch waiting for the tree goes when the tree closes", () => {
-  const h = failedRebuild();
-  h.p.request(EXPAND_SWORD);
-  expect(vi.getTimerCount()).toBe(1);
-  h.p.close();
-  expect(vi.getTimerCount()).toBe(0);
-  vi.advanceTimersByTime(10_000);
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-});
-
-test("the game closing with the tree asked again in silence: the next branch asks the tree again first, never the build the host kept", () => {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  h.p.status({ game: "closed", reader: "connecting" });
-  // With the game closed no reading comes for the clock: the tree is asked at the click, once.
-  h.p.request(EXPAND_SWORD);
-  h.p.request(EXPAND_SWORD);
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
-  h.tree(dropTree(9, 7));
-  expect(h.host.request).toHaveBeenCalledTimes(4);
-  expect(h.host.request.mock.lastCall?.[1]).toEqual({
-    type: "expand",
-    ...EXPAND_SWORD,
-  });
-});
-
 test("a tree asked again in silence that fails keeps the tree on screen, and says so in the log with its id", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
@@ -466,19 +270,4 @@ test("a tree asked again in silence that fails starts the 10 s again: the next c
   h.setPair(pairAt(4, 11));
   h.values({ dropRate: 11, [SWORD]: 9, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(3);
-});
-
-test("a branch asked keeps its turn: a change meanwhile is written in place, and the tree is asked only after the branch comes", () => {
-  const h = readyDrop();
-  h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  const drops = h.host.dropCurrent.mock.calls.length;
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(shown(h).kids).toEqual([7, 2]);
-  expect(h.host.dropCurrent).toHaveBeenCalledTimes(drops);
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.tree({ ...ring, kids: [node({ id: "root/Ring/Gem", pieceKey: null })] });
-  expect(h.host.request).toHaveBeenCalledTimes(3);
-  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
 });
