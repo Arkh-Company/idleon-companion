@@ -79,3 +79,4 @@ Sem protótipo. A clarify fechou sem pergunta `to plan`. As decisões abaixo sã
   - **Worker:** os pools e o achatamento são passadas lineares sobre linhas já montadas, sem chamada nova ao jogo. A medida no jogo real entra na sonda das 716 árvores (`quickstart.md`).
   - **Janela:** refazer o valor dos grupos é linear nas fontes à vista.
 - **Rationale:** a montagem é o que custa (008, T026). O molde não monta nada novo.
+- **Desvio (T031, FR-018):** Desde a T031, a gravação chama o jogo em dois lugares, só leitura e ao lado da raiz: o multiplicador do Meritocracy (`EXTRA_ROOTS`) e, depois das raízes, o máximo de cada Legend Talent que a raiz chamou (`FOLLOW_CALLS`); no Drop Rate são 12 chamadas, sem custo medível na gravação (cerca de 3,1 s com e sem elas). A medida fica na sonda das 716 árvores.
