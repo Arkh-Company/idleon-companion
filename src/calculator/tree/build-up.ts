@@ -47,6 +47,21 @@ import { meritocracyMulti } from "./factors.ts";
 export type { BuiltUp } from "./build-up-rows.ts";
 
 /** A level that is one curve times its multipliers: the curve's level and constants as rows, the curve in the ⓘ. */
+/**
+ * The name of the level a curve uses, by the source's kind (audit families 1 and 5), the same everywhere: the
+ * cauldron it is read from (the vials' is the fifth, N.js CauldronInfo), else the source's cache; null for another.
+ */
+function sourceLevel(input: string, source: string): string | null {
+  const cauldron = /^CauldronInfo\[(\d+)\]/.exec(input)?.[1];
+  if (cauldron !== undefined)
+    return cauldron === "4" ? "Vial level" : "Bubble level";
+  if (input) return null;
+  if (source.startsWith("DNSM.AlchVials.")) return "Vial level";
+  return /^(DNSM\.AlchBubbles\.|CauldronStats\("BubbleBonus")/.test(source)
+    ? "Bubble level"
+    : null;
+}
+
 function curveLevel(lv: Level): BuiltUp | null {
   const cr = lv.rows.find(
     (r) => r.node.name.startsWith("Curve: ") && (r.group?.length ?? 0) >= 2,
@@ -71,9 +86,8 @@ function curveLevel(lv: Level): BuiltUp | null {
     !near(vOf(cr) * product(others), v)
   )
     return null;
-  const name = codeOf(input).startsWith("CauldronInfo[")
-    ? "Bubble level"
-    : input.node.name;
+  const name =
+    sourceLevel(codeOf(input), lv.row.node.code ?? "") ?? input.node.name;
   const base = curveFormula(c, vOf(cr), name, roles);
   if (!base) return null;
   const wrap =
