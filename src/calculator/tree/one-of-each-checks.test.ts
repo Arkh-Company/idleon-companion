@@ -3,7 +3,7 @@
 // when they are separate parts of the level's sum (FR-008), else they are one. Invented calls and values.
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
-import { check, lazy, leaf, placed } from "./tree-fixture.ts";
+import { check, fixed, lazy, leaf, placed } from "./tree-fixture.ts";
 
 const names = (n: CalcTreeNode | null | undefined) =>
   n && Array.isArray(n.kids) ? n.kids.map((k) => k.name) : [];
@@ -21,6 +21,35 @@ test("identical checks with no code on one level appear once", () => {
     check("Gallery unlocked", true),
   ]);
   expect(names(n)).toEqual(["Invented bonus", "Gallery unlocked"]);
+});
+
+test("identical checks the level's ⓘ joins in its rule appear once (a rule ⓘ counts no citations)", () => {
+  const n = under(35, [
+    fixed("Fixed value", 35),
+    check("Gallery unlocked", true),
+    check("Gallery unlocked", true),
+    check("Gallery unlocked", true),
+  ]);
+  expect(names(n)).toEqual(["Fixed value", "Gallery unlocked"]);
+});
+
+test("if (lvl > 0) return lvl × 3: the level's read shows once, though its check names it again in the ⓘ", () => {
+  const lvl = () => leaf("Bonus level", 5, "Stats.lvl", "level");
+  // the call's expression around it, lvl × 3: its ⓘ is the rule "Bonus level × 3 (Bonus level > 0: yes)"
+  const call = {
+    ...lazy("Invented source", 15, "Call1()", 1),
+    xf: ["Bonus level × 3", "5 × 3 = 15"] as [string, string],
+  };
+  const t = placed(
+    { 1: [lvl(), fixed("× 3", 3), lvl(), check("Bonus level > 0", true)] },
+    [call],
+  );
+  const n = t.expand(t.rows[0]?.id ?? "");
+  expect(
+    (n && Array.isArray(n.kids) ? n.kids : []).filter(
+      (k) => k.code === "Stats.lvl",
+    ),
+  ).toHaveLength(1);
 });
 
 test("identical calls that are not separate parts of the level's sum are one", () => {
