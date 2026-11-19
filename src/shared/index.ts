@@ -26,6 +26,7 @@ export {
   changes,
   compareTrees,
   compareValues,
+  oldBoxKeys,
   partsOf,
   pieceValues,
   preorder,

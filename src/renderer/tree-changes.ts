@@ -4,6 +4,7 @@
 // the tree on screen, so a group whose id changed owner when the tree was rebuilt never shows a false arrow.
 import {
   MINUS,
+  oldBoxKeys,
   partsOf,
   pieceValues,
   plain,
@@ -116,40 +117,22 @@ export function arrowOf(
   };
 }
 
-/** A scratch box's key as the 0.8.0 kept it, [character, path]; and the [character, path] of a key of now. */
-const boxOf = (key: string, length: number): string | null => {
-  try {
-    const k: unknown = JSON.parse(key);
-    return Array.isArray(k) && k.length === length
-      ? JSON.stringify(k.slice(0, 2))
-      : null;
-  } catch {
-    return null;
-  }
-};
 /**
- * fix/tree-scratch-keys: a mark of the 0.8.0 kept a scratch box by its path; now a box read at two moments is two pieces
- * ([character, path, writer, write]). The old key holds the box's piece when the tree has only one of that box.
+ * fix/tree-scratch-keys: a mark of the 0.8.0 kept a scratch box by its path; the old key holds the box's piece when the
+ * whole tree has only one piece of that box (oldBoxKeys), and that piece is followed live.
  */
 function rematched(
   base: Readonly<Record<string, Value>>,
-  keys: ReadonlySet<string>,
+  root: TreeNode,
+  followed: ReadonlySet<string>,
 ): Record<string, Value> {
-  const byBox = new Map<string, string[]>();
-  for (const k of keys) {
-    const box = boxOf(k, 4);
-    if (box) byBox.set(box, [...(byBox.get(box) ?? []), k]);
-  }
+  const all = preorder(root).flatMap((n) => n.pieceKey ?? []);
   const out: Record<string, Value> = {};
-  for (const [k, v] of Object.entries(base)) {
-    if (keys.has(k)) {
-      out[k] = v;
-      continue;
-    }
-    const now = byBox.get(boxOf(k, 2) ?? "") ?? [];
-    const [only] = now;
-    if (only !== undefined && now.length === 1 && !Object.hasOwn(base, only))
-      out[only] = v;
+  for (const [k, v] of Object.entries(base)) if (followed.has(k)) out[k] = v;
+  for (const [k, now] of oldBoxKeys(Object.keys(base), all, 1)) {
+    const v = base[k];
+    if (v !== undefined && followed.has(now) && !Object.hasOwn(base, now))
+      out[now] = v;
   }
   return out;
 }
@@ -164,7 +147,7 @@ export function arrowsOf(
 ): Map<string, Arrow> {
   const followed = new Set(partsOf(root).keys());
   if (root.pieceKey !== null) followed.add(root.pieceKey);
-  const pieces = rematched(base, followed);
+  const pieces = rematched(base, root, followed);
   const before = valuesOf(root, pieces);
   const now = valuesOf(root);
   const out = new Map<string, Arrow>();
