@@ -199,7 +199,7 @@ export function makePlaces(ctx: PlaceContext) {
     return {
       formula: w.formula,
       ...(reached ? { maxReached: reached } : {}),
-      kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
+      kids: placeAt({ id, code: lv.code }, w.rows, lv.at, vOf(lv.row)),
     };
   }
 
@@ -211,13 +211,17 @@ export function makePlaces(ctx: PlaceContext) {
     parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
     at: At,
+    /** The level's value: its calls repeated are one unless they are the parts of its sum (audit family 8). */
+    total?: number,
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
     // FR-016: a source a game-bug rule marks stays repeated
     const marked = (code: string) =>
       gameBugOf(ctx.bugs, parent.code, code) !== null;
     // opus2Arena: the yes/no beside the arena's count is named as the count
-    return besideArena(oneOfEach(rows, marked)).map((x) => {
+    const sum =
+      total !== undefined && Number.isFinite(total) ? total : undefined;
+    return besideArena(oneOfEach(rows, marked, sum)).map((x) => {
       // opus5's openStatue: the statue's base bonus, over the recording
       const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
