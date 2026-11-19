@@ -87,7 +87,8 @@ export function startFormulaPipeline(deps: {
   } | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
-  /** The other rows opened meanwhile: each one asked after the branch before it answers (the host keeps one waiting). */
+  /** The other rows opened meanwhile: each one asked after the branch, or the silent rebuild, before it answers (the
+   * host keeps one waiting). */
   let queued: { treeId: string; nodeId: string }[] = [];
   let seq = 0;
   let stale = false;
@@ -98,7 +99,7 @@ export function startFormulaPipeline(deps: {
   /** The parts of the open tree asked live, by piece; only of the active character's tree (FR-024). */
   let parts = new Map<string, TreeNode>();
   /** The parts that had a live value: one that loses it asks the tree again (FR-015). A piece is the same call in any
-   * tree, so the set outlives the tree. */
+   * tree, so a rebuilt tree keeps those it still has; the others go with the tree that had them. */
   const hadLive = new Set<string>();
   /** A change since the last tree came asks it again in silence, at most every 10 s (FR-015, NFR-002). */
   const rebuild = rebuildClock();
@@ -177,13 +178,15 @@ export function startFormulaPipeline(deps: {
 
   function show(tree: FormulaTree): void {
     const root = tree.state === "ready" ? tree.root : null;
-    if (root !== (last.state === "ready" ? last.root : null))
+    if (root !== (last.state === "ready" ? last.root : null)) {
       parts =
         tree.state === "ready" &&
         root &&
         tree.character === tree.activeCharacter
           ? partsOf(root)
           : new Map<string, TreeNode>();
+      for (const k of hadLive) if (!parts.has(k)) hadLive.delete(k);
+    }
     last = tree;
     deps.send(tree);
     inView();
@@ -197,10 +200,15 @@ export function startFormulaPipeline(deps: {
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
-    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The new tree
-    // has another time, and the window asks its open branches again then (FR-015).
-    if (last.state !== "ready" || r.treeId !== open?.id || asked) return;
-    if (expanding && expanding.nodeId !== r.nodeId) {
+    if (
+      last.state !== "ready" ||
+      r.treeId !== open?.id ||
+      asked?.quiet === false
+    )
+      return;
+    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
+    // and is asked as soon as that tree comes or fails, on the tree then on screen (FR-015).
+    if (asked || (expanding && expanding.nodeId !== r.nodeId)) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
       return;
     }
@@ -209,14 +217,19 @@ export function startFormulaPipeline(deps: {
     host.request(seq, { type: "expand", ...r }, null);
   }
 
+  /** The next row waiting is asked, or else the silent rebuild when due. */
+  function nextJob(): void {
+    const next = queued.shift();
+    if (next) expand(next);
+    else rebuildIfDue();
+  }
+
   /** The answer of the branch asked, then the next row waiting is asked. */
   function expanded(raw: unknown): void {
     const target = expanding;
     expanding = null;
     if (target) branched(target, raw);
-    const next = queued.shift();
-    if (next) expand(next);
-    else rebuildIfDue();
+    nextJob();
   }
 
   /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
@@ -269,18 +282,22 @@ export function startFormulaPipeline(deps: {
 
   function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
-    const { request } = asked;
-    rebuild.came(asked.pair.calculatedAt);
+    const { request, quiet } = asked;
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
       stale,
     });
+    // A silent rebuild refused or diverged keeps the tree on screen, as one that fails (FR-015).
+    const kept = quiet && answer.tree.state !== "ready";
+    if (kept) rebuild.failed();
+    else rebuild.came(asked.pair.calculatedAt);
     asked = null;
     if (answer.log) deps.log(answer.log);
     // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
     if (log) deps.log({ event: log, id: request.id });
-    show(answer.tree);
+    if (!kept) show(answer.tree);
+    if (quiet) nextJob();
   }
 
   const host = deps.treeHost({
@@ -295,8 +312,10 @@ export function startFormulaPipeline(deps: {
       asked = null;
       // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
       deps.log({ event: "treeFailed", id: request.id });
-      if (quiet) rebuild.failed();
-      else show({ state: "unavailable", request });
+      if (quiet) {
+        rebuild.failed();
+        nextJob();
+      } else show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
       live.received(id, values);

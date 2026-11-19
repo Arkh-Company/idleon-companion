@@ -244,21 +244,24 @@ test.each<[string, unknown, Record<string, string>]>([
     dropTree(99, 7),
     { event: "treeDiverged", label: "Drop Rate", id: "dropRate" },
   ],
-])("%s, asked again in silence, keeps the tree on screen and says so in the log", (_name, raw, log) => {
-  const h = readyDrop();
-  h.setPair(pairAt(2, 9));
-  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
-  expect(h.host.request).toHaveBeenCalledTimes(2);
-  h.tree(raw);
-  expect(h.last()?.state).toBe("ready");
-  expect(shown(h)).toEqual({
-    rootText: "9x",
-    root: 9,
-    kids: [7, 2],
-    calculatedAt: 1_000,
-  });
-  expect(h.log).toHaveBeenCalledWith(log);
-});
+])(
+  "%s, asked again in silence, keeps the tree on screen and says so in the log",
+  (_name, raw, log) => {
+    const h = readyDrop();
+    h.setPair(pairAt(2, 9));
+    h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+    expect(h.host.request).toHaveBeenCalledTimes(2);
+    h.tree(raw);
+    expect(h.last()?.state).toBe("ready");
+    expect(shown(h)).toEqual({
+      rootText: "9x",
+      root: 9,
+      kids: [7, 2],
+      calculatedAt: 1_000,
+    });
+    expect(h.log).toHaveBeenCalledWith(log);
+  },
+);
 
 test("a change at each reading asks the tree once in 10 s: the values are asked and written at each reading, and the tree after the 10 s", () => {
   const h = setup();
