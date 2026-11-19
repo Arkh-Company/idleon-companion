@@ -50,7 +50,7 @@ test("the read of the total in the turn being opened is the total of the earlier
     rows.push(n);
     const kids = n.kids === "lazy" ? (build.expand(n.id)?.kids ?? []) : n.kids;
     if (Array.isArray(kids) && depth < 12)
-      kids.forEach((k) => walk(k, depth + 1));
+      for (const k of kids) walk(k, depth + 1);
   };
   walk(build.root, 0);
   const earlier = rows.filter((n) => n.name === "Total of the earlier turns");
