@@ -352,6 +352,8 @@ export function startFormulaPipeline(
         asked = null;
         if (gone && !gone.quiet)
           show({ state: "unavailable", request: gone.request });
+        // The host kept that rebuild as its build (tree-host.ts `built`): the tree on screen is no longer the worker's.
+        else if (gone) keptScreen();
       }
       if (closed === stale) return;
       stale = closed;
