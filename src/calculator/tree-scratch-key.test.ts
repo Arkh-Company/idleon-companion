@@ -4,7 +4,12 @@ import { expect, test } from "vitest";
 import { instrument } from "./instrument.ts";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
-import { scratchKey, scratchSeen, scratchWrites } from "./tree/links.ts";
+import {
+  readSeq,
+  scratchKey,
+  scratchSeen,
+  scratchWrites,
+} from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
 
 // Writer(1) writes the box twice, and each of its two readers reads one of the writes
@@ -160,4 +165,26 @@ test("the write a read saw is the last write of its path, or of the box that hol
   // a value no write before the read gave, and a read before any write: none
   expect(seen("DNSM.Box", 9, 4)).toBeNull();
   expect(seen("DNSM.Box", 2, 0)).toBeNull();
+});
+
+test("a read's number is its reader's last read of the path with that value, in the loop's turn when one is open", () => {
+  const [reader] = recordingOf([
+    {
+      b: "Loop",
+      r: [["DNSM.Box", 3, 10]],
+      rx: [
+        ["DNSM.Box", 3, 1, 10],
+        ["DNSM.Box", 3, 5, 12],
+        ["DNSM.Box", 4, 9, 14],
+        ["DNSM.Box", 3, 12, 15],
+      ],
+    },
+  ]).nodes;
+  expect(readSeq(reader, "DNSM.Box", 3)).toBe(15);
+  expect(readSeq(reader, "DNSM.Box", 4)).toBe(14);
+  // in the turn of steps 3 to 8, the read of that turn
+  expect(readSeq(reader, "DNSM.Box", 3, { from: 3, to: 8 })).toBe(12);
+  // a value the log does not have: the first read's number, when it has that value
+  expect(readSeq(reader, "DNSM.Box", 9)).toBeUndefined();
+  expect(readSeq(recordingOf([{ b: "X", r: [["DNSM.Box", 3, 10]] }]).nodes[0], "DNSM.Box", 3)).toBe(10);
 });
