@@ -98,6 +98,15 @@ function foodTexts(reads: Reads): {
 /** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
 export const emporiumName = (reads: Reads): string | null =>
   foodName("Emporium", foodTexts(reads).emText);
+/**
+ * Whether a log call of argument `arg` measures a worn food: N.js GoldFoodBonuses takes getLOG(1 + quantity) of a food
+ * slot's quantity, and the emporium's getLOG(1 + 1e3·10^level) (009 T023 r4).
+ */
+export const measuresWorn = (arg: unknown, reads: Reads): boolean =>
+  [...reads].some(
+    ([k, v]) =>
+      /^EquipmentQuantity\[2\]\[\d+\]$/.test(k) && near(arg, 1 + Number(v)),
+  );
 /** The worn food's row name, "Equipped: <the food's text>", or null with no text (009 T023 r3). */
 export const equippedName = (reads: Reads): string | null =>
   foodName("Equipped", foodTexts(reads).foodText);

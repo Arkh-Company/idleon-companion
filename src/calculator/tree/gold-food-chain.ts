@@ -1,9 +1,10 @@
 // A golden food computed as a chain of steps (spec 009, FR-007, FR-008, FR-017; 009 r2): two terms of its steps that the
 // rules of names leave with no name of their own get one by their role in GoldFoodBonuses (tree/gold-food.ts), the
-// names the Vinicius chose, in English as every tree. The worn food's quantity factor, 1 + log₁₀(10 + quantity) ÷ 2.14,
-// is the "Quantity multiplier"; the emporium's term, Amount × the shared multiplier × 0.05 × log₁₀, is the emporium's
-// row, and the worn food's product, Amount × the shared multiplier × … × its quantity factor, the worn food's row (009
-// T023 r3): each with its parts, the shared multiplier among them, so they multiply to it.
+// names the Vinicius chose, in English as every tree. The worn food's quantity factor, 1 + log₁₀(1 + quantity) ÷ 2.14,
+// is the "Quantity multiplier", alone or inside its product. A product Amount × the shared multiplier × 0.05 × log₁₀ …
+// is the worn food's row when one of its logs measures the worn food's quantity, and the emporium's row otherwise, its
+// logs of the emporium's level, with or without the factor N.js gives it too (009 T023 r3, r4): each with its parts,
+// the shared multiplier among them, so they multiply to it.
 import type { RecNode } from "../recording.ts";
 import { fx3 } from "./curves.ts";
 import { flat } from "./expr.ts";
@@ -12,6 +13,7 @@ import {
   emporiumName,
   equippedName,
   GOLD_FOOD,
+  measuresWorn,
   multiFormula,
 } from "./gold-food.ts";
 import { formulaOut, near } from "./math.ts";
@@ -67,23 +69,30 @@ export function goldFoodTerm(
 ): Row | null {
   if (!GOLD_FOOD.test.test(block.b)) return null;
   const x = strip(e);
-  // the log call of the worn food's quantity factor, 1 + log₁₀(10 + quantity) ÷ 2.14, or null
-  const quantityLog = (y: Expr): Expr | null => {
+  // the argument of a log call that measures the worn food, 1 + its quantity; null for any other expression
+  const wornArg = (y: Expr): number | null => {
+    const arg =
+      y.t === "call" && nodes[y.id]?.b === "getLOG" && nodes[y.id]?.a[0];
+    return measuresWorn(arg, reads) ? Number(arg) : null;
+  };
+  // the worn food's quantity factor, 1 + log₁₀(1 + quantity) ÷ 2.14, as its row; null for any other term (the
+  // emporium's factor measures its level)
+  const quantityRow = (t: Expr, o: "*" | "+"): Row | null => {
+    const y = strip(t);
     const q = y.t === "op" && y.o === "+" && isNum(y.l, 1) ? strip(y.r) : null;
     const log =
       q?.t === "op" && q.o === "/" && isNum(q.r, 2.14) ? strip(q.l) : null;
-    return log?.t === "call" && nodes[log.id]?.b === "getLOG" ? log : null;
-  };
-  const log = quantityLog(x);
-  if (log?.t === "call") {
-    const r = term(e, op);
-    const quantity = Number(nodes[log.id]?.a[0]) - 10;
+    const arg = log && wornArg(log);
+    if (arg === null || arg === undefined) return null;
+    const r = term(t, o);
     const f: Pair = [
-      "1 + log₁₀(quantity + 10) ÷ 2.14",
-      `1 + log₁₀(${fx3(quantity)} + 10) ÷ 2.14 = ${fx3(Number(e.v))}`,
+      "1 + log₁₀(1 + quantity) ÷ 2.14",
+      `1 + log₁₀(1 + ${fx3(arg - 1)}) ÷ 2.14 = ${fx3(Number(t.v))}`,
     ];
     return r && { ...withName(r, GOLD_FOOD_TERMS.quantity.name), f };
-  }
+  };
+  const factor = quantityRow(e, op);
+  if (factor) return factor;
   // Amount × the shared multiplier × …, its log₁₀ loose or inside the quantity factor: the multiplier is the value of an
   // earlier step, kept in a variable or, as the game does, in a box the block reads back (009 T023 r1, r2). Read on its
   // own, the box is the chain's working value, which the chain follows into its first pools: no row here.
@@ -96,11 +105,19 @@ export function goldFoodTerm(
   const at = multi && step(multi);
   if (!multi || !at) return null;
   const parts = fs.map((t) =>
-    t === multi ? shared(Number(t.v)) : term(t, "*"),
+    t === multi ? shared(Number(t.v)) : (quantityRow(t, "*") ?? term(t, "*")),
   );
   if (parts.some((p) => !p)) return null;
-  // the worn food's product has its quantity factor; the emporium's has none, its log₁₀ loose (009 T023 r3)
-  const name = fs.some((t) => quantityLog(strip(t)))
+  // named by what its logs measure: the worn food's quantity, else the emporium's level (009 T023 r4)
+  const logs = (y: Expr): Expr[] =>
+    y.t === "op"
+      ? [...logs(y.l), ...logs(y.r)]
+      : y.t === "def"
+        ? logs(y.e)
+        : [y];
+  const name = fs.some(
+    (t) => t !== multi && logs(t).some((y) => wornArg(y) !== null),
+  )
     ? equippedName(reads)
     : emporiumName(reads);
   // the shared multiplier is a value its own steps prove (the chain's first pools), with the 008's ⓘ: never a "?"
