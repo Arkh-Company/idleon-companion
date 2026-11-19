@@ -100,3 +100,14 @@ test("in a tree, each read of the box has the name of its own write: the start, 
   walk(build.root);
   expect(rows.find((n) => n.name === "Start value")?.leaf).toBe("fixedValue");
 });
+
+test("the royal total starts at 0, a fixed value, and its next writes are the total", () => {
+  const royal = call("RoyalG", "TotalStatz", 0, 0);
+  expect(scratchName("DNSM.TKnS_DN", royal, 0)).toEqual({
+    name: "Start value",
+    leaf: "fixedValue",
+  });
+  expect(scratchName("DNSM.TKnS_DN", royal, 5)).toEqual({
+    name: "Royal total stats (cached)",
+  });
+});
