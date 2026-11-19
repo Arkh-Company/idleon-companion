@@ -978,7 +978,7 @@ lime.$scripts.N = function (_exports, $global) {
         multi *
         0.05 *
         Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
-        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+        (1 + Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     else if (s.EquipmentQuantity[2][1] > 0 && t === "round")
       d.GfoodBonus = Math.round(
         d.GfoodMap.h.Amount *
@@ -986,7 +986,7 @@ lime.$scripts.N = function (_exports, $global) {
           0.05 *
           Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
           (1 +
-            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14),
+            Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14),
       );
     else if (s.EquipmentQuantity[2][1] > 0 && t === "added")
       d.GfoodBonus =
@@ -996,14 +996,14 @@ lime.$scripts.N = function (_exports, $global) {
           0.05 *
           Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
           (1 +
-            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+            Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     else if (s.EquipmentQuantity[2][1] > 0)
       d.GfoodBonus =
         d.GfoodMap.h.Amount *
         multi *
         0.05 *
         Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
-        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+        (1 + Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     var level = s.Ninja[104][0] * 1;
     if (level < 0) return multi;
     var whole = Math.floor(multi);

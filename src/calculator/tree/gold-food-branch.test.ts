@@ -60,10 +60,10 @@ function chainOf(key: string, ...rest: number[]) {
   return { build, food, pools };
 }
 
-// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1009) ÷ 2.14); the emporium's
+// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1000) ÷ 2.14); the emporium's
 // 7 × it × 0.05 × log(1 + 10^6)
 const MULTI = 2.86;
-const WORN = 7.218273444957685;
+const WORN = 7.212813084112149;
 const EMPORIUM = 6.006000434728559;
 /** The shared multiplier's sources: the set's, the family, then the sources it adds. */
 const MULTI_SOURCES = [
@@ -109,7 +109,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["Amount of the golden food (item table)", 7],
     ["Fixed ×0.05", 0.05],
     ["log₁₀", near(3)],
-    ["Quantity multiplier", near(2.403687460858369)],
+    ["Quantity multiplier", near(2.4018691588785046)],
   ]);
   // the emporium's: the food's amount, the multiplier's sources again, and its log of 6
   const [emp] = kidsOf(emporium);
@@ -136,7 +136,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
       "+",
       "Additive pool 2",
     ],
-    [1.3, 2.2, 2.524, 6.006, 13.224],
+    [1.3, 2.2, 2.522, 6.006, 13.219],
   ]);
   expect(checkTree(food, 100)).not.toBeNull();
 });
@@ -226,7 +226,7 @@ test("each row of a golden food the pass reads has the ⓘ of its step", () => {
     {
       rule: [
         `(((Base Amount × (${multiOf})) × 0.05) × log₁₀) × (1 + (log₁₀ ÷ 2.14))`,
-        `(((7 × (${numsOf})) × 0.05) × 3) × (1 + (3.004 ÷ 2.14)) = 7.218`,
+        `(((7 × (${numsOf})) × 0.05) × 3) × (1 + (3 ÷ 2.14)) = 7.213`,
       ],
     },
     {

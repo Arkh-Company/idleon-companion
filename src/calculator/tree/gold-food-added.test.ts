@@ -35,6 +35,6 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
   const [worn] = kidsOf(pools[0]).flatMap(kidsOf);
   expect([worn?.name, worn?.value]).toEqual([
     "Equipped: Invented Charm",
-    expect.closeTo(7.218273444957685, 9),
+    expect.closeTo(7.212813084112149, 9),
   ]);
 });

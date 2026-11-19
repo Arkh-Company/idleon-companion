@@ -56,10 +56,10 @@ const sourcesOf = (n: CalcTreeNode | undefined) =>
 // sources' Additive pool, the worn food's own numbers in a Multi pool, the emporium's Additive pool; the same sources and
 // values as the pass's rows. A food of one step (no worn food, a rounded one, a bonus kept in the block, another read)
 // keeps the pass's rows.
-// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1009) ÷ 2.14); the emporium's
+// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1000) ÷ 2.14); the emporium's
 // 7 × it × 0.05 × log(1 + 10^6)
 const MULTI = 2.86;
-const WORN = 7.218273444957685;
+const WORN = 7.212813084112149;
 const EMPORIUM = 6.006000434728559;
 
 test("a golden food: its shared multiplier's, its worn food's and the emporium's steps are the chain's pools, with the same sources", () => {
@@ -83,7 +83,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["Amount of the golden food (item table)", 7, "fixedValue"],
     ["Fixed ×0.05", 0.05, "fixedValue"],
     ["log₁₀", near(3), "rawBonus"],
-    ["Quantity multiplier", near(2.403687460858369), null],
+    ["Quantity multiplier", near(2.4018691588785046), null],
   ]);
   // the shared multiplier's pools: the set's bonuses, one row each; the family, and the sources in % by system
   expect(sourcesOf(set)).toEqual([
@@ -145,12 +145,12 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
       "+",
       "Additive pool 2",
     ],
-    [1.3, 2.2, 2.524, 6.006, 13.224],
+    [1.3, 2.2, 2.522, 6.006, 13.219],
   ]);
   expect(worn?.formula).toEqual({
     rule: [
       "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Quantity multiplier",
-      "7 × 0.05 × 3 × 2.404 = 2.524",
+      "7 × 0.05 × 3 × 2.402 = 2.522",
     ],
   });
   const [, , , factor] = kidsOf(worn);

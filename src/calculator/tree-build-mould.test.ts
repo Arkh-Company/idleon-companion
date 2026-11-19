@@ -157,7 +157,7 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
 
 // The shape of the Drop Rate's first sum (fake-game.js TreeDrop, FR-017): TreeBase + a step kept in a variable, of
 // ArcadeBonus(0), CardBonusREAL(3), CardBonusREAL(1) and a working value the block wrote, the golden food + TreeLevel;
-// then × TreeLoop(). The golden food: its worn food 7.218 and its emporium's 6.006 (gold-food.test.ts).
+// then × TreeLoop(). The golden food: its worn food 7.213 and its emporium's 6.006 (gold-food.test.ts).
 test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the golden food among them, which opens as its own chain", () => {
   const build = buildTree(
     recorder.record(golden(999, 3, 2, 5), [["TreeDrop", [0, 0, 0]]], NONE),
@@ -172,7 +172,7 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   ).toEqual([
     ["🃏 Cards", 16],
     ["ArcadeBonus(0)", 8],
-    ['GoldFoodBonuses("DropRatez")', expect.closeTo(13.224273879686, 9)],
+    ['GoldFoodBonuses("DropRatez")', expect.closeTo(13.218813518840708, 9)],
     ["🔹 Other", 29],
   ]);
   expect(groups.map((g) => kidsOf(g).map((k) => k.code))).toEqual([
@@ -197,7 +197,7 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   ).toEqual([
     ["Multi pool 1", "multi", expect.closeTo(1.3, 9)],
     ["Additive pool 1", "additive", expect.closeTo(2.2, 9)],
-    ["Multi pool 2", "multi", expect.closeTo(7.218273444957685 / 2.86, 9)],
+    ["Multi pool 2", "multi", expect.closeTo(7.212813084112149 / 2.86, 9)],
     ["Additive pool 2", "additive", expect.closeTo(6.006000434728559, 9)],
   ]);
   expect(checkTree(build.root, 100)).not.toBeNull();
@@ -219,7 +219,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   );
   const [add] = kidsOf(build.root);
   const groups = kidsOf(add);
-  const gold = 13.224273879686;
+  const gold = 13.218813518840708;
   expect(
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
   ).toEqual([
