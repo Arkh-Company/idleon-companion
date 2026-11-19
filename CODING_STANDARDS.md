@@ -111,3 +111,9 @@ Bad: the 18-row behavior table typed in `read-only.test.ts` and again in `read-f
 When a file cannot import `src/shared/index.ts` (a script run as text inside the game, the calculator's lone bundle), its copy of a shared literal has one test that fails when either side changes.
 Good: `expect(TARGETS.map(([id]) => id)).toEqual([...NUMBER_IDS])` in `src/calculator/index.test.ts`, which fails for a key added on either side.
 Bad: a `SKIP` in a script with a comment "keep equal to STATE_EXCLUDED", while the only test feeds the fake engine every `STATE_EXCLUDED` key and stays green when `SKIP` gains a key the test never puts in the engine.
+
+### A tree helper lives once
+
+A small helper that two files of `src/calculator/tree/` need (`strip`, `isNum`, the test of a log's argument) is exported once, from the file its theme belongs to, and imported; no file keeps its own copy.
+Good: `import { strip, isNum } from "./expr.ts"` in `gold-food-step.ts`, `gold-food-chain.ts`, `pools.ts` and `tops.ts`.
+Bad: `const strip = (e) => (e.t === "def" ? strip(e.e) : e)` typed again in `gold-food-step.ts`, beside the same copy in `gold-food-chain.ts`, `percent.ts`, `scaled.ts` and `tops.ts`.
