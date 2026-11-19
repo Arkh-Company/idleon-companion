@@ -123,31 +123,91 @@ export const scratchKey = (
     own ? [character, path, callText(own.call), own.at] : [character, path],
   );
 
+const SCRATCH = /^(?:DNSM|DummyNumbersStatManager)\.[^.[]+/;
+/** A scratch read's path and the paths above it, up to its box: a field is read from the object its box holds. */
+function boxPaths(path: string): string[] {
+  const box = SCRATCH.exec(path)?.[0];
+  if (!box) return [];
+  const out = [path];
+  for (let p = path; p.length > box.length; ) {
+    p = p.slice(0, Math.max(p.lastIndexOf("."), p.lastIndexOf("[")));
+    out.push(p);
+  }
+  return out;
+}
+/** Each path's writes, the builders' pass's too, in the order of their numbers, by `keyOf`. */
+function byKey(
+  list: readonly RecWrite[],
+  keyOf: (w: RecWrite) => string,
+): Map<string, RecWrite[]> {
+  const out = new Map<string, RecWrite[]>();
+  for (const w of [...list].sort((a, b) => a.seq - b.seq))
+    out.set(keyOf(w), [...(out.get(keyOf(w)) ?? []), w]);
+  return out;
+}
+
+/**
+ * The write a scratch read saw, by the number of the last write before it (`seq`): the last write of its path, or of
+ * the box above it that holds an object, by any call and in the builders' pass too; none when the path's write has
+ * another value than the read's.
+ */
+export function scratchSeen(
+  writes: readonly RecWrite[],
+  spliced: readonly RecWrite[] = [],
+) {
+  const byPath = byKey([...writes, ...spliced], (w) => w.path);
+  return (path: string, value: unknown, seq: number): RecWrite | null => {
+    const last = boxPaths(path)
+      .flatMap((p) => byPath.get(p)?.findLast((w) => w.seq <= seq) ?? [])
+      .reduce<RecWrite | null>((a, w) => (a && a.seq > w.seq ? a : w), null);
+    return last && (last.path !== path || near(last.v, value)) ? last : null;
+  };
+}
+
+/**
+ * The place of the write read among a call's writes of a path (`exact`) or of the box above it: by the read's number,
+ * else the first write of the path with the value read, else the box's only object.
+ */
+function placeOf(
+  all: readonly RecWrite[],
+  exact: boolean,
+  value: unknown,
+  seq?: number,
+): number {
+  if (seq !== undefined) {
+    const seen = all.findLastIndex(
+      (w) => w.seq <= seq && (!exact || near(w.v, value)),
+    );
+    if (seen >= 0) return seen;
+  }
+  if (exact) return all.findIndex((w) => near(w.v, value));
+  return all.length === 1 && seq === undefined ? 0 : -1;
+}
+
 /**
  * The write a scratch read comes from: by the first of `by` (its writer, else its reader's own, for a box no cache link
  * covers) that wrote the value read, the write the read saw, by the number of the last write the recording keeps in the
  * read (`seq`), else the call's first write of that value; and the write's place among the call's writes of the box.
+ * The builders' pass's writes count (`spliced`), and a field's read comes from its box's write of the object, by `seq`.
  */
-export function scratchWrites(writes: readonly RecWrite[]) {
-  const byCall = new Map<string, RecWrite[]>();
-  for (const w of writes) {
-    const k = `${String(w.node)}|${w.path}`;
-    byCall.set(k, [...(byCall.get(k) ?? []), w]);
-  }
+export function scratchWrites(
+  writes: readonly RecWrite[],
+  spliced: readonly RecWrite[] = [],
+) {
+  const byCall = byKey(
+    [...writes, ...spliced],
+    (w) => `${String(w.node)}|${w.path}`,
+  );
   return (
     path: string,
     value: unknown,
     seq: number | undefined,
     ...by: (RecNode | null)[]
   ): { call: RecNode; at: number } | null => {
-    if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
-      for (const n of by) {
-        const all = n ? (byCall.get(`${String(n.id)}|${path}`) ?? []) : [];
-        const seen =
-          seq === undefined
-            ? -1
-            : all.findLastIndex((w) => w.seq <= seq && near(w.v, value));
-        const at = seen >= 0 ? seen : all.findIndex((w) => near(w.v, value));
+    for (const n of by)
+      for (const p of n ? boxPaths(path) : []) {
+        const all = byCall.get(`${String(n?.id)}|${p}`) ?? [];
+        const at = all.length ? placeOf(all, p === path, value, seq) : -1;
         if (n && at >= 0) return { call: n, at };
       }
     return null;
