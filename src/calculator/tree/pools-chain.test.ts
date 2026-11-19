@@ -149,15 +149,15 @@ test("a working value the root's call wrote and reads back links the chain; one 
   const pools = (own: boolean) =>
     chainPools(steps, { value: 1407 }, termAt, () => own);
   expect(listOf(pools(true))?.map(brief)).toEqual([
-    ["Additive pool 1", "additive", "sum", 39, [30, 7, 2]],
+    ["Additive pool", "additive", "sum", 39, [30, 7, 2]],
     ["Multi pool 1", "multi", "product", 6, [6]],
-    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
     ["Multi pool 2", "multi", "product", 6, [2, 3]],
   ]);
   expect(listOf(pools(false))?.map(brief)).toEqual([
-    ["Additive pool 1", "additive", "sum", 39, [37, 2]],
+    ["Additive pool", "additive", "sum", 39, [37, 2]],
     ["Multi pool 1", "multi", "product", 6, [6]],
-    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
     ["Multi pool 2", "multi", "product", 6, [2, 3]],
   ]);
 });

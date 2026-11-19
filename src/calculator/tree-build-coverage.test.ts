@@ -132,14 +132,15 @@ test("a chain the game floors keeps its chain's pools, the floor around them in 
   const root = treeOf("TreeFloorChain");
   const level = kidsOf(root);
   expect(level.map((k) => [k.name, k.combine, k.value])).toEqual([
-    ["Additive pool 1", "sum", 12],
+    ["Additive pool", "sum", 12],
     ["Multi pool", "product", expect.closeTo(6.3, 9)],
-    ["Additive pool 2", "sum", 0.3],
+    // the lone + 0.3 after the product is its own row, no pool (decision of 19/11)
+    ["Fixed +0.3", undefined, 0.3],
   ]);
   expect(root.value).toBe(75);
   const [names, numbers] = lines(root.formula);
   expect(names?.replace(/\s/g, "")).toBe(
-    "floor(Additivepool1×Multipool+Additivepool2)",
+    "floor(Additivepool×Multipool+Fixed+0.3)",
   );
   expect(numbers).toMatch(/ 75$/);
   expect(checkTree(root, 100)).not.toBeNull();

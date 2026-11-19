@@ -33,7 +33,8 @@ function poolsOf(key: string, level: number) {
     recorder.ops,
   );
   const food = openPath(build, `GoldFoodBonuses(${JSON.stringify(key)})`);
-  return { build, pools: kidsOf(food).filter((k) => k.role === "pool") };
+  const rows = kidsOf(food);
+  return { build, rows, pools: rows.filter((k) => k.role === "pool") };
 }
 
 test("a worn food added to the bonus: the row inside its pool is Equipped: <the food>", () => {
@@ -62,15 +63,15 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
 
 test("the emporium's product with the quantity factor of its own log, as N.js writes it: Emporium: <its food>", () => {
   useGameTables(TABLES);
-  const { build, pools } = poolsOf("njs", 3);
+  const { build, rows, pools } = poolsOf("njs", 3);
   expect(pools.map((p) => p.name)).toEqual([
     "Multi pool 1",
-    "Additive pool 1",
+    "Additive pool",
     "Multi pool 2",
-    "Additive pool 2",
   ]);
+  // the emporium's lone + is its own row, no pool (decision of 19/11)
   // 7 × 2.86 × 0.05 × log₁₀(1 + 10^6) × (1 + log₁₀(1 + 10^6) ÷ 2.14)
-  const [emporium] = kidsOf(pools[3]);
+  const emporium = rows[3];
   expect([emporium?.name, emporium?.value]).toEqual([
     "Emporium: Other Dish",
     expect.closeTo(22.845255208907478, 9),

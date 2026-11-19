@@ -87,9 +87,10 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
   expect(
     level.map((k) => [k.name, k.role, k.poolKind, k.combine, k.value]),
   ).toEqual([
-    ["Additive pool 1", "pool", "additive", "sum", 39],
+    ["Additive pool", "pool", "additive", "sum", 39],
     ["Multi pool 1", "pool", "multi", "product", 6],
-    ["Additive pool 2", "pool", "additive", "sum", 0.5],
+    // the lone + 0.5 between the products is its own row, no pool (decision of 19/11)
+    ["Fixed +0.5", "piece", undefined, undefined, 0.5],
     ["Multi pool 2", "pool", "multi", "onePlusPercent", 1.83],
     ["Multi pool 3", "pool", "multi", "product", 6],
     // the check that guards the + 2 stays, after the pools: no source leaves (FR-008)
@@ -103,7 +104,7 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
       [null, 2],
     ],
     [["TreeLoop()", 6]],
-    [[null, 0.5]],
+    [],
     [
       ["TreeStats.a", 3],
       ["TreeCapped", 80],
@@ -117,11 +118,11 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
   expect(root.formula).toEqual([
     [
       "(",
-      "Additive pool 1",
+      "Additive pool",
       "×",
       "Multi pool 1",
       "+",
-      "Additive pool 2",
+      "Fixed +0.5",
       ")",
       "×",
       "Multi pool 2",
@@ -192,13 +193,24 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   const opened = gold?.kids === "lazy" ? build.expand(gold.id) : gold;
   expect(
     kidsOf(opened)
-      .filter((k) => k.role === "pool")
-      .map((k) => [k.name, k.poolKind, k.value]),
+      .slice(0, 4)
+      .map((k) => [k.role, k.name, k.poolKind, k.value]),
   ).toEqual([
-    ["Multi pool 1", "multi", expect.closeTo(1.3, 9)],
-    ["Additive pool 1", "additive", expect.closeTo(2.2, 9)],
-    ["Multi pool 2", "multi", expect.closeTo(7.212813084112149 / 2.86, 9)],
-    ["Additive pool 2", "additive", expect.closeTo(6.006000434728559, 9)],
+    ["pool", "Multi pool 1", "multi", expect.closeTo(1.3, 9)],
+    ["pool", "Additive pool", "additive", expect.closeTo(2.2, 9)],
+    [
+      "pool",
+      "Multi pool 2",
+      "multi",
+      expect.closeTo(7.212813084112149 / 2.86, 9),
+    ],
+    // the emporium's lone + is its own row, no pool (decision of 19/11)
+    [
+      "piece",
+      expect.any(String),
+      undefined,
+      expect.closeTo(6.006000434728559, 9),
+    ],
   ]);
   expect(checkTree(build.root, 100)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();
@@ -261,13 +273,14 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   const opened = food?.kids === "lazy" ? build.expand(food.id) : food;
   expect(
     kidsOf(opened)
-      .filter((k) => k.role === "pool")
-      .map((k) => k.name),
+      .slice(0, 4)
+      .map((k) => [k.role, k.role === "pool" ? k.name : k.fmt]),
   ).toEqual([
-    "Multi pool 1",
-    "Additive pool 1",
-    "Multi pool 2",
-    "Additive pool 2",
+    ["pool", "Multi pool 1"],
+    ["pool", "Additive pool"],
+    ["pool", "Multi pool 2"],
+    // the emporium's lone + is its own row, no pool (decision of 19/11)
+    ["piece", "+"],
   ]);
   expect(checkTree(build.root, 200)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();
