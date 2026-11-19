@@ -197,7 +197,7 @@ test("[FR-017] a step that reads the shared multiplier back from its box: the ch
   };
   const block = {
     ...(nodes[0] ?? { id: 0, b: "?", a: [], c: [], p: null, pxi: 0 }),
-    v: worn.v,
+    v: Number(worn.v),
   };
   const ctx = chainContext(
     {
