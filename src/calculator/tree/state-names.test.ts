@@ -64,7 +64,7 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ],
   [
     "OptionsListAccount[468]",
-    "Killroy Shop: Permanently boosts the drops of Masterclasses by x (times bought)",
+    "Killroy Shop: Permanently boosts the drops of Masterclasses (times bought)",
   ],
   ["OptionsListAccount[196]", "Blue Tome Pages added to the Tome"],
   ["OptionsListAccount[197]", "Red Tome Pages added to the Tome"],
@@ -122,10 +122,10 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["Menagerie[0][11]", "Construction build bonus 1 stacks", 1],
   ["CustomLists.SummonUPG[78][6]", "Allstar bonus per level"],
   ["CustomLists.SummonUPG[24][6]", "Re-Draw bonus per level"],
-  ["CustomLists.Research[58][24]", "Menagerie Boost: x Drop Rate (per level)"],
+  ["CustomLists.Research[58][24]", "Menagerie Boost: Drop Rate (per level)"],
   [
     "CustomLists.Research[58][16]",
-    "Menagerie Boost: Orion's first upgrade is x cheaper (per level)",
+    "Menagerie Boost: Orion's first upgrade is cheaper (per level)",
   ],
   [
     "CustomLists.Research[25][5]",

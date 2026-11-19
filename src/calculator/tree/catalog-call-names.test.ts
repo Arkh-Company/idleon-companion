@@ -15,11 +15,12 @@ const CALLS: readonly (readonly [code: string, name: string])[] = [
   ['FarmingStuffs("CropSCbonus", 7, 0)', "Science Highlighter"],
   [
     'Summoning("VotingBonusz", 27, 0)',
-    "Increases Drop Rate for all your characters by",
+    // the game's markers gone (family 4 of the audit of 19/11): its "by {" and its "}x"
+    "Increases Drop Rate for all your characters",
   ],
   [
     'Summoning2("MeritocBonusz", 22, 0)',
-    "All of your Starsigns give x higher bonuses than normal",
+    "All of your Starsigns give higher bonuses than normal",
   ],
 ];
 
