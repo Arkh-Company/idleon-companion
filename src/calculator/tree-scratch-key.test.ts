@@ -122,7 +122,9 @@ test("a box written twice with the same value: the write the read saw, by the wr
 });
 
 test("a write of the builders' pass, kept out of the recording's writes, is still the write a read comes from", () => {
-  const [writer] = recordingOf([{ b: "Who", a: ["AllTalentLVz", "1|4"] }]).nodes;
+  const [writer] = recordingOf([
+    { b: "Who", a: ["AllTalentLVz", "1|4"] },
+  ]).nodes;
   // the pass hands its scratch writes over last first: the order is the writes' numbers
   const writeOf = scratchWrites(
     [],
@@ -186,5 +188,11 @@ test("a read's number is its reader's last read of the path with that value, in 
   expect(readSeq(reader, "DNSM.Box", 3, { from: 3, to: 8 })).toBe(12);
   // a value the log does not have: the first read's number, when it has that value
   expect(readSeq(reader, "DNSM.Box", 9)).toBeUndefined();
-  expect(readSeq(recordingOf([{ b: "X", r: [["DNSM.Box", 3, 10]] }]).nodes[0], "DNSM.Box", 3)).toBe(10);
+  expect(
+    readSeq(
+      recordingOf([{ b: "X", r: [["DNSM.Box", 3, 10]] }]).nodes[0],
+      "DNSM.Box",
+      3,
+    ),
+  ).toBe(10);
 });
