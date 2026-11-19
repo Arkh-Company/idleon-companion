@@ -22,9 +22,23 @@ interface Built {
 /** A step's private name while the ⓘ of its row is written: two marks no name has. */
 const mark = (i: number) => `\u0004${String(i)}\u0004`;
 
-/** A step with no code and no proven name (a name after its first source is the parent's, family 7: it stays). */
+/**
+ * A curve's row (tree/rows.ts `curveRow`, FR-018, decision of 19/11): no row, its curve in the ⓘ above, its constants
+ * and its level rows of the row above.
+ */
+const isCurve = (r: Row): boolean =>
+  r.node.name.startsWith("Curve: ") &&
+  r.open === null &&
+  !!r.f &&
+  (r.group?.length ?? 0) > 0;
+
+/**
+ * A step with no code and no proven name (a name after its first source is the parent's, family 7: it stays), or a
+ * curve's row.
+ */
 function isStep(r: Row): boolean {
   const n = r.node;
+  if (isCurve(r)) return true;
   return (
     n.code === null &&
     r.open === null &&
