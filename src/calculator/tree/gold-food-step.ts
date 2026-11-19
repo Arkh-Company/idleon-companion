@@ -66,7 +66,7 @@ export function wornStep(
   const arg = terms
     .map((t) => logArg(t) ?? factorArg(t))
     .find((a) => a !== null);
-  if (arg === undefined || arg === null) return null;
+  if (arg === undefined) return null;
   const parts = terms.map((t, i) => (maths[i] ? null : term(t)));
   if (parts.some((p, i) => !maths[i] && !p)) return null;
   const value = terms.reduce((a, t) => a * Number(t.v), 1);
