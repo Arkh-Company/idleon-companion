@@ -30,6 +30,8 @@ export const GOLD_FOOD_TERMS = {
     name: "GFood Multi",
     proof: "N.js GoldFoodBonuses; bench pieces.cjs goldFood",
   },
+  // bonus = Amount × multi × 0.05 × …: the block's one literal 0.05 (the Vinicius's name of 19/11)
+  rate: { name: "Base rate (× 0.05)", proof: "N.js GoldFoodBonuses" },
 };
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
@@ -69,6 +71,12 @@ export function goldFoodTerm(
 ): Row | null {
   if (!GOLD_FOOD.test.test(block.b)) return null;
   const x = strip(e);
+  const rateRow = (t: Expr, o: "*" | "+"): Row | null => {
+    const r = isNum(t, 0.05) ? term(t, o) : null;
+    return r && withName(r, GOLD_FOOD_TERMS.rate.name);
+  };
+  const rate = rateRow(e, op);
+  if (rate) return rate;
   // the argument of a log call that measures the worn food, 1 + its quantity; null for any other expression
   const wornArg = (y: Expr): number | null => {
     const arg =
@@ -105,7 +113,9 @@ export function goldFoodTerm(
   const at = multi && step(multi);
   if (!multi || !at) return null;
   const parts = fs.map((t) =>
-    t === multi ? shared(Number(t.v)) : (quantityRow(t, "*") ?? term(t, "*")),
+    t === multi
+      ? shared(Number(t.v))
+      : (quantityRow(t, "*") ?? rateRow(t, "*") ?? term(t, "*")),
   );
   if (parts.some((p) => !p)) return null;
   // named by what its logs measure: the worn food's quantity, else the emporium's level (009 T023 r4)
