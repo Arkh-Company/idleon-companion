@@ -12,7 +12,7 @@ import type { Above } from "./above-renames.ts";
 import { isNameText } from "./name-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { fixed, kidsOf, openPath, read } from "./tree-fixture.ts";
+import { fixed, kidsIn, kidsOf, openPath, read } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -67,9 +67,10 @@ test("a bubble's scratch number is named by the bubble above: under its cache, u
     "quantity",
     { rule: ["floor(Items found in the Slab ÷ 100)", "= 3"] },
   ]);
-  // OPUS4-7: two levels below, in the branch of a call's step, and under a call of that branch
+  // OPUS4-7: two levels below, in the branch of a call's step, and under a call of that branch; the call is one step
+  // whose factor adds two sources, so that branch is its Additive pool (answer B of 20/11)
   const inner = openPath(build, "TreeBubbleInner()");
-  const [branch] = kidsOf(inner);
+  const branch = kidsIn(inner).find((k) => k.role === "pool");
   const SLAB = "Slab items found ÷ 100 (rounded down)";
   // (the game's own value: the mosaic's)
   expect(named(branch)).toEqual([
