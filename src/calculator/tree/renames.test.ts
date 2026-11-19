@@ -22,6 +22,11 @@ const TABLES = new Map<string, unknown>([
   ["CustomLists.MealINFO", at(2, ["Invented_Meal"])],
   ["CustomLists.NinjaInfo", at(39, at(2, "Invented_Shop_@_more"))],
   ["CustomLists.SummonUPG", at(1, [0, 1, 2, "Invented_Upgrade"])],
+  ["CustomLists.ArcaneUpg", at(3, ["Invented_Arcane"])],
+  ["CustomLists.MarketInfo", at(1, ["INVENTED_PLOTS"])],
+  ["CustomLists.MarketExoticInfo", at(2, ["Invented_Seed"])],
+  ["CustomLists.GamingPalette", at(2, [0, 1, 2, "Invented_Colour"])],
+  ["CustomLists.TalentIconNames", at(5, "INVENTED_TALENT")],
   ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
 ]);
 beforeEach(() => {
@@ -41,20 +46,23 @@ type Case = [
 ];
 const CASES: Case[] = [
   ["GodsInfo[2][14]", "Invented God blessing bonus per level", "fixedValue"],
+  // family 2 (audit of 19/11): a text that does not resolve never becomes the list's index; the row has no name
+  ["CustomLists.GodsInfo[4][14]", null, "fixedValue"],
   [
-    "CustomLists.GodsInfo[4][14]",
-    "Blessing bonus per level (god 4)",
+    "CustomLists.GodsInfo[2][3]",
+    "Invented God minor link bonus top",
     "fixedValue",
   ],
-  ["CustomLists.GodsInfo[2][3]", "Minor link bonus top, type 2", "fixedValue"],
-  ["CustomLists.GodsInfo[2][7]", "God 2 bonus constant", "fixedValue"],
+  ["CustomLists.GodsInfo[4][3]", null, "fixedValue"],
+  ["CustomLists.GodsInfo[2][7]", "Invented God bonus constant", "fixedValue"],
+  ["CustomLists.GodsInfo[4][7]", null, "fixedValue"],
   ["Divinity[25]", "Gods unlocked", "quantity"],
   [
     "CustomLists.RANDOlist[92][1]",
     "Shiny bonus per level (Invented Type)",
     "fixedValue",
   ],
-  ["RANDOlist[92][5]", "Shiny bonus per level (type 5)", "fixedValue"],
+  ["RANDOlist[92][5]", null, "fixedValue"],
   ["Spelunk[44][0]", "Grand Discoveries, cave 1", "quantity"],
   ["Spelunk[47][2]", "Manic depth, cave 3", "record"],
   ["Spelunk[8][5]", "Lore chapter 2 bonus 2 level", "level"],
@@ -70,7 +78,7 @@ const CASES: Case[] = [
     "record",
   ],
   ["DNSM.skillLvRanks[1]", "Invented Skill mastery rank", "tier"],
-  ["DNSM.skillLvRanks[3]", "Skill 3 mastery rank", "tier"],
+  ["DNSM.skillLvRanks[3]", null, "tier"],
   ["CookMaster[1][0]", "Cooking mastery rank", "level"],
   ["CookMaster[1][3]", "Cooking mastery points collected", "quantity"],
   ["CookMaster[2][4]", "Cooking mastery bonus 5 level", "level"],
@@ -80,7 +88,7 @@ const CASES: Case[] = [
     "fixedValue",
   ],
   ["Ribbon[30]", "Ribbon tier of Invented Meal", "tier"],
-  ["Ribbon[29]", "Ribbon tier of meal 1", "tier"],
+  ["Ribbon[29]", null, "tier"],
   ["Ribbon[3]", "Ribbon shelf slot 3", "tier"],
   ["OptionsListAccount[99]", "Critter minigame best score", "record"],
   [
@@ -111,7 +119,8 @@ const CASES: Case[] = [
   ["OptionsListAccount[262]", "Megafeathers from Orion", "quantity"],
   ["OptionsListAccount[279]", "Megafish from Poppy", "quantity"],
   ["Holes[22][4]", "Measurement 4 amount", "quantity"],
-  ["Spelunk[9][2]", "Palette colour 2 level", "level"],
+  ["Spelunk[9][2]", "Invented Colour level", "level"],
+  ["Spelunk[9][4]", null, "level"],
   [
     "CustomLists.NinjaInfo[38][4]",
     "Ballot bonus value (ballot 1)",
@@ -119,14 +128,9 @@ const CASES: Case[] = [
   ],
   ["CustomLists.NinjaInfo[38][2]", "Ballot table value 2", "fixedValue"],
   ['Summoning("EventShopOwned", 1, 0)', "Invented Shop", "condition", "owned"],
-  [
-    'Summoning2("EventShopOwned", 3, 0)',
-    "Event Shop item 3",
-    "condition",
-    "owned",
-  ],
+  ['Summoning2("EventShopOwned", 3, 0)', null, "condition", "owned"],
   ["Summon[0][1]", "Invented Upgrade level", "level"],
-  ["Summon[0][5]", "Summoning upgrade 5 level", "level"],
+  ["Summon[0][5]", null, "level"],
   [
     "CustomLists.NinjaInfo[41][7]",
     "Meritocracy bonus value (bonus 2)",
@@ -141,19 +145,24 @@ const CASES: Case[] = [
     "fixedValue",
   ],
   [`${PX}._GenInfo[84]`, "Tome points", "quantity"],
-  ["Arcane[3]", "Arcane upgrade 3 level", "level"],
-  ["FarmUpg[3]", "Farming upgrade 3 level", "level"],
-  ["Meals[0][3]", "Meal 3 level", "level"],
+  // the level of a row of a game list: the name column of the same list (family 2)
+  ["Arcane[3]", "Invented Arcane level", "level"],
+  ["Arcane[4]", null, "level"],
+  // N.js FarmingStuffs BasketUpgQTY: FarmUpg[2 + k] is the level of MarketInfo[k]; ExoticBonusQTY: FarmUpg[20 + i] of
+  // MarketExoticInfo[i]
+  ["FarmUpg[3]", "Invented Plots level", "level"],
+  ["FarmUpg[22]", "Invented Seed level", "level"],
+  ["FarmUpg[0]", null, "level"],
+  ["Meals[0][2]", "Invented Meal level", "level"],
+  ["Meals[0][3]", null, "level"],
   [
     "CustomLists.TalentDescriptions[5][1][2]",
-    "Talent 5 curve constant",
+    "Invented Talent curve constant",
     "fixedValue",
   ],
-  [
-    "CustomLists.GamingPalette[4][2]",
-    "Palette colour 4 constant",
-    "fixedValue",
-  ],
+  ["CustomLists.TalentDescriptions[6][1][2]", null, "fixedValue"],
+  ["CustomLists.GamingPalette[2][1]", "Invented Colour constant", "fixedValue"],
+  ["CustomLists.GamingPalette[4][2]", null, "fixedValue"],
   [
     "CustomLists.SummonEnemies[7][3]",
     "Summoning win bonus of battle 3",

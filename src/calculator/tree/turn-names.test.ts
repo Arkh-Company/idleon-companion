@@ -60,12 +60,8 @@ test.each<[string, TurnRead[], string, string | typeof NO_NAME | null]>([
     "DNSM.X",
     "Endless win, slot 7 of the 40-win cycle",
   ],
-  [
-    "an artifact",
-    [["Sailing[3][12]", 2]],
-    "DNSM.X",
-    "Artifact 12 (artifact 12)",
-  ],
+  // family 2 (audit of 19/11): with no table text, never the artifact's or the colour's index
+  ["an artifact", [["Sailing[3][12]", 2]], "DNSM.X", NO_NAME],
   [
     "a worn item's slot",
     [["EquipmentMap[1][4].UQ2val", 3]],
@@ -106,7 +102,7 @@ test.each<[string, TurnRead[], string, string | typeof NO_NAME | null]>([
     "DNSM.X",
     "Boat 3",
   ],
-  ["a colour", [["Spelunk[9][3]", 1]], "DNSM.X", "Colour 3 (palette 3)"],
+  ["a colour", [["Spelunk[9][3]", 1]], "DNSM.X", NO_NAME],
   [
     "the last table row's text",
     [
