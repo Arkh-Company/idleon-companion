@@ -165,9 +165,15 @@ test("a Multi pool of one item is its source's own × N row; the other pools are
     ["Bonus Stats.m", "multi", "product", 2, [2]],
     ["Multi pool", "multi", "onePlusPercent", 1.5, [30, 20]],
   ]);
-  const first = pools && poolRows(pools, { name: "Total", value: 60 }, noWriter);
+  const first =
+    pools && poolRows(pools, { name: "Total", value: 60 }, noWriter);
   expect(
-    first?.rows.map((r) => [r.node.name, r.node.role, r.node.fmt, r.node.value]),
+    first?.rows.map((r) => [
+      r.node.name,
+      r.node.role,
+      r.node.fmt,
+      r.node.value,
+    ]),
   ).toEqual([
     ["Additive pool", "pool", null, 20],
     ["Bonus Stats.m", "piece", "x", 2],

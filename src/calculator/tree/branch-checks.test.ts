@@ -8,7 +8,15 @@ import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { firstLevel } from "./mould.ts";
 import type { Expr, Step } from "./steps.ts";
-import { check, fixed, lazy, leaf, named, placed, read } from "./tree-fixture.ts";
+import {
+  check,
+  fixed,
+  lazy,
+  leaf,
+  named,
+  placed,
+  read,
+} from "./tree-fixture.ts";
 
 const kids = (n: CalcTreeNode | undefined) =>
   n && Array.isArray(n.kids) ? n.kids.map((k) => k.name) : [];
@@ -107,7 +115,12 @@ function rootWithCheck(a: number, b: number, round: boolean) {
     check("Owned = 1", true),
   ];
   const sum = op("+", call("Call1()", a), call("Call2()", b), a + b);
-  const product = op("*", { t: "val", v: a + b }, call("Call3()", 2), (a + b) * 2);
+  const product = op(
+    "*",
+    { t: "val", v: a + b },
+    call("Call3()", 2),
+    (a + b) * 2,
+  );
   const v = round ? Math.floor((a + b) * 2) : (a + b) * 2;
   const last: Expr = round
     ? { t: "fn", name: "floor", args: [product], v }
@@ -147,6 +160,9 @@ test("beside a rounded root's pools, a check leaves and is said after the roundi
   const out = rootWithCheck(3.5, 4.25, true);
   expect(out.rows.map((r) => r.node.name)).not.toContain("Owned = 1");
   expect(out.formula).toEqual({
-    rule: ["floor(Additive pool × Call3()) (Owned = 1: yes)", "floor(7.75 × 2) = 15"],
+    rule: [
+      "floor(Additive pool × Call3()) (Owned = 1: yes)",
+      "floor(7.75 × 2) = 15",
+    ],
   });
 });

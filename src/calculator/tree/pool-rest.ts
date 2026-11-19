@@ -26,7 +26,9 @@ export function besidePools(
     !isCond(r) &&
     held.some((k) => k.node.code === r.node.code && near(vOf(k), vOf(r)));
   // with no ⓘ, nothing can say a check: it stays a row then (A39)
-  const checks = f ? rows.filter((r) => branchCheck(r, [...rows, ...held])) : [];
+  const checks = f
+    ? rows.filter((r) => branchCheck(r, [...rows, ...held]))
+    : [];
   return {
     checks,
     formula: citing(f, checks),

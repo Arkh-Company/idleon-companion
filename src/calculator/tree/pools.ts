@@ -130,7 +130,8 @@ const loneOf = (
   const [r] = p.rows;
   if (!r || p.rows.length !== 1) return null;
   const added = i > 0 && p.join === "+" && p.combine === "sum" && !r.percent;
-  const single = all.length > 1 && p.kind === "multi" && p.combine === "product";
+  const single =
+    all.length > 1 && p.kind === "multi" && p.combine === "product";
   return added || single ? r : null;
 };
 
