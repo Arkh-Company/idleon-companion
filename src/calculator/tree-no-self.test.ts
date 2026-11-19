@@ -35,3 +35,26 @@ function insideItself(block: string): string[] {
 test("a running total its own block reads back: no row shows inside itself", () => {
   expect(insideItself("TreeZeroTotal")).toEqual([]);
 });
+
+test("the read of the total in the turn being opened is the total of the earlier turns, with no piece and no rows", () => {
+  const build = buildTree(
+    recorder.record(mosaicOf(), [["TreeZeroTotal", []]], {
+      recompute: [],
+      builders: [],
+    }),
+    0,
+    recorder.ops,
+  );
+  const rows: CalcTreeNode[] = [];
+  const walk = (n: CalcTreeNode, depth: number): void => {
+    rows.push(n);
+    const kids = n.kids === "lazy" ? (build.expand(n.id)?.kids ?? []) : n.kids;
+    if (Array.isArray(kids) && depth < 12)
+      kids.forEach((k) => walk(k, depth + 1));
+  };
+  walk(build.root, 0);
+  const earlier = rows.filter((n) => n.name === "Total of the earlier turns");
+  expect(earlier.length).toBeGreaterThan(0);
+  for (const n of earlier)
+    expect([n.pieceKey, n.kids, n.leaf]).toEqual([null, [], "unknown"]);
+});
