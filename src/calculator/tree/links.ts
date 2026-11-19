@@ -1,6 +1,7 @@
 // Step 7 of the bench's build-tree.cjs at BASELINE-4, over a recording: each cache read under the root links to the
 // last write that covers its path (`writerOf`), or to the call's own write (`ownOf`), and the writers' calls are kept
-// too, as a work list, because a cache builder reads other caches. And the piece key of a scratch read (`scratchKeys`).
+// too, as a work list, because a cache builder reads other caches. And the write a scratch read comes from
+// (`scratchWrites`), and its piece key (`scratchKey`).
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { near } from "./math.ts";
 import { callText } from "./rows.ts";
