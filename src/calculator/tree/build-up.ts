@@ -272,6 +272,15 @@ export function branchCheck(r: Row, rows: readonly Row[]): boolean {
   return !!subject && rows.some((k) => k !== r && k.node.name === subject);
 }
 
+/** The row the branch check `r` compares (by the read's code, else by its name), when one is beside it in `rows`. */
+export function checkSubject(r: Row, rows: readonly Row[]): Row | undefined {
+  const by = r.subject;
+  const code = by && rows.find((k) => k !== r && k.node.code === by);
+  if (code) return code;
+  const name = COMPARISON.exec(r.node.name)?.[1];
+  return name ? rows.find((k) => k !== r && k.node.name === name) : undefined;
+}
+
 type Formula = Row["node"]["formula"];
 const SIGN = /^[×÷+−*/(),^:-]$/;
 /** A function's name among the atoms ("floor", "log₁₀"), which its bracket follows with no space. */

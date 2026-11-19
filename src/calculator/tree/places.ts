@@ -20,13 +20,14 @@ import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
-import { byRole, inlined } from "./inline.ts";
+import { byRole, inlined, isStep } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
 import {
   asideInFormula,
   branchCheck,
   buildUp,
+  checkSubject,
   citing,
   ifChecks,
 } from "./build-up.ts";
@@ -75,6 +76,30 @@ const typedLeaf = (n: CalcTreeNode): CalcTreeNode =>
   n.leaf || n.formula || n.role === "pool" || n.role === "system"
     ? n
     : { ...n, ...classify(n) };
+
+type Built = ReturnType<typeof inlined>;
+
+/**
+ * The math of a level's rows but its branch checks, `bare`: without the reads the checks compare too, when an unnamed
+ * step dissolves only then (audit family 14, A15: a call a check gates, its read no part of the math); those reads stay
+ * rows after the others (FR-008).
+ */
+function leanOf(
+  bare: Built,
+  rows: readonly Row[],
+  checks: readonly Row[],
+  own: (rows: Row[]) => Built,
+): Built {
+  const subjects = checks.flatMap((c) => checkSubject(c, rows) ?? []);
+  if (!subjects.length) return bare;
+  const lean = own(
+    rows.filter((r) => !checks.includes(r) && !subjects.includes(r)),
+  );
+  const steps = (rs: readonly Row[]) => rs.filter(isStep).length;
+  return Array.isArray(lean.formula) && steps(lean.rows) < steps(bare.rows)
+    ? { formula: lean.formula, rows: [...lean.rows, ...subjects] }
+    : bare;
+}
 
 export function makePlaces(ctx: PlaceContext) {
   const { nodes } = ctx;
@@ -154,7 +179,12 @@ export function makePlaces(ctx: PlaceContext) {
     const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
     const checks = f ? [] : rows0.filter((r) => branchCheck(r, rows0));
     const bare = checks.length
-      ? own(rows0.filter((r) => !checks.includes(r)))
+      ? leanOf(
+          own(rows0.filter((r) => !checks.includes(r))),
+          rows0,
+          checks,
+          own,
+        )
       : null;
     // a level at 0 whose other parts are all 0: its checks give it, not a math of its parts (a talent at 0, its guard)
     const zero =
