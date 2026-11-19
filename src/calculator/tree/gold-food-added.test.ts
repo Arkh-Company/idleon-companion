@@ -83,7 +83,7 @@ test("the emporium's product with the quantity factor of its own log, as N.js wr
   expect(parts.map((k) => k.name)).toEqual([
     "Amount of the golden food (item table)",
     "GFood Multi",
-    "Fixed ×0.05",
+    "Base rate (× 0.05)",
     "log₁₀",
     "Multiplier",
   ]);

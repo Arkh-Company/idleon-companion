@@ -107,7 +107,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
   );
   expect(kidsOf(worn).map((k) => [k.name, k.value])).toEqual([
     ["Amount of the golden food (item table)", 7],
-    ["Fixed ×0.05", 0.05],
+    ["Base rate (× 0.05)", 0.05],
     ["log₁₀", near(3)],
     ["Quantity multiplier", near(2.4018691588785046)],
   ]);
@@ -118,7 +118,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
   expect(parts.map((k) => [k.name, k.value, k.leaf])).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue"],
     ["GFood Multi", near(MULTI), null],
-    ["Fixed ×0.05", 0.05, "fixedValue"],
+    ["Base rate (× 0.05)", 0.05, "fixedValue"],
     ["log₁₀", near(6.000000434294264), "rawBonus"],
   ]);
   expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(

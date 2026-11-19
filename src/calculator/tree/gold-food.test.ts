@@ -81,7 +81,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   // the worn food's own numbers: no row of the shared multiplier among them (FR-007)
   expect(rowsOf(worn)).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue"],
-    ["Fixed ×0.05", 0.05, "fixedValue"],
+    ["Base rate (× 0.05)", 0.05, "fixedValue"],
     ["log₁₀", near(3), "rawBonus"],
     ["Quantity multiplier", near(2.4018691588785046), null],
   ]);
@@ -115,7 +115,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   expect(parts.map((k) => [k.name, k.value, k.leaf, k.why])).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue", null],
     ["GFood Multi", near(MULTI), null, null],
-    ["Fixed ×0.05", 0.05, "fixedValue", null],
+    ["Base rate (× 0.05)", 0.05, "fixedValue", null],
     ["log₁₀", near(6.000000434294264), "rawBonus", null],
   ]);
   expect(parts[1]?.formula).toEqual({
@@ -149,7 +149,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
   ]);
   expect(worn?.formula).toEqual({
     rule: [
-      "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Quantity multiplier",
+      "Amount of the golden food (item table) × Base rate (× 0.05) × log₁₀ × Quantity multiplier",
       "7 × 0.05 × 3 × 2.402 = 2.522",
     ],
   });
