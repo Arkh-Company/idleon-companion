@@ -7,6 +7,9 @@ import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { fixed } from "./tree-fixture.ts";
+import { poolRows } from "./mould.ts";
+
+const noWriter = () => undefined;
 
 const src = (code: string, value: number): Row => ({
   node: row({ pieceKey: code, value, code, name: `Bonus ${code}` }),
@@ -65,25 +68,41 @@ const CHAIN: Step[] = [
 
 test("a chain of steps gives a pool per run of sums or of multipliers, in the game's order, each closing", () => {
   const pools = listOf(chainPools(CHAIN, { value: 1407 }, termAt));
+  // decision of 19/11 (audit family 25): a lone part added between multiplications is its own "+ N" row, no pool
   expect(pools?.map(brief)).toEqual([
-    ["Additive pool 1", "additive", "sum", 39, [30, 7, 2]],
+    ["Additive pool", "additive", "sum", 39, [30, 7, 2]],
     ["Multi pool 1", "multi", "product", 6, [6]],
-    ["Additive pool 2", "additive", "sum", 0.5, [0.5]],
+    ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
     ["Multi pool 2", "multi", "product", 6, [2, 3]],
   ]);
   expect(pools && poolsPair(pools, 1407)).toEqual([
-    "(Additive pool 1 × Multi pool 1 + Additive pool 2) × Multi pool 2",
+    "(Additive pool × Multi pool 1 + Fixed +0.5) × Multi pool 2",
     "(39 × 6 + 0.5) × 6 = 1407",
+  ]);
+  const first =
+    pools && poolRows(pools, { name: "Total", value: 1407 }, noWriter);
+  expect(
+    first?.rows.map((r) => [
+      r.node.name,
+      r.node.role,
+      r.node.fmt,
+      r.node.value,
+    ]),
+  ).toEqual([
+    ["Additive pool", "pool", null, 39],
+    ["Multi pool 1", "pool", "x", 6],
+    ["Fixed +0.5", "piece", "+", 0.5],
+    ["Multi pool 2", "pool", "x", 6],
   ]);
   // the ⓘ closes with the numbers, and the main takes it
   expect(pools && poolsFormula(pools, 1407)).toEqual([
     [
       "(",
-      "Additive pool 1",
+      "Additive pool",
       "×",
       "Multi pool 1",
       "+",
-      "Additive pool 2",
+      "Fixed +0.5",
       ")",
       "×",
       "Multi pool 2",
