@@ -1149,6 +1149,26 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeMeritOf = function () {
     return Blocks._customBlock_TreeMeritMulti() * state().TreeCapped;
   };
+  // A factor of the bonuses of one system, some taken away, at least a floor (the prayers factor of the game's
+  // accuracy): max(0.1, 1 + (a - b - c) / 100), each a prayer's bonus; TreePrayerOf multiplies a sum by it, so that it
+  // is alone in its pool, as in the game.
+  Blocks._customBlock_prayersReal = function (i, j) {
+    return state().TreeBase * [0, 15, 4, 2][i] + j;
+  };
+  Blocks._customBlock_TreePrayerOf = function () {
+    var s = state();
+    return (
+      (s.TreeLevel + s.TreeBase) *
+      Math.max(
+        0.1,
+        1 +
+          (Blocks._customBlock_prayersReal(1, 0) -
+            Blocks._customBlock_prayersReal(2, 1) -
+            Blocks._customBlock_prayersReal(3, 0)) /
+            100,
+      )
+    );
+  };
   Blocks._customBlock_TreeArcade = function () {
     return Blocks._customBlock_ArcadeBonus(0) + 1;
   };
