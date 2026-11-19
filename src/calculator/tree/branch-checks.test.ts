@@ -4,7 +4,9 @@
 import { expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
-import { check, fixed, leaf, named, placed } from "./tree-fixture.ts";
+import { row } from "./rows.ts";
+import type { Row } from "./rows.ts";
+import { check, fixed, lazy, leaf, named, placed } from "./tree-fixture.ts";
 
 const kids = (n: CalcTreeNode | undefined) =>
   n && Array.isArray(n.kids) ? n.kids.map((k) => k.name) : [];
@@ -37,4 +39,37 @@ test("a check an ⓘ of atoms does not say leaves its row, and the ⓘ says it i
     rule: ["Bonus level + Other bonus (Bonus level > 0: yes)", "6 + 4 = 10"],
   });
   expect(kids(n)).toEqual(["Bonus level", "Other bonus"]);
+});
+
+/** A source that opens into its own pool, beside the pool the level it reads and the check of that level. */
+function besidePool(): CalcTreeNode | null {
+  const level = leaf("Invented level", 101, "Stats.lv", "level");
+  const pool: Row = {
+    node: row({
+      pieceKey: null,
+      value: 2,
+      code: null,
+      name: "Multi pool",
+      role: "pool",
+      combine: "product",
+      poolKind: "multi",
+      fmt: "x",
+      flags: { closed: true },
+    }),
+    open: null,
+    group: [level, fixed("× 2", 2)],
+  };
+  const t = placed({ 1: [pool, level, check("Invented level = 101", true)] }, [
+    {
+      ...lazy("Invented source", 2, "Call1()", 1),
+      xf: ["Multi pool", "2 = 2"],
+    },
+  ]);
+  return t.expand(t.rows[0]?.id ?? "");
+}
+
+test("beside a pool, a read the pool shows leaves, and a check of it is said in the ⓘ (FR-005, family 10)", () => {
+  const n = besidePool() ?? undefined;
+  expect(kids(n)).toEqual(["Multi pool"]);
+  expect(lines(n)?.names).toContain("Invented level = 101: yes");
 });
