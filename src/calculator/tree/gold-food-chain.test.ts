@@ -28,8 +28,10 @@ const op = (o: string, l: Expr, r: Expr, v: number): Expr => ({
   v,
 });
 const nodes: RecNode[] = [
-  { id: 0, b: "GoldFoodBonuses", a: ["DropRatez"], c: [1], p: null, pxi: 0 },
+  { id: 0, b: "GoldFoodBonuses", a: ["DropRatez"], c: [1, 2], p: null, pxi: 0 },
   { id: 1, b: "getLOG", a: [1000001], c: [], p: 0, pxi: 0, v: 6 },
+  // the worn food's log, of 1 + its quantity 999, as N.js takes it
+  { id: 2, b: "getLOG", a: [1000], c: [], p: 0, pxi: 0, v: 3 },
 ];
 /** A term as a plain row named by its code, so only the term's own rule is under test. */
 const term = (e: Expr): Row => ({
@@ -142,7 +144,7 @@ test("[FR-017] the worn food's product, its log only inside the quantity factor:
   const factor = op(
     "+",
     num(1),
-    op("/", { t: "call", id: 1, v: 3 }, num(2.14), 1.402),
+    op("/", { t: "call", id: 2, v: 3 }, num(2.14), 1.402),
     2.402,
   );
   const worn = op(
@@ -181,7 +183,7 @@ test("[FR-017] a step that reads the shared multiplier back from its box: the ch
     op(
       "+",
       num(1),
-      op("/", { t: "call", id: 1, v: 3 }, num(2.14), log),
+      op("/", { t: "call", id: 2, v: 3 }, num(2.14), log),
       1 + log,
     ),
     7 * 2.86 * (1 + log),
