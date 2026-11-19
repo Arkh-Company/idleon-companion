@@ -37,7 +37,6 @@ export const ready = (
   calculatedAt: 1_000,
   checkedOnThisGame: true,
   stale: false,
-  comparingWith: null,
   counts: { nodes: 1 },
   root: { ...root, id: "root", role: "root" },
   ...over,

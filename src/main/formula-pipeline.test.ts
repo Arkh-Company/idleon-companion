@@ -73,7 +73,6 @@ test("a root equal to the Stats is a ready tree, with the Stats' text and time",
     calculatedAt: 1_000,
     checkedOnThisGame: true,
     stale: false,
-    comparingWith: null,
     counts: { nodes: 1 },
     root,
   });

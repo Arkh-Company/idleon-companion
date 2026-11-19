@@ -50,6 +50,10 @@ let emit: (p: SetupProgress) => void;
 
 beforeEach(() => {
   companion = stubCompanion();
+  // Until this test's setup screen subscribes, no callback of an earlier test takes the progress in silence.
+  emit = () => {
+    throw new Error("no setup screen subscribed to the progress yet");
+  };
   companion.onSetupProgress.mockImplementation((cb) => {
     emit = cb;
     return () => undefined;
@@ -134,10 +138,18 @@ test("before steamState answers neither the setup screen nor the 001 window show
 /** Under the load of a whole run, a page's first answers can take longer than findBy's 1 s (the setup tests failed so). */
 const SLOW = { timeout: 5_000 };
 
+/** The setup screen subscribes to the progress in a passive effect, which under the load of a whole run can still be
+ * pending when its button shows: the progress is sent only once it subscribed. */
+const subscribed = () =>
+  waitFor(() => {
+    expect(companion.onSetupProgress).toHaveBeenCalled();
+  });
+
 test("a done progress switches to the 001 window and keeps the final line", async () => {
   companion.steamState.mockResolvedValue(notSetUp);
   render(<App />);
   await screen.findByRole("button", { name: SET_UP }, SLOW);
+  await subscribed();
 
   act(() => {
     emit("done");
@@ -271,6 +283,7 @@ test("Set up Steam for another account after a setup: a fresh setup screen, with
   companion.steamState.mockResolvedValue(notSetUp);
   render(<App />);
   await screen.findByRole("button", { name: SET_UP }, SLOW);
+  await subscribed();
   act(() => {
     emit("done");
   });

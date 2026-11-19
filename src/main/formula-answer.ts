@@ -76,7 +76,6 @@ export function treeAnswer(
       calculatedAt: pair.calculatedAt,
       checkedOnThisGame: on.checkedOnThisGame,
       stale: on.stale,
-      comparingWith: null,
       counts: { nodes: countNodes(root) },
       root,
     },
@@ -153,9 +152,15 @@ export function rebuildClock(now: () => number = Date.now) {
       at = now();
       if (calculatedAt >= changedAt) due = false;
     },
-    /** A tree asked in silence failed: the time starts again, and the change still waits. */
+    /** A tree asked in silence failed: the time starts again. The change that asked it was taken; only a change that
+     * came while it was asked still waits. */
     failed() {
       at = now();
+    },
+    /** The ms until `take(free)` is true, 0 when it is now; null when no change waits or the pipeline is busy. */
+    wait(free: boolean): number | null {
+      if (!due || !free) return null;
+      return Math.max(0, REBUILD_EVERY_MS - (now() - at));
     },
     /** True, once, when a change waits, the pipeline is `free` and the time is past: the caller asks the tree. */
     take(free: boolean): boolean {

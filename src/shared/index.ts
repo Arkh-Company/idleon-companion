@@ -23,9 +23,6 @@ export type {
   TreeRequest,
 } from "./formula-tree.ts";
 export {
-  changes,
-  compareTrees,
-  compareValues,
   oldBoxKeys,
   partsOf,
   pieceValues,

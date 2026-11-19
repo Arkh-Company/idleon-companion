@@ -121,11 +121,16 @@ export function treeLines(
 const spokenArrow = (a: Arrow) =>
   `${a.up ? "up" : "down"} ${a.text.replace(/^[▲▼] [+−]/, "")}`;
 
-/** A pool's or group's "N sources" (spec 009 FR-002). */
+const isGroup = (n: TreeNode) => n.role === "pool" || n.role === "system";
+
+/** A pool's or group's "N sources" (spec 009 FR-002): each row that adds into it, through its groups; never a group. */
 function sourcesText(n: TreeNode): string {
-  if ((n.role !== "pool" && n.role !== "system") || !Array.isArray(n.kids))
-    return "";
-  const k = n.kids.length;
+  if (!isGroup(n) || !Array.isArray(n.kids)) return "";
+  let k = 0;
+  const pending = [...n.kids];
+  for (let r = pending.pop(); r; r = pending.pop())
+    if (isGroup(r) && Array.isArray(r.kids)) pending.push(...r.kids);
+    else k++;
   return `${String(k)} ${k === 1 ? "source" : "sources"}`;
 }
 

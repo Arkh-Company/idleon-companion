@@ -66,7 +66,6 @@ export interface CalcTreeNode {
   pieceKey: string | null;
   name: string;
   value: number | boolean | null;
-  was?: number | boolean | null;
   fmt: "x" | "%" | "+" | null;
   leaf: CalcLeafKind | null;
   condition: (typeof CALC_CONDITION_KINDS)[number] | null;

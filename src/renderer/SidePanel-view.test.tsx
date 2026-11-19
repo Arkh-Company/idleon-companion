@@ -179,10 +179,26 @@ test("the share is hidden by default; on, each row shows only its number, read a
 test("a pool and a group are read with their name, value, share when on, and N sources (FR-002)", async () => {
   await draw(tree(20), { changes: false, share: true });
   expect(label(/^Additive pool/)).toBe(
-    "Additive pool, times 1.5, 100%, 1 source",
+    "Additive pool, times 1.5, 100%, 2 sources",
   );
   open(/^Additive pool/);
   expect(label(/^⚗️ Alchemy/)).toBe("⚗️ Alchemy, plus 50%, 90%, 2 sources");
+});
+
+test("a pool's N sources counts each row that adds into it, inside its groups or alone, never a group", async () => {
+  const card = node({
+    id: `${POOL}/Card`,
+    pieceKey: '[1,"Card"]',
+    name: "Card",
+    value: 5,
+    fmt: "%",
+    role: "piece",
+    share: 0.1,
+    shareMode: "sum",
+    kids: [node({ id: `${POOL}/Card/Level`, name: "Level", value: 5 })],
+  });
+  await draw(tree(20, {}, [card]), { changes: false, share: false });
+  expect(label(/^Additive pool/)).toBe("Additive pool, times 1.55, 3 sources");
 });
 
 test("Changes off shows no mark of change when a value changes", async () => {

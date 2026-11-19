@@ -7,19 +7,14 @@ import { partsOf, pieceValues } from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
-  Mark,
-  Status,
   TreeNode,
   TreeRequest,
 } from "../shared/index.ts";
 import { characterNumber } from "./characters.ts";
 import { feedsIndex, withFeeds } from "./feeds-index.ts";
-import type { FormulaRequest } from "./payloads.ts";
 import { namesOf } from "./character-names.ts";
-import type { savedFiles } from "./saved-files.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
-import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
 import {
   liveTree,
@@ -27,53 +22,15 @@ import {
   rebuildClock,
   treeAnswer,
 } from "./formula-answer.ts";
-import type { FormulaLog } from "./formula-answer.ts";
+import type {
+  FormulaPipeline,
+  FormulaPipelineDeps,
+} from "./formula-pipeline-api.ts";
 import { withBranch } from "./tree-walk.ts";
-import type { createTreeHost } from "./tree-host.ts";
 
-type TreeHost = Pick<
-  ReturnType<typeof createTreeHost>,
-  "request" | "values" | "dropCurrent" | "setFiles" | "stop" | "shape"
->;
-
-export function startFormulaPipeline(deps: {
-  send: (tree: FormulaTree) => void;
-  sendValues: (v: LiveValues) => void;
-  treeHost: (on: {
-    onTree(id: number, tree: unknown, log?: "chainOpen"): void;
-    onUnavailable(id: number): void;
-    onValues(id: number, values: unknown): void;
-    onShape(id: number, shape: unknown): void;
-  }) => TreeHost;
-  statsPair: () => StatsPair | null;
-  /** Whether the game's code is the one the name and type rules were checked on (the version band, FR-018). */
-  checkedOnThisGame: () => boolean;
-  log: (entry: FormulaLog) => void;
-  /** The tree shapes saved on this computer, which the index of Where this goes is built from (FR-027). */
-  shapes: ReturnType<typeof savedFiles>["shapes"];
-  /** The patch radar, which the shapes of a new game version are compared for (FR-029, FR-035). */
-  radar?: ReturnType<typeof patchRadar>;
-}): {
-  /** A request the main already checked (`formulaRequestPayload`). */
-  request(r: FormulaRequest): void;
-  /** `formula:close`: no tree open. */
-  close(): void;
-  /** `formula:values`: what the window has in view, already checked (`formulaValuesPayload`). */
-  values(ids: string[]): void;
-  /** The pinned numbers: in view whatever the window shows (FR-026). */
-  pinned(ids: string[]): void;
-  /** The Stats sent something: maybe a new pair, maybe none (a character change). */
-  statsChanged(): void;
-  status(s: Status): void;
-  gameFiles(resources: string): void;
-  replay(): void;
-  /** What a mark of `character` takes: the open tree's values by piece, and the names the file must never get. */
-  markOf(character: number): { values: Mark["values"]; names: string[] } | null;
-  /** The tree host read the game's code: its sha256, the version the shapes are saved for. */
-  gameRead(sha: string): void;
-  /** `feeds:list`: the catalog numbers that use a piece, each one a tree to open (FR-027). */
-  feeds(pieceKey: string): string[];
-} {
+export function startFormulaPipeline(
+  deps: FormulaPipelineDeps,
+): FormulaPipeline {
   /** The number the window has open; `character` null is the active one. */
   let open: { id: string; character: number | null } | null = null;
   /** The active character the open tree belongs to. */
@@ -87,8 +44,11 @@ export function startFormulaPipeline(deps: {
   } | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
-  /** The other rows opened meanwhile: each one asked after the branch before it answers (the host keeps one waiting). */
+  /** The rows opened meanwhile, each asked once the branch or silent rebuild before it answers (the host keeps one). */
   let queued: { treeId: string; nodeId: string }[] = [];
+  /** Whether the worker keeps the build of the tree on screen, which its branches come from. It drops it when it begins
+   * another tree (tree-engine.ts), so a silent rebuild that leaves the tree on screen takes it away. */
+  let screenBuilt = true;
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
@@ -98,10 +58,11 @@ export function startFormulaPipeline(deps: {
   /** The parts of the open tree asked live, by piece; only of the active character's tree (FR-024). */
   let parts = new Map<string, TreeNode>();
   /** The parts that had a live value: one that loses it asks the tree again (FR-015). A piece is the same call in any
-   * tree, so the set outlives the tree. */
+   * tree, so a rebuilt tree keeps those it still has; the others go with the tree that had them. */
   const hadLive = new Set<string>();
   /** A change since the last tree came asks it again in silence, at most every 10 s (FR-015, NFR-002). */
   const rebuild = rebuildClock();
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -135,7 +96,12 @@ export function startFormulaPipeline(deps: {
   /** The silent rebuild: one at a time, never over a branch asked (the host keeps one waiting job; a branch waiting in
    * `queued` is asked as the one before it comes, so `expanding` covers it). */
   function rebuildIfDue(): void {
-    if (rebuild.take(!asked && !expanding)) ask(true);
+    clearTimeout(timer);
+    const free = !asked && !expanding;
+    // A rebuild that waits only its 10 s is asked then, with no reading needed (a released reader, the game closed).
+    const ms = rebuild.wait(free);
+    if (ms === 0 && rebuild.take(free)) ask(true);
+    else if (ms !== null) timer = setTimeout(rebuildIfDue, ms);
   }
 
   const index = feedsIndex({
@@ -177,19 +143,22 @@ export function startFormulaPipeline(deps: {
 
   function show(tree: FormulaTree): void {
     const root = tree.state === "ready" ? tree.root : null;
-    if (root !== (last.state === "ready" ? last.root : null))
+    if (root !== (last.state === "ready" ? last.root : null)) {
       parts =
         tree.state === "ready" &&
         root &&
         tree.character === tree.activeCharacter
           ? partsOf(root)
           : new Map<string, TreeNode>();
+      for (const k of hadLive) if (!parts.has(k)) hadLive.delete(k);
+    }
     last = tree;
     deps.send(tree);
     inView();
   }
 
   function drop(): void {
+    clearTimeout(timer);
     asked = null;
     expanding = null;
     queued = [];
@@ -197,11 +166,17 @@ export function startFormulaPipeline(deps: {
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
-    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The new tree
-    // has another time, and the window asks its open branches again then (FR-015).
-    if (last.state !== "ready" || r.treeId !== open?.id || asked) return;
-    if (expanding && expanding.nodeId !== r.nodeId) {
+    // A tree asked with no tree on screen shows "calculating": only a silent rebuild is asked over a ready tree.
+    if (last.state !== "ready" || r.treeId !== open?.id) return;
+    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
+    // and is asked as soon as that tree comes (FR-015). With no build of the tree on screen, the tree is asked first, on
+    // the silent rebuilds' clock (NFR-002).
+    if (asked || !screenBuilt || (expanding && expanding.nodeId !== r.nodeId)) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
+      if (!screenBuilt && !asked && !expanding) {
+        rebuild.changed(last.calculatedAt);
+        rebuildIfDue();
+      }
       return;
     }
     seq++;
@@ -209,14 +184,27 @@ export function startFormulaPipeline(deps: {
     host.request(seq, { type: "expand", ...r }, null);
   }
 
+  /** A silent rebuild that left the tree on screen: the rows waiting are unavailable, never asked of another build. */
+  function keptScreen(): void {
+    screenBuilt = false;
+    const lost = queued;
+    queued = [];
+    for (const r of lost) branched(r, null);
+  }
+
+  /** The next row waiting is asked, or else the silent rebuild when due. */
+  function nextJob(): void {
+    const next = queued.shift();
+    if (next) expand(next);
+    else rebuildIfDue();
+  }
+
   /** The answer of the branch asked, then the next row waiting is asked. */
   function expanded(raw: unknown): void {
     const target = expanding;
     expanding = null;
     if (target) branched(target, raw);
-    const next = queued.shift();
-    if (next) expand(next);
-    else rebuildIfDue();
+    nextJob();
   }
 
   /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
@@ -269,7 +257,7 @@ export function startFormulaPipeline(deps: {
 
   function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
-    const { request } = asked;
+    const { request, quiet } = asked;
     rebuild.came(asked.pair.calculatedAt);
     const answer = treeAnswer(raw, asked, {
       fed,
@@ -280,7 +268,12 @@ export function startFormulaPipeline(deps: {
     if (answer.log) deps.log(answer.log);
     // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
     if (log) deps.log({ event: log, id: request.id });
-    show(answer.tree);
+    // A silent rebuild refused or diverged keeps the tree on screen, as one that fails (FR-015).
+    if (!quiet || answer.tree.state === "ready") {
+      show(answer.tree);
+      screenBuilt = true;
+    } else keptScreen();
+    if (quiet) nextJob();
   }
 
   const host = deps.treeHost({
@@ -295,8 +288,11 @@ export function startFormulaPipeline(deps: {
       asked = null;
       // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
       deps.log({ event: "treeFailed", id: request.id });
-      if (quiet) rebuild.failed();
-      else show({ state: "unavailable", request });
+      if (quiet) {
+        keptScreen();
+        rebuild.failed();
+        nextJob();
+      } else show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
       live.received(id, values);
@@ -355,6 +351,7 @@ export function startFormulaPipeline(deps: {
       live.setStale(closed);
       index.pause(closed);
       if (closed) {
+        clearTimeout(timer);
         host.stop();
         // The branch in flight and the ones waiting never come: the worker ended.
         const lost = [...(expanding ? [expanding] : []), ...queued];
@@ -366,12 +363,15 @@ export function startFormulaPipeline(deps: {
         asked = null;
         if (gone && !gone.quiet)
           show({ state: "unavailable", request: gone.request });
+        // The host kept that rebuild as its build (tree-host.ts `built`): the tree on screen is no longer the worker's.
+        else if (gone) keptScreen();
       }
       if (closed === stale) return;
       stale = closed;
       if (last.state === "ready") show({ ...last, stale });
     },
     gameFiles(resources) {
+      clearTimeout(timer);
       open = null;
       openFor = null;
       asked = null;
