@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "IdleOn Companion depois da 009 (como ficou no código)",
-    "output": "specs/009-system-mould/diagramas/local/arquitetura-final.html",
+    "title": "IdleOn Companion depois da 009 (molde por sistema)",
+    "output": "specs/009-system-mould/diagramas/local/arquitetura-depois.html",
     "quality_profile": "showcase",
     "locale": "pt-BR"
   },
@@ -173,7 +173,7 @@
       "type": "security",
       "label": "read.js",
       "sublabel": "só leitura de propriedades",
-      "tag": "sem mudança na 009",
+      "tag": "sem mudança na 008",
       "pos": [
         940,
         510
@@ -307,14 +307,14 @@
       "id": "tree-worker",
       "type": "security",
       "label": "Worker de árvores",
-      "sublabel": "tree-engine.ts · tree-roots.ts · tree-recipe.ts",
-      "tag": "2 GB · tree · values · shape · EXTRA_ROOTS · FOLLOW_CALLS",
+      "sublabel": "tree-engine.ts · tree-roots.ts",
+      "tag": "2 GB · tree · values · shape",
       "pos": [
         340,
         1870
       ],
       "size": [
-        215,
+        170,
         64
       ]
     },
@@ -322,14 +322,14 @@
       "id": "tree-build",
       "type": "backend",
       "label": "tree-build.ts · tree/ · inactive.ts",
-      "sublabel": "pools do jogo, sistemas, achatado, conta completa",
-      "tag": "pools · groups · systems · flatten · build-up* · scratch-names",
+      "sublabel": "pools do jogo e sistemas, achatado",
+      "tag": "pools.ts · systems.ts · flatten.ts",
       "pos": [
         40,
         1870
       ],
       "size": [
-        240,
+        225,
         64
       ]
     },
@@ -338,7 +338,7 @@
       "type": "database",
       "label": "Cópia instrumentada",
       "sublabel": "node:vm · recorder.js · recorder-pass.js",
-      "tag": "só em memória · raiz + chamadas extras, só leitura",
+      "tag": "só em memória",
       "pos": [
         640,
         1870
@@ -454,15 +454,15 @@
     {
       "id": "formula-pipeline",
       "type": "backend",
-      "label": "formula-pipeline.ts · formula-answer.ts",
-      "sublabel": "pedido, paridade, expand, árvore ao vivo",
-      "tag": "remonta em silêncio, no máximo a cada 10 s",
+      "label": "formula-pipeline.ts",
+      "sublabel": "pedido, paridade, expand",
+      "tag": "Game changed · marca",
       "pos": [
         40,
         1400
       ],
       "size": [
-        265,
+        170,
         64
       ]
     },
@@ -471,7 +471,7 @@
       "type": "backend",
       "label": "tree-host.ts",
       "sublabel": "createTreeHost",
-      "tag": "vida longa · 1 em voo · log chainOpen",
+      "tag": "vida longa · 1 em voo",
       "pos": [
         40,
         1550
@@ -519,21 +519,6 @@
       "pos": [
         40,
         800
-      ],
-      "size": [
-        170,
-        64
-      ]
-    },
-    {
-      "id": "settings",
-      "type": "backend",
-      "label": "settings.ts",
-      "sublabel": "settings.json · .tmp + rename",
-      "tag": "changes · share · zoom",
-      "pos": [
-        40,
-        950
       ],
       "size": [
         170,
@@ -590,7 +575,7 @@
       "type": "security",
       "label": "tree-check.ts",
       "sublabel": "forma, teto de nós, só átomos",
-      "tag": "pool e system: sem peça, combine da lista",
+      "tag": "aceita pool e system",
       "pos": [
         340,
         1400
@@ -738,14 +723,14 @@
       "id": "side-panel",
       "type": "frontend",
       "label": "Painel lateral",
-      "sublabel": "SidePanel · FormulaTree · MarkBar · ViewToggles",
-      "tag": "tree-changes.ts: setas e valor do grupo por combine",
+      "sublabel": "SidePanel · FormulaTree · MarkBar",
+      "tag": "Changes (setas) · fatia num botão",
       "pos": [
         940,
         1250
       ],
       "size": [
-        200,
+        170,
         64
       ]
     },
@@ -830,7 +815,6 @@
         "saved-files",
         "version-band",
         "game-files",
-        "settings",
         "farm",
         "app-main",
         "pipelines",
@@ -1029,12 +1013,6 @@
       "label": "lê N.js e default.pak"
     },
     {
-      "id": "app-settings",
-      "from": "app-main",
-      "to": "settings",
-      "label": "loadView · saveView"
-    },
-    {
       "id": "client-farm",
       "from": "link-client",
       "to": "farm",
@@ -1128,7 +1106,7 @@
       "id": "formula-host",
       "from": "formula-pipeline",
       "to": "tree-host",
-      "label": "number (também em silêncio) · expand",
+      "label": "number · expand",
       "variant": "emphasis"
     },
     {
@@ -1142,7 +1120,7 @@
       "id": "tree-worker-host",
       "from": "tree-worker",
       "to": "tree-host",
-      "label": "treeResult (+ log chainOpen) · valuesResult · shapeResult"
+      "label": "treeResult · valuesResult · shapeResult"
     },
     {
       "id": "tree-worker-build",
@@ -1154,7 +1132,7 @@
       "id": "tree-worker-copy",
       "from": "tree-worker",
       "to": "tree-copy",
-      "label": "grava a raiz, as extras e as de seguimento"
+      "label": "grava"
     },
     {
       "id": "instrument-copy",
@@ -1193,15 +1171,9 @@
       "id": "formula-live",
       "from": "formula-pipeline",
       "to": "live-values",
-      "label": "à vista + pins + até 200 partes da árvore",
+      "label": "à vista + pins + árvore aberta",
       "fromSide": "bottom",
       "toSide": "left"
-    },
-    {
-      "id": "live-formula",
-      "from": "live-values",
-      "to": "formula-pipeline",
-      "label": "valores das partes → árvore ao vivo"
     },
     {
       "id": "live-host",
@@ -1276,7 +1248,7 @@
       "id": "formula-side",
       "from": "formula-pipeline",
       "to": "side-panel",
-      "label": "formula:update, a cada leitura que muda",
+      "label": "formula:update",
       "variant": "emphasis"
     },
     {
@@ -1285,12 +1257,6 @@
       "to": "pipelines",
       "label": "formula:request · close · feeds:list",
       "fromSide": "top"
-    },
-    {
-      "id": "side-view",
-      "from": "side-panel",
-      "to": "app-main",
-      "label": "view:get · view:set"
     },
     {
       "id": "side-marks",
@@ -1368,7 +1334,7 @@
         "A Stats no worker de 1 GB, sem os campos de ator; as árvores no de 2 GB, com tree, values e shape",
         "Um trabalho por vez no worker de árvores: árvore antes de valores, valores antes de forma",
         "Falha ou prazo: só aquele pedido fica unavailable; a Stats não é tocada",
-        "009: o primeiro nível são os pools da corrente do jogo (Additive e Multi), com os sistemas dentro; cada bônus abre até o último filho"
+        "009: o primeiro nível são os pools do jogo (Additive e Multi), com os sistemas dentro"
       ]
     },
     {
@@ -1376,17 +1342,15 @@
       "title": "Gravação e nomes só em memória",
       "items": [
         "instrument.ts reescreve com __X; recorder.js grava dentro do node:vm",
-        "009: além da raiz, a gravação chama o multiplicador do Meritocracy e o máximo de cada Legend Talent, só leitura, na cópia offline",
         "Os nomes de tabela são lidos do jogo instalado e conferidos por hash; o repositório leva só receitas e nomes provados",
-        "tree-check.ts confere forma, tamanho e textos antes da janela; pool e system sem peça"
+        "tree-check.ts confere forma, tamanho e textos antes da janela"
       ]
     },
     {
       "dot": "cyan",
-      "title": "Árvore ao vivo",
+      "title": "Ao vivo só o que está à vista",
       "items": [
-        "formula:values traz o painel e o grupo abertos; o main soma os pins e até 200 partes da árvore aberta",
-        "Cada leitura escreve os valores na árvore aberta; uma mudança pede a árvore de novo em silêncio, uma por vez e no máximo a cada 10 s",
+        "formula:values traz o painel e o grupo abertos; o main soma os pins e a árvore aberta",
         "feeds-index varre as formas em segundo plano e alimenta a bolinha e o radar"
       ]
     },
@@ -1395,7 +1359,6 @@
       "title": "Arquivos salvos e leitura",
       "items": [
         "marks.json, pins.json e tree-shapes.json em userData, por .tmp, com .bad quando ilegíveis",
-        "settings.json ganha changes e share, dois booleanos, por .tmp e rename",
         "Só o state-slice.js ganhou a leitura de atores (@actors); read.js não mudou",
         "O farm mede das fatias, só em memória"
       ]
@@ -1407,8 +1370,7 @@
         "side-panel.ts alarga para 840 px, para o lado com espaço",
         "As faixas do radar, do Pin e do farm ficam no App, em todas as abas",
         "Os painéis por sistema usam o CompanionModule e trocam com panel:update",
-        "Sem o resumo de duas linhas, sem Game changed nem Refresh; o botão Changes mostra setas contra o clique ou uma marca, e a fatia fica num botão",
-        "O valor de um pool ou grupo é refeito na janela pelas linhas de dentro (combine)"
+        "Sem o resumo de duas linhas; o botão Changes mostra setas ao vivo e a fatia fica num botão"
       ]
     }
   ]
