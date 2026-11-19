@@ -163,10 +163,17 @@ export function startFormulaPipeline(
     // A tree asked with no tree on screen shows "calculating": only a silent rebuild is asked over a ready tree.
     if (last.state !== "ready" || r.treeId !== open?.id) return;
     // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
-    // and is asked as soon as that tree comes (FR-015). With no build of the tree on screen, the tree is asked first.
+    // and is asked as soon as that tree comes (FR-015). With no build of the tree on screen, the tree is asked first, on
+    // the silent rebuilds' clock (NFR-002); with the game closed no reading comes for that clock, so at once.
     if (asked || !screenBuilt || (expanding && expanding.nodeId !== r.nodeId)) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
-      if (!screenBuilt && !asked && !expanding) ask(true);
+      if (!screenBuilt && !asked && !expanding) {
+        if (stale) ask(true);
+        else {
+          rebuild.changed(last.calculatedAt);
+          rebuildIfDue();
+        }
+      }
       return;
     }
     seq++;
