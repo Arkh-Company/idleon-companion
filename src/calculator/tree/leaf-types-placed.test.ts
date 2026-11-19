@@ -18,7 +18,8 @@ test("a branch that ends with no kids is a leaf with a type, unknown with its wh
 
 test("a call that opens empty is typed when it is placed, and has no kids to open", () => {
   const [n] = placed({ 1: [] }, [lazy("Invented call", 3, "Call1()", 1)]).rows;
-  expect(typed(n)).toEqual([[], "unknown", "string"]);
+  // a call of the game is a raw bonus by its code (tree/kinds.ts), its type with no why
+  expect(typed(n)).toEqual([[], "rawBonus", "object"]);
 });
 
 test("a call that opens into rows stays to be opened, with no type of leaf", () => {
