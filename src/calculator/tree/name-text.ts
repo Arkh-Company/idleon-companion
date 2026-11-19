@@ -56,8 +56,17 @@ export function clean(s: string): string {
   );
 }
 
-/** The recipes' transforms (names-recipes.json `about`); null for a transform the app does not know. */
+/**
+ * A column's header, the text of a list's row the game has not filled (N.js ResGridSquares: "Name … desc"; "Filler",
+ * "Blank"): it names no row (family 16 of the audit of 19/11), or every row of the list would have the same name.
+ */
+const HEADER = /^(?:name|desc|type|filler|blank)$/i;
+/** The recipes' transforms (names-recipes.json `about`); null for a transform the app does not know, or a header. */
 export function transformText(transform: string, raw: string): string | null {
+  const name = transformed(transform, raw);
+  return name !== null && HEADER.test(name.trim()) ? null : name;
+}
+function transformed(transform: string, raw: string): string | null {
   const split = /^(clean|raw)\(split '(.+)' \[(\d+)\]\)$/.exec(transform);
   if (split) {
     const part = raw.split(split[2] ?? "")[Number(split[3])];
