@@ -294,19 +294,35 @@ test("a set of one part is the chain's first row, with its ⓘ; one written with
 });
 
 test("a source at 0 stays in its place in the shared multiplier, and its ⓘ still names it (spec 009, FR-016)", () => {
+  // every source in "Other": the sources in % are the family pool's own rows, no group (A34, option B)
   const [, family] = kidsOf(treeOf("DropRatez", 999, 3, 2, 0));
-  const sources = kidsOf(family)[1];
-  expect(sourcesOf(sources)).toEqual([
+  expect(sourcesOf(family).slice(1)).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
     ["DNSM.GameCache.v", 0],
   ]);
-  expect(sources?.formula).toEqual({
-    rule: [
-      "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
-      "(8 + 4 + 0 + 3) ÷ 100 = 0.15",
+  expect(family?.formula).toEqual([
+    [
+      "DNSM.FamBonusQTYs[66]",
+      "+",
+      "TreeReads()",
+      "÷",
+      "100",
+      "+",
+      "TreeBase",
+      "÷",
+      "100",
+      "+",
+      "DNSM.GameCache.v",
+      "÷",
+      "100",
+      "+",
+      "Fixed +3",
+      "÷",
+      "100",
     ],
-  });
+    [2, 8, 100, 4, 100, 0, 100, 3, 100, 2.15],
+  ]);
 });
 
 test("a source in the sources' ⓘ is its name without its tag, or its code with no name", () => {
