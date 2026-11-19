@@ -130,7 +130,12 @@ export function inPool(
   if (!rows.some(moves)) return null;
   const m = marked(rows, moves);
   const pair = pairOf(m);
-  const top = pair && formulaOut(pair, m.map((r) => termOf(r.node)));
+  const top =
+    pair &&
+    formulaOut(
+      pair,
+      m.map((r) => termOf(r.node)),
+    );
   return spliced(node, top, rows, moves);
 }
 
