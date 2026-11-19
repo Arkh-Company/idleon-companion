@@ -249,4 +249,8 @@ test("a read the builders' pass explains opens in the pass's call of the same bl
   expect([other.writer?.id, other.own?.call.id, other.own?.at]).toEqual([
     3, 3, 0,
   ]);
+  // a read no cache link covers (a loop's own running total) opens in nothing, still keyed by the write it saw
+  const r = rec("Other");
+  const none = scratchReads(r)("DNSM.Box", 5, r.nodes[2], null);
+  expect([none.writer, none.own?.call.id, none.own?.at]).toEqual([null, 3, 0]);
 });
