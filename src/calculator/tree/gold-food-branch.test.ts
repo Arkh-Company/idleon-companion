@@ -97,12 +97,22 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
+  // every source in "Other": no "🔹 Other" group in %, each source in % the pool's own +N% row, adding 0.2 still
+  // (A34, option B of Vinicius's answer)
   expect(
-    kidsIn(family).map((k) => [k.code ?? k.name, k.combine, k.value]),
+    kidsIn(family).map((k) => [k.code ?? k.name, k.combine, k.value, k.fmt]),
   ).toEqual([
-    ["DNSM.FamBonusQTYs[66]", undefined, 2],
-    ["🔹 Other", "percent", near(0.2)],
+    ["DNSM.FamBonusQTYs[66]", undefined, 2, null],
+    ["TreeReads()", undefined, 8, "%"],
+    ["TreeBase", undefined, 4, "%"],
+    ["DNSM.GameCache.v", undefined, 5, "%"],
+    ["Fixed +3", undefined, 3, "%"],
   ]);
+  expect(
+    kidsIn(family)
+      .slice(1)
+      .reduce((a, k) => a + Number(k.value), 0) / 100,
+  ).toBeCloseTo(0.2, 9);
   expect([...sourcesOf(build, set), ...sourcesOf(build, family)]).toEqual(
     MULTI_SOURCES,
   );
