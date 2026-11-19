@@ -3,6 +3,7 @@
 import { expect, test } from "vitest";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
+import { scratchKeys } from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
 
 // Writer(1) writes the box twice, and each of its two readers reads one of the writes
@@ -32,29 +33,27 @@ test("a scratch box read at two moments is two pieces, each keyed by its writer'
   ]);
 });
 
-test("a working total the reader wrote itself is keyed by the reader; a box no call wrote keeps its path alone", () => {
-  const rec = recordingOf(
+test("a working total the reader wrote itself is keyed by the reader; any other read keeps its path alone", () => {
+  const nodes = recordingOf([
+    { b: "StampTotal", a: ["X"], v: 8 },
+    { b: "Other", v: 1 },
+  ]).nodes;
+  const [stamp, other] = nodes;
+  const keyOf = scratchKeys(
     [
-      { b: "(setup: game helpers)" },
-      { b: "(root)", c: [2] },
-      { b: "Top", v: 9, c: [3, 4] },
-      {
-        b: "StampTotal",
-        a: ["X"],
-        v: 4,
-        r: [["DummyNumbersStatManager.Total", 4, 1]],
-      },
-      { b: "FromGame", v: 5, r: [["DNSM.Saved", 5]] },
+      { path: "DummyNumbersStatManager.Total", node: 0, v: 0, xi: 0, seq: 0 },
+      { path: "DummyNumbersStatManager.Total", node: 0, v: 4, xi: 1, seq: 1 },
     ],
-    [
-      { path: "DummyNumbersStatManager.Total", node: 3, v: 0, seq: 0 },
-      { path: "DummyNumbersStatManager.Total", node: 3, v: 4, seq: 1 },
-    ],
-    { setup: 0, root: 1, fromGame: ["Saved"] },
+    0,
   );
-  const keys = shapeOf(buildTree(rec, 0)).map(([k]) => k);
-  expect(keys).toContain(
-    '[0,"DummyNumbersStatManager.Total","StampTotal(\\"X\\")",1]',
+  // no writer linked (the box is no DNSM cache): the reader's own write of the value read
+  expect(keyOf("DummyNumbersStatManager.Total", 4, null, stamp ?? null)).toBe(
+    JSON.stringify([0, "DummyNumbersStatManager.Total", 'StampTotal("X")', 1]),
   );
-  expect(keys).toContain('[0,"DNSM.Saved"]');
+  // a call that never wrote that value, a box no call wrote, and a read of the player's state: the path alone
+  expect(keyOf("DummyNumbersStatManager.Total", 7, other ?? null)).toBe(
+    '[0,"DummyNumbersStatManager.Total"]',
+  );
+  expect(keyOf("DNSM.Saved", 5, null)).toBe('[0,"DNSM.Saved"]');
+  expect(keyOf("Stats.x", 0, stamp ?? null)).toBe('[0,"Stats.x"]');
 });
