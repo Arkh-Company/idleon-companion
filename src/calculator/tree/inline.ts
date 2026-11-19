@@ -37,7 +37,7 @@ const isCurve = (r: Row): boolean =>
  * A step with no code and no proven name (a name after its first source is the parent's, family 7: it stays), or a
  * curve's row.
  */
-function isStep(r: Row): boolean {
+export function isStep(r: Row): boolean {
   const n = r.node;
   if (isCurve(r)) return true;
   return (
@@ -106,16 +106,50 @@ function innerOf(r: Row): Built {
 export function inlined(row: FormulaRow, rows: Row[]): Built {
   const plain = (): Built => withFormula(row, rows);
   if (!rows.some(isStep) || row.node.formula) return plain();
-  const marked = rows.map((r, i) =>
-    isStep(r) ? { ...r, node: { ...r.node, name: mark(i) } } : r,
+  const top = withFormula(row, marked(rows)).formula;
+  return spliced(row.node, top, rows) ?? plain();
+}
+
+/** The rows with each step's private name, for the ⓘ that holds them. */
+const marked = (rows: readonly Row[], moves = isStep): Row[] =>
+  rows.map((r, i) =>
+    moves(r) ? { ...r, node: { ...r.node, name: mark(i) } } : r,
   );
-  const top = withFormula(row, marked).formula;
-  if (!Array.isArray(top)) return plain();
+
+/**
+ * The ⓘ and rows of a pool or a group (spec 009, FR-017) whose rows hold an unnamed step: each step replaced by its
+ * parts and its ⓘ in brackets, as `inlined` does, the ⓘ around them `pairOf` the rows; null when none moves. Only
+ * the steps `moves` says move.
+ */
+export function inPool(
+  node: Pick<Row["node"], "name" | "value">,
+  rows: Row[],
+  pairOf: (rows: readonly Row[]) => [string, string] | null,
+  moves: (r: Row) => boolean = isStep,
+): Built | null {
+  if (!rows.some(moves)) return null;
+  const m = marked(rows, moves);
+  const pair = pairOf(m);
+  const top = pair && formulaOut(pair, m.map((r) => termOf(r.node)));
+  return spliced(node, top, rows, moves);
+}
+
+/**
+ * The ⓘ `top` (of the rows with each step's private name) with each step's ⓘ in brackets, and the rows with each step
+ * replaced by its parts; null when none moves or the joined ⓘ does not give the value of `node`.
+ */
+function spliced(
+  node: Pick<Row["node"], "name" | "value">,
+  top: CalcTreeNode["formula"],
+  rows: readonly Row[],
+  moves = isStep,
+): Built | null {
+  if (!Array.isArray(top)) return null;
   let atoms: Atoms = top;
   let moved = 0;
   const out: Row[] = [];
   for (const [i, r] of rows.entries()) {
-    const inner = isStep(r) ? innerOf(r) : null;
+    const inner = moves(r) ? innerOf(r) : null;
     const joined =
       inner && Array.isArray(inner.formula)
         ? splice(atoms, mark(i), inner.formula)
@@ -137,12 +171,12 @@ export function inlined(row: FormulaRow, rows: Row[]): Built {
     moved === 0 ||
     !closes(atoms) ||
     result === undefined ||
-    !near(result, Number(row.node.value))
+    !near(result, Number(node.value))
   )
-    return plain();
+    return null;
   return {
     formula: atoms,
-    rows: withShares(row.node, pairOf(atoms), out).rows,
+    rows: withShares(node, pairOf(atoms), out).rows,
   };
 }
 

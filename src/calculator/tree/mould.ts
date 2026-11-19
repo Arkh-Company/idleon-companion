@@ -7,6 +7,7 @@ import { fx3 } from "./curves.ts";
 import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
 import { isConstant, termsOf, vOf } from "./formulas.ts";
+import { inPool, isStep } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import {
   chainPools,
@@ -74,15 +75,37 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
         ? "+"
         : null;
   const rows = op ? dissolve(p.rows, op, joins) : p.rows;
-  const level = [...bySystem(rows, p.combine, writerOf)];
   const pct = p.combine === "onePlusPercent";
   // 1 + (its groups) ÷ 100: the ⓘ the parts' own sum or product would not give
-  const pair: [string, string] | null = pct
-    ? [
-        `1 + (${level.map((r) => termOf(r.node)).join(" + ")}) ÷ 100`,
-        `1 + (${level.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
-      ]
-    : ownPair(level, p.combine === "product", p.value);
+  const pairOf = (lv: readonly Row[]): [string, string] | null =>
+    pct
+      ? [
+          `1 + (${lv.map((r) => termOf(r.node)).join(" + ")}) ÷ 100`,
+          `1 + (${lv.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
+        ]
+      : ownPair(lv, p.combine === "product", p.value);
+  // FR-017: an unnamed step of a mixed math moves up, its ⓘ in the pool's (tree/inline.ts); the other rows by system.
+  // A step that only adds or only multiplies is no such step: `dissolve` takes in the first kind, and the second is a
+  // term of the pool (a talent times a count, FR-003)
+  const mixed = (r: Row) => isStep(r) && !r.op;
+  const steps = rows.filter(mixed);
+  const apart = steps.length
+    ? inPool(
+        p,
+        [
+          ...bySystem(
+            rows.filter((r) => !mixed(r)),
+            p.combine,
+            writerOf,
+          ),
+          ...steps,
+        ],
+        pairOf,
+        mixed,
+      )
+    : null;
+  const level = apart?.rows ?? [...bySystem(rows, p.combine, writerOf)];
+  const pair = pairOf(level);
   const node = row({
     pieceKey: null,
     value: p.value,
@@ -93,9 +116,20 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
     poolKind: p.kind,
     fmt: p.combine === "sum" ? null : "x",
     flags: { closed: true },
-    formula: pair && formulaOut(pair, termsOf(level)),
+    // its rows named whole, a name with a colon or a sign too ("Emporium: …", "Fixed +2")
+    formula: apart
+      ? apart.formula
+      : pair &&
+        formulaOut(pair, [
+          ...termsOf(level),
+          ...level.map((r) => termOf(r.node)),
+        ]),
   });
-  return { node, open: null, group: withShares(node, pair, level).rows };
+  return {
+    node,
+    open: null,
+    group: apart ? apart.rows : withShares(node, pair, level).rows,
+  };
 }
 
 /** The root's first level as its pools (FR-005), each with its share of the root, and the root's ⓘ. */
