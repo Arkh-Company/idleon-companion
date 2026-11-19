@@ -8,7 +8,7 @@ import type { CalcTreeNode } from "../tree-contract.ts";
 import { makeConditions } from "./conditions.ts";
 import type { Row } from "./rows.ts";
 import type { Check, Expr } from "./steps.ts";
-import { check, leaf, named, placed } from "./tree-fixture.ts";
+import { check, leaf, named, placed, read } from "./tree-fixture.ts";
 
 const node: RecNode = { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0, v: 1 };
 const { condRows } = makeConditions([node]);
@@ -31,6 +31,24 @@ test("a check of a read against a literal keeps the read's code as its subject, 
     ["Stats.pts ≤ 0", "Stats.pts"],
     ["Stats.lv > 100", "Stats.lv"],
   ]);
+});
+
+test("a yes/no read merged into its test is that state, with no subject: it is no check of a row", () => {
+  const { mergeTests } = makeConditions([node]);
+  const own = {
+    steps: [],
+    checks: [cmp("==", at("Stats.own", 1), num(1), true)],
+  };
+  const conds = condRows(node, own);
+  const state = read("Stats.own", 1);
+  const [merged] = mergeTests(
+    node,
+    [state, read("Stats.b", 4)],
+    [],
+    conds,
+    own,
+  ).filter((r) => r.node.leaf === "condition");
+  expect(merged?.subject).toBeUndefined();
 });
 
 /** A check named as its comparison, its subject the read `code`. */
