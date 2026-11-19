@@ -190,6 +190,9 @@ test.each<[string, string, string]>([
   ["a Rift reward", 'RiftStuff("RiftSkillBonus,19", 2)', "🌀 Rift"],
   ["a Rift star sign unlock", 'RiftStuff("enabledStarSigns", 0)', "🌀 Rift"],
   ["Killroy's shop", 'RandomEvent("KillroyBonuses", 3, 0)', "💀 Killroy"],
+  // decision of 19/11: Divinity is 🕊️ (Prayers keeps 🙏)
+  ["a god's minor bonus", 'Divinity("Bonus_Minor", 3, 0)', "🕊️ Divinity"],
+  ["a god's blessing", 'Divinity("BlesssBonus", 2, 0)', "🕊️ Divinity"],
   ["a talent's calc", "TalentCalc(328)", "🎯 Talents"],
   ["the talents' calc cache", "DNSM.CalcTalentMAP[635]", "🎯 Talents"],
   ["the arcade's doubler cache", "DNSM.ArcadBonDNz[14]", "🕹️ Arcade"],
