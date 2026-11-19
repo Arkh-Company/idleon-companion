@@ -304,9 +304,9 @@ test("[FR-008] the worn food's step of a chain is one row, Equipped: <the food>:
   expect(row0?.group?.map((k) => k.node.value)).toEqual([7, 0.05, 999]);
   expect(row0?.group?.at(-1)?.node.name).toBe("Quantity");
   // its ⓘ is the whole product, the log₁₀ of 1 + the quantity in it, closing on its value (FR-008); its other factors
-  // by their rows' terms (here plain rows, named by their code)
+  // by their rows' terms (here plain rows, named by their code; the 0.05 the Base rate, by its role)
   expect(row0?.f).toEqual([
-    "DNSM.GfoodMap.Amount × Game value × log₁₀(1 + Quantity) × (1 + log₁₀(1 + Quantity) ÷ 2.14)",
+    "DNSM.GfoodMap.Amount × Base rate × log₁₀(1 + Quantity) × (1 + log₁₀(1 + Quantity) ÷ 2.14)",
     "7 × 0.05 × log₁₀(1 + 999) × (1 + log₁₀(1 + 999) ÷ 2.14) = 2.522",
   ]);
 });

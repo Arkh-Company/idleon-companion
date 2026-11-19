@@ -31,7 +31,8 @@ export const V1_SYSTEMS: readonly System[] = (
     ["Shiny Pets", "🐉"],
     ["Tome", "📖"],
     ["Researching", "🔬"],
-    ["Chips", "💎"],
+    // decision of 19/11: 🧩, as the Gem Shop takes 💎
+    ["Chips", "🧩"],
     ["Dreams", "💭"],
     ["Cloud Bonus", "☁️"],
     ["Owl", "🦉"],
@@ -81,6 +82,15 @@ export const EXTRA_SYSTEMS: readonly System[] = (
     ["Trapping", "🪤"],
     ["Sailing", "⛵"],
     ["Lab", "🧪"],
+    // family 15 of the audit of 19/11, the names and emojis of Vinicius's decision 4
+    ["Family Bonuses", "👪"],
+    ["Bubba", "🥩"],
+    ["Clam", "🐚"],
+    ["Rift", "🌀"],
+    ["Killroy", "💀"],
+    // decision of 19/11: Divinity takes 🕊️, as Prayers has 🙏
+    ["Divinity", "🕊️"],
+    ["Gem Shop", "💎"],
   ] as const
 ).map(([name, emoji]) => ({ name, emoji }));
 
@@ -165,6 +175,78 @@ export const SYSTEM_RULES: readonly {
       [/^Spelunk\[/, "Spelunking", "N.js Spelunk (reads Spelunk)"],
       [/^Sailing\[/, "Sailing", "N.js Sailing (reads Sailing)"],
       [/^Atoms\[/, "Atom Collider", "N.js AtomCollider (reads Atoms)"],
+    ] as const
+  ).map(([test, system, proof]) => ({
+    test,
+    system,
+    proof,
+    read: true as const,
+  })),
+  // Family 15 (audit of 19/11): every source with the game's code takes its system by the block it calls, the mode
+  // only where the block hosts more than one system (Thingies, RandomEvent, Minehead); the tagged modes above win
+  ...(
+    [
+      [/^Bubbastuff /, "Bubba", "N.js Bubbastuff (reads Bubba)"],
+      [
+        /^Thingies Clam/,
+        "Clam",
+        "N.js Thingies ClamWorkBonus, Clam_Cost, ClamBonuses",
+      ],
+      [/^Divinity /, "Divinity", "N.js Divinity"],
+      [
+        /^RiftStuff /,
+        "Rift",
+        "N.js RiftStuff (each mode is 0 below a Rift level)",
+      ],
+      [
+        /^RandomEvent KillroyBonuses$/,
+        "Killroy",
+        "N.js RandomEvent KillroyBonuses (the text of the Killroy shop)",
+      ],
+      [/^TalentCalc /, "Talents", "N.js TalentCalc (the math of a talent)"],
+      [
+        /^Thingies Have_b[ao]n_/,
+        "Bundles",
+        "N.js Thingies Have_ban_i (reads BundlesReceived)",
+      ],
+      [/^Holes2? /, "Holes", "N.js Holes; N.js Holes2"],
+      [
+        /^Minehead (GlimboTotalTrades|Glimbo_Cost)$/,
+        "Glimbo",
+        "N.js Minehead GlimboTotalTrades",
+      ],
+      [/^Minehead /, "Minehead", "N.js Minehead"],
+      [
+        /^Summoning SummUpgBonus$/,
+        "Summoning",
+        "N.js Summoning SummUpgBonus (the Summoning upgrades)",
+      ],
+      [/^Labb /, "Lab", "N.js Labb (reads Lab)"],
+      [/^TotalStats /, "LUK / Stats", "N.js TotalStats"],
+    ] as const
+  ).map(([test, system, proof]) => ({ test, system, proof })),
+  ...(
+    [
+      // FamBonusQTYs[32] is Royal Guardian's (the rule above wins); every other index is a class's family bonus
+      [
+        /FamBonusQTYs\[/,
+        "Family Bonuses",
+        "N.js FamBonusQTYs (the family bonus of each class)",
+      ],
+      [/^Bubba\[|^DNSM\.Bubba_/, "Bubba", "N.js Bubbastuff (reads Bubba)"],
+      [
+        /^DNSM\.CalcTalentMAP/,
+        "Talents",
+        "N.js TalentCalc (writes CalcTalentMAP)",
+      ],
+      [/^DNSM\.ArcadBonDNz/, "Arcade", "N.js ArcadeBonus (writes ArcadBonDNz)"],
+      [/^BundlesReceived\./, "Bundles", "N.js BundlesReceived"],
+      [/^Lab\[/, "Lab", "N.js Labb (reads Lab)"],
+      [
+        /^GemItemsPurchased\[/,
+        "Gem Shop",
+        "N.js GemItemsPurchased (the purchases of the gem shop)",
+      ],
     ] as const
   ).map(([test, system, proof]) => ({
     test,

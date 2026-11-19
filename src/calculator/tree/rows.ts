@@ -14,6 +14,7 @@ import { classify } from "./kinds.ts";
 import { leafPasses } from "./leaf-passes.ts";
 import { levelRenames } from "./level-renames.ts";
 import { formulaOut } from "./math.ts";
+import { descFormula } from "./name-descs.ts";
 import { isGeneric, nameOf } from "./names.ts";
 import { kidShares, termOf } from "./share.ts";
 
@@ -139,7 +140,9 @@ export function row(
     leaf: null,
     condition: null,
     why: null,
-    formula: null,
+    // a short name's whole text of the game, its ⓘ (family 13, tree/name-descs.ts)
+    formula:
+      fields.name === undefined ? descFormula(fields.code, fields.value) : null,
     role: "piece",
     share: null,
     shareMode: null,

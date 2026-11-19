@@ -1,6 +1,6 @@
 // Golden Food (spec 008, T023): the port of pieces.cjs `explainRaw` `goldFood` from the bench at BASELINE-4. The block's
 // steps vary by its key: [the shared multiplier, the worn food?, …, the emporium's?]. Step 0 is the multiplier, a set's
-// multi × (the Family Bonus 66, at least 1, + its sources ÷ 100); the worn food is an op at step 1 with a log call of
+// multi × (the family bonus of key 66, at least 1, + its sources ÷ 100); the worn food is an op at step 1 with a log call of
 // its own (its quantity); the emporium's is the last op "+" after it with a log call (its level), added to the bonus
 // the block had before. Each row has the ⓘ of its step. A food is named by the item table's text (tree/table-names.ts);
 // with none, its row keeps the generic name (the bench writes the item's id).
@@ -11,6 +11,7 @@ import { flat, topOp } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
 import { near } from "./math.ts";
 import { isNameText } from "./name-text.ts";
+import { termName } from "./names.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -48,7 +49,12 @@ function part(
   name: string | null,
   value: unknown,
   group: Row[] = [],
-  ip: { f?: Pair | null; xf?: Pair | null; fmt?: "x" } = {},
+  ip: {
+    f?: Pair | null;
+    xf?: Pair | null;
+    fmt?: "x";
+    leaf?: "fixedValue";
+  } = {},
 ): Row {
   return {
     node: row({
@@ -57,6 +63,7 @@ function part(
       code: null,
       ...(name === null ? {} : { name }),
       ...(ip.fmt ? { fmt: ip.fmt } : {}),
+      ...(ip.leaf ? { leaf: ip.leaf } : {}),
     }),
     open: null,
     ...(group.length ? { group } : {}),
@@ -64,6 +71,13 @@ function part(
     ...(ip.xf ? { xf: ip.xf } : {}),
   };
 }
+/** The block's literal 0.05, bonus = Amount × multi × 0.05 × … (N.js GoldFoodBonuses; the Vinicius's name of 19/11). */
+const RATE = "Base rate (× 0.05)";
+/** The family bonus the shared multiplier takes, of class 33 (N.js GoldFoodBonuses: max(FamBonusQTYs[66], 1)). */
+const FAMILY = "DNSM.FamBonusQTYs[66]";
+/** Its name by its game text, without its tag; null with no name yet (the ⓘ then writes its path, FR-012a). */
+const familyName = () =>
+  termName(FAMILY)?.replace(/\s*\(family bonus\)$/, "") ?? null;
 /** A source in the sources' ⓘ: its name without its tag in parentheses, or its code when it has no name. */
 export const sourceTerm = (r: Row) =>
   r.node.flags.unnamed
@@ -75,8 +89,16 @@ function foodName(what: string, text: string | null): string | null {
   return name !== null && isNameText(name) ? name : null;
 }
 
+const slotOf = (k: string) => Number(/\[(\d+)\]$/.exec(k)?.[1]);
+/**
+ * The quantity read of the food that counts (A18): N.js GoldFoodBonuses walks the slots i = 0 … n − 1 and sets the bonus
+ * to slot i's product for each slot whose food is of the effect, so the last such slot i is the one that counts.
+ */
 const quantityKey = (reads: Reads) =>
-  [...reads.keys()].find((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k));
+  [...reads.keys()]
+    .filter((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k))
+    .sort((a, b) => slotOf(a) - slotOf(b))
+    .at(-1);
 /** The texts of the worn food and of the emporium's (the worn food's when it has none), from the block's reads. */
 function foodTexts(reads: Reads): {
   foodText: string | null;
@@ -95,9 +117,13 @@ function foodTexts(reads: Reads): {
     (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
   return { foodText, emText };
 }
-/** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
+/**
+ * The emporium's row name, "Beanstalk: <the food's text>", or null with no text (spec 009, 009 r2; the Vinicius's name
+ * of 19/11). N.js GoldFoodBonuses adds the food i of NinjaInfo[29][2 + 3i] when Ninja[104][i] > 0, the level of the
+ * Jade Emporium's upgrade the game names "Gold Food Beanstalk" ("Grows a giant beanstalk behind the ninja castle!").
+ */
 export const emporiumName = (reads: Reads): string | null =>
-  foodName("Emporium", foodTexts(reads).emText);
+  foodName("Beanstalk", foodTexts(reads).emText);
 /**
  * Whether a log call of argument `arg` measures a worn food: N.js GoldFoodBonuses takes getLOG(1 + quantity) of a food
  * slot's quantity, and the emporium's getLOG(1 + 1e3·10^level) (009 T023 r4).
@@ -112,8 +138,9 @@ export const equippedName = (reads: Reads): string | null =>
   foodName("Equipped", foodTexts(reads).foodText);
 
 /**
- * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(Family Bonus 66, 1) +
- * Sources ÷ 100), when the step gives it; else null.
+ * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(<the family bonus>, 1)
+ * + Sources ÷ 100), when the step gives it; else null. The family bonus is FamBonusQTYs[66] by its game text (19/11),
+ * without its tag, else its path (FR-012a).
  */
 export function multiFormula(s0: Step, reads: Reads): Pair | null {
   const [secret, rest] = flat(s0.e, "*");
@@ -124,7 +151,7 @@ export function multiFormula(s0: Step, reads: Reads): Pair | null {
   const sumV = Number(sumE?.v);
   return sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
     ? [
-        "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+        `SECRET_SET multi × (max(${familyName() ?? FAMILY}, 1) + Sources ÷ 100)`,
         `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
       ]
     : null;
@@ -186,6 +213,10 @@ export function goldFood(
         ]
       : null;
   const emE = s3?.e.t === "op" ? s3.e.r : undefined;
+  // 19/11: a log₁₀ is math, in the row's ⓘ: its leaf is what goes into it, the Beanstalk's level L of log₁₀(1 +
+  // 10³ · 10^L) (N.js GoldFoodBonuses), as the worn food's quantity of log₁₀(1 + quantity)
+  const beanstalk = (c: Expr | undefined) =>
+    c?.t === "call" ? Math.log10((Number(nodes[c.id]?.a[0]) - 1) / 1e3) : null;
   // each level's rows with their types and shares, none of them a product's
   const level = (v: unknown, rows: Row[]) => ctx.finish(v, rows, false);
   return [
@@ -193,7 +224,7 @@ export function goldFood(
       "GFood Multi",
       s0.v,
       level(s0.v, [
-        part("Family Bonus 66", fam),
+        part(termName(FAMILY), fam),
         part("Sources ÷ 100", sumE ? sumV / 100 : null, level(sumV, sources), {
           f: sourcesF,
         }),
@@ -211,8 +242,8 @@ export function goldFood(
             s1.v,
             level(s1.v, [
               part("Base Amount", amount),
+              part(RATE, 0.05, [], { leaf: "fixedValue" }),
               part("Quantity", qtyKey ? reads.get(qtyKey) : null),
-              part("Log Factor", logs(s1)[0]?.v),
             ]),
             { xf: ctx.formulas.expr(s1.e, reads, s1.v, 1) },
           ),
@@ -221,11 +252,12 @@ export function goldFood(
     ...(s3
       ? [
           part(
-            foodName("Emporium", emText),
+            foodName("Beanstalk", emText),
             s3.v - before3,
             level(s3.v - before3, [
               part("Base Amount", amount),
-              part("Log Factor", logs(s3)[0]?.v),
+              part(RATE, 0.05, [], { leaf: "fixedValue" }),
+              part("Beanstalk level", beanstalk(logs(s3)[0])),
             ]),
             { xf: ctx.formulas.expr(emE, reads, s3.v - before3, 1) },
           ),

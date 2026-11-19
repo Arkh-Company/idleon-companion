@@ -225,7 +225,7 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     // the emporium's lone + is its own row, no pool (decision of 19/11)
     [
       "piece",
-      "Emporium: Other Dish",
+      "Beanstalk: Other Dish",
       null,
       undefined,
       expect.closeTo(6.006000434728559, 9),
@@ -313,7 +313,7 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     // the worn food's step is its own × N row, no pool (the rule and answer 2 of 19/11)
     ["piece", "Equipped: Invented Charm", null, "x"],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
-    ["piece", "Emporium: Other Dish", null, "+"],
+    ["piece", "Beanstalk: Other Dish", null, "+"],
   ]);
   expect(checkTree(build.root, 200)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();

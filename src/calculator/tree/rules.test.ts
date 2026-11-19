@@ -49,6 +49,8 @@ import { STATIC_NAMES } from "./names-table.ts";
 import { FIX_NAMES } from "./kid-names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import { SYSTEM_RULES } from "./systems.ts";
+import { DESCS } from "./name-descs.ts";
+import { MERIT_SHOP } from "./merit-names.ts";
 import { PARENT_RENAMES } from "./parent-renames.ts";
 
 import { ONE_CHILD } from "./one-child.ts";
@@ -110,6 +112,8 @@ const TABLES = {
   SYSTEM_TAGS,
   SYSTEM_RULES,
   PARENT_RENAMES: Object.values(PARENT_RENAMES),
+  DESCS,
+  MERIT_SHOP: [MERIT_SHOP],
 
   ONE_CHILD: Object.values(ONE_CHILD),
 };

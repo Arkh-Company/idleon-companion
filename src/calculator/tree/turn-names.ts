@@ -24,6 +24,9 @@ const valueOf = (rs: readonly TurnRead[], path: string) =>
  */
 export const NO_NAME = { stop: true } as const;
 type TurnName = string | typeof NO_NAME | null;
+/** "<the text><tag>", or NO_NAME when the table has no text: a turn is never named by the list's index (family 2). */
+const named = (text: string | null, tag: string): TurnName =>
+  text === null ? NO_NAME : `${text}${tag}`;
 
 /**
  * pieces.cjs `turnName` with names-sailing.cjs TURN_NAMES first: each rule names the turn from the paths and values it
@@ -112,7 +115,7 @@ export const TURN_NAMES: readonly (Rule & {
       const a = m?.[1];
       return a === undefined
         ? null
-        : `${tableText("artifact", Number(a)) ?? `Artifact ${a}`} (artifact ${a})`;
+        : named(tableText("artifact", Number(a)), ` (artifact ${a})`);
     },
   },
   {
@@ -146,7 +149,7 @@ export const TURN_NAMES: readonly (Rule & {
       const c = m?.[1];
       return c === undefined
         ? null
-        : `${tableText("colour", Number(c)) ?? `Colour ${c}`} (palette ${c})`;
+        : named(tableText("colour", Number(c)), ` (palette ${c})`);
     },
   },
   {

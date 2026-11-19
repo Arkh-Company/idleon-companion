@@ -4,6 +4,7 @@
 // the tree on screen, so a group whose id changed owner when the tree was rebuilt never shows a false arrow.
 import {
   MINUS,
+  oldBoxKeys,
   partsOf,
   pieceValues,
   plain,
@@ -117,6 +118,26 @@ export function arrowOf(
 }
 
 /**
+ * fix/tree-scratch-keys: a mark of the 0.8.0 kept a scratch box by its path; the old key holds the box's piece when the
+ * whole tree has only one piece of that box (oldBoxKeys), and that piece is followed live.
+ */
+function rematched(
+  base: Readonly<Record<string, Value>>,
+  root: TreeNode,
+  followed: ReadonlySet<string>,
+): Record<string, Value> {
+  const all = preorder(root).flatMap((n) => n.pieceKey ?? []);
+  const out: Record<string, Value> = {};
+  for (const [k, v] of Object.entries(base)) if (followed.has(k)) out[k] = v;
+  for (const [k, now] of oldBoxKeys(Object.keys(base), all, 1)) {
+    const v = base[k];
+    if (v !== undefined && followed.has(now) && !Object.hasOwn(base, now))
+      out[now] = v;
+  }
+  return out;
+}
+
+/**
  * The arrow of every row of the tree against `base` (by piece). Only the parts followed live take the base (NFR-003):
  * a part past the limit shows its built value on both sides, so neither it nor its group gets a false arrow.
  */
@@ -126,9 +147,7 @@ export function arrowsOf(
 ): Map<string, Arrow> {
   const followed = new Set(partsOf(root).keys());
   if (root.pieceKey !== null) followed.add(root.pieceKey);
-  const pieces = Object.fromEntries(
-    Object.entries(base).filter(([k]) => followed.has(k)),
-  );
+  const pieces = rematched(base, root, followed);
   const before = valuesOf(root, pieces);
   const now = valuesOf(root);
   const out = new Map<string, Arrow>();

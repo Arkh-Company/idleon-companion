@@ -8,12 +8,15 @@
 // Roda na raiz do projeto, sem argumentos. KIT_SKILLS_GIT_BASE troca a base https://github.com/ (os testes do kit usam
 // repositórios locais em file:///).
 import { execFileSync } from "node:child_process";
-import { copyFileSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 
 // ref: o branch, ou null para a maior tag vX.Y.Z sem sufixo (a última release). Uma skill com camada vai para
-// <nome>/upstream/: a camada, <nome>/SKILL.md, é do kit e o ajudante não a toca.
+// <nome>/upstream/: a camada, <nome>/SKILL.md, é do kit e o ajudante não a toca. path "" traz o repositório inteiro
+// (menos o .git e o excluded): é um plugin, que o Claude Code carrega de .claude/skills/<dest>/ pelo
+// .claude-plugin/plugin.json. plugin troca o name desse plugin.json: um plugin de mesmo nome instalado na máquina
+// (o ponytail@ponytail, por exemplo) tem a preferência e impediria a cópia de carregar.
 const TABELA = [
   { repo: "obra/superpowers", ref: null, path: "skills/brainstorming", dest: "brainstorming/upstream" },
   { repo: "obra/superpowers", ref: null, path: "skills/systematic-debugging", dest: "systematic-debugging/upstream" },
@@ -21,6 +24,8 @@ const TABELA = [
   { repo: "mattpocock/skills", ref: "main", path: "skills/engineering/domain-modeling", dest: "domain-modeling" },
   { repo: "mattpocock/skills", ref: "main", path: "skills/engineering/pr", dest: "pr" },
   { repo: "tt-a1i/archify", ref: null, path: "archify", dest: "archify", excluded: ["test"] },
+  { repo: "DietrichGebert/ponytail", ref: null, path: "", dest: "ponytail", plugin: "ponytail-kit",
+    excluded: ["assets", "benchmarks", "examples", "tests"] },
 ];
 
 const BASE = process.env.KIT_SKILLS_GIT_BASE || "https://github.com/";
@@ -75,19 +80,21 @@ try {
       const ref = linhas[0].ref ?? ultimaTag(url);
       const clone = join(temporario, String(n));
       git("clone", "--quiet", "--depth", "1", "--filter=blob:none", "--sparse", "--branch", ref, url, clone);
-      git("-C", clone, "sparse-checkout", "set", ...linhas.map((linha) => linha.path)); // cone: traz a raiz (LICENSE)
+      if (linhas.some((linha) => linha.path === "")) git("-C", clone, "sparse-checkout", "disable"); // o repositório inteiro
+      else git("-C", clone, "sparse-checkout", "set", ...linhas.map((linha) => linha.path)); // cone: traz a raiz (LICENSE)
       const commit = git("-C", clone, "rev-parse", "HEAD");
       // Confere tudo antes de apagar qualquer cópia: uma pasta que mudou de lugar no upstream não leva a cópia antiga
       const copias = linhas.map((linha) => {
         const origem = join(clone, linha.path);
-        if (!existsSync(join(origem, "SKILL.md"))) throw new Error(`${linha.path}/SKILL.md não existe em ${ref}`);
+        const marca = linha.path === "" ? join(".claude-plugin", "plugin.json") : "SKILL.md";
+        if (!existsSync(join(origem, marca))) throw new Error(`${linha.path || "."}/${marca} não existe em ${ref}`);
         const licenca = existsSync(join(origem, "LICENSE")) ? null : join(clone, "LICENSE");
         if (licenca && !existsSync(licenca)) throw new Error(`sem LICENSE em ${linha.path} nem na raiz`);
         return { ...linha, origem, licenca, tree: git("-C", clone, "rev-parse", `HEAD:${linha.path}`) };
       });
       // Link simbólico (120000) ou submódulo (160000) faria a cópia ler ou escrever fora do projeto antes da análise de
       // segurança: o modo vem da árvore do git, não do disco
-      const usados = [...linhas.map((linha) => linha.path), ...(copias.some((c) => c.licenca) ? ["LICENSE"] : [])];
+      const usados = [...linhas.map((linha) => linha.path || "."), ...(copias.some((c) => c.licenca) ? ["LICENSE"] : [])];
       const especial = git("-C", clone, "ls-tree", "-r", "-z", "HEAD", "--", ...usados)
         .split("\0")
         .find((entrada) => /^(120000|160000) /.test(entrada));
@@ -96,10 +103,29 @@ try {
         const destino = join(SKILLS, c.dest);
         const fora = c.excluded ?? [];
         rmSync(destino, { recursive: true, force: true });
-        cpSync(c.origem, destino, { recursive: true, filter: (f) => !fora.includes(relative(c.origem, f).split(sep)[0]) });
+        cpSync(c.origem, destino, {
+          recursive: true,
+          filter: (f) => ![".git", ...fora].includes(relative(c.origem, f).split(sep)[0]),
+        });
         if (c.licenca) copyFileSync(c.licenca, join(destino, "LICENSE"));
+        if (c.plugin) {
+          // O name novo, e os comandos que os hooks chamam pelo name antigo (`ponytail:ponytail-review`, por exemplo)
+          // passam a chamar pelo novo: sem isso, os botões da barra do ponytail não acham as skills
+          const manifesto = join(destino, ".claude-plugin", "plugin.json");
+          const json = JSON.parse(readFileSync(manifesto, "utf8"));
+          const antigo = new RegExp(`\\b${json.name}:(?=${json.name})`, "g");
+          writeFileSync(manifesto, `${JSON.stringify({ ...json, name: c.plugin }, null, 2)}\n`);
+          for (const arquivo of readdirSync(join(destino, "hooks"), { recursive: true })) {
+            const caminho = join(destino, "hooks", arquivo);
+            if (!statSync(caminho).isFile()) continue;
+            const texto = readFileSync(caminho, "utf8");
+            if (antigo.test(texto)) writeFileSync(caminho, texto.replace(antigo, `${c.plugin}:`));
+            antigo.lastIndex = 0;
+          }
+        }
         const registro = { repo: url, ref, commit, path: c.path, tree: c.tree };
         if (c.excluded) registro.excluded = c.excluded;
+        if (c.plugin) registro.plugin = c.plugin;
         writeFileSync(join(destino, "ORIGEM.json"), `${JSON.stringify(registro, null, 2)}\n`);
         // A camada repete a description do upstream, para o Claude escolher a skill do mesmo jeito; sem a camada
         // ainda, não há o que comparar

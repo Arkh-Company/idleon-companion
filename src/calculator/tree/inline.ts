@@ -150,14 +150,16 @@ function spliced(
   moves = isStep,
 ): Built | null {
   if (!Array.isArray(top)) return null;
-  let atoms: Atoms = top;
+  // the names and the numbers; the game's text of the bonus, when the ⓘ has one, stays its first line
+  const [names0, numbers0, text] = top;
+  let atoms: Atoms = [names0, numbers0];
   let moved = 0;
   const out: Row[] = [];
   for (const [i, r] of rows.entries()) {
     const inner = moves(r) ? innerOf(r) : null;
     const joined =
       inner && Array.isArray(inner.formula)
-        ? splice(atoms, mark(i), inner.formula)
+        ? splice(atoms, mark(i), [inner.formula[0], inner.formula[1]])
         : null;
     if (!inner || !joined) {
       atoms = [
@@ -182,7 +184,7 @@ function spliced(
   )
     return null;
   return {
-    formula: atoms,
+    formula: text === undefined ? atoms : [...atoms, text],
     rows: withShares(node, pairOf(atoms), out).rows,
   };
 }

@@ -123,7 +123,7 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
     poolKind: p.kind,
     fmt: p.combine === "sum" ? null : "x",
     flags: { closed: true },
-    // its rows named whole, a name with a colon or a sign too ("Emporium: …", "Fixed +2")
+    // its rows named whole, a name with a colon or a sign too ("Beanstalk: …", "Fixed +2")
     formula: apart
       ? apart.formula
       : pair &&

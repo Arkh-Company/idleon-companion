@@ -124,8 +124,8 @@ known. Each has its tag in text, its family's color and its phrase.
 _Avoid_: category, kind, class
 
 **How it adds up**:
-A row's calculation in two lines, its names and its numbers, or a rule as its two lines of text: names and numbers only,
-never the game's code. The bench calls it ⓘ; the counts of Game details say "Rows with How it adds up".
+A row's calculation in two lines, its names and its numbers, or a rule as its two lines of text, with the game's text of
+the bonus as an optional line before them; never the game's code. The bench calls it ⓘ; the counts of Game details say "Rows with How it adds up".
 _Avoid_: formula, equation, ⓘ on screen
 
 **Pool**:

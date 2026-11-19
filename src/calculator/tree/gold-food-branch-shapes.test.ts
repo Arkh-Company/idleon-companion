@@ -58,7 +58,7 @@ test("a food with no text keeps the generic name; the emporium's with none takes
   expect(goldRows(passOf()).map((k) => k.name)).toEqual([
     "GFood Multi",
     "Equipped: Invented Charm",
-    "Emporium: Invented Charm",
+    "Beanstalk: Invented Charm",
   ]);
 });
 

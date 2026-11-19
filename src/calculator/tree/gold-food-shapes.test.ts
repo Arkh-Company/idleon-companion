@@ -44,14 +44,14 @@ test.each<[string, string, number, number, [string, number][]]>([
     "DropRatez",
     0,
     3,
-    [["Emporium: Other Dish", EMPORIUM]],
+    [["Beanstalk: Other Dish", EMPORIUM]],
   ],
   [
     "a worn food rounded is no worn food's step",
     "round",
     999,
     3,
-    [["Emporium: Other Dish", Math.round(WORN) + EMPORIUM]],
+    [["Beanstalk: Other Dish", Math.round(WORN) + EMPORIUM]],
   ],
   [
     "a bonus kept in the block: the emporium's adds to the worn food's step",
@@ -60,7 +60,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     3,
     [
       ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", EMPORIUM],
+      ["Beanstalk: Other Dish", EMPORIUM],
     ],
   ],
   [
@@ -70,7 +70,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     3,
     [
       ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", 9 + EMPORIUM - WORN],
+      ["Beanstalk: Other Dish", 9 + EMPORIUM - WORN],
     ],
   ],
   [
@@ -78,7 +78,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     "other",
     0,
     3,
-    [["Emporium: Other Dish", 9 + EMPORIUM]],
+    [["Beanstalk: Other Dish", 9 + EMPORIUM]],
   ],
   [
     "the emporium's times 1 is no sum: no emporium row",

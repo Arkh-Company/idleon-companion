@@ -84,17 +84,19 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   why: isTextOrNull,
   formula: orNull(
     (f) =>
+      // the names and the numbers, and the game's text of the bonus as an optional third part, a text
       (Array.isArray(f) &&
-        f.length === 2 &&
+        (f.length === 2 || (f.length === 3 && isText(f[2]))) &&
         Array.isArray(f[0]) &&
         f[0].every(isText) &&
         Array.isArray(f[1]) &&
         f[1].every(isFinite)) ||
-      // a rule: its two lines of text, as they come
+      // a rule: its two lines of text, as they come, and the game's text as an optional field, a text
       fieldsFit(
         f,
         {
           rule: (r) => Array.isArray(r) && r.length === 2 && r.every(isText),
+          text: isText,
         },
         ["rule"],
       ),

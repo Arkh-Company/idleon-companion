@@ -104,7 +104,9 @@ test("a product with a check and a read no step shows is its Multi pool, the che
 
 /** A root's ⓘ as its two lines of text, its names and its numbers. */
 const lines = (f: CalcTreeNode["formula"]): string[] =>
-  Array.isArray(f) ? f.map((line) => line.join(" ")) : (f?.rule ?? []);
+  Array.isArray(f)
+    ? [f[0], f[1]].map((line) => line.join(" "))
+    : (f?.rule ?? []);
 
 // spec 009 T030 (decision of 18/11): a root the game floors keeps its pools, and the floor stays in sight in the
 // root's ⓘ (FR-008). fake-game.js TreeFloored: floor(TreeReads() + TreeBase + 0.5) = floor(12.5) = 12

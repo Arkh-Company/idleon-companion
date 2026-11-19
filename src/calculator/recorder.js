@@ -135,8 +135,9 @@
       return;
     }
     var numeric = typeof v === "string" && v.trim() !== "" && !isNaN(Number(v));
+    // the fourth field is the last write before this read: the write it saw, at every read and not only the first
     if (typeof v === "number" || numeric)
-      log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt()]);
+      log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
     if (fresh) r.push([path, valueOut(v), S.seq]);
   }

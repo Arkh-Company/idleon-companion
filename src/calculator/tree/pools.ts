@@ -40,7 +40,7 @@ export interface Pool {
 export type TermRow = (e: Expr, op: "+") => Row | null;
 /**
  * A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn); `step`: the factors of a
- * step, but its running total, as one row when its block names them whole (tree/gold-food-step.ts), else null.
+ * step, but its running total, as one row when its block names them whole (tree/gold-food-chain.ts `wornStep`), else null.
  */
 export type TermAt = ((e: Expr, op: "*" | "+", at: number) => Row | null) & {
   step?: (terms: readonly Expr[], at: number) => Row | null;

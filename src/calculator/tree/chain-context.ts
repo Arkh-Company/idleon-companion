@@ -6,8 +6,7 @@ import { aboveRenames } from "./above-renames.ts";
 import type { Opened } from "./cache-formulas.ts";
 import { readsPath } from "./cache-picks.ts";
 import { isClamp, topOp } from "./expr.ts";
-import { goldFoodTerm } from "./gold-food-chain.ts";
-import { wornStep } from "./gold-food-step.ts";
+import { goldFoodTerm, wornStep } from "./gold-food-chain.ts";
 import { near } from "./math.ts";
 import type { FirstLevelContext } from "./mould.ts";
 import type { TermAt } from "./pools.ts";
@@ -52,14 +51,12 @@ export function chainContext(
       (isClamp(e) ? terms.clampAt(e, reads, turn) : term(e, op))
     );
   };
-  // the worn food's step, one row (tree/gold-food-step.ts, the rule of 19/11)
-  termAt.step = (ts, at) =>
-    wornStep(ts, {
-      block: n,
-      nodes,
-      reads,
-      term: (t) => termAt(t, "*", at),
-    });
+  // the worn food's step, one row (tree/gold-food-chain.ts `wornStep`, the rule of 19/11)
+  termAt.step = (ts, at) => {
+    const turn = { args: n.a, steps: all, at };
+    const term = (t: Expr, o: "*" | "+") => terms.term(t, o, reads, turn);
+    return wornStep(ts, { block: n, nodes, steps: all, reads, term });
+  };
   // a working value the call's own block wrote: its cache's writer is the call
   const own = (r: Row | null | undefined) =>
     r && typeof r.open === "object" && r.open?.writer === n.id ? r.open : null;

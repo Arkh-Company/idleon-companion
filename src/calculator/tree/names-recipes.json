@@ -1,5 +1,5 @@
 {
-  "about": "Spec 008 names table (T023), table part: the names that come from a game table, as recipes without the text, resolved in the tree worker over the installed game. Each group reads <table>[index...] (and .field) for each of its keys ([call or path, index]), applies the transform and puts the text in the template ({0}; null = the text alone); multi holds the recipes of several parts ([call or path, template, [[table, index, field, transform]...]]). A recipe resolves only when the sha256 of each table it reads equals its hash in hashes ([sha256, table]; canonical form: every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X and CustomMaps.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry). Converted from the bench's names-008 export (NAMES-008-table-recipes.json, NAMES-008-table-hashes.json). Then the entries of every item of the game in hashes (spec 009 T030): 2261 more ItemDefinitionsGET.<id>, hashed in the same canonical form over the installed game at 0e47e87b, the bench's own version (the 219 the bench hashed match), so a row that names an item by the game's table (a search, Found <item>) says it. Then (spec 009 T031, decision of 18/11) the group of the 12 family bonuses DNSM.FamBonusQTYs[k] left: the bench read ClassFamilyBonuses[k], and the game keeps the family bonus of class c under the key 2c (N.js TalentCalc -3, FamilyBonsuesREAL); the rule of tree/state-names.ts names every key by ClassFamilyBonuses[k / 2].",
+  "about": "Spec 008 names table (T023), table part: the names that come from a game table, as recipes without the text, resolved in the tree worker over the installed game. Each group reads <table>[index...] (and .field) for each of its keys ([call or path, index]), applies the transform and puts the text in the template ({0}; null = the text alone); multi holds the recipes of several parts ([call or path, template, [[table, index, field, transform]...]]). A recipe resolves only when the sha256 of each table it reads equals its hash in hashes ([sha256, table]; canonical form: every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X and CustomMaps.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry). Converted from the bench's names-008 export (NAMES-008-table-recipes.json, NAMES-008-table-hashes.json). Then the entries of every item of the game in hashes (spec 009 T030): 2261 more ItemDefinitionsGET.<id>, hashed in the same canonical form over the installed game at 0e47e87b, the bench's own version (the 219 the bench hashed match), so a row that names an item by the game's table (a search, Found <item>) says it. Then (spec 009 T031, decision of 18/11) the group of the 12 family bonuses DNSM.FamBonusQTYs[k] left: the bench read ClassFamilyBonuses[k], and the game keeps the family bonus of class c under the key 2c (N.js TalentCalc -3, FamilyBonsuesREAL); the rule of tree/state-names.ts names every key by ClassFamilyBonuses[k / 2]. Then (fix/tree-names, family 4 of the audit of 19/11) the kills of a map read CustomLists.MapDispName, the list of the names the game shows for each map, at the same index as the map ids of CustomLists.MapName (N.js MapDispName, MapName), never the map id.",
   "baseline": "BASELINE-4 (bench git 99d1772)",
   "njsIndex": "0e47e87bbe36198cbecc41943ea3cd8949f51e9350a4c125d67e3b7de9771ba4",
   "sources": {
@@ -6539,7 +6539,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "{0}: kills left to open",
@@ -7105,7 +7105,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 1: {0}: kills left to open",
@@ -7224,7 +7224,7 @@
       "keys": [["PlayerDATABASE[0].StatueLevels[18][0]", [18, 0]]]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 11: {0}: kills left to open",
@@ -7333,7 +7333,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 2: {0}: kills left to open",
@@ -7443,7 +7443,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 3: {0}: kills left to open",
@@ -7553,7 +7553,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 4: {0}: kills left to open",
@@ -7663,7 +7663,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 5: {0}: kills left to open",
@@ -7773,7 +7773,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 6: {0}: kills left to open",
@@ -7883,7 +7883,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 7: {0}: kills left to open",
@@ -7997,7 +7997,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 8: {0}: kills left to open",
@@ -8203,7 +8203,7 @@
       ]
     },
     {
-      "table": "CustomLists.MapName",
+      "table": "CustomLists.MapDispName",
       "field": null,
       "transform": "clean",
       "template": "Character 10: {0}: kills left to open",

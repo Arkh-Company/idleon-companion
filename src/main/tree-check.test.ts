@@ -100,6 +100,40 @@ test.each<[string, unknown]>([
     "a rule with another field",
     node({ formula: { rule: ["If a: 35", "yes → 35"], x: 1 } as never }),
   ],
+  // the game's text of a rule and of the math, held to the same barrier as every text (review r2): no code, 200 at most
+  [
+    "a rule's text that is code",
+    node({
+      formula: { rule: ["If a: 35", "yes → 35"], text: "if (a) {" },
+    }),
+  ],
+  [
+    "a rule's text too long",
+    node({
+      formula: { rule: ["If a: 35", "yes → 35"], text: "x".repeat(201) },
+    }),
+  ],
+  [
+    "a formula's text too long",
+    node({ formula: [["a"], [1], "x".repeat(201)] }),
+  ],
+  // the game's text a row's ⓘ may carry, a line of text and no more (fix/tree-names r2)
+  [
+    "a formula's text that is a number",
+    node({ formula: [["a"], [1], 1] as never }),
+  ],
+  [
+    "a formula's text that is code",
+    node({ formula: [["a"], [1], "if (a) {"] }),
+  ],
+  [
+    "a formula with a fourth part",
+    node({ formula: [["a"], [1], "t", "u"] as never }),
+  ],
+  [
+    "a rule's text that is a number",
+    node({ formula: { rule: ["If a: 35", "yes → 35"], text: 1 } as never }),
+  ],
 ])("%s gives null", (_name, raw) => {
   expect(checkTree(raw, MAX)).toBe(null);
 });
@@ -131,6 +165,23 @@ test.each<[string, Partial<TreeNode>]>([
   [
     "a rule's two lines",
     { formula: { rule: ["If Owned bonus: 35", "yes → 35"] } },
+  ],
+  // the game's text of the row's bonus, a line of its own beside its math (fix/tree-names r2)
+  [
+    "a formula with the game's text",
+    {
+      formula: [
+        ["Points", "×", "Bonus"],
+        [25, 2.5, 62.5],
+        "Boosts the invented bonus!",
+      ],
+    },
+  ],
+  [
+    "a rule with the game's text",
+    {
+      formula: { rule: ["If Owned bonus: 35", "yes → 35"], text: "Boosts it!" },
+    },
   ],
 ])("%s passes", (_name, over) => {
   expect(checkTree(node(over), MAX)).not.toBe(null);
