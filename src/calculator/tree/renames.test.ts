@@ -27,6 +27,10 @@ const TABLES = new Map<string, unknown>([
   ["CustomLists.MarketExoticInfo", at(2, ["Invented_Seed"])],
   ["CustomLists.GamingPalette", at(2, [0, 1, 2, "Invented_Colour"])],
   ["CustomLists.TalentIconNames", at(5, "INVENTED_TALENT")],
+  [
+    "CustomLists.Spelunky",
+    at(6, [0, 1, 2, "Invented_Cove", 4, 5, 6, 7, "Other_Cave"]),
+  ],
   ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
 ]);
 beforeEach(() => {
@@ -192,7 +196,19 @@ const CASES: Case[] = [
   ["Research[12][4]", "Glimbo trades, type 4", "quantity"],
   ["Holes[11][63]", "Ancient Golem kills (Caverns)", "quantity"],
   ["PrayersActive[1]", "Prayer in slot 2", "choice"],
-  ["Spelunk[0][3]", "Spelunking lore 3 found", "condition", "owned"],
+  // family 13 (audit of 19/11): a lore by its cave, the panel the lore screen draws it in; a dream by the title the
+  // Equinox screen writes, "Dream #" its task + 1, "Nightmare" its task − 35 from the 36th
+  [
+    "Spelunk[0][3]",
+    "Spelunking lore: Invented Cove found",
+    "condition",
+    "owned",
+  ],
+  ["Spelunk[0][4]", null, "condition", "owned"],
+  ['Spelunk("DoWeHaveLoreN1", 8, 0)', "Spelunking lore: Other Cave", null],
+  ['Spelunk("DoWeHaveLoreN1", 4, 0)', null, null],
+  ["WeeklyBoss.d_3", "Equinox: Dream #4", null],
+  ["WeeklyBoss.d_40", "Equinox: Nightmare 5", null],
   [
     "DNSM.GurtBonuzzDN",
     "Best bonus of this talent among your characters",
