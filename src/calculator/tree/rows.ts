@@ -56,6 +56,11 @@ export interface Row {
   /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
   test?: string;
   /**
+   * The code of the read or call a branch check compares with a literal (tree/conditions.ts condRows): its subject,
+   * matched by code and not by name (audit family 3). None once a yes/no read merges into it: it is that state then.
+   */
+  subject?: string;
+  /**
    * The ⓘ before the row's own rows exist (tree/formulas.ts): the game's expression around the row, its parts as tokens
    * (pieces.cjs `xformula`, and `xweak` when it names the row alone), or its finished pair (`f`, a curve's).
    */

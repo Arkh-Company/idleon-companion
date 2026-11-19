@@ -7,7 +7,7 @@
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
-import { termsOf, withFormula } from "./formulas.ts";
+import { termsOf, vOf, withFormula } from "./formulas.ts";
 import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
@@ -22,7 +22,13 @@ import { flatten } from "./flatten.ts";
 import { byRole, inlined } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
-import { asideInFormula, branchCheck, buildUp, citing } from "./build-up.ts";
+import {
+  asideInFormula,
+  branchCheck,
+  buildUp,
+  citing,
+  ifChecks,
+} from "./build-up.ts";
 import { cardFactor, meritocracyMulti } from "./factors.ts";
 import { besidePools } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
@@ -138,14 +144,19 @@ export function makePlaces(ctx: PlaceContext) {
     const bare = checks.length
       ? own(rows0.filter((r) => !checks.includes(r)))
       : null;
+    // a level at 0 whose other parts are all 0: its checks give it, not a math of its parts (a talent at 0, its guard)
+    const zero =
+      !!bare && vOf(l.row) === 0 && bare.rows.every((r) => vOf(r) === 0);
+    const math = bare?.formula && !zero ? bare.formula : null;
+    const all = f || math ? null : own(rows0);
     const w = f
       ? withFormula(l.row, flatten(l.rows))
-      : bare?.formula
-        ? {
-            formula: citing(bare.formula, checks),
-            rows: [...bare.rows, ...checks],
-          }
-        : own(rows0);
+      : math && bare
+        ? { formula: citing(math, checks), rows: [...bare.rows, ...checks] }
+        : all && zero && checks.length
+          ? // no ⓘ but its checks: the value they lead to
+            { formula: ifChecks(checks, vOf(l.row)), rows: all.rows }
+          : (all ?? own(rows0));
     const formula = f
       ? up.rule
         ? { rule: f }

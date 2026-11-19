@@ -36,14 +36,17 @@ export function firstSrc(e: Expr | undefined): Expr | null {
   return null;
 }
 
+/** A read path of no state of the player: a table, a cache or a running total. */
+export const notState = (p: string): boolean =>
+  /^(DNSM|DummyNumbersStatManager|CustomLists|CustomMaps|ItemDefinitionsGET)\./.test(
+    p,
+  );
 /** How many sources of the player's state an expression has (a table, a cache or a running total is none). */
 export const stateSrc = (x: Expr): number =>
   x.t === "call"
     ? 1
     : x.t === "read"
-      ? /^(DNSM|DummyNumbersStatManager|CustomLists|CustomMaps|ItemDefinitionsGET)\./.test(
-          x.p,
-        )
+      ? notState(x.p)
         ? 0
         : 1
       : x.t === "def"

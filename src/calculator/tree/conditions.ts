@@ -19,6 +19,9 @@ import { searchNames } from "./search-names.ts";
 import { near, num } from "./math.ts";
 import { firstSrc } from "./expr.ts";
 import { hasKids } from "./tidy.ts";
+import { COND_SUBS } from "./cond-subs.ts";
+
+export { COND_SUBS } from "./cond-subs.ts";
 
 type Condition = (typeof CALC_CONDITION_KINDS)[number];
 const CMP: Readonly<Record<string, string>> = {
@@ -42,66 +45,6 @@ interface Cmp {
   r: Expr;
   o: string;
 }
-
-/**
- * The rules of pieces.cjs `condSub`, in the bench's order (the first that holds wins, else equalsValue): each tests the
- * compared sides (`paths`), the sides with the check's text (`text`) or the comparison itself (`cmp`); `big` asks for a
- * number of 50 or more on the right, `eq` for an equality.
- */
-export const COND_SUBS: readonly {
-  test: RegExp;
-  on: "paths" | "text" | "cmp";
-  big?: true;
-  eq?: true;
-  condition: Condition;
-  proof: string;
-}[] = [
-  {
-    test: /AchieveReg|WeeklyBoss|QuestComplete|KillsLeft2Advance|"Tasks/,
-    on: "paths",
-    condition: "done",
-    proof: "bench pieces.cjs condSub done",
-  },
-  {
-    test: /BundlesReceived|Ninja[107]|Bribe|Menagerie|owned|unlock|built|bought/i,
-    on: "text",
-    condition: "owned",
-    proof: "bench pieces.cjs condSub owned",
-  },
-  {
-    test: /level|Upg|Lv/i,
-    on: "text",
-    big: true,
-    eq: true,
-    condition: "max",
-    proof: "bench pieces.cjs condSub max, equality",
-  },
-  {
-    test: /PrayersActive|CompanionLVz|Prisma|equipped|active/i,
-    on: "text",
-    condition: "active",
-    proof: "bench pieces.cjs condSub active",
-  },
-  {
-    test: /^(>|<|>=|<=)$/,
-    on: "cmp",
-    condition: "limit",
-    proof: "bench pieces.cjs condSub limit",
-  },
-  {
-    test: /OptionsListAccount|_GenINFO|CurrentMap|vote/i,
-    on: "text",
-    condition: "equalsValue",
-    proof: "bench pieces.cjs condSub equal to a value",
-  },
-  {
-    test: /level|Upg|Lv/i,
-    on: "text",
-    big: true,
-    condition: "max",
-    proof: "bench pieces.cjs condSub max",
-  },
-];
 
 /** The comparisons of a check that compare two known things, the named side first ("level ≤ 0", not "0 ≥ level"). */
 function comparisons(e: Expr, out: Cmp[] = []): Cmp[] {
@@ -209,6 +152,21 @@ export function makeConditions(
     return r?.condition ?? "equalsValue";
   }
 
+  /** The code of the read or call one comparison sets against a literal: the check's subject (audit family 3). */
+  function subjectOf([c, ...more]: Cmp[]): { subject?: string } {
+    const s =
+      c && !more.length
+        ? c.r.t === "num"
+          ? c.l
+          : c.l.t === "num"
+            ? c.r
+            : null
+        : null;
+    const k = s?.t === "call" ? nodes[s.id] : undefined;
+    const code = s?.t === "read" ? s.p : k ? callText(k) : null;
+    return code ? { subject: code } : {};
+  }
+
   /** pieces.cjs `condRows`: one Condition leaf per check on the player's state, yes (1) or no (0). */
   function condRows(n: RecNode, own: BlockSteps): Row[] {
     const out: Row[] = [];
@@ -271,6 +229,7 @@ export function makeConditions(
         }),
         open: null,
         test: meant,
+        ...subjectOf(cs),
       });
     }
     return out;
@@ -330,6 +289,9 @@ export function makeConditions(
     const out = conds.map((c) => {
       const r = [...merged].find(([, x]) => x === c)?.[0];
       if (!r) return c;
+      // the read merged into it: the row is that state, no check of it
+      const state: Row = { ...c };
+      delete state.subject;
       // a yes/no read tested for 1 is said by its name; the ban flag tested for 0 by what it means
       const term = termOf(r.node);
       const test =
@@ -351,7 +313,7 @@ export function makeConditions(
           : null;
       return withName(
         {
-          ...c,
+          ...state,
           ...(test === undefined ? {} : { test }),
           node: { ...c.node, code },
         },

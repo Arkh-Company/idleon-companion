@@ -14,6 +14,7 @@ import { curveFormula, curveText, fx3, maxReachedOf } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
 import { isOperator } from "./math.ts";
+import { notState } from "./expr.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -248,6 +249,11 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
 const COMPARISON = /^(.+?) (?:<|≤|>|≥|=|≠) -?[\d.]+$/;
 export function branchCheck(r: Row, rows: readonly Row[]): boolean {
   if (!isCond(r) || r.open !== null || r.group?.length) return false;
+  // its subject by the read's code (tree/conditions.ts condRows): a row beside it whatever its name now, or a constant
+  // of the code with no row of its own
+  const by = r.subject;
+  if (by && (notState(by) || rows.some((k) => k !== r && k.node.code === by)))
+    return true;
   const subject = COMPARISON.exec(r.node.name)?.[1];
   return !!subject && rows.some((k) => k !== r && k.node.name === subject);
 }
@@ -288,6 +294,14 @@ export function citing(f: Formula, checks: readonly Row[]): Formula {
   const [names, numbers] = linesOf(f);
   const words = more.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`);
   return { rule: [`${names} (${words.join("; ")})`, numbers] };
+}
+
+/** The ⓘ of a level its rows give none of but its branch checks: the value they lead to ("If Level ≤ 0: 0"). */
+export function ifChecks(checks: readonly Row[], v: number): Formula {
+  const said = checks.map((r) =>
+    vOf(r) ? r.node.name : `not (${r.node.name})`,
+  );
+  return { rule: [`If ${said.join(" and ")}: ${fx3(v)}`, `yes → ${fx3(v)}`] };
 }
 
 /**
