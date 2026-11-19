@@ -297,8 +297,10 @@ export function makeTerms(ctx: TermContext) {
         (x.t === "op" && (prodOther(x.l) || prodOther(x.r))) ||
         (x.t === "def" && prodOther(x.e)) ||
         (x.t === "fn" && x.args.some(prodOther));
+      // 009 T023: a cache read that opens, beside other sources: the value is their sum's, never the read's own, nor its name
+      const others = hasKids(read) && stateSrc(e) > stateSrc(s);
       if (
-        (!hasKids(read) || prodOther(e)) &&
+        (!hasKids(read) || prodOther(e) || others) &&
         rv !== undefined &&
         !near(rv, e.v)
       ) {
@@ -307,7 +309,8 @@ export function makeTerms(ctx: TermContext) {
           e.t === "op" && e.o === "*"
             ? [e.l, e.r].find((x) => !(x.t === "read" && x.p === s.p))
             : undefined;
-        const fallback = !other || other.t === "num" ? termName(s.p) : null;
+        const fallback =
+          !others && (!other || other.t === "num") ? termName(s.p) : null;
         return boundRead(
           e,
           read,
