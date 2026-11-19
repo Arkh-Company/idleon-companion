@@ -41,8 +41,11 @@ test("a check an ⓘ of atoms does not say leaves its row, and the ⓘ says it i
   expect(kids(n)).toEqual(["Bonus level", "Other bonus"]);
 });
 
-/** A source that opens into its own pool, beside the pool the level it reads and the check of that level. */
-function besidePool(): CalcTreeNode | null {
+/**
+ * A source that opens into its own pool, beside the pool the level it reads and the check of that level, its ⓘ the game's
+ * expression `xf`.
+ */
+function besidePool(xf: [string, string]): CalcTreeNode | null {
   const level = leaf("Invented level", 101, "Stats.lv", "level");
   const pool: Row = {
     node: row({
@@ -62,14 +65,19 @@ function besidePool(): CalcTreeNode | null {
   const t = placed({ 1: [pool, level, check("Invented level = 101", true)] }, [
     {
       ...lazy("Invented source", 2, "Call1()", 1),
-      xf: ["Multi pool", "2 = 2"],
+      xf,
     },
   ]);
   return t.expand(t.rows[0]?.id ?? "");
 }
 
-test("beside a pool, a read the pool shows leaves, and a check of it is said in the ⓘ (FR-005, family 10)", () => {
-  const n = besidePool() ?? undefined;
+test("beside a pool, a read the pool shows leaves, and a check of it is said in an ⓘ of words (FR-005, family 10)", () => {
+  const n = besidePool(["Multi pool, when unlocked", "2"]) ?? undefined;
   expect(kids(n)).toEqual(["Multi pool"]);
   expect(lines(n)?.names).toContain("Invented level = 101: yes");
+});
+
+test("beside a pool, a check stays while the ⓘ is of atoms, which cannot say it (A39)", () => {
+  const n = besidePool(["Multi pool", "2 = 2"]) ?? undefined;
+  expect(kids(n)).toEqual(["Multi pool", "Invented level = 101"]);
 });
