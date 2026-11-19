@@ -6,6 +6,7 @@
 // code) and a second rule of the minor link's top no row reaches (the first one matches the same codes).
 import { FIXED_RENAMES, rule } from "./rename-list.ts";
 import type { Condition, Leaf, Rename } from "./rename-list.ts";
+import { KILLROY } from "./name-descs.ts";
 import { tableText } from "./table-names.ts";
 
 const n = (m: RegExpExecArray, k = 1) => Number(m[k]);
@@ -253,6 +254,13 @@ export const RENAMES: readonly Rename[] = [
         : `Equinox: Dream #${String(n(m) + 1)}`,
     null,
     "dream; N.js Dreamstuff",
+  ),
+  // the Killroy shop's bonus t by what it raises (the Vinicius's names of 19/11), its text to the ⓘ (name-descs.ts)
+  rule(
+    /^RandomEvent\("KillroyBonuses", (\d+), 0\)$/,
+    (m) => KILLROY[n(m)]?.name ?? null,
+    null,
+    "killroy; N.js RandomEvent KillroyBonuses",
   ),
   ...FIXED_RENAMES.caches,
   rule(

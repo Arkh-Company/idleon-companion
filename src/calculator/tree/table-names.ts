@@ -280,7 +280,6 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js Ninja GemstoneBonus",
   ),
-  // family 2 of the audit of 19/11: the name column of the lists whose index named a row
   arcane: text(
     "CustomLists.ArcaneUpg",
     (n) => [n, 0],
@@ -302,13 +301,19 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js FarmingStuffs ExoticBonusQTY (MarketExoticInfo i at level FarmUpg 20 + i)",
   ),
-  // family 13: the lore screen draws the lore Spelunky[14][c] in the panel of cave c, whose name is Spelunky[6][c]
   cave: text(
     "CustomLists.Spelunky",
     (c) => [6, c],
     null,
     "clean",
     "N.js Spelunk (the lore of cave c, Spelunky 14 c, under the cave Spelunky 6 c)",
+  ),
+  dreamTask: text(
+    "CustomLists.DreamChallenge",
+    (t) => [t, 0],
+    null,
+    "clean-keep-case",
+    "N.js Dreamstuff (the task t of the Equinox, DreamChallenge t 0)",
   ),
   summonUpgradeName: text(
     "CustomLists.SummonUPG",
