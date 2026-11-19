@@ -156,9 +156,10 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "(", "GfoodSet[0]", "+", "GfoodSet[1]", ")", "÷", "100"],
     [1, 10, 20, 100, 1.3],
   ]);
+  // the group in % in its row's unit, +20% as 20 ÷ 100
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
-    [2, 0.2, 2.2],
+    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other", "÷", "100"],
+    [2, 20, 100, 2.2],
   ]);
   expect(kidsOf(family)[1]?.formula).toEqual({
     rule: [
@@ -197,9 +198,10 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     "Working value of the game (FamBonusQTYs)",
     1,
   ]);
+  // the group in % in its row's unit, +20% as 20 ÷ 100
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
-    [1, 0.2, 1.2],
+    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other", "÷", "100"],
+    [1, 20, 100, 1.2],
   ]);
   // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools
   const pools = kidsOf(treeOf("atTwo", 999, 3, 0));

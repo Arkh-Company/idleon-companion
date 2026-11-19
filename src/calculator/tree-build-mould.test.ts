@@ -265,7 +265,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   );
   const f = add?.formula;
   const names = Array.isArray(f) ? f[0].join(" ") : (f?.rule[0] ?? "");
-  expect(names.split("÷ 100").length - 1).toBe(2);
+  // the two lone sources in % and the two groups in %, each in its row's unit with its ÷ 100
+  expect(names.split("÷ 100").length - 1).toBe(4);
   expect(Number(add?.value)).toBeCloseTo(
     4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
     9,
