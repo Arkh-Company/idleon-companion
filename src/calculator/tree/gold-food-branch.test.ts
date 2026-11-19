@@ -170,14 +170,16 @@ test("a golden food the pass reads: the shared multiplier, the worn food and the
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
+  // 19/11: the log₁₀ is math in the row's ⓘ, no Log Factor; the leaves are what goes into it, and the Base rate
   expect(brief(worn)).toEqual([
     ["Base Amount", 7, "fixedValue", null, {}],
+    ["Base rate (× 0.05)", 0.05, "fixedValue", null, {}],
     ["Quantity", 999, "quantity", null, {}],
-    ["Log Factor", near(3), "quantity", null, {}],
   ]);
   expect(brief(emporium)).toEqual([
     ["Base Amount", 7, "fixedValue", null, {}],
-    ["Log Factor", near(6.000000434294264), "quantity", null, {}],
+    ["Base rate (× 0.05)", 0.05, "fixedValue", null, {}],
+    ["Beanstalk level", 3, "level", null, {}],
   ]);
   // every name the pass writes is one the host takes
   expect(checkTree(root, 100)).not.toBeNull();
