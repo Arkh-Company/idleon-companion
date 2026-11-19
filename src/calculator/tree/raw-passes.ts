@@ -112,8 +112,12 @@ export function rawPasses(
   // 5th and the Spelunking's 6th
   if (n.b === "RunCodeOfTypeXforThingY" && mode === "CardLv") {
     const path = `Cards[0].${String(arg)}`;
+    const count = reads.get(path) ?? 0;
     return [
-      leaf("Cards collected", reads.get(path) ?? 0, "quantity", path),
+      // 009 T023: a count the game keeps as a text has no number in the recording: no row, the level says the rest
+      ...(typeof count === "number"
+        ? [leaf("Cards collected", count, "quantity", path)]
+        : []),
       leaf("Base stars", 4, "fixedValue"),
       leaf(
         "Rift 5th star unlocked",

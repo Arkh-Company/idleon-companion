@@ -9,7 +9,11 @@ import { atOneParts, isCond, near, vOf } from "./formulas.ts";
 import { evaluate } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
+import type { RecNode } from "../recording.ts";
+import { nameOf } from "./names.ts";
+import { callText } from "./rows.ts";
 import type { Expr } from "./steps.ts";
+import { num } from "./math.ts";
 
 /** formulas.cjs SHAPES: the sum with each distinct number written as a letter, in order of first place. */
 export const BRANCH_SHAPES: readonly {
@@ -106,3 +110,47 @@ export const branchName = (r: Row, e: Expr, fallback: string | null): Row =>
     r,
     shapeName(e, r) ?? (isFormulaName(exprText(e)) ? fallback : null),
   );
+
+/** The role of a number of the game's code, from where it sits in the expression. */
+export function numRole(v: unknown, parent: Expr | null, side: number): string {
+  const n = num(v);
+  if (parent?.t === "fn") {
+    if (parent.name === "min") return `Cap ${n}`;
+    if (parent.name === "max") return `Minimum ${n}`;
+    if (parent.name === "pow")
+      return side === 1 ? `Exponent ${n}` : `Base ${n}`;
+  }
+  if (parent?.t !== "op") return `Fixed value ${n}`;
+  if (parent.o === "+") return `Base ${n}`;
+  if (parent.o === "-") return side === 1 ? `Minus ${n}` : `Fixed value ${n}`;
+  if (parent.o === "*") return `× ${n}`;
+  if (parent.o === "/" && side === 1)
+    return Number(v) === 100 ? "Percent to number (÷ 100)" : `Divided by ${n}`;
+  return `Fixed value ${n}`;
+}
+
+/**
+ * 009 T023: a branch whose sources are all cards' levels (N.js TotalStats: min(4 × the Ancient Golem card's level + 6 ×
+ * the Crystal Glunko card's, 100)) is named by its cards, the game's names of them; null for any other branch.
+ */
+export function cardsName(e: Expr, nodes: readonly RecNode[]): string | null {
+  const calls: RecNode[] = [];
+  let other = false;
+  (function walk(x: Expr): void {
+    if (x.t === "call") {
+      const k = nodes[x.id];
+      if (k) calls.push(k);
+    } else if (x.t === "read" || x.t === "val") other = true;
+    else if (x.t === "op") [x.l, x.r].forEach(walk);
+    else if (x.t === "fn") x.args.forEach(walk);
+    else if (x.t === "def") walk(x.e);
+    else if (x.t === "not") walk(x.a);
+  })(e);
+  const names = calls.map((k) =>
+    k.b === "RunCodeOfTypeXforThingY" && k.a[0] === "CardLv"
+      ? nameOf(callText(k))
+      : null,
+  );
+  if (other || names.length < 2 || names.some((n) => n === null)) return null;
+  return `${names.slice(0, -1).join(", ")} and ${String(names.at(-1))} cards`;
+}

@@ -19,7 +19,7 @@ import {
   topOp,
 } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
-import { boundRead, branchName } from "./shapes.ts";
+import { boundRead, branchName, cardsName, numRole } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -64,23 +64,6 @@ export interface Turn {
 
 const EARLIER_WHY = "a value of a step of the game the recording did not link";
 
-/** The role of a number of the game's code, from where it sits in the expression. */
-function numRole(v: unknown, parent: Expr | null, side: number): string {
-  const n = num(v);
-  if (parent?.t === "fn") {
-    if (parent.name === "min") return `Cap ${n}`;
-    if (parent.name === "max") return `Minimum ${n}`;
-    if (parent.name === "pow")
-      return side === 1 ? `Exponent ${n}` : `Base ${n}`;
-  }
-  if (parent?.t !== "op") return `Fixed value ${n}`;
-  if (parent.o === "+") return `Base ${n}`;
-  if (parent.o === "-") return side === 1 ? `Minus ${n}` : `Fixed value ${n}`;
-  if (parent.o === "*") return `× ${n}`;
-  if (parent.o === "/" && side === 1)
-    return Number(v) === 100 ? "Percent to number (÷ 100)" : `Divided by ${n}`;
-  return `Fixed value ${n}`;
-}
 const earlier = (v: V): Row => ({
   node: row({
     pieceKey: null,
@@ -352,11 +335,12 @@ export function makeTerms(ctx: TermContext) {
       const byCount =
         ns <= 1
           ? own
-          : pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
-            ? `Multiplier from ${String(ns)} sources`
-            : e.t === "op" && e.o === "+"
-              ? `Sum of ${String(ns)} sources`
-              : `Formula of ${String(ns)} sources`;
+          : (cardsName(e, nodes) ??
+            (pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
+              ? `Multiplier from ${String(ns)} sources`
+              : e.t === "op" && e.o === "+"
+                ? `Sum of ${String(ns)} sources`
+                : `Formula of ${String(ns)} sources`));
       const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
       return own ? { ...r, r1src: own } : r;
     }

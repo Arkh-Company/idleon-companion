@@ -9,8 +9,7 @@
 // - a bubble times its class's bubble (N.js TalentCalc, the bubbles' cache): bonus × the class's multi, at least 1;
 // - a sigil (N.js Labb "SigilBonus"): bonus = (bonus at its tier) × (1 + Chilled Yarn) × (1 + vote bonus ÷ 100), the
 //   tier picking the table's column; the artifact = its base × its rarity's multiplier (N.js Sailing "ArtifactBonus");
-// - a card's bonus (N.js TotalStats): bonus = min(bonus per level × card level, cap): Card level and Bonus per level,
-//   the cap in the ⓘ.
+// - a card's bonus, its level and an equipped card (tree/build-up-cards.ts).
 import {
   curveFormula,
   curveOf,
@@ -44,6 +43,7 @@ import {
 } from "./build-up-talents.ts";
 import { curveSelf, prisma } from "./build-up-curves.ts";
 import { meritocVote } from "./build-up-vote.ts";
+import { cardBonus, cardStars, equippedCard } from "./build-up-cards.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
@@ -237,41 +237,6 @@ function sigil(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   );
 }
 
-/** A card's bonus: its Card level and its Bonus per level (the code's "× N"); the cap ("Cap N") only in the ⓘ. */
-function cardBonus(lv: Level): BuiltUp | null {
-  const k = lv.rows.find(
-    (r) => isConstant(r.node) && r.node.name.startsWith("× "),
-  );
-  const card = lv.rows.find((r) =>
-    codeOf(r).startsWith('RunCodeOfTypeXforThingY("CardLv"'),
-  );
-  const cap = lv.rows.find(
-    (r) => isConstant(r.node) && r.node.name.startsWith("Cap "),
-  );
-  if (!k || !card || lv.rows.length !== (cap ? 3 : 2)) return null;
-  const [K, L, v] = [vOf(k), vOf(card), vOf(lv.row)];
-  const rows = [renamed(card, "Card level"), renamed(k, "Bonus per level")];
-  if (!cap)
-    return near(K * L, v)
-      ? built(lv, rows, [
-          "Bonus per level × Card level",
-          `${fx3(K)} × ${fx3(L)} = ${fx3(v)}`,
-        ])
-      : null;
-  const C = vOf(cap);
-  if (!near(Math.min(K * L, C), v)) return null;
-  const capped = K * L > C && !near(K * L, C);
-  return built(
-    lv,
-    rows,
-    [
-      "min(Bonus per level × Card level, Cap)",
-      `min(${fx3(K)} × ${fx3(L)}, ${fx3(C)}) = ${fx3(v)}${capped ? " (capped)" : ""}`,
-    ],
-    capped,
-  );
-}
-
 /** Level `lv` built up by the first family that knows it, or null. */
 export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   return (
@@ -285,6 +250,8 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
     curveLevel(lv) ??
     bubbleClass(lv) ??
     sigil(lv, ctx) ??
+    cardStars(lv) ??
+    equippedCard(lv) ??
     cardBonus(lv)
   );
 }
