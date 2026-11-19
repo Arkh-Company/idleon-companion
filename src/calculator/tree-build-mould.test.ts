@@ -1,18 +1,22 @@
 // The first level of a tree built from a recording of the invented game is the game's pools (spec 009, FR-001, FR-005,
 // FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (all of them in
 // "🔹 Other": the invented blocks have no system), and every pool closes to the root.
-import { beforeAll, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 import { checkTree } from "../main/tree-check.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
-import { golden } from "./tree/gold-food-fixture.ts";
+import { golden, TABLES } from "./tree/gold-food-fixture.ts";
+import { useGameTables } from "./tree/table-names.ts";
 import { kidsIn } from "./tree/tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
   recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+});
+afterEach(() => {
+  useGameTables(new Map());
 });
 
 const NONE = { recompute: [], builders: [] };
@@ -152,10 +156,12 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
   const level = kidsIn(treeOf("TreeChainData"));
   expect(level.map((k) => [k.name, k.role, k.value])).toEqual([
     ["Additive pool", "pool", 5],
-    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
-    [expect.any(String), "piece", 100],
+    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11): the call, with no name
+    // of its own yet
+    ["Game value", "piece", 100],
     [expect.any(String), "piece", 25],
   ]);
+  expect([level[1]?.code, level[1]?.fmt]).toEqual(["TreeArg(25)", "x"]);
   expect(level[2]?.code).toBe("TreeLevel");
 });
 
@@ -163,6 +169,8 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
 // ArcadeBonus(0), CardBonusREAL(3), CardBonusREAL(1) and a working value the block wrote, the golden food + TreeLevel;
 // then × TreeLoop(). The golden food: its worn food 7.213 and its emporium's 6.006 (gold-food.test.ts).
 test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the golden food among them, which opens as its own chain", () => {
+  // the foods' invented texts, which name the golden food's rows (tree/gold-food.ts)
+  useGameTables(TABLES);
   const build = buildTree(
     recorder.record(golden(999, 3, 2, 5), [["TreeDrop", [0, 0, 0]]], NONE),
     0,
@@ -202,21 +210,23 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   expect(
     kidsIn(opened)
       .slice(0, 4)
-      .map((k) => [k.role, k.name, k.poolKind, k.value]),
+      .map((k) => [k.role, k.name, k.code, k.poolKind, k.value]),
   ).toEqual([
-    ["pool", "Multi pool", "multi", expect.closeTo(1.3, 9)],
-    ["pool", "Additive pool", "additive", expect.closeTo(2.2, 9)],
+    ["pool", "Multi pool", null, "multi", expect.closeTo(1.3, 9)],
+    ["pool", "Additive pool", null, "additive", expect.closeTo(2.2, 9)],
     // the worn food's step is one row, its own × N, no pool (the rule and answer 2 of 19/11)
     [
       "piece",
-      expect.any(String),
+      "Equipped: Invented Charm",
+      null,
       undefined,
       expect.closeTo(7.212813084112149 / 2.86, 9),
     ],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
     [
       "piece",
-      expect.any(String),
+      "Emporium: Other Dish",
+      null,
       undefined,
       expect.closeTo(6.006000434728559, 9),
     ],
@@ -229,6 +239,8 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
 // CardBonusREAL(3) + CardBonusREAL(1) + 5 × TreeLevel + a working value the block wrote, the golden food + TreeLevel)
 // ÷ 100 + 2; then × TreeLoop(). The bonuses in % go by system in % groups, the golden food among them.
 test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its Additive pool shows the systems in %, and every level closes", () => {
+  // the foods' invented texts, which name the golden food's rows (tree/gold-food.ts)
+  useGameTables(TABLES);
   const build = buildTree(
     recorder.record(
       golden(999, 3, 2, 5),
@@ -245,14 +257,24 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
   ).toEqual([
     ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
-    // a system of one source in % shows the source, +N% (FR-006, decision of 19/11)
-    [expect.any(String), "piece", undefined, "%", 8],
-    [expect.any(String), "piece", undefined, "%", expect.closeTo(gold, 9)],
+    // a system of one source in % shows the source, +N% (FR-006, decision of 19/11), by its name
+    ["Base Damage", "piece", undefined, "%", 8],
+    [
+      "Golden Food bonus (Drop Rate)",
+      "piece",
+      undefined,
+      "%",
+      expect.closeTo(gold, 9),
+    ],
     // TreeBase, alone in Other once the constant left the group (T027)
     ["Game value", "piece", undefined, null, 4],
     ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
     // the constant of the game's math, its own row after the groups (T027)
     ["Fixed +2", "piece", undefined, null, 2],
+  ]);
+  expect([groups[1]?.code, groups[2]?.code]).toEqual([
+    "ArcadeBonus(0)",
+    'GoldFoodBonuses("DropRatez")',
   ]);
   // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it; a
   // source in % alone in the pool adds a hundredth of its value, as the pool's ⓘ says
@@ -284,14 +306,14 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   expect(
     kidsIn(opened)
       .slice(0, 4)
-      .map((k) => [k.role, k.role === "pool" ? k.name : k.fmt]),
+      .map((k) => [k.role, k.name, k.code, k.fmt]),
   ).toEqual([
-    ["pool", "Multi pool"],
-    ["pool", "Additive pool"],
+    ["pool", "Multi pool", null, "x"],
+    ["pool", "Additive pool", null, null],
     // the worn food's step is its own × N row, no pool (the rule and answer 2 of 19/11)
-    ["piece", "x"],
+    ["piece", "Equipped: Invented Charm", null, "x"],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
-    ["piece", "+"],
+    ["piece", "Emporium: Other Dish", null, "+"],
   ]);
   expect(checkTree(build.root, 200)).not.toBeNull();
   expect(checkTree(opened, 100)).not.toBeNull();

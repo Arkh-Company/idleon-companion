@@ -297,12 +297,16 @@ test("sources taken as a percent by a product are no sources", () => {
     "x",
     near(WORN / MULTI),
   ]);
+  // (no food texts here: the generic name, no code, as the worn food's)
   const emporium = kidsIn(food)[3];
-  expect([emporium?.role, emporium?.fmt, emporium?.value]).toEqual([
-    "piece",
-    "+",
-    near(EMPORIUM),
-  ]);
+  expect([
+    emporium?.name,
+    emporium?.code,
+    emporium?.role,
+    emporium?.fmt,
+    emporium?.value,
+  ]).toEqual(["Game value", null, "piece", "+", near(EMPORIUM)]);
+  expect(worn?.code).toBeNull();
   expect(sourcesOf(build, pools[1])).toEqual([
     ["DNSM.FamBonusQTYs[66]", 2],
     ["TreeReads()", 8],
@@ -325,10 +329,19 @@ test("a set of one part has its ⓘ; one written with its number last has no par
   expect([last?.value, kidsIn(last)]).toEqual([near(1.1), []]);
   // as a chain, the set's one part is its first row, with the same value: a single multiplier alone in its Multi pool
   // is its own × N row, no pool (answer 2 of 19/11)
-  for (const key of ["oneSet", "setLast"]) {
+  // its name: "Multiplier" for 1 + its part ÷ 100, the generic one written with its number last (tree/shapes.ts)
+  for (const [key, name] of [
+    ["oneSet", "Multiplier"],
+    ["setLast", "Game value"],
+  ] as const) {
     const { build, food } = chainOf(key);
     const [first] = kidsIn(food);
-    expect([first?.role, first?.value]).toEqual(["piece", near(1.1)]);
+    expect([first?.name, first?.code, first?.role, first?.value]).toEqual([
+      name,
+      null,
+      "piece",
+      near(1.1),
+    ]);
     expect(sourcesOf(build, first)).toEqual([["GfoodSet[0]", 10]]);
   }
 });
