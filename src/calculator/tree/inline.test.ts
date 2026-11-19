@@ -91,3 +91,20 @@ test("a step with a proven name holds its row", () => {
     ["Bonus per kill", 1.05],
   ]);
 });
+
+test("a step moves up when the row's value has more decimals than its ⓘ shows: the ⓘ's result is rounded to 3", () => {
+  // 4 × (1 + 5.123 ÷ 100) = 4.20492, the ⓘ's result 4.205
+  const { kids, node } = opened(
+    [read("Invented.a", 4), percent(5.123)],
+    4.20492,
+  );
+  expect(kids.map((k) => k.code ?? k.name)).toEqual([
+    "Invented.a",
+    "Base 1",
+    "Invented.p",
+    "Percent to number (÷ 100)",
+  ]);
+  expect(Array.isArray(node?.formula) && node.formula[1]).toEqual([
+    4, 1, 5.123, 100, 4.205,
+  ]);
+});
