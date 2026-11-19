@@ -77,7 +77,9 @@ test("the emporium's product with the quantity factor of its own log, as N.js wr
   ]);
   // its factor measures the emporium's level, not a quantity: no Quantity multiplier
   const parts =
-    emporium?.kids === "lazy" ? kidsOf(build.expand(emporium.id)) : [];
+    emporium?.kids === "lazy"
+      ? kidsOf(build.expand(emporium.id))
+      : kidsOf(emporium);
   expect(parts.map((k) => k.name)).toEqual([
     "Amount of the golden food (item table)",
     "GFood Multi",
