@@ -114,7 +114,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
   // the emporium's: the food's amount, the multiplier's sources again, and its log of 6
   const [emp] = kidsOf(emporium);
   const parts = kidsOf(emp?.kids === "lazy" ? build.expand(emp.id) : emp);
-  expect(emp?.name).toBe("Emporium: Other Dish");
+  expect(emp?.name).toBe("Beanstalk: Other Dish");
   expect(parts.map((k) => [k.name, k.value, k.leaf])).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue"],
     ["GFood Multi", near(MULTI), null],
@@ -149,7 +149,7 @@ test("a golden food the pass reads: the shared multiplier, the worn food and the
   expect(brief(root)).toEqual([
     ["GFood Multi", near(MULTI), null, "x", {}],
     ["Equipped: Invented Charm", near(WORN), null, null, {}],
-    ["Emporium: Other Dish", near(EMPORIUM), null, null, {}],
+    ["Beanstalk: Other Dish", near(EMPORIUM), null, null, {}],
     // the block's data row (the quantity its log call took) and its checks, as for any block
     ["Food slot 1 quantity", 999, "quantity", null, {}],
     ["Food slot 1 quantity > 0", 1, "condition", null, {}],
@@ -248,7 +248,7 @@ test("a food with no text keeps the generic name; the emporium's with none takes
   expect(goldRows(passOf()).map((k) => k.name)).toEqual([
     "GFood Multi",
     "Equipped: Invented Charm",
-    "Emporium: Invented Charm",
+    "Beanstalk: Invented Charm",
   ]);
 });
 

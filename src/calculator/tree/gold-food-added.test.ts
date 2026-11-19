@@ -72,7 +72,7 @@ test("the emporium's product with the quantity factor of its own log, as N.js wr
   // 7 × 2.86 × 0.05 × log₁₀(1 + 10^6) × (1 + log₁₀(1 + 10^6) ÷ 2.14)
   const [emporium] = kidsOf(pools[3]);
   expect([emporium?.name, emporium?.value]).toEqual([
-    "Emporium: Other Dish",
+    "Beanstalk: Other Dish",
     expect.closeTo(22.845255208907478, 9),
   ]);
   // its factor measures the emporium's level, not a quantity: no Quantity multiplier

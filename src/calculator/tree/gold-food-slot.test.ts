@@ -24,7 +24,7 @@ test("two slots with a food of the effect: the row is the last slot's food, as t
   ]);
   expect([equippedName(r), emporiumName(r)]).toEqual([
     "Equipped: Other Dish",
-    "Emporium: Other Dish",
+    "Beanstalk: Other Dish",
   ]);
 });
 
