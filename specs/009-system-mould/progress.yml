@@ -16,5 +16,5 @@ execution:
     - {name: "US3 (T013-T014)", status: done, commits: 48a79e0..0a90c22}
     - {name: "Vista da árvore (T015-T020)", status: done, commits: a4b9643..6bd604c}
     - {name: "Polish e cobertura (T021-T031)", status: done, commits: 84a89ad..8171e16}
-  feature_review: pending
+  feature_review: done
   code_pr: null
