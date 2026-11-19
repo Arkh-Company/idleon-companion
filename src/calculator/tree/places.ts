@@ -22,7 +22,7 @@ import { flatten } from "./flatten.ts";
 import { byRole, inlined } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
-import { asideInFormula, buildUp } from "./build-up.ts";
+import { asideInFormula, branchCheck, buildUp, citing } from "./build-up.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -127,10 +127,21 @@ export function makePlaces(ctx: PlaceContext) {
     const l = up?.level ?? lv;
     // a built-up ⓘ names its rows whole, a name with a colon too ("Arcade: Prisma Bonuses")
     const f = up && l.row.f;
-    // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts)
+    // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts);
+    // the math of the rows with no branch check comes first, each check said after it in words (FR-018, A39)
+    const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
+    const checks = f ? [] : l.rows.filter((r) => branchCheck(r, l.rows));
+    const bare = checks.length
+      ? own(l.rows.filter((r) => !checks.includes(r)))
+      : null;
     const w = f
       ? withFormula(l.row, flatten(l.rows))
-      : byRole(name, inlined(l.row, flatten(l.rows)));
+      : bare?.formula
+        ? {
+            formula: citing(bare.formula, checks),
+            rows: [...bare.rows, ...checks],
+          }
+        : own(l.rows);
     const formula = f
       ? up.rule
         ? { rule: f }
@@ -141,7 +152,7 @@ export function makePlaces(ctx: PlaceContext) {
       : w.formula;
     return {
       formula,
-      rows: asideInFormula(w.rows, formula !== null),
+      rows: asideInFormula(w.rows, formula),
       ...(up?.maxReached ? { maxReached: up.maxReached } : {}),
     };
   }

@@ -258,21 +258,50 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   );
 }
 
-/** A check of a row beside it ("Bonus level > 0" beside "Bonus level"): a branch check, never a row (FR-018). */
+/**
+ * A check of a row beside it, a state or a number ("Owned = 1" beside "Owned", "Bonus level > 0" beside "Bonus level"):
+ * a branch check, never a row (FR-018; audit family 3).
+ */
 const COMPARISON = /^(.+?) (?:<|≤|>|≥|=|≠) -?[\d.]+$/;
-function branchCheck(r: Row, rows: readonly Row[]): boolean {
+export function branchCheck(r: Row, rows: readonly Row[]): boolean {
   if (!isCond(r) || r.open !== null || r.group?.length) return false;
   const subject = COMPARISON.exec(r.node.name)?.[1];
-  return (
-    !!subject &&
-    rows.some((k) => k !== r && !isCond(k) && k.node.name === subject)
+  return !!subject && rows.some((k) => k !== r && k.node.name === subject);
+}
+
+type Formula = Row["node"]["formula"];
+const OPERATOR = /^[×÷+−*/(),^:-]$/;
+/** Atoms as words, a space between two terms but inside brackets and before a comma. */
+const joined = (ts: readonly string[]) =>
+  ts.join(" ").replace(/\( /g, "(").replace(/ \)/g, ")").replace(/ ,/g, ",");
+/** The two lines of an ⓘ. */
+function linesOf(f: NonNullable<Formula>): [string, string] {
+  if (!Array.isArray(f)) return f.rule;
+  const [terms, numbers] = f;
+  let i = 0;
+  const filled = terms.map((t) =>
+    OPERATOR.test(t) ? t : fx3(numbers[i++] ?? NaN),
   );
+  return [joined(terms), `${joined(filled)} = ${fx3(numbers.at(-1) ?? NaN)}`];
+}
+const says = (f: Formula, r: Row) => !!f && linesOf(f)[0].includes(r.node.name);
+
+/**
+ * The ⓘ `f` that says each of `checks` (A39): those it does not say yet in words after its math ("(Bonus level > 0:
+ * yes)"), as the card's stars; a rule then, its numbers line its math's. As it is when it says them all.
+ */
+export function citing(f: Formula, checks: readonly Row[]): Formula {
+  const more = checks.filter((r) => !says(f, r));
+  if (!f || !more.length) return f;
+  const [names, numbers] = linesOf(f);
+  const words = more.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`);
+  return { rule: [`${names} (${words.join("; ")})`, numbers] };
 }
 
 /**
- * A level's rows once its ⓘ is made: a branch check is in the ⓘ only, never a row (FR-018); with no ⓘ, nothing leaves,
- * so no comparison is lost.
+ * A level's rows once its ⓘ `f` is made: a branch check its ⓘ says is in the ⓘ only, never a row (FR-018, A39); with
+ * no ⓘ, or one that does not say it, nothing leaves, so no comparison is lost.
  */
-export function asideInFormula(rows: Row[], hasFormula: boolean): Row[] {
-  return hasFormula ? rows.filter((r) => !branchCheck(r, rows)) : rows;
+export function asideInFormula(rows: Row[], f: Formula): Row[] {
+  return f ? rows.filter((r) => !(branchCheck(r, rows) && says(f, r))) : rows;
 }
