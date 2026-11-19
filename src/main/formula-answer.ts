@@ -157,6 +157,11 @@ export function rebuildClock(now: () => number = Date.now) {
     failed() {
       at = now();
     },
+    /** The ms until `take(free)` is true, 0 when it is now; null when no change waits or the pipeline is busy. */
+    wait(free: boolean): number | null {
+      if (!due || !free) return null;
+      return Math.max(0, REBUILD_EVERY_MS - (now() - at));
+    },
     /** True, once, when a change waits, the pipeline is `free` and the time is past: the caller asks the tree. */
     take(free: boolean): boolean {
       if (!due || !free || now() - at < REBUILD_EVERY_MS) return false;

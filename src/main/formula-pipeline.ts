@@ -63,6 +63,7 @@ export function startFormulaPipeline(
   const hadLive = new Set<string>();
   /** A change since the last tree came asks it again in silence, at most every 10 s (FR-015, NFR-002). */
   const rebuild = rebuildClock();
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -96,7 +97,12 @@ export function startFormulaPipeline(
   /** The silent rebuild: one at a time, never over a branch asked (the host keeps one waiting job; a branch waiting in
    * `queued` is asked as the one before it comes, so `expanding` covers it). */
   function rebuildIfDue(): void {
-    if (rebuild.take(!asked && !expanding)) ask(true);
+    clearTimeout(timer);
+    const free = !asked && !expanding;
+    // A rebuild that waits only its 10 s is asked then, with no reading needed (a released reader, the game closed).
+    const ms = rebuild.wait(free);
+    if (ms === 0 && rebuild.take(free)) ask(true);
+    else if (ms !== null) timer = setTimeout(rebuildIfDue, ms);
   }
 
   const index = feedsIndex({
@@ -153,6 +159,7 @@ export function startFormulaPipeline(
   }
 
   function drop(): void {
+    clearTimeout(timer);
     asked = null;
     expanding = null;
     queued = [];
@@ -164,15 +171,12 @@ export function startFormulaPipeline(
     if (last.state !== "ready" || r.treeId !== open?.id) return;
     // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
     // and is asked as soon as that tree comes (FR-015). With no build of the tree on screen, the tree is asked first, on
-    // the silent rebuilds' clock (NFR-002); with the game closed no reading comes for that clock, so at once.
+    // the silent rebuilds' clock (NFR-002).
     if (asked || !screenBuilt || (expanding && expanding.nodeId !== r.nodeId)) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
       if (!screenBuilt && !asked && !expanding) {
-        if (stale) ask(true);
-        else {
-          rebuild.changed(last.calculatedAt);
-          rebuildIfDue();
-        }
+        rebuild.changed(last.calculatedAt);
+        rebuildIfDue();
       }
       return;
     }
@@ -367,6 +371,7 @@ export function startFormulaPipeline(
       if (last.state === "ready") show({ ...last, stale });
     },
     gameFiles(resources) {
+      clearTimeout(timer);
       open = null;
       openFor = null;
       asked = null;
