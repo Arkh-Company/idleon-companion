@@ -1131,13 +1131,14 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // A multiplier of one lone % times a clamp plus a sum of bonuses in % ÷ 100, two of them times a constant (audit
   // family 14): its second factor is an unnamed sum of sources of several systems; TreeMeritOf calls it as a source.
+  // One of those sources has a name with a colon ("Arcade: …"), as in the game's own block.
   Blocks._customBlock_TreeMeritMulti = function () {
     var s = state();
     return 0 >= s.TreeOwned
       ? (1 + Blocks._customBlock_ArcadeBonus(1) / 100) *
           (Math.min(1, Math.max(0.25, 0.25 + s.TreeFlagOn)) +
             (5 * Blocks._customBlock_TreeLoop() +
-              (Blocks._customBlock_CardBonusREAL(2) +
+              (Blocks._customBlock_ArcadeBonus(2) +
                 (20 * Blocks._customBlock_CardBonusREAL(1) +
                   (s.TreeLevel + Blocks._customBlock_TreeReads())))) /
               100)

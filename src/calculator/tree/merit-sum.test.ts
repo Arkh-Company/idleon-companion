@@ -2,7 +2,7 @@
 // FR-008, FR-018): the Meritocracy bonus multiplier's shape, (1 + a ÷ 100) × (a clamp + (bonuses) ÷ 100) while a read
 // is 0 or less, else 0. The read the check compares is no part of the math: the steps with no name still dissolve,
 // their sources rising to the call's row, their math in its ⓘ, which closes, the check said after it in words (A39).
-// Over the invented game (fake-game.js TreeMeritOf), invented names and values.
+// Over the invented game (fake-game.js TreeMeritOf), invented values; a source named with a colon, as in the game.
 import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { buildTree } from "../tree-build.ts";
@@ -43,7 +43,7 @@ test("an unnamed sum beside a check's read gives its sources to the source's row
     "ArcadeBonus(1)",
     "TreeFlagOn",
     "TreeLoop()",
-    "CardBonusREAL(2)",
+    "ArcadeBonus(2)",
     "CardBonusREAL(1)",
     "TreeLevel",
     "TreeReads()",
