@@ -6,7 +6,7 @@
 // among its parts ("Base 1", "÷ 100") stay rows (spec 009 Open Questions, Vinicius 18/11).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { byShapeOnly, movedUp } from "./flatten.ts";
-import { isCond, near, withFormula } from "./formulas.ts";
+import { isCond, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { evaluate, formulaOut, isOperator } from "./math.ts";
 import { withName } from "./row-checks.ts";
@@ -172,11 +172,13 @@ function spliced(
     out.push(...movedUp(r, inner.rows));
   }
   const result = atoms[1].at(-1);
+  const v = Number(node.value);
+  // the ⓘ's result is the value rounded to 3 (curves.ts fx3), as `closes` reads it
   if (
     moved === 0 ||
     !closes(atoms) ||
     result === undefined ||
-    !near(result, Number(node.value))
+    Math.abs(result - v) > 1e-3 * Math.max(1, Math.abs(v))
   )
     return null;
   return {
