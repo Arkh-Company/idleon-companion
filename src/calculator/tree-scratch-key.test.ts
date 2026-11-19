@@ -4,7 +4,13 @@ import { expect, test } from "vitest";
 import { instrument } from "./instrument.ts";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
-import { scratchKey, scratchWrites } from "./tree/links.ts";
+import {
+  readSeq,
+  scratchReads,
+  scratchKey,
+  scratchSeen,
+  scratchWrites,
+} from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
 
 // Writer(1) writes the box twice, and each of its two readers reads one of the writes
@@ -114,4 +120,160 @@ test("a box written twice with the same value: the write the read saw, by the wr
   expect(writeOf("DNSM.Box", 1, 0, writer ?? null)?.at).toBe(0);
   // with no number, the first write of the value
   expect(writeOf("DNSM.Box", 1, undefined, writer ?? null)?.at).toBe(0);
+});
+
+test("a write of the builders' pass, kept out of the recording's writes, is still the write a read comes from", () => {
+  const [writer] = recordingOf([
+    { b: "Who", a: ["AllTalentLVz", "1|4"] },
+  ]).nodes;
+  // the pass hands its scratch writes over last first: the order is the writes' numbers
+  const writeOf = scratchWrites(
+    [],
+    [
+      { path: "DNSM.Who", node: 0, v: 4, xi: 2, seq: 9 },
+      { path: "DNSM.Who", node: 0, v: 8, xi: 1, seq: 8 },
+    ],
+  );
+  expect(writeOf("DNSM.Who", 4, 9, writer ?? null)?.at).toBe(1);
+  expect(writeOf("DNSM.Who", 8, undefined, writer ?? null)?.at).toBe(0);
+});
+
+test("a field of a box that holds an object comes from the write of the box before the read, by its number", () => {
+  const [worn] = recordingOf([{ b: "Worn", a: ["STR"] }]).nodes;
+  const writeOf = scratchWrites([
+    { path: "DNSM.Item", node: 0, v: "(object)", xi: 0, seq: 1 },
+    { path: "DNSM.Item", node: 0, v: "(object)", xi: 5, seq: 4 },
+  ]);
+  expect(writeOf("DNSM.Item.v1", 30, 2, worn ?? null)?.at).toBe(0);
+  expect(writeOf("DNSM.Item.v1", 10, 5, worn ?? null)?.at).toBe(1);
+  // with no number, a box written with two objects says nothing of which one was read
+  expect(writeOf("DNSM.Item.v1", 10, undefined, worn ?? null)).toBeNull();
+  // the box itself stops the climb: a path of another box is no field of it
+  expect(writeOf("DNSM.ItemB", 10, 5, worn ?? null)).toBeNull();
+});
+
+test("the write a read saw is the last write of its path, or of the box that holds it, before the read's number", () => {
+  const seen = scratchSeen(
+    [
+      { path: "DNSM.Box", node: 3, v: 2, xi: 0, seq: 1 },
+      { path: "DNSM.Box", node: 4, v: 5, xi: 0, seq: 3 },
+      { path: "DNSM.Item", node: 4, v: "(object)", xi: 1, seq: 4 },
+    ],
+    [{ path: "DNSM.Box", node: 5, v: 7, xi: 0, seq: 6 }],
+  );
+  expect(seen("DNSM.Box", 2, 2)?.node).toBe(3);
+  expect(seen("DNSM.Box", 5, 4)?.node).toBe(4);
+  expect(seen("DNSM.Box", 7, 6)?.node).toBe(5);
+  expect(seen("DNSM.Item.v1", 30, 4)?.seq).toBe(4);
+  // a value no write before the read gave, and a read before any write: none
+  expect(seen("DNSM.Box", 9, 4)).toBeNull();
+  expect(seen("DNSM.Box", 2, 0)).toBeNull();
+});
+
+test("a read's number is its reader's last read of the path with that value, in the loop's turn when one is open", () => {
+  const [reader] = recordingOf([
+    {
+      b: "Loop",
+      r: [["DNSM.Box", 3, 10]],
+      rx: [
+        ["DNSM.Box", 3, 1, 10],
+        ["DNSM.Box", 3, 5, 12],
+        ["DNSM.Box", 4, 9, 14],
+        ["DNSM.Box", 3, 12, 15],
+      ],
+    },
+  ]).nodes;
+  expect(readSeq(reader, "DNSM.Box", 3)).toBe(15);
+  expect(readSeq(reader, "DNSM.Box", 4)).toBe(14);
+  // in the turn of steps 3 to 8, the read of that turn
+  expect(readSeq(reader, "DNSM.Box", 3, { from: 3, to: 8 })).toBe(12);
+  // a value the log does not have: the first read's number, when it has that value
+  expect(readSeq(reader, "DNSM.Box", 9)).toBeUndefined();
+  expect(
+    readSeq(
+      recordingOf([{ b: "X", r: [["DNSM.Box", 3, 10]] }]).nodes[0],
+      "DNSM.Box",
+      3,
+    ),
+  ).toBe(10);
+});
+
+test("a write's reads are its writer's logged reads after its previous write, of any path, and before it", () => {
+  const [w] = recordingOf([
+    {
+      b: "TalentCalc",
+      a: [-2],
+      rx: [
+        ["Meals[0][1]", 2, 0, 2],
+        ["Cards[1].length", 1868, 4, 4],
+        ["X", 1, 6, 5],
+      ],
+    },
+  ]).nodes;
+  const writeOf = scratchWrites(
+    [
+      { path: "DNSM.Box", node: 0, v: 1, xi: 1, seq: 3 },
+      { path: "DNSM.Other", node: 0, v: 0, xi: 3, seq: 4 },
+    ],
+    [{ path: "DNSM.Box", node: 0, v: 18, xi: 5, seq: 5 }],
+  );
+  expect(writeOf("DNSM.Box", 18, 5, w ?? null)?.reads()).toEqual([
+    "Cards[1].length",
+  ]);
+  expect(writeOf("DNSM.Box", 1, 3, w ?? null)?.reads()).toEqual([
+    "Meals[0][1]",
+  ]);
+});
+
+test("a read the builders' pass explains opens in the pass's call of the same block; another block's write, in its own", () => {
+  const rec = (pass: string) =>
+    recordingOf(
+      [
+        { b: "(setup: game helpers)", c: [3] },
+        { b: "(root)", c: [2] },
+        { b: "Top", v: 5, r: [["DNSM.Box", 5, 3]] },
+        { b: "Maker", a: [0], v: 0 },
+        { b: pass, a: [0], v: 0 },
+      ],
+      [
+        { path: "DNSM.Box", node: 3, v: 5, seq: 3 },
+        { path: "DNSM.Box", node: 4, v: 5, seq: 10 },
+      ],
+      { setup: 0, root: 1 },
+    );
+  const read = (r: ReturnType<typeof rec>) =>
+    scratchReads(r)("DNSM.Box", 5, r.nodes[2], r.nodes[4] ?? null);
+  const same = read(rec("Maker"));
+  expect([same.writer?.id, same.own?.call.id, same.own?.at]).toEqual([4, 3, 0]);
+  const other = read(rec("Other"));
+  expect([other.writer?.id, other.own?.call.id, other.own?.at]).toEqual([
+    3, 3, 0,
+  ]);
+  // a read no cache link covers (a loop's own running total) opens in nothing, still keyed by the write it saw
+  const r = rec("Other");
+  const none = scratchReads(r)("DNSM.Box", 5, r.nodes[2], null);
+  expect([none.writer, none.own?.call.id, none.own?.at]).toEqual([null, 3, 0]);
+});
+
+test("a write that copies a read: its source is the writer's read just before it with the value written", () => {
+  const [w] = recordingOf([
+    {
+      b: "Start",
+      rx: [
+        ["Other", 9, 0, 4],
+        ["Base", 4, 0, 4],
+        ["DNSM.Box", 4, 2, 5],
+      ],
+    },
+  ]).nodes;
+  const writeOf = scratchWrites([
+    { path: "DNSM.Other", node: 0, v: 9, xi: 0, seq: 4 },
+    { path: "DNSM.Box", node: 0, v: 4, xi: 0, seq: 5 },
+    { path: "DNSM.Box", node: 0, v: 4, xi: 3, seq: 6 },
+  ]);
+  const start = writeOf("DNSM.Box", 4, 5, w ?? null);
+  expect([start?.seq, start?.source()]).toEqual([5, ["Base", 4, 0, 4]]);
+  // the next write read the box itself: it copies no other read
+  const turn = writeOf("DNSM.Box", 4, 6, w ?? null);
+  expect([turn?.seq, turn?.source()]).toEqual([6, undefined]);
 });

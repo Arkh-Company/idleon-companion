@@ -5,10 +5,13 @@
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { near } from "./math.ts";
 import { callText } from "./rows.ts";
+import type { LoopTurn } from "./steps.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";
 export type Link = [path: string, writer: number | null, origin: Origin];
+/** A read of a call's step log as recorder.js writes it: [path, value, how many steps had run, the last write's number]. */
+export type LoggedRead = NonNullable<RecNode["rx"]>[number];
 
 function byNodeAndPath(list: RecWrite[]): Map<number, Map<string, RecWrite>> {
   const out = new Map<number, Map<string, RecWrite>>();
@@ -122,32 +125,175 @@ export const scratchKey = (
   );
 
 /**
+ * The number of the write a read saw, from its reader's step log: its last read of the path with that value (in the
+ * loop's turn `range` of steps, when one is open), else its first read's, when it has that value.
+ */
+export function readSeq(
+  reader: RecNode | undefined,
+  path: string,
+  value: unknown,
+  range?: LoopTurn,
+): number | undefined {
+  const inRange = (step: number) =>
+    !range || (step >= range.from && step <= range.to);
+  const log = (reader?.rx ?? []).findLast(
+    ([p, v, step, seq]) =>
+      p === path && seq !== undefined && inRange(step) && near(v, value),
+  );
+  return (
+    log?.[3] ?? reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2]
+  );
+}
+
+/**
+ * A scratch read as a row sees it (tree-build.ts readRow): the write it saw, by its number, and its place among its
+ * writer's writes, for its key and its name. It opens in the writer `w` the cache links give (the builders' pass's
+ * call of the same block explains an earlier read: linkReads), unless the write it saw is another block's; a read no
+ * link covers (a loop's own running total) opens in nothing.
+ */
+export function scratchReads(rec: Recording) {
+  const seen = scratchSeen(rec.writes, rec.spliced);
+  const place = scratchWrites(rec.writes, rec.spliced);
+  return (
+    path: string,
+    value: unknown,
+    reader: RecNode | undefined,
+    w: RecNode | null,
+    range?: LoopTurn,
+  ) => {
+    const seq = readSeq(reader, path, value, range);
+    const write = seq === undefined ? null : seen(path, value, seq);
+    const node = write?.node ?? rec.setup;
+    const saw = node === rec.setup ? null : (rec.nodes[node ?? -1] ?? null);
+    const same = !!saw && !!w && callText(saw) === callText(w);
+    const writer = same || !w ? w : (saw ?? w);
+    const own = place(path, value, seq, saw ?? writer, reader ?? null);
+    return { writer, own };
+  };
+}
+
+const SCRATCH = /^(?:DNSM|DummyNumbersStatManager)\.[^.[]+/;
+/** A scratch read's path and the paths above it, up to its box: a field is read from the object its box holds. */
+function boxPaths(path: string): string[] {
+  const box = SCRATCH.exec(path)?.[0];
+  if (!box) return [];
+  const out = [path];
+  for (let p = path; p.length > box.length;) {
+    p = p.slice(0, Math.max(p.lastIndexOf("."), p.lastIndexOf("[")));
+    out.push(p);
+  }
+  return out;
+}
+/** Each path's writes, the builders' pass's too, in the order of their numbers, by `keyOf`. */
+function byKey(
+  list: readonly RecWrite[],
+  keyOf: (w: RecWrite) => string,
+): Map<string, RecWrite[]> {
+  const out = new Map<string, RecWrite[]>();
+  for (const w of [...list].sort((a, b) => a.seq - b.seq)) {
+    const k = keyOf(w);
+    const at = out.get(k);
+    if (at) at.push(w);
+    else out.set(k, [w]);
+  }
+  return out;
+}
+
+/**
+ * The write a scratch read saw, by the number of the last write before it (`seq`): the last write of its path, or of
+ * the box above it that holds an object, by any call and in the builders' pass too; none when the path's write has
+ * another value than the read's.
+ */
+export function scratchSeen(
+  writes: readonly RecWrite[],
+  spliced: readonly RecWrite[] = [],
+) {
+  const byPath = byKey([...writes, ...spliced], (w) => w.path);
+  return (path: string, value: unknown, seq: number): RecWrite | null => {
+    const last = boxPaths(path)
+      .flatMap((p) => byPath.get(p)?.findLast((w) => w.seq <= seq) ?? [])
+      .reduce<RecWrite | null>((a, w) => (a && a.seq > w.seq ? a : w), null);
+    return last && (last.path !== path || near(last.v, value)) ? last : null;
+  };
+}
+
+/**
+ * The place of the write read among a call's writes of a path (`exact`) or of the box above it: by the read's number,
+ * else the first write of the path with the value read, else the box's only object.
+ */
+function placeOf(
+  all: readonly RecWrite[],
+  exact: boolean,
+  value: unknown,
+  seq?: number,
+): number {
+  if (seq !== undefined) {
+    const seen = all.findLastIndex(
+      (w) => w.seq <= seq && (!exact || near(w.v, value)),
+    );
+    if (seen >= 0) return seen;
+  }
+  if (exact) return all.findIndex((w) => near(w.v, value));
+  return all.length === 1 && seq === undefined ? 0 : -1;
+}
+
+/**
  * The write a scratch read comes from: by the first of `by` (its writer, else its reader's own, for a box no cache link
  * covers) that wrote the value read, the write the read saw, by the number of the last write the recording keeps in the
  * read (`seq`), else the call's first write of that value; and the write's place among the call's writes of the box.
+ * The builders' pass's writes count (`spliced`), and a field's read comes from its box's write of the object, by `seq`.
+ * `reads` are the paths the writer read for that write, and `source` the read it copied, if any.
  */
-export function scratchWrites(writes: readonly RecWrite[]) {
-  const byCall = new Map<string, RecWrite[]>();
-  for (const w of writes) {
-    const k = `${String(w.node)}|${w.path}`;
-    byCall.set(k, [...(byCall.get(k) ?? []), w]);
-  }
+export function scratchWrites(
+  writes: readonly RecWrite[],
+  spliced: readonly RecWrite[] = [],
+) {
+  const all = [...writes, ...spliced];
+  const byCall = byKey(all, (w) => `${String(w.node)}|${w.path}`);
+  const byNode = byKey(all, (w) => String(w.node));
+  /** The writer's logged reads after its write before `w`, of any path, and before `w`. */
+  const logged = (n: RecNode, w: RecWrite) => {
+    const mine = byNode.get(String(n.id)) ?? [];
+    const from = mine[mine.findIndex((x) => x === w) - 1]?.seq ?? -Infinity;
+    return (n.rx ?? []).filter(
+      ([, , , s]) => s !== undefined && s >= from && s < w.seq,
+    );
+  };
+  const writeOf = (n: RecNode, w: RecWrite, at: number): ScratchWrite => ({
+    call: n,
+    at,
+    seq: w.seq,
+    reads: () => logged(n, w).map(([p]) => p),
+    source: () =>
+      logged(n, w).findLast(
+        ([p, v]) =>
+          SCRATCH.exec(p)?.[0] !== SCRATCH.exec(w.path)?.[0] && near(v, w.v),
+      ),
+  });
   return (
     path: string,
     value: unknown,
     seq: number | undefined,
     ...by: (RecNode | null)[]
-  ): { call: RecNode; at: number } | null => {
-    if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
-      for (const n of by) {
-        const all = n ? (byCall.get(`${String(n.id)}|${path}`) ?? []) : [];
-        const seen =
-          seq === undefined
-            ? -1
-            : all.findLastIndex((w) => w.seq <= seq && near(w.v, value));
-        const at = seen >= 0 ? seen : all.findIndex((w) => near(w.v, value));
-        if (n && at >= 0) return { call: n, at };
+  ): ScratchWrite | null => {
+    for (const n of by)
+      for (const p of n ? boxPaths(path) : []) {
+        const list = byCall.get(`${String(n?.id)}|${p}`) ?? [];
+        const at = list.length ? placeOf(list, p === path, value, seq) : -1;
+        const w = list[at];
+        if (n && w) return writeOf(n, w, at);
       }
     return null;
   };
+}
+/**
+ * The write a scratch read comes from: its writer, its place among the writer's writes of the box, its number, what it
+ * read and, for a write that copies a read (the start of a box), that read.
+ */
+export interface ScratchWrite {
+  call: RecNode;
+  at: number;
+  seq: number;
+  reads: () => readonly string[];
+  source: () => LoggedRead | undefined;
 }
