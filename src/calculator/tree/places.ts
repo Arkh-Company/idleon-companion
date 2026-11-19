@@ -19,7 +19,7 @@ import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
-import { inlined } from "./inline.ts";
+import { byRole, inlined } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
 import { asideInFormula, buildUp } from "./build-up.ts";
@@ -127,10 +127,10 @@ export function makePlaces(ctx: PlaceContext) {
     const l = up?.level ?? lv;
     // a built-up ⓘ names its rows whole, a name with a colon too ("Arcade: Prisma Bonuses")
     const f = up && l.row.f;
-    // any other ⓘ takes in the unnamed steps of any math (tree/inline.ts)
+    // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts)
     const w = f
       ? withFormula(l.row, flatten(l.rows))
-      : inlined(l.row, flatten(l.rows));
+      : byRole(name, inlined(l.row, flatten(l.rows)));
     const formula = f
       ? up.rule
         ? { rule: f }

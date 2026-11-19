@@ -2,13 +2,14 @@
 // tree/flatten.ts moves up a step that only adds (or only multiplies) as its level does; a step of any other math
 // (1 + x ÷ 100 inside a product, a floor, a power) moves up too, its ⓘ written inside the ⓘ of the row above, in
 // brackets, so that ⓘ still closes with the numbers of the rows on screen. A step moves up only when both ⓘ are atoms
-// (math.ts `formulaOut`) and the joined one recomputes the row's value; else it stays as it is. The 1 and the ÷ 100
-// that turn a bonus in % into a multiplier are numbers of the ⓘ, never rows of their own, as in the sigils' build-up.
+// (math.ts `formulaOut`) and the joined one recomputes the row's value; else it stays as it is. The code's constants
+// among its parts ("Base 1", "÷ 100") stay rows (spec 009 Open Questions, Vinicius 18/11).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, near, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { evaluate, isOperator } from "./math.ts";
+import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
@@ -36,14 +37,6 @@ function isStep(r: Row): boolean {
     (r.group?.length ?? 0) > 0
   );
 }
-
-/** The constants that turn a bonus in % into a multiplier: numbers of the ⓘ only. */
-export const isPercentForm = (r: Row): boolean =>
-  r.node.leaf === "fixedValue" &&
-  r.node.code === null &&
-  !r.group?.length &&
-  ((r.node.name === "Base 1" && r.node.value === 1) ||
-    (r.node.name === "Percent to number (÷ 100)" && r.node.value === 100));
 
 /** Whether the atoms recompute their result, as math.ts `formulaOut` checks. */
 function closes([terms, numbers]: Atoms): boolean {
@@ -109,12 +102,7 @@ export function inlined(row: FormulaRow, rows: Row[]): Built {
     }
     atoms = joined;
     moved++;
-    out.push(
-      ...movedUp(
-        r,
-        inner.rows.filter((k) => !isPercentForm(k)),
-      ),
-    );
+    out.push(...movedUp(r, inner.rows));
   }
   const result = atoms[1].at(-1);
   if (
@@ -127,5 +115,28 @@ export function inlined(row: FormulaRow, rows: Row[]): Built {
   return {
     formula: atoms,
     rows: withShares(row.node, pairOf(atoms), out).rows,
+  };
+}
+
+/** The role of a source's own part in its math (decision of 19/11, as in cards and talents). */
+const roleOf = (r: Row) => (r.node.leaf === "level" ? "Level" : "Bonus");
+
+/**
+ * The ⓘ and rows of the source `name` (audit family 7, decision of 19/11): a part that says the source's name again
+ * takes its role, in the rows and in an ⓘ of atoms.
+ */
+export function byRole(name: string, w: Built): Built {
+  if (!Array.isArray(w.formula)) return w;
+  const [terms, numbers] = w.formula;
+  const same = (r: Row) => !r.node.flags.unnamed && r.node.name === name;
+  const roles = new Set(w.rows.filter(same).map(roleOf));
+  const rows = w.rows.map((r) => (same(r) ? withName(r, roleOf(r)) : r));
+  // one role names the source's term in the ⓘ; two would say nothing of which is which
+  const [role] = roles.size === 1 ? [...roles] : [];
+  return {
+    formula: role
+      ? [terms.map((t) => (t === name ? role : t)), numbers]
+      : w.formula,
+    rows,
   };
 }
