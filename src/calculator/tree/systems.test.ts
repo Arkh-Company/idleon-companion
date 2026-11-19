@@ -165,7 +165,8 @@ test.each<[string, string, string]>([
   ["trapping", 'TrappingStuffs("TrapMGbonus", 2)', "🪤 Trapping"],
   ["sailing", 'Sailing("SlabboBonus", 6, 0)', "⛵ Sailing"],
   ["the lab's mainframe", "MainframeBonus(122)", "🧪 Lab"],
-  ["a chip", 'chipBonuses("acc")', "💎 Chips"],
+  // decision of 19/11: Chips is 🧩, Gem Shop takes 💎
+  ["a chip", 'chipBonuses("acc")', "🧩 Chips"],
   ["a captain", "CaptBonusCalc(3, 5)", "⛵ Sailing"],
   ["a sailing cell", "Sailing[3][1]", "⛵ Sailing"],
   ["an atom's level", "Atoms[4]", "⚛️ Atom Collider"],
@@ -193,6 +194,7 @@ test.each<[string, string, string]>([
   // decision of 19/11: Divinity is 🕊️ (Prayers keeps 🙏)
   ["a god's minor bonus", 'Divinity("Bonus_Minor", 3, 0)', "🕊️ Divinity"],
   ["a god's blessing", 'Divinity("BlesssBonus", 2, 0)', "🕊️ Divinity"],
+  ["a gem shop purchase", "GemItemsPurchased[139]", "💎 Gem Shop"],
   ["a talent's calc", "TalentCalc(328)", "🎯 Talents"],
   ["the talents' calc cache", "DNSM.CalcTalentMAP[635]", "🎯 Talents"],
   ["the arcade's doubler cache", "DNSM.ArcadBonDNz[14]", "🕹️ Arcade"],
