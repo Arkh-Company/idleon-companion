@@ -224,18 +224,28 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
   ).toEqual([
     ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
-    ["🕹️ Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
-    ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
+    // a system of one source in % shows the source, +N% (FR-006, decision of 19/11)
+    [expect.any(String), "piece", undefined, "%", 8],
+    [expect.any(String), "piece", undefined, "%", expect.closeTo(gold, 9)],
     // TreeBase, alone in Other once the constant left the group (T027)
     ["Game value", "piece", undefined, null, 4],
     ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
     // the constant of the game's math, its own row after the groups (T027)
     ["Fixed +2", "piece", undefined, null, 2],
   ]);
-  // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it
+  // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it; a
+  // source in % alone in the pool adds a hundredth of its value, as the pool's ⓘ says
   const sum = (ns: readonly CalcTreeNode[]) =>
     ns.reduce((s, k) => s + Number(k.value), 0);
-  expect(sum(groups)).toBeCloseTo(Number(add?.value), 9);
+  const added = (k: CalcTreeNode) =>
+    Number(k.value) / (k.role === "piece" && k.fmt === "%" ? 100 : 1);
+  expect(groups.reduce((s, k) => s + added(k), 0)).toBeCloseTo(
+    Number(add?.value),
+    9,
+  );
+  const f = add?.formula;
+  const names = Array.isArray(f) ? f[0].join(" ") : (f?.rule[0] ?? "");
+  expect(names.split("÷ 100").length - 1).toBe(2);
   expect(Number(add?.value)).toBeCloseTo(
     4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
     9,
@@ -245,8 +255,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
       Number(g.value),
       9,
     );
-  // the golden food in its group opens as its own chain
-  const [food] = kidsOf(groups[2]);
+  // the golden food, its system's one source, opens as its own chain
+  const food = groups[2];
   expect(food?.code).toBe('GoldFoodBonuses("DropRatez")');
   const opened = food?.kids === "lazy" ? build.expand(food.id) : food;
   expect(

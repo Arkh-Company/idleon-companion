@@ -112,7 +112,7 @@ test("a sum the root wrote inside an unnamed sum dissolves too, all the way", ()
 /** A bonus in % the game sums with others and divides by 100 before the sum enters the pool. */
 const pct = (r: Row): Row => ({ ...r, percent: true });
 
-test("bonuses in % the game divides by 100 go by system in % groups, a lone one too, and the pool still closes (FR-017)", () => {
+test("bonuses in % the game divides by 100 go by system in % groups, a lone one stands alone as its +N%, and the pool still closes (FR-006, FR-017)", () => {
   const rows = poolOf(
     [other(2, 2), pct(card(20)), pct(talent(6)), pct(card(4, 11))],
     2.3,
@@ -125,11 +125,14 @@ test("bonuses in % the game divides by 100 go by system in % groups, a lone one 
       r.node.value,
     ]),
   ).toEqual([
-    ["🎯 Talents", "percent", "%", 0.06],
+    // decision of 19/11: the group of one source goes, and the source shows +6% (its pool's ⓘ divides it by 100)
+    ["GetTalentNumber(1, 207)", undefined, "%", 6],
     ["🃏 Cards", "percent", "%", 0.24],
     ["InventedBlock(2)", undefined, null, 2],
   ]);
-  expect(rows.reduce((s, r) => s + Number(r.node.value), 0)).toBeCloseTo(2.3);
+  expect(
+    rows.reduce((s, r) => s + Number(r.node.value) / (r.percent ? 100 : 1), 0),
+  ).toBeCloseTo(2.3);
   const [, cards] = rows;
   // the group's ⓘ: its bonuses' sum ÷ 100; each bonus's share of that sum
   expect(cards?.node.formula).toEqual([
@@ -145,8 +148,10 @@ test("bonuses in % the game divides by 100 go by system in % groups, a lone one 
 test("an unnamed sum of bonuses in % dissolves, its bonuses still in % (FR-017)", () => {
   const rows = poolOf([other(2, 2), pct(unnamedSum())], 2.3);
   expect(brief(rows)).toEqual([
-    ["🎯 Talents", 0.06, ["GetTalentNumber(1, 207)"]],
+    // the lone talent stands alone, its bonus in % (decision of 19/11)
+    ["GetTalentNumber(1, 207)", 6, []],
     ["🃏 Cards", 0.24, ["CardBonusREAL(10, 0)", "CardBonusREAL(11, 0)"]],
     ["InventedBlock(2)", 2, []],
   ]);
+  expect(rows[0]?.percent).toBe(true);
 });
