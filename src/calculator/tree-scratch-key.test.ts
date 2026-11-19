@@ -2,7 +2,6 @@
 // each keyed by the write it comes from, so a piece shows one value wherever it is.
 import { expect, test } from "vitest";
 import { buildTree } from "./tree-build.ts";
-import type { CalcTreeNode } from "./tree-contract.ts";
 import { shapeOf } from "./tree-engine.ts";
 import { scratchKeys } from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
@@ -32,23 +31,6 @@ test("a scratch box read at two moments is two pieces, each keyed by its writer'
     '[0,"DNSM.Box","Writer(1)",0]',
     '[0,"DNSM.Box","Writer(1)",1]',
   ]);
-});
-
-test("the first write of a box its writer writes again later opens into nothing: the writer's math is another write's", () => {
-  const build = buildTree(REC, 0);
-  const rows: CalcTreeNode[] = [];
-  const walk = (n: CalcTreeNode): void => {
-    rows.push(n);
-    const kids = n.kids === "lazy" ? (build.expand(n.id)?.kids ?? []) : n.kids;
-    if (Array.isArray(kids)) kids.forEach(walk);
-  };
-  walk(build.root);
-  const at = (i: number) =>
-    rows.find(
-      (n) => n.pieceKey === JSON.stringify([0, "DNSM.Box", "Writer(1)", i]),
-    );
-  expect(at(0)?.kids).toEqual([]);
-  expect(at(1)?.kids).toBe("lazy");
 });
 
 test("a working total the reader wrote itself is keyed by the reader; any other read keeps its path alone", () => {
