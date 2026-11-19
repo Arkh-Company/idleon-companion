@@ -58,3 +58,26 @@ test("the read of the total in the turn being opened is the total of the earlier
   for (const n of earlier)
     expect([n.pieceKey, n.kids, n.leaf]).toEqual([null, [], "unknown"]);
 });
+
+test("a running total that starts from a source and adds 0: the start keeps its source under the box, by its write", () => {
+  const build = buildTree(
+    recorder.record(mosaicOf(), [["TreeStartTotal", []]], {
+      recompute: [],
+      builders: [],
+    }),
+    0,
+    recorder.ops,
+  );
+  const codes: (string | null)[] = [];
+  const walk = (n: CalcTreeNode, depth: number, inBox: boolean): void => {
+    if (inBox) codes.push(n.code);
+    const kids = n.kids === "lazy" ? (build.expand(n.id)?.kids ?? []) : n.kids;
+    const box = inBox || n.code === "DNSM.TreeStart[0]";
+    if (Array.isArray(kids) && depth < 12)
+      for (const k of kids) walk(k, depth + 1, box);
+  };
+  walk(build.root, 0, false);
+  // the value the box starts with comes from TreeBase: the read of that write opens into it
+  expect(codes).toContain("TreeBase");
+  expect(insideItself("TreeStartTotal")).toEqual([]);
+});
