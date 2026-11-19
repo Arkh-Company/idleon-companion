@@ -260,9 +260,15 @@ const TABLE_RULES: readonly StateRule[] = [
     return `${words} (${sign})`;
   }),
   // family 17 (audit of 19/11): Minehead BonusQTY(t) = Research[20][t] past floor t, and its screen writes the bonus as
-  // the text Research[19][t] (bench 007 catalog, proven by table)
+  // the text Research[19][t] (bench 007 catalog, proven by table): its first line ("@" breaks the game's lines) and
+  // its first sentence, the rest being the screen's note
   rule(/^Minehead\("BonusQTY", (\d+), \d+\)$/, "N.js Minehead BonusQTY", (m) =>
-    tableText("research", 19, n(m)),
+    with_(
+      tableText("research", 19, n(m)),
+      (t) =>
+        (t.split(/\s*@\s*/)[0] ?? "").split(/\.\s/)[0]?.replace(/[.!]+$/, "") ??
+        "",
+    ),
   ),
   // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
   // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
