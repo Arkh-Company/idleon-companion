@@ -308,13 +308,6 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js Spelunk (the lore of cave c, Spelunky 14 c, under the cave Spelunky 6 c)",
   ),
-  dreamTask: text(
-    "CustomLists.DreamChallenge",
-    (t) => [t, 0],
-    null,
-    "clean-keep-case",
-    "N.js Dreamstuff (the task t of the Equinox, DreamChallenge t 0)",
-  ),
   summonUpgradeName: text(
     "CustomLists.SummonUPG",
     (n) => [n, 3],

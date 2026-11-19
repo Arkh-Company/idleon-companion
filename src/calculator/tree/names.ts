@@ -142,6 +142,13 @@ export function nameOf(code: string): string | null {
   return shapeName(code)?.name ?? null;
 }
 
+/**
+ * The name a recipe gives `code` over the installed game's table, whatever names the row (family 13: the whole text a
+ * short name leaves to the ⓘ, tree/name-descs.ts); null with none.
+ */
+export const recipeName = (code: string): string | null =>
+  RECIPE_KEYS.has(code) ? (gameNames.get(code) ?? null) : null;
+
 /** The first rule by shape that names `code`, with its name. */
 function shapeName(code: string): { name: string; generic: boolean } | null {
   const call = callOf(code);

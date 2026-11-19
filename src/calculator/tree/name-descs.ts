@@ -4,6 +4,8 @@
 // bonus raises; the texts are the game's, over its checked tables (tree/table-names.ts).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
+import { MERIT_SHOP } from "./merit-names.ts";
+import { recipeName } from "./names.ts";
 import { partText, tableText } from "./table-names.ts";
 
 /**
@@ -23,7 +25,7 @@ export const KILLROY: readonly { row: number; name: string }[] = [
 export const killroyName = (r: number): string | null =>
   KILLROY.find((k) => k.row === r)?.name ?? null;
 
-const n = (m: RegExpExecArray) => Number(m[1]);
+const n = (m: RegExpExecArray, k = 1) => Number(m[k]);
 /** The game's whole text of a row's bonus, by its code, each with its proof by reference. */
 export const DESCS: readonly {
   test: RegExp;
@@ -57,8 +59,21 @@ export const DESCS: readonly {
     proof: "N.js Spelunk (the lore of cave c is Spelunky 14 c)",
   },
   {
+    // the shop's screen draws, for Tasks[2][w][i], the lines TaskShopDesc[w][i][0] and [1]: the recipe's text of the
+    // purchase (names-recipes.json, "World N merit purchases: {0} {1}"), its own words only ("Descline2": no line)
+    test: MERIT_SHOP.test,
+    text: (m) =>
+      recipeName(m.input)
+        ?.replace(/^World \d+ merit purchases: /, "")
+        .replace(/ Descline2$/, "")
+        .trim() ?? null,
+    proof: "N.js TaskShopDesc (the two lines the shop draws)",
+  },
+  {
     test: /^WeeklyBoss\.d_(\d+)$/,
-    text: (m) => tableText("dreamTask", n(m)),
+    // the recipe's text of the task (names-recipes.json, "{0} (dream progress)"), DreamChallenge[t][0]
+    text: (m) =>
+      recipeName(m.input)?.replace(/ \(dream progress\)$/, "") ?? null,
     proof: "N.js Dreamstuff (the task t of the Equinox is DreamChallenge t 0)",
   },
 ];

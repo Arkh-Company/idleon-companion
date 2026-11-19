@@ -6,6 +6,7 @@
 // code) and a second rule of the minor link's top no row reaches (the first one matches the same codes).
 import { FIXED_RENAMES, rule } from "./rename-list.ts";
 import type { Condition, Leaf, Rename } from "./rename-list.ts";
+import { MERIT_SHOP, meritName } from "./merit-names.ts";
 import { KILLROY } from "./name-descs.ts";
 import { tableText } from "./table-names.ts";
 
@@ -254,6 +255,13 @@ export const RENAMES: readonly Rename[] = [
         : `Equinox: Dream #${String(n(m) + 1)}`,
     null,
     "dream; N.js Dreamstuff",
+  ),
+  // a merit shop's purchase by what it raises (tree/merit-names.ts), its text to the ⓘ (name-descs.ts)
+  rule(
+    MERIT_SHOP.test,
+    (m) => meritName(n(m), n(m, 2)),
+    null,
+    "merit; N.js TaskShopDesc",
   ),
   // the Killroy shop's bonus t by what it raises (the Vinicius's names of 19/11), its text to the ⓘ (name-descs.ts)
   rule(
