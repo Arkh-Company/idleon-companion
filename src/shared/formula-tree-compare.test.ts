@@ -5,6 +5,7 @@ import {
   changes,
   compareTrees,
   compareValues,
+  oldBoxKeys,
   pieceValues,
 } from "./formula-tree-compare.ts";
 import type { TreeNode } from "./formula-tree.ts";
@@ -151,3 +152,53 @@ test("changes lists the rows with a `was` and the rows with one inside them (`ch
   expect([...ids]).toEqual(["root/Sword"]);
   expect([...inside].sort()).toEqual(["root", "root/Gear"]);
 });
+
+test.each<[string, number, string[], string[], [string, string][]]>([
+  [
+    "with the character first, as a mark keeps it",
+    1,
+    ['[0,"DNSM.Box"]'],
+    ['[0,"DNSM.Box","Writer(1)",2]'],
+    [['[0,"DNSM.Box"]', '[0,"DNSM.Box","Writer(1)",2]']],
+  ],
+  [
+    "without the character, as the radar's shapes keep it",
+    0,
+    ['["DNSM.Box"]', '["DummyNumbersStatManager.Total"]'],
+    [
+      '["DNSM.Box","Writer(1)",2]',
+      '["DummyNumbersStatManager.Total","Stamp(\\"X\\")",1]',
+    ],
+    [
+      ['["DNSM.Box"]', '["DNSM.Box","Writer(1)",2]'],
+      [
+        '["DummyNumbersStatManager.Total"]',
+        '["DummyNumbersStatManager.Total","Stamp(\\"X\\")",1]',
+      ],
+    ],
+  ],
+  [
+    "a call of the same block, with 1 and with 3 arguments: no scratch box",
+    0,
+    ['["Holes","MonumentROGbonuses"]', '["Holes"]'],
+    ['["Holes","MonumentROGbonuses",2,6]', '["Holes","Bravery",0]'],
+    [],
+  ],
+  [
+    "two pieces of the box now, or the old key still there: none",
+    0,
+    ['["DNSM.Twin"]', '["DNSM.Same"]'],
+    [
+      '["DNSM.Twin","W(1)",0]',
+      '["DNSM.Twin","W(1)",1]',
+      '["DNSM.Same"]',
+      '["DNSM.Same","W(1)",0]',
+    ],
+    [],
+  ],
+])(
+  "an old key of a scratch box (0.8.0) stands for the one piece of its box now: %s",
+  (_case, at, old, now, pairs) => {
+    expect([...oldBoxKeys(old, now, at)]).toEqual(pairs);
+  },
+);

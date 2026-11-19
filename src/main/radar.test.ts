@@ -61,24 +61,27 @@ test("a tree's change is by piece key: parts new, parts gone and names changed, 
 });
 
 test("a shape of the 0.8.0 keyed a scratch box by its path: it is the one piece of that box the new shape has", () => {
+  // the keys as the radar gets them, without the character (feeds-index.ts feedKey)
   expect(
     shapeChange(
       "hp",
       [
-        ['[0,"DNSM.Box"]', "Box total"],
-        ['[0,"DNSM.Twin"]', "Twin"],
+        ['["DNSM.Box"]', "Box total"],
+        ['["DNSM.Twin"]', "Twin"],
+        ['["Holes","MonumentROGbonuses"]', "Monument"],
       ],
       [
-        ['[0,"DNSM.Box","Writer(1)",2]', "Box total"],
-        ['[0,"DNSM.Twin","Writer(1)",0]', "Twin start"],
-        ['[0,"DNSM.Twin","Writer(1)",1]', "Twin"],
+        ['["DNSM.Box","Writer(1)",2]', "Box total"],
+        ['["DNSM.Twin","Writer(1)",0]', "Twin start"],
+        ['["DNSM.Twin","Writer(1)",1]', "Twin"],
+        ['["Holes","MonumentROGbonuses",2,6]', "Monument"],
       ],
     ),
   ).toEqual({
     catalogId: "hp",
-    // two pieces of the box now: the old key says nothing of which one it was
-    added: ["Twin start", "Twin"],
-    removed: ["Twin"],
+    // two pieces of the box now: the old key says nothing of which one it was; a call is no scratch box
+    added: ["Twin start", "Twin", "Monument"],
+    removed: ["Twin", "Monument"],
     renamed: [],
   });
 });

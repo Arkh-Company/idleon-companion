@@ -259,3 +259,24 @@ test("a mark of the 0.8.0 keyed a scratch box by its path: it still holds the on
   expect(arrows.has("Twin A")).toBe(false);
   expect(arrows.has("Twin B")).toBe(false);
 });
+
+test("an old key holds a piece only for a scratch box, and only when the whole tree has one piece of that box", () => {
+  const box = (id: string, key: string, value: number) =>
+    node({ id, name: id, pieceKey: key, value, fmt: "+", role: "piece" });
+  // a part beyond the live limit of 200 parts still counts as a piece of its box
+  const fill = Array.from({ length: 200 }, (_, i) => piece(`p${String(i)}`, 1));
+  const root = node({
+    id: "root",
+    role: "root",
+    kids: [
+      box("Call", '[0,"Holes","Bravery",2]', 30),
+      box("Near", '[0,"DNSM.Far","Writer(1)",0]', 4),
+      ...fill,
+      box("Far", '[0,"DNSM.Far","Writer(1)",1]', 6),
+    ],
+  });
+  const old = mark("Mark 1", { '[0,"Holes"]': 20, '[0,"DNSM.Far"]': 1 });
+  const arrows = arrowsOf(root, baseOf(root, old).values);
+  expect(arrows.has("Call")).toBe(false);
+  expect(arrows.has("Near")).toBe(false);
+});
