@@ -19,7 +19,7 @@ import { GAME_BUGS } from "./tree/game-bugs.ts";
 import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
-import { linkReads, scratchKeys, scratchWrites } from "./tree/links.ts";
+import { linkReads, scratchKey, scratchWrites } from "./tree/links.ts";
 import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
 import { chainContext } from "./tree/chain-context.ts";
@@ -77,7 +77,6 @@ export function buildTree(
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
-  const readKey = scratchKeys(writes, character);
   const writeOf = scratchWrites(writes);
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
@@ -101,9 +100,11 @@ export function buildTree(
     const progress = (!w || w === reader) && progressRow(path, value);
     if (progress) return progress;
     // 009 T023: named by its own write
-    const own = writeOf(path, value, w, reader ?? null);
+    // the write the read saw: the number of the last write the recording keeps in the read
+    const seq = reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2];
+    const own = writeOf(path, value, seq, w, reader ?? null);
     const node = row({
-      pieceKey: readKey(path, value, w, reader ?? null),
+      pieceKey: scratchKey(character, path, own),
       value,
       code: path,
       kids: w ? "lazy" : [],

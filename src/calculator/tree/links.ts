@@ -107,39 +107,44 @@ export function linkReads(rec: Recording): Linked {
 }
 
 /**
- * 009 T023: a scratch box read at two moments is two pieces. A read's piece key names the write it comes from: its
- * writer's call (else its reader's own, for a box no cache link covers) and the write's place among that call's writes
- * of the box; with no such write, its path alone, as any other read.
+ * 009 T023: a scratch box read at two moments is two pieces. A read's piece key names the write it comes from (its
+ * `scratchWrites`): the writer's call and the write's place among that call's writes of the box; with no such write,
+ * its path alone, as any other read.
  */
-export function scratchKeys(writes: readonly RecWrite[], character: number) {
-  const writeOf = scratchWrites(writes);
-  return (path: string, value: unknown, ...by: (RecNode | null)[]): string => {
-    const w = writeOf(path, value, ...by);
-    return JSON.stringify(
-      w ? [character, path, callText(w.call), w.at] : [character, path],
-    );
-  };
-}
+export const scratchKey = (
+  character: number,
+  path: string,
+  own: { call: RecNode; at: number } | null,
+): string =>
+  JSON.stringify(
+    own ? [character, path, callText(own.call), own.at] : [character, path],
+  );
 
-/** The write a scratch read comes from: the first of `by` that wrote that value, and the write's place in its writes. */
+/**
+ * The write a scratch read comes from: by the first of `by` (its writer, else its reader's own, for a box no cache link
+ * covers) that wrote the value read, the write the read saw, by the number of the last write the recording keeps in the
+ * read (`seq`), else the call's first write of that value; and the write's place among the call's writes of the box.
+ */
 export function scratchWrites(writes: readonly RecWrite[]) {
-  const byCall = new Map<string, RecWrite["v"][]>();
+  const byCall = new Map<string, RecWrite[]>();
   for (const w of writes) {
     const k = `${String(w.node)}|${w.path}`;
-    byCall.set(k, [...(byCall.get(k) ?? []), w.v]);
+    byCall.set(k, [...(byCall.get(k) ?? []), w]);
   }
   return (
     path: string,
     value: unknown,
+    seq: number | undefined,
     ...by: (RecNode | null)[]
   ): { call: RecNode; at: number } | null => {
     if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
       for (const n of by) {
-        const at = n
-          ? (byCall.get(`${String(n.id)}|${path}`) ?? []).findIndex((v) =>
-              near(v, value),
-            )
-          : -1;
+        const all = n ? (byCall.get(`${String(n.id)}|${path}`) ?? []) : [];
+        const seen =
+          seq === undefined
+            ? -1
+            : all.findLastIndex((w) => w.seq <= seq && near(w.v, value));
+        const at = seen >= 0 ? seen : all.findIndex((w) => near(w.v, value));
         if (n && at >= 0) return { call: n, at };
       }
     return null;
