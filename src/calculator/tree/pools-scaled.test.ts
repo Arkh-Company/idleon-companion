@@ -50,11 +50,7 @@ const sumOf = (part: Expr) =>
 const ROWS = [src("Stats.c", 5), branch(45), src("Stats.d", 3)];
 
 test("a running total times 1 + its % ÷ 100 in a pool is the chain: the bases, the % pool, then the other parts", () => {
-  const pools = poolsOf(
-    ROWS,
-    { value: 53, expr: sumOf(scaled(BASES)) },
-    term,
-  );
+  const pools = poolsOf(ROWS, { value: 53, expr: sumOf(scaled(BASES)) }, term);
   expect(pools?.map(brief)).toEqual([
     ["Additive pool 1", "additive", "sum", 30, [10, 20]],
     ["Multi pool", "multi", "onePlusPercent", 1.5, [30, 20]],

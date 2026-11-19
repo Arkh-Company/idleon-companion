@@ -10,6 +10,7 @@ import { near, vOf } from "./formulas.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { added, addedRows } from "./percent.ts";
+import { additiveRows, kindOf, scaledPools, strip } from "./scaled.ts";
 import { through } from "./tops.ts";
 
 export { through } from "./tops.ts";
@@ -40,66 +41,6 @@ export type TermRow = (e: Expr, op: "+") => Row | null;
 /** A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn). */
 export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
 
-const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
-
-/** The sources an expression reads or calls (a value of an earlier step is one too). */
-const sources = (e: Expr): number =>
-  e.t === "call" || e.t === "read" || e.t === "val"
-    ? 1
-    : e.t === "def"
-      ? sources(e.e)
-      : e.t === "op"
-        ? sources(e.l) + sources(e.r)
-        : e.t === "fn"
-          ? e.args.reduce((a, x) => a + sources(x), 0)
-          : e.t === "not"
-            ? sources(e.a)
-            : 0;
-
-/** A factor that sums the bonuses of two sources or more: its terms and how they give it. */
-function additive(e: Expr): { terms: Expr[]; combine: Combine } | null {
-  const x = strip(e);
-  if (x.t !== "op" || x.o !== "+") return null;
-  const l = strip(x.l);
-  const r = strip(x.r);
-  // 1 + (bonuses) ÷ 100: the bonuses are percents
-  if (
-    l.t === "num" &&
-    Number(l.v) === 1 &&
-    r.t === "op" &&
-    r.o === "/" &&
-    strip(r.r).t === "num" &&
-    Number((strip(r.r) as { v: unknown }).v) === 100
-  )
-    return sources(r.l) >= 2
-      ? { terms: flat(strip(r.l), "+"), combine: "onePlusPercent" }
-      : null;
-  return sources(x) >= 2 ? { terms: flat(x, "+"), combine: "sum" } : null;
-}
-
-/** The rows of an additive factor of value `v`, when its terms give it; else null. */
-function additiveRows(
-  e: Expr,
-  v: number,
-  term: TermRow,
-): { rows: Row[]; combine: Combine } | null {
-  const a = additive(e);
-  if (!a) return null;
-  // the bonuses inside 1 + (…) ÷ 100 are percents already
-  const parts = a.terms.map((t) =>
-    a.combine === "sum" ? addedRows(t, (x) => term(x, "+")) : term(t, "+"),
-  );
-  if (parts.some((p) => !p)) return null;
-  const rows = parts.flatMap((p) => p ?? []);
-  const sum = rows.reduce((s, r) => s + added(r), 0);
-  const gives = a.combine === "sum" ? sum : 1 + sum / 100;
-  if (!near(gives, v)) return null;
-  return { rows: finish(sum, rows, false), combine: a.combine };
-}
-
-/** A factor that sums bonuses inside 1 + (…) ÷ 100 multiplies: its own Multi pool; one that sums sources adds them. */
-const kindOf = (c: Combine): PoolKind =>
-  c === "onePlusPercent" ? "multi" : "additive";
 /** A Multi pool of single multipliers, which share one pool when they come in a row (the order changes nothing). */
 const isSingles = (p: Omit<Pool, "name">) =>
   p.kind === "multi" && p.combine === "product";
@@ -182,9 +123,17 @@ export function poolsOf(
     parts.length > 1 &&
     (expr ? topOp(expr) === "+" : rows.some((r) => r.node.shareMode === "sum"));
   if (isSum && (!isProduct || sumFirst))
-    return named([
-      { kind: "additive", value: v, rows: [...rows], combine: "sum" },
-    ]);
+    return named(
+      (expr && term && topOp(expr) === "+"
+        ? scaledPools(flat(expr, "+"), v, term, (_, part) => {
+            // the other parts are the root's other rows, as they are (FR-008)
+            const i = rows.findIndex((r) => near(vOf(r), Number(part.v)));
+            return i < 0 ? null : rows.filter((_r, j) => j !== i);
+          })
+        : null) ?? [
+        { kind: "additive", value: v, rows: [...rows], combine: "sum" },
+      ],
+    );
   if (!isProduct) return null;
   const pools: Omit<Pool, "name">[] = parts.map((r) => ({
     kind: "multi",
@@ -365,6 +314,22 @@ export function chainPools(
           rows,
         });
     };
+    // the first step's sum, a part of which is a running total times 1 + its % ÷ 100: that chain of pools
+    // (tree/scaled.ts, answer A of 19/11)
+    const own = (t: Expr) => termAt(t, "+", at);
+    const scaled =
+      !pools.length && op === "+"
+        ? scaledPools(terms, Number(steps[at]?.v), own, (others) => {
+            const rs = others.map((x) => addedRows(x, own));
+            const parts = rs.flatMap((r) => r ?? []);
+            const sum = parts.reduce((a, r) => a + added(r), 0);
+            return rs.some((r) => !r) ? null : finish(sum, parts, false);
+          })
+        : null;
+    if (scaled) {
+      pools.push(...scaled.map((p) => ({ ...p, rows: under(p.rows) })));
+      continue;
+    }
     for (const e of terms) {
       const factor =
         op === "*"
