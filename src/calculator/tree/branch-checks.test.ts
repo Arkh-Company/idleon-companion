@@ -79,9 +79,14 @@ test("beside a pool, a read the pool shows leaves, and a check of it is said in 
   expect(lines(n)?.names).toContain("Invented level = 101: yes");
 });
 
-test("beside a pool, a check stays while the ⓘ is of atoms, which cannot say it (A39)", () => {
+test("beside a pool, a check an ⓘ of atoms does not say leaves too, said in words after the pools' math (A39)", () => {
+  // Vinicius's answer to A39 (option A): the check that stayed a row while the ⓘ was of atoms now leaves, and the
+  // pools' ⓘ becomes a rule that says it, its result still the row's value (FR-008)
   const n = besidePool(["Multi pool", "2 = 2"]) ?? undefined;
-  expect(kids(n)).toEqual(["Multi pool", "Invented level = 101"]);
+  expect(kids(n)).toEqual(["Multi pool"]);
+  expect(n?.formula).toEqual({
+    rule: ["Multi pool (Invented level = 101: yes)", "2 = 2"],
+  });
 });
 
 // A root whose steps are a chain, (Call1() + Call2()) × Call3(), its check "Owned = 1" beside "Owned" after the pools

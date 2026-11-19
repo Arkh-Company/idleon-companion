@@ -83,9 +83,9 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["Multi pool 2", near(WORN / MULTI), null, "x", { closed: true }],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
     ["Emporium: Other Dish", near(EMPORIUM), null, "+", {}],
-    // the block's data row (the quantity its log call took) and its checks, as for any block
+    // the block's data row (the quantity its log call took) and its checks, as for any block; the check of the
+    // quantity beside it is said in the food's ⓘ, no row (A39, Vinicius's answer of 19/11)
     ["Food slot 1 quantity", 999, "quantity", null, {}],
-    ["Food slot 1 quantity > 0", 0, "condition", null, {}],
     ["Game value", 0, "condition", null, { unnamed: true }],
   ]);
   const [set, family, worn] = pools;
@@ -126,19 +126,13 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     EMPORIUM,
     9,
   );
-  // its ⓘ is how its pools join
-  expect(food?.formula).toEqual([
-    [
-      "Multi pool 1",
-      "×",
-      "Additive pool",
-      "×",
-      "Multi pool 2",
-      "+",
-      "Emporium: Other Dish",
+  // its ⓘ is how its pools join, then the check beside them in words: a rule, its result the food's value (A39)
+  expect(food?.formula).toEqual({
+    rule: [
+      "Multi pool 1 × Additive pool × Multi pool 2 + Emporium: Other Dish (Food slot 1 quantity > 0: no)",
+      "1.3 × 2.2 × 2.522 + 6.006 = 13.219",
     ],
-    [1.3, 2.2, 2.522, 6.006, 13.219],
-  ]);
+  });
   expect(checkTree(food, 100)).not.toBeNull();
 });
 
