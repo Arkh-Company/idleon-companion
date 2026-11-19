@@ -208,7 +208,7 @@ test("a branch opened while the tree is asked again is asked as soon as the new 
     type: "expand",
     ...EXPAND_RING,
   });
-  h.tree({ ...ring, kids: [gem] });
+  h.branch({ ...ring, kids: [gem] });
   const t = h.last();
   expect(
     t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[1]?.kids,
@@ -216,22 +216,56 @@ test("a branch opened while the tree is asked again is asked as soon as the new 
   expect(shown(h).calculatedAt).toBe(2_000);
 });
 
-test("a branch opened while the tree is asked again is asked on the tree on screen when the new one fails", () => {
+const EXPAND_SWORD = { treeId: "dropRate", nodeId: "root/Sword" };
+const kidOf = (h: ReturnType<typeof setup>, i: number) => {
+  const t = h.last();
+  return t?.state === "ready" && Array.isArray(t.root.kids)
+    ? t.root.kids[i]
+    : undefined;
+};
+
+test("a branch opened while the tree is asked again is unavailable at once when the new one fails; the next branch asks the tree again first", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   h.p.request(EXPAND_RING);
   h.unavailable();
+  // The worker dropped the tree on screen when it began the new one: no branch of it is asked.
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  expect(kidOf(h, 1)).toMatchObject({ flags: { unavailable: true }, kids: [] });
+  h.p.request(EXPAND_SWORD);
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
+  expect(h.last()?.state).toBe("ready");
+  h.tree(dropTree(9, 7));
   expect(h.host.request.mock.lastCall?.[1]).toEqual({
     type: "expand",
-    ...EXPAND_RING,
+    ...EXPAND_SWORD,
   });
-  h.tree({ ...ring, kids: [gem] });
-  const t = h.last();
-  expect(
-    t?.state === "ready" && Array.isArray(t.root.kids) && t.root.kids[1]?.kids,
-  ).toEqual([gem]);
+  const edge = node({ id: "root/Sword/Edge", pieceKey: null });
+  h.branch({ ...sword(7), kids: [edge] });
+  expect(kidOf(h, 0)?.kids).toEqual([edge]);
 });
+
+test.each<[string, unknown]>([
+  ["a tree the check refuses", { id: 1 }],
+  ["a tree whose root is not the Stats number", dropTree(99, 7)],
+])(
+  "%s, asked again in silence with a branch waiting: the branch is unavailable, never asked of that build",
+  (_name, raw) => {
+    const h = readyDrop();
+    h.setPair(pairAt(2, 9));
+    h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+    h.p.request(EXPAND_RING);
+    h.tree(raw);
+    expect(h.host.request).toHaveBeenCalledTimes(2);
+    expect(kidOf(h, 1)).toMatchObject({
+      flags: { unavailable: true },
+      kids: [],
+    });
+    expect(shown(h).calculatedAt).toBe(1_000);
+  },
+);
 
 test.each<[string, unknown, Record<string, string>]>([
   [

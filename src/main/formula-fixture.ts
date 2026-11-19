@@ -75,6 +75,13 @@ export function pipeline(
     Parameters<typeof startFormulaPipeline>[0]["treeHost"]
   >[0];
   let on: Callbacks | undefined;
+  /** As the tree worker (tree-engine.ts): a number asked drops its build, and only a tree answered keeps one. */
+  let built = false;
+  const isNumber = (id: number) =>
+    (
+      host.request.mock.calls.find((c) => c[0] === id)?.[1] as
+        { type?: string } | undefined
+    )?.type === "number";
   const p = startFormulaPipeline({
     send: (t) => {
       sent.push(t);
@@ -106,18 +113,28 @@ export function pipeline(
     asked: () => host.request.mock.calls.at(-1)?.[0] as number,
     tree: (tree: unknown, log?: "chainOpen") => {
       const id = host.request.mock.calls.at(-1)?.[0] as number;
+      if (isNumber(id)) built = true;
       if (log) on?.onTree(id, tree, log);
       else on?.onTree(id, tree);
     },
     answer: (id: number, tree: unknown) => {
+      if (isNumber(id)) built = true;
       on?.onTree(id, tree);
+    },
+    /** The worker's answer to the last expand: the branch only when it still has a build, else "no such branch". */
+    branch: (raw: unknown) => {
+      const id = host.request.mock.calls.at(-1)?.[0] as number;
+      if (built) on?.onTree(id, raw);
+      else on?.onUnavailable(id);
     },
     /** The worker's answer to the last values asked. */
     values: (values: unknown) => {
       on?.onValues(host.values.mock.calls.at(-1)?.[0] as number, values);
     },
     unavailable: () => {
-      on?.onUnavailable(host.request.mock.calls.at(-1)?.[0] as number);
+      const id = host.request.mock.calls.at(-1)?.[0] as number;
+      if (isNumber(id)) built = false;
+      on?.onUnavailable(id);
     },
     /** The worker's answer to the last shape asked. */
     shape: (parts: unknown) => {
