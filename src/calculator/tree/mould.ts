@@ -6,7 +6,11 @@
 import { fx3 } from "./curves.ts";
 import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
-import { isConstant, termsOf, vOf } from "./formulas.ts";
+import { flat, topOp } from "./expr.ts";
+import { isConstant, near, termsOf, vOf } from "./formulas.ts";
+import { inPool, isStep } from "./inline.ts";
+import { besidePools } from "./pool-rest.ts";
+import { citing } from "./build-up.ts";
 import { formulaOut } from "./math.ts";
 import {
   chainPools,
@@ -15,6 +19,7 @@ import {
   rootExtreme,
   through,
 } from "./pools.ts";
+import { addsSources } from "./scaled.ts";
 import { roundingOf } from "./tops.ts";
 import type { Rounding } from "./tops.ts";
 import type { OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
@@ -26,7 +31,6 @@ import { bySystem, ownPair } from "./groups.ts";
 import type { WriterOf } from "./groups.ts";
 
 export { bySystem } from "./groups.ts";
-export type { WriterOf } from "./groups.ts";
 
 /** The root's rows as its steps: a step named by its shape loses that name; a branch's own rows are its parts, with
  * their names by shape for its ⓘ. */
@@ -65,6 +69,12 @@ const readsOf = (e: Expr): string[] =>
  * working value of the root that only joins sources in the way (`joins`, FR-017).
  */
 function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
+  const [part] = p.rows;
+  if (p.lone && part)
+    return {
+      ...part,
+      node: { ...part.node, fmt: p.kind === "multi" ? "x" : "+" },
+    };
   const op =
     p.combine === "product"
       ? "*"
@@ -72,15 +82,37 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
         ? "+"
         : null;
   const rows = op ? dissolve(p.rows, op, joins) : p.rows;
-  const level = [...bySystem(rows, p.combine, writerOf)];
   const pct = p.combine === "onePlusPercent";
   // 1 + (its groups) ÷ 100: the ⓘ the parts' own sum or product would not give
-  const pair: [string, string] | null = pct
-    ? [
-        `1 + (${level.map((r) => termOf(r.node)).join(" + ")}) ÷ 100`,
-        `1 + (${level.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
-      ]
-    : ownPair(level, p.combine === "product", p.value);
+  const pairOf = (lv: readonly Row[]): [string, string] | null =>
+    pct
+      ? [
+          `1 + (${lv.map((r) => termOf(r.node)).join(" + ")}) ÷ 100`,
+          `1 + (${lv.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
+        ]
+      : ownPair(lv, p.combine === "product", p.value);
+  // FR-017: an unnamed step of a mixed math moves up, its ⓘ in the pool's (tree/inline.ts); the other rows by system.
+  // A step that only adds or only multiplies is no such step: `dissolve` takes in the first kind, and the second is a
+  // term of the pool (a talent times a count, FR-003)
+  const mixed = (r: Row) => isStep(r) && !r.op;
+  const steps = rows.filter(mixed);
+  const apart = steps.length
+    ? inPool(
+        p,
+        [
+          ...bySystem(
+            rows.filter((r) => !mixed(r)),
+            p.combine,
+            writerOf,
+          ),
+          ...steps,
+        ],
+        pairOf,
+        mixed,
+      )
+    : null;
+  const level = apart?.rows ?? [...bySystem(rows, p.combine, writerOf)];
+  const pair = pairOf(level);
   const node = row({
     pieceKey: null,
     value: p.value,
@@ -91,9 +123,20 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
     poolKind: p.kind,
     fmt: p.combine === "sum" ? null : "x",
     flags: { closed: true },
-    formula: pair && formulaOut(pair, termsOf(level)),
+    // its rows named whole, a name with a colon or a sign too ("Beanstalk: …", "Fixed +2")
+    formula: apart
+      ? apart.formula
+      : pair &&
+        formulaOut(pair, [
+          ...termsOf(level),
+          ...level.map((r) => termOf(r.node)),
+        ]),
   });
-  return { node, open: null, group: withShares(node, pair, level).rows };
+  return {
+    node,
+    open: null,
+    group: apart ? apart.rows : withShares(node, pair, level).rows,
+  };
 }
 
 /** The root's first level as its pools (FR-005), each with its share of the root, and the root's ⓘ. */
@@ -160,7 +203,8 @@ function pooledLevel(
   chain: boolean,
   { steps, writerOf, joins }: FirstLevelContext,
   keep = chain,
-): { rows: Row[]; formula: Node["formula"] } {
+  cite = true,
+): ReturnType<typeof besidePools> {
   // a step's terms keep their names by shape, as under the step in the 008; the steps of one step lose theirs
   const out = poolRows(
     chain ? pools : pools.map((p) => ({ ...p, rows: mould(p.rows) })),
@@ -170,25 +214,52 @@ function pooledLevel(
   );
   // its checks and its data rows stay after the pools
   const rest = keep ? restOf(rows, steps) : [];
-  return { rows: [...out.rows, ...rest], formula: out.formula };
+  // only pools beside each other: a read a pool shows leaves (tree/pool-rest.ts)
+  // its checks said in its ⓘ when `cite` (A39)
+  return besidePools([...out.rows, ...rest], cite ? out.formula : null);
 }
 
 /**
- * The level of a source that is itself a system computed as a chain (spec 009, FR-017): the pools of its own chain (FR-005)
- * by system, its block's other rows after them (`rows`, its 008 rows), and how its pools give it; null for no chain.
+ * A call of one step that multiplies, a factor of which adds the bonuses of two sources or more (the Meritocracy bonus
+ * multiplier, audit family 14; Vinicius's answer B of 20/11): its pools are that step's (rule Y, FR-005).
+ */
+function factorStep(steps: readonly Step[], value: Node["value"]): boolean {
+  const v = typeof value === "boolean" ? Number(value) : value;
+  const st = v === null ? undefined : steps.findLast((s) => near(s.v, v));
+  const e = st && through(st.e, st.v);
+  return !!e && topOp(e) === "*" && flat(e, "*").some(addsSources);
+}
+
+/**
+ * The level of a source that is itself a system computed as a chain (spec 009, FR-017), or of any call of one step whose
+ * factor adds the bonuses of two sources or more (answer B of 20/11): the pools of its own chain or step (FR-005) by
+ * system, its block's other rows after them (`rows`, its 008 rows), and how its pools give it; null for neither.
  */
 export function chainLevel(
   rows: Row[],
   value: Node["value"],
   ctx: FirstLevelContext,
+  system = true,
 ): { rows: Row[]; pair: [string, string] | null } | null {
   const { steps, termAt, ownCache } = ctx;
+  if (!steps || !termAt) return null;
+  const chain = system ? chainPools(steps, { value }, termAt, ownCache) : null;
+  // its one step's pools only when a sum is among them (single multipliers alone are no pools of their own), and never
+  // over the rows of a pass of the game's own (tree/gold-food.ts, tree/raw-passes.ts), as the root's
+  const one =
+    chain === null && !ctx.passed && factorStep(steps, value)
+      ? chainPools(steps, { value }, termAt, ownCache, true)
+      : null;
   const pools =
-    steps && termAt ? chainPools(steps, { value }, termAt, ownCache) : null;
+    Array.isArray(one) && one.some((p) => p.combine !== "product")
+      ? one
+      : chain;
   if (!Array.isArray(pools)) return null;
   const v = typeof value === "boolean" ? Number(value) : (value ?? NaN);
+  // its checks stay rows here: the ⓘ that says them is the pair's, made where the level is placed (tree/places.ts)
   return {
-    rows: pooledLevel(rows, { name: "", value }, pools, true, ctx).rows,
+    rows: pooledLevel(rows, { name: "", value }, pools, true, ctx, true, false)
+      .rows,
     pair: poolsPair(pools, v),
   };
 }
@@ -219,6 +290,8 @@ function pooled(
 ): {
   rows: Row[];
   formula: Node["formula"];
+  /** The checks beside its pools its ⓘ says, no rows (A39). */
+  checks: Row[];
   pools: readonly Pool[];
   open: boolean;
 } | null {
@@ -282,9 +355,13 @@ export function firstLevel(
   if (rounding && rounded)
     return {
       rows: rounded.rows,
-      formula: formulaOut(
-        roundedPair(rounding, rounded.pools, v),
-        rounded.pools.map((p) => p.name),
+      // the checks beside its pools said after the rounding (A39)
+      formula: citing(
+        formulaOut(
+          roundedPair(rounding, rounded.pools, v),
+          rounded.pools.map((p) => p.name),
+        ),
+        rounded.checks,
       ),
       ...(rounded.open ? { chainOpen: true as const } : {}),
     };

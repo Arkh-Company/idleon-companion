@@ -146,17 +146,25 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
   };
 }
 
-/** The ⓘ of a pool or group from its rows: their sum or product; none for a single row (it is the row's). */
+/**
+ * The ⓘ of a pool or group from its rows: their sum or product, a bonus in % standing alone divided by 100 (FR-017),
+ * and so a group in %, in the unit its row shows (+24% is 24 ÷ 100); none for a single row that gives it whole (it is
+ * the row's).
+ */
 export function ownPair(
   rows: readonly Row[],
   product: boolean,
   value: number,
 ): [string, string] | null {
-  if (rows.length < 2) return null;
+  const inPercent = (r: Row) => r.node.combine === "percent";
+  const cuts = (r: Row) => !!r.percent || inPercent(r);
+  if (rows.length < 2 && !rows.some(cuts)) return null;
   const op = product ? " × " : " + ";
+  const cut = (r: Row, t: string) => (cuts(r) ? `${t} ÷ 100` : t);
+  const shown = (r: Row) => (inPercent(r) ? vOf(r) * 100 : vOf(r));
   return [
-    rows.map((r) => termOf(r.node)).join(op),
-    `${rows.map((r) => fx3(vOf(r))).join(op)} = ${fx3(value)}`,
+    rows.map((r) => cut(r, termOf(r.node))).join(op),
+    `${rows.map((r) => cut(r, fx3(shown(r)))).join(op)} = ${fx3(value)}`,
   ];
 }
 
@@ -187,28 +195,36 @@ export function bySystem(
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  const [only] = groups.values();
-  if (groups.size <= 1 && (!only || (only.s === OTHER && !only.pct)))
-    return rows;
-  // a system beyond the V1 after the V1's, in the order of the sum (the sort keeps it), "Other" last (FR-004)
+  // every source in "Other", in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%,
+  // its pool's ⓘ dividing it by 100 (A34, option B of 20/11)
+  const all = [...groups.values()];
+  if (all.every((g) => g.s === OTHER))
+    return all.some((g) => g.pct)
+      ? rows.map((r) =>
+          r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+        )
+      : rows;
+  // a system beyond the V1 after the V1's, in the order of the sum, "Other" last (FR-004); each system's group in %
+  // right after its own (A34)
+  const first = all.map((g) => g.s.name);
   const at = (s: System) =>
     s === OTHER
-      ? SYSTEM_ORDER.length
+      ? SYSTEM_ORDER.length + first.length
       : SYSTEM_ORDER.includes(s.name)
         ? SYSTEM_ORDER.indexOf(s.name)
-        : SYSTEM_ORDER.length - 1;
+        : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
-  // a lone bonus in % stays a group: it adds a hundredth of its value
+  // a lone bonus in % stands alone too, as its +N% (FR-006, decision of 19/11): its pool's ⓘ divides it by 100
   return [
     ...[...groups.values()]
       .sort((a, b) => rank(a) - rank(b))
       .flatMap(({ s, pct, rows: rs }) =>
-        pct
-          ? [systemRow(s, "percent", rs)]
-          : rs.length === 1
-            ? rs
-            : [systemRow(s, combine, rs)],
+        rs.length === 1
+          ? rs.map((r) =>
+              pct ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+            )
+          : [systemRow(s, pct ? "percent" : combine, rs)],
       ),
     ...constants,
   ];

@@ -5,12 +5,11 @@
 // file: gold-food-branch.test.ts is at its size.
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { GAME, PAK } from "../fixtures/fake-mosaic.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { golden, TABLES } from "./gold-food-fixture.ts";
 import { useGameTables } from "./table-names.ts";
-import { openPath } from "./tree-fixture.ts";
+import { kidsIn, openPath } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -20,8 +19,6 @@ afterEach(() => {
   useGameTables(new Map());
 });
 
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 /** The chain's pools of the golden food of `key`, at an emporium level `level`, and its build. */
 function poolsOf(key: string, level: number) {
   const build = buildTree(
@@ -33,7 +30,8 @@ function poolsOf(key: string, level: number) {
     recorder.ops,
   );
   const food = openPath(build, `GoldFoodBonuses(${JSON.stringify(key)})`);
-  return { build, pools: kidsOf(food).filter((k) => k.role === "pool") };
+  const rows = kidsIn(food);
+  return { build, rows, pools: rows.filter((k) => k.role === "pool") };
 }
 
 test("a worn food added to the bonus: the row inside its pool is Equipped: <the food>", () => {
@@ -41,18 +39,18 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
   const { build, pools } = poolsOf("added", 0);
   expect(pools.map((p) => p.name)).toEqual(["Additive pool"]);
   // the pool's rows by system: the worn food's product is the first row of its group
-  const [worn] = kidsOf(pools[0]).flatMap(kidsOf);
+  const [worn] = kidsIn(pools[0]).flatMap(kidsIn);
   expect([worn?.name, worn?.value]).toEqual([
     "Equipped: Invented Charm",
     expect.closeTo(7.212813084112149, 9),
   ]);
   // its quantity factor, 1 + log₁₀(1 + quantity) ÷ 2.14, is math in its ⓘ, no row (19/11): its leaf is the quantity
   const factor = worn?.kids === "lazy" ? build.expand(worn.id) : worn;
-  expect(kidsOf(factor).map((k) => [k.name, k.value])).toContainEqual([
+  expect(kidsIn(factor).map((k) => [k.name, k.value])).toContainEqual([
     "Quantity",
     999,
   ]);
-  expect(kidsOf(factor).map((k) => k.name)).not.toContain(
+  expect(kidsIn(factor).map((k) => k.name)).not.toContain(
     "Quantity multiplier",
   );
   expect(worn?.formula).toEqual([
@@ -89,15 +87,13 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
 
 test("the emporium's product with the quantity factor of its own log, as N.js writes it: Emporium: <its food>", () => {
   useGameTables(TABLES);
-  const { build, pools } = poolsOf("njs", 3);
-  expect(pools.map((p) => p.name)).toEqual([
-    "Multi pool 1",
-    "Additive pool 1",
-    "Multi pool 2",
-    "Additive pool 2",
-  ]);
+  const { build, rows, pools } = poolsOf("njs", 3);
+  // the worn food's step is its own × N row, no pool (the rule and answer 2 of 19/11)
+  expect(pools.map((p) => p.name)).toEqual(["Multi pool", "Additive pool"]);
+  expect(rows[2]?.name).toBe("Equipped: Invented Charm");
+  // the emporium's lone + is its own row, no pool (decision of 19/11)
   // 7 × 2.86 × 0.05 × log₁₀(1 + 10^6) × (1 + log₁₀(1 + 10^6) ÷ 2.14)
-  const [emporium] = kidsOf(pools[3]);
+  const emporium = rows[3];
   expect([emporium?.name, emporium?.value]).toEqual([
     "Beanstalk: Other Dish",
     expect.closeTo(22.845255208907478, 9),
@@ -105,8 +101,8 @@ test("the emporium's product with the quantity factor of its own log, as N.js wr
   // its factor measures the emporium's level, not a quantity: no Quantity multiplier
   const parts =
     emporium?.kids === "lazy"
-      ? kidsOf(build.expand(emporium.id))
-      : kidsOf(emporium);
+      ? kidsIn(build.expand(emporium.id))
+      : kidsIn(emporium);
   expect(parts.map((k) => k.name)).toEqual([
     "Amount of the golden food (item table)",
     "GFood Multi",

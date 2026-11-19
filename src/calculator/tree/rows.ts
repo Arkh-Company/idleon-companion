@@ -57,12 +57,24 @@ export interface Row {
   /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
   test?: string;
   /**
+   * The code of the read or call a branch check compares with a literal (tree/conditions.ts condRows): its subject,
+   * matched by code and not by name (audit family 3). None once a yes/no read merges into it: it is that state then.
+   */
+  subject?: string;
+  /**
+   * Reads beside the pools of the level above that this source's call read (tree/pool-rest.ts, audit family 10): shown
+   * under it, after its own rows.
+   */
+  below?: Row[];
+  /**
    * The ⓘ before the row's own rows exist (tree/formulas.ts): the game's expression around the row, its parts as tokens
    * (pieces.cjs `xformula`, and `xweak` when it names the row alone), or its finished pair (`f`, a curve's).
    */
   xf?: [names: string, numbers: string];
   xweak?: [names: string, numbers: string];
   f?: [names: string, numbers: string];
+  /** A curve's `f` with its constants by their role (spec 009, FR-018), for the ⓘ above it when it is no row. */
+  roles?: [names: string, numbers: string];
   /** A cache row that takes its writer's ⓘ only when it gives the row's value, or never (tree/cache-formulas.ts). */
   writerF?: "sameValue" | "never";
   /** formulas.cjs `r1src`: the name of the first source of a branch around a call, which tells two such branches apart. */
@@ -260,6 +272,12 @@ export function curveRow(
   };
   const name = `Curve: ${curveText(c)}`;
   const text = curveFormula(c, fields.value, termOf(last.node));
+  // FR-018: in the ⓘ above it, its constants by their role in the line of names, as its rows are named
+  const [a, b] = parts.map((r) => r.node.name);
+  const roles =
+    a && text
+      ? curveFormula(c, fields.value, termOf(last.node), [a, b ?? a])
+      : null;
   const reached = maxReachedOf(c, fields.value);
   return {
     node: row({
@@ -278,5 +296,6 @@ export function curveRow(
     group: withShares({ name, value: fields.value }, text, [...parts, last])
       .rows,
     ...(text ? { f: text } : {}),
+    ...(roles ? { roles } : {}),
   };
 }

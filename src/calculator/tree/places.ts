@@ -7,7 +7,8 @@
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
-import { termsOf, withFormula } from "./formulas.ts";
+import { near, termsOf, vOf, withFormula } from "./formulas.ts";
+import { classify } from "./kinds.ts";
 import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
@@ -17,11 +18,23 @@ import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
+import type { LevelOf } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
+import { byRole, inlined, isStep } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
-import { asideInFormula, buildUp } from "./build-up.ts";
+import {
+  asideInFormula,
+  branchCheck,
+  buildUp,
+  checkSubject,
+  citing,
+  ifChecks,
+} from "./build-up.ts";
+import { cardFactor, meritocracyMulti } from "./factors.ts";
+import { boxTotal } from "./box-total.ts";
+import { besidePools, downToSources } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -55,6 +68,39 @@ export interface PlaceContext {
   explain(id: number, depth: number, seen: ReadonlySet<number>): Row[] | null;
   /** A cache row's rows, its writer's, with the writer's ⓘ (tree/caches.ts). */
   opened(o: CacheOpen, depth: number, seen: ReadonlySet<number>): Opened | null;
+}
+
+/**
+ * A row that ends with no kids: its type of leaf, by its name and code (tree/kinds.ts), when it has none; one whose ⓘ
+ * says how it comes is no unknown leaf (never a "?").
+ */
+const typedLeaf = (n: CalcTreeNode): CalcTreeNode =>
+  n.leaf || n.formula || n.role === "pool" || n.role === "system"
+    ? n
+    : { ...n, ...classify(n) };
+
+type Built = ReturnType<typeof inlined>;
+
+/**
+ * The math of a level's rows but its branch checks, `bare`: without the reads the checks compare too, when an unnamed
+ * step dissolves only then (audit family 14, A15: a call a check gates, its read no part of the math); those reads stay
+ * rows after the others (FR-008).
+ */
+function leanOf(
+  bare: Built,
+  rows: readonly Row[],
+  checks: readonly Row[],
+  own: (rows: Row[]) => Built,
+): Built {
+  const subjects = checks.flatMap((c) => checkSubject(c, rows) ?? []);
+  if (!subjects.length) return bare;
+  const lean = own(
+    rows.filter((r) => !checks.includes(r) && !subjects.includes(r)),
+  );
+  const steps = (rs: readonly Row[]) => rs.filter(isStep).length;
+  return Array.isArray(lean.formula) && steps(lean.rows) < steps(bare.rows)
+    ? { formula: lean.formula, rows: [...lean.rows, ...subjects] }
+    : bare;
 }
 
 export function makePlaces(ctx: PlaceContext) {
@@ -124,9 +170,40 @@ export function makePlaces(ctx: PlaceContext) {
       keyOf: (n) => ctx.keyOf(n),
     });
     const l = up?.level ?? lv;
-    const w = withFormula(l.row, flatten(l.rows));
     // a built-up ⓘ names its rows whole, a name with a colon too ("Arcade: Prisma Bonuses")
     const f = up && l.row.f;
+    // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts);
+    // the math of the rows with no branch check comes first, each check said after it in words (FR-018, A39)
+    // its Meritocracy multi and its card's level by their roles first, before any step moves up (tree/factors.ts)
+    const rows0 = f
+      ? l.rows
+      : boxTotal(
+          cardFactor(name, l.rows.map(meritocracyMulti), vOf(l.row)),
+          vOf(l.row),
+        );
+    const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
+    const checks = f ? [] : rows0.filter((r) => branchCheck(r, rows0));
+    const bare = checks.length
+      ? leanOf(
+          own(rows0.filter((r) => !checks.includes(r))),
+          rows0,
+          checks,
+          own,
+        )
+      : null;
+    // a level at 0 whose other parts are all 0: its checks give it, not a math of its parts (a talent at 0, its guard)
+    const zero =
+      !!bare && vOf(l.row) === 0 && bare.rows.every((r) => vOf(r) === 0);
+    const math = bare?.formula && !zero ? bare.formula : null;
+    const all = f || math ? null : own(rows0);
+    const w = f
+      ? withFormula(l.row, flatten(l.rows))
+      : math && bare
+        ? { formula: citing(math, checks), rows: [...bare.rows, ...checks] }
+        : all && zero && checks.length
+          ? // no ⓘ but its checks: the value they lead to
+            { formula: ifChecks(checks, vOf(l.row)), rows: all.rows }
+          : (all ?? own(rows0));
     const formula = f
       ? up.rule
         ? { rule: f }
@@ -137,10 +214,17 @@ export function makePlaces(ctx: PlaceContext) {
       : w.formula;
     return {
       formula,
-      rows: asideInFormula(w.rows, formula !== null),
+      rows: asideInFormula(w.rows, formula),
       ...(up?.maxReached ? { maxReached: up.maxReached } : {}),
     };
   }
+
+  /** Whether the call of the source `s` read `r`, its path at its value (tree/pool-rest.ts `downToSources`). */
+  const readBy = (s: Row, r: Row) =>
+    typeof s.open === "number" &&
+    !!nodes[s.open]?.r?.some(
+      ([p, v]) => p === r.node.code && near(Number(v), vOf(r)),
+    );
 
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
   function placedLevel(id: string, lv: Level, name: string) {
@@ -148,25 +232,34 @@ export function makePlaces(ctx: PlaceContext) {
     // of a source computed as a chain, which opens into its pools: its ⓘ is how they join, the step its call takes
     // (FR-017); any other level has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
     const pools = lv.rows.filter((r) => r.node.role === "pool");
-    const w = isMould(lv.row)
-      ? { formula: lv.row.node.formula, rows: lv.rows }
-      : pools.length
-        ? {
-            formula: lv.row.xf
-              ? formulaOut(
+    const mould = isMould(lv.row);
+    const up = mould || pools.length ? null : builtUp(lv, name);
+    const w =
+      up ??
+      (mould
+        ? { formula: lv.row.node.formula, rows: lv.rows }
+        : // only pools beside each other (tree/pool-rest.ts)
+          besidePools(
+            downToSources(lv.rows, readBy),
+            lv.row.xf
+              ? // a lone part between the pools goes by its term (tree/pools.ts `lone`)
+                formulaOut(
                   lv.row.xf,
-                  pools.map((p) => p.node.name),
+                  lv.rows.map((p) => termOf(p.node)),
                 )
               : null,
-            rows: lv.rows,
-          }
-        : builtUp(lv, name);
+          ));
+    const reached = up?.maxReached;
     return {
       formula: w.formula,
-      ...("maxReached" in w && w.maxReached
-        ? { maxReached: w.maxReached }
-        : {}),
-      kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
+      ...(reached ? { maxReached: reached } : {}),
+      // the reads beside the pools above that its call read, after its rows (audit family 10)
+      kids: placeAt(
+        { id, code: lv.code },
+        [...w.rows, ...(lv.row.below ?? [])],
+        lv.at,
+        { total: vOf(lv.row), formula: w.formula, aside: lv.row.below ?? [] },
+      ),
     };
   }
 
@@ -178,13 +271,21 @@ export function makePlaces(ctx: PlaceContext) {
     parent: Pick<CalcTreeNode, "id" | "code">,
     rows: Row[],
     at: At,
+    /**
+     * The level's value, ⓘ and reads beside it: its rows repeated are one unless they are the parts of its sum or its
+     * ⓘ cites them each time (audit family 8, FR-008).
+     */
+    of: LevelOf = {},
   ): CalcTreeNode[] {
     const count = new Map<string, number>();
     // FR-016: a source a game-bug rule marks stays repeated
     const marked = (code: string) =>
       gameBugOf(ctx.bugs, parent.code, code) !== null;
     // opus2Arena: the yes/no beside the arena's count is named as the count
-    return besideArena(oneOfEach(rows, marked)).map((x) => {
+    const { total, ...rest } = of;
+    const kept =
+      total !== undefined && Number.isFinite(total) ? { ...rest, total } : rest;
+    return besideArena(oneOfEach(rows, marked, kept)).map((x) => {
       // opus5's openStatue: the statue's base bonus, over the recording
       const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
@@ -210,8 +311,14 @@ export function makePlaces(ctx: PlaceContext) {
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
         ...(group ? placedLevel(id, group, node.name) : {}),
       };
-      if (open !== null) places.set(id, { node: placed, level });
-      return placed;
+      // audit family 6: a row that ends with no kids is a leaf with its type, one of the 9 or unknown with its why (a
+      // call is typed when it opens: its build-up may give it rows its level does not have)
+      const out: CalcTreeNode =
+        open === null && Array.isArray(placed.kids) && !placed.kids.length
+          ? typedLeaf(placed)
+          : placed;
+      if (open !== null) places.set(id, { node: out, level });
+      return out;
     });
   }
 
@@ -231,7 +338,11 @@ export function makePlaces(ctx: PlaceContext) {
       const { node, level } = p;
       if (!level)
         return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
-      return { ...node, ...placedLevel(node.id, level, node.name) };
+      const open = { ...node, ...placedLevel(node.id, level, node.name) };
+      // a call that opens empty ends there: a leaf with its type (audit family 6)
+      return Array.isArray(open.kids) && !open.kids.length
+        ? typedLeaf(open)
+        : open;
     },
   };
 }

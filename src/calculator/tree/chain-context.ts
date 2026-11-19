@@ -5,8 +5,8 @@ import type { RecNode } from "../recording.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Opened } from "./cache-formulas.ts";
 import { readsPath } from "./cache-picks.ts";
-import { topOp } from "./expr.ts";
-import { goldFoodTerm } from "./gold-food-chain.ts";
+import { isClamp, topOp } from "./expr.ts";
+import { goldFoodTerm, wornStep } from "./gold-food-chain.ts";
 import { near } from "./math.ts";
 import type { FirstLevelContext } from "./mould.ts";
 import type { TermAt } from "./pools.ts";
@@ -40,14 +40,22 @@ export function chainContext(
   const last = all.at(-1);
   const terms = termsOf(n);
   const reads: Reads = new Map((n.r ?? []).map(([p, v]) => [p, v]));
-  // a golden food's terms named by their role (tree/gold-food-chain.ts), else the assembly's
+  // a golden food's terms named by their role (tree/gold-food-chain.ts); a clamp its own row, the clamp in its ⓘ and
+  // its constants its rows, even when it leaves its source's value as it is (FR-008, answer B of 20/11); else the
+  // assembly's
   const termAt: TermAt = (e, op, at) => {
-    const term = (t: Expr, o: "*" | "+") =>
-      terms.term(t, o, reads, { args: n.a, steps: all, at });
+    const turn = { args: n.a, steps: all, at };
+    const term = (t: Expr, o: "*" | "+") => terms.term(t, o, reads, turn);
     return (
       goldFoodTerm(e, op, { block: n, nodes, steps: all, reads, term }) ??
-      term(e, op)
+      (isClamp(e) ? terms.clampAt(e, reads, turn) : term(e, op))
     );
+  };
+  // the worn food's step, one row (tree/gold-food-chain.ts `wornStep`, the rule of 19/11)
+  termAt.step = (ts, at) => {
+    const turn = { args: n.a, steps: all, at };
+    const term = (t: Expr, o: "*" | "+") => terms.term(t, o, reads, turn);
+    return wornStep(ts, { block: n, nodes, steps: all, reads, term });
   };
   // a working value the call's own block wrote: its cache's writer is the call
   const own = (r: Row | null | undefined) =>

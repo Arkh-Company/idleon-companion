@@ -10,25 +10,12 @@ import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { cond, fixed, placed, recNode } from "./tree-fixture.ts";
+import { check, fixed, kidsIn, leaf, placed, recNode } from "./tree-fixture.ts";
 
-const leaf = (
-  name: string,
-  value: number,
-  code: string | null,
-  kind: Row["node"]["leaf"],
-): Row => ({
-  node: row({ pieceKey: code, value, code, name, leaf: kind }),
-  open: null,
-});
 const lazy = (name: string, open: number, value: number, code: string) => ({
   node: row({ pieceKey: code, value, code, name, kids: "lazy" as const }),
   open,
 });
-const check = (name: string, yes: boolean): Row => {
-  const c = cond(name, yes);
-  return { ...c, node: { ...c.node, name } };
-};
 const branch = (name: string, value: number, group: Row[]): Row => ({
   node: row({ pieceKey: null, value, code: null, name }),
   open: null,
@@ -38,8 +25,6 @@ const brief = (kids: readonly CalcTreeNode[]) =>
   kids.map((k) => [k.name, k.value, k.leaf]);
 const lines = (n: CalcTreeNode | null | undefined) =>
   n?.formula ? formulaLines(n.formula) : null;
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 
 /** The row `top` placed and opened, over `nodes` and the calls' `levels`. */
 function opened(
@@ -77,7 +62,7 @@ test("[FR-018] a talent: its Talent level (Points invested + All-talent levels) 
     { 0: talentLevel, 2: [leaf("Rift Slug", 268, "Companions(1)", null)] },
     lazy("Haungry For Gold", 0, 49.187582562747686, "GetTalentNumber(1, 99)"),
   );
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Talent level", 677, null],
     ["Max bonus", 55, "fixedValue"],
     ["Level at half", 80, "fixedValue"],
@@ -86,10 +71,10 @@ test("[FR-018] a talent: its Talent level (Points invested + All-talent levels) 
     names: "Max bonus × Talent level ÷ (Talent level + Level at half)",
     numbers: "55 × 677 ÷ (677 + 80) = 49.2",
   });
-  const [level] = kidsOf(n);
-  expect(brief(kidsOf(level))).toEqual([
+  const [level] = kidsIn(n);
+  expect(brief(kidsIn(level))).toEqual([
     ["Points invested", 409, "investedPoints"],
-    ["All-talent levels", 268, null],
+    ["All-talent levels", 268, "rawBonus"],
   ]);
   expect(lines(level)).toMatchObject({
     names: "Points invested + All-talent levels",
@@ -112,7 +97,7 @@ test("[FR-018] a talent in a dungeon: its Talent level is the dungeon's 50, with
     },
     lazy("Some Talent", 0, 5, "GetTalentNumber(1, 5)"),
   );
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Talent level (in a dungeon)", 50, "fixedValue"],
     ["Start value", 0, "fixedValue"],
     ["Bonus per level", 0.1, "fixedValue"],
@@ -133,7 +118,7 @@ test("[FR-018] a talent whose curve does not take its points and All-talent leve
     },
     lazy("Haungry For Gold", 0, 49.187582562747686, "GetTalentNumber(1, 99)"),
   );
-  expect(kidsOf(n).map((k) => k.name)).toEqual(["All-talent levels", "Level"]);
+  expect(kidsIn(n).map((k) => k.name)).toEqual(["All-talent levels", "Level"]);
 });
 
 test("[FR-018] a Legend Talent: its Points and its Bonus per point, the round in the ⓘ", () => {
@@ -151,7 +136,7 @@ test("[FR-018] a Legend Talent: its Points and its Bonus per point, the round in
     { 0: [leaf("Level", 3, "Spelunk[18][25]", "level")] },
     lazy("Midusian Appetite", 0, 1500, 'Thingies("LegendPTS_bonus", 25, 0)'),
   );
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Points", 3, "level"],
     ["Bonus per point", 500, "fixedValue"],
   ]);
@@ -204,7 +189,7 @@ test("[FR-018] a bubble: its level, the curve's constants and the Prisma multi, 
     },
     lazy("SHIMMERON bubble", 0, 326.899733289806, BUBBLE),
   );
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Bubble level", 10058, "level"],
     ["Max bonus", 80, "fixedValue"],
     ["Level at half", 40, "fixedValue"],
@@ -224,7 +209,7 @@ test("[FR-018] a bubble that is no Prisma: its level and the curve's constants, 
     { 0: bubbleLevel(false) },
     lazy("SHIMMERON bubble", 0, 79.6831055654585, BUBBLE),
   );
-  expect(kidsOf(n).map((k) => k.name)).toEqual([
+  expect(kidsIn(n).map((k) => k.name)).toEqual([
     "Bubble level",
     "Max bonus",
     "Level at half",
@@ -253,7 +238,7 @@ test("[FR-018] a bubble times its class's bubble: Bubble bonus × the class mult
     },
     lazy("Shimmeron bubble", 1, 4017.161798622736, "DNSM.AlchBubbles.GFoodz"),
   );
-  expect(kidsOf(n).map((k) => k.name)).toEqual([
+  expect(kidsIn(n).map((k) => k.name)).toEqual([
     "Bubble bonus",
     "Warriors Rule multi",
   ]);
@@ -308,7 +293,7 @@ test("[FR-018] a sigil: its tier, the Bonus at tier and each multiplier as its o
     },
     lazy("Emoji Veggie", 0, 640, 'Labb("SigilBonus", "Blank", 14, 0)'),
   );
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Sigil tier", 4, "tier"],
     ["Bonus at tier", 80, "fixedValue"],
     ["Chilled Yarn multi", 8, null],
@@ -318,8 +303,8 @@ test("[FR-018] a sigil: its tier, the Bonus at tier and each multiplier as its o
     names: "Bonus at tier × Chilled Yarn multi × Meritocracy multi",
     numbers: "80 × 8 × 1 = 640",
   });
-  const [, , yarn, merit] = kidsOf(n);
-  expect(brief(kidsOf(yarn))).toEqual([
+  const [, , yarn, merit] = kidsIn(n);
+  expect(brief(kidsIn(yarn))).toEqual([
     ["Artifact base", 1, "fixedValue"],
     ["Rarity multiplier", 7, "tier"],
   ]);
@@ -328,7 +313,7 @@ test("[FR-018] a sigil: its tier, the Bonus at tier and each multiplier as its o
     numbers: "1 + 1 × 7 = 8",
   });
   // the code's "Base 1" and "÷ 100" are in the ⓘ only; the vote bonus opens into its own rows
-  expect(kidsOf(merit).map((k) => k.name)).toEqual([
+  expect(kidsIn(merit).map((k) => k.name)).toEqual([
     "All of your Sigils give x higher bonuses than normal",
   ]);
   expect(lines(merit)?.numbers).toBe("1 + 0 ÷ 100 = 1");
@@ -347,7 +332,7 @@ test("[FR-018] a card with a cap: its Card level and its Bonus per level as rows
     [branch("Domeo Magmus", 10, cardLevel(7, true))],
   );
   const [n] = rows;
-  expect(brief(kidsOf(n))).toEqual([
+  expect(brief(kidsIn(n))).toEqual([
     ["Card level", 7, null],
     ["Bonus per level", 1.5, "fixedValue"],
   ]);
@@ -371,7 +356,7 @@ test("[FR-018] a check of a row beside it is in the ⓘ only, never a row; a con
     ]),
   ]);
   const [n] = rows;
-  expect(kidsOf(n).map((k) => k.name)).toEqual(["× 2", "Bonus level"]);
+  expect(kidsIn(n).map((k) => k.name)).toEqual(["× 2", "Bonus level"]);
   expect(lines(n)?.names).toContain("Bonus level > 0");
 });
 
@@ -384,7 +369,7 @@ test("[FR-018] a check stays a row when the level has no ⓘ to say it", () => {
     ]),
   ]);
   expect(rows[0]?.formula).toBeNull();
-  expect(kidsOf(rows[0]).map((k) => k.name)).toEqual([
+  expect(kidsIn(rows[0]).map((k) => k.name)).toEqual([
     "Bonus level",
     "Other level",
     "Bonus level > 0",

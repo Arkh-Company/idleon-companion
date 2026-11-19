@@ -1129,6 +1129,46 @@ lime.$scripts.N = function (_exports, $global) {
     for (var j = 0; j < 2; j++) d.TreeZero[j] = d.TreeZero[j] + s.TreeOwned;
     return d.TreeZero[0] + d.TreeZero[1] + s.TreeBase;
   };
+  // A multiplier of one lone % times a clamp plus a sum of bonuses in % ÷ 100, two of them times a constant (audit
+  // family 14): its second factor is an unnamed sum of sources of several systems; TreeMeritOf calls it as a source.
+  // As in the game's own block, its sources are named calls (one with a colon, "Arcade: …", the two times a constant
+  // named after their source), and the clamp is around a call whose value it leaves as it is.
+  Blocks._customBlock_TreeMeritMulti = function () {
+    var s = state();
+    return 0 >= s.TreeOwned
+      ? (1 + Blocks._customBlock_ArcadeBonus(1) / 100) *
+          (Math.min(8, Math.max(0.25, Blocks._customBlock_ArcadeBonus(3))) +
+            (5 * Blocks._customBlock_ArcadeBonus(4) +
+              (Blocks._customBlock_ArcadeBonus(2) +
+                (20 * Blocks._customBlock_ArcadeBonus(5) +
+                  (Blocks._customBlock_CardBonusREAL(1) +
+                    (s.TreeLevel + Blocks._customBlock_TreeReads()))))) /
+              100)
+      : 0;
+  };
+  Blocks._customBlock_TreeMeritOf = function () {
+    return Blocks._customBlock_TreeMeritMulti() * state().TreeCapped;
+  };
+  // A factor of the bonuses of one system, some taken away, at least a floor (the prayers factor of the game's
+  // accuracy): max(0.1, 1 + (a - b - c) / 100), each a prayer's bonus; TreePrayerOf multiplies a sum by it, so that it
+  // is alone in its pool, as in the game.
+  Blocks._customBlock_prayersReal = function (i, j) {
+    return state().TreeBase * [0, 15, 4, 2][i] + j;
+  };
+  Blocks._customBlock_TreePrayerOf = function () {
+    var s = state();
+    return (
+      (s.TreeLevel + s.TreeBase) *
+      Math.max(
+        0.1,
+        1 +
+          (Blocks._customBlock_prayersReal(1, 0) -
+            Blocks._customBlock_prayersReal(2, 1) -
+            Blocks._customBlock_prayersReal(3, 0)) /
+            100,
+      )
+    );
+  };
   // A running total that starts from a source (TreeBase, 4) and whose turns add 0 (fix/tree-scratch-keys)
   Blocks._customBlock_TreeStartTotal = function () {
     var s = state();

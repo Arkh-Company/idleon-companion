@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { cond, fixed, kidsOf, placed, recNode } from "./tree-fixture.ts";
+import { check, fixed, kidsOf, placed, recNode } from "./tree-fixture.ts";
 
 const leaf = (name: string, value: number, code: string): Row => ({
   node: row({ pieceKey: code, value, code, name, leaf: "level" }),
@@ -26,10 +26,6 @@ const curve = (): Row => ({
     leaf("SHIMMERON bubble level", 10058, "CauldronInfo[0][18]"),
   ],
 });
-const check = (name: string, yes: boolean): Row => {
-  const c = cond(name, yes);
-  return { ...c, node: { ...c.node, name } };
-};
 const NODES = Array.from({ length: 6 }, (_, i) =>
   recNode(i, `Call${String(i)}`),
 );
@@ -189,8 +185,44 @@ test("[FR-018] a curve that grows from 1, times a factor, says in its ⓘ how mu
       ],
     },
   ]);
+  // 99.77% of the max, rounded down: below the max never reads up
   expect(n?.formula && formulaLines(n.formula).names).toMatch(
-    /\(the curve is at 99\.8% of its max 3\)$/,
+    /\(the curve is at 99\.7% of its max 3\)$/,
   );
   expect(n?.maxReached).toBeUndefined();
+});
+
+test("[FR-018] a curve below its max never reads 100% of it in the ⓘ, however close", () => {
+  // 1 + 2 × 100000 ÷ (100000 + 50) = 2.999, 99.967% of its max 3: rounded down, never up to 100%
+  const CODE = 'ArbitraryCode5Inputs("decayMulti", 2, 50, 100000, 0, 0)';
+  const curveV = 1 + (2 * 100000) / (100000 + 50);
+  const n = bubble(curveV * 4, [
+    {
+      node: row({
+        pieceKey: "p",
+        value: 4,
+        code: 'ArcaneType("PrismaBonusMult", 0, 0)',
+        name: "Prisma Bubble bonus multi",
+        kids: "lazy",
+      }),
+      open: 5,
+    },
+    {
+      node: row({
+        pieceKey: CODE,
+        value: curveV,
+        code: CODE,
+        name: "Curve: 1 + 2 × 100000 ÷ (100000 + 50)",
+      }),
+      open: null,
+      group: [
+        fixed("Max bonus of the curve", 2),
+        fixed("Level at half of the max", 50),
+        leaf("WARRIORS RULE bubble level", 100000, "CauldronInfo[0][1]"),
+      ],
+    },
+  ]);
+  expect(n?.formula && formulaLines(n.formula).names).toMatch(
+    /\(the curve is at 99\.9% of its max 3\)$/,
+  );
 });

@@ -270,3 +270,21 @@ test.each<[string, Row[], number, string]>([
   expect(formulaFor(at(v), kids)?.[0]).toBe(names);
   expectShown(at(v), kids);
 });
+
+// The Meritocracy bonus multiplier's leftovers (audit family 14): a part named with a colon ("Arcade: …") or a sign
+// split into two terms, so the ⓘ was no atoms and the unnamed step around it could not move up
+test("a part whose name has a colon or a sign stays one term: the ⓘ is atoms and closes", () => {
+  const named = (code: string, name: string, value: number): Row => ({
+    node: row({ pieceKey: code, value, code, name }),
+    open: null,
+  });
+  const kids = [
+    named("Stats.a", "Arcade: Invented Bonus", 3),
+    named("Stats.b", "Invented + More", 4),
+  ];
+  const r = branch(7, kids);
+  expect(withFormula(r, kids).formula).toEqual([
+    ["Arcade: Invented Bonus", "+", "Invented + More"],
+    [3, 4, 7],
+  ]);
+});

@@ -7,7 +7,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { fixed, placed, recNode } from "./tree-fixture.ts";
+import { fixed, kidsIn, placed, recNode } from "./tree-fixture.ts";
 
 const leaf = (
   name: string,
@@ -28,8 +28,6 @@ const branch = (
   open: null,
   group,
 });
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 const lines = (n: CalcTreeNode | null | undefined) =>
   n?.formula ? formulaLines(n.formula) : null;
 
@@ -47,7 +45,7 @@ test("[FR-018] a row that is a curve has the curve's constants by their role, an
     ),
   ]);
   const [n] = rows;
-  expect(kidsOf(n).map((k) => [k.name, k.value])).toEqual([
+  expect(kidsIn(n).map((k) => [k.name, k.value])).toEqual([
     ["Max bonus", 0.4],
     ["Level at half", 100],
     ["Level the curve uses", 1902],
@@ -94,7 +92,7 @@ test("[FR-018] the Prisma multi: its sources with their weights in the ⓘ, and 
     branch("Prisma Bubble bonus multi", PRISMA_V, prismaRows(1.5), PRISMA),
   ]);
   const [n] = rows;
-  expect(kidsOf(n)).toHaveLength(10);
+  expect(kidsIn(n)).toHaveLength(10);
   expect(n?.formula && formulaLines(n.formula)).toMatchObject({
     names:
       "min(5, 2 + (Pinnacle of Prisma + Arcade: Prisma Bonuses + Tobo Tamago + Bowling Pin + Heroic Spirit owned + Violet + 0.2 × Sigils at purple tier + Prisma Petal + Wowa Woowa + 50 × Rift Hivemind) ÷ 100)",
@@ -132,7 +130,7 @@ test("[FR-018] a cache whose one row is the curve block keeps its own name, and 
       open: 1,
     },
   ]);
-  expect(kidsOf(rows[0]).map((k) => k.name)).toEqual([
+  expect(kidsIn(rows[0]).map((k) => k.name)).toEqual([
     "Max bonus",
     "Level at half",
     "Level the curve uses",
@@ -185,7 +183,7 @@ test("[FR-018] a cache opened into its writer's curve has the curve's constants 
     1,
     [],
   );
-  expect(kidsOf(fam).map((k) => k.name)).toEqual([
+  expect(kidsIn(fam).map((k) => k.name)).toEqual([
     "Max bonus",
     "Level at half",
     "Level the curve uses",

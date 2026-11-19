@@ -36,14 +36,17 @@ export function firstSrc(e: Expr | undefined): Expr | null {
   return null;
 }
 
+/** A read path of no state of the player: a table, a cache or a running total. */
+export const notState = (p: string): boolean =>
+  /^(DNSM|DummyNumbersStatManager|CustomLists|CustomMaps|ItemDefinitionsGET)\./.test(
+    p,
+  );
 /** How many sources of the player's state an expression has (a table, a cache or a running total is none). */
 export const stateSrc = (x: Expr): number =>
   x.t === "call"
     ? 1
     : x.t === "read"
-      ? /^(DNSM|DummyNumbersStatManager|CustomLists|CustomMaps|ItemDefinitionsGET)\./.test(
-          x.p,
-        )
+      ? notState(x.p)
         ? 0
         : 1
       : x.t === "def"
@@ -55,6 +58,16 @@ export const stateSrc = (x: Expr): number =>
             : x.t === "op"
               ? stateSrc(x.l) + stateSrc(x.r)
               : 0;
+/** A min or a max with a constant around one source of the player's state ("min(1, max(0.25, 0.25 + x))"): a clamp. */
+export function isClamp(e: Expr): boolean {
+  const x = e.t === "def" ? e.e : e;
+  return (
+    x.t === "fn" &&
+    (x.name === "min" || x.name === "max") &&
+    x.args.some((a) => a.t === "num") &&
+    stateSrc(x) === 1
+  );
+}
 export const readValueIn = (e: Expr, p: string): V => {
   if (e.t === "read") return e.p === p ? e.v : undefined;
   const subs =

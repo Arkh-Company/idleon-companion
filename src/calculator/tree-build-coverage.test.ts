@@ -10,6 +10,7 @@ import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { TABLES } from "./tree/gold-food-fixture.ts";
 import { useGameTables } from "./tree/table-names.ts";
+import { kidsIn } from "./tree/tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -23,11 +24,9 @@ const treeOf = (block: string) =>
     0,
     recorder.ops,
   ).root;
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 /** Every code under a row, at any depth, pools and groups gone through. */
 const codesIn = (n: CalcTreeNode): string[] =>
-  kidsOf(n).flatMap((k) => [
+  kidsIn(n).flatMap((k) => [
     ...(k.code === null ? [] : [k.code]),
     ...codesIn(k),
   ]);
@@ -39,7 +38,7 @@ const product = (ns: readonly CalcTreeNode[]) =>
 // fake-game.js TreeRoundSum: round(3 × CardBonusREAL(1) + ArcadeBonus(0) + TreeLevel) = round(12 + 8 + 25)
 test("a rounded sum of a coefficient times a source is one Additive pool, its terms by system", () => {
   const root = treeOf("TreeRoundSum");
-  const [pool, ...rest] = kidsOf(root);
+  const [pool, ...rest] = kidsIn(root);
   expect(rest).toEqual([]);
   expect([pool?.name, pool?.role, pool?.combine, pool?.value]).toEqual([
     "Additive pool",
@@ -47,7 +46,7 @@ test("a rounded sum of a coefficient times a source is one Additive pool, its te
     "sum",
     45,
   ]);
-  const level = kidsOf(pool);
+  const level = kidsIn(pool);
   // the card's term, the arcade's and the level's, in the V1 order; the card's term is 3 × its value
   expect(level.map((k) => k.value)).toEqual([12, 8, 25]);
   expect(sum(level)).toBe(45);
@@ -60,21 +59,20 @@ test("a rounded sum of a coefficient times a source is one Additive pool, its te
 // fake-game.js TreeClamped: max(0.01, (TreeReads() + TreeBase) × TreeLoop()) = max(0.01, 72)
 test("a chain the game clamps at the end, where the clamp does not bite, gets its chain's pools", () => {
   const root = treeOf("TreeClamped");
-  const level = kidsOf(root);
+  const level = kidsIn(root);
   expect(level.map((k) => [k.name, k.role, k.combine, k.value])).toEqual([
     ["Additive pool", "pool", "sum", 12],
-    ["Multi pool", "pool", "product", 6],
+    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
+    ["Game value", "piece", undefined, 6],
   ]);
   expect(product(level)).toBe(72);
-  expect(kidsOf(level[0]).map((k) => [k.code, k.value])).toEqual([
+  expect(kidsIn(level[0]).map((k) => [k.code, k.value])).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
   ]);
-  expect(kidsOf(level[1]).map((k) => [k.code, k.value])).toEqual([
-    ["TreeLoop()", 6],
-  ]);
+  expect([level[1]?.code, level[1]?.fmt]).toEqual(["TreeLoop()", "x"]);
   expect(root.formula).toEqual([
-    ["Additive pool", "×", "Multi pool"],
+    ["Additive pool", "×", "TreeLoop()"],
     [12, 6, 72],
   ]);
   expect(checkTree(root, 100)).not.toBeNull();
@@ -83,14 +81,14 @@ test("a chain the game clamps at the end, where the clamp does not bite, gets it
 // fake-game.js TreeChecked: TreeLevel > 100 returns 0; else TreeReads() × TreeLoop(), × 2 when TreeOwned > 0 (not taken)
 test("a product with a check and a read no step shows is its Multi pool, the check and the read after it", () => {
   const root = treeOf("TreeChecked");
-  const [pool, ...rest] = kidsOf(root);
+  const [pool, ...rest] = kidsIn(root);
   expect([pool?.name, pool?.role, pool?.combine, pool?.value]).toEqual([
     "Multi pool",
     "pool",
     "product",
     48,
   ]);
-  expect(kidsOf(pool).map((k) => [k.code, k.value])).toEqual([
+  expect(kidsIn(pool).map((k) => [k.code, k.value])).toEqual([
     ["TreeReads()", 8],
     ["TreeLoop()", 6],
   ]);
@@ -114,14 +112,14 @@ const lines = (f: CalcTreeNode["formula"]): string[] =>
 // root's ⓘ (FR-008). fake-game.js TreeFloored: floor(TreeReads() + TreeBase + 0.5) = floor(12.5) = 12
 test("a root the game floors keeps its pools, the floor in its ⓘ", () => {
   const root = treeOf("TreeFloored");
-  const [pool, ...rest] = kidsOf(root);
+  const [pool, ...rest] = kidsIn(root);
   expect(rest).toEqual([]);
   expect([pool?.name, pool?.combine, pool?.value]).toEqual([
     "Additive pool",
     "sum",
     12.5,
   ]);
-  expect(sum(kidsOf(pool))).toBe(12.5);
+  expect(sum(kidsIn(pool))).toBe(12.5);
   expect(root.value).toBe(12);
   const [names, numbers] = lines(root.formula);
   expect(names?.replace(/\s/g, "")).toBe("floor(Additivepool)");
@@ -132,16 +130,17 @@ test("a root the game floors keeps its pools, the floor in its ⓘ", () => {
 // fake-game.js TreeFloorChain: floor((TreeReads() + TreeBase) × TreeLoop() × 1.05 + 0.3) = floor(75.9) = 75
 test("a chain the game floors keeps its chain's pools, the floor around them in the root's ⓘ", () => {
   const root = treeOf("TreeFloorChain");
-  const level = kidsOf(root);
+  const level = kidsIn(root);
   expect(level.map((k) => [k.name, k.combine, k.value])).toEqual([
-    ["Additive pool 1", "sum", 12],
+    ["Additive pool", "sum", 12],
     ["Multi pool", "product", expect.closeTo(6.3, 9)],
-    ["Additive pool 2", "sum", 0.3],
+    // the lone + 0.3 after the product is its own row, no pool (decision of 19/11)
+    ["Fixed +0.3", undefined, 0.3],
   ]);
   expect(root.value).toBe(75);
   const [names, numbers] = lines(root.formula);
   expect(names?.replace(/\s/g, "")).toBe(
-    "floor(Additivepool1×Multipool+Additivepool2)",
+    "floor(Additivepool×Multipool+Fixed+0.3)",
   );
   expect(numbers).toMatch(/ 75$/);
   expect(checkTree(root, 100)).not.toBeNull();
@@ -160,7 +159,7 @@ test("a block's cache of its own search is said by the item it found, from the i
     recorder.ops,
   ).root;
   const names = (n: CalcTreeNode): string[] =>
-    kidsOf(n).flatMap((k) => [k.name, ...names(k)]);
+    kidsIn(n).flatMap((k) => [k.name, ...names(k)]);
   expect(names(root)).toContain("Found Invented Charm");
   useGameTables(new Map());
 });

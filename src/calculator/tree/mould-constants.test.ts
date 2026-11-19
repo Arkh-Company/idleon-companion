@@ -62,17 +62,21 @@ test("a constant of the game's math is never a source of a group: it stays its o
     writerOf,
   );
   expect([k?.node.role, k?.node.value]).toEqual(["piece", 4]);
-  // a constant in % adds a hundredth of its value only in a group in %: it stays in Other's
+  // a constant in % adds a hundredth of its value: it is Other's, never a constant beside the groups; alone in its
+  // system, each stands alone as its +N% (decision of 19/11), the ÷ 100 in its pool's ⓘ
   const pct = bySystem(
     [
       { ...card(30), percent: true },
       { ...fixed("Fixed +3", 3), percent: true },
+      { ...fixed("Fixed +4", 4), percent: true },
     ],
     "sum",
     writerOf,
   );
-  expect(pct.map((r) => [r.node.name, r.node.combine, r.node.value])).toEqual([
-    ["🃏 Cards", "percent", 0.3],
-    ["🔹 Other", "percent", 0.03],
+  expect(
+    pct.map((r) => [r.node.name, r.node.combine, r.node.fmt, r.node.value]),
+  ).toEqual([
+    [card(30).node.name, undefined, "%", 30],
+    ["🔹 Other", "percent", "%", 0.07],
   ]);
 });

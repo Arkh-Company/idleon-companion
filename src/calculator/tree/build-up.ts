@@ -10,15 +10,11 @@
 // - a sigil (N.js Labb "SigilBonus"): bonus = (bonus at its tier) × (1 + Chilled Yarn) × (1 + vote bonus ÷ 100), the
 //   tier picking the table's column; the artifact = its base × its rarity's multiplier (N.js Sailing "ArtifactBonus");
 // - a card's bonus, its level and an equipped card (tree/build-up-cards.ts).
-import {
-  curveFormula,
-  curveOf,
-  curveText,
-  fx3,
-  maxReachedOf,
-} from "./curves.ts";
+import { curveFormula, curveText, fx3, maxReachedOf } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
+import { isOperator } from "./math.ts";
+import { notState } from "./expr.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -27,6 +23,7 @@ import {
   built,
   codeOf,
   constRows,
+  curveIn,
   groupRow,
   parts,
   product,
@@ -36,6 +33,7 @@ import {
 } from "./build-up-rows.ts";
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 import {
+  accountTalent,
   allTalentLevels,
   legendMax,
   legendTalent,
@@ -44,20 +42,31 @@ import {
 import { curveSelf, prisma } from "./build-up-curves.ts";
 import { meritocVote } from "./build-up-vote.ts";
 import { cardBonus, cardStars, equippedCard } from "./build-up-cards.ts";
+import { meritocracyMulti } from "./factors.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
-const CURVE_CALL = /^ArbitraryCode5Inputs\((.*)\)$/;
-
 /** A level that is one curve times its multipliers: the curve's level and constants as rows, the curve in the ⓘ. */
+/**
+ * The name of the level a curve uses, by the source's kind (audit families 1 and 5), the same everywhere: the
+ * cauldron it is read from (the vials' is the fifth, N.js CauldronInfo), else the source's cache; null for another.
+ */
+function sourceLevel(input: string, source: string): string | null {
+  const cauldron = /^CauldronInfo\[(\d+)\]/.exec(input)?.[1];
+  if (cauldron !== undefined)
+    return cauldron === "4" ? "Vial level" : "Bubble level";
+  if (input) return null;
+  if (source.startsWith("DNSM.AlchVials.")) return "Vial level";
+  return /^(DNSM\.AlchBubbles\.|CauldronStats\("BubbleBonus")/.test(source)
+    ? "Bubble level"
+    : null;
+}
+
 function curveLevel(lv: Level): BuiltUp | null {
   const cr = lv.rows.find(
     (r) => r.node.name.startsWith("Curve: ") && (r.group?.length ?? 0) >= 2,
   );
-  const args = cr && CURVE_CALL.exec(codeOf(cr))?.[1];
-  const c = args
-    ? curveOf("ArbitraryCode5Inputs", JSON.parse(`[${args}]`) as unknown[])
-    : null;
+  const c = cr ? curveIn(cr) : null;
   const roles = c && rolesOf(c);
   const last = cr?.group?.at(-1);
   if (!cr || !c || !roles || !last) return null;
@@ -77,9 +86,8 @@ function curveLevel(lv: Level): BuiltUp | null {
     !near(vOf(cr) * product(others), v)
   )
     return null;
-  const name = codeOf(input).startsWith("CauldronInfo[")
-    ? "Bubble level"
-    : input.node.name;
+  const name =
+    sourceLevel(codeOf(input), lv.row.node.code ?? "") ?? input.node.name;
   const base = curveFormula(c, vOf(cr), name, roles);
   if (!base) return null;
   const wrap =
@@ -87,8 +95,12 @@ function curveLevel(lv: Level): BuiltUp | null {
   const w = (s: string) => (wrap ? `(${s})` : s);
   // a curve times a factor: the ⓘ says how much of its max the curve alone reached (decision of 18/11), so it is a rule
   const share = others.length ? maxReachedOf(c, vOf(cr)) : null;
+  // rounded down, so that below the max never reads 100% (the max itself, within a float's error, does)
+  const percent = share
+    ? (Math.floor(share.share * 1000 + 1e-9) / 10).toFixed(1)
+    : "";
   const note = share
-    ? ` (the curve is at ${(share.share * 100).toFixed(1)}% of its max ${fx3(share.max)})`
+    ? ` (the curve is at ${percent}% of its max ${fx3(share.max)})`
     : "";
   const f: Pair = [
     [w(base[0]), ...others.map((r) => termOf(r.node))].join(" × ") + note,
@@ -162,21 +174,8 @@ function sigilMulti(r: Row, lv: Level, ctx: BuildUpContext): Row {
         ])
       : renamed(r, name);
   }
-  const vote = g.find((k) =>
-    codeOf(k).startsWith('Summoning2("MeritocBonusz"'),
-  );
-  const hundred = g.find((k) => isConstant(k.node) && vOf(k) === 100);
-  if (vote && one && hundred && g.length === 3 && near(1 + vOf(vote) / 100, v))
-    // the code's 1 and ÷ 100 are in the ⓘ only
-    return {
-      ...renamed(r, "Meritocracy multi"),
-      group: [vote],
-      f: [
-        `1 + ${termOf(vote.node)} ÷ 100`,
-        `1 + ${fx3(vOf(vote))} ÷ 100 = ${fx3(v)}`,
-      ],
-    };
-  return r;
+  // the Meritocracy's: the code's 1 and ÷ 100 are in the ⓘ only (tree/factors.ts)
+  return meritocracyMulti(r);
 }
 
 /** The columns of SigilDesc the tier ladder picks, tier 0 to 4 (N.js Labb SigilBonus). */
@@ -241,6 +240,7 @@ function sigil(lv: Level, ctx: BuildUpContext): BuiltUp | null {
 export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   return (
     talent(lv, ctx) ??
+    accountTalent(lv) ??
     legendTalent(lv, ctx) ??
     legendMax(lv) ??
     allTalentLevels(lv) ??
@@ -256,21 +256,81 @@ export function buildUp(lv: Level, ctx: BuildUpContext): BuiltUp | null {
   );
 }
 
-/** A check of a row beside it ("Bonus level > 0" beside "Bonus level"): a branch check, never a row (FR-018). */
+/**
+ * A check of a row beside it, a state or a number ("Owned = 1" beside "Owned", "Bonus level > 0" beside "Bonus level"):
+ * a branch check, never a row (FR-018; audit family 3).
+ */
 const COMPARISON = /^(.+?) (?:<|≤|>|≥|=|≠) -?[\d.]+$/;
-function branchCheck(r: Row, rows: readonly Row[]): boolean {
+export function branchCheck(r: Row, rows: readonly Row[]): boolean {
   if (!isCond(r) || r.open !== null || r.group?.length) return false;
+  // its subject by the read's code (tree/conditions.ts condRows): a row beside it whatever its name now, or a constant
+  // of the code with no row of its own
+  const by = r.subject;
+  if (by && (notState(by) || rows.some((k) => k !== r && k.node.code === by)))
+    return true;
   const subject = COMPARISON.exec(r.node.name)?.[1];
-  return (
-    !!subject &&
-    rows.some((k) => k !== r && !isCond(k) && k.node.name === subject)
+  return !!subject && rows.some((k) => k !== r && k.node.name === subject);
+}
+
+/** The row the branch check `r` compares (by the read's code, else by its name), when one is beside it in `rows`. */
+export function checkSubject(r: Row, rows: readonly Row[]): Row | undefined {
+  const by = r.subject;
+  const code = by && rows.find((k) => k !== r && k.node.code === by);
+  if (code) return code;
+  const name = COMPARISON.exec(r.node.name)?.[1];
+  return name ? rows.find((k) => k !== r && k.node.name === name) : undefined;
+}
+
+type Formula = Row["node"]["formula"];
+const SIGN = /^[×÷+−*/(),^:-]$/;
+/** A function's name among the atoms ("floor", "log₁₀"), which its bracket follows with no space. */
+const isFn = (t: string | undefined) => !!t && isOperator(t) && !SIGN.test(t);
+/** Atoms as words, a space between two terms but inside brackets, before a comma and after a function's name. */
+const joined = (ts: readonly string[]) =>
+  ts
+    .reduce(
+      (s, t, i) => (i === 0 ? t : `${s}${isFn(ts[i - 1]) ? "" : " "}${t}`),
+      "",
+    )
+    .replace(/\( /g, "(")
+    .replace(/ \)/g, ")")
+    .replace(/ ,/g, ",");
+/** The two lines of an ⓘ. */
+function linesOf(f: NonNullable<Formula>): [string, string] {
+  if (!Array.isArray(f)) return f.rule;
+  const [terms, numbers] = f;
+  let i = 0;
+  const filled = terms.map((t) =>
+    isOperator(t) ? t : fx3(numbers[i++] ?? NaN),
   );
+  return [joined(terms), `${joined(filled)} = ${fx3(numbers.at(-1) ?? NaN)}`];
+}
+const says = (f: Formula, r: Row) => !!f && linesOf(f)[0].includes(r.node.name);
+
+/**
+ * The ⓘ `f` that says each of `checks` (A39): those it does not say yet in words after its math ("(Bonus level > 0:
+ * yes)"), as the card's stars; a rule then, its numbers line its math's. As it is when it says them all.
+ */
+export function citing(f: Formula, checks: readonly Row[]): Formula {
+  const more = checks.filter((r) => !says(f, r));
+  if (!f || !more.length) return f;
+  const [names, numbers] = linesOf(f);
+  const words = more.map((r) => `${r.node.name}: ${vOf(r) ? "yes" : "no"}`);
+  return { rule: [`${names} (${words.join("; ")})`, numbers] };
+}
+
+/** The ⓘ of a level its rows give none of but its branch checks: the value they lead to ("If Level ≤ 0: 0"). */
+export function ifChecks(checks: readonly Row[], v: number): Formula {
+  const said = checks.map((r) =>
+    vOf(r) ? r.node.name : `not (${r.node.name})`,
+  );
+  return { rule: [`If ${said.join(" and ")}: ${fx3(v)}`, `yes → ${fx3(v)}`] };
 }
 
 /**
- * A level's rows once its ⓘ is made: a branch check is in the ⓘ only, never a row (FR-018); with no ⓘ, nothing leaves,
- * so no comparison is lost.
+ * A level's rows once its ⓘ `f` is made: a branch check its ⓘ says is in the ⓘ only, never a row (FR-018, A39); with
+ * no ⓘ, or one that does not say it, nothing leaves, so no comparison is lost.
  */
-export function asideInFormula(rows: Row[], hasFormula: boolean): Row[] {
-  return hasFormula ? rows.filter((r) => !branchCheck(r, rows)) : rows;
+export function asideInFormula(rows: Row[], f: Formula): Row[] {
+  return f ? rows.filter((r) => !(branchCheck(r, rows) && says(f, r))) : rows;
 }

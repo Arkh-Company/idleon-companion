@@ -2,12 +2,11 @@
 // its parts to the level above when they sum (or multiply) as the level does, so every level still closes; its ⓘ is the
 // level's whole sum or product.
 import { expect, test } from "vitest";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { flatten } from "./flatten.ts";
 import { makePlaces } from "./places.ts";
 import { row, withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { read, recNode } from "./tree-fixture.ts";
+import { kidsIn, read, recNode } from "./tree-fixture.ts";
 
 /** A level's rows with their shares in a parent of value `v`, as rows.ts `finish` leaves them. */
 const level = (v: number, rows: Row[]): Row[] =>
@@ -33,8 +32,6 @@ const branch = (
   ...(op ? { op } : {}),
 });
 const codes = (rows: readonly Row[]) => rows.map((r) => r.node.code);
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 
 /** Game value (2 × 3) × Multiplier (2 × 2) × Invented.x 5 = 120. */
 const product = () =>
@@ -81,7 +78,7 @@ test("the row above has the whole product as its ⓘ, and it closes", () => {
     [0],
   );
   const opened = places.expand(placed?.id ?? "");
-  expect(kidsOf(opened).map((k) => [k.code, k.value])).toEqual([
+  expect(kidsIn(opened).map((k) => [k.code, k.value])).toEqual([
     ["Invented.a", 2],
     ["Invented.b", 3],
     ["Invented.c", 2],
@@ -235,6 +232,6 @@ test("a game-bug part keeps its tag after flattening (FR-016 of the 008)", () =>
     1,
     [0],
   );
-  const [a] = kidsOf(places.expand(placed?.id ?? ""));
+  const [a] = kidsIn(places.expand(placed?.id ?? ""));
   expect([a?.code, a?.flags.gameBug]).toEqual(["Invented.a", "countedTwice"]);
 });

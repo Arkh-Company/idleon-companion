@@ -4,7 +4,7 @@
 // an unnamed branch of that same shape too. Two sources, a count (a quantity, a level: how many, not which bonus), or a
 // source whose name is vague or only its shape, name nothing: the branch keeps the generic name, never a guess.
 import { byShapeOnly } from "./flatten.ts";
-import { isCond, isScaling } from "./formulas.ts";
+import { isCond, isScaling, near, vOf } from "./formulas.ts";
 import { MERGES, ONE_CHILD } from "./one-child.ts";
 import type { Level } from "./places.ts";
 import { withName } from "./row-checks.ts";
@@ -35,7 +35,19 @@ const multiplies = (at: Level, op: Row["op"]): boolean =>
         r.node.shareMode === "product" || r.node.shareMode === "productZero",
     )) ||
   (at.rows.some((r) => noSource(r) && isScaling(r.node)) &&
-    at.rows.every((r) => !noSource(r) || isScaling(r.node)));
+    at.rows.every((r) => !noSource(r) || isScaling(r.node)) &&
+    scales(at));
+
+/**
+ * Whether the level's value is its sources times its constants, each "÷ N" one dividing (deferred A42: Claws + 2 × 3
+ * is no scale of Claws, though its constants all multiply).
+ */
+function scales(at: Level): boolean {
+  const divides = (r: Row) =>
+    /^(?:Divided by |Percent to number)/.test(r.node.name);
+  const v = at.rows.reduce((a, r) => (divides(r) ? a / vOf(r) : a * vOf(r)), 1);
+  return near(v, vOf(at.row));
+}
 
 /**
  * The proven name of the one source among the rows of `at`, a branch of step `op`, through an unnamed branch of the same
@@ -54,7 +66,8 @@ function sourceName(
   if (talent && !talent.node.flags.unnamed) return talent.node.name;
   const parts = at.rows.filter((r) => !noSource(r));
   const [p] = parts;
-  if (!p || parts.length !== 1) return null;
+  // a pool or a system's group has the app's name, no source's (answer B of 20/11)
+  if (!p || parts.length !== 1 || p.node.role !== "piece") return null;
   if (!p.node.flags.unnamed) {
     const name = p.node.name;
     // a bonus names what it scales; a count (a quantity, a level, a choice) only how many

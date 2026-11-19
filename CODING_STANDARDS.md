@@ -117,3 +117,9 @@ Bad: a `SKIP` in a script with a comment "keep equal to STATE_EXCLUDED", while t
 Every comment, JSDoc or glossary line that describes a type, a field or a module's readers is rewritten in the same commit that changes that type, field or import.
 Good: the commit that adds `text?: string` to `TreeNode["formula"]` also rewrites its JSDoc and `formulaLines`' to say the game's text is an optional line before the names and the numbers.
 Bad: `formula` gains `text?: string` while the JSDoc right above it still says "names and numbers only" and `formulaLines` still says "in two lines".
+
+### A tree helper lives once
+
+A small helper that two files of `src/calculator/tree/` need (`strip`, `isNum`, the test of a log's argument) is exported once, from the file its theme belongs to, and imported; no file keeps its own copy.
+Good: `import { strip, isNum } from "./expr.ts"` in `gold-food-step.ts`, `gold-food-chain.ts`, `pools.ts` and `tops.ts`.
+Bad: `const strip = (e) => (e.t === "def" ? strip(e.e) : e)` typed again in `gold-food-step.ts`, beside the same copy in `gold-food-chain.ts`, `percent.ts`, `scaled.ts` and `tops.ts`.

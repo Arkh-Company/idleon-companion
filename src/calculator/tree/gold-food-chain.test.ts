@@ -227,3 +227,86 @@ test("[FR-017] a step that reads the shared multiplier back from its box: the ch
     [null, "Stats.a", "Stats.b"],
   ]);
 });
+
+/** The chain of the worn food's step `worn` after the shared multiplier's, the box read back as its running total. */
+function chainOfWorn(worn: Expr) {
+  const own = (e: Expr): Row | null => {
+    const r = term(e);
+    return e.t === "read" && e.p === "DNSM.GfoodBonusMULTI"
+      ? {
+          ...r,
+          open: { path: e.p, value: 2.86, writer: 0, entry: null, opening: [] },
+        }
+      : r;
+  };
+  const block = {
+    ...(nodes[0] ?? { id: 0, b: "?", a: [], c: [], p: null, pxi: 0 }),
+    v: Number(worn.v),
+    r: [
+      ["EquipmentQuantity[2][1]", 999],
+      ["EquipmentOrder[2][1]", "itemA"],
+    ] as [string, RecValue][],
+  };
+  const ctx = chainContext(
+    {
+      nodes,
+      steps: () => [MULTI_STEP, { v: Number(worn.v), e: worn }],
+      terms: () => ({ term: own }) as unknown as Terms,
+      turns: () => [],
+      opened: () => null,
+    },
+    block,
+    0,
+    new Set(),
+  );
+  return chainPools(
+    ctx.steps ?? [],
+    { value: Number(worn.v) },
+    ctx.termAt ?? (() => null),
+    ctx.ownCache,
+  );
+}
+
+test("[FR-008] the worn food's step of a chain is one row, Equipped: <the food>: its log₁₀ and its quantity factor in its ⓘ, its leaves what goes into them", () => {
+  // 7 × the box × 0.05 × log₁₀(1 + 999) × (1 + log₁₀(1 + 999) ÷ 2.14), the box the chain's running total (19/11)
+  const log = { t: "call", id: 2, v: 3 } as const;
+  const factor = op(
+    "+",
+    num(1),
+    op("/", log, num(2.14), 3 / 2.14),
+    1 + 3 / 2.14,
+  );
+  const own = 7 * 0.05 * 3 * (1 + 3 / 2.14);
+  const amount = op(
+    "*",
+    read("DNSM.GfoodMap.Amount", 7),
+    read("DNSM.GfoodBonusMULTI", 2.86),
+    7 * 2.86,
+  );
+  const withRate = op("*", amount, num(0.05), 7 * 2.86 * 0.05);
+  const withLog = op("*", withRate, log, 7 * 2.86 * 0.05 * 3);
+  const worn = op("*", withLog, factor, 2.86 * own);
+  useGameTables(TABLES);
+  const pools = chainOfWorn(worn);
+  const last = Array.isArray(pools) ? pools.at(-1) : undefined;
+  // one row, no pool of a row per factor: a single multiplier alone in its Multi pool is its own row (answer 2 of 19/11)
+  expect([last?.lone, last?.rows.length, last?.value]).toEqual([
+    true,
+    1,
+    expect.closeTo(own, 9),
+  ]);
+  const [row0] = last?.rows ?? [];
+  expect([row0?.node.name, row0?.node.value]).toEqual([
+    "Equipped: Invented Charm",
+    expect.closeTo(own, 9),
+  ]);
+  // its leaves: the amount, the base rate and the quantity, no log₁₀ and no quantity factor among them
+  expect(row0?.group?.map((k) => k.node.value)).toEqual([7, 0.05, 999]);
+  expect(row0?.group?.at(-1)?.node.name).toBe("Quantity");
+  // its ⓘ is the whole product, the log₁₀ of 1 + the quantity in it, closing on its value (FR-008); its other factors
+  // by their rows' terms (here plain rows, named by their code; the 0.05 the Base rate, by its role)
+  expect(row0?.f).toEqual([
+    "DNSM.GfoodMap.Amount × Base rate × log₁₀(1 + Quantity) × (1 + log₁₀(1 + Quantity) ÷ 2.14)",
+    "7 × 0.05 × log₁₀(1 + 999) × (1 + log₁₀(1 + 999) ÷ 2.14) = 2.522",
+  ]);
+});

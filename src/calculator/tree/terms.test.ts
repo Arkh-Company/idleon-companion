@@ -68,7 +68,8 @@ test("a value from an earlier step of the block opens into that step, its pool i
         [null, 3, []],
       ],
     ],
-    ["Additive pool", 25, [["TreeLevel", 25, []]]],
+    // the lone + TreeLevel after the product is its own row, no pool (decision of 19/11)
+    ["Game value", 25, []],
   ]);
 });
 

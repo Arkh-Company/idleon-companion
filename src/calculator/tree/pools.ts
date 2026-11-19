@@ -7,14 +7,15 @@ import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { exprText, flat, topOp } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
-import { formulaOut } from "./math.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
 import { added, addedRows } from "./percent.ts";
+import { additiveRows, kindOf, scaledPools, strip } from "./scaled.ts";
 import { through } from "./tops.ts";
 
 export { through } from "./tops.ts";
 import { finish } from "./rows.ts";
+import { termOf } from "./share.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 
@@ -29,72 +30,22 @@ export interface Pool {
   combine: Combine;
   /** How the pool joins the total of the pools before it in the game's chain: added, or multiplied (when not set). */
   join?: "+" | "*";
+  /**
+   * A lone part added between multiplications, or a single multiplier alone in its Multi pool (decisions of 19/11): its
+   * own "+ N" or "× N" row, named by its term, no pool.
+   */
+  lone?: true;
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
-/** A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn). */
-export type TermAt = (e: Expr, op: "*" | "+", at: number) => Row | null;
+/**
+ * A term of step `at` of the root's call as a row (tree/terms.ts `term`, in that step's turn); `step`: the factors of a
+ * step, but its running total, as one row when its block names them whole (tree/gold-food-chain.ts `wornStep`), else null.
+ */
+export type TermAt = ((e: Expr, op: "*" | "+", at: number) => Row | null) & {
+  step?: (terms: readonly Expr[], at: number) => Row | null;
+};
 
-const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
-
-/** The sources an expression reads or calls (a value of an earlier step is one too). */
-const sources = (e: Expr): number =>
-  e.t === "call" || e.t === "read" || e.t === "val"
-    ? 1
-    : e.t === "def"
-      ? sources(e.e)
-      : e.t === "op"
-        ? sources(e.l) + sources(e.r)
-        : e.t === "fn"
-          ? e.args.reduce((a, x) => a + sources(x), 0)
-          : e.t === "not"
-            ? sources(e.a)
-            : 0;
-
-/** A factor that sums the bonuses of two sources or more: its terms and how they give it. */
-function additive(e: Expr): { terms: Expr[]; combine: Combine } | null {
-  const x = strip(e);
-  if (x.t !== "op" || x.o !== "+") return null;
-  const l = strip(x.l);
-  const r = strip(x.r);
-  // 1 + (bonuses) ÷ 100: the bonuses are percents
-  if (
-    l.t === "num" &&
-    Number(l.v) === 1 &&
-    r.t === "op" &&
-    r.o === "/" &&
-    strip(r.r).t === "num" &&
-    Number((strip(r.r) as { v: unknown }).v) === 100
-  )
-    return sources(r.l) >= 2
-      ? { terms: flat(strip(r.l), "+"), combine: "onePlusPercent" }
-      : null;
-  return sources(x) >= 2 ? { terms: flat(x, "+"), combine: "sum" } : null;
-}
-
-/** The rows of an additive factor of value `v`, when its terms give it; else null. */
-function additiveRows(
-  e: Expr,
-  v: number,
-  term: TermRow,
-): { rows: Row[]; combine: Combine } | null {
-  const a = additive(e);
-  if (!a) return null;
-  // the bonuses inside 1 + (…) ÷ 100 are percents already
-  const parts = a.terms.map((t) =>
-    a.combine === "sum" ? addedRows(t, (x) => term(x, "+")) : term(t, "+"),
-  );
-  if (parts.some((p) => !p)) return null;
-  const rows = parts.flatMap((p) => p ?? []);
-  const sum = rows.reduce((s, r) => s + added(r), 0);
-  const gives = a.combine === "sum" ? sum : 1 + sum / 100;
-  if (!near(gives, v)) return null;
-  return { rows: finish(sum, rows, false), combine: a.combine };
-}
-
-/** A factor that sums bonuses inside 1 + (…) ÷ 100 multiplies: its own Multi pool; one that sums sources adds them. */
-const kindOf = (c: Combine): PoolKind =>
-  c === "onePlusPercent" ? "multi" : "additive";
 /** A Multi pool of single multipliers, which share one pool when they come in a row (the order changes nothing). */
 const isSingles = (p: Omit<Pool, "name">) =>
   p.kind === "multi" && p.combine === "product";
@@ -113,11 +64,35 @@ function singlesTogether(pools: Omit<Pool, "name">[]): Omit<Pool, "name">[] {
   return out;
 }
 
-/** Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more. */
+/**
+ * A lone part, not in %, added to the total of the multiplications before it (audit family 25, decision of 19/11); or
+ * a single multiplier alone in its Multi pool beside other pools (answer 2 of 19/11): its source's own row.
+ */
+const loneOf = (
+  p: Omit<Pool, "name">,
+  i: number,
+  all: readonly Omit<Pool, "name">[],
+): Row | null => {
+  const [r] = p.rows;
+  if (!r || p.rows.length !== 1) return null;
+  const added = i > 0 && p.join === "+" && p.combine === "sum" && !r.percent;
+  const single =
+    all.length > 1 && p.kind === "multi" && p.combine === "product";
+  return added || single ? r : null;
+};
+
+/**
+ * Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more; a lone
+ * part added between multiplications, or a single multiplier alone in its pool, is no pool, and goes by its own term.
+ */
 function named(pools: Omit<Pool, "name">[]): Pool[] {
-  const count = (k: PoolKind) => pools.filter((p) => p.kind === k).length;
+  const lone = pools.map((p, i) => loneOf(p, i, pools));
+  const count = (k: PoolKind) =>
+    pools.filter((p, i) => p.kind === k && !lone[i]).length;
   const seen = new Map<PoolKind, number>();
-  return pools.map((p) => {
+  return pools.map((p, i) => {
+    const r = lone[i];
+    if (r) return { ...p, name: termOf(r.node), lone: true as const };
     const n = (seen.get(p.kind) ?? 0) + 1;
     seen.set(p.kind, n);
     const base = p.kind === "additive" ? "Additive pool" : "Multi pool";
@@ -153,9 +128,17 @@ export function poolsOf(
     parts.length > 1 &&
     (expr ? topOp(expr) === "+" : rows.some((r) => r.node.shareMode === "sum"));
   if (isSum && (!isProduct || sumFirst))
-    return named([
-      { kind: "additive", value: v, rows: [...rows], combine: "sum" },
-    ]);
+    return named(
+      (expr && term && topOp(expr) === "+"
+        ? scaledPools(flat(expr, "+"), v, term, (_, part) => {
+            // the other parts are the root's other rows, as they are (FR-008)
+            const i = rows.findIndex((r) => near(vOf(r), Number(part.v)));
+            return i < 0 ? null : rows.filter((_r, j) => j !== i);
+          })
+        : null) ?? [
+        { kind: "additive", value: v, rows: [...rows], combine: "sum" },
+      ],
+    );
   if (!isProduct) return null;
   const pools: Omit<Pool, "name">[] = parts.map((r) => ({
     kind: "multi",
@@ -217,21 +200,6 @@ export function poolsPair(
       { s: "", sum: false },
     ).s;
   return [line((p) => p.name), `${line((p) => fx3(p.value))} = ${fx3(value)}`];
-}
-
-/** The root's ⓘ as the contract writes it (atoms). */
-export function poolsFormula(
-  pools: readonly Pool[],
-  value: number,
-): CalcTreeNode["formula"] {
-  const pair = poolsPair(pools, value);
-  return (
-    pair &&
-    formulaOut(
-      pair,
-      pools.map((p) => p.name),
-    )
-  );
 }
 
 /**
@@ -351,6 +319,29 @@ export function chainPools(
           rows,
         });
     };
+    // the first step's sum, a part of which is a running total times 1 + its % ÷ 100: that chain of pools
+    // (tree/scaled.ts, answer A of 19/11)
+    const own = (t: Expr) => termAt(t, "+", at);
+    const scaled =
+      !pools.length && op === "+"
+        ? scaledPools(terms, Number(steps[at]?.v), own, (others) => {
+            const rs = others.map((x) => addedRows(x, own));
+            const parts = rs.flatMap((r) => r ?? []);
+            const sum = parts.reduce((a, r) => a + added(r), 0);
+            return rs.some((r) => !r) ? null : finish(sum, parts, false);
+          })
+        : null;
+    if (scaled) {
+      pools.push(...scaled.map((p) => ({ ...p, rows: under(p.rows) })));
+      continue;
+    }
+    // the factors its block names whole are one row, their math in its ⓘ (the worn food's, the rule of 19/11)
+    const whole = op === "*" ? termAt.step?.(terms, at) : null;
+    if (whole) {
+      batch.push(whole);
+      flush();
+      continue;
+    }
     for (const e of terms) {
       const factor =
         op === "*"
