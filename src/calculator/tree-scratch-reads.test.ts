@@ -73,18 +73,14 @@ test("a running total that starts from a source and adds 0: its read is its last
   expect(inside).toEqual([]);
 });
 
-// Open question of fix/tree-scratch-keys: the box opens into its last turn (every turn adds 0), whose read of the box is
-// the total of the earlier turns; reaching the start's TreeBase needs a cache read opened by its write, not its value
-// (tree/caches.ts). This test fails until then, and turns red when it passes.
-test.fails(
-  "a running total that starts from a source and adds 0: the start keeps its source under the box",
-  () => {
-    const rows = rowsOf("TreeStartTotal");
-    const box = rows.find(({ n }) => n.code === "DNSM.TreeStart[0]");
-    const under = rows.filter(
-      ({ above }) => box && above.includes(box.n.pieceKey ?? "-"),
-    );
-    // the value the box starts with comes from TreeBase: the read of that write opens into it
-    expect(under.map(({ n }) => n.code)).toContain("TreeBase");
-  },
-);
+// The box opens into its turn whose read of the box saw the start, a write before the loop's turns: that read is no total
+// of the earlier turns, and opens into what the start copied (Vinicius, 19/11)
+test("a running total that starts from a source and adds 0: the start keeps its source under the box", () => {
+  const rows = rowsOf("TreeStartTotal");
+  const box = rows.find(({ n }) => n.code === "DNSM.TreeStart[0]");
+  const under = rows.filter(
+    ({ above }) => box && above.includes(box.n.pieceKey ?? "-"),
+  );
+  // the value the box starts with comes from TreeBase: the read of that write opens into it
+  expect(under.map(({ n }) => n.code)).toContain("TreeBase");
+});

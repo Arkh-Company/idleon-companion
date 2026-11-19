@@ -254,3 +254,26 @@ test("a read the builders' pass explains opens in the pass's call of the same bl
   const none = scratchReads(r)("DNSM.Box", 5, r.nodes[2], null);
   expect([none.writer, none.own?.call.id, none.own?.at]).toEqual([null, 3, 0]);
 });
+
+test("a write that copies a read: its source is the writer's read just before it with the value written", () => {
+  const [w] = recordingOf([
+    {
+      b: "Start",
+      rx: [
+        ["Other", 9, 0, 4],
+        ["Base", 4, 0, 4],
+        ["DNSM.Box", 4, 2, 5],
+      ],
+    },
+  ]).nodes;
+  const writeOf = scratchWrites([
+    { path: "DNSM.Other", node: 0, v: 9, xi: 0, seq: 4 },
+    { path: "DNSM.Box", node: 0, v: 4, xi: 0, seq: 5 },
+    { path: "DNSM.Box", node: 0, v: 4, xi: 3, seq: 6 },
+  ]);
+  const start = writeOf("DNSM.Box", 4, 5, w ?? null);
+  expect([start?.seq, start?.source()]).toEqual([5, ["Base", 4, 0, 4]]);
+  // the next write read the box itself: it copies no other read
+  const turn = writeOf("DNSM.Box", 4, 6, w ?? null);
+  expect([turn?.seq, turn?.source()]).toEqual([6, undefined]);
+});
