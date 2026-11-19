@@ -2,12 +2,13 @@
 // with markers, or one whose code cannot be checked, opens without the debugging pipe; a confirmed update is read in
 // the next session, and clean code is recorded. Fake game, reader and app; every value and name is invented.
 import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 import type { LinkMessage } from "../shared/index.ts";
 import {
-  app,
+  linkApp,
   cleanUp,
   cleanups,
   harness,
@@ -17,6 +18,7 @@ import {
 import { runKeeper } from "./keeper.ts";
 import { checkGameUpdate } from "./update-watch.ts";
 
+const app = linkApp(connect);
 afterEach(cleanUp);
 
 test("a changed game with markers opens without the pipe and is not read this session", async () => {

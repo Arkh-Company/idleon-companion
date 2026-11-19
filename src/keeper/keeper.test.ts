@@ -1,11 +1,12 @@
 // The keeper's flow with fake game, reader and app, over a real local pipe (runs on the CI): it never launches the
 // game twice, opens it without the debugging pipe when the keeper itself cannot start, and never ends before the game.
 // The game code's check is in keeper-update.test.ts.
+import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 import {
-  app,
+  linkApp,
   cleanUp,
   cleanups,
   harness,
@@ -17,6 +18,7 @@ import {
 import { keepAlive, runKeeper } from "./keeper.ts";
 import { startLinkServer } from "./link-server.ts";
 
+const app = linkApp(connect);
 afterEach(cleanUp);
 
 test("a clean game is launched and read, and what the reader sends reaches the app and the log", async () => {

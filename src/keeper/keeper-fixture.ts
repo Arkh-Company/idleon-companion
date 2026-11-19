@@ -2,9 +2,9 @@
 // keeper-update.test.ts: a keeper whose game, reader and app are fakes, and an app on the link. Every value and name is
 // invented.
 import { mkdtempSync } from "node:fs";
-import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Duplex } from "node:stream";
 import { threadId } from "node:worker_threads";
 import { createLineDecoder, encodeLine, READ_NULLS } from "../shared/index.ts";
 import type { LinkMessage, Reading, Status } from "../shared/index.ts";
@@ -80,22 +80,26 @@ export function harness(gameCode: () => string | undefined) {
   };
 }
 
-/** An app on the link: what it got, and a way to send. Closed messages also go to `order`. */
-export function app(path: string, order: string[] = []) {
-  const got: LinkMessage[] = [];
-  const s = connect(path);
-  s.on("error", () => undefined);
-  s.on(
-    "data",
-    createLineDecoder((m) => {
-      if (m.type !== "tables") got.push(m); // the tables have their own tests, in keeper-scan.test.ts
-      if (m.type === "status" && m.status.game === "closed")
-        order.push("closed");
-    }),
-  );
-  cleanups.push(() => s.destroy());
-  return { got, send: (m: LinkMessage) => s.write(encodeLine(m)) };
-}
+/**
+ * An app on the link: what it got, and a way to send. Closed messages also go to `order`. The test file gives node:net's
+ * `connect`, so this file, which the no-network scan reads, never loads node:net.
+ */
+export const linkApp = (connect: (path: string) => Duplex) =>
+  function app(path: string, order: string[] = []) {
+    const got: LinkMessage[] = [];
+    const s = connect(path);
+    s.on("error", () => undefined);
+    s.on(
+      "data",
+      createLineDecoder((m) => {
+        if (m.type !== "tables") got.push(m); // the tables have their own tests, in keeper-scan.test.ts
+        if (m.type === "status" && m.status.game === "closed")
+          order.push("closed");
+      }),
+    );
+    cleanups.push(() => s.destroy());
+    return { got, send: (m: LinkMessage) => s.write(encodeLine(m)) };
+  };
 
 export const reading: Reading = {
   t: 1,
