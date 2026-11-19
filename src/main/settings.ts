@@ -1,5 +1,11 @@
 // settings.json (spec §5.5): a missing or broken file gives the defaults, key by key.
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname } from "node:path";
 import { DEFAULT_SETTINGS, DEFAULT_VIEW } from "../shared/index.ts";
 import type { Settings, ViewPrefs } from "../shared/index.ts";
@@ -26,8 +32,23 @@ function write(file: string, patch: object): void {
   };
   mkdirSync(dirname(file), { recursive: true });
   const tmp = `${file}.tmp`;
-  writeFileSync(tmp, JSON.stringify(v));
-  renameSync(tmp, file);
+  const text = JSON.stringify(v);
+  writeFileSync(tmp, text);
+  for (let tries = 3; tries > 0; tries--) {
+    try {
+      renameSync(tmp, file);
+      return;
+    } catch {
+      // Windows: another process holds the file a moment (EPERM, EBUSY)
+    }
+  }
+  // Still held: a direct write keeps the setting, and the main process never gets the error (no caller catches it).
+  try {
+    writeFileSync(file, text);
+    rmSync(tmp, { force: true });
+  } catch {
+    // this save is lost; the next one tries again
+  }
 }
 
 /** The user's settings: unknown keys dropped, a key of the wrong type gets its default. */
