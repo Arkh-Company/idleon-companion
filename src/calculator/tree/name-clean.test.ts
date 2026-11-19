@@ -34,6 +34,8 @@ test("the cleaner keeps the case of a text it does not title-case, and a name wi
     "Invented Bonus × 2 (talent 3)",
   );
   expect(tidy("Max HP working value")).toBe("Max HP working value");
+  // a "#" before a number is the game's own numbering ("Dream #4"), no marker
+  expect(tidy("Equinox: Dream #4")).toBe("Equinox: Dream #4");
   // a "+" between numbers is math, no marker; a bundle's id "bon x" is no orphan x
   expect(tidy("Invented charge (up to 20 + 20 × rarity)")).toBe(
     "Invented charge (up to 20 + 20 × rarity)",
