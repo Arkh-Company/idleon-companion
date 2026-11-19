@@ -3,7 +3,9 @@
 // writer, and the name of each of that writer's writes; a box with no rule keeps the name of its path (tree/names.ts).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { RecNode } from "../recording.ts";
-import { GENERIC_NAME } from "./rows.ts";
+import { LOOP_ENTRY_CACHES } from "./loop-parts.ts";
+import { GENERIC_NAME, openingOf } from "./rows.ts";
+import { any } from "./val-path.ts";
 
 export interface ScratchName {
   /** null: the write has no name of its own (the generic name, FR-012a). */
@@ -62,6 +64,30 @@ const RULES: readonly Rule[] = [
       "N.js Gallery InitializeNametagBonuses: the box holds the grade factor of the nametag, then its multiplier",
   },
 ];
+
+/**
+ * A read of the write being opened above it, in a turn of the loop that makes that write: the box before the turn, the
+ * total of the earlier turns, with no piece of its own (a row is never a child of itself).
+ */
+export const EARLIER_TURNS = {
+  name: "Total of the earlier turns",
+  leaf: "unknown",
+  why: "the box before this turn of its loop",
+  flags: {},
+} as const;
+/**
+ * Whether the read of `path` at `value` by writer `w` is the read being opened above it (`opening`); a bubble's box
+ * keeps its own rule, its turn opened once more and then cut (tree/caches.ts OPUS4-4).
+ */
+export const readAgain = (
+  opening: readonly string[],
+  w: RecNode | null,
+  path: string,
+  value: number | boolean | null,
+): boolean =>
+  !!w &&
+  !any(LOOP_ENTRY_CACHES, path) &&
+  opening.includes(openingOf({ writer: w.id, path, value }));
 
 /** A read row's fields for its write's name: none for a box no rule knows; the generic name for a write with none. */
 export const scratchFields = (

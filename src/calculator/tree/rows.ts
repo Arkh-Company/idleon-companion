@@ -103,6 +103,11 @@ export const valueOf = (v: RecValue | undefined): number | boolean | null =>
     ? v
     : null;
 
+/** A cache read being opened, in the set of what the tree is opening (tree/caches.ts): a row is never a child of itself. */
+export const openingOf = (
+  o: Pick<CacheOpen, "writer" | "path" | "value">,
+): string => `read|${String(o.writer)}|${o.path}|${String(o.value)}`;
+
 export const callText = (n: RecNode): string =>
   `${n.b}(${n.a.map((a) => JSON.stringify(a)).join(", ")})`;
 

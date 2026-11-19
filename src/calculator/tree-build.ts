@@ -20,6 +20,7 @@ import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
 import { linkReads, scratchKey, scratchWrites } from "./tree/links.ts";
+import { EARLIER_TURNS, readAgain } from "./tree/scratch-names.ts";
 import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
 import { chainContext } from "./tree/chain-context.ts";
@@ -99,21 +100,26 @@ export function buildTree(
     // DEEP3-FIX-5: read by the call that wrote it, a loop's working value is that loop's progress
     const progress = (!w || w === reader) && progressRow(path, value);
     if (progress) return progress;
-    // 009 T023: named by its own write
-    // the write the read saw: the number of the last write the recording keeps in the read
+    // 009 T023: named by its own write, the one the read saw (the number of the last write the recording keeps in the
+    // read); a read of the write being opened above it is the total of the earlier turns: never a child of itself
     const seq = reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2];
     const own = writeOf(path, value, seq, w, reader ?? null);
+    const now = caches.now();
+    const again = readAgain(now.opening, w, path, value);
+    const by = again ? null : w;
     const node = row({
-      pieceKey: scratchKey(character, path, own),
+      pieceKey: again ? null : scratchKey(character, path, own),
       value,
       code: path,
-      kids: w ? "lazy" : [],
-      ...scratchFields(own && scratchName(path, own.call, own.at)),
+      kids: by ? "lazy" : [],
+      ...(again
+        ? EARLIER_TURNS
+        : scratchFields(own && scratchName(path, own.call, own.at))),
     });
     if (link?.[2] === "game") node.flags = { ...node.flags, fromCache: true };
     return {
       node,
-      open: w && { path, value, writer: w.id, ...caches.now() },
+      open: by && { path, value, writer: by.id, ...now },
     };
   }
 

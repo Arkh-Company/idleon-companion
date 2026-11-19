@@ -23,7 +23,7 @@ import type { CacheContext } from "./cache-context.ts";
 import type { Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
-import { callText, row } from "./rows.ts";
+import { callText, openingOf, row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { flat } from "./expr.ts";
@@ -361,7 +361,7 @@ export function makeCaches(ctx: CacheContext) {
   ): Opened | null {
     const before = [entryP, opening] as const;
     entryP = o.entry;
-    opening = new Set(o.opening);
+    opening = new Set([...o.opening, openingOf(o)]);
     try {
       return cache(
         o.path,
