@@ -112,3 +112,49 @@ test("a vote with no Meritocracy multiplier in the recording keeps its rows", ()
     "Meritocracy vote of the week = 21",
   ]);
 });
+
+test("[FR-018] the week's vote opens as any vote: its Vote bonus, the Meritocracy bonus multiplier and the week's vote", () => {
+  useGameTables(TABLES);
+  const { rows, expand } = placed(
+    {
+      0: [
+        {
+          node: row({
+            pieceKey: "b",
+            value: 40,
+            code: "CustomLists.NinjaInfo[41][64]",
+            name: "Meritocracy bonus value (bonus 21)",
+            leaf: "fixedValue",
+          }),
+          open: null,
+        },
+        lazy(
+          "Meritoc Bonusz Multi",
+          1,
+          1.85,
+          'Summoning("MeritocBonuszMulti", 0, 0)',
+        ),
+        ...week(21),
+      ],
+    },
+    [
+      lazy(
+        "All of your Sigils give x higher bonuses than normal",
+        0,
+        74,
+        'Summoning2("MeritocBonusz", 21, 0)',
+      ),
+    ],
+    [
+      { ...(NODES[0] ?? recNode(0, "None")), v: 74 },
+      NODES[1] ?? recNode(1, "None"),
+    ],
+  );
+  const n = expand(rows[0]?.id ?? "");
+  expect(kidsOf(n).map((k) => [k.name, k.value])).toEqual([
+    ["Vote bonus", 40],
+    ["Meritocracy bonus multiplier", 1.85],
+    ["Meritocracy vote of the week", 21],
+  ]);
+  expect(n?.formula && formulaLines(n.formula).numbers).toBe("40 × 1.85 = 74");
+});
