@@ -82,8 +82,8 @@ export function goldFoodTerm(
     const q = y.t === "op" && y.o === "+" && isNum(y.l, 1) ? strip(y.r) : null;
     const log =
       q?.t === "op" && q.o === "/" && isNum(q.r, 2.14) ? strip(q.l) : null;
-    const arg = log && wornArg(log);
-    if (arg === null || arg === undefined) return null;
+    const arg = log ? wornArg(log) : null;
+    if (arg === null) return null;
     const r = term(t, o);
     const f: Pair = [
       "1 + log₁₀(1 + quantity) ÷ 2.14",
