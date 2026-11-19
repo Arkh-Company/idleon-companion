@@ -3,10 +3,12 @@
 import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { row } from "./rows.ts";
+import { useGameNames } from "./names.ts";
 import { useGameTables } from "./table-names.ts";
 
 afterEach(() => {
   useGameTables(new Map());
+  useGameNames(new Map());
 });
 
 const at = (i: number, v: unknown) => {
@@ -23,11 +25,6 @@ const TABLES = new Map<string, unknown>([
   [
     "CustomLists.Spelunky",
     Object.assign(at(6, ["Invented_Cove"]), { 14: ["Invented_lore_text"] }),
-  ],
-  ["CustomLists.DreamChallenge", at(3, ["Reach_an_invented_goal", "30"])],
-  [
-    "CustomLists.TaskShopDesc",
-    at(5, at(4, ["+{%_Larger_invented_bonuses_to_all", "your_Invented_Wins"])),
   ],
 ]);
 
@@ -55,6 +52,16 @@ test.each<[string, string, string]>([
   ],
 ])("%s is %s, with the game's whole text in its ⓘ", (code, name, text) => {
   useGameTables(TABLES);
+  // the recipes' texts over the installed game (names-recipes.json): a dream's task, a merit purchase's two lines
+  useGameNames(
+    new Map([
+      ["WeeklyBoss.d_3", "Reach an invented goal (dream progress)"],
+      [
+        "Tasks[2][5][4]",
+        "World 6 merit purchases: Larger invented bonuses to all your Invented Wins",
+      ],
+    ]),
+  );
   const r = row({ pieceKey: "k", value: 1, code });
   expect([r.name, r.formula]).toEqual([name, { rule: [text, "= 1"] }]);
   expect(checkTree({ id: "x", ...r }, 1)).not.toBeNull();
