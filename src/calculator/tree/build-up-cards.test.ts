@@ -115,10 +115,10 @@ test("[FR-018] the checks of a card's stars are in the ⓘ of its level, never r
   );
   const opened = expand(rows[0]?.id ?? "");
   expect(kidsOf(opened).map((k) => k.name)).toEqual(["Base stars"]);
+  // the checks are said in words; the numbers line stays the level's math, which the parity compares number by number
   expect(lines(opened)).toMatchObject({
     names:
-      "1 + min(Stars passed, Base stars + Rift 5th star + Spelunking 6th star), at least 7 and 6 by the card lists of the account",
-    numbers:
-      "1 + min(6, 4 + 1 + 1) = 7 (Card stars < 7: no; Card stars < 6: no)",
+      "1 + min(Stars passed, Base stars + Rift 5th star + Spelunking 6th star), at least 7 and 6 by the card lists of the account (Card stars < 7: no; Card stars < 6: no)",
+    numbers: "1 + min(6, 4 + 1 + 1) = 7",
   });
 });
