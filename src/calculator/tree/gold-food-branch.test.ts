@@ -119,12 +119,11 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["Amount of the golden food (item table)", 7, "fixedValue"],
     ["GFood Multi", near(MULTI), null],
     ["Base rate (× 0.05)", 0.05, "fixedValue"],
-    ["log₁₀", near(6.000000434294264), "rawBonus"],
+    ["Beanstalk level", 3, "level"],
   ]);
-  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
-    EMPORIUM,
-    9,
-  );
+  // 19/11: the log₁₀ is math, in the row's ⓘ, which ends with its value (FR-008)
+  const empF = emp?.formula;
+  expect(Array.isArray(empF) ? empF[1].at(-1) : null).toBeCloseTo(6.006, 3);
   // its ⓘ is how its pools join
   expect(food?.formula).toEqual([
     [

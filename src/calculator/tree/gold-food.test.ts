@@ -116,7 +116,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["Amount of the golden food (item table)", 7, "fixedValue", null],
     ["GFood Multi", near(MULTI), null, null],
     ["Base rate (× 0.05)", 0.05, "fixedValue", null],
-    ["log₁₀", near(6.000000434294264), "rawBonus", null],
+    ["Beanstalk level", 3, "level", null],
   ]);
   expect(parts[1]?.formula).toEqual({
     rule: [
@@ -124,10 +124,8 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });
-  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
-    EMPORIUM,
-    9,
-  );
+  const empF = emp?.formula as [string[], number[]]; // 19/11: log₁₀ in the ⓘ
+  expect(empF[1].at(-1)).toBeCloseTo(6.006, 3);
   expect(checkTree(root, 100)).not.toBeNull();
 });
 
@@ -175,13 +173,15 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "log₁₀", "(", "1", "+", "quantity", ")", "÷", "2.14"],
     [1, 1, 999, 2.14, 2.402],
   ]);
-  // the emporium's: its parts' product, the shared multiplier among them
-  expect(kidsOf(emporium)[0]?.formula).toEqual({
-    rule: [
-      "Amount of the golden food × GFood Multi × 0.05 × log₁₀",
-      "7 × 2.86 × 0.05 × 6 = 6.006",
-    ],
-  });
+  // the emporium's: its parts and its log₁₀ of 1 + 1000 × 10^level, the Beanstalk's level its leaf (19/11)
+  const [words, numbers] = (kidsOf(emporium)[0]?.formula ?? [[], []]) as [
+    string[],
+    number[],
+  ];
+  expect([words.join(" "), numbers]).toEqual([
+    "Amount of the golden food × GFood Multi × Base rate × log₁₀ ( 1 + 1000 × 10 ^ Beanstalk level )",
+    [7, 2.86, 0.05, 1, 1000, 10, 3, 6.006],
+  ]);
 });
 
 test("the shared multiplier counts a family below 1 as 1; a step whose family is at least 2 is the chain's own pool", () => {

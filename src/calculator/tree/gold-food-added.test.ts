@@ -46,17 +46,44 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
     "Equipped: Invented Charm",
     expect.closeTo(7.212813084112149, 9),
   ]);
-  // its quantity factor is the Quantity multiplier, with the quantity in its ⓘ (009 T023 r4)
+  // its quantity factor, 1 + log₁₀(1 + quantity) ÷ 2.14, is math in its ⓘ, no row (19/11): its leaf is the quantity
   const factor = worn?.kids === "lazy" ? build.expand(worn.id) : worn;
-  expect(
-    kidsOf(factor)
-      .filter((k) => k.name === "Quantity multiplier")
-      .map((k) => k.formula),
-  ).toEqual([
+  expect(kidsOf(factor).map((k) => [k.name, k.value])).toContainEqual([
+    "Quantity",
+    999,
+  ]);
+  expect(kidsOf(factor).map((k) => k.name)).not.toContain(
+    "Quantity multiplier",
+  );
+  expect(worn?.formula).toEqual([
     [
-      ["1", "+", "log₁₀", "(", "1", "+", "quantity", ")", "÷", "2.14"],
-      [1, 1, 999, 2.14, 2.402],
+      "Amount of the golden food",
+      "×",
+      "GFood Multi",
+      "×",
+      "Base rate",
+      "×",
+      "log₁₀",
+      "(",
+      "1",
+      "+",
+      "Quantity",
+      ")",
+      "×",
+      "(",
+      "1",
+      "+",
+      "log₁₀",
+      "(",
+      "1",
+      "+",
+      "Quantity",
+      ")",
+      "÷",
+      "2.14",
+      ")",
     ],
+    [7, 2.86, 0.05, 1, 999, 1, 1, 999, 2.14, 7.213],
   ]);
 });
 
@@ -84,7 +111,6 @@ test("the emporium's product with the quantity factor of its own log, as N.js wr
     "Amount of the golden food (item table)",
     "GFood Multi",
     "Base rate (× 0.05)",
-    "log₁₀",
-    "Multiplier",
+    "Beanstalk level",
   ]);
 });
