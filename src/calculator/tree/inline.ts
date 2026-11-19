@@ -8,10 +8,11 @@ import type { CalcTreeNode } from "../tree-contract.ts";
 import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, near, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
-import { evaluate, isOperator } from "./math.ts";
+import { evaluate, formulaOut, isOperator } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
+import { termOf } from "./share.ts";
 
 type Atoms = [string[], number[]];
 interface Built {
@@ -85,6 +86,19 @@ function splice(outer: Atoms, term: string, inner: Atoms): Atoms | null {
   ];
 }
 
+/** A step's own ⓘ and rows; a curve's names its constants by their role (FR-018), its rows' names. */
+function innerOf(r: Row): Built {
+  const own = inlined(r, r.group ?? []);
+  const roles =
+    isCurve(r) && r.roles
+      ? formulaOut(
+          r.roles,
+          (r.group ?? []).map((k) => termOf(k.node)),
+        )
+      : null;
+  return Array.isArray(roles) ? { ...own, formula: roles } : own;
+}
+
 /**
  * The ⓘ and rows of `row`'s level `rows`, each unnamed step in it replaced by its parts and its ⓘ in brackets, all the
  * way down, when the ⓘ still closes; else the level's own (tree/formulas.ts `withFormula`).
@@ -101,7 +115,7 @@ export function inlined(row: FormulaRow, rows: Row[]): Built {
   let moved = 0;
   const out: Row[] = [];
   for (const [i, r] of rows.entries()) {
-    const inner = isStep(r) ? inlined(r, r.group ?? []) : null;
+    const inner = isStep(r) ? innerOf(r) : null;
     const joined =
       inner && Array.isArray(inner.formula)
         ? splice(atoms, mark(i), inner.formula)
