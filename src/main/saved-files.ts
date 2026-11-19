@@ -2,8 +2,8 @@
 // contracts/saved-files.md): read, checked, written whole, as settings.ts does. A file that cannot be read is set aside
 // as `.bad`, the item starts empty and the window is told once; nothing here ever throws to the app. A character is its
 // number, never its name. No electron import, so tests can load it.
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { readFileSync, renameSync } from "node:fs";
+import { join } from "node:path";
 import {
   isCatalogId,
   isObject,
@@ -15,6 +15,7 @@ import {
 } from "../shared/index.ts";
 import type { Mark, Pin, RadarChange } from "../shared/index.ts";
 import { pinsPayload } from "./payloads.ts";
+import { replaceFile } from "./replace-file.ts";
 
 export const MARKS_RESET = "Saved marks could not be read and were reset";
 export const MARKS_UNSAVED = "The marks could not be saved on this computer.";
@@ -219,13 +220,11 @@ function jsonFile<T>(
       load();
       data = next;
       if (kept) return sentences.unsaved;
-      // Written to `.tmp` and renamed over the file (as setup-store.ts), so a failed write never leaves half a file.
+      // Written whole, as settings.json (replace-file.ts): a failed write never leaves half a file.
       try {
-        mkdirSync(dirname(file), { recursive: true });
-        const tmp = `${file}.tmp`;
-        writeFileSync(tmp, JSON.stringify(toFile(next)));
-        renameSync(tmp, file);
-        return null;
+        return replaceFile(file, JSON.stringify(toFile(next)))
+          ? null
+          : sentences.unsaved;
       } catch {
         return sentences.unsaved;
       }

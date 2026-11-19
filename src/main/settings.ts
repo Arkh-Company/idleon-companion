@@ -1,14 +1,8 @@
 // settings.json (spec §5.5): a missing or broken file gives the defaults, key by key.
-import {
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync } from "node:fs";
 import { DEFAULT_SETTINGS, DEFAULT_VIEW } from "../shared/index.ts";
 import type { Settings, ViewPrefs } from "../shared/index.ts";
+import { replaceFile } from "./replace-file.ts";
 import { zoomFactor } from "./zoom.ts";
 
 /** The file's object, or {} when it is missing, broken or not an object. */
@@ -22,8 +16,7 @@ function read(file: string): Partial<Record<string, unknown>> {
 }
 
 /** Every key the app keeps, each as its loader reads it, with `patch` over them: no save loses another's keys. Written
- * to `.tmp` and renamed over the file (as saved-files.ts), so a failed write of `.tmp` never leaves half a file; only
- * the direct write, when Windows keeps refusing the rename, is not atomic. */
+ * whole (replace-file.ts), and a file still held never throws to the main process (no caller catches it). */
 function write(file: string, patch: object): void {
   const v = {
     ...loadSettings(file),
@@ -31,25 +24,8 @@ function write(file: string, patch: object): void {
     ...loadView(file),
     ...patch,
   };
-  mkdirSync(dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
-  const text = JSON.stringify(v);
-  writeFileSync(tmp, text);
-  for (let tries = 3; tries > 0; tries--) {
-    try {
-      renameSync(tmp, file);
-      return;
-    } catch {
-      // Windows: another process holds the file a moment (EPERM, EBUSY)
-    }
-  }
-  // Still held: a direct write keeps the setting, and the main process never gets the error (no caller catches it).
-  try {
-    writeFileSync(file, text);
-    rmSync(tmp, { force: true });
-  } catch {
-    // this save is lost; the next one tries again
-  }
+  // false: this save is lost; the next one tries again
+  replaceFile(file, JSON.stringify(v));
 }
 
 /** The user's settings: unknown keys dropped, a key of the wrong type gets its default. */
