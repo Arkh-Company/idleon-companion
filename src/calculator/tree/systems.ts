@@ -31,7 +31,8 @@ export const V1_SYSTEMS: readonly System[] = (
     ["Shiny Pets", "🐉"],
     ["Tome", "📖"],
     ["Researching", "🔬"],
-    ["Chips", "💎"],
+    // decision of 19/11: 🧩, as the Gem Shop takes 💎
+    ["Chips", "🧩"],
     ["Dreams", "💭"],
     ["Cloud Bonus", "☁️"],
     ["Owl", "🦉"],
@@ -89,6 +90,7 @@ export const EXTRA_SYSTEMS: readonly System[] = (
     ["Killroy", "💀"],
     // decision of 19/11: Divinity takes 🕊️, as Prayers has 🙏
     ["Divinity", "🕊️"],
+    ["Gem Shop", "💎"],
   ] as const
 ).map(([name, emoji]) => ({ name, emoji }));
 
@@ -240,6 +242,11 @@ export const SYSTEM_RULES: readonly {
       [/^DNSM\.ArcadBonDNz/, "Arcade", "N.js ArcadeBonus (writes ArcadBonDNz)"],
       [/^BundlesReceived\./, "Bundles", "N.js BundlesReceived"],
       [/^Lab\[/, "Lab", "N.js Labb (reads Lab)"],
+      [
+        /^GemItemsPurchased\[/,
+        "Gem Shop",
+        "N.js GemItemsPurchased (the purchases of the gem shop)",
+      ],
     ] as const
   ).map(([test, system, proof]) => ({
     test,
