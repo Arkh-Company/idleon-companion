@@ -158,6 +158,22 @@ test("around a cache read with a writer, the read's row with the expression's va
   ]);
 });
 
+test("a cache read beside other sources never takes their sum's value, name and rows: the branch of the parts (009 T023)", () => {
+  // max(x, 1) + (B + C) ÷ 100: the read is one part of the sum, never the sum
+  const sum = op(
+    "+",
+    fn("max", [read("DNSM.W.x", 1.38), num(1)], 1.38),
+    op("/", op("+", call(1, 3), call(2, 2), 5), num(100), 0.05),
+    1.43,
+  );
+  const [r] = rowsOf([{ v: 2.86, e: op("*", sum, num(2), 2.86) }], [], [], "*");
+  expect(r?.node).toMatchObject({ code: null, value: 1.43, pieceKey: null });
+  expect(r?.group?.map((k) => [k.node.code, k.node.value])).toContainEqual([
+    "DNSM.W.x",
+    1.38,
+  ]);
+});
+
 test("the parts of an expression, one that adds or a product, stay in their places (spec 009, FR-016)", () => {
   const codes = (rows: Row[]): string[] =>
     rows.flatMap((r) =>
