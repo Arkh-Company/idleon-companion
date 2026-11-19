@@ -67,7 +67,11 @@ const readsOf = (e: Expr): string[] =>
  */
 function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
   const [part] = p.rows;
-  if (p.lone && part) return { ...part, node: { ...part.node, fmt: "+" } };
+  if (p.lone && part)
+    return {
+      ...part,
+      node: { ...part.node, fmt: p.kind === "multi" ? "x" : "+" },
+    };
   const op =
     p.combine === "product"
       ? "*"

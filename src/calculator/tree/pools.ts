@@ -29,7 +29,10 @@ export interface Pool {
   combine: Combine;
   /** How the pool joins the total of the pools before it in the game's chain: added, or multiplied (when not set). */
   join?: "+" | "*";
-  /** A lone part added between multiplications (decision of 19/11): its own "+ N" row, named by its term, no pool. */
+  /**
+   * A lone part added between multiplications, or a single multiplier alone in its Multi pool (decisions of 19/11): its
+   * own "+ N" or "× N" row, named by its term, no pool.
+   */
   lone?: true;
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
@@ -115,25 +118,28 @@ function singlesTogether(pools: Omit<Pool, "name">[]): Omit<Pool, "name">[] {
   return out;
 }
 
-/** A lone part, not in %, added to the total of the multiplications before it (audit family 25, decision of 19/11). */
-const loneOf = (p: Omit<Pool, "name">, i: number): Row | null => {
+/**
+ * A lone part, not in %, added to the total of the multiplications before it (audit family 25, decision of 19/11); or
+ * a single multiplier alone in its Multi pool beside other pools (answer 2 of 19/11): its source's own row.
+ */
+const loneOf = (
+  p: Omit<Pool, "name">,
+  i: number,
+  all: readonly Omit<Pool, "name">[],
+): Row | null => {
   const [r] = p.rows;
-  return i > 0 &&
-    p.join === "+" &&
-    p.combine === "sum" &&
-    p.rows.length === 1 &&
-    r &&
-    !r.percent
-    ? r
-    : null;
+  if (!r || p.rows.length !== 1) return null;
+  const added = i > 0 && p.join === "+" && p.combine === "sum" && !r.percent;
+  const single = all.length > 1 && p.kind === "multi" && p.combine === "product";
+  return added || single ? r : null;
 };
 
 /**
  * Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more; a lone
- * part added between multiplications is no pool, and goes by its own term.
+ * part added between multiplications, or a single multiplier alone in its pool, is no pool, and goes by its own term.
  */
 function named(pools: Omit<Pool, "name">[]): Pool[] {
-  const lone = pools.map(loneOf);
+  const lone = pools.map((p, i) => loneOf(p, i, pools));
   const count = (k: PoolKind) =>
     pools.filter((p, i) => p.kind === k && !lone[i]).length;
   const seen = new Map<PoolKind, number>();
