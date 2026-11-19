@@ -32,6 +32,7 @@ import {
   ifChecks,
 } from "./build-up.ts";
 import { cardFactor, meritocracyMulti } from "./factors.ts";
+import { boxTotal } from "./box-total.ts";
 import { besidePools, downToSources } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
@@ -175,7 +176,10 @@ export function makePlaces(ctx: PlaceContext) {
     // its Meritocracy multi and its card's level by their roles first, before any step moves up (tree/factors.ts)
     const rows0 = f
       ? l.rows
-      : cardFactor(name, l.rows.map(meritocracyMulti), vOf(l.row));
+      : boxTotal(
+          cardFactor(name, l.rows.map(meritocracyMulti), vOf(l.row)),
+          vOf(l.row),
+        );
     const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
     const checks = f ? [] : rows0.filter((r) => branchCheck(r, rows0));
     const bare = checks.length
