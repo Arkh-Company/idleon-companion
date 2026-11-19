@@ -122,8 +122,10 @@ const isShared = (r: Row | null | undefined) => {
   expect(r?.node.formula).not.toBeNull();
 };
 
-test("[FR-017] the box of the shared multiplier read on its own: GFood Multi, no rows of its own, its ⓘ", () => {
-  isShared(inBlock(read("DNSM.GfoodBonusMULTI", 2.86)));
+test("[FR-017] the box of the shared multiplier read on its own is the chain's working value: left to the chain, never a row here", () => {
+  // the chain follows that read into the step that made it, and its sources become the chain's first pools; a row
+  // here would end the chain there and lose them (009 T023 r2, measured on the Drop Rate)
+  expect(inBlock(read("DNSM.GfoodBonusMULTI", 2.86))).toBeNull();
 });
 
 test("[FR-017] the worn food's product, its log only inside the quantity factor: the shared multiplier is GFood Multi", () => {
