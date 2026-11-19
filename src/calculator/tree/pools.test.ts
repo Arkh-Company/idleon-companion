@@ -118,19 +118,21 @@ const forge = op(
   12160,
 );
 
-test("a factor that sums two sources is an Additive pool of its terms; one of a single source, a Multi pool", () => {
+test("a factor that sums two sources is an Additive pool of its terms; one of a single source, its own × N row", () => {
   // the assembly's rows: each factor a branch of its parts (tree/terms.ts exprRow)
   const rows = [
     branch(760, [read("Stats.x", 96), read("Stats.y", 6)]),
     branch(16, [read("Stats.m", 1500)]),
   ];
   const pools = poolsOf(rows, { value: 12160, expr: forge }, term);
+  // the single multiplier alone in its Multi pool is its own row, by its term, no pool (answer 2 of 19/11)
   expect(pools?.map(brief)).toEqual([
     ["Additive pool", "additive", "sum", 760, [480, 180, 100]],
-    ["Multi pool", "multi", "product", 16, [16]],
+    ["Game value", "multi", "product", 16, [16]],
   ]);
+  expect(pools?.map((p) => p.lone)).toEqual([undefined, true]);
   expect(pools && rootFormula(pools, 12160)).toEqual([
-    ["Additive pool", "×", "Multi pool"],
+    ["Additive pool", "×", "Game value"],
     [760, 16, 12160],
   ]);
 });

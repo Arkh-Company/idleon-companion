@@ -242,8 +242,10 @@ test("sources taken as a percent by a product are a product of their sum by 0.01
   );
 });
 
-test("a set of one part is the chain's first pool, with its ⓘ; one written with its number last too", () => {
-  const set = (key: string) => kidsOf(kidsOf(treeOf(key))[0])[0];
+test("a set of one part is the chain's first row, with its ⓘ; one written with its number last too", () => {
+  // the single multiplier alone in its Multi pool is its own × N row, no pool (answer 2 of 19/11)
+  const set = (key: string) => kidsOf(treeOf(key))[0];
+  expect(set("oneSet")?.role).toBe("piece");
   const one = set("oneSet");
   expect(sourcesOf(one)).toEqual([["GfoodSet[0]", 10]]);
   expect(one?.formula).toEqual([

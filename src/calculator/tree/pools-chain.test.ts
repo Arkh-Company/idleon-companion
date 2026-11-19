@@ -71,15 +71,16 @@ const CHAIN: Step[] = [
 
 test("a chain of steps gives a pool per run of sums or of multipliers, in the game's order, each closing", () => {
   const pools = listOf(chainPools(CHAIN, { value: 1407 }, termAt));
-  // decision of 19/11 (audit family 25): a lone part added between multiplications is its own "+ N" row, no pool
+  // decision of 19/11 (audit family 25): a lone part added between multiplications is its own "+ N" row, no pool;
+  // a single multiplier alone in its Multi pool is its own "× N" row too (answer 2 of 19/11)
   expect(pools?.map(brief)).toEqual([
     ["Additive pool", "additive", "sum", 39, [30, 7, 2]],
-    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Bonus Stats.m", "multi", "product", 6, [6]],
     ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
-    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+    ["Multi pool", "multi", "product", 6, [2, 3]],
   ]);
   expect(pools && poolsPair(pools, 1407)).toEqual([
-    "(Additive pool × Multi pool 1 + Fixed +0.5) × Multi pool 2",
+    "(Additive pool × Bonus Stats.m + Fixed +0.5) × Multi pool",
     "(39 × 6 + 0.5) × 6 = 1407",
   ]);
   const first =
@@ -93,9 +94,9 @@ test("a chain of steps gives a pool per run of sums or of multipliers, in the ga
     ]),
   ).toEqual([
     ["Additive pool", "pool", null, 39],
-    ["Multi pool 1", "pool", "x", 6],
+    ["Bonus Stats.m", "piece", "x", 6],
     ["Fixed +0.5", "piece", "+", 0.5],
-    ["Multi pool 2", "pool", "x", 6],
+    ["Multi pool", "pool", "x", 6],
   ]);
   // the ⓘ closes with the numbers, and the main takes it
   expect(pools && rootFormula(pools, 1407)).toEqual([
@@ -103,12 +104,12 @@ test("a chain of steps gives a pool per run of sums or of multipliers, in the ga
       "(",
       "Additive pool",
       "×",
-      "Multi pool 1",
+      "Bonus Stats.m",
       "+",
       "Fixed +0.5",
       ")",
       "×",
-      "Multi pool 2",
+      "Multi pool",
     ],
     [39, 6, 0.5, 6, 1407],
   ]);
@@ -138,7 +139,8 @@ test("single multipliers of steps in a row share one Multi pool; a factor that s
       ["Additive pool", "additive", "sum", 20, [10, 10]],
       ["Multi pool 1", "multi", "product", 6, [2, 3]],
       ["Multi pool 2", "multi", "onePlusPercent", 1.5, [30, 20]],
-      ["Multi pool 3", "multi", "product", 4, [4]],
+      // the last single multiplier, alone in its pool, is its own row (answer 2 of 19/11)
+      ["Bonus Stats.g", "multi", "product", 4, [4]],
     ],
   );
 });
@@ -186,17 +188,18 @@ test("a working value the root's call wrote and reads back links the chain; one 
   ];
   const pools = (own: boolean) =>
     chainPools(steps, { value: 1407 }, termAt, () => own);
+  // a single multiplier alone in its Multi pool is its own row (answer 2 of 19/11)
   expect(listOf(pools(true))?.map(brief)).toEqual([
     ["Additive pool", "additive", "sum", 39, [30, 7, 2]],
-    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Bonus Stats.m", "multi", "product", 6, [6]],
     ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
-    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+    ["Multi pool", "multi", "product", 6, [2, 3]],
   ]);
   expect(listOf(pools(false))?.map(brief)).toEqual([
     ["Additive pool", "additive", "sum", 39, [37, 2]],
-    ["Multi pool 1", "multi", "product", 6, [6]],
+    ["Bonus Stats.m", "multi", "product", 6, [6]],
     ["Fixed +0.5", "additive", "sum", 0.5, [0.5]],
-    ["Multi pool 2", "multi", "product", 6, [2, 3]],
+    ["Multi pool", "multi", "product", 6, [2, 3]],
   ]);
 });
 
@@ -278,14 +281,15 @@ test("a running total links the chain before a multiplier kept in a variable, wh
   const both = [op("*", def, val(20), 100), op("*", val(20), def, 100)].map(
     (e) => listOf(chainPools(steps(e), { value: 100 }, terms))?.map(brief),
   );
+  // the variable alone in its Multi pool is its own row (answer 2 of 19/11)
   expect(both).toEqual([
     [
       ["Additive pool", "additive", "sum", 20, [10, 10]],
-      ["Multi pool", "multi", "product", 5, [5]],
+      ["Bonus Stats.m", "multi", "product", 5, [5]],
     ],
     [
       ["Additive pool", "additive", "sum", 20, [10, 10]],
-      ["Multi pool", "multi", "product", 5, [5]],
+      ["Bonus Stats.m", "multi", "product", 5, [5]],
     ],
   ]);
 });

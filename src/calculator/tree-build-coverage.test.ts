@@ -62,18 +62,17 @@ test("a chain the game clamps at the end, where the clamp does not bite, gets it
   const level = kidsIn(root);
   expect(level.map((k) => [k.name, k.role, k.combine, k.value])).toEqual([
     ["Additive pool", "pool", "sum", 12],
-    ["Multi pool", "pool", "product", 6],
+    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
+    ["Game value", "piece", undefined, 6],
   ]);
   expect(product(level)).toBe(72);
   expect(kidsIn(level[0]).map((k) => [k.code, k.value])).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
   ]);
-  expect(kidsIn(level[1]).map((k) => [k.code, k.value])).toEqual([
-    ["TreeLoop()", 6],
-  ]);
+  expect([level[1]?.code, level[1]?.fmt]).toEqual(["TreeLoop()", "x"]);
   expect(root.formula).toEqual([
-    ["Additive pool", "×", "Multi pool"],
+    ["Additive pool", "×", "TreeLoop()"],
     [12, 6, 72],
   ]);
   expect(checkTree(root, 100)).not.toBeNull();

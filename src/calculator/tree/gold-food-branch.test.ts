@@ -326,14 +326,13 @@ test("a set of one part has its ⓘ; one written with its number last has no par
   ]);
   const last = set("setLastLocal");
   expect([last?.value, kidsIn(last)]).toEqual([near(1.1), []]);
-  // as a chain, the set's one part is its first pool, with the same value
+  // as a chain, the set's one part is its first row, with the same value: a single multiplier alone in its Multi pool
+  // is its own × N row, no pool (answer 2 of 19/11)
   for (const key of ["oneSet", "setLast"]) {
-    const { build, pools } = chainOf(key);
-    expect([pools[0]?.name, pools[0]?.value]).toEqual([
-      "Multi pool 1",
-      near(1.1),
-    ]);
-    expect(sourcesOf(build, pools[0])).toEqual([["GfoodSet[0]", 10]]);
+    const { build, food } = chainOf(key);
+    const [first] = kidsIn(food);
+    expect([first?.role, first?.value]).toEqual(["piece", near(1.1)]);
+    expect(sourcesOf(build, first)).toEqual([["GfoodSet[0]", 10]]);
   }
 });
 

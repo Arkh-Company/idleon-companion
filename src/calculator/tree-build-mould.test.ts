@@ -87,11 +87,12 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
     level.map((k) => [k.name, k.role, k.poolKind, k.combine, k.value]),
   ).toEqual([
     ["Additive pool", "pool", "additive", "sum", 39],
-    ["Multi pool 1", "pool", "multi", "product", 6],
+    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
+    ["Game value", "piece", undefined, undefined, 6],
     // the lone + 0.5 between the products is its own row, no pool (decision of 19/11)
     ["Fixed +0.5", "piece", undefined, undefined, 0.5],
-    ["Multi pool 2", "pool", "multi", "onePlusPercent", 1.83],
-    ["Multi pool 3", "pool", "multi", "product", 6],
+    ["Multi pool 1", "pool", "multi", "onePlusPercent", 1.83],
+    ["Multi pool 2", "pool", "multi", "product", 6],
     // the check that guards the + 2 stays, after the pools: no source leaves (FR-008)
     ["Game value", "piece", undefined, undefined, 1],
   ]);
@@ -102,7 +103,7 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
       ["TreeLevel", 25],
       [null, 2],
     ],
-    [["TreeLoop()", 6]],
+    [],
     [],
     [
       ["TreeStats.a", 3],
@@ -119,18 +120,20 @@ test("a root that is a chain of steps gets a pool per run, in the game's order, 
       "(",
       "Additive pool",
       "×",
-      "Multi pool 1",
+      "TreeLoop()",
       "+",
       "Fixed +0.5",
       ")",
       "×",
-      "Multi pool 2",
+      "Multi pool 1",
       "×",
-      "Multi pool 3",
+      "Multi pool 2",
     ],
     [39, 6, 0.5, 1.83, 6, 2574.81],
   ]);
   // a call of the sum still opens inside its pool
+  // the single multiplier is the source itself, shown as × N
+  expect([level[1]?.code, level[1]?.fmt]).toEqual(["TreeLoop()", "x"]);
   const [reads] = kidsIn(level[0]);
   expect(
     kidsIn(reads?.kids === "lazy" ? build.expand(reads.id) : reads).map((r) => [
@@ -149,7 +152,8 @@ test("a chain keeps after its pools the rows no step of it shows: the block's da
   const level = kidsIn(treeOf("TreeChainData"));
   expect(level.map((k) => [k.name, k.role, k.value])).toEqual([
     ["Additive pool", "pool", 5],
-    ["Multi pool", "pool", 100],
+    // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
+    [expect.any(String), "piece", 100],
     [expect.any(String), "piece", 25],
   ]);
   expect(level[2]?.code).toBe("TreeLevel");
@@ -165,7 +169,12 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     recorder.ops,
   );
   const [add, multi] = kidsIn(build.root);
-  expect([add?.name, multi?.name]).toEqual(["Additive pool", "Multi pool"]);
+  // the single multiplier alone in its pool is its own × N row, no pool (answer 2 of 19/11)
+  expect([add?.name, multi?.role, multi?.code]).toEqual([
+    "Additive pool",
+    "piece",
+    "TreeLoop()",
+  ]);
   const groups = kidsIn(add);
   expect(
     groups.map((k) => [k.role === "system" ? k.name : k.code, k.value]),
