@@ -70,11 +70,6 @@ test.each<[string, TurnRead[], string | null]>([
     "Battle 3 win",
   ],
   ["an artifact", [["Sailing[3][2]", 1]], "Invented Relic (artifact 2)"],
-  [
-    "an artifact with no text",
-    [["Sailing[3][0]", 1]],
-    "Artifact 0 (artifact 0)",
-  ],
   ["a colour", [["Spelunk[9][0]", 1]], "Invented Hue (palette 0)"],
   ["a found item", [["Cards[1] contains itemA", true]], "Found Invented Charm"],
   ["an item it did not find", [["Cards[1] contains itemA", false]], null],
@@ -147,6 +142,9 @@ test.each<[string, TurnRead[]]>([
     ],
   ],
   ["a definition with no text", [["ItemDefinitionsGET.itemB.UQ1val", 3]]],
+  // family 2 (audit of 19/11): an artifact or a colour with no text is never named by its index
+  ["an artifact with no text", [["Sailing[3][0]", 1]]],
+  ["a colour with no text", [["Spelunk[9][5]", 1]]],
   // a rule that names the turn with a name too long to be one ends the search too
   [
     "a battle whose name would be too long",

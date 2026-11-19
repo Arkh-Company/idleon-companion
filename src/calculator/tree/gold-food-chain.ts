@@ -15,6 +15,7 @@ import {
   GOLD_FOOD,
   measuresWorn,
   multiFormula,
+  sourceTerm,
 } from "./gold-food.ts";
 import { formulaOut, near } from "./math.ts";
 import { withName } from "./row-checks.ts";
@@ -30,6 +31,8 @@ export const GOLD_FOOD_TERMS = {
     name: "GFood Multi",
     proof: "N.js GoldFoodBonuses; bench pieces.cjs goldFood",
   },
+  // bonus = Amount × multi × 0.05 × …: the block's one literal 0.05 (the Vinicius's name of 19/11)
+  rate: { name: "Base rate (× 0.05)", proof: "N.js GoldFoodBonuses" },
 };
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
@@ -69,6 +72,12 @@ export function goldFoodTerm(
 ): Row | null {
   if (!GOLD_FOOD.test.test(block.b)) return null;
   const x = strip(e);
+  const rateRow = (t: Expr, o: "*" | "+"): Row | null => {
+    const r = isNum(t, 0.05) ? term(t, o) : null;
+    return r && withName(r, GOLD_FOOD_TERMS.rate.name);
+  };
+  const rate = rateRow(e, op);
+  if (rate) return rate;
   // the argument of a log call that measures the worn food, 1 + its quantity; null for any other expression
   const wornArg = (y: Expr): number | null => {
     const arg =
@@ -93,6 +102,22 @@ export function goldFoodTerm(
   };
   const factor = quantityRow(e, op);
   if (factor) return factor;
+  // a log₁₀ call, or the factor 1 + log₁₀(…) ÷ 2.14, with the argument of its log; null for any other term
+  const logArg = (t: Expr): number | null => {
+    const y = strip(t);
+    return y.t === "call" && nodes[y.id]?.b === "getLOG"
+      ? Number(nodes[y.id]?.a[0])
+      : null;
+  };
+  const mathOf = (t: Expr): { kind: "log" | "factor"; arg: number } | null => {
+    const log = logArg(t);
+    if (log !== null) return { kind: "log", arg: log };
+    const y = strip(t);
+    const q = y.t === "op" && y.o === "+" && isNum(y.l, 1) ? strip(y.r) : null;
+    const inner =
+      q?.t === "op" && q.o === "/" && isNum(q.r, 2.14) ? logArg(q.l) : null;
+    return inner === null ? null : { kind: "factor", arg: inner };
+  };
   // Amount × the shared multiplier × …, its log₁₀ loose or inside the quantity factor: the multiplier is the value of an
   // earlier step, kept in a variable or, as the game does, in a box the block reads back (009 T023 r1, r2). Read on its
   // own, the box is the chain's working value, which the chain follows into its first pools: no row here.
@@ -104,10 +129,6 @@ export function goldFoodTerm(
   const multi = fs.find(step);
   const at = multi && step(multi);
   if (!multi || !at) return null;
-  const parts = fs.map((t) =>
-    t === multi ? shared(Number(t.v)) : (quantityRow(t, "*") ?? term(t, "*")),
-  );
-  if (parts.some((p) => !p)) return null;
   // named by what its logs measure: the worn food's quantity, else the emporium's level (009 T023 r4)
   const logs = (y: Expr): Expr[] =>
     y.t === "op"
@@ -115,11 +136,51 @@ export function goldFoodTerm(
       : y.t === "def"
         ? logs(y.e)
         : [y];
-  const name = fs.some(
+  const worn = fs.some(
     (t) => t !== multi && logs(t).some((y) => wornArg(y) !== null),
-  )
-    ? equippedName(reads)
-    : emporiumName(reads);
+  );
+  const name = worn ? equippedName(reads) : emporiumName(reads);
+  // 19/11: a log₁₀ and the factor 1 + log₁₀(…) ÷ 2.14 are math, no rows: they go to the product's ⓘ, and the product's
+  // leaf is what goes into them (N.js GoldFoodBonuses: log₁₀(1 + q) of the worn food's quantity q, log₁₀(1 + 10³·10^L)
+  // of the Beanstalk's level L): q = the log's argument − 1, the quantity of the slot whose step this is
+  const maths = fs.flatMap((t) => {
+    const m = t === multi ? null : mathOf(t);
+    return m ? [{ t, ...m }] : [];
+  });
+  const parts = fs
+    .filter((t) => !maths.some((m) => m.t === t))
+    .map((t) =>
+      t === multi ? shared(Number(t.v)) : (rateRow(t, "*") ?? term(t, "*")),
+    );
+  if (parts.some((p) => !p)) return null;
+  const arg = maths[0]?.arg;
+  const leaf =
+    arg === undefined
+      ? null
+      : worn
+        ? part("Quantity", arg - 1)
+        : part("Beanstalk level", Math.log10((arg - 1) / 1e3));
+  // what goes into the log, in words and in numbers, the same shape
+  const lv = fx3(Number(leaf?.node.value));
+  const [what, whatV] = worn
+    ? ["1 + Quantity", `1 + ${lv}`]
+    : ["1 + 1000 × 10^Beanstalk level", `1 + 1000 × 10^${lv}`];
+  const shown = (t: Expr, i: number) => {
+    const m = maths.find((y) => y.t === t);
+    const log = (s: string) => `log₁₀(${s})`;
+    if (m)
+      return m.kind === "log"
+        ? [log(what), log(whatV)]
+        : [`(1 + ${log(what)} ÷ 2.14)`, `(1 + ${log(whatV)} ÷ 2.14)`];
+    const r = parts[fs.filter((y) => !maths.some((n) => n.t === y)).indexOf(t)];
+    return [r ? sourceTerm(r) : String(i), fx3(Number(t.v))];
+  };
+  const f: Pair | null = maths.length
+    ? [
+        fs.map((t, i) => shown(t, i)[0]).join(" × "),
+        `${fs.map((t, i) => shown(t, i)[1]).join(" × ")} = ${fx3(Number(e.v))}`,
+      ]
+    : null;
   // the shared multiplier is a value its own steps prove (the chain's first pools), with the 008's ⓘ: never a "?"
   const pair = multiFormula(
     multi.t === "read" ? at : { v: Number(multi.v), e: strip(multi) },
@@ -145,10 +206,17 @@ export function goldFoodTerm(
       ...(name === null ? {} : { name }),
     }),
     open: null,
+    ...(f ? { f } : {}),
     group: finish(
       e.v,
-      parts.flatMap((p) => p ?? []),
-      true,
+      [...parts.flatMap((p) => p ?? []), ...(leaf ? [leaf] : [])],
+      !maths.length,
     ).map(proven),
   };
 }
+
+/** A leaf of the pass with a fixed name: what goes into a golden food's logs (19/11). */
+const part = (name: string, v: number): Row => ({
+  node: row({ pieceKey: null, value: valueOf(v), code: null, name }),
+  open: null,
+});

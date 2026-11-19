@@ -5,7 +5,7 @@
 // game's table (`resolveNames`): when its table changed, the row has no name, never a wrong one.
 import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
 import type { NamePart, NameRecipe } from "./names-table.ts";
-import { clean, isNameText, transformText } from "./name-text.ts";
+import { clean, isNameText, tidy, transformText } from "./name-text.ts";
 import { renameOf } from "./renames.ts";
 import { STATE_NAMES } from "./state-names.ts";
 
@@ -14,6 +14,7 @@ export {
   isNameText,
   MAX_NAME,
   NAME_SIGNS,
+  tidy,
   transformText,
 } from "./name-text.ts";
 
@@ -128,14 +129,25 @@ const RECIPE_KEYS = new Set(NAME_RECIPES.map((r) => r.key));
 
 /** The row's name for its call or read path; null when nothing names it (the row keeps the generic name). */
 export function nameOf(code: string): string | null {
-  // pieces.cjs rename NAMES renames the finished tree: over every other name
+  // pieces.cjs rename NAMES renames the finished tree: over every other name; each passes the one cleaner of the
+  // game's text (family 4), a static name's too
   const renamed = renameOf(code);
-  if (renamed !== null) return renamed;
+  if (renamed !== null) return tidy(renamed);
   const known = STATIC_NAMES.get(code);
-  if (known) return known.name;
-  if (RECIPE_KEYS.has(code)) return gameNames.get(code) ?? null;
+  if (known) return tidy(known.name) || null;
+  if (RECIPE_KEYS.has(code)) {
+    const name = gameNames.get(code);
+    return name === undefined ? null : tidy(name) || null;
+  }
   return shapeName(code)?.name ?? null;
 }
+
+/**
+ * The name a recipe gives `code` over the installed game's table, whatever names the row (family 13: the whole text a
+ * short name leaves to the ⓘ, tree/name-descs.ts); null with none.
+ */
+export const recipeName = (code: string): string | null =>
+  RECIPE_KEYS.has(code) ? (gameNames.get(code) ?? null) : null;
 
 /** The first rule by shape that names `code`, with its name. */
 function shapeName(code: string): { name: string; generic: boolean } | null {

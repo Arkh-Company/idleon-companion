@@ -5,8 +5,15 @@ import { mosaicOf } from "../fixtures/fake-mosaic.ts";
 export const TABLES = new Map<string, unknown>([
   ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
   ["ItemDefinitionsGET.itemB", { displayName: "OTHER_DISH" }],
+  // the family bonus of class 33, key 66 of FamBonusQTYs, in the game's form (tree/state-names.ts)
+  [
+    "CustomLists.ClassFamilyBonuses",
+    Array.from({ length: 34 }, (_, c) =>
+      c === 33 ? ["{千@INVENTED_FAMILY"] : [],
+    ),
+  ],
 ]);
-/** The state of a golden food: the worn food's quantity, the emporium's level and the Family Bonus 66. */
+/** The state of a golden food: the worn food's quantity, the emporium's level and the family bonus of key 66. */
 export const golden = (
   quantity: number,
   level: number,

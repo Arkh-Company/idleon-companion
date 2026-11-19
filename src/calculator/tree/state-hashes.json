@@ -1,5 +1,5 @@
 {
-  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not, and the form at the boot of the two tables the game changes after it (CustomLists.LabMainBonus, grown by NinjaInfo[25..28] with an Emporium bonus, and CustomLists.NinjaInfo, rows 3, 9 and 10 rescaled by OptionsListAccount[231]), which replaces the bench's hash of a loaded game: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them. Then (spec 009 T031) CustomLists.SigilDesc, which the build-up reads for a sigil's tiers (tree/table-names.ts tableNumber), hashed the same way over the installed game at 0e47e87b (ClassFamilyBonuses, hashed alongside, gives the recipes' own hash).",
+  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not, and the form at the boot of the two tables the game changes after it (CustomLists.LabMainBonus, grown by NinjaInfo[25..28] with an Emporium bonus, and CustomLists.NinjaInfo, rows 3, 9 and 10 rescaled by OptionsListAccount[231]), which replaces the bench's hash of a loaded game: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them. Then (spec 009 T031) CustomLists.SigilDesc, which the build-up reads for a sigil's tiers (tree/table-names.ts tableNumber), hashed the same way over the installed game at 0e47e87b (ClassFamilyBonuses, hashed alongside, gives the recipes' own hash). Then (fix/tree-names, family 13 of the audit of 19/11) CustomLists.Spelunky, whose row 6 names the caves the lore of the cave is drawn under, hashed the same way over the installed game at 0e47e87b (the same way gives the hash of CustomLists.SkullShopDesc above).",
   "version": "0e47e87b",
   "hashes": [
     [
@@ -17,6 +17,10 @@
     [
       "e3ec5e3ec5b4c0369693a40afe5e252b6126a4408f946f966aa9047c821631b7",
       "CustomLists.SkullShopDesc"
+    ],
+    [
+      "53469f8e477774e1ef2705978945224ac90bf340c40de43c96120410eab2b866",
+      "CustomLists.Spelunky"
     ],
     [
       "38b84ac9e70778be6c80a5c48534e23574b121bdb7eff2f1181a8e2e418e1b39",

@@ -61,13 +61,16 @@ function joined(terms: string[]): string {
 }
 
 /**
- * "How it adds up" in two lines (contracts/tree-worker.md): the names, then each name's number with the result; a rule's
- * two lines as they come, its result the last number of its line of numbers.
+ * "How it adds up" (contracts/tree-worker.md): the game's text of the row's bonus as an optional line before the names
+ * and the numbers, then the names, then each name's number with the result; a rule's two lines as they come, its result
+ * the last number of its line of numbers.
  */
 export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
   names: string;
   numbers: string;
   result: string;
+  /** The game's text of the row's bonus, the optional line before the names and the numbers; null with none. */
+  text: string | null;
 } {
   if (!Array.isArray(formula)) {
     const [names, numbers] = formula.rule;
@@ -76,6 +79,7 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
       names,
       numbers,
       result: last === undefined ? "" : plain(Number(last.replace(/,/g, ""))),
+      text: formula.text ?? null,
     };
   }
   const [terms, numbers] = formula;
@@ -89,6 +93,7 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
     names: joined(terms),
     numbers: `${joined(filled)} = ${result}`,
     result,
+    text: formula[2] ?? null,
   };
 }
 

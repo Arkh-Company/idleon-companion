@@ -57,15 +57,9 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["CustomLists.CompassUpg[39][5]", "Circle Supremacy bonus per level"],
   ["CustomLists.CompassUpg[80][5]", "Abomination Slayer XXI bonus per level"],
   ["CustomLists.CompassUpg[42][5]", "Critter Culture bonus per level"],
-  // the shop's own text (the file's example, "Gallery Multiplier", is the screen's text after two buys)
-  [
-    "OptionsListAccount[467]",
-    "Killroy Shop: 5% Chance for +1 Grade for your Gallery in World 7! (times bought)",
-  ],
-  [
-    "OptionsListAccount[468]",
-    "Killroy Shop: Permanently boosts the drops of Masterclasses by x (times bought)",
-  ],
+  // the shop's bonus by its short name (the Vinicius's names of 19/11); the shop's text goes to the ⓘ
+  ["OptionsListAccount[467]", "Killroy: Gallery Grade chance (times bought)"],
+  ["OptionsListAccount[468]", "Killroy: Masterclass drops (times bought)"],
   ["OptionsListAccount[196]", "Blue Tome Pages added to the Tome"],
   ["OptionsListAccount[197]", "Red Tome Pages added to the Tome"],
   ["OptionsListAccount[238]", "Moissanite gemstone LV"],
@@ -122,10 +116,10 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["Menagerie[0][11]", "Construction build bonus 1 stacks", 1],
   ["CustomLists.SummonUPG[78][6]", "Allstar bonus per level"],
   ["CustomLists.SummonUPG[24][6]", "Re-Draw bonus per level"],
-  ["CustomLists.Research[58][24]", "Menagerie Boost: x Drop Rate (per level)"],
+  ["CustomLists.Research[58][24]", "Menagerie Boost: Drop Rate (per level)"],
   [
     "CustomLists.Research[58][16]",
-    "Menagerie Boost: Orion's first upgrade is x cheaper (per level)",
+    "Menagerie Boost: Orion's first upgrade is cheaper (per level)",
   ],
   [
     "CustomLists.Research[25][5]",
@@ -162,8 +156,13 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   // spec 009 T031 (nothing stays with the generic name): a star sign's own total, a family bonus by its class's text
   // (FamBonusQTYs[2c] is ClassFamilyBonuses[c]) and the slot the All-talent levels read the Super Talents of
   ["DNSM.StarSigns[69]", "Golden Food bonuses (Beanbie Major)"],
-  ["DNSM.FamBonusQTYs[66]", "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)"],
+  ["DNSM.FamBonusQTYs[66]", "Higher Bonuses From Golden Foods (family bonus)"],
   ["DNSM.AllTalWhichPlayer", "Character slot (whose Super Talents count)"],
+  // family 17 of the audit of 19/11: a Minehead floor's bonus by the text its screen writes, never its mode in words
+  ['Minehead("BonusQTY", 21, 0)', "Hat Rack bonus multi"],
+  // its first line and its first sentence: the rest is the screen's note
+  ['Minehead("BonusQTY", 4, 0)', "Total Damage and Drop Rate"],
+  ['Minehead("BonusQTY", 5, 0)', "Damage per Weapon POW"],
 ];
 
 /** The shape rule that names `code`. */

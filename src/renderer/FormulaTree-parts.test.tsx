@@ -2,7 +2,7 @@
 // Every part in its place (spec 009, FR-016): no group "At 0", "At ×1" or "Small" and no "Show all", in any level; a
 // Condition among many parts keeps its place, and a 0 in a product still says it zeroes the total. Every value and name
 // is invented.
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import type { TreeNode } from "../shared/index.ts";
 import { node, ready } from "./formula-fixture.ts";
@@ -72,4 +72,45 @@ test("a 0 in a product stays in its place and says it zeroes the total", () => {
   expect(
     screen.getByRole("treeitem", { name: /^Zed/ }).getAttribute("aria-label"),
   ).toContain("zeroes the total");
+});
+
+// fix/tree-names r2: a row whose bonus has a text of the game shows it in How it adds up, a line before its math
+test("How it adds up shows the game's text of the bonus first, then the names and the numbers", () => {
+  draw(
+    node({
+      kids: [
+        node({
+          id: "root/K",
+          name: "Shop bonus",
+          value: 62.5,
+          formula: [
+            ["Points", "×", "Bonus"],
+            [25, 2.5, 62.5],
+            "<b>Permanently</b> boosts an invented bonus!",
+          ],
+        }),
+      ],
+    }),
+  );
+  const items = () =>
+    screen
+      .getAllByRole("treeitem")
+      .map((i) => (i.getAttribute("aria-label") ?? "").split(",")[0]);
+  screen.getByRole("treeitem", { name: /^Shop bonus/ }).focus();
+  fireEvent.keyDown(document.activeElement ?? document.body, {
+    key: "ArrowRight",
+  });
+  screen.getByRole("treeitem", { name: /^How it adds up = 62.5/ }).focus();
+  fireEvent.keyDown(document.activeElement ?? document.body, {
+    key: "ArrowRight",
+  });
+  expect(items().slice(-3)).toEqual([
+    "<b>Permanently</b> boosts an invented bonus!",
+    "Points × Bonus",
+    "25 × 2.5 = 62.5",
+  ]);
+  // the text as it comes, never markup (review r2)
+  expect(
+    screen.getByText("<b>Permanently</b> boosts an invented bonus!"),
+  ).toBeTruthy();
 });
