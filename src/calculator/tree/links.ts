@@ -112,22 +112,36 @@ export function linkReads(rec: Recording): Linked {
  * of the box; with no such write, its path alone, as any other read.
  */
 export function scratchKeys(writes: readonly RecWrite[], character: number) {
+  const writeOf = scratchWrites(writes);
+  return (path: string, value: unknown, ...by: (RecNode | null)[]): string => {
+    const w = writeOf(path, value, ...by);
+    return JSON.stringify(
+      w ? [character, path, callText(w.call), w.at] : [character, path],
+    );
+  };
+}
+
+/** The write a scratch read comes from: the first of `by` that wrote that value, and the write's place in its writes. */
+export function scratchWrites(writes: readonly RecWrite[]) {
   const byCall = new Map<string, RecWrite["v"][]>();
   for (const w of writes) {
     const k = `${String(w.node)}|${w.path}`;
     byCall.set(k, [...(byCall.get(k) ?? []), w.v]);
   }
-  return (path: string, value: unknown, ...by: (RecNode | null)[]): string => {
+  return (
+    path: string,
+    value: unknown,
+    ...by: (RecNode | null)[]
+  ): { call: RecNode; at: number } | null => {
     if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
       for (const n of by) {
-        const i = n
+        const at = n
           ? (byCall.get(`${String(n.id)}|${path}`) ?? []).findIndex((v) =>
               near(v, value),
             )
           : -1;
-        if (n && i >= 0)
-          return JSON.stringify([character, path, callText(n), i]);
+        if (n && at >= 0) return { call: n, at };
       }
-    return JSON.stringify([character, path]);
+    return null;
   };
 }

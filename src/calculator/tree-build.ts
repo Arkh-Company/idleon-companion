@@ -19,7 +19,8 @@ import { GAME_BUGS } from "./tree/game-bugs.ts";
 import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
-import { linkReads, scratchKeys } from "./tree/links.ts";
+import { linkReads, scratchKeys, scratchWrites } from "./tree/links.ts";
+import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
 import { chainContext } from "./tree/chain-context.ts";
 import { chainLevel, firstLevel, mould } from "./tree/mould.ts";
@@ -77,6 +78,7 @@ export function buildTree(
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
   const readKey = scratchKeys(writes, character);
+  const writeOf = scratchWrites(writes);
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
@@ -98,11 +100,14 @@ export function buildTree(
     // DEEP3-FIX-5: read by the call that wrote it, a loop's working value is that loop's progress
     const progress = (!w || w === reader) && progressRow(path, value);
     if (progress) return progress;
+    // 009 T023: named by its own write
+    const own = writeOf(path, value, w, reader ?? null);
     const node = row({
       pieceKey: readKey(path, value, w, reader ?? null),
       value,
       code: path,
       kids: w ? "lazy" : [],
+      ...scratchFields(own && scratchName(path, own.call, own.at)),
     });
     if (link?.[2] === "game") node.flags = { ...node.flags, fromCache: true };
     return {
