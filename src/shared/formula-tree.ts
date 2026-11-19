@@ -119,8 +119,9 @@ export interface TreeNode {
   why: string | null;
   /** "How it adds up": names and numbers only (FR-012a); a rule ("If …: 35", "yes → 35") as its two lines of text. */
   formula:
-    | [names: string[], numbers: number[]]
-    | { rule: [names: string, numbers: string] }
+    // (text: the game's text of the row's bonus, a line of its own before its math; fix/tree-names r2)
+    | [names: string[], numbers: number[], text?: string]
+    | { rule: [names: string, numbers: string]; text?: string }
     | null;
   /** Block and arguments or path, only in "Game details". */
   code: string | null;

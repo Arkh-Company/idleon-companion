@@ -72,8 +72,9 @@ export interface CalcTreeNode {
   condition: (typeof CALC_CONDITION_KINDS)[number] | null;
   why: string | null;
   formula:
-    | [names: string[], numbers: number[]]
-    | { rule: [names: string, numbers: string] }
+    // (text: the game's text of the row's bonus, a line of its own before its math; fix/tree-names r2)
+    | [names: string[], numbers: number[], text?: string]
+    | { rule: [names: string, numbers: string]; text?: string }
     | null;
   code: string | null;
   role: (typeof CALC_NODE_ROLES)[number];

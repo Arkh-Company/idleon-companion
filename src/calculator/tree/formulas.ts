@@ -10,6 +10,7 @@
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { formulaOut } from "./math.ts";
+import { descText, withText } from "./name-descs.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -380,12 +381,16 @@ export function withFormula(
   row: FormulaRow,
   rows: Row[],
 ): { formula: CalcTreeNode["formula"]; rows: Row[] } {
-  if (row.node.formula || row.node.role === "root")
-    return { formula: row.node.formula, rows };
+  // fix/tree-names r2: a row made with the game's text as its ⓘ (tree/name-descs.ts) that has math of its own takes the
+  // ⓘ of its math, the text beside it
+  const own = row.node.formula;
+  const text = descText(row.node.code);
+  const made = own !== null && !Array.isArray(own) && own.rule[0] === text;
+  if ((own && !made) || row.node.role === "root") return { formula: own, rows };
   const fm = formulaFor(row, rows);
-  if (!fm) return { formula: null, rows };
+  if (!fm) return { formula: own, rows };
   return {
-    formula: formulaOut(fm, termsOf(rows, row.xf, row.xweak)),
+    formula: withText(formulaOut(fm, termsOf(rows, row.xf, row.xweak)), text),
     rows: withShares(row.node, fm, rows).rows,
   };
 }

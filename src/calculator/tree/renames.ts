@@ -263,7 +263,8 @@ export const RENAMES: readonly Rename[] = [
     null,
     "merit; N.js TaskShopDesc",
   ),
-  // the Killroy shop's bonus t by what it raises (the Vinicius's names of 19/11), its text to the ⓘ (name-descs.ts)
+  // the Killroy shop's bonus t by what it raises (the Vinicius's names of 19/11); the shop's text is in tree/name-descs.ts
+  // DESCS: a leaf's ⓘ, or a line beside the math of a bonus that opens (tree/formulas.ts withFormula)
   rule(
     /^RandomEvent\("KillroyBonuses", (\d+), 0\)$/,
     (m) => KILLROY[n(m)]?.name ?? null,

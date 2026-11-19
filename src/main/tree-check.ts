@@ -85,7 +85,7 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   formula: orNull(
     (f) =>
       (Array.isArray(f) &&
-        f.length === 2 &&
+        (f.length === 2 || (f.length === 3 && isText(f[2]))) &&
         Array.isArray(f[0]) &&
         f[0].every(isText) &&
         Array.isArray(f[1]) &&
@@ -95,6 +95,7 @@ const NODE: Record<string, (v: unknown) => boolean> = {
         f,
         {
           rule: (r) => Array.isArray(r) && r.length === 2 && r.every(isText),
+          text: isText,
         },
         ["rule"],
       ),

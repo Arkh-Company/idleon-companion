@@ -68,6 +68,8 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
   names: string;
   numbers: string;
   result: string;
+  /** The game's text of the row's bonus, a line before its math; null with none. */
+  text: string | null;
 } {
   if (!Array.isArray(formula)) {
     const [names, numbers] = formula.rule;
@@ -76,6 +78,7 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
       names,
       numbers,
       result: last === undefined ? "" : plain(Number(last.replace(/,/g, ""))),
+      text: formula.text ?? null,
     };
   }
   const [terms, numbers] = formula;
@@ -89,6 +92,7 @@ export function formulaLines(formula: NonNullable<TreeNode["formula"]>): {
     names: joined(terms),
     numbers: `${joined(filled)} = ${result}`,
     result,
+    text: formula[2] ?? null,
   };
 }
 

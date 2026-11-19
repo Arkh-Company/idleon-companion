@@ -143,6 +143,14 @@ export function FormulaTree({
           <span className="name">{label}</span>,
           () =>
             lines(`${n.id}::how`, level + 1, [
+              ...(f.text === null
+                ? []
+                : [
+                    [f.text, <span className="name">{f.text}</span>] satisfies [
+                      string,
+                      ReactNode,
+                    ],
+                  ]),
               [f.names, <span className="name">{f.names}</span>],
               [f.numbers, <span className="name num">{f.numbers}</span>],
             ]),
