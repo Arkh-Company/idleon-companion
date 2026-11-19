@@ -76,7 +76,6 @@ export function treeAnswer(
       calculatedAt: pair.calculatedAt,
       checkedOnThisGame: on.checkedOnThisGame,
       stale: on.stale,
-      comparingWith: null,
       counts: { nodes: countNodes(root) },
       root,
     },

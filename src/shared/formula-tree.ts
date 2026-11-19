@@ -172,7 +172,6 @@ export type FormulaTree =
       checkedOnThisGame: boolean;
       /** The game is closed: the last reading (FR-022). */
       stale: boolean;
-      comparingWith: string | null;
       counts: { nodes: number };
       root: TreeNode;
     };
