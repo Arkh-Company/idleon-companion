@@ -208,6 +208,19 @@ const CASES: Case[] = [
   ['Spelunk("DoWeHaveLoreN1", 8, 0)', "Spelunking lore: Other Cave", null],
   ['Spelunk("DoWeHaveLoreN1", 4, 0)', null, null],
   ["WeeklyBoss.d_3", "Equinox: Dream #4", null],
+  // the Killroy shop's bonus t by what it raises (the Vinicius's names of 19/11)
+  [
+    'RandomEvent("KillroyBonuses", 0, 0)',
+    "Killroy: Artifact Find Chance",
+    null,
+  ],
+  [
+    'RandomEvent("KillroyBonuses", 3, 0)',
+    "Killroy: Gallery Grade chance",
+    null,
+  ],
+  ['RandomEvent("KillroyBonuses", 6, 0)', "Killroy: Daily coral gain", null],
+  ['RandomEvent("KillroyBonuses", 7, 0)', null, null],
   ["WeeklyBoss.d_40", "Equinox: Nightmare 5", null],
   [
     "DNSM.GurtBonuzzDN",

@@ -57,15 +57,9 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["CustomLists.CompassUpg[39][5]", "Circle Supremacy bonus per level"],
   ["CustomLists.CompassUpg[80][5]", "Abomination Slayer XXI bonus per level"],
   ["CustomLists.CompassUpg[42][5]", "Critter Culture bonus per level"],
-  // the shop's own text (the file's example, "Gallery Multiplier", is the screen's text after two buys)
-  [
-    "OptionsListAccount[467]",
-    "Killroy Shop: 5% Chance for +1 Grade for your Gallery in World 7! (times bought)",
-  ],
-  [
-    "OptionsListAccount[468]",
-    "Killroy Shop: Permanently boosts the drops of Masterclasses (times bought)",
-  ],
+  // the shop's bonus by its short name (the Vinicius's names of 19/11); the shop's text goes to the ⓘ
+  ["OptionsListAccount[467]", "Killroy: Gallery Grade chance (times bought)"],
+  ["OptionsListAccount[468]", "Killroy: Masterclass drops (times bought)"],
   ["OptionsListAccount[196]", "Blue Tome Pages added to the Tome"],
   ["OptionsListAccount[197]", "Red Tome Pages added to the Tome"],
   ["OptionsListAccount[238]", "Moissanite gemstone LV"],
