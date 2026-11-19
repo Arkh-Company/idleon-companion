@@ -148,7 +148,9 @@ export function makePlaces(ctx: PlaceContext) {
     // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts);
     // the math of the rows with no branch check comes first, each check said after it in words (FR-018, A39)
     // its Meritocracy multi and its card's level by their roles first, before any step moves up (tree/factors.ts)
-    const rows0 = f ? l.rows : cardFactor(name, l.rows.map(meritocracyMulti));
+    const rows0 = f
+      ? l.rows
+      : cardFactor(name, l.rows.map(meritocracyMulti), vOf(l.row));
     const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
     const checks = f ? [] : rows0.filter((r) => branchCheck(r, rows0));
     const bare = checks.length
