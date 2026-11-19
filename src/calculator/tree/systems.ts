@@ -87,6 +87,8 @@ export const EXTRA_SYSTEMS: readonly System[] = (
     ["Clam", "🐚"],
     ["Rift", "🌀"],
     ["Killroy", "💀"],
+    // decision of 19/11: Divinity takes 🕊️, as Prayers has 🙏
+    ["Divinity", "🕊️"],
   ] as const
 ).map(([name, emoji]) => ({ name, emoji }));
 
@@ -188,6 +190,7 @@ export const SYSTEM_RULES: readonly {
         "Clam",
         "N.js Thingies ClamWorkBonus, Clam_Cost, ClamBonuses",
       ],
+      [/^Divinity /, "Divinity", "N.js Divinity"],
       [
         /^RiftStuff /,
         "Rift",
