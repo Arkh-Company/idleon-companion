@@ -8,6 +8,7 @@ import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
 import { near, termsOf, vOf, withFormula } from "./formulas.ts";
+import { classify } from "./kinds.ts";
 import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
@@ -65,6 +66,15 @@ export interface PlaceContext {
   /** A cache row's rows, its writer's, with the writer's ⓘ (tree/caches.ts). */
   opened(o: CacheOpen, depth: number, seen: ReadonlySet<number>): Opened | null;
 }
+
+/**
+ * A row that ends with no kids: its type of leaf, by its name and code (tree/kinds.ts), when it has none; one whose ⓘ
+ * says how it comes is no unknown leaf (never a "?").
+ */
+const typedLeaf = (n: CalcTreeNode): CalcTreeNode =>
+  n.leaf || n.formula || n.role === "pool" || n.role === "system"
+    ? n
+    : { ...n, ...classify(n) };
 
 export function makePlaces(ctx: PlaceContext) {
   const { nodes } = ctx;
@@ -260,8 +270,14 @@ export function makePlaces(ctx: PlaceContext) {
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
         ...(group ? placedLevel(id, group, node.name) : {}),
       };
-      if (open !== null) places.set(id, { node: placed, level });
-      return placed;
+      // audit family 6: a row that ends with no kids is a leaf with its type, one of the 9 or unknown with its why (a
+      // call is typed when it opens: its build-up may give it rows its level does not have)
+      const out: CalcTreeNode =
+        open === null && Array.isArray(placed.kids) && !placed.kids.length
+          ? typedLeaf(placed)
+          : placed;
+      if (open !== null) places.set(id, { node: out, level });
+      return out;
     });
   }
 
@@ -281,7 +297,11 @@ export function makePlaces(ctx: PlaceContext) {
       const { node, level } = p;
       if (!level)
         return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
-      return { ...node, ...placedLevel(node.id, level, node.name) };
+      const open = { ...node, ...placedLevel(node.id, level, node.name) };
+      // a call that opens empty ends there: a leaf with its type (audit family 6)
+      return Array.isArray(open.kids) && !open.kids.length
+        ? typedLeaf(open)
+        : open;
     },
   };
 }
