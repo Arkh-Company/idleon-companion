@@ -1,6 +1,6 @@
 // Test helper (only the window's tests import it): a `window.companion` whose every method is a vi.fn.
 import { vi } from "vitest";
-import { DEFAULT_SETTINGS } from "../shared/index.ts";
+import { DEFAULT_SETTINGS, DEFAULT_VIEW } from "../shared/index.ts";
 import type { CompanionApi } from "../shared/index.ts";
 
 export type CompanionStub = {
@@ -70,6 +70,10 @@ export function stubCompanion(): CompanionStub {
     onCharacters: vi.fn<CompanionApi["onCharacters"]>(() => () => undefined),
     dismissRadar: vi.fn<CompanionApi["dismissRadar"]>(() => Promise.resolve()),
     setSidePanel: vi.fn<CompanionApi["setSidePanel"]>(() => Promise.resolve()),
+    getView: vi.fn<CompanionApi["getView"]>(() =>
+      Promise.resolve({ ...DEFAULT_VIEW }),
+    ),
+    setView: vi.fn<CompanionApi["setView"]>(() => Promise.resolve()),
   };
   window.companion = companion;
   return companion;

@@ -71,7 +71,6 @@ test("a root equal to the Stats is a ready tree, with the Stats' text and time",
     character: 0,
     activeCharacter: 0,
     calculatedAt: 1_000,
-    gameChanged: false,
     checkedOnThisGame: true,
     stale: false,
     comparingWith: null,
@@ -137,6 +136,27 @@ test("a request the host could not answer is unavailable", () => {
   h.p.request({ id: "dropRate", character: null });
   h.unavailable();
   expect(h.last()).toEqual({ state: "unavailable", request: DROP });
+});
+
+test("a tree the worker failed to build (its mould too) leaves one log line with a label and the id (spec 009, NFR-005)", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.unavailable();
+  expect(h.log).toHaveBeenCalledExactlyOnceWith({
+    event: "treeFailed",
+    id: "dropRate",
+  });
+});
+
+test("a tree whose chain of steps is open is shown, and leaves one log line with a label and the id (spec 009, NFR-005)", () => {
+  const h = setup();
+  h.p.request({ id: "dropRate", character: null });
+  h.tree(node({ value: CALCULATED.dropRate }), "chainOpen");
+  expect(h.last()).toMatchObject({ state: "ready" });
+  expect(h.log).toHaveBeenCalledExactlyOnceWith({
+    event: "chainOpen",
+    id: "dropRate",
+  });
 });
 
 test("an answer to an older request is dropped", () => {

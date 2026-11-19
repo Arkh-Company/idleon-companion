@@ -135,6 +135,10 @@ const TABLE_RULES: readonly StateRule[] = [
     "N.js MainframeBonus",
     (m) => with_(tableText("lab", n(m)), (t) => `${t} connected`),
   ),
+  // spec 009 T030: a Cosmo upgrade's level, which CosmoBonusQTY(t, i) multiplies by the upgrade's own bonus
+  rule(/^Holes\[([4-6])\]\[(\d+)\]$/, "N.js Holes CosmoBonusQTY", (m) =>
+    with_(tableText("cosmo", n(m) - 4, n(m, 2)), (t) => `${t} level`),
+  ),
   rule(/^Dream\[(\d+)\]$/, "N.js Dreamstuff; N.js TotalStats", (m) =>
     with_(tableText("dream", n(m) - 2), (t) => `${t} LV`),
   ),
@@ -244,6 +248,27 @@ const TABLE_RULES: readonly StateRule[] = [
     "N.js QuestComplete by the NPC of DIAL",
     (m) =>
       `${(m[1] ?? "").replace(/_/g, " ")} quest ${String(n(m, 2))} completed`,
+  ),
+  // spec 009 T031: a star sign's own total, the sign's bonus added once for each set of signs it is in (N.js StarSigns,
+  // while the list of equipped signs holds it), by its bonus's words and its name
+  rule(/^DNSM\.StarSigns\[(\d+)\]$/, "N.js StarSigns cache by sign", (m) => {
+    const sign = tableText("sign", n(m));
+    const bonus = tableText("signBonus", n(m));
+    if (sign === null || bonus === null) return null;
+    const more = tableText("signBonusMore", n(m));
+    const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
+    return `${words} (${sign})`;
+  }),
+  // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
+  // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
+  rule(
+    /^DNSM\.FamBonusQTYs\[(\d+)\]$/,
+    "N.js TalentCalc FamBonusQTYs; N.js FamilyBonsuesREAL",
+    (m) =>
+      with_(
+        tableText("family", Math.floor(n(m) / 2)),
+        (t) => `${t.replace(/^@\s*/, "")} (family bonus)`,
+      ),
   ),
 ];
 

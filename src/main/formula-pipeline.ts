@@ -1,8 +1,9 @@
 // From the window's tree request to the FormulaTree it gets back (spec 008, data-model.md). A request always uses the
 // Stats' own pair of result and mosaic, so the root is checked against the number on screen (FR-019, formula-answer.ts).
-// The live values of what is in view go over the same pair (FR-008, plan B). Each part carries how many catalog numbers
-// use it, from the index the shapes fill in the background (FR-027). No electron import, so tests can load it.
-import { pieceValues } from "../shared/index.ts";
+// The live values of what is in view go over the same pair (FR-008, plan B), and the open tree takes its own (spec 009
+// FR-015). Each part carries how many catalog numbers use it, from the index the shapes fill in the background (FR-027).
+// No electron import, so tests can load it.
+import { partsOf, pieceValues } from "../shared/index.ts";
 import type {
   FormulaTree,
   LiveValues,
@@ -20,9 +21,14 @@ import type { StatsPair } from "./stats-pipeline.ts";
 import { liveValues } from "./live-values.ts";
 import type { patchRadar } from "./radar.ts";
 import { checkTree } from "./tree-check.ts";
-import { gameChangedBy, MAX_TREE_NODES, treeAnswer } from "./formula-answer.ts";
+import {
+  liveTree,
+  MAX_TREE_NODES,
+  rebuildClock,
+  treeAnswer,
+} from "./formula-answer.ts";
 import type { FormulaLog } from "./formula-answer.ts";
-import { partsOf, withBranch } from "./tree-walk.ts";
+import { withBranch } from "./tree-walk.ts";
 import type { createTreeHost } from "./tree-host.ts";
 
 type TreeHost = Pick<
@@ -34,7 +40,7 @@ export function startFormulaPipeline(deps: {
   send: (tree: FormulaTree) => void;
   sendValues: (v: LiveValues) => void;
   treeHost: (on: {
-    onTree(id: number, tree: unknown): void;
+    onTree(id: number, tree: unknown, log?: "chainOpen"): void;
     onUnavailable(id: number): void;
     onValues(id: number, values: unknown): void;
     onShape(id: number, shape: unknown): void;
@@ -77,11 +83,8 @@ export function startFormulaPipeline(deps: {
     request: Extract<TreeRequest, { type: "number" }>;
     pair: StatsPair;
     active: number;
-    /** The tree on screen before a Refresh: the new one shows "was …" against it (FR-024). */
-    before: TreeNode | null;
+    quiet: boolean; // a silent rebuild (FR-015): the tree on screen stays when it never comes
   } | null = null;
-  /** Set by a Refresh, taken by the next ask. */
-  let refreshFrom: TreeNode | null = null;
   /** The lazy branch asked of the worker; the same row asked again replaces it. */
   let expanding: { seq: number; treeId: string; nodeId: string } | null = null;
   /** The other rows opened meanwhile: each one asked after the branch before it answers (the host keeps one waiting). */
@@ -94,6 +97,11 @@ export function startFormulaPipeline(deps: {
   let pinIds: string[] = [];
   /** The parts of the open tree asked live, by piece; only of the active character's tree (FR-024). */
   let parts = new Map<string, TreeNode>();
+  /** The parts that had a live value: one that loses it asks the tree again (FR-015). A piece is the same call in any
+   * tree, so the set outlives the tree. */
+  const hadLive = new Set<string>();
+  /** A change since the last tree came asks it again in silence, at most every 10 s (FR-015, NFR-002). */
+  const rebuild = rebuildClock();
   const live = liveValues({
     ask: (id, ids, mosaicJson) => {
       host.values(id, ids, mosaicJson);
@@ -104,14 +112,30 @@ export function startFormulaPipeline(deps: {
         ([k]) => !k.startsWith("["),
       );
       deps.sendValues({ ...v, values: Object.fromEntries(values) });
-      changedInGame(v);
+      liveInTree(v);
     },
   });
 
-  /** "Game changed · Refresh" (FR-024), once, over the open tree. */
-  function changedInGame(v: LiveValues): void {
-    if (last.state === "ready" && gameChangedBy(last, v, parts))
-      show({ ...last, gameChanged: true });
+  /** spec 009 FR-015: the open tree takes the live values at each reading, and a change asks it again in silence (its
+   * ⓘ, its shares, a source that came or left), the tree kept on screen meanwhile. */
+  function liveInTree(v: LiveValues): void {
+    if (last.state !== "ready") return;
+    const next = liveTree(last, v, parts, hadLive);
+    for (const k of parts.keys())
+      if (typeof v.values[k] === "number") hadLive.add(k);
+    if (next) {
+      // A part lost counts once: still without a value on the new tree, it asks nothing more.
+      for (const k of next.lost) hadLive.delete(k);
+      if (next.tree !== last) show(next.tree);
+      rebuild.changed(v.calculatedAt);
+    }
+    rebuildIfDue();
+  }
+
+  /** The silent rebuild: one at a time, never over a branch asked (the host keeps one waiting job; a branch waiting in
+   * `queued` is asked as the one before it comes, so `expanding` covers it). */
+  function rebuildIfDue(): void {
+    if (rebuild.take(!asked && !expanding)) ask(true);
   }
 
   const index = feedsIndex({
@@ -173,7 +197,9 @@ export function startFormulaPipeline(deps: {
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
-    if (last.state !== "ready" || r.treeId !== open?.id) return;
+    // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The new tree
+    // has another time, and the window asks its open branches again then (FR-015).
+    if (last.state !== "ready" || r.treeId !== open?.id || asked) return;
     if (expanding && expanding.nodeId !== r.nodeId) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
       return;
@@ -190,6 +216,7 @@ export function startFormulaPipeline(deps: {
     if (target) branched(target, raw);
     const next = queued.shift();
     if (next) expand(next);
+    else rebuildIfDue();
   }
 
   /** The branch in place of the lazy row, or the row unavailable when the branch is refused or never comes. */
@@ -218,7 +245,8 @@ export function startFormulaPipeline(deps: {
     return pair && active !== null ? { pair, active } : null;
   }
 
-  function ask(): void {
+  /** `quiet`: the tree on screen stays until the new one comes (a rebuild, FR-015). */
+  function ask(quiet = false): void {
     if (!open) return;
     const now = current();
     if (!now) {
@@ -227,8 +255,6 @@ export function startFormulaPipeline(deps: {
       return;
     }
     const { pair, active } = now;
-    const before = refreshFrom;
-    refreshFrom = null;
     openFor = active;
     const request = {
       type: "number" as const,
@@ -236,13 +262,15 @@ export function startFormulaPipeline(deps: {
       character: open.character ?? active,
     };
     seq++;
-    asked = { seq, request, pair, active, before };
-    show({ state: "calculating", request });
+    asked = { seq, request, pair, active, quiet };
+    if (!quiet) show({ state: "calculating", request });
     host.request(seq, request, pair.mosaicJson);
   }
 
-  function received(id: number, raw: unknown): void {
+  function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
+    const { request } = asked;
+    rebuild.came(asked.pair.calculatedAt);
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
@@ -250,20 +278,25 @@ export function startFormulaPipeline(deps: {
     });
     asked = null;
     if (answer.log) deps.log(answer.log);
+    // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
+    if (log) deps.log({ event: log, id: request.id });
     show(answer.tree);
   }
 
   const host = deps.treeHost({
-    onTree: (id, raw) => {
+    onTree: (id, raw, log) => {
       if (expanding?.seq === id) expanded(raw);
-      else received(id, raw);
+      else received(id, raw, log);
     },
     onUnavailable: (id) => {
       if (expanding?.seq === id) expanded(null);
       if (asked?.seq !== id) return;
-      const { request } = asked;
+      const { request, quiet } = asked;
       asked = null;
-      show({ state: "unavailable", request });
+      // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
+      deps.log({ event: "treeFailed", id: request.id });
+      if (quiet) rebuild.failed();
+      else show({ state: "unavailable", request });
     },
     onValues: (id, values) => {
       live.received(id, values);
@@ -279,14 +312,6 @@ export function startFormulaPipeline(deps: {
         expand(r);
         return;
       }
-      // The same number again over its tree is a Refresh: the new tree is compared with this one.
-      refreshFrom =
-        last.state === "ready" &&
-        last.request.type === "number" &&
-        last.request.id === r.id &&
-        (r.character ?? last.activeCharacter) === last.character
-          ? last.root
-          : null;
       drop();
       open = { id: r.id, character: r.character };
       view();
@@ -336,12 +361,11 @@ export function startFormulaPipeline(deps: {
         expanding = null;
         queued = [];
         for (const r of lost) branched(r, null);
-        // The worker ended with the tree in flight: it will never answer (FR-022).
-        if (asked) {
-          const { request } = asked;
-          asked = null;
-          show({ state: "unavailable", request });
-        }
+        // The worker ended with the tree in flight: it will never answer (FR-022); a silent rebuild keeps its tree, stale.
+        const gone = asked;
+        asked = null;
+        if (gone && !gone.quiet)
+          show({ state: "unavailable", request: gone.request });
       }
       if (closed === stale) return;
       stale = closed;

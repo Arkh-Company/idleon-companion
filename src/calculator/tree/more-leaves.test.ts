@@ -77,7 +77,7 @@ test("[OPUS3-F7a] a leaf of that count, typed or not, is the count", () => {
     },
     open: null,
   };
-  const [r] = finish(9, [typed, read("Q", 2)], false);
+  const [r] = finish(9, [typed, read("Q", 2)]);
   expect([r?.node.name, r?.node.leaf, r?.node.why, r?.node.formula]).toEqual([
     MAPS,
     "quantity",
@@ -94,7 +94,7 @@ test("[OPUS3-F7c] the obols' total of a stat is a raw bonus, named by its slot",
     node: { ...read(OBOL, 12).node, leaf: "unknown", why: "a why" },
     open: null,
   };
-  const [r] = finish(9, [untyped, read("Q", 2)], false);
+  const [r] = finish(9, [untyped, read("Q", 2)]);
   expect([r?.node.name, r?.node.leaf, r?.node.why, r?.node.flags]).toEqual([
     "Obols: stat 5 total",
     "rawBonus",
@@ -106,13 +106,12 @@ test("[OPUS3-F7c] the obols' total of a stat is a raw bonus, named by its slot",
     node: { ...read(OBOL, 12).node, leaf: "level" },
     open: null,
   };
-  expect(finish(9, [typed, read("Q", 2)], false)[0]?.node.leaf).toBe("level");
+  expect(finish(9, [typed, read("Q", 2)])[0]?.node.leaf).toBe("level");
   // another cell of the list is no total
-  const [other] = finish(
-    9,
-    [read(OBOL.replace(/\[3\]$/, "[2]"), 12), read("Q", 2)],
-    false,
-  );
+  const [other] = finish(9, [
+    read(OBOL.replace(/\[3\]$/, "[2]"), 12),
+    read("Q", 2),
+  ]);
   expect(other?.node.name).not.toBe("Obols: stat 5 total");
 });
 

@@ -104,8 +104,10 @@ export function pipeline(
     },
     /** The id the host got in its last request. */
     asked: () => host.request.mock.calls.at(-1)?.[0] as number,
-    tree: (tree: unknown) => {
-      on?.onTree(host.request.mock.calls.at(-1)?.[0] as number, tree);
+    tree: (tree: unknown, log?: "chainOpen") => {
+      const id = host.request.mock.calls.at(-1)?.[0] as number;
+      if (log) on?.onTree(id, tree, log);
+      else on?.onTree(id, tree);
     },
     answer: (id: number, tree: unknown) => {
       on?.onTree(id, tree);

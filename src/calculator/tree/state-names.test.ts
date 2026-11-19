@@ -152,6 +152,18 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["CustomLists.BubbaUpg[0][1]", "1st Slice cost base"],
   ["QuestComplete.Cactolyte3", "Cactolyte quest 3 completed"],
   ["QuestComplete.Lord_of_the_Hunt2", "Lord of the Hunt quest 2 completed"],
+  // spec 009 T030 (decision of 18/11: never a raw path as a name): a Cosmo upgrade's level, by its name in the table
+  ["Holes[4][0]", "Monumental Vibes level"],
+  ["Holes[5][3]", "Lengthmeister level"],
+  ["Holes[6][3]", "Voter Integrity level"],
+  // the bench's names of two counters (names-other.cjs; build-v1mold.cjs [G6b])
+  ["OptionsListAccount[139]", "Plunderous Kills (account total)"],
+  ["OptionsListAccount[189]", "Weekly boss difficulties defeated this week"],
+  // spec 009 T031 (nothing stays with the generic name): a star sign's own total, a family bonus by its class's text
+  // (FamBonusQTYs[2c] is ClassFamilyBonuses[c]) and the slot the All-talent levels read the Super Talents of
+  ["DNSM.StarSigns[69]", "Golden Food bonuses (Beanbie Major)"],
+  ["DNSM.FamBonusQTYs[66]", "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)"],
+  ["DNSM.AllTalWhichPlayer", "Character slot (whose Super Talents count)"],
 ];
 
 /** The shape rule that names `code`. */
@@ -197,9 +209,9 @@ test.each([
 
 test("a game cache off its rule keeps the generic name of a working value", () => {
   useGameTables(GAME);
-  for (const code of ["DNSM.FishTKdl[4]", "DNSM.StarSigns[69]"])
+  for (const code of ["DNSM.FishTKdl[4]", "DNSM.CalcTalentDN3"])
     expect(row({ pieceKey: "k", value: 1, code })).toMatchObject({
-      name: `Working value of the game (${code.slice(5, code.search(/\[/))})`,
+      name: `Working value of the game (${/^DNSM\.(\w+)/.exec(code)?.[1] ?? ""})`,
       flags: { unnamed: true },
     });
 });

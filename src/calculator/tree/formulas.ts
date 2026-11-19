@@ -28,8 +28,12 @@ export const vOf = (r: Part): number => {
   return typeof v === "boolean" ? Number(v) : (v ?? NaN);
 };
 export const isCond = (r: Part) => r.node.leaf === "condition";
-/** The group of the parts at ×1 (the bench's "N more parts at ×1"). */
-export const isAtOne = (r: Row) => r.node.role === "atOne";
+/**
+ * The parts at ×1 the ⓘ leaves aside, as the bench's "N more parts at ×1" does: those rows.ts `finish` marked where the
+ * 008 grouped them. They stay in their places on screen (spec 009, FR-016).
+ */
+export const atOneParts = (kids: readonly Row[]): ReadonlySet<Row> =>
+  new Set(kids.filter((k) => k.asideAtOne));
 const kidsOf = (r: Row) => r.group ?? [];
 /** What the bench's `k.name` is here: a Condition's comparison, a row's term (its name, or its path with no name). */
 const nameOf = (r: Part) => (isCond(r) && r.test ? r.test : termOf(r.node));
@@ -52,6 +56,11 @@ function short(r: Part): string {
 /** The names the assembly gives a constant of the code by its place (terms.ts), never a bonus name. */
 const CONSTANT_NAME =
   /^(?:(?:Base|Minus|Cap|Divided by|Exponent|Minimum|Fixed value|Percent to number)\b|Fixed [+×]|× )/;
+/** The names terms.ts `numRole` gives a constant that multiplies or divides what it stands beside (009 r2). */
+const SCALING_NAME = /^(?:× |Divided by |Percent to number \(÷ 100\)$|Fixed ×)/;
+/** A constant of the code that only multiplies or divides: "× 2", "Divided by 3", "Percent to number (÷ 100)", "Fixed ×2". */
+export const isScaling = (n: Pick<Row["node"], "leaf" | "code" | "name">) =>
+  isConstant(n) && SCALING_NAME.test(n.name);
 /** A constant of the code named by its place: a fixed value with no code of its own, never a bonus's proven name. */
 export const isConstant = (n: Pick<Row["node"], "leaf" | "code" | "name">) =>
   n.leaf === "fixedValue" && n.code === null && CONSTANT_NAME.test(n.name);
@@ -65,9 +74,8 @@ function partName(r: Row): string {
   return input ? `curve of ${short(input)}` : "curve";
 }
 const unique = (xs: string[]) => new Set(xs).size === xs.length;
-/** The row's parts and the parts of its ×1 group, which a formula may name. */
-const poolOf = (kids: readonly Row[]) =>
-  kids.flatMap((k) => (isAtOne(k) ? [k, ...kidsOf(k)] : [k]));
+/** The row's parts, which a formula may name (those at ×1 too). */
+const poolOf = (kids: readonly Row[]) => kids;
 const COMPARE = / [=≠<>≤≥] /;
 /** A check whose text a reader cannot follow ("0 = 0 and …"). */
 const unclean = (c: Row) =>
@@ -78,8 +86,9 @@ export type FormulaRow = Pick<Row, "node" | "xf" | "xweak" | "f">;
 
 /** formulas.cjs `formulaOf` (B): the parts' product or sum gives the row's value. */
 function formulaOf(n: FormulaRow, all: readonly Row[]): Pair | null {
-  const kids = all.filter((k) => !isAtOne(k));
-  const grouped = kids.length !== all.length;
+  const aside = atOneParts(all);
+  const kids = all.filter((k) => !aside.has(k));
+  const grouped = aside.size > 0;
   if (kids.some(isCond)) return null;
   if (kids.length < 2 || !kids.every((k) => Number.isFinite(vOf(k))))
     return null;
@@ -109,11 +118,7 @@ export const token = (key: string, fallback: string): string =>
 function resolveParts(kids: readonly Row[], text: string): string {
   const pool = poolOf(kids);
   const plain = (x: Row, v: number) =>
-    !x.node.code &&
-    !isAtOne(x) &&
-    near(vOf(x), v) &&
-    !isCond(x) &&
-    !COMPARE.test(nameOf(x));
+    !x.node.code && near(vOf(x), v) && !isCond(x) && !COMPARE.test(nameOf(x));
   return text.replace(TOKEN, (_m, key: string, fallback: string) => {
     if (key.startsWith("c:")) {
       const at = key.lastIndexOf("@");
@@ -137,11 +142,7 @@ function resolveParts(kids: readonly Row[], text: string): string {
     const v = Number(key.slice(2));
     // a yes/no never names a number of the sum
     const same = pool.filter(
-      (x) =>
-        !isAtOne(x) &&
-        near(vOf(x), v) &&
-        !isCond(x) &&
-        !COMPARE.test(nameOf(x)),
+      (x) => near(vOf(x), v) && !isCond(x) && !COMPARE.test(nameOf(x)),
     );
     return same.length === 1 && same[0] ? partName(same[0]) : fallback;
   });
@@ -151,7 +152,8 @@ function resolveParts(kids: readonly Row[], text: string): string {
 function checksFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
   const conds = kids.filter((k) => isCond(k) && !kidsOf(k).length);
   if (!conds.length) return null;
-  const parts = kids.filter((k) => !isCond(k) && !isAtOne(k));
+  const aside = atOneParts(kids);
+  const parts = kids.filter((k) => !isCond(k) && !aside.has(k));
   const v = vOf(n);
   if (
     parts.length >= 2 &&
@@ -225,7 +227,7 @@ function ifFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
     )
   )
     return null;
-  const part = pool.filter((k) => !isCond(k) && near(vOf(k), v) && !isAtOne(k));
+  const part = pool.filter((k) => !isCond(k) && near(vOf(k), v));
   // a whole number with no part is the code's literal (the bench's own 0/1 of the yes/no is that literal too: a check is
   // 1 when it passes, and a failed one reaches here only beside the row of its 0)
   const literal = !part.length && Number.isInteger(v) && v !== 0;
@@ -252,8 +254,9 @@ function lastFormula(n: FormulaRow, kids: readonly Row[]): Pair | null {
   const v = vOf(n);
   const curves = kids.filter((k) => isCurve(k) && k.f && near(vOf(k), v));
   if (curves.length === 1 && curves[0]?.f) return curves[0].f;
+  const aside = atOneParts(kids);
   const parts = kids.filter(
-    (k) => !isCond(k) && !isAtOne(k) && Number.isFinite(vOf(k)),
+    (k) => !isCond(k) && !aside.has(k) && Number.isFinite(vOf(k)),
   );
   if (!parts.length) return null;
   const shorts = parts.map(short);
@@ -321,8 +324,7 @@ function riftSkill(n: FormulaRow, kids: readonly Row[]): Pair | null {
 /** The ⓘ of row `n` from its built rows `kids`, in the bench's order; null when none closes. */
 export function formulaFor(n: FormulaRow, kids: readonly Row[]): Pair | null {
   if (n.f) return n.f;
-  if (!kids.length || n.node.role === "atOne" || n.node.role === "atZero")
-    return null;
+  if (!kids.length) return null;
   let fm = riftSkill(n, kids) ?? formulaOf(n, kids);
   if (!fm && n.xf) {
     fm = [resolveParts(kids, n.xf[0]), n.xf[1]];
@@ -339,8 +341,8 @@ export function formulaFor(n: FormulaRow, kids: readonly Row[]): Pair | null {
     fm = f0;
   }
   if (!fm && n.xweak) fm = [resolveParts(kids, n.xweak[0]), n.xweak[1]];
-  // ([NR-C]'s test of an ⓘ that names the group of the parts at ×1 is left out: the group's own parts are in the pool,
-  // so no part of an expression resolves to the group)
+  // ([NR-C]'s test of an ⓘ that names the group of the parts at ×1 is left out: the app has no such group, spec 009
+  // FR-016)
   fm ??= lastFormula(n, kids);
   // a formula that only adds zeros to its own result, over cache paths, says nothing
   if (

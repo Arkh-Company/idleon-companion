@@ -19,19 +19,23 @@ import { GAME_BUGS } from "./tree/game-bugs.ts";
 import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
-import { linkReads } from "./tree/links.ts";
+import { linkReads, scratchKey, scratchWrites } from "./tree/links.ts";
+import { EARLIER_TURNS, readAgain } from "./tree/scratch-names.ts";
+import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
-import { mould } from "./tree/mould.ts";
+import { chainContext } from "./tree/chain-context.ts";
+import { chainLevel, firstLevel, mould } from "./tree/mould.ts";
 import { makePieces } from "./tree/pieces.ts";
 import { makePlaces } from "./tree/places.ts";
 import { callText, curveRow, finish, row, valueOf } from "./tree/rows.ts";
 import type { Row } from "./tree/rows.ts";
 import { makeSteps } from "./tree/steps.ts";
+import { systemOf } from "./tree/systems.ts";
 import { near } from "./tree/math.ts";
 import { firstSrc, noSource, topOp } from "./tree/expr.ts";
 import { makeCodeFormulas } from "./tree/code-formulas.ts";
 import { checkOutcome, onlyCache } from "./tree/once.ts";
-import { dataRows } from "./tree/data-rows.ts";
+import { asideCaches, dataRows } from "./tree/data-rows.ts";
 import { rawPasses } from "./tree/raw-passes.ts";
 import { rootStep } from "./tree/root-step.ts";
 import { progressRow } from "./tree/term-passes.ts";
@@ -43,6 +47,8 @@ export interface TreeBuild {
   root: CalcTreeNode;
   /** The lazy branch `nodeId` with its rows built, or null when no lazy branch has that id. */
   expand(nodeId: string): CalcTreeNode | null;
+  /** The root's chain of steps could not be read as pools: its first level is its rows (spec 009, NFR-005). */
+  chainOpen?: boolean;
   readonly conflicts: readonly string[];
 }
 
@@ -62,11 +68,17 @@ export function buildTree(
   const steps = makeSteps(rec, ops);
   const entries = entriesOf(rec, linked, steps.turn);
   const writers = makeWriters(nodes, entries);
-  const conditions = makeConditions(nodes);
+  // every call that wrote each path, for a block's own cache of its search (tree/conditions.ts)
+  const wroteBy = new Map<string, number[]>();
+  for (const w of rec.writes)
+    if (w.node !== null)
+      wroteBy.set(w.path, [...(wroteBy.get(w.path) ?? []), w.node]);
+  const conditions = makeConditions(nodes, wroteBy);
   const codeFormulas = makeCodeFormulas(nodes, (id) => steps.of(id).steps);
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
+  const writeOf = scratchWrites(writes);
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
@@ -88,16 +100,26 @@ export function buildTree(
     // DEEP3-FIX-5: read by the call that wrote it, a loop's working value is that loop's progress
     const progress = (!w || w === reader) && progressRow(path, value);
     if (progress) return progress;
+    // 009 T023: named by its own write, the one the read saw (the number of the last write the recording keeps in the
+    // read); a read of the write being opened above it is the total of the earlier turns: never a child of itself
+    const seq = reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2];
+    const own = writeOf(path, value, seq, w, reader ?? null);
+    const now = caches.now();
+    const again = readAgain(now.opening, w, path, value);
+    const by = again ? null : w;
     const node = row({
-      pieceKey: JSON.stringify([character, path]),
+      pieceKey: again ? null : scratchKey(character, path, own),
       value,
       code: path,
-      kids: w ? "lazy" : [],
+      kids: by ? "lazy" : [],
+      ...(again
+        ? EARLIER_TURNS
+        : scratchFields(own && scratchName(path, own.call, own.at))),
     });
     if (link?.[2] === "game") node.flags = { ...node.flags, fromCache: true };
     return {
       node,
-      open: w && { path, value, writer: w.id, ...caches.now() },
+      open: by && { path, value, writer: by.id, ...now },
     };
   }
 
@@ -198,6 +220,8 @@ export function buildTree(
     formulas: codeFormulas,
   });
 
+  /** The calls whose rows a pass of the game's own gives, not their steps (tree/gold-food.ts, tree/raw-passes.ts). */
+  const passed = new Set<number>();
   function raw(id: number, depth: number, seen: ReadonlySet<number>): Row[] {
     const n = nodes[id];
     if (!n) return [];
@@ -221,6 +245,7 @@ export function buildTree(
         finish,
         formulas: codeFormulas,
       }) ?? rawPasses(n, nodes, reads);
+    if (special) passed.add(id);
     const op = indexStep || special ? null : topOp(last?.e);
     const rows =
       special ??
@@ -243,6 +268,7 @@ export function buildTree(
       writers.writersOf,
       // the bench opens a data row's cache under this call, at its depth
       (r) => caches.opens(r, depth, new Set([...seen, id])),
+      asideCaches(n, nodes, wroteBy),
     );
     // a block that only returns one cache: its rows are the cache's own computation
     const cached =
@@ -284,12 +310,38 @@ export function buildTree(
     const all = conditions.mergeTests(n, rows, data, conds, own);
     return finish(n.v, terms.tidy(all, op ?? "*", n.a, n), true);
   }
-  const pieces = makePieces(rec, links, raw, keyOf, (rows) =>
-    JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
-  );
-
   /** [NR-G 2b] the ⓘ a call takes from the one cache it returns, by piece, once its rows are built. */
   const openXf = new Map<string, [string, string]>();
+  // spec 009, rule Y: what a call's chain of steps reads for its pools
+  const chainOf = (n: RecNode, depth: number, seen: ReadonlySet<number>) =>
+    chainContext(
+      {
+        nodes,
+        steps: (id) => steps.of(id).steps,
+        terms: termsOf,
+        turns: (key) => entries.get(key) ?? [],
+        opened: (o, d, s) => caches.opened(o, d, s),
+      },
+      n,
+      depth,
+      seen,
+    );
+  // FR-017: below the root, a system computed as a chain opens with its own chain's pools, its ⓘ how they join
+  const pieces = makePieces(
+    rec,
+    links,
+    (id, depth, seen) => {
+      const rows = raw(id, depth, seen);
+      const n = nodes[id];
+      if (!n || id === top.id || !systemOf(callText(n))) return rows;
+      const chain = chainLevel(rows, valueOf(n.v), chainOf(n, depth, seen));
+      if (chain?.pair) openXf.set(keyOf(n), chain.pair);
+      return chain?.rows ?? rows;
+    },
+    keyOf,
+    (rows) =>
+      JSON.stringify(rows.map((r) => [r.node, r.group?.map((g) => g.node)])),
+  );
   const { place, expand } = makePlaces({
     nodes,
     bugs,
@@ -300,6 +352,7 @@ export function buildTree(
   });
 
   const value = valueOf(top.v);
+  let chainOpen = false;
   const root: CalcTreeNode = {
     id: "root",
     ...row({
@@ -318,18 +371,23 @@ export function buildTree(
       opens: (r) => caches.opens(r, 0, new Set([top.id])),
     });
     root.formula = own?.formula ?? null;
-    root.kids = place(
-      { id: root.id, code: callText(top) },
-      // FR-006: the first level is the game steps, never named by their shape
-      mould(own?.rows ?? rows),
-      1,
-      [top.id],
-    );
+    // FR-006: the game steps, never named by their shape; spec 009: in the game's pools (rule Y: a chain's from its
+    // steps), by system
+    const first = firstLevel(mould(own?.rows ?? rows), root, {
+      ...chainOf(top, 0, new Set()),
+      passed: passed.has(top.id),
+    });
+    root.formula = first.formula;
+    chainOpen = first.chainOpen === true;
+    root.kids = place({ id: root.id, code: callText(top) }, first.rows, 1, [
+      top.id,
+    ]);
   }
 
   return {
     root,
     expand,
     conflicts: pieces.conflicts,
+    chainOpen,
   };
 }

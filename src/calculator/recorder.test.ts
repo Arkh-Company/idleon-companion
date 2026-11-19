@@ -288,3 +288,19 @@ test("a builder cut by its time limit leaves the state and the links as they wer
   expect([writer.b, writer.p]).toEqual(["TreeCacheFill", rec.builders]);
   expect(rec.writes.some((w) => w.v === 99)).toBe(false);
 });
+
+test("after the roots, a follow-up call runs once for each argument the roots gave a block's mode, beside the root", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeLegends", []]], NONE, false, [
+    ["TreeLegend", "Points", "TreeLegend", "Max"],
+  ]);
+  expect(under(rec, rec.root).map((n) => [n.b, n.a, n.v])).toEqual([
+    ["TreeLegends", [], 27],
+    ["TreeLegend", ["Max", 2, 0], 3],
+    ["TreeLegend", ["Max", 5, 0], 6],
+  ]);
+});
+
+test("with no follow-up, the roots are the only calls under the root", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeLegends", []]], NONE);
+  expect(under(rec, rec.root).map((n) => n.b)).toEqual(["TreeLegends"]);
+});

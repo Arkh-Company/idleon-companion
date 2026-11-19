@@ -3,10 +3,12 @@ export { createLineDecoder, encodeLine, isObject, LINK_PIPE } from "./link.ts";
 export type { LinkMessage } from "./link.ts";
 export {
   CAP_KINDS,
+  COMBINE_KINDS,
   CONDITION_KINDS,
   LEAF_FAMILY,
   LEAF_KINDS,
   NODE_ROLES,
+  POOL_KINDS,
   SHARE_MODES,
   VALUE_FORMATS,
 } from "./formula-tree.ts";
@@ -24,7 +26,9 @@ export {
   changes,
   compareTrees,
   compareValues,
+  partsOf,
   pieceValues,
+  preorder,
 } from "./formula-tree-compare.ts";
 export { modulesFor } from "./modules.ts";
 export { MINUS, plain, valueText } from "./row-text.ts";
@@ -69,6 +73,7 @@ export {
 export type { CatalogNumber } from "./tree-catalog.ts";
 export {
   DEFAULT_SETTINGS,
+  DEFAULT_VIEW,
   GAME_UPDATED,
   IPC,
   MARKS_FULL,
@@ -102,4 +107,5 @@ export type {
   Status,
   SteamState,
   UpdateState,
+  ViewPrefs,
 } from "./types.ts";

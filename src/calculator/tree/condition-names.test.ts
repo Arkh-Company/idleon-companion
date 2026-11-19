@@ -8,7 +8,9 @@ import type { RecNode } from "../recording.ts";
 import { BAN_FLAG, makeConditions } from "./conditions.ts";
 import { classify } from "./kinds.ts";
 import { nameOf } from "./names.ts";
-import { NAME_RECIPES, STATIC_NAMES } from "./names-table.ts";
+import { NAME_RECIPES, STATIC_NAMES, TABLE_HASHES } from "./names-table.ts";
+import { TABLES } from "./gold-food-fixture.ts";
+import { useGameTables } from "./table-names.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Check, Expr } from "./steps.ts";
@@ -262,4 +264,114 @@ test("a read of -1 tested for 1 keeps its comparison: only a 0 or a 1 is said by
   expect(merged(cmp("==", read(FLAG, -1), num(1)), rowOf(FLAG, -1))).toEqual([
     [`${named} = 1`, null],
   ]);
+});
+
+// spec 009 T030 (decision of 18/11): a condition says what it means, as the bench names it (pieces.cjs condRows), in
+// every tree: the game marks a finished achievement or dream with -1, and a search is a yes/no
+test("a finished achievement or dream (= -1) is said completed, and a count at its end (≤ 0) reached", () => {
+  const done = condRows(
+    node(0, "Top"),
+    own([cmp("==", read("AchieveReg[9]", -1), num(-1))]),
+  )[0];
+  expect([done?.node.condition, done?.test]).toEqual([
+    "done",
+    "AchieveReg[9] completed",
+  ]);
+  const left = condRows(
+    node(0, "Top"),
+    own([cmp("<=", read("KillsLeft2Advance[3][0]", 0), num(0))]),
+  )[0];
+  expect([left?.node.condition, left?.test]).toEqual([
+    "done",
+    "KillsLeft2Advance[3][0] reached",
+  ]);
+});
+
+test("a cache the block fills with its one search is said by what it found: Found <item>, Not found <item>", () => {
+  useGameTables(TABLES);
+  // the block's own cache of its search, written by the block (HaveW6Trophy: the cache = Cards[1] contains the trophy)
+  const block: RecNode = {
+    ...node(5, "InventedSearch", [], 1),
+    r: [
+      ["DNSM.InventedFound", 1],
+      ["Cards[1] contains itemA", true],
+    ],
+  };
+  const { condRows: rows } = makeConditions(
+    [...NODES, block],
+    new Map([["DNSM.InventedFound", [5]]]),
+  );
+  const yes = rows(
+    block,
+    own([cmp("==", read("DNSM.InventedFound", 1), num(1))]),
+  )[0];
+  expect(yes?.test).toBe("Found Invented Charm");
+  const no: Check = {
+    v: false,
+    e: {
+      t: "op",
+      o: "==",
+      l: read("DNSM.InventedFound", 1),
+      r: num(0),
+      v: false,
+    },
+  };
+  expect(rows(block, own([no]))[0]?.test).toBe("Not found Invented Charm");
+  // a cache another block writes says nothing of the search
+  const { condRows: other } = makeConditions(
+    [...NODES, block],
+    new Map([["DNSM.InventedFound", [1]]]),
+  );
+  expect(
+    other(block, own([cmp("==", read("DNSM.InventedFound", 1), num(1))]))[0]
+      ?.test,
+  ).toBe("DNSM.InventedFound = 1");
+  useGameTables(new Map());
+});
+
+test("every item of the game has its entry checked, so a search says the item it found (009 T030)", () => {
+  // the World 6 trophy a block searches for (Cards[1] contains Trophy23), and 2480 items at 0e47e87b
+  expect(TABLE_HASHES.has("ItemDefinitionsGET.Trophy23")).toBe(true);
+  expect(
+    [...TABLE_HASHES.keys()].filter((t) => t.startsWith("ItemDefinitionsGET."))
+      .length,
+  ).toBeGreaterThanOrEqual(2480);
+});
+
+test("a block that reads back the cache an earlier call of the same block filled with its search says the item too (009 T030)", () => {
+  useGameTables(TABLES);
+  const first: RecNode = {
+    ...node(5, "InventedSearch", [], 1),
+    r: [["Cards[1] contains itemA", true]],
+  };
+  const later: RecNode = {
+    ...node(6, "InventedSearch", [], 1),
+    r: [["DNSM.InventedFound", 1]],
+  };
+  const { condRows: rows } = makeConditions(
+    [...NODES, first, later],
+    new Map([["DNSM.InventedFound", [5]]]),
+  );
+  expect(
+    rows(later, own([cmp("==", read("DNSM.InventedFound", 1), num(1))]))[0]
+      ?.test,
+  ).toBe("Found Invented Charm");
+  useGameTables(new Map());
+});
+
+test("with no writer of the cache in the recording, the block's own search right beside it says the item (009 T030)", () => {
+  useGameTables(TABLES);
+  const block: RecNode = {
+    ...node(5, "InventedSearch", [], 1),
+    r: [
+      ["Cards[1] contains itemA", true],
+      ["DNSM.InventedFound", 1],
+    ],
+  };
+  const { condRows: rows } = makeConditions([...NODES, block], new Map());
+  expect(
+    rows(block, own([cmp("==", read("DNSM.InventedFound", 1), num(1))]))[0]
+      ?.test,
+  ).toBe("Found Invented Charm");
+  useGameTables(new Map());
 });

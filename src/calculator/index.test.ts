@@ -202,6 +202,29 @@ describe("tree mode (contracts/tree-worker.md)", () => {
     expect(posted(port)[1]).toEqual({ type: "treeResult", id: 7, tree: TREE });
   });
 
+  test("a tree whose chain of steps is open says so with a label only (spec 009, NFR-005)", () => {
+    const port = fakePort();
+    const makeTree = vi.fn(() => ({
+      tree: () => TREE,
+      values: () => ({}),
+      shape: () => [],
+      log: () => "chainOpen" as const,
+    }));
+    handleMessage(TREE_INIT, port, vi.fn(), makeTree);
+    handleMessage(
+      { type: "tree", id: 7, request: REQUEST, mosaic: "{}" },
+      port,
+      vi.fn(),
+      makeTree,
+    );
+    expect(posted(port)[1]).toEqual({
+      type: "treeResult",
+      id: 7,
+      tree: TREE,
+      log: "chainOpen",
+    });
+  });
+
   test("a number outside the roots is refused", () => {
     const port = fakePort();
     const makeTree = treeEngineThat(() => "unknownNumber");

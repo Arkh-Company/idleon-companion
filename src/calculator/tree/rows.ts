@@ -1,5 +1,6 @@
-// The rows of one level before they have a place (spec 008): a row of the game, the curve block as a branch, the group
-// of the parts at ×1 (pieces.cjs `tidy`) and the group of the parts at 0 (FR-014), each with its share in the parent.
+// The rows of one level before they have a place (spec 008): a row of the game and the curve block as a branch, each with
+// its share in the parent; the parts at 0 and at ×1 stay in their places (spec 009, FR-016).
+import type { Above } from "./above-renames.ts";
 import type { RecNode, RecValue } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import {
@@ -42,6 +43,16 @@ export interface Row {
   group?: Row[];
   /** pieces.cjs "Value from an earlier step": a value of a step the recording did not link. */
   earlier?: boolean;
+  /**
+   * A part at ×1 of a product the 008 grouped under "At ×1" (two or more, in a level finished with `ones`): it stays in
+   * its place (spec 009, FR-016), and the ⓘ and the renames still leave it aside, as the bench does.
+   */
+  asideAtOne?: true;
+  /**
+   * A part at 0 of a sum the 008 grouped under "At 0" (a Condition that is no aside): it stays in its place (spec 009,
+   * FR-016), and the checks of whether a level opens into something still see it as the group they saw.
+   */
+  asideAtZero?: true;
   /** A Condition's comparison, written with the terms of its sides (pieces.cjs condRows). */
   test?: string;
   /**
@@ -55,6 +66,25 @@ export interface Row {
   writerF?: "sameValue" | "never";
   /** formulas.cjs `r1src`: the name of the first source of a branch around a call, which tells two such branches apart. */
   r1src?: string;
+  /**
+   * The caches above the row in the 008 that its place no longer shows (spec 009, rule Y): a term of an earlier step of
+   * a chain, read back from a working value the root wrote. Its own rows are renamed under them, as they were.
+   */
+  up?: readonly Above[];
+  /** A branch whose expression only adds, or only multiplies, its rows (tree/flatten.ts: a step that may give them up). */
+  op?: "+" | "*";
+  /** A variable's step named after its first source (tree/terms.ts): no name of its own, so it gives up its rows too. */
+  bySource?: true;
+  /**
+   * A bonus in % the game sums with others and divides by 100 before the sum enters its pool (spec 009, FR-017): it adds
+   * a hundredth of its value, in its system's group of `combine: "percent"` (tree/mould.ts).
+   */
+  percent?: true;
+  /**
+   * A ceiling of the row above, not a part of its value (spec 009, FR-018: a Legend Talent's max, an exception to
+   * FR-008): the row above never merges into it nor takes its ⓘ (tree/parent-passes.ts).
+   */
+  ceiling?: true;
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */
@@ -72,6 +102,11 @@ export const valueOf = (v: RecValue | undefined): number | boolean | null =>
   typeof v === "boolean" || (typeof v === "number" && Number.isFinite(v))
     ? v
     : null;
+
+/** A cache read being opened, in the set of what the tree is opening (tree/caches.ts): a row is never a child of itself. */
+export const openingOf = (
+  o: Pick<CacheOpen, "writer" | "path" | "value">,
+): string => `read|${String(o.writer)}|${o.path}|${String(o.value)}`;
 
 export const callText = (n: RecNode): string =>
   `${n.b}(${n.a.map((a) => JSON.stringify(a)).join(", ")})`;
@@ -105,9 +140,6 @@ export function row(
   };
 }
 
-const number = (v: CalcTreeNode["value"]) =>
-  typeof v === "boolean" ? Number(v) : v;
-
 /** The rows with their share in a parent of value `value` (tree/share.ts), the parent's formula given. */
 export function withShares(
   parent: Pick<CalcTreeNode, "name" | "value">,
@@ -133,46 +165,6 @@ export function withShares(
   };
 }
 
-/** A group row of the tree's mould (no piece of its own), closed at first (FR-014). */
-function group(
-  role: "atZero" | "atOne",
-  name: string,
-  value: number,
-  rows: Row[],
-): Row {
-  return {
-    node: row({
-      pieceKey: null,
-      value,
-      code: null,
-      name,
-      role,
-      fmt: role === "atOne" ? "x" : null,
-      flags: { closed: true },
-    }),
-    open: null,
-    group: rows,
-  };
-}
-
-/**
- * pieces.cjs `tidy`, in a product (FR-014: multipliers at ×1): the parts at ×1 go under one closed row, at the end, when
- * there are two or more; the row weighs what they weighed in the parent.
- */
-export function timesOne(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
-  if (mode !== "product" && mode !== "productZero") return rows;
-  const one = rows.filter((r) => {
-    const v = number(r.node.value);
-    return v !== null && Math.abs(v - 1) < 1e-9;
-  });
-  if (one.length < 2) return rows;
-  const shared = withShares({ name: "", value: 1 }, null, one).rows;
-  const g = group("atOne", `At ×1 (${String(one.length)})`, 1, shared);
-  g.node.share = one.reduce((s, r) => s + (r.node.share ?? 0), 0);
-  g.node.shareMode = mode;
-  return [...rows.filter((r) => !one.includes(r)), g];
-}
-
 /**
  * formulas.cjs `r1src`: a branch with the name of another part of its level takes its first source's name after it,
  * in order (the bench renames as it goes, so the last of two same names keeps its own).
@@ -193,10 +185,11 @@ function bySource(rows: Row[]): Row[] {
 
 /**
  * A level's rows with its context reads gone and its proven leaves named (tree/level-renames.ts), typed, through the
- * passes after the types (tree/leaf-passes.ts), with their shares; then a product's parts at ×1 (when `ones`) and a
- * sum's parts at 0.
+ * passes after the types (tree/leaf-passes.ts), with their shares; every part in its place, at 0 or at ×1 too (spec
+ * 009, FR-016: no group "At 0" nor "At ×1"). The parts the 008 grouped are marked: a sum's parts at 0 `asideAtZero`,
+ * and, with `ones`, a product's parts at ×1 `asideAtOne`.
  */
-export function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
+export function finish(v: unknown, rows: Row[], ones = false): Row[] {
   // A leaf gets its type and the reason of a "?" (pieces.cjs classify); a branch or a typed leaf keeps its own.
   const typed = bySource(levelRenames(rows)).map((r) =>
     r.node.kids === "lazy" || r.node.leaf || r.group
@@ -208,26 +201,26 @@ export function finish(v: unknown, rows: Row[], ones: boolean): Row[] {
     null,
     leafPasses(typed),
   );
-  return atZero(
-    ones ? timesOne(shared.rows, shared.mode) : shared.rows,
-    shared.mode,
+  const product = shared.mode === "product" || shared.mode === "productZero";
+  const one = (r: Row) => {
+    // (a yes/no counts as 1 or 0, as the 008's group read it)
+    const x = r.node.value;
+    const n = typeof x === "boolean" ? Number(x) : x;
+    return n !== null && Math.abs(n - 1) < 1e-9;
+  };
+  const aside = ones && product ? shared.rows.filter(one) : [];
+  const zero = (r: Row) =>
+    shared.mode === "sum" &&
+    r.node.value === 0 &&
+    r.node.leaf !== "condition" &&
+    r.node.role === "piece";
+  return shared.rows.map((r) =>
+    aside.length >= 2 && aside.includes(r)
+      ? { ...r, asideAtOne: true as const }
+      : zero(r)
+        ? { ...r, asideAtZero: true as const }
+        : r,
   );
-}
-
-/** FR-014: in a sum, the parts at 0 go under one closed row at the end; a Condition that is "no" stays in the list. */
-export function atZero(rows: Row[], mode: CalcTreeNode["shareMode"]): Row[] {
-  if (mode !== "sum") return rows;
-  const zero = rows.filter(
-    (r) =>
-      r.node.value === 0 &&
-      r.node.leaf !== "condition" &&
-      r.node.role === "piece",
-  );
-  if (!zero.length) return rows;
-  return [
-    ...rows.filter((r) => !zero.includes(r)),
-    group("atZero", `At 0 (${String(zero.length)})`, 0, zero),
-  ];
 }
 
 /**

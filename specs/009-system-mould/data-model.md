@@ -7,8 +7,8 @@ Muda o nó da árvore da 008 (`TreeNode`, `src/shared/formula-tree.ts`; `CalcTre
 | Campo | Tipo | Regra |
 | --- | --- | --- |
 | `role` | ganha `"pool"` e `"system"` | `pool`: uma etapa da conta do jogo (FR-005). `system`: um grupo de sistema dentro de um pool (FR-002) |
-| `combine` | `"sum"` \| `"product"` \| `"onePlusPercent"` \| null | Só em `pool` e `system`: como as linhas de dentro dão o valor do nó. A janela usa isso para refazer o valor ao vivo e o da marca (research R5). Nas outras linhas, null |
-| `poolKind` | `"additive"` \| `"multi"` \| null | Só em `pool`: diz se a etapa soma os bônus antes (`additive`) ou multiplica tudo (`multi`) |
+| `combine` | `"sum"` \| `"product"` \| `"onePlusPercent"` \| `"max"` \| `"min"` \| `"percent"`, opcional | Só em `pool` e `system`: como as linhas de dentro dão o valor do nó. A janela usa isso para refazer o valor ao vivo e o da marca (research R5). Nas outras linhas o campo não aparece, nem como null (decisão de 17/11). `max`/`min`: só nos grupos de uma raiz com `max`/`min` no topo, sem pool (decisão de 17/11). `percent`: a soma das linhas ÷ 100, para os bônus em % que o jogo soma e divide por 100 antes de entrar num pool (FR-017, decisão de 17/11) |
+| `poolKind` | `"additive"` \| `"multi"` \| null, opcional | Só em `pool` e `system` (`system` leva null): diz se a etapa soma os bônus antes (`additive`) ou multiplica tudo (`multi`) |
 | `emoji` | não existe | O emoji é parte do `name` do grupo ("⚗️ Alchemy"); nenhum campo novo |
 
 Regras:

@@ -9,9 +9,17 @@ import { MAX_DEPTH } from "./pieces.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { adds, firstSrc, flat, readValueIn, stateSrc, topOp } from "./expr.ts";
+import {
+  adds,
+  firstSrc,
+  flat,
+  onlyOp,
+  readValueIn,
+  stateSrc,
+  topOp,
+} from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
-import { branchName } from "./shapes.ts";
+import { boundRead, branchName, cardsName, numRole } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -35,7 +43,10 @@ export interface TermContext {
   read(path: string, v: V): Row;
   /** A call as a row with the value its caller took; a curve takes its input from `reads`. */
   call(k: RecNode, v: V, reads: Reads): Row;
-  /** A level's rows with their shares and their groups of 0 and, when `ones`, of ×1, under a parent of value `v`. */
+  /**
+   * A level's rows with their shares, under a parent of value `v`, each in its place (spec 009, FR-016); `ones`: a
+   * product whose parts at ×1 the 008 grouped, which the ⓘ still leaves aside.
+   */
   finish(v: V, rows: Row[], ones: boolean): Row[];
   /** The call whose terms these are (the bench's CUR_BLOCK). */
   block: RecNode;
@@ -53,23 +64,6 @@ export interface Turn {
 
 const EARLIER_WHY = "a value of a step of the game the recording did not link";
 
-/** The role of a number of the game's code, from where it sits in the expression. */
-function numRole(v: unknown, parent: Expr | null, side: number): string {
-  const n = num(v);
-  if (parent?.t === "fn") {
-    if (parent.name === "min") return `Cap ${n}`;
-    if (parent.name === "max") return `Minimum ${n}`;
-    if (parent.name === "pow")
-      return side === 1 ? `Exponent ${n}` : `Base ${n}`;
-  }
-  if (parent?.t !== "op") return `Fixed value ${n}`;
-  if (parent.o === "+") return `Base ${n}`;
-  if (parent.o === "-") return side === 1 ? `Minus ${n}` : `Fixed value ${n}`;
-  if (parent.o === "*") return `× ${n}`;
-  if (parent.o === "/" && side === 1)
-    return Number(v) === 100 ? "Percent to number (÷ 100)" : `Divided by ${n}`;
-  return `Fixed value ${n}`;
-}
 const earlier = (v: V): Row => ({
   node: row({
     pieceKey: null,
@@ -120,10 +114,10 @@ export function makeTerms(ctx: TermContext) {
       const [only] = rows;
       if (only && rows.length === 1 && near(only.node.value, v)) return only;
       // pieces.cjs stepRef tidies with no caller ({ id: -1 }): no argument names an earlier value here
-      return branch(
-        v,
-        op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows,
-      );
+      return {
+        ...branch(v, op ? ctx.finish(v, tidy(rows, op, []), op === "*") : rows),
+        ...(op ? { op } : {}),
+      };
     }
     return null;
   }
@@ -146,10 +140,11 @@ export function makeTerms(ctx: TermContext) {
         });
       } else if (x.t === "not") walk(x.a, x, 0);
     })(e, null, 0);
-    // [R1-PATCH] the parts of a sum are no parts at ×1: the group is undone when the expression adds anything
+    // [R1-PATCH] the parts of a sum are no parts at ×1: they are left aside only when the expression adds nothing
     const out = branch(e.v, ctx.finish(e.v, tidy(rows, "*", []), ones));
     const xf = ctx.formulas.expr(e, reads, e.v);
-    return xf ? { ...out, xf } : out;
+    const op = onlyOp(e);
+    return { ...out, ...(xf ? { xf } : {}), ...(op ? { op } : {}) };
   }
 
   /** A value with no source of its own (pieces.cjs rowOfTerm, "val"). */
@@ -240,10 +235,15 @@ export function makeTerms(ctx: TermContext) {
       }
       // the branch of an expression is named by its first source; with none, by its shape
       const src = firstSrc(x);
+      const named = src ? sourceName(src) : null;
       const r = src
-        ? withName(exprRow(x, d, reads), sourceName(src))
+        ? withName(exprRow(x, d, reads), named)
         : branchName(exprRow(x, d, reads), x, null);
-      return { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
+      return {
+        ...r,
+        node: { ...r.node, value: valueOf(e.v ?? null) },
+        ...(named === null ? {} : { bySource: true as const }),
+      };
     }
     if (e.t === "num")
       return fixed(
@@ -280,8 +280,10 @@ export function makeTerms(ctx: TermContext) {
         (x.t === "op" && (prodOther(x.l) || prodOther(x.r))) ||
         (x.t === "def" && prodOther(x.e)) ||
         (x.t === "fn" && x.args.some(prodOther));
+      // 009 T023: a cache read that opens, beside other sources: the value is their sum's, never the read's own, nor its name
+      const others = hasKids(read) && stateSrc(e) > stateSrc(s);
       if (
-        (!hasKids(read) || prodOther(e)) &&
+        (!hasKids(read) || prodOther(e) || others) &&
         rv !== undefined &&
         !near(rv, e.v)
       ) {
@@ -290,10 +292,12 @@ export function makeTerms(ctx: TermContext) {
           e.t === "op" && e.o === "*"
             ? [e.l, e.r].find((x) => !(x.t === "read" && x.p === s.p))
             : undefined;
-        return branchName(
-          exprRow(e, d, reads),
+        const fallback =
+          !others && (!other || other.t === "num") ? termName(s.p) : null;
+        return boundRead(
           e,
-          !other || other.t === "num" ? termName(s.p) : null,
+          read,
+          branchName(exprRow(e, d, reads), e, fallback),
         );
       }
       return { ...read, writerF: "sameValue" };
@@ -331,11 +335,12 @@ export function makeTerms(ctx: TermContext) {
       const byCount =
         ns <= 1
           ? own
-          : pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
-            ? `Multiplier from ${String(ns)} sources`
-            : e.t === "op" && e.o === "+"
-              ? `Sum of ${String(ns)} sources`
-              : `Formula of ${String(ns)} sources`;
+          : (cardsName(e, nodes) ??
+            (pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
+              ? `Multiplier from ${String(ns)} sources`
+              : e.t === "op" && e.o === "+"
+                ? `Sum of ${String(ns)} sources`
+                : `Formula of ${String(ns)} sources`));
       const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
       return own ? { ...r, r1src: own } : r;
     }
@@ -372,9 +377,9 @@ export function makeTerms(ctx: TermContext) {
     /** pieces.cjs `exprRow` with no step around it: the branch of an expression's parts ([F2-TOP]). */
     branchOf: (e: Expr, reads: Reads) =>
       withTurn(null, () => exprRow(e, 0, reads)),
-    /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms). */
-    term: (e: Expr, op: "*" | "+", reads: Reads) =>
-      withTurn(null, () => rowOfTerm(e, op, 1, reads)),
+    /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms), or in turn `t`. */
+    term: (e: Expr, op: "*" | "+", reads: Reads, t: Turn | null = null) =>
+      withTurn(t, () => rowOfTerm(e, op, 1, reads)),
     /** The rows of the terms of the block's step `at` (its top sum or product). */
     stepTerms(t: Turn, op: "*" | "+", reads: Reads): Row[] {
       const st = t.steps[t.at];

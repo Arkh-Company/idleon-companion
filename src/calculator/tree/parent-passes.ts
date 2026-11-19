@@ -17,6 +17,7 @@ import { leafRules, mapsCount } from "./leaf-passes.ts";
 import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
 import { bare } from "./rows.ts";
+import { scaledName } from "./scaled-names.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 
@@ -60,7 +61,7 @@ function nameLevel(
       rows = under(k, at);
       return (rows?.rows.length ?? 0) > 0;
     });
-    if (!c || !rows) break;
+    if (!c || !rows || c.ceiling) break;
     n = absorb(n, c);
     lv = rows;
   }
@@ -75,6 +76,28 @@ function nameLevel(
   };
 }
 
+/**
+ * The level with no working value of the game at 0 beside one branch of the row's value, the loop's one turn: that branch
+ * alone. A turn that is a call keeps the running total at 0 in its place (FR-016, the 008's loop turns).
+ */
+function startless(r: Row, at: Level): Level {
+  if (at.rows.length !== 2) return at;
+  const zero = at.rows.find(
+    (k) =>
+      k.node.code?.startsWith("DNSM.") === true &&
+      k.node.value === 0 &&
+      !!k.node.flags.unnamed &&
+      !k.group?.length,
+  );
+  const [turn] = at.rows.filter((k) => k !== zero);
+  return zero &&
+    turn?.node.code === null &&
+    !!turn.group?.length &&
+    near(turn.node.value, r.node.value)
+    ? { ...at, rows: [turn] }
+    : at;
+}
+
 /** Row `r` and its level, once the passes over them ran; `up` the rows above `r`. */
 export function parentPasses(
   r: Row,
@@ -85,17 +108,23 @@ export function parentPasses(
   if (!level) return { row: r, level };
   const own = nameLevel(r, level, under, up.map(aboveText));
   let n = own.row;
-  let at = own.level;
+  // spec 009 T030 (decision of 18/11): a loop's working value that starts at 0 beside its one turn adds nothing, so the
+  // row is the turn, and structurePass below gives it the turn's parts (the bench's Cape Vine: 1.32 and 40)
+  let at = startless(n, own.level);
   // the texts of every level above the rows a merge brings: the rows above, the row, then each child merged into it
   const above = [...up.map(aboveText), own.text];
-  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a group of the
-  // parts at 0 or at ×1 is the app's (FR-014), no child to merge into
+  // structurePass: a row whose one child has its value is that child, a leaf or with the child's rows; a pool or a
+  // system's group is the app's, no child to merge into. A sum's one part at 0 (rows.ts `asideAtZero`) stays in its
+  // place under the row, as the 008's group "At 0" kept it (spec 009, FR-016)
   for (let i = 0; i < MERGES; i++) {
     const [c] = at.rows;
     if (
       at.rows.length !== 1 ||
       c?.node.role !== "piece" ||
-      !near(c.node.value, n.node.value)
+      !near(c.node.value, n.node.value) ||
+      c.asideAtZero ||
+      // a ceiling is no part of the row: the row keeps its own name, ⓘ and rows (FR-018)
+      c.ceiling
     )
       break;
     // the bench's passes after structurePass see the leaf with the row's own code
@@ -119,9 +148,8 @@ export function parentPasses(
   const maps = art.level && mapsCount(art.row, art.level.rows);
   if (maps) return { row: maps, level: null };
   const ar = arenaPasses(art.row, art.level);
-  // opus5, last: the count of maps named by the earlier maps' total among its rows
-  return {
-    row: withName(ar.row, mapsByKills(ar.row, ar.level?.rows ?? [])),
-    level: ar.level,
-  };
+  // opus5: the count of maps named by the earlier maps' total among its rows
+  const named = withName(ar.row, mapsByKills(ar.row, ar.level?.rows ?? []));
+  // spec 009 T026, last: a branch with no proven name of one source and constants takes the source's name
+  return { row: scaledName(named, ar.level, under), level: ar.level };
 }

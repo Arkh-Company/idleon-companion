@@ -40,28 +40,33 @@ dev:
 
 # Os *args do test e do test-one vão crus ao `pwsh -Command`, e o settings.json do projeto libera `just test *` e `just test-one *` sem pedir:
 # por isso o just aceita, palavra por palavra, só o `-t <nome>` do vitest (o nome de letras, números, `_ . -`, sem
-# começar por `-`) e recusa o resto (como no Python). O resto vai direto pelo `pnpm exec vitest run`, que pede
+# começar por `-`) e recusa o resto (como no Python). O resto vai direto pelo `pnpm exec vitest run --pool=threads`, que pede
 # permissão. O alvo do test-one vai entre aspas, com as aspas dobradas, e não começa por `-` nem `@`, e a regex vai em
 # linha em cada `=~` (como no Python).
 VITEST_ERRO := "just test e just test-one aceitam só -t <nome>: o resto vai direto pelo pnpm exec vitest run, que pede permissão"
 ALVO_ERRO := "o alvo não pode começar por - nem por @ (seria uma opção): use o caminho do arquivo ou o node id"
 
+# --pool=threads, não o padrão forks: no Windows, encerrar os node.exe filhos do forks (um por worker, a cada execução)
+# disparou telas azuis 0x153 KERNEL_LOCK_ENTRY_LEAKED_ON_THREAD_TERMINATION (lock do fltmgr.sys preso ao fechar o
+# named pipe do worker; bug do Windows, sem correção da Microsoft em 11/2026). Com threads, os workers vivem num processo
+# só. Não é otimização opcional: não volte ao forks. Um teste que precise de processo próprio (process.chdir, addon
+# nativo) roda à parte com `pnpm exec vitest run --pool=forks <arquivo>`.
 test *args:
-    pnpm exec vitest run --dir src {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
+    pnpm exec vitest run --pool=threads --dir src {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
 
 # Um alvo dentro de src/: arquivo ou pasta. Ex.: just test-one src/main.test.ts -t "carrega"
 test-one target *args:
-    pnpm exec vitest run --dir src '{{ if target =~ '^[-@]' { error(ALVO_ERRO) } else { replace_regex(target, "['\u{2018}-\u{201B}]", "$0$0") } }}' {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
+    pnpm exec vitest run --pool=threads --dir src '{{ if target =~ '^[-@]' { error(ALVO_ERRO) } else { replace_regex(target, "['\u{2018}-\u{201B}]", "$0$0") } }}' {{ if args =~ '^(?:-t [A-Za-z0-9_.][A-Za-z0-9_.-]*(?: -t [A-Za-z0-9_.][A-Za-z0-9_.-]*)*)?$' { args } else { error(VITEST_ERRO) } }}
 
 # O leitor contra o jogo falso no Edge headless (só no Windows com o Edge): fora do check, porque o Edge não garante
 # zero tráfego próprio ao subir. O parâmetro com $ vira variável de ambiente da receita e liga o describe do Edge.
 test-edge $IDLEON_EDGE_TESTS="1":
-    pnpm exec vitest run --dir src src/keeper/reader.integration.test.ts
+    pnpm exec vitest run --pool=threads --dir src src/keeper/reader.integration.test.ts
 
 # O teste se pula sozinho sem PARITY_BENCH_DIR, PARITY_SNAPSHOT e PARITY_GAME_DIR no ambiente (veja o .env.example).
 # Paridade App = bancada (spec 008, SC-002): só na máquina com a bancada, fora do check e da CI
 parity:
-    pnpm exec vitest run --dir src --passWithNoTests src/calculator/parity.integration.test.ts
+    pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/parity.integration.test.ts
 
 lint:
     pnpm exec eslint .

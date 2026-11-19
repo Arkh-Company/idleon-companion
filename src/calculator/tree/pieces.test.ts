@@ -4,11 +4,15 @@
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
-import { chainOf, PIECES, recordingOf, SAME_TWICE } from "./tree-fixture.ts";
+import {
+  chainOf,
+  kidsOf,
+  PIECES,
+  recordingOf,
+  SAME_TWICE,
+} from "./tree-fixture.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 
-const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 const brief = (n: CalcTreeNode | null | undefined) =>
   kidsOf(n).map((k) => [k.code, k.value]);
 

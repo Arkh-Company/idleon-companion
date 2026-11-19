@@ -72,9 +72,11 @@ test("[GetTalentNumber] a talent with no points stops before its curve: the chec
     "condition",
     "limit",
   ]);
-  // the points are 0: they sit in the group of the parts at 0
-  expect(kidsOf(zero).map((k) => [k.code, k.value, k.leaf])).toEqual([
-    ["SkillLevels[5]", 0, "investedPoints"],
+  // the points are 0: they sit in their place, beside the check (spec 009, FR-016)
+  expect([zero?.code, zero?.value, zero?.leaf]).toEqual([
+    "SkillLevels[5]",
+    0,
+    "investedPoints",
   ]);
 });
 
@@ -262,7 +264,8 @@ test.each([
       v: 0,
       r: [["SkillLevels[5]", 0]],
     }),
-    ["Points in the talent > 0", "Points in the talent"],
+    // spec 009, FR-018: the check is in the talent's ⓘ ("0 while Points in the talent ≤ 0"), never a row
+    ["Points in the talent"],
   ],
   [
     "[Breeding] a shiny pet's level",
@@ -308,4 +311,31 @@ test.each([
   expect(named(root).slice(0, names.length)).toEqual(names.map((n) => [n, {}]));
   expect(names.every(isNameText)).toBe(true);
   expect(checkTree(root, 100)).not.toBeNull();
+});
+
+test("[CardLv] a count the game keeps as a text is no row: the recording carries no number of it (009 T023)", () => {
+  const rows = rowsOf(
+    {
+      b: "RunCodeOfTypeXforThingY",
+      a: ["CardLv", "cardT"],
+      v: 7,
+      c: [2, 3],
+      r: [["Cards[0].cardT", "(text)"]],
+    },
+    { b: "RiftStuff", v: 1 },
+    { b: "Spelunk", v: 1 },
+  );
+  expect(rows.map(([code]) => code)).not.toContain("Cards[0].cardT");
+  expect(rows.slice(0, 3).map(([, value, leaf]) => [value, leaf])).toEqual([
+    [4, "fixedValue"],
+    [1, "condition"],
+    [1, "condition"],
+  ]);
+  // a card the recording never read the count of was never collected: 0
+  const none = rowsOf({
+    b: "RunCodeOfTypeXforThingY",
+    a: ["CardLv", "cardN"],
+    v: 0,
+  });
+  expect(none[0]).toEqual(["Cards[0].cardN", 0, "quantity", null]);
 });

@@ -504,6 +504,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTwice = function () {
     return Blocks._customBlock_TreeReads() + Blocks._customBlock_TreeReads();
   };
+  // spec 009 T031: a block with a mode, its first argument, as the game's Thingies; "Points" of t is t × 3, "Max" of t
+  // is t + 1; TreeLegends calls the points of 2 and of 5, the 2 twice
+  Blocks._customBlock_TreeLegend = function (mode, t) {
+    return mode === "Points" ? t * 3 : mode === "Max" ? t + 1 : 0;
+  };
+  Blocks._customBlock_TreeLegends = function () {
+    return (
+      Blocks._customBlock_TreeLegend("Points", 2, 0) +
+      Blocks._customBlock_TreeLegend("Points", 5, 0) +
+      Blocks._customBlock_TreeLegend("Points", 2, 0)
+    );
+  };
   Blocks._customBlock_TreeSources = function () {
     return (
       Blocks._customBlock_TreeReads() * Blocks._customBlock_TreeLoop() +
@@ -529,6 +541,126 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTimesOne = function () {
     var s = state();
     return s.TreeBase * (1 + s.TreeOwned / 100);
+  };
+  // The shape of the Drop Rate's chain (spec 009, FR-005): a sum, then each step adds to or multiplies the running total
+  // it wrote: + 2, × a single multiplier, + 0.5, × one that sums two bonuses inside, × two single multipliers.
+  Blocks._customBlock_TreeChain = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeChain = new StringMap();
+    d.TreeChain.h.v =
+      Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeLevel;
+    if (s.TreeFlagOn == 1) d.TreeChain.h.v = d.TreeChain.h.v + 2;
+    d.TreeChain.h.v = d.TreeChain.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeChain.h.v = d.TreeChain.h.v + 0.5;
+    d.TreeChain.h.v =
+      d.TreeChain.h.v * (1 + (s.TreeStats.h.a + s.TreeCapped) / 100);
+    d.TreeChain.h.v = d.TreeChain.h.v * s.TreeTwins[0] * s.TreeList[1];
+    return d.TreeChain.h.v;
+  };
+  // A chain whose call takes a read no step shows: the block's data row (spec 009, FR-008).
+  Blocks._customBlock_TreeChainData = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeChainData = new StringMap();
+    d.TreeChainData.h.v = s.TreeBase + 1;
+    d.TreeChainData.h.v =
+      d.TreeChainData.h.v * Blocks._customBlock_TreeArg(s.TreeLevel);
+    return d.TreeChainData.h.v;
+  };
+  // A chain with a step that neither adds nor multiplies (a floor): its pools cannot be read (spec 009, NFR-005).
+  Blocks._customBlock_TreeChainOpen = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeChainOpen = new StringMap();
+    d.TreeChainOpen.h.v = s.TreeBase + 1;
+    d.TreeChainOpen.h.v = Math.floor(d.TreeChainOpen.h.v * 1.5);
+    d.TreeChainOpen.h.v = d.TreeChainOpen.h.v + 2;
+    return d.TreeChainOpen.h.v;
+  };
+  // The roots the probe of the 716 trees found with no pool (spec 009, T025): a rounded sum of a coefficient times a
+  // source; a chain the game clamps at the end, which does not bite; a product with a check and a read no step shows.
+  Blocks._customBlock_TreeRoundSum = function () {
+    var s = state();
+    return Math.round(
+      3 * Blocks._customBlock_CardBonusREAL(1) +
+        Blocks._customBlock_ArcadeBonus(0) +
+        s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreeClamped = function () {
+    var d = dnsm();
+    d.TreeClamp = new StringMap();
+    d.TreeClamp.h.v = Blocks._customBlock_TreeReads() + state().TreeBase;
+    d.TreeClamp.h.v = d.TreeClamp.h.v * Blocks._customBlock_TreeLoop();
+    return Math.max(0.01, d.TreeClamp.h.v);
+  };
+  Blocks._customBlock_TreeChecked = function () {
+    var s = state();
+    var level = s.TreeLevel;
+    if (level > 100) return 0;
+    var v = Blocks._customBlock_TreeReads() * Blocks._customBlock_TreeLoop();
+    if (s.TreeOwned > 0) v = v * 2;
+    return v;
+  };
+  // A root the game floors, which cuts a fraction (spec 009, T030; STR, AGI, WIS, LUK): one step, and a chain.
+  Blocks._customBlock_TreeFloored = function () {
+    return Math.floor(Blocks._customBlock_TreeReads() + state().TreeBase + 0.5);
+  };
+  Blocks._customBlock_TreeFloorChain = function () {
+    var d = dnsm();
+    d.TreeFloorChain = new StringMap();
+    d.TreeFloorChain.h.v = Blocks._customBlock_TreeReads() + state().TreeBase;
+    d.TreeFloorChain.h.v =
+      d.TreeFloorChain.h.v * Blocks._customBlock_TreeLoop() * 1.05;
+    return Math.floor(d.TreeFloorChain.h.v + 0.3);
+  };
+  // A golden food opened as a branch, as in the Drop Rate: its pass names its rows (spec 009).
+  Blocks._customBlock_TreeGoldOf = function (t) {
+    return Blocks._customBlock_GoldFoodBonuses(t) * 2;
+  };
+  // The shape of the Drop Rate (spec 009, FR-017): its first sum holds a sum the block keeps in a variable (a step with
+  // no name) of sources of two systems and of a working value the block writes that only joins sources, a golden food
+  // among them; then the running total is multiplied.
+  Blocks._customBlock_CardBonusREAL = function (t) {
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeDrop = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDrop = new StringMap();
+    d.TreeDropPart = new StringMap();
+    d.TreeDropPart.h.v =
+      Blocks._customBlock_GoldFoodBonuses("DropRatez") + s.TreeLevel;
+    var mix =
+      Blocks._customBlock_ArcadeBonus(0) +
+      Blocks._customBlock_CardBonusREAL(3) +
+      Blocks._customBlock_CardBonusREAL(1) +
+      d.TreeDropPart.h.v;
+    d.TreeDrop.h.v = s.TreeBase + mix;
+    d.TreeDrop.h.v = d.TreeDrop.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeDrop.h.v;
+  };
+  // The Drop Rate first sum as the game writes it (spec 009, FR-017): bonuses in % summed and divided by 100, among them
+  // a product and a working value the block writes that only joins sources, a golden food among them.
+  Blocks._customBlock_TreeDropPercent = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDropPct = new StringMap();
+    d.TreeDropPctPart = new StringMap();
+    d.TreeDropPctPart.h.v =
+      Blocks._customBlock_GoldFoodBonuses("DropRatez") + s.TreeLevel;
+    d.TreeDropPct.h.v =
+      s.TreeBase +
+      (Blocks._customBlock_ArcadeBonus(0) +
+        Blocks._customBlock_CardBonusREAL(3) +
+        Blocks._customBlock_CardBonusREAL(1) +
+        5 * s.TreeLevel +
+        d.TreeDropPctPart.h.v) /
+        100 +
+      2;
+    d.TreeDropPct.h.v = d.TreeDropPct.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeDropPct.h.v;
   };
   Blocks._customBlock_TreeConditionNo = function () {
     var s = state();
@@ -702,6 +834,20 @@ lime.$scripts.N = function (_exports, $global) {
       return false;
     },
   };
+  // The game's search of a list (D.contains): the block caches its answer and tests the cache (HaveW6Trophy, spec 009).
+  A["com.stencyl.utils.Utils"].contains = function (list, value) {
+    return list.indexOf(value) >= 0;
+  };
+  Blocks._customBlock_TreeHaveItem = function () {
+    var d = dnsm();
+    d.TreeHaveItem = A["com.stencyl.utils.Utils"].contains(
+      state().Cards[1],
+      "itemA",
+    )
+      ? 1
+      : 0;
+    return d.TreeHaveItem == 1 ? 10 : 0;
+  };
   Blocks._customBlock_TreeSearchForever = function () {
     return A["com.stencyl.utils.Utils"].mapContainsValue(
       state().TreeBig,
@@ -776,8 +922,10 @@ lime.$scripts.N = function (_exports, $global) {
   // A golden food's bonus in steps of the shape pieces.cjs goldFood reads: the shared multiplier (a set's multi × (the
   // family's, at least 1, + its sources ÷ 100)), the worn food's part with its logs when one is worn, a level and a
   // whole number, and the emporium's part added to the bonus when its level is above 0, each log a call of its own. A
-  // level below 0 ends the block after its third step. The key picks how a step is written, one shape per test. (No
-  // quote mark in its comments: instrument.ts finds the end of a block by its braces, outside quotes.)
+  // level below 0 ends the block after its third step. The key picks how a step is written, one shape per test; a key
+  // ending in Local (percentLocal) takes the shared multiplier of its start and keeps the worn food in the block, as the
+  // key local does. (No quote mark in its comments: instrument.ts finds the end of a block by its braces, outside
+  // quotes.)
   Blocks._customBlock_getLOG = function (x) {
     return Math.log(x) / Math.LN10;
   };
@@ -788,27 +936,27 @@ lime.$scripts.N = function (_exports, $global) {
     var multi;
     if (s.EquipmentOrder[2][1] === "") return 0;
     // the sum of the sources taken as a percent by a product, not a division
-    if (t === "percent")
+    if (t === "percent" || t === "percentLocal")
       multi =
         (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) *
             0.01);
     // a set of one part, then one written with its number last
-    else if (t === "oneSet")
+    else if (t === "oneSet" || t === "oneSetLocal")
       multi =
         (1 + s.GfoodSet[0] / 100) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
-    else if (t === "setLast")
+    else if (t === "setLast" || t === "setLastLocal")
       multi =
         (s.GfoodSet[0] / 100 + 1) *
         (Math.max(d.FamBonusQTYs[66], 1) +
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
     // a family of at least 2, which the ⓘ of the bench does not read
-    else if (t === "atTwo")
+    else if (t === "atTwo" || t === "atTwoLocal")
       multi =
         (1 + (s.GfoodSet[0] + s.GfoodSet[1]) / 100) *
         (Math.max(d.FamBonusQTYs[66], 2) +
@@ -821,13 +969,16 @@ lime.$scripts.N = function (_exports, $global) {
           (Blocks._customBlock_TreeReads() + s.TreeBase + d.GameCache.h.v + 3) /
             100);
     // the part of the worn food: kept in the block, rounded, added to the bonus, or the bonus itself
-    if (s.EquipmentQuantity[2][1] > 0 && t === "local")
+    if (
+      s.EquipmentQuantity[2][1] > 0 &&
+      (t === "local" || t.slice(-5) === "Local")
+    )
       worn =
         d.GfoodMap.h.Amount *
         multi *
         0.05 *
         Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
-        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+        (1 + Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     else if (s.EquipmentQuantity[2][1] > 0 && t === "round")
       d.GfoodBonus = Math.round(
         d.GfoodMap.h.Amount *
@@ -835,7 +986,7 @@ lime.$scripts.N = function (_exports, $global) {
           0.05 *
           Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
           (1 +
-            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14),
+            Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14),
       );
     else if (s.EquipmentQuantity[2][1] > 0 && t === "added")
       d.GfoodBonus =
@@ -845,14 +996,14 @@ lime.$scripts.N = function (_exports, $global) {
           0.05 *
           Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
           (1 +
-            Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+            Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     else if (s.EquipmentQuantity[2][1] > 0)
       d.GfoodBonus =
         d.GfoodMap.h.Amount *
         multi *
         0.05 *
         Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) *
-        (1 + Blocks._customBlock_getLOG(10 + s.EquipmentQuantity[2][1]) / 2.14);
+        (1 + Blocks._customBlock_getLOG(1 + s.EquipmentQuantity[2][1]) / 2.14);
     var level = s.Ninja[104][0] * 1;
     if (level < 0) return multi;
     var whole = Math.floor(multi);
@@ -860,7 +1011,7 @@ lime.$scripts.N = function (_exports, $global) {
       return d.GfoodBonus + worn + whole * Blocks._customBlock_TreeReads() * 0;
     // the part of the emporium: added to a value of the block, to another read, times 1, inside a max, twice, or to the
     // bonus
-    if (t === "local")
+    if (t === "local" || t.slice(-5) === "Local")
       return (
         worn +
         d.GfoodMap.h.Amount *
@@ -907,7 +1058,17 @@ lime.$scripts.N = function (_exports, $global) {
           multi *
           0.05 *
           Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level));
-    } else
+    } else if (t === "njs")
+      // as N.js writes it: the emporium has the quantity factor too, of its own log
+      d.GfoodBonus =
+        d.GfoodBonus +
+        d.GfoodMap.h.Amount *
+          multi *
+          0.05 *
+          Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level)) *
+          (1 +
+            Blocks._customBlock_getLOG(1 + 1e3 * Math.pow(10, level)) / 2.14);
+    else
       d.GfoodBonus =
         d.GfoodBonus +
         d.GfoodMap.h.Amount *
@@ -956,6 +1117,17 @@ lime.$scripts.N = function (_exports, $global) {
   // a call of the branch.
   Blocks._customBlock_ArcadeBonus = function () {
     return state().TreeBase * 2;
+  };
+  // A running total of zeros its own block reads back (the game's FishingToolkit and its weight + line, 009 T023)
+  Blocks._customBlock_TreeZeroTotal = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeZero = [];
+    d.TreeZero.push(0);
+    d.TreeZero.push(0);
+    for (var i = 0; i < 2; i++) d.TreeZero[i] = d.TreeZero[i] + s.TreeOwned;
+    for (var j = 0; j < 2; j++) d.TreeZero[j] = d.TreeZero[j] + s.TreeOwned;
+    return d.TreeZero[0] + d.TreeZero[1] + s.TreeBase;
   };
   Blocks._customBlock_TreeArcade = function () {
     return Blocks._customBlock_ArcadeBonus(0) + 1;

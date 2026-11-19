@@ -4,7 +4,7 @@
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { exprText, isFormulaName } from "./expr.ts";
-import { nameOf } from "./names.ts";
+import { nameOf, useGameNames } from "./names.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { finish, GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -191,7 +191,7 @@ test("formulas.cjs r1src: two branches of one shape name are told apart by their
   const pct = (id: number, v: number) =>
     term(op("+", num(1), op("/", call(id, v), num(100), v / 100), 1 + v / 100));
   const [a, b] = [pct(4, 3), pct(5, 2)];
-  const rows = a && b ? finish(2, [a, b], false) : [];
+  const rows = a && b ? finish(2, [a, b]) : [];
   expect(rows.map((r) => r.node.name)).toEqual([
     "Multiplier (Some Mode)",
     "Multiplier",
@@ -208,7 +208,7 @@ test("formulas.cjs r1src: a branch that shares its name with another part takes 
       r1src: src,
     };
   };
-  const names = (rows: Row[]) => finish(4, rows, false).map((r) => r.node.name);
+  const names = (rows: Row[]) => finish(4, rows).map((r) => r.node.name);
   expect(names([r1("Some Mode"), r1("Other Mode")])).toEqual([
     "Sum of 2 sources (Some Mode)",
     "Sum of 2 sources",
@@ -279,4 +279,40 @@ test("in the tree, a block's row that only repeats the block leaves its rows", (
   expect(kidsOf(buildTree(rec, 0).root).map((k) => k.code)).toEqual([
     "Other()",
   ]);
+});
+
+test("[009 T023] a capped sum of cards' levels is named by its cards, as the game names them", () => {
+  const golem = 'RunCodeOfTypeXforThingY("CardLv", "caveC")';
+  const glunko = 'RunCodeOfTypeXforThingY("CardLv", "caveD")';
+  useGameNames(
+    new Map([
+      [golem, "Ancient Golem"],
+      [glunko, "Crystal Glunko"],
+    ]),
+  );
+  try {
+    // min(4 × the first card's level + 6 × the second's, 100)
+    const cards = fn(
+      "min",
+      [
+        op(
+          "+",
+          op("*", num(4), call(6, 7), 28),
+          op("*", num(6), call(7, 7), 42),
+          70,
+        ),
+        num(100),
+      ],
+      70,
+    );
+    expect(shown(term(cards))?.[0]).toBe(
+      "Ancient Golem and Crystal Glunko cards",
+    );
+    expect(passes(term(cards))).toBe(true);
+    // a card beside a source that is no card keeps the count of its sources
+    const mixed = op("+", call(6, 7), call(4, 3), 10);
+    expect(shown(term(mixed))?.[0]).toBe("Sum of 2 sources");
+  } finally {
+    useGameNames(new Map());
+  }
 });

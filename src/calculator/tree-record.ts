@@ -13,6 +13,16 @@ import type { Recipe, Recording } from "./recording.ts";
 /** Measured again on the compiled calculator.js over the real game (T026); the host's own limit is above these. */
 export const TREE_LIMITS = { startMs: 20_000, numberMs: 10_000 };
 
+/**
+ * A follow-up call after the roots (recorder.js `roots`): for each argument the roots gave block `block` in mode
+ * `mode`, block `then` in mode `thenMode` with that argument.
+ */
+export type FollowCall = readonly [
+  block: string,
+  mode: string,
+  then: string,
+  thenMode: string,
+];
 export type RootCall = readonly [
   block: string,
   args: readonly (string | number)[],
@@ -35,6 +45,7 @@ export function bootRecorder(
     roots: readonly RootCall[],
     recipe: Recipe,
     scene?: boolean,
+    follow?: readonly FollowCall[],
   ): Recording;
 } {
   const { source, ops } = instrument(anchored(code));
@@ -53,7 +64,7 @@ export function bootRecorder(
   return {
     context,
     ops,
-    record(mosaicJson, roots, recipe, scene = false) {
+    record(mosaicJson, roots, recipe, scene = false, follow = []) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);
       try {
@@ -63,7 +74,10 @@ export function bootRecorder(
         run("__calc.helperSteps()", startMs);
         run("__rec.afterHelpers()", startMs);
         if (scene) rebuildScene((text) => run(text, startMs));
-        run(`__rec.roots(${JSON.stringify(roots)})`, numberMs);
+        run(
+          `__rec.roots(${JSON.stringify(roots)}, ${JSON.stringify(follow)})`,
+          numberMs,
+        );
         run("__rec.startBuilders()", startMs);
         recipe.builders.forEach((_, i) => {
           try {

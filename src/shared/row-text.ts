@@ -25,13 +25,19 @@ export function plain(v: number): string {
   return v < 0 && s !== "0" ? `${MINUS}${s}` : s;
 }
 
-/** The row's value as written: + for a part that adds, × for one that multiplies, yes/no, — when unavailable. */
-export function valueText(n: Pick<TreeNode, "value" | "fmt">): string {
+/**
+ * The row's value as written: + for a part that adds, × for one that multiplies, yes/no, — when unavailable; a group of
+ * bonuses in % the game divides by 100 (spec 009, FR-017) as its bonuses' sum in %, not the part it adds.
+ */
+export function valueText(
+  n: Pick<TreeNode, "value" | "fmt"> & Partial<Pick<TreeNode, "combine">>,
+): string {
   const v = n.value;
   if (v === null) return "—";
   if (typeof v === "boolean") return v ? "yes" : "no";
-  const p = plain(v);
   const sign = v < 0 ? "" : "+";
+  if (n.combine === "percent") return `${sign}${plain(v * 100)}%`;
+  const p = plain(v);
   if (n.fmt === "x") return `×${p}`;
   if (n.fmt === "%") return `${sign}${p}%`;
   if (n.fmt === "+") return `${sign}${p}`;

@@ -105,7 +105,7 @@ test("[NR-G 2b] a block that only returns the worn items' total takes the total'
   expect(onlyReturns("DNSM.OtherTotal.Drop")?.formula).toBeNull();
 });
 
-test("[NR-G 2] the slot's value under the level's At 0 group is named too; a call with no name leaves the branch's own", () => {
+test("[NR-G 2] the slot's value at 0, in its place in the level, is named too; a call with no name leaves the branch's own (spec 009, FR-016)", () => {
   const zero: Row = {
     node: row({ pieceKey: null, value: 0, code: null, leaf: "unknown" }),
     open: null,
@@ -115,17 +115,7 @@ test("[NR-G 2] the slot's value under the level's At 0 group is named too; a cal
     node: row({ pieceKey: null, value: 10.3, code: null }),
     open: null,
     group: [
-      {
-        node: row({
-          pieceKey: null,
-          value: 0,
-          code: null,
-          name: "At 0 (1)",
-          role: "atZero",
-        }),
-        open: null,
-        group: [zero],
-      },
+      zero,
       // a read of 0, and a value of an earlier step that is no 0, are no slot's value
       { node: row({ pieceKey: "z", value: 0, code: "Stats.z" }), open: null },
       { ...zero, node: { ...zero.node, value: 5 } },
@@ -134,9 +124,7 @@ test("[NR-G 2] the slot's value under the level's At 0 group is named too; a cal
   const unnamed = nodes[1] ?? nodes[0];
   const out = unnamed && wornItem(r, unnamed, turn());
   expect(out?.node.name).toBe(GENERIC_NAME);
-  expect(
-    out?.group?.map((x) => x.group?.[0]?.node.name ?? x.node.name),
-  ).toEqual([
+  expect(out?.group?.map((x) => x.node.name)).toEqual([
     "Slot value of the item in turn (EquipmentMap UQ1val)",
     GENERIC_NAME,
     GENERIC_NAME,

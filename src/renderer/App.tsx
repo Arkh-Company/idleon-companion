@@ -341,7 +341,6 @@ export function App() {
         <SidePanel
           side={side}
           tree={formula}
-          live={live}
           onClose={closeSide}
           onPick={pick}
           onExpand={expand}

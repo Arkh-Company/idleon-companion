@@ -9,6 +9,7 @@
 // opening of SpelunkyUpgTOT into its push.
 import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
+import { atOneParts } from "./formulas.ts";
 import { near } from "./math.ts";
 import { lastAbove } from "./last-renames.ts";
 import { bare, unlinked } from "./rows.ts";
@@ -253,22 +254,37 @@ function aboveRename(r: Row, up: readonly Above[]): Row {
 
 /**
  * A level's rows renamed by the rows above them, `up` from their piece's head down to their parent (the first level, the
- * pieces' heads, has none: no rule renames there), and the rows of each group: a branch and the group at ×1 are a row above their parts, the
- * group of the parts at 0 is the level's own. (A row that opens later keeps the rows above it without its groups: no
- * rule reads a row with no code.)
+ * pieces' heads, has none: no rule renames there), and the rows of each branch, a row above its parts. The parts at ×1
+ * the bench keeps under its group "At ×1" (tree/formulas.ts `atOneParts`) are renamed with that group above them, and
+ * stay in their places (spec 009, FR-016). (A row that opens later keeps the rows above it without its groups: no rule
+ * reads a row with no code.)
  */
 export function aboveRenames(
   rows: readonly Row[],
   up: readonly Above[],
 ): Row[] {
+  const aside = atOneParts(rows);
+  if (!aside.size) return renameLevel(rows, up);
+  const ones = rows.filter((r) => aside.has(r));
+  const named = new Map(
+    renameLevel(ones, [
+      ...up,
+      { code: null, name: `At ×1 (${String(ones.length)})` },
+    ]).map((r, i) => [ones[i], r] as const),
+  );
+  const rest = renameLevel(
+    rows.filter((r) => !aside.has(r)),
+    up,
+  );
+  return rows.map((r) => named.get(r) ?? rest.shift() ?? r);
+}
+
+function renameLevel(rows: readonly Row[], up: readonly Above[]): Row[] {
   return rows.map((r) => {
     // opus5's rules by the rows above, after the bench's other passes (tree/last-renames.ts)
     const own = lastAbove(aboveRename(r, up), up, rows);
     if (!own.group) return own;
-    const inside =
-      own.node.role === "atZero"
-        ? up
-        : [...up, { code: own.node.code, name: own.node.name }];
+    const inside = [...up, { code: own.node.code, name: own.node.name }];
     return { ...own, group: aboveRenames(own.group, inside) };
   });
 }

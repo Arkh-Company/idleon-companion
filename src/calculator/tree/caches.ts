@@ -23,7 +23,7 @@ import type { CacheContext } from "./cache-context.ts";
 import type { Entry, TurnRead } from "./entries.ts";
 import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
-import { callText, row } from "./rows.ts";
+import { callText, openingOf, row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 import { flat } from "./expr.ts";
@@ -111,8 +111,16 @@ export function makeCaches(ctx: CacheContext) {
     seen: ReadonlySet<number>,
     only?: readonly Entry[],
   ): Opened | null {
-    const L = only ?? entries.get(`${String(w.id)}|${p}`);
-    if (!L) return null;
+    const all = only ?? entries.get(`${String(w.id)}|${p}`);
+    if (!all) return null;
+    // 009 T023: a read of a write before the writer's turns (the value it starts the box with) opens into none of
+    // them, and a read of an earlier turn into the turns up to it: never into another write's
+    const upTo = all.findIndex((q) => near(q.v, value));
+    if (!only && upTo < 0 && all.length) return null;
+    const L =
+      !only && upTo >= 0 && all.slice(upTo + 1).some((q) => !near(q.v, value))
+        ? all.slice(0, upTo + 1)
+        : all;
     const next = new Set(seen).add(w.id);
     // a turn's rows open where the bench built their kids: one level down, under the writer
     const kids = (x: Row) => opens(x, depth + 1, next);
@@ -353,7 +361,7 @@ export function makeCaches(ctx: CacheContext) {
   ): Opened | null {
     const before = [entryP, opening] as const;
     entryP = o.entry;
-    opening = new Set(o.opening);
+    opening = new Set([...o.opening, openingOf(o)]);
     try {
       return cache(
         o.path,

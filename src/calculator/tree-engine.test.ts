@@ -7,6 +7,7 @@ import { TARGETS } from "./targets.ts";
 import type { CalcTreeNode } from "./tree-contract.ts";
 import { createTreeEngine, shapeOf } from "./tree-engine.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
+import { kidsOf as rowsOf } from "./tree/tree-fixture.ts";
 
 let trees: ReturnType<typeof createTreeEngine>;
 beforeAll(() => {
@@ -115,23 +116,44 @@ test("the root of the Drop Rate", () => {
     share: null,
     shareMode: null,
     flags: {},
+    // spec 009 (FR-005): the root's one row is its one pool, and the row is inside it
     kids: [
       {
-        id: "root/Game value",
-        pieceKey: '[0,"Stats.Drop_Rarity"]',
-        name: "Game value",
+        id: "root/Multi pool",
+        pieceKey: null,
+        name: "Multi pool",
         value: 2.5,
-        fmt: null,
-        leaf: "tier", // the bench's rule on a code with "rarity" in it
+        fmt: "x",
+        leaf: null,
         condition: null,
         why: null,
         formula: null,
-        code: "Stats.Drop_Rarity",
-        role: "piece",
+        code: null,
+        role: "pool",
+        combine: "product",
+        poolKind: "multi",
         share: 1,
         shareMode: "sum",
-        flags: { unnamed: true },
-        kids: [],
+        flags: { closed: true },
+        kids: [
+          {
+            id: "root/Multi pool/Game value",
+            pieceKey: '[0,"Stats.Drop_Rarity"]',
+            name: "Game value",
+            value: 2.5,
+            fmt: null,
+            leaf: "tier", // the bench's rule on a code with "rarity" in it
+            condition: null,
+            why: null,
+            formula: null,
+            code: "Stats.Drop_Rarity",
+            role: "piece",
+            share: 1,
+            shareMode: "sum",
+            flags: { unnamed: true },
+            kids: [],
+          },
+        ],
       },
     ],
   });
@@ -164,7 +186,7 @@ const expand = (treeId: string, nodeId: string) => ({
   nodeId,
 });
 const kidsOf = (n: CalcTreeNode | "unknownNumber") =>
-  n !== "unknownNumber" && Array.isArray(n.kids) ? n.kids : [];
+  n === "unknownNumber" ? [] : rowsOf(n);
 
 test("an expand opens a branch of the last tree, with no mosaic: nothing is recorded again", () => {
   const [reads] = kidsOf(trees.tree(number("sources"), mosaicOf()));
@@ -253,4 +275,24 @@ test.each([
   ["a mosaic that is not text", "sources", { attrs: {} }],
 ])("a shape with %s throws", (_name, id, mosaic) => {
   expect(() => trees.shape(id, mosaic)).toThrow();
+});
+
+test("the engine's log says a number's chain of steps could not be read, for that number only (spec 009, NFR-005)", () => {
+  const logged = createTreeEngine(GAME, PAK, {
+    ...TREE_ROOTS,
+    open: ["TreeChainOpen", [0, 0, 0]],
+    chain: ["TreeChain", [0, 0, 0]],
+  });
+  const open = logged.tree(number("open"), mosaicOf());
+  expect(logged.log?.()).toBe("chainOpen");
+  logged.tree(number("chain"), mosaicOf());
+  expect(logged.log?.()).toBeNull();
+  // a branch opened right after the open number answers with no log: the log went with the number
+  logged.tree(number("open"), mosaicOf());
+  const lazyIn = (n: CalcTreeNode): CalcTreeNode | undefined =>
+    n.kids === "lazy" ? n : n.kids.map(lazyIn).find(Boolean);
+  const branch = open === "unknownNumber" ? undefined : lazyIn(open);
+  expect(branch).toBeDefined();
+  logged.tree(expand("open", branch?.id ?? ""), undefined);
+  expect(logged.log?.()).toBeNull();
 });

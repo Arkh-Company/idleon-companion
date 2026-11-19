@@ -3,10 +3,12 @@
 // pipeline shows the tree as unavailable. No electron import, so tests can load it.
 import {
   CAP_KINDS,
+  COMBINE_KINDS,
   CONDITION_KINDS,
   isObject,
   LEAF_KINDS,
   NODE_ROLES,
+  POOL_KINDS,
   SHARE_MODES,
   VALUE_FORMATS,
 } from "../shared/index.ts";
@@ -99,6 +101,8 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   ),
   code: isCode,
   role: oneOf(NODE_ROLES),
+  combine: orNull(oneOf(COMBINE_KINDS)),
+  poolKind: orNull(oneOf(POOL_KINDS)),
   share: orNull(isShare),
   shareMode: orNull(oneOf(SHARE_MODES)),
   cap: oneOf(CAP_KINDS),
@@ -109,8 +113,19 @@ const NODE: Record<string, (v: unknown) => boolean> = {
   kids: (k) => k === "lazy" || Array.isArray(k),
 };
 const REQUIRED = Object.keys(NODE).filter(
-  (k) => !["was", "cap", "maxReached", "feeds"].includes(k),
+  (k) =>
+    !["was", "cap", "maxReached", "feeds", "combine", "poolKind"].includes(k),
 );
+
+/** spec 009 (contracts/tree-node.md): a pool or a system group has no piece, says how it combines, and only a pool has a
+ * kind; any other row has neither field. */
+const roleFits = (n: Record<string, unknown>): boolean =>
+  n.role === "pool" || n.role === "system"
+    ? n.pieceKey === null &&
+      typeof n.combine === "string" &&
+      Object.hasOwn(n, "poolKind") &&
+      (n.role === "pool") === (n.poolKind !== null)
+    : !Object.hasOwn(n, "combine") && !Object.hasOwn(n, "poolKind");
 
 /** The tree, unchanged, when every node fits and there are at most `maxNodes`; null otherwise. */
 export function checkTree(raw: unknown, maxNodes: number): TreeNode | null {
@@ -119,7 +134,8 @@ export function checkTree(raw: unknown, maxNodes: number): TreeNode | null {
   while (pending.length > 0) {
     const n = pending.pop();
     seen++;
-    if (seen > maxNodes || !fieldsFit(n, NODE, REQUIRED)) return null;
+    if (seen > maxNodes || !fieldsFit(n, NODE, REQUIRED) || !roleFits(n))
+      return null;
     const kids = n.kids === "lazy" ? [] : (n.kids as unknown[]);
     // Counted before the push: a list longer than the ceiling never spreads.
     if (seen + pending.length + kids.length > maxNodes) return null;

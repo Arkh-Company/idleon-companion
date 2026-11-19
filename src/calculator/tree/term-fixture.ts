@@ -15,7 +15,27 @@ export const nodes: RecNode[] = [
   // two calls named by their mode in words (tree/names.ts, P2)
   { id: 4, b: "Invented", a: ["SomeMode", 0, 0], c: [], p: 0, pxi: 0, v: 3 },
   { id: 5, b: "Invented", a: ["OtherMode", 0, 0], c: [], p: 0, pxi: 0, v: 2 },
+  // two cards' levels (spec 009 T023), named by the game's card names in the test that sets them
+  {
+    id: 6,
+    b: "RunCodeOfTypeXforThingY",
+    a: ["CardLv", "caveC"],
+    c: [],
+    p: 0,
+    pxi: 0,
+    v: 7,
+  },
+  {
+    id: 7,
+    b: "RunCodeOfTypeXforThingY",
+    a: ["CardLv", "caveD"],
+    c: [],
+    p: 0,
+    pxi: 0,
+    v: 7,
+  },
 ];
+/** The `ones` each level was finished with (rows.ts `finish`), in order. */
 export const finished: boolean[] = [];
 /** The terms of `block`'s steps (the first node by default), in the loop entry `entry` gives. */
 export const termsOf = (

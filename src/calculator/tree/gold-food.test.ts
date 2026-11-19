@@ -4,11 +4,12 @@
 // text of the game is in this file.
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
-import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
+import { GAME, PAK } from "../fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { sourceTerm } from "./gold-food.ts";
+import { golden, TABLES } from "./gold-food-fixture.ts";
 import { row } from "./rows.ts";
 import { useGameTables } from "./table-names.ts";
 
@@ -20,35 +21,7 @@ afterEach(() => {
   useGameTables(new Map());
 });
 
-const TABLES = new Map<string, unknown>([
-  ["ItemDefinitionsGET.itemA", { displayName: "Invented|Charm" }],
-  ["ItemDefinitionsGET.itemB", { displayName: "OTHER_DISH" }],
-]);
-/** The state of a golden food: the worn food's quantity, the emporium's level and the Family Bonus 66. */
-const golden = (
-  quantity: number,
-  level: number,
-  family: number,
-  cache: number,
-) =>
-  mosaicOf({
-    GfoodSet: [10, 20],
-    GfoodStart: 9,
-    EquipmentOrder: [[], [], ["Blank", "itemA"]],
-    EquipmentQuantity: [[], [], [0, quantity]],
-    Ninja: Array.from({ length: 105 }, (_, i) => (i === 104 ? [level] : [])),
-    DNSM: {
-      $m: {
-        FamBonusQTYs: Array.from({ length: 67 }, (_, i) =>
-          i === 66 ? family : 0,
-        ),
-        GfoodMap: { $m: { Amount: 7 } },
-        GfoodBonus: 0,
-        GameCache: { $m: { v: cache } },
-      },
-    },
-  });
-const treeOf = (
+const buildOf = (
   key = "DropRatez",
   quantity = 999,
   level = 3,
@@ -63,7 +36,8 @@ const treeOf = (
     ),
     0,
     recorder.ops,
-  ).root;
+  );
+const treeOf = (...args: Parameters<typeof buildOf>) => buildOf(...args).root;
 const kidsOf = (n: CalcTreeNode | undefined) =>
   n && Array.isArray(n.kids) ? n.kids : [];
 /** The pass's own rows (branches), without the block's checks and data rows that follow them, as any block's. */
@@ -71,166 +45,211 @@ const goldRows = (n: CalcTreeNode) => kidsOf(n).filter((k) => k.leaf === null);
 const brief = (n: CalcTreeNode | undefined) =>
   kidsOf(n).map((k) => [k.name, k.value, k.leaf, k.fmt, k.flags]);
 const near = (v: number): unknown => expect.closeTo(v, 9);
-// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1009) ÷ 2.14); the emporium's
+/** Each row as [name, value, leaf]. */
+const rowsOf = (n: CalcTreeNode | undefined) =>
+  kidsOf(n).map((k) => [k.name, k.value, k.leaf]);
+/** The rows under a row that has a code, as [code, value]. */
+const sourcesOf = (n: CalcTreeNode | undefined) =>
+  kidsOf(n).flatMap((k) => (k.code === null ? [] : [[k.code, k.value]]));
+// A golden food whose worn food it reads back (DNSM.GfoodBonus) is a chain (spec 009, FR-005, rule Y of 17/11), back to
+// its shared multiplier, which the block keeps in a variable (FR-017, 009 r1): the set's Multi pool, the family and the
+// sources' Additive pool, the worn food's own numbers in a Multi pool, the emporium's Additive pool; the same sources and
+// values as the pass's rows. A food of one step (no worn food, a rounded one, a bonus kept in the block, another read)
+// keeps the pass's rows.
+// the multiplier 1.3 × (2 + 0.2); the worn food 7 × it × 0.05 × log(1000) × (1 + log(1000) ÷ 2.14); the emporium's
 // 7 × it × 0.05 × log(1 + 10^6)
 const MULTI = 2.86;
-const WORN = 7.218273444957685;
+const WORN = 7.212813084112149;
 const EMPORIUM = 6.006000434728559;
 
-test("a golden food: the shared multiplier, the worn food and the emporium's, each with its parts", () => {
+test("a golden food: its shared multiplier's, its worn food's and the emporium's steps are the chain's pools, with the same sources", () => {
   useGameTables(TABLES);
-  const root = treeOf();
+  const build = buildOf();
+  const root = build.root;
   expect(root.value).toBeCloseTo(WORN + EMPORIUM, 9);
-  const [multi, worn, emporium] = kidsOf(root);
+  const [set, family, worn, emporium] = kidsOf(root);
   expect(brief(root)).toEqual([
-    ["GFood Multi", near(MULTI), null, "x", {}],
-    ["Equipped: Invented Charm", near(WORN), null, null, {}],
-    ["Emporium: Other Dish", near(EMPORIUM), null, null, {}],
+    ["Multi pool 1", near(1.3), null, "x", { closed: true }],
+    ["Additive pool 1", near(2.2), null, null, { closed: true }],
+    ["Multi pool 2", near(WORN / MULTI), null, "x", { closed: true }],
+    ["Additive pool 2", near(EMPORIUM), null, null, { closed: true }],
     // the block's data row (the quantity its log call took) and its checks, as for any block
     ["Food slot 1 quantity", 999, "quantity", null, {}],
     ["Food slot 1 quantity > 0", 0, "condition", null, {}],
     ["Game value", 0, "condition", null, { unnamed: true }],
   ]);
-  const [, sources, set] = kidsOf(multi);
-  expect(brief(multi)).toEqual([
-    ["Family Bonus 66", 2, "rawBonus", null, {}],
-    ["Sources ÷ 100", near(0.2), null, null, {}],
-    ["SECRET_SET multi", near(1.3), null, "x", {}],
+  // the worn food's own numbers: no row of the shared multiplier among them (FR-007)
+  expect(rowsOf(worn)).toEqual([
+    ["Amount of the golden food (item table)", 7, "fixedValue"],
+    ["Fixed ×0.05", 0.05, "fixedValue"],
+    ["log₁₀", near(3), "rawBonus"],
+    ["Quantity multiplier", near(2.4018691588785046), null],
   ]);
-  expect(kidsOf(sources).map((k) => [k.code, k.name, k.value])).toEqual([
-    ["TreeReads()", "Game value", 8],
-    ["TreeBase", "Game value", 4],
-    ["DNSM.GameCache.v", "Working value of the game (GameCache)", 5],
-    [null, "Fixed +3", 3],
-  ]);
-  expect(kidsOf(set).map((k) => [k.code, k.value])).toEqual([
+  // the shared multiplier's pools: the set's bonuses, one row each; the family, and the sources in % by system
+  expect(sourcesOf(set)).toEqual([
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
-  expect(brief(worn)).toEqual([
-    ["Base Amount", 7, "fixedValue", null, {}],
-    ["Quantity", 999, "quantity", null, {}],
-    ["Log Factor", near(3), "quantity", null, {}],
+  const [fam, other] = kidsOf(family);
+  expect([fam?.code, fam?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
+  expect([other?.name, other?.combine, other?.value]).toEqual([
+    "🔹 Other",
+    "percent",
+    near(0.2),
   ]);
-  expect(brief(emporium)).toEqual([
-    ["Base Amount", 7, "fixedValue", null, {}],
-    ["Log Factor", near(6.000000434294264), "quantity", null, {}],
+  expect(sourcesOf(other)).toEqual([
+    ["TreeReads()", 8],
+    ["TreeBase", 4],
+    ["DNSM.GameCache.v", 5],
   ]);
-  // every name the pass writes is one the host takes
-  expect(checkTree(root, 100)).not.toBeNull();
-});
-
-test("each row of a golden food has the ⓘ of its step", () => {
-  useGameTables(TABLES);
-  const [multi, worn, emporium] = kidsOf(treeOf());
-  const [, sources, set] = kidsOf(multi);
-  expect(multi?.formula).toEqual({
+  // the emporium's row: its food's name, and its parts with the shared multiplier, which multiply to it (FR-007, FR-008)
+  const [emp] = kidsOf(emporium);
+  expect([emp?.name, emp?.value]).toEqual([
+    "Emporium: Other Dish",
+    near(EMPORIUM),
+  ]);
+  const parts = kidsOf(
+    emp?.kids === "lazy" ? (build.expand(emp.id) ?? undefined) : emp,
+  );
+  // each part with its name, value and type; the shared multiplier a value its own steps prove, never a "?"
+  expect(parts.map((k) => [k.name, k.value, k.leaf, k.why])).toEqual([
+    ["Amount of the golden food (item table)", 7, "fixedValue", null],
+    ["GFood Multi", near(MULTI), null, null],
+    ["Fixed ×0.05", 0.05, "fixedValue", null],
+    ["log₁₀", near(6.000000434294264), "rawBonus", null],
+  ]);
+  expect(parts[1]?.formula).toEqual({
     rule: [
       "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });
-  // a source with no name of its own is its code; "Fixed +3" is the constant of the sum
-  expect(sources?.formula).toEqual({
+  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
+    EMPORIUM,
+    9,
+  );
+  expect(checkTree(root, 100)).not.toBeNull();
+});
+
+test("each pool and row of a golden food's chain has the ⓘ of its step", () => {
+  useGameTables(TABLES);
+  const root = treeOf();
+  const [set, family, worn, emporium] = kidsOf(root);
+  expect(root.formula).toEqual([
+    [
+      "Multi pool 1",
+      "×",
+      "Additive pool 1",
+      "×",
+      "Multi pool 2",
+      "+",
+      "Additive pool 2",
+    ],
+    [1.3, 2.2, 2.522, 6.006, 13.219],
+  ]);
+  expect(worn?.formula).toEqual({
+    rule: [
+      "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Quantity multiplier",
+      "7 × 0.05 × 3 × 2.402 = 2.522",
+    ],
+  });
+  const [, , , factor] = kidsOf(worn);
+  // the shared multiplier, by its pools: the set's 1 + (bonuses) ÷ 100, the family + the sources ÷ 100
+  expect(set?.formula).toEqual([
+    ["1", "+", "(", "GfoodSet[0]", "+", "GfoodSet[1]", ")", "÷", "100"],
+    [1, 10, 20, 100, 1.3],
+  ]);
+  expect(family?.formula).toEqual([
+    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
+    [2, 0.2, 2.2],
+  ]);
+  expect(kidsOf(family)[1]?.formula).toEqual({
     rule: [
       "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
       "(8 + 4 + 5 + 3) ÷ 100 = 0.2",
     ],
   });
-  expect(set?.formula).toEqual([
-    [
-      "1",
-      "+",
-      "(",
-      "(",
-      "GfoodSet[0]",
-      "+",
-      "GfoodSet[1]",
-      ")",
-      "÷",
-      "100",
-      ")",
-    ],
-    [1, 10, 20, 100, 1.3],
+  // the worn food's quantity factor, named by its role, with the quantity in its ⓘ (FR-007), as N.js writes it:
+  // 1 + getLOG(1 + quantity) ÷ 2.14 (009 T023 r4)
+  expect(factor?.formula).toEqual([
+    ["1", "+", "log₁₀", "(", "1", "+", "quantity", ")", "÷", "2.14"],
+    [1, 1, 999, 2.14, 2.402],
   ]);
-  // the shared multiplier is the step under its variable; a log call keeps its own term (it has no code among the parts)
-  const multiOf =
-    "(1 + ((GfoodSet[0] + GfoodSet[1]) ÷ 100)) × (max(DNSM.FamBonusQTYs[66], 1) + ((((TreeReads() + TreeBase) + DNSM.GameCache.v) + 3) ÷ 100))";
-  const numsOf =
-    "(1 + ((10 + 20) ÷ 100)) × (max(2, 1) + ((((8 + 4) + 5) + 3) ÷ 100))";
-  expect([worn?.formula, emporium?.formula]).toEqual([
-    {
-      rule: [
-        `(((Base Amount × (${multiOf})) × 0.05) × log₁₀) × (1 + (log₁₀ ÷ 2.14))`,
-        `(((7 × (${numsOf})) × 0.05) × 3) × (1 + (3.004 ÷ 2.14)) = 7.218`,
-      ],
-    },
-    {
-      rule: [
-        `((Base Amount × (${multiOf})) × 0.05) × log₁₀`,
-        `((7 × (${numsOf})) × 0.05) × 6 = 6.006`,
-      ],
-    },
-  ]);
-});
-
-test("the multiplier's ⓘ counts a family below 1 as 1, and is not written when the step's family is another", () => {
-  expect(goldRows(treeOf("DropRatez", 999, 3, 0))[0]?.formula).toEqual({
+  // the emporium's: its parts' product, the shared multiplier among them
+  expect(kidsOf(emporium)[0]?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
-      "1.3 × (1 + 0.2) = 1.56",
+      "Amount of the golden food × GFood Multi × 0.05 × log₁₀",
+      "7 × 2.86 × 0.05 × 6 = 6.006",
     ],
   });
-  expect(goldRows(treeOf("atTwo", 999, 3, 0))[0]?.formula).toBeNull();
 });
 
-test("sources taken as a percent by a product are no sources", () => {
-  const [multi] = goldRows(treeOf("percent"));
-  const sources = kidsOf(multi)[1];
-  expect([
-    sources?.name,
-    sources?.value,
-    sources?.flags,
-    kidsOf(sources),
-  ]).toEqual(["Sources ÷ 100", null, { unavailable: true }, []]);
-  expect(multi?.formula).toBeNull();
-});
-
-test("a set of one part has its ⓘ; one written with its number last has no parts", () => {
-  const set = (key: string) => kidsOf(goldRows(treeOf(key))[0])[2];
-  const one = set("oneSet");
-  expect(kidsOf(one).map((k) => [k.code, k.value])).toEqual([
-    ["GfoodSet[0]", 10],
+test("the shared multiplier counts a family below 1 as 1; a step whose family is at least 2 is the chain's own pool", () => {
+  // 1.3 × (max(0, 1) + 0.2) = 1.56, by its pools
+  const [set, family] = kidsOf(treeOf("DropRatez", 999, 3, 0));
+  expect(Number(set?.value) * Number(family?.value)).toBeCloseTo(1.56, 9);
+  // under it, the read without the name the row above says (the 008's rename by the row above) and its minimum
+  expect(rowsOf(kidsOf(family)[0])).toEqual([
+    ["Working value of the game", 0, "unknown"],
+    ["Minimum 1", 1, "fixedValue"],
   ]);
+  // max(family, 1) is the family's row, with its read's name and code, never a row with no name (FR-007)
+  const fam = kidsOf(family)[0];
+  expect([fam?.code, fam?.name, fam?.value]).toEqual([
+    "DNSM.FamBonusQTYs[66]",
+    "Working value of the game (FamBonusQTYs)",
+    1,
+  ]);
+  expect(family?.formula).toEqual([
+    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
+    [1, 0.2, 1.2],
+  ]);
+  // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools
+  const pools = kidsOf(treeOf("atTwo", 999, 3, 0));
+  expect(pools.slice(0, 2).map((p) => [p.name, p.value])).toEqual([
+    ["Multi pool 1", near(1.3)],
+    ["Additive pool 1", near(2.2)],
+  ]);
+  expect(rowsOf(kidsOf(pools[1])[0])).toEqual([
+    ["Working value of the game", 0, "unknown"],
+    ["Minimum 2", 2, "fixedValue"],
+  ]);
+  expect(kidsOf(pools[1])[0]?.code).toBe("DNSM.FamBonusQTYs[66]");
+});
+
+test("sources taken as a percent by a product are a product of their sum by 0.01, in the chain's pool", () => {
+  const [, add] = kidsOf(treeOf("percent"));
+  expect([add?.name, add?.value]).toEqual(["Additive pool 1", near(2.2)]);
+  const [family, sources] = kidsOf(add);
+  expect([family?.code, family?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
+  expect(sources?.value).toBeCloseTo(0.2, 9);
+  expect(sourcesOf(sources)).toEqual([
+    ["TreeReads()", 8],
+    ["TreeBase", 4],
+    ["DNSM.GameCache.v", 5],
+  ]);
+  expect(Array.isArray(sources?.formula) && sources.formula[0].at(-1)).toBe(
+    "0.01",
+  );
+});
+
+test("a set of one part is the chain's first pool, with its ⓘ; one written with its number last too", () => {
+  const set = (key: string) => kidsOf(kidsOf(treeOf(key))[0])[0];
+  const one = set("oneSet");
+  expect(sourcesOf(one)).toEqual([["GfoodSet[0]", 10]]);
   expect(one?.formula).toEqual([
     ["1", "+", "(", "GfoodSet[0]", "÷", "100", ")"],
     [1, 10, 100, 1.1],
   ]);
   const last = set("setLast");
-  expect([last?.value, kidsOf(last)]).toEqual([near(1.1), []]);
-});
-
-test("a food with no text keeps the generic name; the emporium's with none takes the worn food's", () => {
-  expect(goldRows(treeOf()).map((k) => [k.name, k.flags])).toEqual([
-    ["GFood Multi", {}],
-    ["Game value", { unnamed: true }],
-    ["Game value", { unnamed: true }],
+  const [lastNames, lastNumbers] = Array.isArray(last?.formula)
+    ? last.formula
+    : [];
+  expect([last?.value, lastNames?.join(" "), lastNumbers]).toEqual([
+    near(1.1),
+    "( GfoodSet[0] ÷ 100 ) + 1",
+    [10, 100, 1, 1.1],
   ]);
-  useGameTables(new Map([...TABLES].slice(0, 1)));
-  expect(goldRows(treeOf()).map((k) => k.name)).toEqual([
-    "GFood Multi",
-    "Equipped: Invented Charm",
-    "Emporium: Invented Charm",
-  ]);
-});
-
-test("a food whose name would be too long keeps the generic name", () => {
-  useGameTables(
-    new Map([["ItemDefinitionsGET.itemA", { displayName: "y".repeat(196) }]]),
-  );
-  const [, worn, emporium] = goldRows(treeOf());
-  expect([worn?.name, worn?.flags]).toEqual(["Game value", { unnamed: true }]);
-  expect(emporium?.flags).toEqual({ unnamed: true });
 });
 
 test.each<[string, string, number, number, [string, number][]]>([
@@ -242,25 +261,11 @@ test.each<[string, string, number, number, [string, number][]]>([
     [["Emporium: Other Dish", EMPORIUM]],
   ],
   [
-    "no emporium level: no emporium row",
-    "DropRatez",
-    999,
-    0,
-    [["Equipped: Invented Charm", WORN]],
-  ],
-  [
     "a worn food rounded is no worn food's step",
     "round",
     999,
     3,
     [["Emporium: Other Dish", Math.round(WORN) + EMPORIUM]],
-  ],
-  [
-    "a worn food added to the bonus is the worn food's step, not the emporium's",
-    "added",
-    999,
-    0,
-    [["Equipped: Invented Charm", WORN]],
   ],
   [
     "a bonus kept in the block: the emporium's adds to the worn food's step",
@@ -296,26 +301,6 @@ test.each<[string, string, number, number, [string, number][]]>([
     3,
     [["Equipped: Invented Charm", WORN]],
   ],
-  [
-    "the emporium's log inside a max",
-    "inFn",
-    999,
-    3,
-    [
-      ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", EMPORIUM],
-    ],
-  ],
-  [
-    "the emporium's twice: the last step, over the worn food's",
-    "twice",
-    999,
-    3,
-    [
-      ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", EMPORIUM / 5 + EMPORIUM],
-    ],
-  ],
 ])("%s", (_name, key, quantity, level, rows) => {
   useGameTables(TABLES);
   expect(
@@ -326,14 +311,47 @@ test.each<[string, string, number, number, [string, number][]]>([
   ]);
 });
 
-test("a source at 0 goes under the sum's own row at 0, as in any sum, and the sources' ⓘ still names it", () => {
-  const [multi] = goldRows(treeOf("DropRatez", 999, 3, 2, 0));
-  const sources = kidsOf(multi)[1];
-  expect(kidsOf(sources).map((k) => [k.name, k.value])).toEqual([
-    ["Game value", 8],
-    ["Game value", 4],
-    ["Fixed +3", 3],
-    ["At 0 (1)", 0],
+// the foods whose worn food is read back: a chain, the shared multiplier's pools and the worn food's (when there is one),
+// then the sum's
+const MULTI_POOLS = ["Multi pool 1", "Additive pool 1", "Multi pool 2"];
+test.each<[string, string, number, number[]]>([
+  [
+    "no emporium level: the emporium's pool is 0",
+    "DropRatez",
+    0,
+    [1.3, 2.2, WORN / MULTI, 0],
+  ],
+  ["a worn food added to the bonus is one sum", "added", 0, [WORN]],
+  [
+    "the emporium's log inside a max",
+    "inFn",
+    3,
+    [1.3, 2.2, WORN / MULTI, EMPORIUM],
+  ],
+  [
+    "the emporium's twice, in one pool",
+    "twice",
+    3,
+    [1.3, 2.2, WORN / MULTI, EMPORIUM * 1.2],
+  ],
+])("%s", (_name, key, level, values) => {
+  useGameTables(TABLES);
+  const names = values.length > 1 ? MULTI_POOLS : [];
+  const last = values.length > 1 ? "Additive pool 2" : "Additive pool";
+  expect(
+    kidsOf(treeOf(key, 999, level))
+      .filter((k) => k.role === "pool")
+      .map((k) => [k.name, k.value]),
+  ).toEqual(values.map((v, i) => [names[i] ?? last, near(v)]));
+});
+
+test("a source at 0 stays in its place in the shared multiplier, and its ⓘ still names it (spec 009, FR-016)", () => {
+  const [, family] = kidsOf(treeOf("DropRatez", 999, 3, 2, 0));
+  const sources = kidsOf(family)[1];
+  expect(sourcesOf(sources)).toEqual([
+    ["TreeReads()", 8],
+    ["TreeBase", 4],
+    ["DNSM.GameCache.v", 0],
   ]);
   expect(sources?.formula).toEqual({
     rule: [

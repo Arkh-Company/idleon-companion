@@ -1,0 +1,212 @@
+// The system of a source (spec 009, FR-003, FR-004): the block it calls, or the block that writes the cache it reads,
+// gives its system by a rule with proof; an unknown block gives none (the caller files it under "🔹 Other"). The V1
+// order is the bench's (build-v1mold.cjs V1). Invented blocks and paths, apart from the game's own block names the
+// rules read.
+import { expect, test } from "vitest";
+import { isNameText } from "./names.ts";
+import { SYSTEM_TAGS } from "./tags.ts";
+import {
+  EXTRA_SYSTEMS,
+  isHelper,
+  SYSTEM_ORDER,
+  SYSTEM_RULES,
+  systemLabel,
+  systemOf,
+  V1_SYSTEMS,
+} from "./systems.ts";
+
+test.each<[string, string | null, string | undefined, string | null]>([
+  ["a card's call", "CardBonusREAL(10, 0)", undefined, "🃏 Cards"],
+  ["a talent's call", "GetTalentNumber(1, 207)", undefined, "🎯 Talents"],
+  [
+    "a block known by its mode",
+    'Summoning("VotingBonusz", 27)',
+    undefined,
+    "🗳️ Voting",
+  ],
+  [
+    "a cache read with an Alchemy writer",
+    "DNSM.InventedCache",
+    'CauldronStats("InventedMode", 0)',
+    "⚗️ Alchemy",
+  ],
+  [
+    "a read the bench files by its path",
+    "DNSM.AlchBubbles.InventedBubble",
+    undefined,
+    "⚗️ Alchemy",
+  ],
+  [
+    "an Equinox upgrade's level, which the V1 files under Dreams",
+    "Dream[10]",
+    undefined,
+    "💭 Dreams",
+  ],
+  ["an unknown block", 'InventedBlock("Mode", 0)', undefined, null],
+  [
+    "a known block in a mode no rule names",
+    'Summoning("InventedMode", 0)',
+    undefined,
+    null,
+  ],
+  ["a read with no writer", "DNSM.InventedCache", undefined, null],
+  [
+    "a read whose writer is unknown",
+    "DNSM.InventedCache",
+    'InventedBlock("Mode")',
+    null,
+  ],
+  ["no code", null, undefined, null],
+])("%s", (_name, code, writer, label) => {
+  const s = systemOf(code, writer);
+  expect(s && systemLabel(s)).toBe(label);
+});
+
+test("the order is the V1's, Other last", () => {
+  expect(SYSTEM_ORDER).toEqual([
+    "LUK / Stats",
+    "Talents",
+    "Cards",
+    "Star Signs",
+    "Achievements",
+    "Companions",
+    "Friends",
+    "Stamps",
+    "Alchemy",
+    "Sigils",
+    "Prayers",
+    "Shrines",
+    "Guild",
+    "Arcade",
+    "Voting",
+    "Post Office",
+    "Shiny Pets",
+    "Tome",
+    "Researching",
+    "Chips",
+    "Dreams",
+    "Cloud Bonus",
+    "Owl",
+    "Grimoire",
+    "Vault",
+    "Farming",
+    "Holes",
+    "Emperor",
+    "Legend Talents",
+    "Spelunk Shop",
+    "Sushi",
+    "Minehead",
+    "Menagerie",
+    "Arcane Map",
+    "Glimbo",
+    "Equipment",
+    "Obols",
+    "Gallery",
+    "Hatrack",
+    "Cape Vine",
+    "Golden Food",
+    "Set Bonuses",
+    "Bundles",
+    "Pristine Charms",
+    "Sneaking Mastery",
+    "Summoning",
+    "Royal Guardian",
+    "Other",
+  ]);
+});
+
+test("every system's label is a name the host takes, with its emoji first", () => {
+  expect(V1_SYSTEMS.map((s) => s.name)).toEqual(SYSTEM_ORDER);
+  for (const s of V1_SYSTEMS) {
+    const label = systemLabel(s);
+    expect([label, isNameText(label)]).toEqual([`${s.emoji} ${s.name}`, true]);
+  }
+  expect(V1_SYSTEMS.at(-1)).toEqual({ name: "Other", emoji: "🔹" });
+});
+
+test("every system a rule gives is in the V1 list or among the systems beyond it", () => {
+  const known = [...SYSTEM_ORDER, ...EXTRA_SYSTEMS.map((s) => s.name)];
+  for (const r of SYSTEM_RULES)
+    expect([String(r.test), known.includes(r.system)]).toEqual([
+      String(r.test),
+      true,
+    ]);
+});
+
+// T028: the blocks and reads of the probe's "Other" list that name a known system (the game's own block and path
+// names, invented arguments)
+test.each<[string, string, string]>([
+  ["a research grid cell", "Research[7][2]", "🔬 Researching"],
+  [
+    "the stamps' running total",
+    "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X",
+    "📜 Stamps",
+  ],
+  ["a menagerie cell", "Menagerie[3][1]", "🪼 Menagerie"],
+  ["an owl cell", "CustomLists.Owlz[2][0]", "🦉 Owl"],
+  ["a companion's +", "CompLV2(132)", "🐾 Companions"],
+  ["any farming mode", 'FarmingStuffs("StickerDMGmulti", 0, 0)', "🌾 Farming"],
+  ["a meal", 'MealBonus("zInvented")', "🍲 Meals"],
+  ["the meals' cache", "DNSM.MealBonusesS.Invented", "🍲 Meals"],
+  ["a bribe", 'GetBribeBonus("36")', "💰 Bribes"],
+  [
+    "the jelly operator",
+    'JellyOperation("RoG_BonusQTY", 10, 0)',
+    "🫧 Jelly Operator",
+  ],
+  [
+    "the atom collider",
+    'AtomCollider("AtomBonuses", 12, 0)',
+    "⚛️ Atom Collider",
+  ],
+  ["a compass bonus", 'Windwalker("CompassBonus", 76, 0)', "🧭 Compass"],
+  ["gaming", 'GamingStatType("PaletteBonus", 23, 0)', "🎮 Gaming"],
+  ["a spelunking cell", "Spelunk[4][0]", "🔦 Spelunking"],
+  ["trapping", 'TrappingStuffs("TrapMGbonus", 2)', "🪤 Trapping"],
+  ["sailing", 'Sailing("SlabboBonus", 6, 0)', "⛵ Sailing"],
+  ["the lab's mainframe", "MainframeBonus(122)", "🧪 Lab"],
+  ["a chip", 'chipBonuses("acc")', "💎 Chips"],
+  ["a captain", "CaptBonusCalc(3, 5)", "⛵ Sailing"],
+  ["a sailing cell", "Sailing[3][1]", "⛵ Sailing"],
+  ["an atom's level", "Atoms[4]", "⚛️ Atom Collider"],
+])("%s", (_name, code, label) => {
+  const s = systemOf(code);
+  expect(s && systemLabel(s)).toBe(label);
+});
+
+test("a block the game only calls as a curve or a log is a helper, of no system of its own", () => {
+  expect(isHelper('ArbitraryCode5Inputs("decay", 10, 100, 101, 0, 0)')).toBe(
+    true,
+  );
+  expect(isHelper("getLOG(0)")).toBe(true);
+  expect(isHelper("Log2(0)")).toBe(true);
+  expect(isHelper("CardBonusREAL(10, 0)")).toBe(false);
+  expect(isHelper("DNSM.Invented")).toBe(false);
+  expect(systemOf('ArbitraryCode5Inputs("add", 1, 0, 101, 0, 0)')).toBeNull();
+});
+
+test("no two systems share an emoji: Arcade is 🕹️, Gaming 🎮 (Vinicius, 18/11)", () => {
+  const all = [...V1_SYSTEMS, ...EXTRA_SYSTEMS];
+  expect(new Set(all.map((s) => s.emoji)).size).toBe(all.length);
+  const arcade = systemOf("ArcadeBonus(0)");
+  expect(arcade && systemLabel(arcade)).toBe("🕹️ Arcade");
+});
+
+test("the systems beyond the V1 have a label the host takes, and none is a V1 name", () => {
+  for (const s of EXTRA_SYSTEMS) {
+    const label = systemLabel(s);
+    expect([label, isNameText(label), SYSTEM_ORDER.includes(s.name)]).toEqual([
+      `${s.emoji} ${s.name}`,
+      true,
+      false,
+    ]);
+  }
+});
+
+test("every system a tagged call gives is in the V1 list", () => {
+  for (const t of SYSTEM_TAGS)
+    expect([String(t.test), SYSTEM_ORDER.includes(t.system)]).toEqual([
+      String(t.test),
+      true,
+    ]);
+});

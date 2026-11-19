@@ -324,13 +324,27 @@
       );
     },
 
-    // 6. The roots, with the game's exact arguments.
-    roots: (list) => {
+    // 6. The roots, with the game's exact arguments. Then each follow-up [block, mode, then block, then mode]: once for
+    // each argument the roots gave that block's mode, the then block with the then mode and that argument (spec 009,
+    // FR-018: a Legend Talent's max, which the game's screen shows beside its points).
+    roots: (list, follow) => {
       S.root = S.newNode("(root)", [], null);
       S.cur = S.root;
       try {
         list.forEach((c) => {
           G.__calc.call(c[0], c[1]);
+        });
+        (follow || []).forEach((f) => {
+          var seen = {};
+          var upTo = S.nodes.length;
+          for (var i = 0; i < upTo; i++) {
+            var n = S.nodes[i];
+            if (n.b !== f[0] || n.a[0] !== f[1]) continue;
+            var key = JSON.stringify(n.a[1]);
+            if (hasOwn(seen, key)) continue;
+            seen[key] = true;
+            G.__calc.call(f[2], [f[3], n.a[1], 0]);
+          }
         });
       } finally {
         S.stopped();

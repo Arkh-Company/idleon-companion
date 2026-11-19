@@ -5,7 +5,7 @@ import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
-import { recordingOf } from "./tree-fixture.ts";
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
@@ -16,8 +16,6 @@ const NONE = { recompute: [], builders: [] };
 const treeOf = (block: string, args: number[] = [0, 0, 0]) =>
   buildTree(recorder.record(mosaicOf(), [[block, args]], NONE), 0, recorder.ops)
     .root;
-const kidsOf = (n: CalcTreeNode | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
 /** Each row as [code, value, its rows or "lazy"]. */
 const brief = (n: CalcTreeNode): unknown[] => [
   n.code,
@@ -39,8 +37,18 @@ test("the terms of the block's last sum are its rows; a product of two calls is 
   ]);
 });
 
+/** The root's pools, each as [name, value, its rows]: a root of a chain of steps has one per run (spec 009, FR-005). */
+const poolsOf = (root: CalcTreeNode): unknown[] =>
+  (Array.isArray(root.kids) ? root.kids : []).map((p) => [
+    p.name,
+    p.value,
+    kidsOf(p).map(brief),
+  ]);
+
 test("a number of the code is a fixed value named by its place in the step", () => {
-  const [, value] = kidsOf(kidsOf(treeOf("TreeStepRef"))[0]);
+  // the earlier step's terms are the chain's first pool (spec 009, rule Y of 17/11)
+  const root = treeOf("TreeStepRef");
+  const [, value] = kidsOf(Array.isArray(root.kids) ? root.kids[0] : null);
   expect(value).toMatchObject({
     name: "Fixed ×3",
     value: 3,
@@ -49,17 +57,18 @@ test("a number of the code is a fixed value named by its place in the step", () 
   });
 });
 
-test("a value from an earlier step of the block opens into that step", () => {
-  expect(kidsOf(treeOf("TreeStepRef")).map(brief)).toEqual([
+test("a value from an earlier step of the block opens into that step, its pool in the chain", () => {
+  // TreeBase × 3, then + TreeLevel: the earlier step opens into its terms in the Multi pool (spec 009, rule Y)
+  expect(poolsOf(treeOf("TreeStepRef"))).toEqual([
     [
-      null,
+      "Multi pool",
       12,
       [
         ["TreeBase", 4, []],
         [null, 3, []],
       ],
     ],
-    ["TreeLevel", 25, []],
+    ["Additive pool", 25, [["TreeLevel", 25, []]]],
   ]);
 });
 

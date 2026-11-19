@@ -5,11 +5,15 @@
 // name: it keeps the generic one when neither applies.
 import { exprText, isFormulaName } from "./expr.ts";
 import { fx3 } from "./curves.ts";
-import { isCond, isAtOne, near, vOf } from "./formulas.ts";
+import { atOneParts, isCond, near, vOf } from "./formulas.ts";
 import { evaluate } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
+import type { RecNode } from "../recording.ts";
+import { nameOf } from "./names.ts";
+import { callText } from "./rows.ts";
 import type { Expr } from "./steps.ts";
+import { num } from "./math.ts";
 
 /** formulas.cjs SHAPES: the sum with each distinct number written as a letter, in order of first place. */
 export const BRANCH_SHAPES: readonly {
@@ -42,15 +46,15 @@ export const BRANCH_SHAPES: readonly {
 const NUMBER = /\d+(?:\.\d+)?/g;
 
 /**
- * formulas.cjs `formulaOf` (A), its rename: the shape's name of branch `r` of expression `e`, when its parts (the ×1
- * group aside, the parts at 0 among them) have no Condition, each number of the sum is one part's value, and the sum
+ * formulas.cjs `formulaOf` (A), its rename: the shape's name of branch `r` of expression `e`, when its parts (those
+ * at ×1 a product leaves aside, tree/formulas.ts `atOneParts`, apart; the parts at 0 among them) have no Condition, each number of the sum is one part's value, and the sum
  * with the parts' exact values is the branch's; else null.
  */
 export function shapeName(e: Expr, r: Row): string | null {
   const text = exprText(e);
-  const kids = (r.group ?? []).flatMap((k) =>
-    k.node.role === "atZero" ? (k.group ?? []) : isAtOne(k) ? [] : [k],
-  );
+  const group = r.group ?? [];
+  const aside = atOneParts(group);
+  const kids = group.filter((k) => !aside.has(k));
   if (kids.some(isCond) || !isFormulaName(text)) return null;
   const parts = new Map<string, Row>();
   for (const x of new Set(text.match(NUMBER))) {
@@ -72,6 +76,32 @@ export function shapeName(e: Expr, r: Row): string | null {
 }
 
 /**
+ * The branch `r` of a max or a min of one read and numbers of the code (a minimum, a cap), as `max(family, 1)`: the
+ * read's own name and code, with the read and its bound under it, never a row with no name (spec 009, FR-007, 009 r2);
+ * any other branch as it is.
+ */
+export function boundRead(e: Expr, read: Row, r: Row): Row {
+  const x = e.t === "def" ? e.e : e;
+  const bound =
+    x.t === "fn" &&
+    (x.name === "max" || x.name === "min") &&
+    x.args.filter((a) => a.t === "read").length === 1 &&
+    x.args.every((a) => a.t === "read" || a.t === "num");
+  if (!bound) return r;
+  const flags = { ...r.node.flags };
+  delete flags.unnamed;
+  return {
+    ...r,
+    node: {
+      ...r.node,
+      name: read.node.name,
+      code: read.node.code,
+      flags: read.node.flags.unnamed ? { ...flags, unnamed: true } : flags,
+    },
+  };
+}
+
+/**
  * The branch `r` of expression `e` with its name: its shape's (shapeName), else, when its name would be its own sum with
  * numbers, `fallback` (formulas.cjs `fallback`, the source's name); null leaves it as it is.
  */
@@ -80,3 +110,47 @@ export const branchName = (r: Row, e: Expr, fallback: string | null): Row =>
     r,
     shapeName(e, r) ?? (isFormulaName(exprText(e)) ? fallback : null),
   );
+
+/** The role of a number of the game's code, from where it sits in the expression. */
+export function numRole(v: unknown, parent: Expr | null, side: number): string {
+  const n = num(v);
+  if (parent?.t === "fn") {
+    if (parent.name === "min") return `Cap ${n}`;
+    if (parent.name === "max") return `Minimum ${n}`;
+    if (parent.name === "pow")
+      return side === 1 ? `Exponent ${n}` : `Base ${n}`;
+  }
+  if (parent?.t !== "op") return `Fixed value ${n}`;
+  if (parent.o === "+") return `Base ${n}`;
+  if (parent.o === "-") return side === 1 ? `Minus ${n}` : `Fixed value ${n}`;
+  if (parent.o === "*") return `× ${n}`;
+  if (parent.o === "/" && side === 1)
+    return Number(v) === 100 ? "Percent to number (÷ 100)" : `Divided by ${n}`;
+  return `Fixed value ${n}`;
+}
+
+/**
+ * 009 T023: a branch whose sources are all cards' levels (N.js TotalStats: min(4 × the Ancient Golem card's level + 6 ×
+ * the Crystal Glunko card's, 100)) is named by its cards, the game's names of them; null for any other branch.
+ */
+export function cardsName(e: Expr, nodes: readonly RecNode[]): string | null {
+  const calls: RecNode[] = [];
+  let other = false;
+  (function walk(x: Expr): void {
+    if (x.t === "call") {
+      const k = nodes[x.id];
+      if (k) calls.push(k);
+    } else if (x.t === "read" || x.t === "val") other = true;
+    else if (x.t === "op") [x.l, x.r].forEach(walk);
+    else if (x.t === "fn") x.args.forEach(walk);
+    else if (x.t === "def") walk(x.e);
+    else if (x.t === "not") walk(x.a);
+  })(e);
+  const names = calls.map((k) =>
+    k.b === "RunCodeOfTypeXforThingY" && k.a[0] === "CardLv"
+      ? nameOf(callText(k))
+      : null,
+  );
+  if (other || names.length < 2 || names.some((n) => n === null)) return null;
+  return `${names.slice(0, -1).join(", ")} and ${String(names.at(-1))} cards`;
+}

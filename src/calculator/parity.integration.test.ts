@@ -90,6 +90,20 @@ describe.skipIf(!READY)("parity of the Drop Rate tree with the bench", () => {
   );
 
   test(
+    "the first level is the chain's pools: Additive pool 1 before Multi pool 1 (spec 009, FR-005, rule Y)",
+    () => {
+      // the pools' names are the rule's, never a name of the save
+      const names = (Array.isArray(tree.kids) ? tree.kids : []).map(
+        (k) => k.name,
+      );
+      const add = names.indexOf("Additive pool 1");
+      expect(add).toBeGreaterThanOrEqual(0);
+      expect(names.indexOf("Multi pool 1")).toBeGreaterThan(add);
+    },
+    BUILD_MS,
+  );
+
+  test(
     "no piece shows two values (the bench's code × value check)",
     () => {
       // Only the count: a piece key can carry a state path with a character's name (FR-010a).

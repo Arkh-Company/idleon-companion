@@ -1,7 +1,10 @@
 // Step 7 of the bench's build-tree.cjs at BASELINE-4, over a recording: each cache read under the root links to the
 // last write that covers its path (`writerOf`), or to the call's own write (`ownOf`), and the writers' calls are kept
-// too, as a work list, because a cache builder reads other caches.
-import type { Recording, RecWrite } from "../recording.ts";
+// too, as a work list, because a cache builder reads other caches. And the write a scratch read comes from
+// (`scratchWrites`), and its piece key (`scratchKey`).
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import { near } from "./math.ts";
+import { callText } from "./rows.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";
@@ -102,4 +105,49 @@ export function linkReads(rec: Recording): Linked {
     }
   }
   return { keep, links, writerOf, ownOf };
+}
+
+/**
+ * 009 T023: a scratch box read at two moments is two pieces. A read's piece key names the write it comes from (its
+ * `scratchWrites`): the writer's call and the write's place among that call's writes of the box; with no such write,
+ * its path alone, as any other read.
+ */
+export const scratchKey = (
+  character: number,
+  path: string,
+  own: { call: RecNode; at: number } | null,
+): string =>
+  JSON.stringify(
+    own ? [character, path, callText(own.call), own.at] : [character, path],
+  );
+
+/**
+ * The write a scratch read comes from: by the first of `by` (its writer, else its reader's own, for a box no cache link
+ * covers) that wrote the value read, the write the read saw, by the number of the last write the recording keeps in the
+ * read (`seq`), else the call's first write of that value; and the write's place among the call's writes of the box.
+ */
+export function scratchWrites(writes: readonly RecWrite[]) {
+  const byCall = new Map<string, RecWrite[]>();
+  for (const w of writes) {
+    const k = `${String(w.node)}|${w.path}`;
+    byCall.set(k, [...(byCall.get(k) ?? []), w]);
+  }
+  return (
+    path: string,
+    value: unknown,
+    seq: number | undefined,
+    ...by: (RecNode | null)[]
+  ): { call: RecNode; at: number } | null => {
+    if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
+      for (const n of by) {
+        const all = n ? (byCall.get(`${String(n.id)}|${path}`) ?? []) : [];
+        const seen =
+          seq === undefined
+            ? -1
+            : all.findLastIndex((w) => w.seq <= seq && near(w.v, value));
+        const at = seen >= 0 ? seen : all.findIndex((w) => near(w.v, value));
+        if (n && at >= 0) return { call: n, at };
+      }
+    return null;
+  };
 }

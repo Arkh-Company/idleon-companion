@@ -30,7 +30,7 @@ Tudo é montado no worker de árvores, depois da montagem da 008 (research R1–
 
 **Project Type**: desktop-app
 
-**Performance Goals**: o molde não chama o jogo; ele é linear sobre as linhas já montadas. O tempo de abrir uma árvore fica no da 008, medido na sonda (research R9)
+**Performance Goals**: o molde não chama o jogo; ele é linear sobre as linhas já montadas. Exceção: desde a T031, a gravação chama o jogo em dois lugares, só leitura e ao lado da raiz: o multiplicador do Meritocracy (`EXTRA_ROOTS`) e, depois das raízes, o máximo de cada Legend Talent que a raiz chamou (`FOLLOW_CALLS`); no Drop Rate são 12 chamadas, sem custo medível na gravação (cerca de 3,1 s com e sem elas). O tempo de abrir uma árvore fica no da 008, medido na sonda (research R9)
 
 **Constraints**:
 - só leitura do jogo, sem rede para o jogo;

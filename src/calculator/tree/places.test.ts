@@ -73,36 +73,25 @@ const named = (name: string, value: number): Row => ({
   node: row({ pieceKey: null, value, code: null, name, leaf: "rawBonus" }),
   open: null,
 });
-const timesOne = (rows: Row[]): Row => ({
-  node: row({
-    pieceKey: null,
-    value: 1,
-    code: null,
-    name: `At ×1 (${String(rows.length)})`,
-    role: "atOne",
-    fmt: "x",
-    flags: { closed: true },
-  }),
-  open: null,
-  group: rows,
-});
-
-test("a group of the parts at ×1 keeps the app's name: no pass names it by its rows (R14)", () => {
+test("the parts at ×1 stay in their places, each with its own name (spec 009, FR-016: no group at ×1)", () => {
   const { places } = counted({});
-  // stampBonus would name a row of these two rows "X bonus" (X bonus value × Slot = the row's value)
-  const [group] = places.place(
+  const rows = places.place(
     { id: "root", code: "Root()" },
-    [timesOne([named("X bonus value", 1), named("Slot", 1)])],
+    [named("X bonus value", 1), named("Slot", 1)],
     1,
     [0],
   );
-  expect(group?.name).toBe("At ×1 (2)");
+  expect(rows.map((r) => [r.name, r.value])).toEqual([
+    ["X bonus value", 1],
+    ["Slot", 1],
+  ]);
 });
 
-test("the rows of a group are named as any level's (pieces.cjs fixNames): a system the rows above show leaves their name", () => {
+test("the parts at ×1 are named as any level's (pieces.cjs fixNames): a system the rows above show leaves their name", () => {
   const { places } = counted({
     1: [
-      timesOne([named("Bonus per level (Grimoire)", 1), named("Other", 1)]),
+      named("Bonus per level (Grimoire)", 1),
+      named("Other", 1),
       named("Rest", 5),
     ],
   });
@@ -123,10 +112,7 @@ test("the rows of a group are named as any level's (pieces.cjs fixNames): a syst
     [0],
   );
   const kids = places.expand(placed?.id ?? "");
-  const group = Array.isArray(kids?.kids) ? kids.kids[0] : undefined;
-  // the group's own name is the app's, also under a parent whose name it starts with
-  expect(group?.name).toBe("At ×1 (2)");
   expect(
-    (Array.isArray(group?.kids) ? group.kids : []).map((k) => k.name),
-  ).toEqual(["Bonus per level", "Other"]);
+    (Array.isArray(kids?.kids) ? kids.kids : []).map((k) => k.name),
+  ).toEqual(["Bonus per level", "Other", "Rest"]);
 });

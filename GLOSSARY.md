@@ -128,6 +128,37 @@ A row's calculation in two lines, its names and its numbers, or a rule as its tw
 never the game's code. The bench calls it ⓘ; the counts of Game details say "Rows with How it adds up".
 _Avoid_: formula, equation, ⓘ on screen
 
+**Pool**:
+One stage of the game's own math on the first level of a **Formula tree**, in the order of the sum: an **Additive pool** or
+a **Multi pool**, with its value, its **Share** and the **System groups** inside; numbered ("Multi pool 1") when there is
+more than one of a kind.
+_Avoid_: stage, bucket, layer
+
+**Additive pool**:
+A **Pool** that adds: the sums in a row of the game's steps, or a factor that is a plain sum of two sources or more.
+_Avoid_: sum pool, flat pool, additive group
+
+**Multi pool**:
+A **Pool** that multiplies: the loose multipliers in a row are one, and a multiplier that sums bonuses inside,
+`1 + (a + b) ÷ 100`, is one of its own.
+_Avoid_: multiplier pool, product pool, multi group
+
+**System group**:
+The sources of one game system inside a **Pool** or under the root, with its emoji and name, in the V1 order of the bench
+and "🔹 Other" last; its value is the sum or the product of its sources, and a source with no system rule is never
+guessed into one.
+_Avoid_: category, system row, grupo de sistema
+
+**Changes**:
+The tree's button, off by default, that shows on each row a live arrow with how much it moved, against the tree as it was
+at the click ("live") or against a **Mark**; only its on or off is saved.
+_Avoid_: diff, Refresh, was
+
+**Share**:
+How much of its parent a row is ("26%"), and the tree's button, off by default, that shows or hides it; only its on or off
+is saved.
+_Avoid_: fatia, of total, weight
+
 **System panel**:
 The panel of one game system in the Panel tab, shown when that system's screen opens in the game and said once to a screen
 reader; a screen without one keeps the last.

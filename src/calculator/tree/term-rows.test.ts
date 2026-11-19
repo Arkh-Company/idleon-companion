@@ -1,8 +1,11 @@
 // The branches of pieces.cjs rowOfTerm, exprRow, stepRef and tidy, over written steps: a stand-in context builds each
 // read and call as a plain row (term-fixture.ts), so only the term's own rule is under test.
 import { expect, test } from "vitest";
+import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
-import { token } from "./formulas.ts";
+import { formulaFor, token } from "./formulas.ts";
+import { finish } from "./rows.ts";
+import { at, read as part } from "./tree-fixture.ts";
 import {
   brief,
   call,
@@ -155,7 +158,40 @@ test("around a cache read with a writer, the read's row with the expression's va
   ]);
 });
 
-test("the parts of an expression that adds are no group at ×1; a product's are", () => {
+test("a cache read beside other sources never takes their sum's value, name and rows: the branch of the parts (009 T023)", () => {
+  // max(x, 1) + (B + C) ÷ 100: the read is one part of the sum, never the sum
+  const sum = op(
+    "+",
+    fn("max", [read("DNSM.W.x", 1.38), num(1)], 1.38),
+    op("/", op("+", call(1, 3), call(2, 2), 5), num(100), 0.05),
+    1.43,
+  );
+  const [r] = rowsOf([{ v: 2.86, e: op("*", sum, num(2), 2.86) }], [], [], "*");
+  expect(r?.node).toMatchObject({ code: null, value: 1.43, pieceKey: null });
+  expect(r?.group?.map((k) => [k.node.code, k.node.value])).toContainEqual([
+    "DNSM.W.x",
+    1.38,
+  ]);
+});
+
+test("the parts of an expression, one that adds or a product, stay in their places (spec 009, FR-016)", () => {
+  const codes = (rows: Row[]): string[] =>
+    rows.flatMap((r) =>
+      r.group ? codes(r.group) : [r.node.code ?? r.node.name],
+    );
+  const sum = op("+", call(1, 3), call(2, 2), 5);
+  expect(
+    codes(rowsOf([{ v: 6, e: op("+", op("*", sum, num(1), 5), num(1), 6) }])),
+  ).toEqual(["B()", "C()", "× 1", "Fixed +1"]);
+  const product = op("*", call(1, 3), call(2, 2), 6);
+  expect(codes(rowsOf([{ v: 7, e: op("+", product, num(1), 7) }]))).toEqual([
+    "B()",
+    "C()",
+    "Fixed +1",
+  ]);
+});
+
+test("the parts of an expression that adds are no parts at ×1 to leave aside; a product's are", () => {
   finished.length = 0;
   const sum = op("+", call(1, 3), call(2, 2), 5);
   rowsOf([{ v: 6, e: op("+", op("*", sum, num(1), 5), num(1), 6) }]);
@@ -164,6 +200,20 @@ test("the parts of an expression that adds are no group at ×1; a product's are"
   expect(finished).toEqual([false, true]);
 });
 
+test("the ⓘ keeps the parts at ×1 of a level the 008 never grouped; it leaves aside a product's (spec 009, FR-016)", () => {
+  const parts = () => [
+    part("Stats.a", 3),
+    part("Stats.o", 1),
+    part("Stats.p", 1),
+  ];
+  expect(formulaFor(at(3), finish(3, parts(), false))).toEqual([
+    "Stats.a × Stats.o × Stats.p",
+    "3 × 1 × 1 = 3",
+  ]);
+  expect(
+    JSON.stringify(formulaFor(at(3), finish(3, parts(), true))),
+  ).not.toContain("Stats.o");
+});
 test("a number cut out of a text the block read is a fixed value", () => {
   const [fixed] = rowsOf(
     [{ v: 26, e: op("+", val(25), num(1), 26) }],

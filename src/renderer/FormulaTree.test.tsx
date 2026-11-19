@@ -185,38 +185,27 @@ test("a raw bonus says what it is (FR-013), and a Condition is yes or no", () =>
   expect(item(/^If/).textContent).toContain("no");
 });
 
-test("the groups of the worker start closed: At 0 (N) and At ×1 (N) · no effect yet", () => {
-  const zero = node({ id: "root/Z1", name: "Zed", value: 0 });
+test("a part at 0 and a part at ×1 stay in their places, in the game's order, their values greyed (spec 009, FR-016)", () => {
   draw(
     node({
       kids: [
-        node({
-          id: "root/At 0 (1)",
-          name: "At 0 (1)",
-          value: 0,
-          role: "atZero",
-          flags: { closed: true },
-          kids: [zero],
-        }),
-        node({
-          id: "root/At ×1 (2)",
-          name: "At ×1 (2)",
-          value: 1,
-          fmt: "x",
-          role: "atOne",
-          flags: { closed: true },
-          kids: [],
-        }),
+        node({ id: "root/Z1", name: "Zed", value: 0, leaf: "level" }),
+        node({ id: "root/A", name: "Alpha", value: 4, leaf: "level" }),
+        node({ id: "root/O", name: "Once", value: 1, fmt: "x", leaf: "level" }),
       ],
     }),
   );
-  const atZero = item(/^At 0 \(1\) · not adding anything now/);
-  expect(atZero.getAttribute("aria-expanded")).toBe("false");
-  expect(screen.queryByRole("treeitem", { name: /^Zed/ })).toBe(null);
-  expect(item(/^At ×1 \(2\) · no effect yet/)).toBeDefined();
+  const rows = screen
+    .getAllByRole("treeitem")
+    .map((i) => (i.getAttribute("aria-label") ?? "").split(",")[0]);
+  expect(rows).toEqual(["Drop Rate", "Zed", "Alpha", "Once"]);
+  const value = (name: RegExp) => item(name).querySelector(".num")?.className;
+  expect(value(/^Zed/)).toBe("num num--zero");
+  expect(value(/^Once/)).toBe("num num--zero");
+  expect(value(/^Alpha/)).toBe("num");
 });
 
-test("more than 10 parts with shares: the largest in the game's order, then Small (N) and Show all N parts, closed", () => {
+test("more than 10 parts with shares: all of them, in the game's order, with no Small row and no Show all (spec 009, FR-016)", () => {
   const shares = [
     0.4, 0.002, 0.3, 0.001, 0.1, 0.05, 0.04, 0.03, 0.02, 0.01, 0.003, 0.046,
   ];
@@ -232,25 +221,13 @@ test("more than 10 parts with shares: the largest in the game's order, then Smal
     }),
   );
   draw(node({ kids }));
-  const names = () =>
-    screen
-      .getAllByRole("treeitem")
-      .map((i) => i.getAttribute("aria-label") ?? "")
-      .filter((n) => n.startsWith("Part"));
-  expect(names().map((n) => n.split(",")[0])).toEqual([
-    "Part 0",
-    "Part 2",
-    "Part 4",
-    "Part 5",
-    "Part 6",
-    "Part 11",
-  ]);
-  expect(item(/^Small \(3\)/).getAttribute("aria-expanded")).toBe("false");
-  const all = item(/^Show all 12 parts/);
-  expect(all.getAttribute("aria-expanded")).toBe("false");
-  all.focus();
-  key("Enter");
-  expect(names().map((n) => n.split(",")[0])).toEqual(kids.map((k) => k.name));
+  const names = screen
+    .getAllByRole("treeitem")
+    .map((i) => i.getAttribute("aria-label") ?? "")
+    .filter((n) => n.startsWith("Part"));
+  expect(names.map((n) => n.split(",")[0])).toEqual(kids.map((k) => k.name));
+  expect(screen.queryByRole("treeitem", { name: /^Small/ })).toBe(null);
+  expect(screen.queryByRole("treeitem", { name: /^Show all/ })).toBe(null);
 });
 
 test("a decay curve with a maximum says how much is reached (FR-015a), and one without says nothing", () => {

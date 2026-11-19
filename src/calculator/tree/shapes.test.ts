@@ -2,11 +2,11 @@
 // shape (SHAPES) when each number is one part and the sum gives its value; before the source's name (`fallback`).
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
-import { atZero, row } from "./rows.ts";
+import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { shapeName } from "./shapes.ts";
 import type { Expr } from "./steps.ts";
-import { branch, cond, fixed, ones, read as part } from "./tree-fixture.ts";
+import { branch, cond, fixed, read as part } from "./tree-fixture.ts";
 import { fn, num, op, read } from "./term-fixture.ts";
 
 const shaped = (e: Expr, group: Row[], v = Number(e.v)) =>
@@ -104,25 +104,27 @@ test("a number of the name is a part's value as the name writes it; the sum take
   ).toBe("Multiplier");
 });
 
-test("the group of the parts at ×1 is no part; the parts at 0 are", () => {
-  expect(shaped(PCT, [...pctParts(), ones(part("X", 1), part("Y", 1))])).toBe(
-    "Multiplier",
-  );
+test("the parts at ×1 a product leaves aside are no parts, in their places; the parts at 0 are (spec 009, FR-016)", () => {
+  const asideAtOne = (r: Row): Row => ({
+    ...r,
+    asideAtOne: true,
+  });
+  expect(
+    shaped(PCT, [
+      ...pctParts(),
+      asideAtOne(part("X", 1)),
+      asideAtOne(part("Y", 1)),
+    ]),
+  ).toBe("Multiplier");
   const zero = op("+", num(1), op("/", read("A", 0), num(100), 0), 1);
   expect(
-    shaped(
-      zero,
-      atZero(
-        [
-          fixed("Base 1", 1),
-          part("A", 0),
-          fixed("Percent to number (÷ 100)", 100),
-        ],
-        "sum",
-      ),
-    ),
+    shaped(zero, [
+      fixed("Base 1", 1),
+      part("A", 0),
+      fixed("Percent to number (÷ 100)", 100),
+    ]),
   ).toBe("Multiplier");
-  // two parts at 0 under the At 0 group are two parts: the 0 of the name is neither
+  // two parts at 0 are two parts: the 0 of the name is neither
   const level = op(
     "/",
     read("A", 0),
@@ -130,9 +132,6 @@ test("the group of the parts at ×1 is no part; the parts at 0 are", () => {
     0,
   );
   expect(
-    shaped(
-      level,
-      atZero([part("A", 0), fixed("Base 1000", 1000), part("B", 0)], "sum"),
-    ),
+    shaped(level, [part("A", 0), fixed("Base 1000", 1000), part("B", 0)]),
   ).toBeNull();
 });

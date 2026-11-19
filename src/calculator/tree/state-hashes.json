@@ -1,5 +1,5 @@
 {
-  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not, and the form at the boot of the two tables the game changes after it (CustomLists.LabMainBonus, grown by NinjaInfo[25..28] with an Emporium bonus, and CustomLists.NinjaInfo, rows 3, 9 and 10 rescaled by OptionsListAccount[231]), which replaces the bench's hash of a loaded game: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them.",
+  "about": "Spec 008 names table (FR-012a), the hashes of the tables the rules by shape of the game state paths read (tree/state-names.ts) that the recipes do not, and the form at the boot of the two tables the game changes after it (CustomLists.LabMainBonus, grown by NinjaInfo[25..28] with an Emporium bonus, and CustomLists.NinjaInfo, rows 3, 9 and 10 rescaled by OptionsListAccount[231]), which replaces the bench's hash of a loaded game: [sha256, table], the canonical form of names-recipes.json (every {h: ...} wrapper unwrapped, object keys sorted, then JSON.stringify; CustomLists.X whole, ItemDefinitionsGET.<id> and MonsterDefinitionsGET.<id> per entry), read over the installed game at version 0e47e87b right after the boot, as the tree worker reads them (game-names.ts). The items are those with a bonus text (UQ1txt or UQ2txt), the Tome pages and the Refinery salts; the monsters are all of them. Then (spec 009 T031) CustomLists.SigilDesc, which the build-up reads for a sigil's tiers (tree/table-names.ts tableNumber), hashed the same way over the installed game at 0e47e87b (ClassFamilyBonuses, hashed alongside, gives the recipes' own hash).",
   "version": "0e47e87b",
   "hashes": [
     [
@@ -2529,6 +2529,10 @@
     [
       "bd280186127b0781d3f1e2fe1e83e31315d3e553174369270656b88e01d6376a",
       "MonsterDefinitionsGET.rockS"
+    ],
+    [
+      "db9c65673b6e65bfddf5f1cf6560901a371cefe28b1a878d28ecbb02068a9c20",
+      "CustomLists.SigilDesc"
     ]
   ]
 }

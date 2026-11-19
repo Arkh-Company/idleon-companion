@@ -7,17 +7,21 @@
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
-import { withFormula } from "./formulas.ts";
+import { termsOf, withFormula } from "./formulas.ts";
+import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
 import { gameBugOf } from "./game-bugs.ts";
 import type { GameBugRule } from "./game-bugs.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
-import { aboveText, isGroup, kidNames } from "./kid-names.ts";
+import { isMould } from "./kid-names.ts";
 import { oneOfEach } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
+import { flatten } from "./flatten.ts";
+import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
+import { asideInFormula, buildUp } from "./build-up.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -37,6 +41,8 @@ export interface Level {
   rows: Row[];
   at: At;
   code: string | null;
+  /** The call the rows come from, when they are a call's own (spec 009, FR-018: its family's build-up). */
+  call?: RecNode;
 }
 
 export interface PlaceContext {
@@ -59,7 +65,11 @@ export function makePlaces(ctx: PlaceContext) {
   /** The level under row `r`, placed at `at`: its call's rows or its cache's, renamed by the rows above them. */
   function below(r: Row, at: At): Level | null {
     const seen = r.seen ?? at.seen;
-    const up = [...at.up, { code: r.node.code, name: r.node.name }];
+    const up = [
+      ...at.up,
+      ...(r.up ?? []),
+      { code: r.node.code, name: r.node.name },
+    ];
     const o = r.open;
     if (o === null) return null;
     // a cache's rows are its writer's, each with the calls above it; the depth is its reader's, as in the bench
@@ -83,6 +93,7 @@ export function makePlaces(ctx: PlaceContext) {
       rows: aboveRenames(rows, up),
       at: { depth: at.depth + 1, seen: [...seen, o], up },
       code: from ? callText(from) : null,
+      ...(from ? { call: from } : {}),
     };
   }
 
@@ -94,11 +105,67 @@ export function makePlaces(ctx: PlaceContext) {
       : null;
   }
 
+  /**
+   * The ⓘ and rows of a level of a source (FR-007, FR-018): its family's full build-up when it has one, the whole sum or
+   * product with no unnamed step, and the constants of the code and the branch checks in the ⓘ only.
+   */
+  function builtUp(
+    lv: Level,
+    name: string,
+  ): {
+    formula: CalcTreeNode["formula"];
+    rows: Row[];
+    maxReached?: CalcTreeNode["maxReached"];
+  } {
+    const up = buildUp(lv, {
+      nodes,
+      under: (k, l) => levelOf(k, l.at, l.code),
+      name,
+      keyOf: (n) => ctx.keyOf(n),
+    });
+    const l = up?.level ?? lv;
+    const w = withFormula(l.row, flatten(l.rows));
+    // a built-up ⓘ names its rows whole, a name with a colon too ("Arcade: Prisma Bonuses")
+    const f = up && l.row.f;
+    const formula = f
+      ? up.rule
+        ? { rule: f }
+        : formulaOut(f, [
+            ...termsOf(w.rows, f),
+            ...w.rows.map((r) => termOf(r.node)),
+          ])
+      : w.formula;
+    return {
+      formula,
+      rows: asideInFormula(w.rows, formula !== null),
+      ...(up?.maxReached ? { maxReached: up.maxReached } : {}),
+    };
+  }
+
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
-  function placedLevel(id: string, lv: Level) {
-    const w = withFormula(lv.row, lv.rows);
+  function placedLevel(id: string, lv: Level, name: string) {
+    // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows, and so are those
+    // of a source computed as a chain, which opens into its pools: its ⓘ is how they join, the step its call takes
+    // (FR-017); any other level has no unnamed step (FR-007), and its row's ⓘ is the whole sum or product
+    const pools = lv.rows.filter((r) => r.node.role === "pool");
+    const w = isMould(lv.row)
+      ? { formula: lv.row.node.formula, rows: lv.rows }
+      : pools.length
+        ? {
+            formula: lv.row.xf
+              ? formulaOut(
+                  lv.row.xf,
+                  pools.map((p) => p.node.name),
+                )
+              : null,
+            rows: lv.rows,
+          }
+        : builtUp(lv, name);
     return {
       formula: w.formula,
+      ...("maxReached" in w && w.maxReached
+        ? { maxReached: w.maxReached }
+        : {}),
       kids: placeAt({ id, code: lv.code }, w.rows, lv.at),
     };
   }
@@ -121,15 +188,9 @@ export function makePlaces(ctx: PlaceContext) {
       // opus5's openStatue: the statue's base bonus, over the recording
       const r0 = baseStatue(x, at.up, nodes);
       const level0 = levelOf(r0, at, parent.code);
-      // a group of the parts at 0 or at ×1 keeps the app's name; its rows are named as any level's (pieces.cjs fixNames)
-      const { row: r, level } = isGroup(r0)
-        ? {
-            row: r0,
-            level: level0 && {
-              ...level0,
-              rows: kidNames(level0.rows, r0.node, at.up.map(aboveText)),
-            },
-          }
+      // a pool or a system's group keeps the app's name, and its rows the names of the level they come from (spec 009)
+      const { row: r, level } = isMould(r0)
+        ? { row: r0, level: level0 }
         : parentPasses(
             r0,
             level0,
@@ -147,7 +208,7 @@ export function makePlaces(ctx: PlaceContext) {
         id,
         ...node,
         ...(bug === null ? {} : { flags: { ...node.flags, gameBug: bug } }),
-        ...(group ? placedLevel(id, group) : {}),
+        ...(group ? placedLevel(id, group, node.name) : {}),
       };
       if (open !== null) places.set(id, { node: placed, level });
       return placed;
@@ -170,7 +231,7 @@ export function makePlaces(ctx: PlaceContext) {
       const { node, level } = p;
       if (!level)
         return { ...node, flags: { ...node.flags, truncated: true }, kids: [] };
-      return { ...node, ...placedLevel(node.id, level) };
+      return { ...node, ...placedLevel(node.id, level, node.name) };
     },
   };
 }

@@ -75,6 +75,61 @@ function foodName(what: string, text: string | null): string | null {
   return name !== null && isNameText(name) ? name : null;
 }
 
+const quantityKey = (reads: Reads) =>
+  [...reads.keys()].find((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k));
+/** The texts of the worn food and of the emporium's (the worn food's when it has none), from the block's reads. */
+function foodTexts(reads: Reads): {
+  foodText: string | null;
+  emText: string | null;
+} {
+  const qtyKey = quantityKey(reads);
+  const slot = qtyKey && /\[(\d+)\]$/.exec(qtyKey)?.[1];
+  const food = slot ? reads.get(`EquipmentOrder[2][${slot}]`) : undefined;
+  const foodText = typeof food === "string" ? tableText("item", food) : null;
+  const niKey = [...reads.keys()].find((k) => /^Ninja\[104\]\[\d+\]$/.test(k));
+  const ni = niKey && /\[(\d+)\]$/.exec(niKey)?.[1];
+  const emFood = ni
+    ? reads.get(`CustomLists.NinjaInfo[29][${String(2 + 3 * Number(ni))}]`)
+    : undefined;
+  const emText =
+    (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
+  return { foodText, emText };
+}
+/** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
+export const emporiumName = (reads: Reads): string | null =>
+  foodName("Emporium", foodTexts(reads).emText);
+/**
+ * Whether a log call of argument `arg` measures a worn food: N.js GoldFoodBonuses takes getLOG(1 + quantity) of a food
+ * slot's quantity, and the emporium's getLOG(1 + 1e3·10^level) (009 T023 r4).
+ */
+export const measuresWorn = (arg: unknown, reads: Reads): boolean =>
+  [...reads].some(
+    ([k, v]) =>
+      /^EquipmentQuantity\[2\]\[\d+\]$/.test(k) && near(arg, 1 + Number(v)),
+  );
+/** The worn food's row name, "Equipped: <the food's text>", or null with no text (009 T023 r3). */
+export const equippedName = (reads: Reads): string | null =>
+  foodName("Equipped", foodTexts(reads).foodText);
+
+/**
+ * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(Family Bonus 66, 1) +
+ * Sources ÷ 100), when the step gives it; else null.
+ */
+export function multiFormula(s0: Step, reads: Reads): Pair | null {
+  const [secret, rest] = flat(s0.e, "*");
+  const div =
+    rest?.t === "op" && rest.r.t === "op" && rest.r.o === "/" ? rest.r : null;
+  const sumE = div?.l ?? null;
+  const famV = Math.max(Number(reads.get("DNSM.FamBonusQTYs[66]")) || 0, 1);
+  const sumV = Number(sumE?.v);
+  return sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
+    ? [
+        "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+        `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
+      ]
+    : null;
+}
+
 /** The rows of a Golden Food block with its four steps or more, or null for any other block. */
 export function goldFood(
   n: RecNode,
@@ -113,29 +168,11 @@ export function goldFood(
       ? flat(secret.r.l, "+").flatMap((x) => ctx.term(x, "+", new Map()) ?? [])
       : [];
   const amount = reads.get("DNSM.GfoodMap.Amount");
-  const qtyKey = [...reads.keys()].find((k) =>
-    /^EquipmentQuantity\[2\]\[\d+\]$/.test(k),
-  );
-  const slot = qtyKey && /\[(\d+)\]$/.exec(qtyKey)?.[1];
-  const food = slot ? reads.get(`EquipmentOrder[2][${slot}]`) : undefined;
-  const foodText = typeof food === "string" ? tableText("item", food) : null;
-  const niKey = [...reads.keys()].find((k) => /^Ninja\[104\]\[\d+\]$/.test(k));
-  const ni = niKey && /\[(\d+)\]$/.exec(niKey)?.[1];
-  const emFood = ni
-    ? reads.get(`CustomLists.NinjaInfo[29][${String(2 + 3 * Number(ni))}]`)
-    : undefined;
-  const emText =
-    (typeof emFood === "string" ? tableText("item", emFood) : null) ?? foodText;
+  const qtyKey = quantityKey(reads);
+  const { foodText, emText } = foodTexts(reads);
   // the ⓘ of these rows, from the steps of the block
-  const famV = Math.max(Number(fam) || 0, 1);
   const sumV = Number(sumE?.v);
-  const multiF: Pair | null =
-    sumE && secret && near(Number(secret.v) * (famV + sumV / 100), s0.v)
-      ? [
-          "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
-          `${fx3(Number(secret.v))} × (${fx3(famV)} + ${fx3(sumV / 100)}) = ${fx3(s0.v)}`,
-        ]
-      : null;
+  const multiF = multiFormula(s0, reads);
   // the sources as the step adds them, before a level groups those at 0
   const sourcesF: Pair | null =
     sources.length >= 2 &&

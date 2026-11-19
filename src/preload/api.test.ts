@@ -99,6 +99,13 @@ test.each<
     [{ pieceKey: '[0,"Sword"]' }],
   ],
   ["dismissRadar", (a) => a.dismissRadar(), IPC.radarDismiss, []],
+  ["getView", (a) => a.getView(), IPC.viewGet, []],
+  [
+    "setView",
+    (a) => a.setView({ changes: true, share: false }),
+    IPC.viewSet,
+    [{ changes: true, share: false }],
+  ],
   [
     "setSidePanel",
     (a) => a.setSidePanel({ open: true }),

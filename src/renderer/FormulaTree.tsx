@@ -1,10 +1,12 @@
-// The tree of one number, opened in place like folders (spec 008 FR-006, FR-014, FR-031; design.md C2, C5, C6, C8, C10,
-// C15, §3.8): the APG treeview whole, one Tab stop with a roving tabindex, ↑ ↓ → ← Home End Enter. A lazy branch asks
+// The tree of one number, opened in place like folders (spec 008 FR-006, FR-031; design.md C2, C5, C6, C8, C10, §3.8;
+// every part in its place, with no "Small" nor "Show all": spec 009, FR-016): the APG treeview whole, one Tab stop with a roving tabindex, ↑ ↓ → ← Home End Enter. A lazy branch asks
 // its rows when it opens and says "calculating this part…" until they come. A part that 2 or more numbers use shows how
-// many, and its "Feeds N numbers" row lists them, each one opening its tree (FR-027).
+// many, and its "Feeds N numbers" row lists them, each one opening its tree (FR-027). Spec 009: a pool's and a group's value
+// is rebuilt from its rows (the main writes the live values of the parts, FR-015), the share shows only when asked
+// (FR-014), each row has its arrow with "Changes" on (FR-013), and a tree rebuilt by itself keeps open what was open.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
-import { changes } from "../shared/index.ts";
+import { preorder } from "../shared/index.ts";
 import type { FormulaTree as Tree, TreeNode } from "../shared/index.ts";
 import { FEEDS_LOADING, useFeedsLists } from "./FeedsBadge.tsx";
 import { nameOf } from "./FormulasTab.tsx";
@@ -13,8 +15,10 @@ import { partLine, phrasesOf, treeItem, treeLines } from "./tree-items.tsx";
 import type { RowCtx } from "./tree-items.tsx";
 import { keyMove } from "./tree-keys.ts";
 import type { Visible } from "./tree-keys.ts";
-import { formulaLines, GROUP_SUFFIX } from "./tree-text.ts";
-import { flip, isGroup, partition } from "./tree-parts.ts";
+import { valuesOf } from "./tree-changes.ts";
+import type { Arrow } from "./tree-changes.ts";
+import { formulaLines } from "./tree-text.ts";
+import { flip } from "./tree-parts.ts";
 
 type Ready = Extract<Tree, { state: "ready" }>;
 
@@ -25,6 +29,8 @@ export function FormulaTree({
   onExpand,
   onOpenNumber,
   announce,
+  share = false,
+  arrows = null,
 }: {
   tree: Ready;
   onExpand: (nodeId: string) => void;
@@ -32,13 +38,16 @@ export function FormulaTree({
   onOpenNumber?: (id: string) => void;
   /** One sentence for the page's live region (design.md §3.8): the Copy of Game details. */
   announce?: (text: string) => void;
+  /** The share toggle (spec 009 FR-014). */
+  share?: boolean;
+  /** Each row's arrow by id, with "Changes" on; null when it is off (spec 009 FR-013). */
+  arrows?: ReadonlyMap<string, Arrow> | null;
 }) {
   const feeds = useFeedsLists();
   const copied = useCopy(announce);
   const [open, setOpen] = useState<ReadonlySet<string>>(
     () => new Set([tree.root.id]),
   );
-  const [showAll, setShowAll] = useState<ReadonlySet<string>>(() => new Set());
   /** design.md C10: the loop's steps show only when asked, from the root's Game details; with no such row to ask from
    * (a root without its call), nothing is hidden. */
   const [repeated, setRepeated] = useState(false);
@@ -47,8 +56,21 @@ export function FormulaTree({
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const asked = useRef(new Set<string>());
   const ref = useRef<HTMLUListElement>(null);
-  /** The rows with a change below them: closed, they say `changed inside` (design.md C11). */
-  const changedInside = useMemo(() => changes(tree.root).inside, [tree.root]);
+  /** Each pool's and group's value rebuilt from its rows, live (spec 009 R5). */
+  const values = useMemo(() => valuesOf(tree.root), [tree.root]);
+  /** The build the rows were asked of: a tree rebuilt by itself asks its open lazy rows again (spec 009 FR-015). */
+  const built = useRef(tree.calculatedAt);
+  useEffect(() => {
+    if (built.current !== tree.calculatedAt) {
+      built.current = tree.calculatedAt;
+      asked.current.clear();
+    }
+    for (const n of preorder(tree.root))
+      if (n.kids === "lazy" && open.has(n.id) && !asked.current.has(n.id)) {
+        asked.current.add(n.id);
+        onExpand(n.id);
+      }
+  }, [tree.root, tree.calculatedAt, open, onExpand]);
 
   useEffect(() => {
     if (focusKey === null) return;
@@ -59,20 +81,13 @@ export function FormulaTree({
 
   /** A row's name on screen: the root's is the number's title. */
   const rowName = (n: TreeNode) =>
-    n.id === tree.root.id
-      ? tree.title
-      : `${n.name}${GROUP_SUFFIX[n.role] ?? ""}`;
+    n.id === tree.root.id ? tree.title : n.name;
 
   // Walked during the render: the visible rows in order, for the keys.
   const visible: Visible[] = [];
   const nodes = new Map<string, TreeNode>();
 
   function toggle(key: string): void {
-    if (key.endsWith("::all")) {
-      const id = key.slice(0, -"::all".length);
-      setShowAll((s) => flip(s, id));
-      return;
-    }
     if (key.endsWith(FEEDS)) {
       const n = nodes.get(key.slice(0, -FEEDS.length));
       if (n?.pieceKey) feeds.load(n.pieceKey, n.feeds ?? 0);
@@ -88,8 +103,7 @@ export function FormulaTree({
   const ctx: RowCtx = {
     visible,
     active,
-    isOpen: (key) =>
-      key.endsWith("::all") ? showAll.has(key.slice(0, -5)) : open.has(key),
+    isOpen: (key) => open.has(key),
     focus: (key) => {
       setActive(key);
       setFocusKey(key);
@@ -185,7 +199,6 @@ export function FormulaTree({
             </>,
             null,
             false,
-            false,
             mine
               ? undefined
               : () => {
@@ -267,63 +280,20 @@ export function FormulaTree({
           </li>
         </ul>
       );
-    // "Show all" on: every part in the game's order, and its row stays to close the list again.
-    const all = showAll.has(n.id);
-    const { shown, small, hidden, groups } = all
-      ? {
-          ...partition([]),
-          shown: kids.filter((k) => !isGroup(k)),
-          groups: kids.filter(isGroup),
-        }
-      : partition(kids);
-    const allRow = all || hidden > 0;
-    const hasDetails = n.code !== null && !isGroup(n);
+    // spec 009 FR-016: every part in its place, in the game's order
+    const hasDetails = n.code !== null;
     const size =
       phrasesOf(n).length +
       (n.formula ? 1 : 0) +
       (n.feeds !== undefined && n.pieceKey !== null ? 1 : 0) +
-      shown.length +
-      (allRow ? 1 : 0) +
-      (small.length ? 1 : 0) +
-      groups.length +
+      kids.length +
       (hasDetails ? 1 : 0);
     let pos = 0;
     const at = (): [number, number] => [++pos, size];
-    const allKey = `${n.id}::all`;
-    const smallKey = `${n.id}::small`;
     return (
       <ul role="group">
         {info(n, level, at)}
-        {shown.map((k) => branch(k, level, at(), n.id))}
-        {allRow &&
-          item(
-            allKey,
-            level,
-            at(),
-            n.id,
-            `Show all ${String(kids.length - groups.length)} parts`,
-            <span className="name">{`Show all ${String(kids.length - groups.length)} parts`}</span>,
-            null,
-            true,
-          )}
-        {small.length > 0 &&
-          item(
-            smallKey,
-            level,
-            at(),
-            n.id,
-            `Small (${String(small.length)})`,
-            <span className="name">{`Small (${String(small.length)})`}</span>,
-            () => (
-              <ul role="group">
-                {small.map((k, i) =>
-                  branch(k, level + 1, [i + 1, small.length], smallKey),
-                )}
-              </ul>
-            ),
-            true,
-          )}
-        {groups.map((k) => branch(k, level, at(), n.id))}
+        {kids.map((k) => branch(k, level, at(), n.id))}
         {hasDetails && details(n, level, at())}
       </ul>
     );
@@ -337,12 +307,13 @@ export function FormulaTree({
   ): ReactNode {
     nodes.set(n.id, n);
     const root = n.id === tree.root.id;
-    const group = isGroup(n);
-    const { label, line, was } = partLine(n, {
+    const shown = n.combine ? { ...n, value: values.get(n.id) ?? null } : n;
+    const { label, line } = partLine(shown, {
       name: rowName(n),
       root,
       rootText: tree.rootText,
-      closedChange: !open.has(n.id) && changedInside.has(n.id),
+      share,
+      arrow: arrows?.get(n.id) ?? null,
       onFeeds: () => {
         tapFeeds(n);
       },
@@ -350,11 +321,10 @@ export function FormulaTree({
     const expandable =
       n.kids === "lazy" ||
       n.kids.length > 0 ||
-      (!group &&
-        (n.formula !== null ||
-          n.code !== null ||
-          n.feeds !== undefined ||
-          phrasesOf(n).length > 0));
+      n.formula !== null ||
+      n.code !== null ||
+      n.feeds !== undefined ||
+      phrasesOf(n).length > 0;
     return item(
       n.id,
       level,
@@ -364,11 +334,24 @@ export function FormulaTree({
       line,
       () => rows(n, level + 1),
       expandable,
-      was,
     );
   }
 
   const body = branch(tree.root, 1, [1, 1], null);
+
+  // spec 009 FR-015: a rebuilt tree may drop the row of the Tab stop. It goes to the nearest row left (up the path of
+  // names), or the root, and the focus with it when it was on that row (gone, it left the focus to the page).
+  useEffect(() => {
+    const keys = new Set(visible.map((v) => v.key));
+    if (keys.has(active)) return;
+    let to = active;
+    while (!keys.has(to)) {
+      const cut = Math.max(to.lastIndexOf("/"), to.lastIndexOf("::"));
+      to = cut > 0 ? to.slice(0, cut) : tree.root.id;
+    }
+    setActive(to);
+    if (document.activeElement === document.body) setFocusKey(to);
+  });
 
   function onKeyDown(e: KeyboardEvent<HTMLUListElement>): void {
     const key = (e.target as HTMLElement).closest<HTMLElement>(

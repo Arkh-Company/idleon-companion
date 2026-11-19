@@ -63,16 +63,21 @@ const prod = (v = 12, more: Partial<RecNode> = {}) =>
     more,
   );
 
-test("a root of only the reads of its step has that step as its ⓘ, which the main lets through", () => {
+test("a root of only the reads of its step shows them, in its one pool; its ⓘ is its step's (spec 009, FR-005), which the main lets through", () => {
   const root = rootOf(prod());
+  // one pool needs no ⓘ of pools: the root keeps its step's
   expect(root.formula).toEqual([
     ["A", "×", "B"],
     [3, 4, 12],
   ]);
-  expect(kidsOf(root).map((k) => [k.code, k.value, k.shareMode])).toEqual([
-    ["A", 3, "product"],
-    ["B", 4, "product"],
+  expect(kidsOf(root).map((k) => [k.code, k.value])).toEqual([
+    ["A", 3],
+    ["B", 4],
   ]);
+  // the single multipliers share one Multi pool, and each read's share is of the product (revised on 17/11)
+  const pools = Array.isArray(root.kids) ? root.kids : [];
+  expect(pools.map((p) => [p.role, p.value])).toEqual([["pool", 12]]);
+  expect(kidsOf(root).map((k) => k.shareMode)).toEqual(["product", "product"]);
   expect(checkTree(windowNode({ formula: root.formula }), 1)?.formula).toEqual(
     root.formula,
   );
@@ -137,7 +142,7 @@ test("a root with no row shows each argument its step uses as a choice", () => {
   expect([pow("3").formula, kidsOf(pow("3"))]).toEqual([null, []]);
 });
 
-test("a root with a row that is no read of its step, or that opens, keeps its rows and has no ⓘ", () => {
+test("a root with a row that is no read of its step, or that opens, keeps its rows and has no ⓘ of its step: only its pools' (spec 009, FR-005)", () => {
   const two = rootOf(
     block(
       "Two",
@@ -149,6 +154,7 @@ test("a root with a row that is no read of its step, or that opens, keeps its ro
       [["A", 3, 0]],
     ),
   );
+  // one Multi pool of both factors (revised on 17/11): no ⓘ of pools, and none of the step
   expect([two.formula, codes(two)]).toEqual([null, ["A", null]]);
   const extra = rootOf(
     prod(12, {

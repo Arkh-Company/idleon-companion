@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Antes/depois in the side panel (spec 008 FR-025, FR-037, FR-041; T042): "Mark before" asks a name, a picker chooses
-// the mark the tree compares with, each mark has Clear, a fourth is refused, and each row that changed shows the mark's
-// value. Every value and name is invented.
+// the mark the tree compares with ("Live" or a mark), each mark has Clear, a fourth is refused, and with "Changes" on each
+// row that changed shows its arrow from the mark's value (spec 009 FR-013). Every value and name is invented.
 import {
   act,
   cleanup,
@@ -62,7 +62,6 @@ async function draw(announce = vi.fn()) {
       <SidePanel
         side={SIDE}
         tree={TREE}
-        live={null}
         onClose={vi.fn()}
         onPick={vi.fn()}
         onExpand={vi.fn()}
@@ -143,17 +142,20 @@ test("a refusal of the main is shown as it came", async () => {
   ).toBeDefined();
 });
 
-test("a mark chosen shows the mark's value beside the current one on each row that changed", async () => {
+test("with Changes on, a mark chosen shows the arrow from the mark's value on each row that changed", async () => {
+  companion.getView.mockResolvedValue({ changes: true, share: false });
   saved = [mark("Mark 1", { '[1,"Sword"]': 4 })];
   await draw();
   fireEvent.change(picker(), { target: { value: "Mark 1" } });
   const row = screen.getByRole("treeitem", { name: /^Sword/ });
-  expect(row.querySelector(".was")?.textContent).toBe("was +4");
+  expect(row.querySelector(".arrow")?.textContent).toBe("▲ +2");
+  expect(row.getAttribute("aria-label")).toContain("up 2");
   fireEvent.change(picker(), { target: { value: "" } });
-  expect(row.querySelector(".was")).toBe(null);
+  expect(row.querySelector(".arrow")).toBe(null);
 });
 
-test("Clear removes the chosen mark, stops the comparison and keeps the focus in the bar", async () => {
+test("Clear removes the chosen mark, compares with Live again and keeps the focus in the bar", async () => {
+  companion.getView.mockResolvedValue({ changes: true, share: false });
   saved = [mark("Mark 1", { '[1,"Sword"]': 4 }), mark("Mark 2")];
   await draw();
   fireEvent.change(picker(), { target: { value: "Mark 1" } });
@@ -166,9 +168,9 @@ test("Clear removes the chosen mark, stops the comparison and keeps the focus in
   });
   expect(
     [...(picker() as HTMLSelectElement).options].map((o) => o.text),
-  ).toEqual(["Nothing", "Mark 2"]);
+  ).toEqual(["Live", "Mark 2"]);
   expect(
-    screen.getByRole("treeitem", { name: /^Sword/ }).querySelector(".was"),
+    screen.getByRole("treeitem", { name: /^Sword/ }).querySelector(".arrow"),
   ).toBe(null);
   expect(document.activeElement).toBe(picker());
 });

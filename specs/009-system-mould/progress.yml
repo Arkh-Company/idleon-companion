@@ -7,3 +7,14 @@ phases:
   plan: {status: done, date: 2026-11-17}
   prototype: {status: skipped, date: 2026-11-17}
   tasks: {status: done, date: 2026-11-17}
+execution:
+  branch: feat/009-system-mould
+  phases:
+    - {name: "Foundational (T001-T004)", status: done, commits: afb17c8..5195c6f}
+    - {name: "US2 (T005-T009)", status: done, commits: 6642eb0..a8ffac2}
+    - {name: "US1 (T010-T012)", status: done, commits: 85965ba..78c6566}
+    - {name: "US3 (T013-T014)", status: done, commits: 48a79e0..0a90c22}
+    - {name: "Vista da árvore (T015-T020)", status: done, commits: a4b9643..6bd604c}
+    - {name: "Polish e cobertura (T021-T031)", status: done, commits: 84a89ad..8171e16}
+  feature_review: done
+  code_pr: 40

@@ -1,8 +1,7 @@
-// "Game changed · Refresh" by a part of an open node (spec 008 FR-024, design.md C11; Vinicius's choice of 16/11): the
-// pipeline asks the live values of the open tree's parts with the numbers in view, and the band lights when the text of
-// one changes, never by a counter alone. The window never gets the parts' values. The tree host is a fake; every value
-// and name is invented.
-import { expect, test } from "vitest";
+// The parts of an open node live (spec 008 FR-024; spec 009 FR-015): the pipeline asks the live values of the open tree's
+// parts with the numbers in view and writes each one into its row; a part that loses its value asks the tree again. The
+// live values channel carries only the catalog numbers. The tree host is a fake; every value and name is invented.
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type { FormulaTree } from "../shared/index.ts";
 import { node, pairOf, pipeline as setup } from "./formula-fixture.ts";
 import type { StatsPair } from "./stats-pipeline.ts";
@@ -21,17 +20,34 @@ const lazy = node({ id: "root/Part", pieceKey: '[0,"Part"]', kids: "lazy" });
 const pairAt = (n: number): StatsPair => pairOf("Invented", n);
 const lastIds = (h: ReturnType<typeof setup>) =>
   (h.host.values.mock.calls.at(-1)?.[1] ?? []) as string[];
-const gameChanged = (t: FormulaTree | undefined) =>
-  t?.state === "ready" ? t.gameChanged : null;
+/** The open tree's root text and the values of its first rows. */
+const rows = (t: FormulaTree | undefined) =>
+  t?.state === "ready" && Array.isArray(t.root.kids)
+    ? { rootText: t.rootText, kids: t.root.kids.map((k) => k.value) }
+    : null;
 
+// The 10 s between two silent rebuilds are counted on a fake clock (FR-015, NFR-002).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(0);
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+const seconds = (n: number) => {
+  vi.setSystemTime(Date.now() + n * 1_000);
+};
+
+/** The Drop Rate's tree, 10 s after it came: a change may ask it again at once. */
 function readyDrop(character: number | null = null) {
   const h = setup();
   h.p.request({ id: "dropRate", character });
   h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  seconds(10);
   return h;
 }
 
-test("the open tree's parts are asked with the numbers in view; the window never gets their values", () => {
+test("the open tree's parts are asked with the numbers in view; the live values channel carries only the catalog numbers", () => {
   const h = readyDrop();
   expect(lastIds(h)).toEqual(expect.arrayContaining(["dropRate", SWORD]));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4 });
@@ -45,20 +61,53 @@ test("a branch opened adds its parts to what is asked", () => {
   expect(lastIds(h)).toContain(INSIDE);
 });
 
-test("the band lights when a part's text changes in a newer reading, with the root's the same", () => {
+test("a part's value in a newer reading is written into its row, with the root's the same", () => {
   const h = readyDrop();
+  const text = rows(h.last())?.rootText;
   h.setPair(pairAt(2));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 9 });
-  expect(gameChanged(h.last())).toBe(true);
+  expect(rows(h.last())).toEqual({ rootText: text, kids: [9, 2.5] });
 });
 
-test("a part that moves below its text, or comes unavailable, does not light it", () => {
+test("a part that moves below its text is written as it is; one that comes unavailable asks the tree again", () => {
   const h = readyDrop();
   h.setPair(pairAt(2));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4.0001 });
+  expect(rows(h.last())?.kids).toEqual([4.0001, 2.5]);
+  // The change asks the tree again in silence (FR-015); it comes with the part's new value.
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree(
+    node({
+      value: CALCULATED.dropRate,
+      kids: [{ ...sword, value: 4.0001 }, lazy],
+    }),
+  );
+  seconds(10);
   h.setPair(pairAt(3));
   h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
-  expect(gameChanged(h.last())).toBe(false);
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  expect(h.last()?.state).toBe("ready");
+});
+
+test("a part with no live value that never had one asks nothing again", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledOnce();
+});
+
+test("a part still without value after the new tree asks the tree only once", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: 4 });
+  h.setPair(pairAt(3));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.tree(node({ value: CALCULATED.dropRate, kids: [sword, lazy] }));
+  seconds(10);
+  h.setPair(pairAt(4));
+  h.values({ dropRate: CALCULATED.dropRate, [SWORD]: null });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
 });
 
 test("another character's tree asks no part: the live values are the active character's", () => {

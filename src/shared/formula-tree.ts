@@ -34,9 +34,6 @@ export const NODE_ROLES = [
   "subsystem",
   "pool",
   "bucket",
-  "atZero",
-  "atOne",
-  "small",
   "piece",
   "row",
 ] as const;
@@ -67,6 +64,21 @@ export const SHARE_MODES = [
   "unknown",
 ] as const;
 export type ShareMode = (typeof SHARE_MODES)[number];
+
+/**
+ * How the rows of a pool or a system group give its value (spec 009, data-model.md); `max` and `min` only in the groups
+ * of a root with a max or a min at the top; `percent` the sum ÷ 100 of the bonuses in % the game divides by 100.
+ */
+export const COMBINE_KINDS = [
+  "sum",
+  "product",
+  "onePlusPercent",
+  "max",
+  "min",
+  "percent",
+] as const;
+/** A pool that adds its bonuses first, or one that multiplies everything (spec 009, FR-005). */
+export const POOL_KINDS = ["additive", "multi"] as const;
 
 /** How a row writes its value: × for a multiplier, % and + for what adds (design.md §3.6). */
 export const VALUE_FORMATS = ["x", "%", "+"] as const;
@@ -113,6 +125,10 @@ export interface TreeNode {
   /** Block and arguments or path, only in "Game details". */
   code: string | null;
   role: NodeRole;
+  /** Only in `pool` and `system`: how the rows inside give its value; absent in every other row. */
+  combine?: (typeof COMBINE_KINDS)[number] | null;
+  /** Only in `pool` and `system`: the pool's kind, null in a `system`; absent in every other row. */
+  poolKind?: (typeof POOL_KINDS)[number] | null;
   /** Weight in the parent, 0..1. */
   share: number | null;
   shareMode: ShareMode | null;
@@ -152,7 +168,6 @@ export type FormulaTree =
       character: number;
       activeCharacter: number;
       calculatedAt: number;
-      gameChanged: boolean;
       /** False shows the version band (FR-018). */
       checkedOnThisGame: boolean;
       /** The game is closed: the last reading (FR-022). */

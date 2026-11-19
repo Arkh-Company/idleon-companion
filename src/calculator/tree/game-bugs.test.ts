@@ -3,13 +3,9 @@
 import { expect, test } from "vitest";
 import { node } from "../../main/formula-fixture.ts";
 import { checkTree } from "../../main/tree-check.ts";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { buildTree } from "../tree-build.ts";
-import { recordingOf } from "./tree-fixture.ts";
-
-const kidsOf = (n: CalcTreeNode | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
+import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 test("the rule tests the call the rows come from, also behind a call that only passes its value on", () => {
   const rec = recordingOf(
@@ -40,7 +36,7 @@ test("the rule tests the call the rows come from, also behind a call that only p
   ]);
 });
 
-test("a source counted twice at 0 is tagged inside the At 0 group", () => {
+test("a source counted twice at 0 is tagged in its places (spec 009, FR-016: no At 0 group)", () => {
   const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
@@ -59,8 +55,8 @@ test("a source counted twice at 0 is tagged inside the At 0 group", () => {
     proof: "N.js Total",
   };
   const kids = kidsOf(buildTree(rec, 0, [], [rule]).root);
-  const zero = kids.find((k) => k.role === "atZero");
-  expect(kidsOf(zero).map((k) => [k.code, k.flags.gameBug])).toEqual([
+  expect(kids.map((k) => [k.code, k.flags.gameBug])).toEqual([
+    ["Some()", undefined],
     ["Nothing()", "inventedTwice"],
     ["Nothing()", "inventedTwice"],
   ]);

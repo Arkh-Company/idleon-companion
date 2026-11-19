@@ -15,7 +15,7 @@ afterEach(() => {
 
 /** The level's rows, its groups' rows in it. */
 const level = (rows: Row[]) =>
-  finish(9, rows, false).flatMap((r) =>
+  finish(9, rows).flatMap((r) =>
     r.group && r.node.role !== "piece" ? r.group : [r],
   );
 /** One read's row after the passes, as [name, leaf, condition, why]. */

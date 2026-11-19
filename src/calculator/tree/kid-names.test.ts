@@ -70,8 +70,8 @@ test("[fixNames 4] a parent with no proven name renames no child (R14: a generic
   ).toEqual(["At 0 (1)"]);
 });
 
-test("a group of the parts at 0 or at ×1 keeps the app's name under any parent (R14)", () => {
-  const group = (name: string, role: "atZero" | "atOne"): Row => ({
+test("a pool or a system's group keeps the app's name under any parent (spec 009)", () => {
+  const group = (name: string, role: "pool" | "system"): Row => ({
     node: row({ pieceKey: null, value: 0, code: null, name, role }),
     open: null,
     group: [named("A"), named("B")],
@@ -79,12 +79,12 @@ test("a group of the parts at 0 or at ×1 keeps the app's name under any parent 
   expect(
     names(
       kidNames(
-        [group("At ×1 (2)", "atOne"), group("At 0 (Grimoire)", "atZero")],
-        { name: "At ×1", code: 'Summoning("GrimoireUpgBonus", 5)' },
+        [group("Multi pool 1", "pool"), group("📕 Grimoire", "system")],
+        { name: "Multi pool", code: 'Summoning("GrimoireUpgBonus", 5)' },
         [],
       ),
     ),
-  ).toEqual(["At ×1 (2)", "At 0 (Grimoire)"]);
+  ).toEqual(["Multi pool 1", "📕 Grimoire"]);
 });
 
 test("[fixNames 4] the parent is compared without its system's emoji, its parentheses and what follows a dot", () => {

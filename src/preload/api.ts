@@ -8,6 +8,7 @@ import type {
   Settings,
   SetupProgress,
   SteamState,
+  ViewPrefs,
 } from "../shared/index.ts";
 import { channel } from "./channel.ts";
 
@@ -78,5 +79,8 @@ export function companionApi(ipc: Ipc): CompanionApi {
     onCharacters: listen(IPC.formulaCharacters, true),
     dismissRadar: call(IPC.radarDismiss),
     setSidePanel: call(IPC.sidePanel),
+    // The channels of 009 (contracts/ipc.md).
+    getView: async () => (await ipc.invoke(IPC.viewGet)) as ViewPrefs,
+    setView: call(IPC.viewSet),
   };
 }

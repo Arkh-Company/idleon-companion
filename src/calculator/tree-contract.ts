@@ -31,9 +31,6 @@ export const CALC_NODE_ROLES = [
   "subsystem",
   "pool",
   "bucket",
-  "atZero",
-  "atOne",
-  "small",
   "piece",
   "row",
 ] as const;
@@ -80,6 +77,9 @@ export interface CalcTreeNode {
     | null;
   code: string | null;
   role: (typeof CALC_NODE_ROLES)[number];
+  combine?:
+    "sum" | "product" | "onePlusPercent" | "max" | "min" | "percent" | null;
+  poolKind?: "additive" | "multi" | null;
   share: number | null;
   shareMode:
     | "sum"

@@ -41,6 +41,45 @@ export const TABLE_TEXTS = {
     "clean",
     "bench pieces.cjs entryRows turnName, sign; N.js StarSigns",
   ),
+  /** The words of a star sign's bonus, and the word after them (spec 009 T031). */
+  signBonus: text(
+    "CustomLists.StarSigns",
+    (s) => [s, 1],
+    null,
+    "clean",
+    "N.js StarSigns (the bonus text of the sign)",
+  ),
+  signBonusMore: text(
+    "CustomLists.StarSigns",
+    (s) => [s, 2],
+    null,
+    "clean",
+    "N.js StarSigns (the bonus text of the sign)",
+  ),
+  /** The bonus of sigil i at the tier of column col (spec 009 T031), a number read by `tableNumber`. */
+  sigilTier: text(
+    "CustomLists.SigilDesc",
+    (s, col) => [s, col],
+    null,
+    "raw",
+    "N.js Labb SigilBonus (the bonus of the sigil at a tier)",
+  ),
+  /** The bonus of the Meritocracy vote t (spec 009 T031), a number of the table, read by `tableNumber`. */
+  vote: text(
+    "CustomLists.NinjaInfo",
+    (t) => [41, 1 + 3 * Number(t)],
+    null,
+    "raw",
+    "N.js Summoning2 MeritocBonusz (the bonus of the vote t)",
+  ),
+  /** A class's family bonus (spec 009 T031), as the recipes of FamilyBonsuesREAL read it. */
+  family: text(
+    "CustomLists.ClassFamilyBonuses",
+    (c) => [c, 0],
+    null,
+    "clean-keep-case",
+    "N.js FamilyBonsuesREAL (the family bonus of class c)",
+  ),
   artifact: text(
     "CustomLists.ArtifactInfo",
     (a) => [a, 0],
@@ -76,6 +115,13 @@ export const TABLE_TEXTS = {
     "displayName",
     "clean",
     "bench pieces.cjs itemName",
+  ),
+  cosmo: text(
+    "CustomLists.CosmoUpgrades",
+    (t, i) => [t, i, 2],
+    null,
+    "clean",
+    "N.js Holes CosmoBonusQTY, the level of the Cosmo upgrade t, i",
   ),
   god: text(
     "CustomLists.GodsInfo",
@@ -261,13 +307,34 @@ const step = (v: unknown, k: string | number): unknown =>
 
 /** The text of a part over the installed game's checked table, transformed; null when it has none that may be a name. */
 export function partText(p: NamePart): string | null {
-  // a list's index starts inside the list; an item's or a monster's first index is its entry, the id of its table
-  const inside = p.table.includes(".") ? p.index : p.index.slice(1);
-  let v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
-  if (p.field !== null) v = step(v, p.field);
+  const v = cellOf(p);
   if (typeof v !== "string") return null;
   const name = transformText(p.transform, v);
   return name && isNameText(name) ? name : null;
+}
+
+/** The cell a part reads over the installed game's checked table, its field too; undefined with none. */
+function cellOf(p: NamePart): unknown {
+  // a list's index starts inside the list; an item's or a monster's first index is its entry, the id of its table
+  const inside = p.table.includes(".") ? p.index : p.index.slice(1);
+  const v = inside.reduce<unknown>(step, gameTables.get(partTable(p)));
+  return p.field === null ? v : step(v, p.field);
+}
+
+/** The number in the cell of row `i` of a table text, over the installed game's checked table; null with none. */
+export function tableNumber(
+  kind: keyof typeof TABLE_TEXTS,
+  ...i: (string | number)[]
+): number | null {
+  const t = TABLE_TEXTS[kind];
+  const v = cellOf({
+    table: t.table,
+    index: t.at(...i),
+    field: t.field,
+    transform: t.transform,
+  });
+  const x = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
+  return Number.isFinite(x) ? x : null;
 }
 
 /** The text that names row `i` of a table text, or null. */

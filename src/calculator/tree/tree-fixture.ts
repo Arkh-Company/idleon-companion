@@ -153,8 +153,13 @@ export function chainOf(depth: number): Recording {
   return recordingOf(specs, [], { root: 0 });
 }
 
-export const kidsOf = (n: CalcTreeNode | null | undefined) =>
-  n && Array.isArray(n.kids) ? n.kids : [];
+/** A row's rows, through the pools and system groups of the first level (spec 009): the rows they hold, in order. */
+export const kidsOf = (n: CalcTreeNode | null | undefined): CalcTreeNode[] =>
+  n && Array.isArray(n.kids)
+    ? n.kids.flatMap((k) =>
+        k.role === "pool" || k.role === "system" ? kidsOf(k) : [k],
+      )
+    : [];
 /** Each row as [code, value]. */
 export const brief = (n: CalcTreeNode | null | undefined) =>
   kidsOf(n).map((k) => [k.code, k.value]);
@@ -206,18 +211,6 @@ export const branch = (value: number, group: Row[] = []): Row => ({
   node: row({ pieceKey: null, value, code: null }),
   open: null,
   group,
-});
-export const ones = (...rows: Row[]): Row => ({
-  node: row({
-    pieceKey: null,
-    value: 1,
-    code: null,
-    name: `At ×1 (${String(rows.length)})`,
-    role: "atOne",
-    flags: { closed: true },
-  }),
-  open: null,
-  group: rows,
 });
 /** The row whose ⓘ is asked: a call, with the game's expressions around it. */
 export const at = (
