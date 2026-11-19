@@ -54,7 +54,7 @@ test("an unnamed sum beside a check's read gives its sources to the source's row
 test("the source's ⓘ is the steps' math with the numbers of its rows, the check after it, and closes (FR-008)", () => {
   const f = multi()?.formula;
   const [names, numbers] = f && "rule" in f ? f.rule : ["", ""];
-  expect(names).toMatch(/^\(1 \+ Base Defence ÷ 100\) × \(min\(/);
+  expect(names).toMatch(/^\(1 \+ \(Base Defence ÷ 100\)\) × \(min\(/);
   expect(names).toMatch(/: yes\)$/);
   expect(numbers).toMatch(/ = 2\.711$/);
 });
