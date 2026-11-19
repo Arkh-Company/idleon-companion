@@ -120,8 +120,24 @@ test("a group with an unavailable source has no value; a group not built yet kee
 test("a yes/no row in a group counts as 1 or 0, as the worker counts it", () => {
   const kids = [piece("a", 0), piece("owned", false)];
   const g = group("g", "product", kids);
-  expect(groupValue(g, new Map([["a", 4], ["owned", true]]))).toBe(4);
-  expect(groupValue(g, new Map([["a", 4], ["owned", false]]))).toBe(0);
+  expect(
+    groupValue(
+      g,
+      new Map([
+        ["a", 4],
+        ["owned", true],
+      ]),
+    ),
+  ).toBe(4);
+  expect(
+    groupValue(
+      g,
+      new Map([
+        ["a", 4],
+        ["owned", false],
+      ]),
+    ),
+  ).toBe(0);
 });
 
 test("a yes/no row in a group keeps the arrows of the group and the pool when another row moves", () => {
