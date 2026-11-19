@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { instrument } from "./instrument.ts";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
-import { scratchKey, scratchWrites } from "./tree/links.ts";
+import { scratchKey, scratchSeen, scratchWrites } from "./tree/links.ts";
 import { recordingOf } from "./tree/tree-fixture.ts";
 
 // Writer(1) writes the box twice, and each of its two readers reads one of the writes
@@ -114,4 +114,50 @@ test("a box written twice with the same value: the write the read saw, by the wr
   expect(writeOf("DNSM.Box", 1, 0, writer ?? null)?.at).toBe(0);
   // with no number, the first write of the value
   expect(writeOf("DNSM.Box", 1, undefined, writer ?? null)?.at).toBe(0);
+});
+
+test("a write of the builders' pass, kept out of the recording's writes, is still the write a read comes from", () => {
+  const [writer] = recordingOf([{ b: "Who", a: ["AllTalentLVz", "1|4"] }]).nodes;
+  // the pass hands its scratch writes over last first: the order is the writes' numbers
+  const writeOf = scratchWrites(
+    [],
+    [
+      { path: "DNSM.Who", node: 0, v: 4, xi: 2, seq: 9 },
+      { path: "DNSM.Who", node: 0, v: 8, xi: 1, seq: 8 },
+    ],
+  );
+  expect(writeOf("DNSM.Who", 4, 9, writer ?? null)?.at).toBe(1);
+  expect(writeOf("DNSM.Who", 8, undefined, writer ?? null)?.at).toBe(0);
+});
+
+test("a field of a box that holds an object comes from the write of the box before the read, by its number", () => {
+  const [worn] = recordingOf([{ b: "Worn", a: ["STR"] }]).nodes;
+  const writeOf = scratchWrites([
+    { path: "DNSM.Item", node: 0, v: "(object)", xi: 0, seq: 1 },
+    { path: "DNSM.Item", node: 0, v: "(object)", xi: 5, seq: 4 },
+  ]);
+  expect(writeOf("DNSM.Item.v1", 30, 2, worn ?? null)?.at).toBe(0);
+  expect(writeOf("DNSM.Item.v1", 10, 5, worn ?? null)?.at).toBe(1);
+  // with no number, a box written with two objects says nothing of which one was read
+  expect(writeOf("DNSM.Item.v1", 10, undefined, worn ?? null)).toBeNull();
+  // the box itself stops the climb: a path of another box is no field of it
+  expect(writeOf("DNSM.ItemB", 10, 5, worn ?? null)).toBeNull();
+});
+
+test("the write a read saw is the last write of its path, or of the box that holds it, before the read's number", () => {
+  const seen = scratchSeen(
+    [
+      { path: "DNSM.Box", node: 3, v: 2, xi: 0, seq: 1 },
+      { path: "DNSM.Box", node: 4, v: 5, xi: 0, seq: 3 },
+      { path: "DNSM.Item", node: 4, v: "(object)", xi: 1, seq: 4 },
+    ],
+    [{ path: "DNSM.Box", node: 5, v: 7, xi: 0, seq: 6 }],
+  );
+  expect(seen("DNSM.Box", 2, 2)?.node).toBe(3);
+  expect(seen("DNSM.Box", 5, 4)?.node).toBe(4);
+  expect(seen("DNSM.Box", 7, 6)?.node).toBe(5);
+  expect(seen("DNSM.Item.v1", 30, 4)?.seq).toBe(4);
+  // a value no write before the read gave, and a read before any write: none
+  expect(seen("DNSM.Box", 9, 4)).toBeNull();
+  expect(seen("DNSM.Box", 2, 0)).toBeNull();
 });
