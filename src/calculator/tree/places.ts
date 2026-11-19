@@ -157,9 +157,10 @@ export function makePlaces(ctx: PlaceContext) {
       : pools.length
         ? {
             formula: lv.row.xf
-              ? formulaOut(
+              ? // a lone part between the pools goes by its term (tree/pools.ts `lone`)
+                formulaOut(
                   lv.row.xf,
-                  pools.map((p) => p.node.name),
+                  lv.rows.map((p) => termOf(p.node)),
                 )
               : null,
             rows: lv.rows,

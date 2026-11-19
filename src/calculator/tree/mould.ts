@@ -65,6 +65,8 @@ const readsOf = (e: Expr): string[] =>
  * working value of the root that only joins sources in the way (`joins`, FR-017).
  */
 function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
+  const [part] = p.rows;
+  if (p.lone && part) return { ...part, node: { ...part.node, fmt: "+" } };
   const op =
     p.combine === "product"
       ? "*"

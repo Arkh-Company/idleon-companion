@@ -15,6 +15,7 @@ import { through } from "./tops.ts";
 
 export { through } from "./tops.ts";
 import { finish } from "./rows.ts";
+import { termOf } from "./share.ts";
 import type { Row } from "./rows.ts";
 import type { Expr, Step } from "./steps.ts";
 
@@ -29,6 +30,8 @@ export interface Pool {
   combine: Combine;
   /** How the pool joins the total of the pools before it in the game's chain: added, or multiplied (when not set). */
   join?: "+" | "*";
+  /** A lone part added between multiplications (decision of 19/11): its own "+ N" row, named by its term, no pool. */
+  lone?: true;
 }
 /** A term of the root's step as a row (tree/terms.ts `term`). */
 export type TermRow = (e: Expr, op: "+") => Row | null;
@@ -113,11 +116,31 @@ function singlesTogether(pools: Omit<Pool, "name">[]): Omit<Pool, "name">[] {
   return out;
 }
 
-/** Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more. */
+/** A lone part, not in %, added to the total of the multiplications before it (audit family 25, decision of 19/11). */
+const loneOf = (p: Omit<Pool, "name">, i: number): Row | null => {
+  const [r] = p.rows;
+  return i > 0 &&
+    p.join === "+" &&
+    p.combine === "sum" &&
+    p.rows.length === 1 &&
+    r &&
+    !r.percent
+    ? r
+    : null;
+};
+
+/**
+ * Each pool its name: "Additive pool", "Multi pool", numbered in the game's order when there are two or more; a lone
+ * part added between multiplications is no pool, and goes by its own term.
+ */
 function named(pools: Omit<Pool, "name">[]): Pool[] {
-  const count = (k: PoolKind) => pools.filter((p) => p.kind === k).length;
+  const lone = pools.map(loneOf);
+  const count = (k: PoolKind) =>
+    pools.filter((p, i) => p.kind === k && !lone[i]).length;
   const seen = new Map<PoolKind, number>();
-  return pools.map((p) => {
+  return pools.map((p, i) => {
+    const r = lone[i];
+    if (r) return { ...p, name: termOf(r.node), lone: true as const };
     const n = (seen.get(p.kind) ?? 0) + 1;
     seen.set(p.kind, n);
     const base = p.kind === "additive" ? "Additive pool" : "Multi pool";
