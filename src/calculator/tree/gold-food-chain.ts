@@ -32,6 +32,19 @@ const isNum = (e: Expr, v: number) => {
   return x.t === "num" && Number(x.v) === v;
 };
 
+/** The shared multiplier, GFood Multi: no piece and no rows of its own, with its ⓘ when given. */
+const shared = (v: number, pair: Pair | null): Row => ({
+  node: row({
+    pieceKey: null,
+    value: valueOf(v),
+    code: null,
+    name: GOLD_FOOD_TERMS.multiplier.name,
+    fmt: "x",
+    ...(pair ? { formula: formulaOut(pair) } : {}),
+  }),
+  open: null,
+});
+
 /** The block a chain's terms are built in, and how a term becomes a row there. */
 export interface GoldFoodBlock {
   block: RecNode;
@@ -63,29 +76,19 @@ export function goldFoodTerm(
     ];
     return r && { ...withName(r, GOLD_FOOD_TERMS.quantity.name), f };
   }
-  // Amount × the shared multiplier × 0.05 × log₁₀(…): the multiplier is the value of an earlier step, kept in a variable
-  // or, as the game does, in a box the term reads back (009 T023 r1)
-  if (x.t !== "op" || x.o !== "*") return null;
-  const fs = flat(x, "*");
+  // Amount × the shared multiplier × …, its log₁₀ loose or inside the quantity factor: the multiplier is the value of an
+  // earlier step, kept in a variable or, as the game does, in a box the block reads back (009 T023 r1, r2). Read on its
+  // own, the box is the chain's working value, which the chain follows into its first pools: no row here.
   const step = (t: Expr) =>
     (t.t === "def" || (t.t === "read" && t.p === MULTI_BOX)) &&
     steps.find((st) => near(st.v, t.v));
+  if (x.t !== "op" || x.o !== "*") return null;
+  const fs = flat(x, "*");
   const multi = fs.find(step);
   const at = multi && step(multi);
-  if (!multi || !at || !fs.some(isLog)) return null;
+  if (!multi || !at) return null;
   const parts = fs.map((t) =>
-    t === multi
-      ? {
-          node: row({
-            pieceKey: null,
-            value: valueOf(t.v ?? null),
-            code: null,
-            name: GOLD_FOOD_TERMS.multiplier.name,
-            fmt: "x",
-          }),
-          open: null,
-        }
-      : term(t, "*"),
+    t === multi ? shared(Number(t.v), null) : term(t, "*"),
   );
   if (parts.some((p) => !p)) return null;
   const name = emporiumName(reads);
