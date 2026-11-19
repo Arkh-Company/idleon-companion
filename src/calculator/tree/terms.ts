@@ -19,7 +19,7 @@ import {
   topOp,
 } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
-import { boundRead, branchName, cardsName, numRole } from "./shapes.ts";
+import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -339,7 +339,7 @@ export function makeTerms(ctx: TermContext) {
       const byCount =
         ns <= 1
           ? own
-          : (cardsName(e, nodes) ??
+          : (sourcesName(e, nodes) ??
             (pct || (e.t === "op" && (e.o === "*" || e.o === "/"))
               ? `Multiplier from ${String(ns)} sources`
               : e.t === "op" && e.o === "+"

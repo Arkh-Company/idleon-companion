@@ -14,6 +14,7 @@ import { nameOf } from "./names.ts";
 import { callText } from "./rows.ts";
 import type { Expr } from "./steps.ts";
 import { num } from "./math.ts";
+import { systemOf } from "./systems.ts";
 
 /** formulas.cjs SHAPES: the sum with each distinct number written as a letter, in order of first place. */
 export const BRANCH_SHAPES: readonly {
@@ -154,3 +155,55 @@ export function cardsName(e: Expr, nodes: readonly RecNode[]): string | null {
   if (other || names.length < 2 || names.some((n) => n === null)) return null;
   return `${names.slice(0, -1).join(", ")} and ${String(names.at(-1))} cards`;
 }
+
+/** A system's name in the singular, for the row it names ("Prayers" → "Prayer", "Set Bonuses" → "Set Bonus"). */
+const singular = (s: string): string =>
+  /(ss|us)$/.test(s)
+    ? s
+    : s.endsWith("uses")
+      ? s.slice(0, -2)
+      : s.replace(/s$/, "");
+
+/**
+ * A factor max(c, 1 + (a signed sum of the bonuses of one system) ÷ 100), the prayers' factor of the game's accuracy
+ * (Vinicius's answer B of 20/11): "<System> multiplier", by its system's name, never by its count of sources; null for
+ * any other shape, or for sources of no system or of two.
+ */
+export function systemFactorName(
+  e: Expr,
+  nodes: readonly RecNode[],
+): string | null {
+  const x = e.t === "def" ? e.e : e;
+  if (x.t !== "fn" || x.name !== "max" || x.args.length !== 2) return null;
+  const inner = x.args.find((a) => a.t !== "num");
+  if (!x.args.some((a) => a.t === "num") || inner?.t !== "op") return null;
+  const isNum = (y: Expr, v: number) => y.t === "num" && Number(y.v) === v;
+  const div = inner.r;
+  const pct =
+    inner.o === "+" &&
+    isNum(inner.l, 1) &&
+    div.t === "op" &&
+    div.o === "/" &&
+    isNum(div.r, 100)
+      ? div.l
+      : null;
+  // the sum's terms, added or taken away, each a call of a system
+  const terms = (y: Expr): Expr[] =>
+    y.t === "op" && (y.o === "+" || y.o === "-")
+      ? [...terms(y.l), ...terms(y.r)]
+      : [y];
+  const systems = new Set(
+    (pct ? terms(pct) : []).map((t) => {
+      const k = t.t === "call" ? nodes[t.id] : undefined;
+      return k ? (systemOf(callText(k))?.name ?? null) : null;
+    }),
+  );
+  const [only] = systems;
+  return systems.size === 1 && only ? `${singular(only)} multiplier` : null;
+}
+
+/** A branch of two sources or more named by what they are: one system's factor, else its cards' levels; else null. */
+export const sourcesName = (
+  e: Expr,
+  nodes: readonly RecNode[],
+): string | null => systemFactorName(e, nodes) ?? cardsName(e, nodes);
