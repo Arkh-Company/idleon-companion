@@ -100,6 +100,23 @@ test.each<[string, unknown]>([
     "a rule with another field",
     node({ formula: { rule: ["If a: 35", "yes → 35"], x: 1 } as never }),
   ],
+  // the game's text of a rule and of the math, held to the same barrier as every text (review r2): no code, 200 at most
+  [
+    "a rule's text that is code",
+    node({
+      formula: { rule: ["If a: 35", "yes → 35"], text: "if (a) {" },
+    }),
+  ],
+  [
+    "a rule's text too long",
+    node({
+      formula: { rule: ["If a: 35", "yes → 35"], text: "x".repeat(201) },
+    }),
+  ],
+  [
+    "a formula's text too long",
+    node({ formula: [["a"], [1], "x".repeat(201)] }),
+  ],
   // the game's text a row's ⓘ may carry, a line of text and no more (fix/tree-names r2)
   [
     "a formula's text that is a number",

@@ -86,7 +86,7 @@ test("How it adds up shows the game's text of the bonus first, then the names an
           formula: [
             ["Points", "×", "Bonus"],
             [25, 2.5, 62.5],
-            "Permanently boosts an invented bonus!",
+            "<b>Permanently</b> boosts an invented bonus!",
           ],
         }),
       ],
@@ -105,8 +105,12 @@ test("How it adds up shows the game's text of the bonus first, then the names an
     key: "ArrowRight",
   });
   expect(items().slice(-3)).toEqual([
-    "Permanently boosts an invented bonus!",
+    "<b>Permanently</b> boosts an invented bonus!",
     "Points × Bonus",
     "25 × 2.5 = 62.5",
   ]);
+  // the text as it comes, never markup (review r2)
+  expect(
+    screen.getByText("<b>Permanently</b> boosts an invented bonus!"),
+  ).toBeTruthy();
 });

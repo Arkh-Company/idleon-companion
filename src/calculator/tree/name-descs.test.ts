@@ -103,6 +103,22 @@ test("a Killroy bonus opened over its reads keeps the ⓘ of its math and its pa
   expect(r.rows.map((k) => k.node.share)).not.toContain(null);
 });
 
+// review r2 (tree/formulas.ts withFormula): a Killroy bonus whose reads make no math of it keeps the shop's text as its ⓘ
+test("a Killroy bonus whose reads neither add nor multiply to it keeps the shop's text as its ⓘ", () => {
+  useGameTables(TABLES);
+  const n = {
+    node: row({
+      pieceKey: "x",
+      value: 12,
+      code: 'RandomEvent("KillroyBonuses", 3, 0)',
+    }),
+  };
+  const r = withFormula(n, [read("Stats.a", 3), read("Stats.b", 5)]);
+  expect(r.formula).toEqual({
+    rule: ["5% Chance for +1 Grade for your Invented Gallery!", "= 12"],
+  });
+});
+
 test("a row with no text of its bonus has no ⓘ of its own", () => {
   const r = row({ pieceKey: "k", value: 1, code: "WeeklyBoss.d_3" });
   expect(r.formula).toBeNull();
