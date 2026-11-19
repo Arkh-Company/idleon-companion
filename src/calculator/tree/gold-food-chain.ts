@@ -25,6 +25,8 @@ export const GOLD_FOOD_TERMS = {
 };
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
+/** The box the game keeps the shared multiplier in (N.js GoldFoodBonuses). */
+const MULTI_BOX = "DNSM.GfoodBonusMULTI";
 const isNum = (e: Expr, v: number) => {
   const x = strip(e);
   return x.t === "num" && Number(x.v) === v;
@@ -62,12 +64,15 @@ export function goldFoodTerm(
     return r && { ...withName(r, GOLD_FOOD_TERMS.quantity.name), f };
   }
   // Amount × the shared multiplier × 0.05 × log₁₀(…): the multiplier is the value of an earlier step, kept in a variable
+  // or, as the game does, in a box the term reads back (009 T023 r1)
   if (x.t !== "op" || x.o !== "*") return null;
   const fs = flat(x, "*");
-  const multi = fs.find(
-    (t) => t.t === "def" && steps.some((st) => near(st.v, t.v)),
-  );
-  if (!multi || !fs.some(isLog)) return null;
+  const step = (t: Expr) =>
+    (t.t === "def" || (t.t === "read" && t.p === MULTI_BOX)) &&
+    steps.find((st) => near(st.v, t.v));
+  const multi = fs.find(step);
+  const at = multi && step(multi);
+  if (!multi || !at || !fs.some(isLog)) return null;
   const parts = fs.map((t) =>
     t === multi
       ? {
@@ -85,7 +90,10 @@ export function goldFoodTerm(
   if (parts.some((p) => !p)) return null;
   const name = emporiumName(reads);
   // the shared multiplier is a value its own steps prove (the chain's first pools), with the 008's ⓘ: never a "?"
-  const pair = multiFormula({ v: Number(multi.v), e: strip(multi) }, reads);
+  const pair = multiFormula(
+    multi.t === "read" ? at : { v: Number(multi.v), e: strip(multi) },
+    reads,
+  );
   const proven = (r: Row): Row =>
     r.node.name === GOLD_FOOD_TERMS.multiplier.name && r.node.code === null
       ? {
