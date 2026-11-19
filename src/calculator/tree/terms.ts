@@ -213,6 +213,20 @@ export function makeTerms(ctx: TermContext) {
         : null;
   };
 
+  /** The branch of an expression's parts, of value `v`, named by its first source; with none, by its shape. */
+  function sourceBranch(x: Expr, v: V, d: number, reads: Reads): Row {
+    const src = firstSrc(x);
+    const named = src ? sourceName(src) : null;
+    const r = src
+      ? withName(exprRow(x, d, reads), named)
+      : branchName(exprRow(x, d, reads), x, null);
+    return {
+      ...r,
+      node: { ...r.node, value: valueOf(v ?? null) },
+      ...(named === null ? {} : { bySource: true as const }),
+    };
+  }
+
   function rowOfTerm(
     e: Expr,
     op: string | null,
@@ -233,17 +247,7 @@ export function makeTerms(ctx: TermContext) {
           return branch(e.v, [r]);
         return r && { ...r, node: { ...r.node, value: valueOf(e.v ?? null) } };
       }
-      // the branch of an expression is named by its first source; with none, by its shape
-      const src = firstSrc(x);
-      const named = src ? sourceName(src) : null;
-      const r = src
-        ? withName(exprRow(x, d, reads), named)
-        : branchName(exprRow(x, d, reads), x, null);
-      return {
-        ...r,
-        node: { ...r.node, value: valueOf(e.v ?? null) },
-        ...(named === null ? {} : { bySource: true as const }),
-      };
+      return sourceBranch(x, e.v, d, reads);
     }
     if (e.t === "num")
       return fixed(
@@ -377,6 +381,9 @@ export function makeTerms(ctx: TermContext) {
     /** pieces.cjs `exprRow` with no step around it: the branch of an expression's parts ([F2-TOP]). */
     branchOf: (e: Expr, reads: Reads) =>
       withTurn(null, () => exprRow(e, 0, reads)),
+    /** A clamp of a pool in turn `t`, its own row: the branch of its parts, named by its source (answer B of 20/11). */
+    clampAt: (e: Expr, reads: Reads, t: Turn) =>
+      withTurn(t, () => sourceBranch(e.t === "def" ? e.e : e, e.v, 1, reads)),
     /** One term of a product with no step around it (pieces.cjs entryRows, a multiplier's terms), or in turn `t`. */
     term: (e: Expr, op: "*" | "+", reads: Reads, t: Turn | null = null) =>
       withTurn(t, () => rowOfTerm(e, op, 1, reads)),

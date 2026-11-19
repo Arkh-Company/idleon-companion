@@ -58,6 +58,16 @@ export const stateSrc = (x: Expr): number =>
             : x.t === "op"
               ? stateSrc(x.l) + stateSrc(x.r)
               : 0;
+/** A min or a max with a constant around one source of the player's state ("min(1, max(0.25, 0.25 + x))"): a clamp. */
+export function isClamp(e: Expr): boolean {
+  const x = e.t === "def" ? e.e : e;
+  return (
+    x.t === "fn" &&
+    (x.name === "min" || x.name === "max") &&
+    x.args.some((a) => a.t === "num") &&
+    stateSrc(x) === 1
+  );
+}
 export const readValueIn = (e: Expr, p: string): V => {
   if (e.t === "read") return e.p === p ? e.v : undefined;
   const subs =
