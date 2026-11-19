@@ -48,6 +48,9 @@ function additive(e: Expr): { terms: Expr[]; combine: Combine } | null {
   return sources(x) >= 2 ? { terms: flat(x, "+"), combine: "sum" } : null;
 }
 
+/** Whether a factor sums the bonuses of two sources or more: an Additive pool, or the Multi pool of 1 + (…) ÷ 100. */
+export const addsSources = (e: Expr): boolean => additive(e) !== null;
+
 /** The rows of an additive factor of value `v`, when its terms give it; else null. */
 export function additiveRows(
   e: Expr,

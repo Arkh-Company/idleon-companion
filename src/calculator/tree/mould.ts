@@ -6,7 +6,8 @@
 import { fx3 } from "./curves.ts";
 import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
-import { isConstant, termsOf, vOf } from "./formulas.ts";
+import { flat, topOp } from "./expr.ts";
+import { isConstant, near, termsOf, vOf } from "./formulas.ts";
 import { inPool, isStep } from "./inline.ts";
 import { besidePools } from "./pool-rest.ts";
 import { citing } from "./build-up.ts";
@@ -18,6 +19,7 @@ import {
   rootExtreme,
   through,
 } from "./pools.ts";
+import { addsSources } from "./scaled.ts";
 import { roundingOf } from "./tops.ts";
 import type { Rounding } from "./tops.ts";
 import type { OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
@@ -218,17 +220,40 @@ function pooledLevel(
 }
 
 /**
- * The level of a source that is itself a system computed as a chain (spec 009, FR-017): the pools of its own chain (FR-005)
- * by system, its block's other rows after them (`rows`, its 008 rows), and how its pools give it; null for no chain.
+ * A call of one step that multiplies, a factor of which adds the bonuses of two sources or more (the Meritocracy bonus
+ * multiplier, audit family 14; Vinicius's answer B of 20/11): its pools are that step's (rule Y, FR-005).
+ */
+function factorStep(steps: readonly Step[], value: Node["value"]): boolean {
+  const v = typeof value === "boolean" ? Number(value) : value;
+  const st = v === null ? undefined : steps.findLast((s) => near(s.v, v));
+  const e = st && through(st.e, st.v);
+  return !!e && topOp(e) === "*" && flat(e, "*").some(addsSources);
+}
+
+/**
+ * The level of a source that is itself a system computed as a chain (spec 009, FR-017), or of any call of one step whose
+ * factor adds the bonuses of two sources or more (answer B of 20/11): the pools of its own chain or step (FR-005) by
+ * system, its block's other rows after them (`rows`, its 008 rows), and how its pools give it; null for neither.
  */
 export function chainLevel(
   rows: Row[],
   value: Node["value"],
   ctx: FirstLevelContext,
+  system = true,
 ): { rows: Row[]; pair: [string, string] | null } | null {
   const { steps, termAt, ownCache } = ctx;
+  if (!steps || !termAt) return null;
+  const chain = system ? chainPools(steps, { value }, termAt, ownCache) : null;
+  // its one step's pools only when a sum is among them (single multipliers alone are no pools of their own), and never
+  // over the rows of a pass of the game's own (tree/gold-food.ts, tree/raw-passes.ts), as the root's
+  const one =
+    chain === null && !ctx.passed && factorStep(steps, value)
+      ? chainPools(steps, { value }, termAt, ownCache, true)
+      : null;
   const pools =
-    steps && termAt ? chainPools(steps, { value }, termAt, ownCache) : null;
+    Array.isArray(one) && one.some((p) => p.combine !== "product")
+      ? one
+      : chain;
   if (!Array.isArray(pools)) return null;
   const v = typeof value === "boolean" ? Number(value) : (value ?? NaN);
   // its checks stay rows here: the ⓘ that says them is the pair's, made where the level is placed (tree/places.ts)

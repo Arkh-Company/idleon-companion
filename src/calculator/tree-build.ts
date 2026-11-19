@@ -326,15 +326,21 @@ export function buildTree(
       depth,
       seen,
     );
-  // FR-017: below the root, a system computed as a chain opens with its own chain's pools, its ⓘ how they join
+  // FR-017: below the root, a system computed as a chain opens with its own chain's pools, its ⓘ how they join; so does
+  // any call of one step whose factor adds the bonuses of two sources or more (answer B of 20/11)
   const pieces = makePieces(
     rec,
     links,
     (id, depth, seen) => {
       const rows = raw(id, depth, seen);
       const n = nodes[id];
-      if (!n || id === top.id || !systemOf(callText(n))) return rows;
-      const chain = chainLevel(rows, valueOf(n.v), chainOf(n, depth, seen));
+      if (!n || id === top.id) return rows;
+      const chain = chainLevel(
+        rows,
+        valueOf(n.v),
+        { ...chainOf(n, depth, seen), passed: passed.has(id) },
+        systemOf(callText(n)) !== null,
+      );
       if (chain?.pair) openXf.set(keyOf(n), chain.pair);
       return chain?.rows ?? rows;
     },
