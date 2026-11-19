@@ -97,9 +97,16 @@ test.each<[string, string, number, number, [string, number][]]>([
   ]);
 });
 
-// the foods whose worn food is read back: a chain, the shared multiplier's pools and the worn food's (when there is one),
-// then the sum's
-const SHARED = ["Multi pool 1", "Additive pool", "Multi pool 2"];
+// the foods whose worn food is read back: a chain, the shared multiplier's pools and the worn food's step (when there is
+// one), then the sum's; the worn food's step is one row, its own × N, so the set's pool is alone of its kind (the rule
+// and answer 2 of 19/11)
+const SHARED = ["Multi pool", "Additive pool", "Equipped: Invented Charm"];
+const TWO_SUMS = [
+  "Multi pool",
+  "Additive pool 1",
+  "Equipped: Invented Charm",
+  "Additive pool 2",
+];
 // the emporium's lone + is its own row, no pool (decision of 19/11); two of them are its pool
 test.each<[string, string, number, number[], string[]]>([
   [
@@ -107,7 +114,7 @@ test.each<[string, string, number, number[], string[]]>([
     "DropRatez",
     0,
     [1.3, 2.2, WORN / MULTI, 0],
-    ["Multi pool 1", "Additive pool 1", "Multi pool 2", "Additive pool 2"],
+    TWO_SUMS,
   ],
   [
     "a worn food added to the bonus is one sum",
@@ -129,7 +136,7 @@ test.each<[string, string, number, number[], string[]]>([
     "twice",
     3,
     [1.3, 2.2, WORN / MULTI, EMPORIUM * 1.2],
-    ["Multi pool 1", "Additive pool 1", "Multi pool 2", "Additive pool 2"],
+    TWO_SUMS,
   ],
 ])("%s", (_name, key, level, values, names) => {
   useGameTables(TABLES);

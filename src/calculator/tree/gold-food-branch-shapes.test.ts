@@ -81,11 +81,12 @@ test("an emporium's part times 1 is no sum: the pass has no emporium row", () =>
 
 // the steps of a golden food's emporium and worn food that read the worn food back: the chain's pools, the shared
 // multiplier's and the worn food's (when there is one), then the sum's, with the values of the pass's rows
-// the emporium's lone + is its own row, no pool (decision of 19/11); two of them are its pool
+// the emporium's lone + is its own row, no pool (decision of 19/11); two of them are its pool; the worn food's step is
+// one row, its own × N, so the set's pool is alone of its kind (the rule and answer 2 of 19/11)
 const TWO_SUMS = [
-  "Multi pool 1",
+  "Multi pool",
   "Additive pool 1",
-  "Multi pool 2",
+  "Equipped: Invented Charm",
   "Additive pool 2",
 ];
 test.each<[string, string, number, number[], string[]]>([
@@ -109,7 +110,7 @@ test.each<[string, string, number, number[], string[]]>([
     3,
     [1.3, 2.2, WORN / MULTI, EMPORIUM],
     // an emporium with no name of its own
-    ["Multi pool 1", "Additive pool", "Multi pool 2", "Game value"],
+    ["Multi pool", "Additive pool", "Equipped: Invented Charm", "Game value"],
   ],
   [
     "the emporium's twice: one pool, over the worn food's",

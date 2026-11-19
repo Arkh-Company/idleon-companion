@@ -61,11 +61,9 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
 test("the emporium's product with the quantity factor of its own log, as N.js writes it: Emporium: <its food>", () => {
   useGameTables(TABLES);
   const { build, rows, pools } = poolsOf("njs", 3);
-  expect(pools.map((p) => p.name)).toEqual([
-    "Multi pool 1",
-    "Additive pool",
-    "Multi pool 2",
-  ]);
+  // the worn food's step is its own × N row, no pool (the rule and answer 2 of 19/11)
+  expect(pools.map((p) => p.name)).toEqual(["Multi pool", "Additive pool"]);
+  expect(rows[2]?.name).toBe("Equipped: Invented Charm");
   // the emporium's lone + is its own row, no pool (decision of 19/11)
   // 7 × 2.86 × 0.05 × log₁₀(1 + 10^6) × (1 + log₁₀(1 + 10^6) ÷ 2.14)
   const emporium = rows[3];

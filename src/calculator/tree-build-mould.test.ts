@@ -204,12 +204,13 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
       .slice(0, 4)
       .map((k) => [k.role, k.name, k.poolKind, k.value]),
   ).toEqual([
-    ["pool", "Multi pool 1", "multi", expect.closeTo(1.3, 9)],
+    ["pool", "Multi pool", "multi", expect.closeTo(1.3, 9)],
     ["pool", "Additive pool", "additive", expect.closeTo(2.2, 9)],
+    // the worn food's step is one row, its own × N, no pool (the rule and answer 2 of 19/11)
     [
-      "pool",
-      "Multi pool 2",
-      "multi",
+      "piece",
+      expect.any(String),
+      undefined,
       expect.closeTo(7.212813084112149 / 2.86, 9),
     ],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
@@ -285,9 +286,10 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
       .slice(0, 4)
       .map((k) => [k.role, k.role === "pool" ? k.name : k.fmt]),
   ).toEqual([
-    ["pool", "Multi pool 1"],
+    ["pool", "Multi pool"],
     ["pool", "Additive pool"],
-    ["pool", "Multi pool 2"],
+    // the worn food's step is its own × N row, no pool (the rule and answer 2 of 19/11)
+    ["piece", "x"],
     // the emporium's lone + is its own row, no pool (decision of 19/11)
     ["piece", "+"],
   ]);
