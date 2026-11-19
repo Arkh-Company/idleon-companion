@@ -222,16 +222,23 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
 test("sources taken as a percent by a product are a product of their sum by 0.01, in the chain's pool", () => {
   const [, add] = kidsOf(treeOf("percent"));
   expect([add?.name, add?.value]).toEqual(["Additive pool", near(2.2)]);
-  const [family, sources] = kidsOf(add);
+  const [family, ...sources] = kidsOf(add);
   expect([family?.code, family?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
-  expect(sources?.value).toBeCloseTo(0.2, 9);
-  expect(sourcesOf(sources)).toEqual([
+  // the product of their sum by 0.01 has no name: no row (FR-017), its sources rows of the pool, its math in the
+  // pool's ⓘ, which closes (FR-008)
+  expect(sources.slice(0, 3).map((k) => [k.code, k.value])).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
     ["DNSM.GameCache.v", 5],
   ]);
-  expect(Array.isArray(sources?.formula) && sources.formula[0].at(-1)).toBe(
+  expect(Array.isArray(add?.formula) && add.formula[0].slice(-3)).toEqual([
+    "×",
     "0.01",
+    ")",
+  ]);
+  expect(Array.isArray(add?.formula) && add.formula[1].at(-1)).toBeCloseTo(
+    2.2,
+    9,
   );
 });
 
