@@ -155,3 +155,25 @@ test("an unnamed sum of bonuses in % dissolves, its bonuses still in % (FR-017)"
   ]);
   expect(rows[0]?.percent).toBe(true);
 });
+
+test("the pool's ⓘ writes a group in % in its row's unit, +24% as 24 ÷ 100, and still closes on the pool (FR-008)", () => {
+  const pool0 = poolRows(
+    [pool([other(2, 2), pct(talent(6)), pct(card(20)), pct(card(4, 11))], 2.3)],
+    { name: "Total", value: 2.3 },
+    noWriter,
+  ).rows[0];
+  expect(pool0?.node.formula).toEqual([
+    [
+      "GetTalentNumber(1, 207)",
+      "÷",
+      "100",
+      "+",
+      "🃏 Cards",
+      "÷",
+      "100",
+      "+",
+      "InventedBlock(2)",
+    ],
+    [6, 100, 24, 100, 2, 2.3],
+  ]);
+});
