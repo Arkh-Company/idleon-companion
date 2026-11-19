@@ -158,7 +158,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     [1, 10, 20, 100, 1.3],
   ]);
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
+    ["Invented Family (family bonus)", "+", "🔹 Other"],
     [2, 0.2, 2.2],
   ]);
   expect(kidsOf(family)[1]?.formula).toEqual({

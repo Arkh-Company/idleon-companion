@@ -220,7 +220,7 @@ test("each row of a golden food the pass reads has the ⓘ of its step", () => {
   ]);
   // the shared multiplier is the step under its variable; a log call keeps its own term (it has no code among the parts)
   const multiOf =
-    "(1 + ((GfoodSet[0] + GfoodSet[1]) ÷ 100)) × (max(DNSM.FamBonusQTYs[66], 1) + ((((TreeReads() + TreeBase) + DNSM.GameCache.v) + 3) ÷ 100))";
+    "(1 + ((GfoodSet[0] + GfoodSet[1]) ÷ 100)) × (max(Invented Family, 1) + ((((TreeReads() + TreeBase) + DNSM.GameCache.v) + 3) ÷ 100))";
   const numsOf =
     "(1 + ((10 + 20) ÷ 100)) × (max(2, 1) + ((((8 + 4) + 5) + 3) ÷ 100))";
   expect([worn?.formula, emporium?.formula]).toEqual([
@@ -265,7 +265,7 @@ test("a food whose name would be too long keeps the generic name", () => {
 test("the multiplier's ⓘ counts a family below 1 as 1, and is not written when the step's family is another", () => {
   expect(goldRows(passOf("local", 999, 3, 0))[0]?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Invented Family, 1) + Sources ÷ 100)",
+      "SECRET_SET multi × (max(DNSM.FamBonusQTYs[66], 1) + Sources ÷ 100)",
       "1.3 × (1 + 0.2) = 1.56",
     ],
   });
