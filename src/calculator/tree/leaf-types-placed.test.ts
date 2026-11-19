@@ -1,5 +1,5 @@
 // Every row that ends with no kids is a leaf with its type (audit family 6, the memory of the 9 types of leaf): one of
-// the 9, or `unknown` with its `why`, never no type. A call that opens empty is typed when it is placed, and ends there.
+// the 9, or `unknown` with its `why`, never no type. A call that opens empty is typed when it opens, and ends there.
 // Invented calls and values.
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
@@ -16,8 +16,10 @@ test("a branch that ends with no kids is a leaf with a type, unknown with its wh
   expect(typed(n)).toEqual([[], "unknown", "string"]);
 });
 
-test("a call that opens empty is typed when it is placed, and has no kids to open", () => {
-  const [n] = placed({ 1: [] }, [lazy("Invented call", 3, "Call1()", 1)]).rows;
+test("a call that opens empty is typed when it opens: a leaf with no kids", () => {
+  // its build-up may give it rows its level does not have (a golden food's pass), so its opening tells
+  const t = placed({ 1: [] }, [lazy("Invented call", 3, "Call1()", 1)]);
+  const n = t.expand(t.rows[0]?.id ?? "") ?? undefined;
   // a call of the game is a raw bonus by its code (tree/kinds.ts), its type with no why
   expect(typed(n)).toEqual([[], "rawBonus", "object"]);
 });
