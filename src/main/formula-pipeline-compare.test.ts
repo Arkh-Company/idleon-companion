@@ -265,6 +265,21 @@ test("a tree asked again in silence that fails keeps the tree on screen, and say
   expect(h.log).toHaveBeenCalledWith({ event: "treeFailed", id: "dropRate" });
 });
 
+test("a tree asked again in silence that fails starts the 10 s again: the next change waits them (NFR-002)", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.unavailable();
+  h.setPair(pairAt(3, 10));
+  h.values({ dropRate: 10, [SWORD]: 8, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  seconds(10);
+  h.setPair(pairAt(4, 11));
+  h.values({ dropRate: 11, [SWORD]: 9, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+});
+
 test("a branch asked keeps its turn: a change meanwhile is written in place, and the tree is asked only after the branch comes", () => {
   const h = readyDrop();
   h.p.request({ treeId: "dropRate", nodeId: "root/Ring" });
