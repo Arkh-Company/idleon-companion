@@ -4,8 +4,13 @@
 // sum and no product gives (a max at the top) has no pool. Invented paths and values, apart from the game's own block
 // names the system rules read.
 import { expect, test } from "vitest";
-import { poolsFormula, poolsOf, rootExtreme } from "./pools.ts";
+import { poolsOf, rootExtreme } from "./pools.ts";
 import type { Pool } from "./pools.ts";
+import { poolRows } from "./mould.ts";
+
+/** The root's ⓘ its pools give it (tree/mould.ts `poolRows`). */
+const rootFormula = (pools: readonly Pool[], value: number) =>
+  poolRows(pools, { name: "", value }, () => undefined).formula;
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
@@ -124,7 +129,7 @@ test("a factor that sums two sources is an Additive pool of its terms; one of a 
     ["Additive pool", "additive", "sum", 760, [480, 180, 100]],
     ["Multi pool", "multi", "product", 16, [16]],
   ]);
-  expect(pools && poolsFormula(pools, 12160)).toEqual([
+  expect(pools && rootFormula(pools, 12160)).toEqual([
     ["Additive pool", "×", "Multi pool"],
     [760, 16, 12160],
   ]);
@@ -168,7 +173,7 @@ test("a factor 1 + (bonuses) ÷ 100 is its own Multi pool of its percents; the s
     ["Multi pool 1", "multi", "onePlusPercent", 1.8, [30, 50]],
     ["Multi pool 2", "multi", "product", expect.closeTo(3.6, 9), [2, 1.5, 1.2]],
   ]);
-  expect(pools && poolsFormula(pools, 6.48)).toEqual([
+  expect(pools && rootFormula(pools, 6.48)).toEqual([
     ["Multi pool 1", "×", "Multi pool 2"],
     [1.8, 3.6, 6.48],
   ]);
@@ -194,7 +199,7 @@ test("a root with max() at the top keeps its sources: no pool", () => {
 test("one pool needs no ⓘ at the root", () => {
   const rows = [src("Stats.a", 1), src("Stats.b", 2)];
   const pools = poolsOf(rows, { value: 3 });
-  expect(pools && poolsFormula(pools, 3)).toBeNull();
+  expect(pools && rootFormula(pools, 3)).toBeNull();
 });
 
 const fn = (name: string, args: Expr[], v: number): Expr => ({

@@ -1,7 +1,7 @@
 // The pools of a chain of the game's steps (spec 009, FR-005, rule Y of 17/11), apart from the pools of one step in
 // pools.test.ts. Invented paths and values, apart from the game's own block names the system rules read.
 import { expect, test } from "vitest";
-import { chainPools, poolsFormula, poolsPair, through } from "./pools.ts";
+import { chainPools, poolsPair, through } from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -10,6 +10,9 @@ import { fixed } from "./tree-fixture.ts";
 import { poolRows } from "./mould.ts";
 
 const noWriter = () => undefined;
+/** The root's ⓘ its pools give it (tree/mould.ts `poolRows`). */
+const rootFormula = (pools: readonly Pool[], value: number) =>
+  poolRows(pools, { name: "", value }, noWriter).formula;
 
 const src = (code: string, value: number): Row => ({
   node: row({ pieceKey: code, value, code, name: `Bonus ${code}` }),
@@ -95,7 +98,7 @@ test("a chain of steps gives a pool per run of sums or of multipliers, in the ga
     ["Multi pool 2", "pool", "x", 6],
   ]);
   // the ⓘ closes with the numbers, and the main takes it
-  expect(pools && poolsFormula(pools, 1407)).toEqual([
+  expect(pools && rootFormula(pools, 1407)).toEqual([
     [
       "(",
       "Additive pool",
