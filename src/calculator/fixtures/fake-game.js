@@ -1108,6 +1108,17 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_ArcadeBonus = function () {
     return state().TreeBase * 2;
   };
+  // A running total of zeros its own block reads back (the game's FishingToolkit and its weight + line, 009 T023)
+  Blocks._customBlock_TreeZeroTotal = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeZero = [];
+    d.TreeZero.push(0);
+    d.TreeZero.push(0);
+    for (var i = 0; i < 2; i++) d.TreeZero[i] = d.TreeZero[i] + s.TreeOwned;
+    for (var j = 0; j < 2; j++) d.TreeZero[j] = d.TreeZero[j] + s.TreeOwned;
+    return d.TreeZero[0] + d.TreeZero[1] + s.TreeBase;
+  };
   Blocks._customBlock_TreeArcade = function () {
     return Blocks._customBlock_ArcadeBonus(0) + 1;
   };
