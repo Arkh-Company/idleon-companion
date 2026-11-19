@@ -16,7 +16,6 @@ import {
   measuresWorn,
   multiFormula,
   sourceTerm,
-  wornQuantity,
 } from "./gold-food.ts";
 import { formulaOut, near } from "./math.ts";
 import { withName } from "./row-checks.ts";
@@ -143,7 +142,7 @@ export function goldFoodTerm(
   const name = worn ? equippedName(reads) : emporiumName(reads);
   // 19/11: a log₁₀ and the factor 1 + log₁₀(…) ÷ 2.14 are math, no rows: they go to the product's ⓘ, and the product's
   // leaf is what goes into them (N.js GoldFoodBonuses: log₁₀(1 + q) of the worn food's quantity q, log₁₀(1 + 10³·10^L)
-  // of the Beanstalk's level L)
+  // of the Beanstalk's level L): q = the log's argument − 1, the quantity of the slot whose step this is
   const maths = fs.flatMap((t) => {
     const m = t === multi ? null : mathOf(t);
     return m ? [{ t, ...m }] : [];
@@ -159,7 +158,7 @@ export function goldFoodTerm(
     arg === undefined
       ? null
       : worn
-        ? part("Quantity", wornQuantity(reads) ?? arg - 1)
+        ? part("Quantity", arg - 1)
         : part("Beanstalk level", Math.log10((arg - 1) / 1e3));
   // what goes into the log, in words and in numbers, the same shape
   const lv = fx3(Number(leaf?.node.value));

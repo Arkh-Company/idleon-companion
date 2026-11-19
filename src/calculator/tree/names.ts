@@ -132,7 +132,7 @@ export function nameOf(code: string): string | null {
   // pieces.cjs rename NAMES renames the finished tree: over every other name; each passes the one cleaner of the
   // game's text (family 4), a static name's too
   const renamed = renameOf(code);
-  if (renamed !== null) return tidy(renamed) || null;
+  if (renamed !== null) return tidy(renamed);
   const known = STATIC_NAMES.get(code);
   if (known) return tidy(known.name) || null;
   if (RECIPE_KEYS.has(code)) {

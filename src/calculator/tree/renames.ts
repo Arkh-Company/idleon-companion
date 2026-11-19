@@ -7,7 +7,7 @@
 import { FIXED_RENAMES, rule } from "./rename-list.ts";
 import type { Condition, Leaf, Rename } from "./rename-list.ts";
 import { MERIT_SHOP, meritName } from "./merit-names.ts";
-import { KILLROY } from "./name-descs.ts";
+import { KILLROY } from "./killroy-names.ts";
 import { tableText } from "./table-names.ts";
 
 const n = (m: RegExpExecArray, k = 1) => Number(m[k]);

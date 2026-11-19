@@ -3,7 +3,7 @@
 // so a table that changed names nothing. The Tome's rule is one rule: the path the game keeps in DNSM.TomeQTY[k] has the
 // name of the Tome's line k. A character is only its slot. The rules in words are in tree/state-words.ts. A name that
 // already exists wins (tree/names.ts): an item's bonus value keeps the rename's, now that the item's table is checked.
-import { killroyName } from "./name-descs.ts";
+import { killroyName } from "./killroy-names.ts";
 import { tableRows, tableText } from "./table-names.ts";
 import { escape, GEN_INFO, n, rule, WORD_RULES } from "./state-words.ts";
 import type { StateRule } from "./state-words.ts";

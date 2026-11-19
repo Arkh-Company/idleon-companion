@@ -133,12 +133,6 @@ export const measuresWorn = (arg: unknown, reads: Reads): boolean =>
     ([k, v]) =>
       /^EquipmentQuantity\[2\]\[\d+\]$/.test(k) && near(arg, 1 + Number(v)),
   );
-/** The worn food's quantity, of the slot that counts (A18): the leaf its log takes (19/11); null with none. */
-export function wornQuantity(reads: Reads): number | null {
-  const k = quantityKey(reads);
-  const v = k === undefined ? NaN : Number(reads.get(k));
-  return Number.isFinite(v) ? v : null;
-}
 /** The worn food's row name, "Equipped: <the food's text>", or null with no text (009 T023 r3). */
 export const equippedName = (reads: Reads): string | null =>
   foodName("Equipped", foodTexts(reads).foodText);
