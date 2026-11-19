@@ -224,7 +224,7 @@ const kidOf = (h: ReturnType<typeof setup>, i: number) => {
     : undefined;
 };
 
-test("a branch opened while the tree is asked again is unavailable at once when the new one fails; the next branch asks the tree again first", () => {
+test("a branch opened while the tree is asked again is unavailable at once when the new one fails; the next branch asks the tree again when the 10 s are past", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
@@ -233,11 +233,21 @@ test("a branch opened while the tree is asked again is unavailable at once when 
   // The worker dropped the tree on screen when it began the new one: no branch of it is asked.
   expect(h.host.request).toHaveBeenCalledTimes(2);
   expect(kidOf(h, 1)).toMatchObject({ flags: { unavailable: true }, kids: [] });
+  // The branch waits, and the tree is asked by the clock of the silent rebuilds (NFR-002), never at the click.
   h.p.request(EXPAND_SWORD);
+  h.p.request(EXPAND_SWORD);
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  h.setPair(pairAt(3, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  seconds(10);
+  h.setPair(pairAt(4, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   expect(h.host.request).toHaveBeenCalledTimes(3);
   expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
   expect(h.last()?.state).toBe("ready");
   h.tree(dropTree(9, 7));
+  expect(h.host.request).toHaveBeenCalledTimes(4);
   expect(h.host.request.mock.lastCall?.[1]).toEqual({
     type: "expand",
     ...EXPAND_SWORD,
@@ -245,6 +255,24 @@ test("a branch opened while the tree is asked again is unavailable at once when 
   const edge = node({ id: "root/Sword/Edge", pieceKey: null });
   h.branch({ ...sword(7), kids: [edge] });
   expect(kidOf(h, 0)?.kids).toEqual([edge]);
+});
+
+test("a branch waiting for the tree asked again by the clock is unavailable when that tree fails too, and nothing more is asked", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  h.unavailable();
+  h.p.request(EXPAND_SWORD);
+  expect(h.host.request).toHaveBeenCalledTimes(2);
+  seconds(10);
+  h.setPair(pairAt(3, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
+  h.unavailable();
+  expect(kidOf(h, 0)).toMatchObject({ flags: { unavailable: true }, kids: [] });
+  h.setPair(pairAt(4, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  expect(h.host.request).toHaveBeenCalledTimes(3);
 });
 
 test.each<[string, unknown]>([
@@ -355,8 +383,17 @@ test("the game closing with the tree asked again in silence: the next branch ask
   h.setPair(pairAt(2, 9));
   h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
   h.p.status({ game: "closed", reader: "connecting" });
+  // With the game closed no reading comes for the clock: the tree is asked at the click, once.
   h.p.request(EXPAND_SWORD);
+  h.p.request(EXPAND_SWORD);
+  expect(h.host.request).toHaveBeenCalledTimes(3);
   expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
+  h.tree(dropTree(9, 7));
+  expect(h.host.request).toHaveBeenCalledTimes(4);
+  expect(h.host.request.mock.lastCall?.[1]).toEqual({
+    type: "expand",
+    ...EXPAND_SWORD,
+  });
 });
 
 test("a tree asked again in silence that fails keeps the tree on screen, and says so in the log with its id", () => {
