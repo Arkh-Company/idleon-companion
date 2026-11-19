@@ -185,8 +185,9 @@ test("[FR-018] a curve that grows from 1, times a factor, says in its ⓘ how mu
       ],
     },
   ]);
+  // 99.77% of the max, rounded down: below the max never reads up
   expect(n?.formula && formulaLines(n.formula).names).toMatch(
-    /\(the curve is at 99\.8% of its max 3\)$/,
+    /\(the curve is at 99\.7% of its max 3\)$/,
   );
   expect(n?.maxReached).toBeUndefined();
 });
