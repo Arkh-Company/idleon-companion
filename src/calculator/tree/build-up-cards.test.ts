@@ -42,20 +42,21 @@ test("[FR-018] an equipped card: its Card level, its Bonus per level from the ca
     ]),
   ]);
   const [n] = rows;
+  // in the game's order of the factors
   expect(brief(kidsOf(n))).toEqual([
+    ["Multiplier", 1.75, null],
     ["Card level", 7, null],
     ["Bonus per level", 6, "fixedValue"],
-    ["Multiplier", 1.75, null],
   ]);
   // the card's own row of the table, which the scratch box held while the game added this card: one piece per card
   const table = `${GEN_INFO(6, 312)}[45].babaMummy[4]`;
-  expect(kidsOf(n)[1]).toMatchObject({
+  expect(kidsOf(n)[2]).toMatchObject({
     code: table,
     pieceKey: JSON.stringify([8, table]),
   });
   expect(lines(n)).toMatchObject({
-    names: "Bonus per level × Card level × Multiplier",
-    numbers: "6 × 7 × 1.75 = 73.5",
+    names: "Multiplier × Card level × Bonus per level",
+    numbers: "1.75 × 7 × 6 = 73.5",
   });
 });
 
