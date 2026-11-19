@@ -206,6 +206,41 @@ export const cond = (
   open: null,
   test,
 });
+/** A read with its name and its type of leaf. */
+export const leaf = (
+  name: string,
+  value: number,
+  code: string | null,
+  kind: Row["node"]["leaf"],
+): Row => ({
+  node: row({ pieceKey: code, value, code, name, leaf: kind }),
+  open: null,
+});
+/** A call's row with its name, that opens into the call `open`. */
+export const lazy = (
+  name: string,
+  value: number,
+  code: string,
+  open = 9,
+): Row => ({
+  node: row({ pieceKey: code, value, code, name, kids: "lazy" }),
+  open,
+});
+/** A Condition named as the comparison it is. */
+export const check = (
+  name: string,
+  yes: boolean,
+  code: string | null = null,
+): Row => {
+  const c = cond(name, yes, code);
+  return { ...c, node: { ...c.node, name } };
+};
+/** A branch with no code of its own and a name. */
+export const named = (name: string, value: number, group: Row[]): Row => ({
+  node: row({ pieceKey: null, value, code: null, name }),
+  open: null,
+  group,
+});
 /** A branch with no code of its own (the bench's branch of an expression's parts). */
 export const branch = (value: number, group: Row[] = []): Row => ({
   node: row({ pieceKey: null, value, code: null }),
