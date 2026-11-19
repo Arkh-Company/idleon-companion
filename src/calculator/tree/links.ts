@@ -2,15 +2,16 @@
 // last write that covers its path (`writerOf`), or to the call's own write (`ownOf`), and the writers' calls are kept
 // too, as a work list, because a cache builder reads other caches. And the write a scratch read comes from
 // (`scratchWrites`), and its piece key (`scratchKey`).
-import type { RecNode, Recording, RecValue, RecWrite } from "../recording.ts";
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { near } from "./math.ts";
 import { callText } from "./rows.ts";
+import type { LoopTurn } from "./steps.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";
 export type Link = [path: string, writer: number | null, origin: Origin];
 /** A read of a call's step log as recorder.js writes it: [path, value, how many steps had run, the last write's number]. */
-export type LoggedRead = readonly [string, RecValue, number, number?];
+export type LoggedRead = NonNullable<RecNode["rx"]>[number];
 
 function byNodeAndPath(list: RecWrite[]): Map<number, Map<string, RecWrite>> {
   const out = new Map<number, Map<string, RecWrite>>();
@@ -123,13 +124,56 @@ export const scratchKey = (
     own ? [character, path, callText(own.call), own.at] : [character, path],
   );
 
+/**
+ * The number of the write a read saw, from its reader's step log: its last read of the path with that value (in the
+ * loop's turn `range` of steps, when one is open), else its first read's, when it has that value.
+ */
+export function readSeq(
+  reader: RecNode | undefined,
+  path: string,
+  value: unknown,
+  range?: LoopTurn,
+): number | undefined {
+  const inRange = (step: number) =>
+    !range || (step >= range.from && step <= range.to);
+  const log = (reader?.rx ?? []).findLast(
+    ([p, v, step, seq]) =>
+      p === path && seq !== undefined && inRange(step) && near(v, value),
+  );
+  return (
+    log?.[3] ?? reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2]
+  );
+}
+
+/**
+ * A scratch read as a row sees it (tree-build.ts readRow): the write it saw, by its number, opens with its own writer's
+ * rows, else the writer `w` the cache links give; and the write's place among that writer's writes, for its key.
+ */
+export function scratchReads(rec: Recording) {
+  const seen = scratchSeen(rec.writes, rec.spliced);
+  const place = scratchWrites(rec.writes, rec.spliced);
+  return (
+    path: string,
+    value: unknown,
+    reader: RecNode | undefined,
+    w: RecNode | null,
+    range?: LoopTurn,
+  ) => {
+    const seq = readSeq(reader, path, value, range);
+    const write = seq === undefined ? null : seen(path, value, seq);
+    const node = write?.node ?? rec.setup;
+    const writer = node === rec.setup ? w : (rec.nodes[node ?? -1] ?? w);
+    return { writer, own: place(path, value, seq, writer, reader ?? null) };
+  };
+}
+
 const SCRATCH = /^(?:DNSM|DummyNumbersStatManager)\.[^.[]+/;
 /** A scratch read's path and the paths above it, up to its box: a field is read from the object its box holds. */
 function boxPaths(path: string): string[] {
   const box = SCRATCH.exec(path)?.[0];
   if (!box) return [];
   const out = [path];
-  for (let p = path; p.length > box.length; ) {
+  for (let p = path; p.length > box.length;) {
     p = p.slice(0, Math.max(p.lastIndexOf("."), p.lastIndexOf("[")));
     out.push(p);
   }

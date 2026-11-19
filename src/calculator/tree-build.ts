@@ -19,7 +19,7 @@ import { GAME_BUGS } from "./tree/game-bugs.ts";
 import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
-import { linkReads, scratchKey, scratchWrites } from "./tree/links.ts";
+import { linkReads, scratchKey, scratchReads } from "./tree/links.ts";
 import { EARLIER_TURNS, readAgain } from "./tree/scratch-names.ts";
 import { scratchFields, scratchName } from "./tree/scratch-names.ts";
 import type { Link } from "./tree/links.ts";
@@ -78,7 +78,7 @@ export function buildTree(
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
-  const writeOf = scratchWrites(writes);
+  const writeOf = scratchReads(rec);
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
@@ -92,19 +92,20 @@ export function buildTree(
     link?: Link,
     reader?: RecNode,
   ): Row {
-    const w = caches.writerOf(
+    const linked = caches.writerOf(
       new Map(link?.[1] == null ? [] : [[path, link[1]]]),
       path,
       value,
     );
     // DEEP3-FIX-5: read by the call that wrote it, a loop's working value is that loop's progress
-    const progress = (!w || w === reader) && progressRow(path, value);
+    const progress = (!linked || linked === reader) && progressRow(path, value);
     if (progress) return progress;
-    // 009 T023: named by its own write, the one the read saw (the number of the last write the recording keeps in the
-    // read); a read of the write being opened above it is the total of the earlier turns: never a child of itself
-    const seq = reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2];
-    const own = writeOf(path, value, seq, w, reader ?? null);
-    const now = caches.now();
+    // 009 T023: named by its own write, the one the read saw (by the number of the last write before it, in the turn of
+    // the loop being opened), and open in that write's writer; a read of the write being opened above it is the total
+    // of the earlier turns: never a child of itself
+    const { turn, ...now } = caches.now();
+    const inTurn = turn && turn.writer === reader?.id ? turn : undefined;
+    const { writer: w, own } = writeOf(path, value, reader, linked, inTurn);
     const again = readAgain(now.opening, w, path, value);
     const by = again ? null : w;
     const node = row({
