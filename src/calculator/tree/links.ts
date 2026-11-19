@@ -2,13 +2,15 @@
 // last write that covers its path (`writerOf`), or to the call's own write (`ownOf`), and the writers' calls are kept
 // too, as a work list, because a cache builder reads other caches. And the write a scratch read comes from
 // (`scratchWrites`), and its piece key (`scratchKey`).
-import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import type { RecNode, Recording, RecValue, RecWrite } from "../recording.ts";
 import { near } from "./math.ts";
 import { callText } from "./rows.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";
 export type Link = [path: string, writer: number | null, origin: Origin];
+/** A read of a call's step log as recorder.js writes it: [path, value, how many steps had run, the last write's number]. */
+export type LoggedRead = readonly [string, RecValue, number, number?];
 
 function byNodeAndPath(list: RecWrite[]): Map<number, Map<string, RecWrite>> {
   const out = new Map<number, Map<string, RecWrite>>();
