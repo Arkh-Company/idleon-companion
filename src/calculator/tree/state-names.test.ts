@@ -166,6 +166,9 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["DNSM.AllTalWhichPlayer", "Character slot (whose Super Talents count)"],
   // family 17 of the audit of 19/11: a Minehead floor's bonus by the text its screen writes, never its mode in words
   ['Minehead("BonusQTY", 21, 0)', "Hat Rack bonus multi"],
+  // its first line and its first sentence: the rest is the screen's note
+  ['Minehead("BonusQTY", 4, 0)', "Total Damage and Drop Rate"],
+  ['Minehead("BonusQTY", 5, 0)', "Damage per Weapon POW"],
 ];
 
 /** The shape rule that names `code`. */
