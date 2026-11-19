@@ -158,17 +158,30 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "(", "GfoodSet[0]", "+", "GfoodSet[1]", ")", "÷", "100"],
     [1, 10, 20, 100, 1.3],
   ]);
-  // the group in % in its row's unit, +20% as 20 ÷ 100
+  // every source in "Other", no group in %: the pool's ⓘ writes each source in % in its row's unit, +8% as 8 ÷ 100
+  // (A34, option B, as family 21), and still closes (FR-008)
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other", "÷", "100"],
-    [2, 20, 100, 2.2],
-  ]);
-  expect(kidsOf(family)[1]?.formula).toEqual({
-    rule: [
-      "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
-      "(8 + 4 + 5 + 3) ÷ 100 = 0.2",
+    [
+      "DNSM.FamBonusQTYs[66]",
+      "+",
+      "TreeReads()",
+      "÷",
+      "100",
+      "+",
+      "TreeBase",
+      "÷",
+      "100",
+      "+",
+      "DNSM.GameCache.v",
+      "÷",
+      "100",
+      "+",
+      "Fixed +3",
+      "÷",
+      "100",
     ],
-  });
+    [2, 8, 100, 4, 100, 5, 100, 3, 100, 2.2],
+  ]);
   // the worn food's quantity factor, named by its role, with the quantity in its ⓘ (FR-007), as N.js writes it:
   // 1 + getLOG(1 + quantity) ÷ 2.14 (009 T023 r4)
   expect(factor?.formula).toEqual([
