@@ -23,6 +23,7 @@ import { byRole, inlined } from "./inline.ts";
 import { formulaOut } from "./math.ts";
 import { baseStatue } from "./last-renames.ts";
 import { asideInFormula, branchCheck, buildUp, citing } from "./build-up.ts";
+import { cardFactor, meritocracyMulti } from "./factors.ts";
 import { besidePools } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
@@ -130,10 +131,14 @@ export function makePlaces(ctx: PlaceContext) {
     const f = up && l.row.f;
     // any other ⓘ takes in the unnamed steps of any math, and names the source's own part by its role (tree/inline.ts);
     // the math of the rows with no branch check comes first, each check said after it in words (FR-018, A39)
+    // its Meritocracy multi and its card's level by their roles first, before any step moves up (tree/factors.ts)
+    const rows0 = f
+      ? l.rows
+      : cardFactor(name, l.rows.map(meritocracyMulti));
     const own = (rows: Row[]) => byRole(name, inlined(l.row, flatten(rows)));
-    const checks = f ? [] : l.rows.filter((r) => branchCheck(r, l.rows));
+    const checks = f ? [] : rows0.filter((r) => branchCheck(r, rows0));
     const bare = checks.length
-      ? own(l.rows.filter((r) => !checks.includes(r)))
+      ? own(rows0.filter((r) => !checks.includes(r)))
       : null;
     const w = f
       ? withFormula(l.row, flatten(l.rows))
@@ -142,7 +147,7 @@ export function makePlaces(ctx: PlaceContext) {
             formula: citing(bare.formula, checks),
             rows: [...bare.rows, ...checks],
           }
-        : own(l.rows);
+        : own(rows0);
     const formula = f
       ? up.rule
         ? { rule: f }

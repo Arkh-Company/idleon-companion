@@ -45,6 +45,7 @@ import {
 import { curveSelf, prisma } from "./build-up-curves.ts";
 import { meritocVote } from "./build-up-vote.ts";
 import { cardBonus, cardStars, equippedCard } from "./build-up-cards.ts";
+import { meritocracyMulti } from "./factors.ts";
 
 export type { BuiltUp } from "./build-up-rows.ts";
 
@@ -163,21 +164,8 @@ function sigilMulti(r: Row, lv: Level, ctx: BuildUpContext): Row {
         ])
       : renamed(r, name);
   }
-  const vote = g.find((k) =>
-    codeOf(k).startsWith('Summoning2("MeritocBonusz"'),
-  );
-  const hundred = g.find((k) => isConstant(k.node) && vOf(k) === 100);
-  if (vote && one && hundred && g.length === 3 && near(1 + vOf(vote) / 100, v))
-    // the code's 1 and ÷ 100 are in the ⓘ only
-    return {
-      ...renamed(r, "Meritocracy multi"),
-      group: [vote],
-      f: [
-        `1 + ${termOf(vote.node)} ÷ 100`,
-        `1 + ${fx3(vOf(vote))} ÷ 100 = ${fx3(v)}`,
-      ],
-    };
-  return r;
+  // the Meritocracy's: the code's 1 and ÷ 100 are in the ⓘ only (tree/factors.ts)
+  return meritocracyMulti(r);
 }
 
 /** The columns of SigilDesc the tier ladder picks, tier 0 to 4 (N.js Labb SigilBonus). */
