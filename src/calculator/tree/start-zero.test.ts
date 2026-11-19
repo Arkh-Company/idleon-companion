@@ -38,13 +38,23 @@ test("a working value that starts at 0 beside the loop's one turn leaves the row
   ]);
 });
 
-test("a start that is not 0, or two turns, keep their rows", () => {
+test("a start that is not 0, or two turns, keep their rows: the start, and each turn's parts (FR-007, any math)", () => {
   const turn = (v: number) => ({
     ...branch(v, [source("Gallery.x", 1.32), fixed("Bonus value", v / 1.32)]),
     op: "*" as const,
   });
   const [kept] = placed({}, [cache([start(2), turn(52.8)], 54.8)]).rows;
-  expect(kidsOf(kept)).toHaveLength(2);
+  expect(kidsOf(kept).map((k) => [k.code, k.value])).toEqual([
+    ["DNSM.InventedDN", 2],
+    ["Gallery.x", 1.32],
+    [null, 52.8 / 1.32],
+  ]);
   const [two] = placed({}, [cache([start(), turn(52.8), turn(13.2)], 66)]).rows;
-  expect(kidsOf(two)).toHaveLength(3);
+  expect(kidsOf(two).map((k) => [k.code, k.value])).toEqual([
+    ["DNSM.InventedDN", 0],
+    ["Gallery.x", 1.32],
+    [null, 52.8 / 1.32],
+    // the second turn's same source shows once (tree/one-of-each.ts)
+    [null, 13.2 / 1.32],
+  ]);
 });
