@@ -13,7 +13,10 @@ import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
 type Atoms = [string[], number[]];
-type Built = { formula: CalcTreeNode["formula"]; rows: Row[] };
+interface Built {
+  formula: CalcTreeNode["formula"];
+  rows: Row[];
+}
 
 /** A step's private name while the ⓘ of its row is written: two marks no name has. */
 const mark = (i: number) => `\u0004${String(i)}\u0004`;
@@ -88,26 +91,34 @@ export function inlined(row: FormulaRow, rows: Row[]): Built {
   const top = withFormula(row, marked).formula;
   if (!Array.isArray(top)) return plain();
   let atoms: Atoms = top;
-  let moved = false;
+  let moved = 0;
   const out: Row[] = [];
-  rows.forEach((r, i) => {
+  for (const [i, r] of rows.entries()) {
     const inner = isStep(r) ? inlined(r, r.group ?? []) : null;
     const joined =
       inner && Array.isArray(inner.formula)
         ? splice(atoms, mark(i), inner.formula)
         : null;
     if (!inner || !joined) {
-      atoms = [atoms[0].map((t) => (t === mark(i) ? r.node.name : t)), atoms[1]];
+      atoms = [
+        atoms[0].map((t) => (t === mark(i) ? r.node.name : t)),
+        atoms[1],
+      ];
       out.push(r);
-      return;
+      continue;
     }
     atoms = joined;
-    moved = true;
-    out.push(...movedUp(r, inner.rows.filter((k) => !isPercentForm(k))));
-  });
+    moved++;
+    out.push(
+      ...movedUp(
+        r,
+        inner.rows.filter((k) => !isPercentForm(k)),
+      ),
+    );
+  }
   const result = atoms[1].at(-1);
   if (
-    !moved ||
+    moved === 0 ||
     !closes(atoms) ||
     result === undefined ||
     !near(result, Number(row.node.value))

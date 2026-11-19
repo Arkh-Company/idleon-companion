@@ -50,10 +50,7 @@ test("a step 1 + x ÷ 100 inside a product gives its source to the row above, an
 });
 
 test("two unnamed steps of the same level each give their parts, and the ⓘ still closes", () => {
-  const { kids, node } = opened(
-    [percent(5, null), percent(10, null)],
-    1.155,
-  );
+  const { kids, node } = opened([percent(5, null), percent(10, null)], 1.155);
   expect(kids.map((k) => k.code)).toEqual(["Invented.p", "Invented.p"]);
   expect(node?.formula).toEqual([
     [
