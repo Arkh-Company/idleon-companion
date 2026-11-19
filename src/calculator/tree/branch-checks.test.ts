@@ -6,7 +6,9 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { check, fixed, lazy, leaf, named, placed } from "./tree-fixture.ts";
+import { firstLevel } from "./mould.ts";
+import type { Expr, Step } from "./steps.ts";
+import { check, fixed, lazy, leaf, named, placed, read } from "./tree-fixture.ts";
 
 const kids = (n: CalcTreeNode | undefined) =>
   n && Array.isArray(n.kids) ? n.kids.map((k) => k.name) : [];
@@ -80,4 +82,66 @@ test("beside a pool, a read the pool shows leaves, and a check of it is said in 
 test("beside a pool, a check stays while the ⓘ is of atoms, which cannot say it (A39)", () => {
   const n = besidePool(["Multi pool", "2 = 2"]) ?? undefined;
   expect(kids(n)).toEqual(["Multi pool", "Invented level = 101"]);
+});
+
+// A root whose steps are a chain, (Call1() + Call2()) × Call3(), its check "Owned = 1" beside "Owned" after the pools
+const call = (p: string, v: number): Expr => ({ t: "read", p, v });
+const op = (o: string, l: Expr, r: Expr, v: number): Expr => ({
+  t: "op",
+  o,
+  l,
+  r,
+  v,
+});
+function rootWithCheck(a: number, b: number, round: boolean) {
+  const rows = [
+    read("Call1()", a),
+    read("Call2()", b),
+    read("Call3()", 2),
+    check("Owned", true, "Stats.own"),
+    check("Owned = 1", true),
+  ];
+  const sum = op("+", call("Call1()", a), call("Call2()", b), a + b);
+  const product = op("*", { t: "val", v: a + b }, call("Call3()", 2), (a + b) * 2);
+  const v = round ? Math.floor((a + b) * 2) : (a + b) * 2;
+  const last: Expr = round
+    ? { t: "fn", name: "floor", args: [product], v }
+    : product;
+  const steps: Step[] = [
+    { v: a + b, e: sum },
+    { v, e: last },
+  ];
+  const termAt = (e: Expr): Row | null =>
+    e.t === "read"
+      ? (rows.find((r) => r.node.code === e.p) ?? null)
+      : e.t === "num"
+        ? fixed(`Fixed +${String(e.v)}`, Number(e.v))
+        : null;
+  return firstLevel(
+    rows,
+    { name: "Total", value: v, formula: null },
+    {
+      expr: last,
+      term: (e) => termAt(e),
+      writerOf: () => undefined,
+      steps,
+      termAt,
+    },
+  );
+}
+
+test("beside the root's pools, a check leaves and is said after the pools' math in the root's ⓘ (A39)", () => {
+  const out = rootWithCheck(3, 4, false);
+  expect(out.rows.map((r) => r.node.name)).not.toContain("Owned = 1");
+  expect(out.formula).toEqual({
+    rule: ["Additive pool × Call3() (Owned = 1: yes)", "7 × 2 = 14"],
+  });
+});
+
+test("beside a rounded root's pools, a check leaves and is said after the rounding in the root's ⓘ (A39, T030)", () => {
+  const out = rootWithCheck(3.5, 4.25, true);
+  expect(out.rows.map((r) => r.node.name)).not.toContain("Owned = 1");
+  expect(out.formula).toEqual({
+    rule: ["floor(Additive pool × Call3()) (Owned = 1: yes)", "floor(7.75 × 2) = 15"],
+  });
 });
