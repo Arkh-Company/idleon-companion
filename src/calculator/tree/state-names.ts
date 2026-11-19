@@ -3,6 +3,7 @@
 // so a table that changed names nothing. The Tome's rule is one rule: the path the game keeps in DNSM.TomeQTY[k] has the
 // name of the Tome's line k. A character is only its slot. The rules in words are in tree/state-words.ts. A name that
 // already exists wins (tree/names.ts): an item's bonus value keeps the rename's, now that the item's table is checked.
+import { killroyName } from "./killroy-names.ts";
 import { tableRows, tableText } from "./table-names.ts";
 import { escape, GEN_INFO, n, rule, WORD_RULES } from "./state-words.ts";
 import type { StateRule } from "./state-words.ts";
@@ -34,6 +35,19 @@ export const TOME_PATHS: ReadonlyMap<string, number> = new Map([
   [`${GEN_INFO(24, 623)}[143][9]`, 71],
 ]);
 
+/**
+ * A text of the game's capitals in title case, as clean writes them (pieces.cjs clean F2-ROMAN), the abbreviations the
+ * game writes in capitals inside its mixed-case texts kept (TaskShopDesc: "AFK Gains", "EXP Gain"); a text in mixed
+ * case as it is (19/11: "Higher Bonuses From Golden Foods").
+ */
+const KEEP = /^(?:LV|EXP|AFK|HP|MP|STR|AGI|WIS|LUK|DMG)\W*$/;
+const titleCaps = (t: string): string =>
+  t !== t.toUpperCase()
+    ? t
+    : t
+        .split(" ")
+        .map((w) => (KEEP.test(w) ? w : w.charAt(0) + w.slice(1).toLowerCase()))
+        .join(" ");
 /** `text` in `form`, or null with no text. */
 const with_ = (text: string | null, form: (t: string) => string) =>
   text === null ? null : form(text);
@@ -90,7 +104,8 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("killroyShop", n(m) - 452),
-        (t) => `Killroy Shop: ${t} (times bought)`,
+        // the shop's row by its short name, its text to the ⓘ (tree/name-descs.ts)
+        () => `${killroyName(n(m) - 452) ?? ""} (times bought)`,
       ),
   ),
   rule(
@@ -259,6 +274,17 @@ const TABLE_RULES: readonly StateRule[] = [
     const words = `${bonus.replace(/^[+-]?[\d.]+%?\s*/, "")}${more ? ` ${more}` : ""}`;
     return `${words} (${sign})`;
   }),
+  // family 17 (audit of 19/11): Minehead BonusQTY(t) = Research[20][t] past floor t, and its screen writes the bonus as
+  // the text Research[19][t] (bench 007 catalog, proven by table): its first line ("@" breaks the game's lines) and
+  // its first sentence, the rest being the screen's note
+  rule(/^Minehead\("BonusQTY", (\d+), \d+\)$/, "N.js Minehead BonusQTY", (m) =>
+    with_(
+      tableText("research", 19, n(m)),
+      (t) =>
+        (t.split(/\s*@\s*/)[0] ?? "").split(/\.\s/)[0]?.replace(/[.!]+$/, "") ??
+        "",
+    ),
+  ),
   // the family bonus k of FamBonusQTYs is the class k ÷ 2's (N.js TalentCalc -3 keys it by twice the class, plus 0 or
   // 1; the family bonus screen shows FamBonusQTYs of twice the class with ClassFamilyBonuses of the class)
   rule(
@@ -267,7 +293,7 @@ const TABLE_RULES: readonly StateRule[] = [
     (m) =>
       with_(
         tableText("family", Math.floor(n(m) / 2)),
-        (t) => `${t.replace(/^@\s*/, "")} (family bonus)`,
+        (t) => `${titleCaps(t.replace(/^@\s*/, ""))} (family bonus)`,
       ),
   ),
 ];

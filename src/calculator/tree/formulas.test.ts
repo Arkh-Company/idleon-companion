@@ -7,6 +7,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
+import { useGameTables } from "./table-names.ts";
 import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, read } from "./tree-fixture.ts";
 
@@ -201,7 +202,8 @@ test.each<[string, string, [string, string] | null]>([
   expect(formulaFor(n, [read(path, 5), read("Stats.q", 2)])).toEqual(formula);
 });
 
-const RIFT = "1 if Rift level ≥ 15 and Skill 3 mastery rank > 2, else 0";
+// the skill by its name in the game's list, never by its index (family 2 of the audit of 19/11); an invented list
+const RIFT = "1 if Rift level ≥ 15 and Invented Skill mastery rank > 2, else 0";
 test.each<[number, number, number, [string, string]]>([
   [20, 4, 1, [RIFT, "20 ≥ 15 and 4 > 2 → 1"]],
   [20, 1, 0, [RIFT, "20 ≥ 15 and 1 ≤ 2 → 0"]],
@@ -210,10 +212,14 @@ test.each<[number, number, number, [string, string]]>([
 ])(
   "a skill's Rift bonus (deep-2): level %d, rank %d, value %d",
   (lv, rank, v, formula) => {
+    useGameTables(
+      new Map([["CustomLists.SkillNames", [0, 1, 2, "Invented Skill"]]]),
+    );
     const n = at(v, { code: 'RiftStuff("RiftSkillBonus,3", 2)' });
     const kids = [read("Rift[0]", lv), read("DNSM.skillLvRanks[3]", rank)];
     expect(formulaFor(n, kids)).toEqual(formula);
     expectShown(n, kids);
+    useGameTables(new Map());
   },
 );
 

@@ -18,6 +18,10 @@ export interface Entry {
   /** The calls made in the turn. */
   k: number[];
   r: TurnRead[];
+  /** The turn's place in the writer's step log: a read of the turn is the one logged there (tree/links.ts readSeq). */
+  t?: LoopTurn;
+  /** The number of the turn's write: a write of the box that is no turn is its start (tree/cache-open.ts). */
+  seq?: number;
 }
 export type Entries = ReadonlyMap<string, readonly Entry[]>;
 
@@ -107,6 +111,8 @@ export function entriesOf(
         s: turn(n, n.x.slice(from, w.xi), { from, to: w.xi }),
         k,
         r,
+        t: { from, to: w.xi },
+        seq: w.seq,
       });
     }
     if (out.length) entries.set(key, out);

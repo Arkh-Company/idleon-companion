@@ -24,6 +24,45 @@ export function pieceValues(root: TreeNode): Record<string, Value> {
   return out;
 }
 
+const SCRATCH_PATH = /^(?:DNSM|DummyNumbersStatManager)\./;
+/** The box of a scratch key of `length` items whose path is at `at`: the items up to its path; else null. */
+function boxOf(key: string, at: number, length: number): string | null {
+  try {
+    const k: unknown = JSON.parse(key);
+    return Array.isArray(k) &&
+      k.length === length &&
+      typeof k[at] === "string" &&
+      SCRATCH_PATH.test(k[at])
+      ? JSON.stringify(k.slice(0, at + 1))
+      : null;
+  } catch {
+    return null;
+  }
+}
+/**
+ * fix/tree-scratch-keys: the 0.8.0 kept a scratch box by its path ([path], after the character when the key has it, at
+ * `at`); now a box read at two moments is two pieces ([path, writer, write]). Each old key of `old` not in `now` stands
+ * for the one piece of its box in `now`, when there is only one: old key → new key.
+ */
+export function oldBoxKeys(
+  old: Iterable<string>,
+  now: Iterable<string>,
+  at: number,
+): Map<string, string> {
+  const keys = new Set(now);
+  const byBox = new Map<string, string[]>();
+  for (const k of keys) {
+    const box = boxOf(k, at, at + 3);
+    if (box) byBox.set(box, [...(byBox.get(box) ?? []), k]);
+  }
+  const out = new Map<string, string>();
+  for (const k of old) {
+    const [only, ...more] = byBox.get(boxOf(k, at, at + 1) ?? "") ?? [];
+    if (!keys.has(k) && only !== undefined && !more.length) out.set(k, only);
+  }
+  return out;
+}
+
 // ponytail: the first parts in the tree's order; a bigger tree's later parts keep their built value and show no
 // arrow (spec 009 NFR-003).
 const MAX_LIVE_PARTS = 200;

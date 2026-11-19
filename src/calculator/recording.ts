@@ -18,8 +18,11 @@ export interface RecNode {
   err?: true;
   /** State reads: [path, value, the last write's number before the first read]; table texts have no number. */
   r?: ([string, RecValue] | [string, RecValue, number])[];
-  /** The step log of the reads: [path, value, how many steps had run]. */
-  rx?: [string, RecValue, number][];
+  /**
+   * The step log of the reads: [path, value, how many steps had run] and, for a number, the last write's number before
+   * the read (the write it saw).
+   */
+  rx?: [string, RecValue, number, number?][];
   /** Checks made without reading the value: [path, it exists]. */
   q?: [string, boolean][];
   /** The steps of the block's arithmetic: [op id, value]. */

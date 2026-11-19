@@ -81,7 +81,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   // the worn food's own numbers: no row of the shared multiplier among them (FR-007)
   expect(rowsOf(worn)).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue"],
-    ["Fixed ×0.05", 0.05, "fixedValue"],
+    ["Base rate (× 0.05)", 0.05, "fixedValue"],
     ["log₁₀", near(3), "rawBonus"],
     ["Quantity multiplier", near(2.4018691588785046), null],
   ]);
@@ -105,7 +105,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   // the emporium's row: its food's name, and its parts with the shared multiplier, which multiply to it (FR-007, FR-008)
   const [emp] = kidsOf(emporium);
   expect([emp?.name, emp?.value]).toEqual([
-    "Emporium: Other Dish",
+    "Beanstalk: Other Dish",
     near(EMPORIUM),
   ]);
   const parts = kidsOf(
@@ -115,19 +115,17 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   expect(parts.map((k) => [k.name, k.value, k.leaf, k.why])).toEqual([
     ["Amount of the golden food (item table)", 7, "fixedValue", null],
     ["GFood Multi", near(MULTI), null, null],
-    ["Fixed ×0.05", 0.05, "fixedValue", null],
-    ["log₁₀", near(6.000000434294264), "rawBonus", null],
+    ["Base rate (× 0.05)", 0.05, "fixedValue", null],
+    ["Beanstalk level", 3, "level", null],
   ]);
   expect(parts[1]?.formula).toEqual({
     rule: [
-      "SECRET_SET multi × (max(Family Bonus 66, 1) + Sources ÷ 100)",
+      "SECRET_SET multi × (max(Invented Family, 1) + Sources ÷ 100)",
       "1.3 × (2 + 0.2) = 2.86",
     ],
   });
-  expect(parts.reduce((p, k) => p * Number(k.value), 1)).toBeCloseTo(
-    EMPORIUM,
-    9,
-  );
+  const empF = emp?.formula as [string[], number[]]; // 19/11: log₁₀ in the ⓘ
+  expect(empF[1].at(-1)).toBeCloseTo(6.006, 3);
   expect(checkTree(root, 100)).not.toBeNull();
 });
 
@@ -149,7 +147,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
   ]);
   expect(worn?.formula).toEqual({
     rule: [
-      "Amount of the golden food (item table) × Fixed ×0.05 × log₁₀ × Quantity multiplier",
+      "Amount of the golden food (item table) × Base rate (× 0.05) × log₁₀ × Quantity multiplier",
       "7 × 0.05 × 3 × 2.402 = 2.522",
     ],
   });
@@ -160,7 +158,7 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     [1, 10, 20, 100, 1.3],
   ]);
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other"],
+    ["Invented Family (family bonus)", "+", "🔹 Other"],
     [2, 0.2, 2.2],
   ]);
   expect(kidsOf(family)[1]?.formula).toEqual({
@@ -175,13 +173,15 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "log₁₀", "(", "1", "+", "quantity", ")", "÷", "2.14"],
     [1, 1, 999, 2.14, 2.402],
   ]);
-  // the emporium's: its parts' product, the shared multiplier among them
-  expect(kidsOf(emporium)[0]?.formula).toEqual({
-    rule: [
-      "Amount of the golden food × GFood Multi × 0.05 × log₁₀",
-      "7 × 2.86 × 0.05 × 6 = 6.006",
-    ],
-  });
+  // the emporium's: its parts and its log₁₀ of 1 + 1000 × 10^level, the Beanstalk's level its leaf (19/11)
+  const [words, numbers] = (kidsOf(emporium)[0]?.formula ?? [[], []]) as [
+    string[],
+    number[],
+  ];
+  expect([words.join(" "), numbers]).toEqual([
+    "Amount of the golden food × GFood Multi × Base rate × log₁₀ ( 1 + 1000 × 10 ^ Beanstalk level )",
+    [7, 2.86, 0.05, 1, 1000, 10, 3, 6.006],
+  ]);
 });
 
 test("the shared multiplier counts a family below 1 as 1; a step whose family is at least 2 is the chain's own pool", () => {
@@ -258,14 +258,14 @@ test.each<[string, string, number, number, [string, number][]]>([
     "DropRatez",
     0,
     3,
-    [["Emporium: Other Dish", EMPORIUM]],
+    [["Beanstalk: Other Dish", EMPORIUM]],
   ],
   [
     "a worn food rounded is no worn food's step",
     "round",
     999,
     3,
-    [["Emporium: Other Dish", Math.round(WORN) + EMPORIUM]],
+    [["Beanstalk: Other Dish", Math.round(WORN) + EMPORIUM]],
   ],
   [
     "a bonus kept in the block: the emporium's adds to the worn food's step",
@@ -274,7 +274,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     3,
     [
       ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", EMPORIUM],
+      ["Beanstalk: Other Dish", EMPORIUM],
     ],
   ],
   [
@@ -284,7 +284,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     3,
     [
       ["Equipped: Invented Charm", WORN],
-      ["Emporium: Other Dish", 9 + EMPORIUM - WORN],
+      ["Beanstalk: Other Dish", 9 + EMPORIUM - WORN],
     ],
   ],
   [
@@ -292,7 +292,7 @@ test.each<[string, string, number, number, [string, number][]]>([
     "other",
     0,
     3,
-    [["Emporium: Other Dish", 9 + EMPORIUM]],
+    [["Beanstalk: Other Dish", 9 + EMPORIUM]],
   ],
   [
     "the emporium's times 1 is no sum: no emporium row",

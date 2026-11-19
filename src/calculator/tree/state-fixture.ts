@@ -84,6 +84,11 @@ export const GAME = new Map<string, unknown>([
   [
     "CustomLists.Research",
     list({
+      19: list({
+        4: "}x_Total_Damage_and_}x_Drop_Rate!_@_(NOTE:All_Bonuses_earned_from_beating_Opponents_affect_the_rest_of_the_game)",
+        5: "+{%_Damage_per_Weapon_POW._Based_on_your_current_weapon,_you're_getting_$%_Damage",
+        21: "+{%_Hat_Rack_bonus_multi",
+      }),
       23: list({ 5: "Glassical_Bananical_Sticker" }),
       57: list({
         16: "Orion's_first_upgrade_is_}x_cheaper",

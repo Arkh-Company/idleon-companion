@@ -22,7 +22,12 @@ export type {
   TreeNode,
   TreeRequest,
 } from "./formula-tree.ts";
-export { partsOf, pieceValues, preorder } from "./formula-tree-compare.ts";
+export {
+  oldBoxKeys,
+  partsOf,
+  pieceValues,
+  preorder,
+} from "./formula-tree-compare.ts";
 export { modulesFor } from "./modules.ts";
 export { MINUS, plain, valueText } from "./row-text.ts";
 export { toReading } from "./reading.ts";

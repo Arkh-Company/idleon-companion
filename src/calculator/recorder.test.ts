@@ -5,6 +5,7 @@ import { CHARACTERS, GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import type { Recipe, RecNode, Recording } from "./recording.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { linkReads } from "./tree/links.ts";
+import type { LoggedRead } from "./tree/links.ts";
 
 const NONE: Recipe = { recompute: [], builders: [] };
 const call = (block: string): [string, number[]] => [block, [0, 0, 0]];
@@ -303,4 +304,22 @@ test("after the roots, a follow-up call runs once for each argument the roots ga
 test("with no follow-up, the roots are the only calls under the root", () => {
   const rec = recorder.record(mosaicOf(), [["TreeLegends", []]], NONE);
   expect(under(rec, rec.root).map((n) => n.b)).toEqual(["TreeLegends"]);
+});
+
+test("each logged read keeps the number of the last write before it: the write it saw, at every read of a box", () => {
+  const rec = record(["TreeZeroTotal"]);
+  const box = "DNSM.TreeZero[0]";
+  const log: readonly LoggedRead[] = first(rec, "TreeZeroTotal").rx ?? [];
+  const reads = log.filter(([p]) => p === box);
+  // the box is read in each of its two loops and by the return: each read names its own write, the last one before it
+  expect(reads.length).toBe(3);
+  const saw = reads.map(([, v, , seq]) => {
+    const w = rec.writes.filter((x) => x.path === box && x.seq <= (seq ?? -1));
+    return [v, w.at(-1)?.v, w.length];
+  });
+  expect(saw).toEqual([
+    [0, 0, 1],
+    [0, 0, 2],
+    [0, 0, 3],
+  ]);
 });

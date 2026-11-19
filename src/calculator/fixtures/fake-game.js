@@ -1129,6 +1129,37 @@ lime.$scripts.N = function (_exports, $global) {
     for (var j = 0; j < 2; j++) d.TreeZero[j] = d.TreeZero[j] + s.TreeOwned;
     return d.TreeZero[0] + d.TreeZero[1] + s.TreeBase;
   };
+  // A running total that starts from a source (TreeBase, 4) and whose turns add 0 (fix/tree-scratch-keys)
+  Blocks._customBlock_TreeStartTotal = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeStart = [];
+    d.TreeStart.push(0);
+    d.TreeStart[0] = s.TreeBase;
+    for (var i = 0; i < 2; i++) d.TreeStart[0] = d.TreeStart[0] + s.TreeOwned;
+    return d.TreeStart[0] + s.TreeLevel;
+  };
+  // A box that holds the item in turn, read by its field, as the game's worn items in TotalStats (fix/tree-scratch-keys)
+  Blocks._customBlock_TreeWorn = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeWornSum = 0;
+    for (var i = 0; i < s.TreeItems.length; i++) {
+      d.TreeWornNow = s.TreeItems[i];
+      d.TreeWornSum = d.TreeWornSum + d.TreeWornNow.v;
+    }
+    return d.TreeWornSum + s.TreeLevel;
+  };
+  // A builder of the game's cache whose scratch box is written twice before its step reads it, as the game's slot whose
+  // talents count (fix/tree-scratch-keys): -1 builds the cache, any other argument reads it
+  Blocks._customBlock_TreeWho = function (t) {
+    var d = dnsm();
+    if (t !== -1) return d.TreeWhoCache.h.total;
+    d.TreeWho = 8;
+    d.TreeWho = state().TreeBase + state().TreeLevel;
+    d.TreeWhoCache.h.total = d.TreeWho * 2;
+    return 0;
+  };
   Blocks._customBlock_TreeArcade = function () {
     return Blocks._customBlock_ArcadeBonus(0) + 1;
   };

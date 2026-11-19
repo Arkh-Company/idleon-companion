@@ -25,7 +25,7 @@ import { near } from "./math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { callText, openingOf, row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, LoopTurn, Step } from "./steps.ts";
 import { flat } from "./expr.ts";
 import {
   LOOP_ENTRY_CACHES,
@@ -46,12 +46,11 @@ import {
 } from "./turn-names.ts";
 import { any } from "./val-path.ts";
 
-const stamp = (rows: Row[], seen: readonly number[]) =>
-  rows.map((r) => (r.seen ? r : { ...r, seen }));
-
 export function makeCaches(ctx: CacheContext) {
   const { nodes, entries } = ctx;
   let entryP: string | null = null;
+  // fix/tree-scratch-keys: the loop turn whose rows are built: its writer's reads are the turn's own (links.ts readSeq)
+  let turnP: (LoopTurn & { writer: number }) | null = null;
   let opening = new Set<string>();
   const writerOf = (
     links: ReadonlyMap<string, number>,
@@ -61,7 +60,8 @@ export function makeCaches(ctx: CacheContext) {
   /** The rows of call `id` under `seen`, placed as that call's own. */
   const explained = (id: number, depth: number, seen: ReadonlySet<number>) => {
     const rows = ctx.explain(id, depth, seen);
-    return rows && stamp(rows, [...seen, id]);
+    const at = [...seen, id];
+    return rows ? rows.map((r) => (r.seen ? r : { ...r, seen: at })) : null;
   };
 
   /** pieces.cjs stepRowsAt: step `at` of writer `w` (its expression `e`), with the turn's own reads first. */
@@ -134,18 +134,18 @@ export function makeCaches(ctx: CacheContext) {
           near(x.node.value, 0),
       ) &&
         !rows.some(kids));
-    const inEntry = <T>(fn: () => T): T => {
-      const before = entryP;
-      entryP = p;
+    const inEntry = <T>(q: Entry, fn: () => T): T => {
+      const before = [entryP, turnP] as const;
+      [entryP, turnP] = [p, q.t ? { writer: w.id, ...q.t } : null];
       try {
         return fn();
       } finally {
-        entryP = before;
+        [entryP, turnP] = before;
       }
     };
     // a turn's own rows: its steps, else the call it made that has the turn's value, else the cache it read
     const turnRows = (q: Entry, target: number) => {
-      const r = inEntry(() => stepRows(w, q.s, target, seen, q.r));
+      const r = inEntry(q, () => stepRows(w, q.s, target, seen, q.r));
       let rows = r ?? [];
       const call = q.k
         .map((id) => nodes[id])
@@ -173,7 +173,7 @@ export function makeCaches(ctx: CacheContext) {
         const at = q.s.findIndex((x) => near(x.v, q.v));
         const side = addedSide(q.s[at]?.e, p, Number(q.v) - target);
         if (side?.t === "fn" && near(side.v, target))
-          rows = inEntry(() => stepRowsAt(w, q.s, at, side, seen, q.r));
+          rows = inEntry(q, () => stepRowsAt(w, q.s, at, side, seen, q.r));
       }
       return { rows, call, read };
     };
@@ -390,8 +390,8 @@ export function makeCaches(ctx: CacheContext) {
   return {
     /** The writer a cache read opens into: its linked writer, else the one whose loop wrote that very value. */
     writerOf,
-    /** What the tree is walking now, kept on a cache row made now. */
-    now: () => ({ entry: entryP, opening: [...opening] }),
+    /** What the tree is walking now, kept on a cache row made now; and the loop turn whose rows it builds. */
+    now: () => ({ entry: entryP, opening: [...opening], turn: turnP }),
     open,
     opened,
     opens,

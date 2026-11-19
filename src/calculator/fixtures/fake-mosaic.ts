@@ -38,6 +38,7 @@ const DNSM = {
   CompanionBon: { $m: { b1: 3 } },
   ShinyBonusS: { $m: { s1: 4 } },
   GameCache: { $m: { v: 5 } },
+  TreeWhoCache: { $m: { total: 58 } },
 };
 
 /**
@@ -85,6 +86,7 @@ export const BASE = {
   TreeTwins: [3, 3],
   TreeFlagOn: 1,
   TreeBig: { $m: { k1: 1, k2: 7 } },
+  TreeItems: [{ v: 3 }, { v: 5 }],
   // The first character active: its own keys, as the game keeps them outside PlayerDATABASE.
   ...activeAs(0),
   GetPlayersUsernames: [...CHARACTERS],
