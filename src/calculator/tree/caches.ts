@@ -61,7 +61,7 @@ export function makeCaches(ctx: CacheContext) {
   const explained = (id: number, depth: number, seen: ReadonlySet<number>) => {
     const rows = ctx.explain(id, depth, seen);
     const at = [...seen, id];
-    return rows && rows.map((r) => (r.seen ? r : { ...r, seen: at }));
+    return rows ? rows.map((r) => (r.seen ? r : { ...r, seen: at })) : null;
   };
 
   /** pieces.cjs stepRowsAt: step `at` of writer `w` (its expression `e`), with the turn's own reads first. */
