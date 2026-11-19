@@ -6,6 +6,7 @@ import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
 import {
   readSeq,
+  scratchReads,
   scratchKey,
   scratchSeen,
   scratchWrites,
@@ -221,5 +222,31 @@ test("a write's reads are its writer's logged reads after its previous write, of
   ]);
   expect(writeOf("DNSM.Box", 1, 3, w ?? null)?.reads()).toEqual([
     "Meals[0][1]",
+  ]);
+});
+
+test("a read the builders' pass explains opens in the pass's call of the same block; another block's write, in its own", () => {
+  const rec = (pass: string) =>
+    recordingOf(
+      [
+        { b: "(setup: game helpers)", c: [3] },
+        { b: "(root)", c: [2] },
+        { b: "Top", v: 5, r: [["DNSM.Box", 5, 3]] },
+        { b: "Maker", a: [0], v: 0 },
+        { b: pass, a: [0], v: 0 },
+      ],
+      [
+        { path: "DNSM.Box", node: 3, v: 5, seq: 3 },
+        { path: "DNSM.Box", node: 4, v: 5, seq: 10 },
+      ],
+      { setup: 0, root: 1 },
+    );
+  const read = (r: ReturnType<typeof rec>) =>
+    scratchReads(r)("DNSM.Box", 5, r.nodes[2], r.nodes[4] ?? null);
+  const same = read(rec("Maker"));
+  expect([same.writer?.id, same.own?.call.id, same.own?.at]).toEqual([4, 3, 0]);
+  const other = read(rec("Other"));
+  expect([other.writer?.id, other.own?.call.id, other.own?.at]).toEqual([
+    3, 3, 0,
   ]);
 });
