@@ -58,7 +58,7 @@ const RULES: readonly Rule[] = [
           ? { name: MONUMENT_MULTI[Number(call.a[1])] ?? null }
           : { name: null },
     proof:
-      "N.js Holes MonumentROGbonuses: the multiplier of the monument starts at 1 and changes in the next writes; HolesInfo names each monument's 9th bonus",
+      "N.js Holes MonumentROGbonuses: the multiplier of the monument starts at 1 and changes in the next writes; HolesInfo names the 9th bonus of each monument",
   },
   {
     path: "DNSM.CalcTalentDN2",
