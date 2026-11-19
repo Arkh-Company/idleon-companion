@@ -111,3 +111,9 @@ Bad: the 18-row behavior table typed in `read-only.test.ts` and again in `read-f
 When a file cannot import `src/shared/index.ts` (a script run as text inside the game, the calculator's lone bundle), its copy of a shared literal has one test that fails when either side changes.
 Good: `expect(TARGETS.map(([id]) => id)).toEqual([...NUMBER_IDS])` in `src/calculator/index.test.ts`, which fails for a key added on either side.
 Bad: a `SKIP` in a script with a comment "keep equal to STATE_EXCLUDED", while the only test feeds the fake engine every `STATE_EXCLUDED` key and stays green when `SKIP` gains a key the test never puts in the engine.
+
+### A comment changes with the shape it describes
+
+Every comment, JSDoc or glossary line that describes a type, a field or a module's readers is rewritten in the same commit that changes that type, field or import.
+Good: the commit that adds `text?: string` to `TreeNode["formula"]` also rewrites its JSDoc and `formulaLines`' to say the game's text is an optional line before the names and the numbers.
+Bad: `formula` gains `text?: string` while the JSDoc right above it still says "names and numbers only" and `formulaLines` still says "in two lines".
