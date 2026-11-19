@@ -1,6 +1,7 @@
 // The piece key of a scratch read (spec 009 T023, decision of 18/11): the same box read at two moments is two pieces,
 // each keyed by the write it comes from, so a piece shows one value wherever it is.
 import { expect, test } from "vitest";
+import { instrument } from "./instrument.ts";
 import { buildTree } from "./tree-build.ts";
 import { shapeOf } from "./tree-engine.ts";
 import { scratchKeys } from "./tree/links.ts";
@@ -31,6 +32,47 @@ test("a scratch box read at two moments is two pieces, each keyed by its writer'
     '[0,"DNSM.Box","Writer(1)",0]',
     '[0,"DNSM.Box","Writer(1)",1]',
   ]);
+});
+
+// ops: Stamp 0-2 (s.P + s.B), its step reading the total it wrote itself
+const { ops } = instrument(
+  "Blocks._customBlock_Stamp = function () { return s.P + s.B; };",
+);
+
+test("in a tree, a step that reads the working total its own block wrote keys it by that block and that write", () => {
+  const rec = recordingOf(
+    [
+      { b: "(setup: game helpers)" },
+      { b: "(root)", c: [2] },
+      {
+        b: "Stamp",
+        a: ["X"],
+        v: 6,
+        x: [
+          [1, 4],
+          [2, 2],
+          [0, 6],
+        ],
+        rx: [
+          ["DummyNumbersStatManager.Total", 4, 0],
+          ["B", 2, 1],
+        ],
+        r: [
+          ["DummyNumbersStatManager.Total", 4, 1],
+          ["B", 2],
+        ],
+      },
+    ],
+    [
+      { path: "DummyNumbersStatManager.Total", node: 2, v: 0, seq: 0 },
+      { path: "DummyNumbersStatManager.Total", node: 2, v: 4, seq: 1 },
+    ],
+    { setup: 0, root: 1 },
+  );
+  // no cache link covers the box: its writer is the reader itself
+  expect(shapeOf(buildTree(rec, 0, ops)).map(([k]) => k)).toContain(
+    JSON.stringify([0, "DummyNumbersStatManager.Total", 'Stamp("X")', 1]),
+  );
 });
 
 test("a working total the reader wrote itself is keyed by the reader; any other read keeps its path alone", () => {
