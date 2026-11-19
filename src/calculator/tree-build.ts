@@ -19,7 +19,7 @@ import { GAME_BUGS } from "./tree/game-bugs.ts";
 import { goldFood } from "./tree/gold-food.ts";
 import type { GameBugRule } from "./tree/game-bugs.ts";
 import { classify } from "./tree/kinds.ts";
-import { linkReads } from "./tree/links.ts";
+import { linkReads, scratchKeys } from "./tree/links.ts";
 import type { Link } from "./tree/links.ts";
 import { chainContext } from "./tree/chain-context.ts";
 import { chainLevel, firstLevel, mould } from "./tree/mould.ts";
@@ -76,6 +76,7 @@ export function buildTree(
   const top = nodes[nodes[rec.root ?? -1]?.c[0] ?? -1];
   if (!top) throw new Error("the recording has no root call");
   const keyOf = (n: RecNode) => JSON.stringify([character, n.b, ...n.a]);
+  const readKey = scratchKeys(writes, character);
   const opens = (n: RecNode) =>
     n.c.length > 0 || (n.r?.length ?? 0) > 0 || links.has(n.id);
 
@@ -98,7 +99,7 @@ export function buildTree(
     const progress = (!w || w === reader) && progressRow(path, value);
     if (progress) return progress;
     const node = row({
-      pieceKey: JSON.stringify([character, path]),
+      pieceKey: readKey(path, value, w, reader ?? null),
       value,
       code: path,
       kids: w ? "lazy" : [],

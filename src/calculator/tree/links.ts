@@ -1,7 +1,9 @@
 // Step 7 of the bench's build-tree.cjs at BASELINE-4, over a recording: each cache read under the root links to the
 // last write that covers its path (`writerOf`), or to the call's own write (`ownOf`), and the writers' calls are kept
-// too, as a work list, because a cache builder reads other caches.
-import type { Recording, RecWrite } from "../recording.ts";
+// too, as a work list, because a cache builder reads other caches. And the piece key of a scratch read (`scratchKeys`).
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import { near } from "./math.ts";
+import { callText } from "./rows.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";
@@ -102,4 +104,30 @@ export function linkReads(rec: Recording): Linked {
     }
   }
   return { keep, links, writerOf, ownOf };
+}
+
+/**
+ * 009 T023: a scratch box read at two moments is two pieces. A read's piece key names the write it comes from: its
+ * writer's call (else its reader's own, for a box no cache link covers) and the write's place among that call's writes
+ * of the box; with no such write, its path alone, as any other read.
+ */
+export function scratchKeys(writes: readonly RecWrite[], character: number) {
+  const byCall = new Map<string, RecWrite["v"][]>();
+  for (const w of writes) {
+    const k = `${String(w.node)}|${w.path}`;
+    byCall.set(k, [...(byCall.get(k) ?? []), w.v]);
+  }
+  return (path: string, value: unknown, ...by: (RecNode | null)[]): string => {
+    if (/^(?:DNSM|DummyNumbersStatManager)\./.test(path))
+      for (const n of by) {
+        const i = n
+          ? (byCall.get(`${String(n.id)}|${path}`) ?? []).findIndex((v) =>
+              near(v, value),
+            )
+          : -1;
+        if (n && i >= 0)
+          return JSON.stringify([character, path, callText(n), i]);
+      }
+    return JSON.stringify([character, path]);
+  };
 }
