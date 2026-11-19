@@ -146,8 +146,9 @@ export function readSeq(
 }
 
 /**
- * A scratch read as a row sees it (tree-build.ts readRow): the write it saw, by its number, opens with its own writer's
- * rows, else the writer `w` the cache links give; and the write's place among that writer's writes, for its key.
+ * A scratch read as a row sees it (tree-build.ts readRow): the write it saw, by its number, and its place among its
+ * writer's writes, for its key and its name. It opens in the writer `w` the cache links give (the builders' pass's
+ * call of the same block explains an earlier read: linkReads), unless the write it saw is another call's.
  */
 export function scratchReads(rec: Recording) {
   const seen = scratchSeen(rec.writes, rec.spliced);
@@ -162,8 +163,11 @@ export function scratchReads(rec: Recording) {
     const seq = readSeq(reader, path, value, range);
     const write = seq === undefined ? null : seen(path, value, seq);
     const node = write?.node ?? rec.setup;
-    const writer = node === rec.setup ? w : (rec.nodes[node ?? -1] ?? w);
-    return { writer, own: place(path, value, seq, writer, reader ?? null) };
+    const saw = node === rec.setup ? null : (rec.nodes[node ?? -1] ?? null);
+    const same = !!saw && !!w && callText(saw) === callText(w);
+    const writer = same ? w : (saw ?? w);
+    const own = place(path, value, seq, saw ?? writer, reader ?? null);
+    return { writer, own };
   };
 }
 
