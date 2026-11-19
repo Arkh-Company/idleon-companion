@@ -350,6 +350,15 @@ test("the game closing with the tree asked again in silence keeps the tree on sc
   expect(shown(h).kids).toEqual([7, 2]);
 });
 
+test("the game closing with the tree asked again in silence: the next branch asks the tree again first, never the build the host kept", () => {
+  const h = readyDrop();
+  h.setPair(pairAt(2, 9));
+  h.values({ dropRate: 9, [SWORD]: 7, [RING]: 2 });
+  h.p.status({ game: "closed", reader: "connecting" });
+  h.p.request(EXPAND_SWORD);
+  expect(h.host.request.mock.lastCall?.[1]).toMatchObject({ type: "number" });
+});
+
 test("a tree asked again in silence that fails keeps the tree on screen, and says so in the log with its id", () => {
   const h = readyDrop();
   h.setPair(pairAt(2, 9));
