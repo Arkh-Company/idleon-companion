@@ -37,15 +37,14 @@ const isNum = (e: Expr, v: number) => {
   return x.t === "num" && Number(x.v) === v;
 };
 
-/** The shared multiplier, GFood Multi: no piece and no rows of its own, with its ⓘ when given. */
-const shared = (v: number, pair: Pair | null): Row => ({
+/** The shared multiplier, GFood Multi: no piece and no rows of its own. */
+const shared = (v: number): Row => ({
   node: row({
     pieceKey: null,
     value: valueOf(v),
     code: null,
     name: GOLD_FOOD_TERMS.multiplier.name,
     fmt: "x",
-    ...(pair ? { formula: formulaOut(pair) } : {}),
   }),
   open: null,
 });
@@ -96,7 +95,7 @@ export function goldFoodTerm(
   const at = multi && step(multi);
   if (!multi || !at) return null;
   const parts = fs.map((t) =>
-    t === multi ? shared(Number(t.v), null) : term(t, "*"),
+    t === multi ? shared(Number(t.v)) : term(t, "*"),
   );
   if (parts.some((p) => !p)) return null;
   // the worn food's product has its quantity factor; the emporium's has none, its log₁₀ loose (009 T023 r3)
