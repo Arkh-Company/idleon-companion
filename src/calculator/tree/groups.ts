@@ -195,16 +195,24 @@ export function bySystem(
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  const [only] = groups.values();
-  if (groups.size <= 1 && (!only || (only.s === OTHER && !only.pct)))
-    return rows;
-  // a system beyond the V1 after the V1's, in the order of the sum (the sort keeps it), "Other" last (FR-004)
+  // every source in "Other", one group: the rows stay as they are (FR-001), the % forcing no group, each as its +N%
+  // (A34); "Other" beside "Other" in % is two groups still
+  const all = [...groups.values()];
+  if (all.length <= 1 && all.every((g) => g.s === OTHER))
+    return all.some((g) => g.pct)
+      ? rows.map((r) =>
+          r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+        )
+      : rows;
+  // a system beyond the V1 after the V1's, in the order of the sum, "Other" last (FR-004); each system's group in %
+  // right after its own (A34)
+  const first = all.map((g) => g.s.name);
   const at = (s: System) =>
     s === OTHER
-      ? SYSTEM_ORDER.length
+      ? SYSTEM_ORDER.length + first.length
       : SYSTEM_ORDER.includes(s.name)
         ? SYSTEM_ORDER.indexOf(s.name)
-        : SYSTEM_ORDER.length - 1;
+        : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
   // a lone bonus in % stands alone too, as its +N% (FR-006, decision of 19/11): its pool's ⓘ divides it by 100
