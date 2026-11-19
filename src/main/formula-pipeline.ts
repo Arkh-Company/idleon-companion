@@ -90,6 +90,9 @@ export function startFormulaPipeline(deps: {
   /** The other rows opened meanwhile: each one asked after the branch, or the silent rebuild, before it answers (the
    * host keeps one waiting). */
   let queued: { treeId: string; nodeId: string }[] = [];
+  /** Whether the worker keeps the build of the tree on screen, which its branches come from. It drops it when it begins
+   * another tree (tree-engine.ts), so a silent rebuild that leaves the tree on screen takes it away. */
+  let screenBuilt = true;
   let seq = 0;
   let stale = false;
   let last: FormulaTree = { state: "none" };
@@ -203,14 +206,23 @@ export function startFormulaPipeline(deps: {
     // A tree asked with no tree on screen shows "calculating": only a silent rebuild is asked over a ready tree.
     if (last.state !== "ready" || r.treeId !== open?.id) return;
     // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
-    // and is asked as soon as that tree comes or fails, on the tree then on screen (FR-015).
-    if (asked || (expanding && expanding.nodeId !== r.nodeId)) {
+    // and is asked as soon as that tree comes (FR-015). With no build of the tree on screen, the tree is asked first.
+    if (asked || !screenBuilt || (expanding && expanding.nodeId !== r.nodeId)) {
       if (!queued.some((q) => q.nodeId === r.nodeId)) queued.push(r);
+      if (!screenBuilt && !asked && !expanding) ask(true);
       return;
     }
     seq++;
     expanding = { seq, ...r };
     host.request(seq, { type: "expand", ...r }, null);
+  }
+
+  /** A silent rebuild that left the tree on screen: the rows waiting are unavailable, never asked of another build. */
+  function keptScreen(): void {
+    screenBuilt = false;
+    const lost = queued;
+    queued = [];
+    for (const r of lost) branched(r, null);
   }
 
   /** The next row waiting is asked, or else the silent rebuild when due. */
@@ -290,7 +302,10 @@ export function startFormulaPipeline(deps: {
     // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
     if (log) deps.log({ event: log, id: request.id });
     // A silent rebuild refused or diverged keeps the tree on screen, as one that fails (FR-015).
-    if (!quiet || answer.tree.state === "ready") show(answer.tree);
+    if (!quiet || answer.tree.state === "ready") {
+      show(answer.tree);
+      screenBuilt = true;
+    } else keptScreen();
     if (quiet) nextJob();
   }
 
@@ -307,6 +322,7 @@ export function startFormulaPipeline(deps: {
       // spec 009 NFR-005: a tree the worker could not build, its mould too, says so with its id only
       deps.log({ event: "treeFailed", id: request.id });
       if (quiet) {
+        keptScreen();
         rebuild.failed();
         nextJob();
       } else show({ state: "unavailable", request });
