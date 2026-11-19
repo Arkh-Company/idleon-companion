@@ -117,6 +117,34 @@ test("a group with an unavailable source has no value; a group not built yet kee
   expect(groupValue(group("g", "sum", "lazy", 7), values())).toBe(7);
 });
 
+test("a yes/no row in a group counts as 1 or 0, as the worker counts it", () => {
+  const kids = [piece("a", 0), piece("owned", false)];
+  const g = group("g", "product", kids);
+  expect(groupValue(g, new Map([["a", 4], ["owned", true]]))).toBe(4);
+  expect(groupValue(g, new Map([["a", 4], ["owned", false]]))).toBe(0);
+});
+
+test("a yes/no row in a group keeps the arrows of the group and the pool when another row moves", () => {
+  const withOwned = (sword: number) => {
+    const t = tree(sword);
+    const [pool] = Array.isArray(t.kids) ? t.kids : [];
+    const [alchemy] = pool && Array.isArray(pool.kids) ? pool.kids : [];
+    if (alchemy && Array.isArray(alchemy.kids))
+      alchemy.kids.push(piece("Owned", true, null));
+    return t;
+  };
+  const arrows = arrowsOf(withOwned(30), baseOf(withOwned(20)).values);
+  expect(arrows.get("root/Additive pool/⚗️ Alchemy")).toEqual({
+    up: true,
+    text: "▲ +10%",
+  });
+  expect(arrows.get("root/Additive pool")).toEqual({
+    up: true,
+    text: "▲ +0.1",
+  });
+  expect(arrows.has("Owned")).toBe(false);
+});
+
 test("every row's value: a piece's from the pieces given, a pool's and a group's rebuilt from their rows", () => {
   const v = valuesOf(tree(20), { '[0,"Sword"]': 40 });
   expect(v.get("Sword")).toBe(40);
