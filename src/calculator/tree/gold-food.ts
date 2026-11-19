@@ -75,8 +75,16 @@ function foodName(what: string, text: string | null): string | null {
   return name !== null && isNameText(name) ? name : null;
 }
 
+const slotOf = (k: string) => Number(/\[(\d+)\]$/.exec(k)?.[1]);
+/**
+ * The quantity read of the food that counts (A18): N.js GoldFoodBonuses walks the slots i = 0 … n − 1 and sets the bonus
+ * to slot i's product for each slot whose food is of the effect, so the last such slot i is the one that counts.
+ */
 const quantityKey = (reads: Reads) =>
-  [...reads.keys()].find((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k));
+  [...reads.keys()]
+    .filter((k) => /^EquipmentQuantity\[2\]\[\d+\]$/.test(k))
+    .sort((a, b) => slotOf(a) - slotOf(b))
+    .at(-1);
 /** The texts of the worn food and of the emporium's (the worn food's when it has none), from the block's reads. */
 function foodTexts(reads: Reads): {
   foodText: string | null;
