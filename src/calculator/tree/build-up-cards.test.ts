@@ -122,3 +122,23 @@ test("[FR-018] the checks of a card's stars are in the ⓘ of its level, never r
     numbers: "1 + min(6, 4 + 1 + 1) = 7",
   });
 });
+
+test("[FR-018] a check of a card's stars that raised the level says yes, the list named once, by the forced level", () => {
+  const raised = (): Row => {
+    const c = cond("Card stars < 7", true);
+    return { ...c, node: { ...c.node, name: "Card stars < 7" } };
+  };
+  const card: Row = {
+    ...lazy("Emperor", 1, 7, cardLv("Boss6A")),
+    xf: ["Forced to 7 by the card list of the account", "→ 7"],
+  };
+  const { rows, expand } = placed({ 1: [fixed("Base stars", 4), raised()] }, [
+    card,
+  ]);
+  const opened = expand(rows[0]?.id ?? "");
+  expect(kidsOf(opened).map((k) => k.name)).toEqual(["Base stars"]);
+  expect(lines(opened)).toMatchObject({
+    names: "Forced to 7 by the card list of the account (Card stars < 7: yes)",
+    numbers: "→ 7",
+  });
+});
