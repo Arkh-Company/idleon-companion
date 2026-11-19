@@ -169,10 +169,11 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
       "(8 + 4 + 5 + 3) ÷ 100 = 0.2",
     ],
   });
-  // the worn food's quantity factor, named by its role, with the quantity in its ⓘ (FR-007)
+  // the worn food's quantity factor, named by its role, with the quantity in its ⓘ (FR-007), as N.js writes it:
+  // 1 + getLOG(1 + quantity) ÷ 2.14 (009 T023 r4)
   expect(factor?.formula).toEqual([
-    ["1", "+", "log₁₀", "(", "quantity", "+", "10", ")", "÷", "2.14"],
-    [1, 999, 10, 2.14, 2.404],
+    ["1", "+", "log₁₀", "(", "1", "+", "quantity", ")", "÷", "2.14"],
+    [1, 1, 999, 2.14, 2.402],
   ]);
   // the emporium's: its parts' product, the shared multiplier among them
   expect(kidsOf(emporium)[0]?.formula).toEqual({
