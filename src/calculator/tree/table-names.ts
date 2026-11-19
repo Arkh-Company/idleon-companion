@@ -302,6 +302,14 @@ export const TABLE_TEXTS = {
     "clean",
     "N.js FarmingStuffs ExoticBonusQTY (MarketExoticInfo i at level FarmUpg 20 + i)",
   ),
+  // family 13: the lore screen draws the lore Spelunky[14][c] in the panel of cave c, whose name is Spelunky[6][c]
+  cave: text(
+    "CustomLists.Spelunky",
+    (c) => [6, c],
+    null,
+    "clean",
+    "N.js Spelunk (the lore of cave c, Spelunky 14 c, under the cave Spelunky 6 c)",
+  ),
   summonUpgradeName: text(
     "CustomLists.SummonUPG",
     (n) => [n, 3],

@@ -225,10 +225,34 @@ export const RENAMES: readonly Rename[] = [
   ),
   rule(
     /^Spelunk\[0\]\[(\d+)\]$/,
-    (m) => `Spelunking lore ${String(n(m))} found`,
+    (m) =>
+      named(tableText("cave", n(m)), " found")?.replace(
+        /^/,
+        "Spelunking lore: ",
+      ) ?? null,
     "condition",
     "names",
     "owned",
+  ),
+  // family 13 (audit of 19/11), the short name "System: name": the lore of cave c by the cave its screen draws it under
+  // (Spelunk[0][c] ≥ 1 ⇒ the panel of cave c shows Spelunky[14][c]); the description stays the table's text
+  rule(
+    /^Spelunk\("DoWeHaveLoreN1", (\d+), 0\)$/,
+    (m) =>
+      named(tableText("cave", n(m)), "")?.replace(/^/, "Spelunking lore: ") ??
+      null,
+    null,
+    "lore; N.js Spelunk",
+  ),
+  // the Equinox screen titles the dream of task t "Dream #(t + 1)", and "Nightmare (t − 35)" for t ≥ 36
+  rule(
+    /^WeeklyBoss\.d_(\d+)$/,
+    (m) =>
+      n(m) >= 36
+        ? `Equinox: Nightmare ${String(n(m) - 35)}`
+        : `Equinox: Dream #${String(n(m) + 1)}`,
+    null,
+    "dream; N.js Dreamstuff",
   ),
   ...FIXED_RENAMES.caches,
   rule(
