@@ -4,11 +4,14 @@
 // in a variable (gold-food-branch.test.ts).
 import { afterEach, expect, test } from "vitest";
 import type { RecNode, RecValue } from "../recording.ts";
+import { chainContext } from "./chain-context.ts";
 import { TABLES } from "./gold-food-fixture.ts";
 import { goldFoodTerm } from "./gold-food-chain.ts";
+import { chainPools } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "./steps.ts";
+import type { Terms } from "./terms.ts";
 import { useGameTables } from "./table-names.ts";
 
 afterEach(() => {
@@ -161,4 +164,64 @@ test("[FR-017] the worn food's product, its log only inside the quantity factor:
   isShared(r?.group?.find((k) => k.node.name === "GFood Multi"));
   // the worn food's, named as in the pass (tree/gold-food.ts), never the emporium's (009 T023 r3)
   expect(r?.node.name).toBe("Equipped: Invented Charm");
+});
+
+test("[FR-017] a step that reads the shared multiplier back from its box: the chain follows the read, and its first pools are the set's and the family's", () => {
+  // the worn food's step, 7 × the box × (1 + log₁₀(1009) ÷ 2.14), after the multiplier's; the box is the block's own
+  // working value (its writer is the block), the read the chain follows (chain-context.ts ownCache, pools.ts prevOf)
+  const log = 3 / 2.14;
+  const worn = op(
+    "*",
+    op(
+      "*",
+      read("DNSM.GfoodMap.Amount", 7),
+      read("DNSM.GfoodBonusMULTI", 2.86),
+      7 * 2.86,
+    ),
+    op(
+      "+",
+      num(1),
+      op("/", { t: "call", id: 1, v: 3 }, num(2.14), log),
+      1 + log,
+    ),
+    7 * 2.86 * (1 + log),
+  );
+  const own = (e: Expr): Row | null => {
+    const r = term(e);
+    return e.t === "read" && e.p === "DNSM.GfoodBonusMULTI"
+      ? {
+          ...r,
+          open: { path: e.p, value: 2.86, writer: 0, entry: null, opening: [] },
+        }
+      : r;
+  };
+  const block = {
+    ...(nodes[0] ?? { id: 0, b: "?", a: [], c: [], p: null, pxi: 0 }),
+    v: worn.v,
+  };
+  const ctx = chainContext(
+    {
+      nodes,
+      steps: () => [MULTI_STEP, { v: Number(worn.v), e: worn }],
+      terms: () => ({ term: own }) as unknown as Terms,
+      turns: () => [],
+      opened: () => null,
+    },
+    block,
+    0,
+    new Set(),
+  );
+  const pools = chainPools(
+    ctx.steps ?? [],
+    { value: Number(worn.v) },
+    ctx.termAt ?? (() => null),
+    ctx.ownCache,
+  );
+  const codes = (i: number) =>
+    Array.isArray(pools) ? pools[i]?.rows.map((r) => r.node.code) : pools;
+  // the set's bonus, then the family (the 2) and the sources it adds
+  expect([codes(0), codes(1)]).toEqual([
+    ["Stats.set"],
+    [null, "Stats.a", "Stats.b"],
+  ]);
 });
