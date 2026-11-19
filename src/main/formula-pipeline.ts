@@ -200,12 +200,8 @@ export function startFormulaPipeline(deps: {
   }
 
   function expand(r: { treeId: string; nodeId: string }): void {
-    if (
-      last.state !== "ready" ||
-      r.treeId !== open?.id ||
-      asked?.quiet === false
-    )
-      return;
+    // A tree asked with no tree on screen shows "calculating": only a silent rebuild is asked over a ready tree.
+    if (last.state !== "ready" || r.treeId !== open?.id) return;
     // A tree asked again in silence: the host keeps one waiting job, so an expand now would replace it. The row waits,
     // and is asked as soon as that tree comes or fails, on the tree then on screen (FR-015).
     if (asked || (expanding && expanding.nodeId !== r.nodeId)) {
@@ -283,20 +279,18 @@ export function startFormulaPipeline(deps: {
   function received(id: number, raw: unknown, log?: "chainOpen"): void {
     if (asked?.seq !== id) return;
     const { request, quiet } = asked;
+    rebuild.came(asked.pair.calculatedAt);
     const answer = treeAnswer(raw, asked, {
       fed,
       checkedOnThisGame: deps.checkedOnThisGame(),
       stale,
     });
-    // A silent rebuild refused or diverged keeps the tree on screen, as one that fails (FR-015).
-    const kept = quiet && answer.tree.state !== "ready";
-    if (kept) rebuild.failed();
-    else rebuild.came(asked.pair.calculatedAt);
     asked = null;
     if (answer.log) deps.log(answer.log);
     // spec 009 NFR-005: a chain of steps the worker could not read as pools, with the id only
     if (log) deps.log({ event: log, id: request.id });
-    if (!kept) show(answer.tree);
+    // A silent rebuild refused or diverged keeps the tree on screen, as one that fails (FR-015).
+    if (!quiet || answer.tree.state === "ready") show(answer.tree);
     if (quiet) nextJob();
   }
 

@@ -152,8 +152,8 @@ export function rebuildClock(now: () => number = Date.now) {
       at = now();
       if (calculatedAt >= changedAt) due = false;
     },
-    /** A tree asked in silence failed, or came refused or diverged: the time starts again. The change that asked it
-     * was taken; only a change that came while it was asked still waits. */
+    /** A tree asked in silence failed: the time starts again. The change that asked it was taken; only a change that
+     * came while it was asked still waits. */
     failed() {
       at = now();
     },
