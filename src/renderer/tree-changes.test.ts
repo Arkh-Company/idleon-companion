@@ -239,3 +239,23 @@ test("live grows with the pieces it did not have, at their value then, and never
   const m = baseOf(tree(20), mark("Mark 1", { '[0,"Ring"]': 25 }));
   expect(growBase(m, extra)).toBe(m);
 });
+
+test("a mark of the 0.8.0 keyed a scratch box by its path: it still holds the one piece of that box the tree has now", () => {
+  const box = (id: string, key: string, value: number) =>
+    node({ id, name: id, pieceKey: key, value, fmt: "+", role: "piece" });
+  const root = node({
+    id: "root",
+    role: "root",
+    kids: [
+      box("Box", '[0,"DNSM.Box","Writer(1)",2]', 30),
+      box("Twin A", '[0,"DNSM.Twin","Writer(1)",0]', 4),
+      box("Twin B", '[0,"DNSM.Twin","Writer(1)",1]', 6),
+    ],
+  });
+  const old = mark("Mark 1", { '[0,"DNSM.Box"]': 20, '[0,"DNSM.Twin"]': 1 });
+  const arrows = arrowsOf(root, baseOf(root, old).values);
+  expect(arrows.get("Box")).toEqual({ up: true, text: "▲ +10" });
+  // two pieces of the box now: the old key says nothing of which one it was
+  expect(arrows.has("Twin A")).toBe(false);
+  expect(arrows.has("Twin B")).toBe(false);
+});
