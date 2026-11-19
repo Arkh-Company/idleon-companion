@@ -80,7 +80,7 @@ const unclean = (c: Row) =>
   /^(\d|Value\b|If )/.test(nameOf(c)) || / \d+ = \d+/.test(nameOf(c));
 
 /** The row an ⓘ is made for: its node, and the game's expressions around it (pieces.cjs `xformula`, `xweak`). */
-export type FormulaRow = Pick<Row, "node" | "xf" | "xweak" | "f">;
+export type FormulaRow = Pick<Row, "node" | "xf" | "xweak" | "f" | "below">;
 
 /** formulas.cjs `formulaOf` (B): the parts' product or sum gives the row's value. */
 function formulaOf(n: FormulaRow, all: readonly Row[]): Pair | null {

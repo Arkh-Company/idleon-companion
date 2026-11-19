@@ -61,6 +61,11 @@ export interface Row {
    */
   subject?: string;
   /**
+   * Reads beside the pools of the level above that this source's call read (tree/pool-rest.ts, audit family 10): shown
+   * under it, after its own rows.
+   */
+  below?: Row[];
+  /**
    * The ⓘ before the row's own rows exist (tree/formulas.ts): the game's expression around the row, its parts as tokens
    * (pieces.cjs `xformula`, and `xweak` when it names the row alone), or its finished pair (`f`, a curve's).
    */

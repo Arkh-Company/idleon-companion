@@ -7,7 +7,7 @@
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
-import { termsOf, vOf, withFormula } from "./formulas.ts";
+import { near, termsOf, vOf, withFormula } from "./formulas.ts";
 import { termOf } from "./share.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
@@ -30,7 +30,7 @@ import {
   ifChecks,
 } from "./build-up.ts";
 import { cardFactor, meritocracyMulti } from "./factors.ts";
-import { besidePools } from "./pool-rest.ts";
+import { besidePools, downToSources } from "./pool-rest.ts";
 import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
@@ -172,6 +172,13 @@ export function makePlaces(ctx: PlaceContext) {
     };
   }
 
+  /** Whether the call of the source `s` read `r`, its path at its value (tree/pool-rest.ts `downToSources`). */
+  const readBy = (s: Row, r: Row) =>
+    typeof s.open === "number" &&
+    !!nodes[s.open]?.r?.some(
+      ([p, v]) => p === r.node.code && near(Number(v), vOf(r)),
+    );
+
   /** Level `lv` placed under the row `id`, with the ⓘ it gives that row. */
   function placedLevel(id: string, lv: Level, name: string) {
     // a pool's or a system's ⓘ and shares are the mould's own (spec 009), never a guess from its rows, and so are those
@@ -186,7 +193,7 @@ export function makePlaces(ctx: PlaceContext) {
         ? { formula: lv.row.node.formula, rows: lv.rows }
         : // only pools beside each other (tree/pool-rest.ts)
           besidePools(
-            lv.rows,
+            downToSources(lv.rows, readBy),
             lv.row.xf
               ? // a lone part between the pools goes by its term (tree/pools.ts `lone`)
                 formulaOut(
@@ -199,7 +206,13 @@ export function makePlaces(ctx: PlaceContext) {
     return {
       formula: w.formula,
       ...(reached ? { maxReached: reached } : {}),
-      kids: placeAt({ id, code: lv.code }, w.rows, lv.at, vOf(lv.row)),
+      // the reads beside the pools above that its call read, after its rows (audit family 10)
+      kids: placeAt(
+        { id, code: lv.code },
+        [...w.rows, ...(lv.row.below ?? [])],
+        lv.at,
+        vOf(lv.row),
+      ),
     };
   }
 
