@@ -7,7 +7,12 @@ import type { RecNode } from "../recording.ts";
 import { fx3 } from "./curves.ts";
 import { flat } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
-import { emporiumName, GOLD_FOOD, multiFormula } from "./gold-food.ts";
+import {
+  emporiumName,
+  equippedName,
+  GOLD_FOOD,
+  multiFormula,
+} from "./gold-food.ts";
 import { formulaOut, near } from "./math.ts";
 import { withName } from "./row-checks.ts";
 import { finish, row, valueOf } from "./rows.ts";
@@ -62,12 +67,15 @@ export function goldFoodTerm(
 ): Row | null {
   if (!GOLD_FOOD.test.test(block.b)) return null;
   const x = strip(e);
-  const isLog = (y: Expr) => y.t === "call" && nodes[y.id]?.b === "getLOG";
-  // 1 + log₁₀(10 + quantity) ÷ 2.14
-  const q = x.t === "op" && x.o === "+" && isNum(x.l, 1) ? strip(x.r) : null;
-  const log =
-    q?.t === "op" && q.o === "/" && isNum(q.r, 2.14) ? strip(q.l) : null;
-  if (log?.t === "call" && isLog(log)) {
+  // the log call of the worn food's quantity factor, 1 + log₁₀(10 + quantity) ÷ 2.14, or null
+  const quantityLog = (y: Expr): Expr | null => {
+    const q = y.t === "op" && y.o === "+" && isNum(y.l, 1) ? strip(y.r) : null;
+    const log =
+      q?.t === "op" && q.o === "/" && isNum(q.r, 2.14) ? strip(q.l) : null;
+    return log?.t === "call" && nodes[log.id]?.b === "getLOG" ? log : null;
+  };
+  const log = quantityLog(x);
+  if (log?.t === "call") {
     const r = term(e, op);
     const quantity = Number(nodes[log.id]?.a[0]) - 10;
     const f: Pair = [
@@ -91,7 +99,10 @@ export function goldFoodTerm(
     t === multi ? shared(Number(t.v), null) : term(t, "*"),
   );
   if (parts.some((p) => !p)) return null;
-  const name = emporiumName(reads);
+  // the worn food's product has its quantity factor; the emporium's has none, its log₁₀ loose (009 T023 r3)
+  const name = fs.some((t) => quantityLog(strip(t)))
+    ? equippedName(reads)
+    : emporiumName(reads);
   // the shared multiplier is a value its own steps prove (the chain's first pools), with the 008's ⓘ: never a "?"
   const pair = multiFormula(
     multi.t === "read" ? at : { v: Number(multi.v), e: strip(multi) },

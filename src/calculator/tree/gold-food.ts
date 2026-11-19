@@ -98,6 +98,9 @@ function foodTexts(reads: Reads): {
 /** The emporium's row name, "Emporium: <the food's text>", or null with no text (spec 009, 009 r2). */
 export const emporiumName = (reads: Reads): string | null =>
   foodName("Emporium", foodTexts(reads).emText);
+/** The worn food's row name, "Equipped: <the food's text>", or null with no text (009 T023 r3). */
+export const equippedName = (reads: Reads): string | null =>
+  foodName("Equipped", foodTexts(reads).foodText);
 
 /**
  * The shared multiplier's ⓘ, its step `s0` (bench pieces.cjs goldFood): SECRET_SET multi × (max(Family Bonus 66, 1) +
