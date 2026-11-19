@@ -25,6 +25,10 @@ const TABLES = new Map<string, unknown>([
     Object.assign(at(6, ["Invented_Cove"]), { 14: ["Invented_lore_text"] }),
   ],
   ["CustomLists.DreamChallenge", at(3, ["Reach_an_invented_goal", "30"])],
+  [
+    "CustomLists.TaskShopDesc",
+    at(5, at(4, ["+{%_Larger_invented_bonuses_to_all", "your_Invented_Wins"])),
+  ],
 ]);
 
 test.each<[string, string, string]>([
@@ -39,6 +43,11 @@ test.each<[string, string, string]>([
     "5% Chance for +1 Grade for your Invented Gallery!",
   ],
   ["WeeklyBoss.d_3", "Equinox: Dream #4", "Reach an invented goal"],
+  [
+    "Tasks[2][5][4]",
+    "Merit shop: Winner's Bonuses from Summoning",
+    "Larger invented bonuses to all your Invented Wins",
+  ],
   [
     'Spelunk("DoWeHaveLoreN1", 0, 0)',
     "Spelunking lore: Invented Cove",

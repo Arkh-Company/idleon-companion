@@ -221,6 +221,11 @@ const CASES: Case[] = [
   ],
   ['RandomEvent("KillroyBonuses", 6, 0)', "Killroy: Daily coral gain", null],
   ['RandomEvent("KillroyBonuses", 7, 0)', null, null],
+  // a merit shop's purchase by what it raises (the list the Vinicius approved on 19/11); a filler slot has no name
+  ["Tasks[2][5][4]", "Merit shop: Winner's Bonuses from Summoning", null],
+  ["Tasks[2][0][0]", "Merit shop: Inventory Bag for everyone", null],
+  ["Tasks[2][6][5]", "Merit shop: Nautilus recipe", null],
+  ["Tasks[2][0][7]", null, null],
   ["WeeklyBoss.d_40", "Equinox: Nightmare 5", null],
   [
     "DNSM.GurtBonuzzDN",
