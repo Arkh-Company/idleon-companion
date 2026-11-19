@@ -84,6 +84,7 @@ export const GAME = new Map<string, unknown>([
   [
     "CustomLists.Research",
     list({
+      19: list({ 21: "+{%_Hat_Rack_bonus_multi" }),
       23: list({ 5: "Glassical_Bananical_Sticker" }),
       57: list({
         16: "Orion's_first_upgrade_is_}x_cheaper",

@@ -164,6 +164,8 @@ const EXAMPLES: [code: string, name: string, inferred?: 1][] = [
   ["DNSM.StarSigns[69]", "Golden Food bonuses (Beanbie Major)"],
   ["DNSM.FamBonusQTYs[66]", "HIGHER BONUSES FROM GOLDEN FOODS (family bonus)"],
   ["DNSM.AllTalWhichPlayer", "Character slot (whose Super Talents count)"],
+  // family 17 of the audit of 19/11: a Minehead floor's bonus by the text its screen writes, never its mode in words
+  ['Minehead("BonusQTY", 21, 0)', "Hat Rack bonus multi"],
 ];
 
 /** The shape rule that names `code`. */
