@@ -40,6 +40,18 @@ const RULES: readonly Rule[] = [
       "N.js Holes MonumentROGbonuses: the multiplier of the monument starts at 1 and changes in the next writes",
   },
   {
+    path: "DNSM.TKnS_DN",
+    block: "RoyalG",
+    mode: "TotalStatz",
+    // t = 0, then t = t + the stat of each kingdom entry: the start, then the total on its way to the last one
+    name: (at) =>
+      at === 0
+        ? { name: "Start value", leaf: "fixedValue" }
+        : { name: "Royal total stats (cached)" },
+    proof:
+      "N.js RoyalG TotalStatz: the total starts at 0 and adds each kingdom stat",
+  },
+  {
     path: "DNSM.GalleryDN2",
     block: "Gallery",
     mode: "InitializeNametagBonuses",
