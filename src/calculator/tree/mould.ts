@@ -265,6 +265,8 @@ function pooled(
 ): {
   rows: Row[];
   formula: Node["formula"];
+  /** The checks beside its pools its ⓘ says, no rows (A39). */
+  checks: Row[];
   pools: readonly Pool[];
   open: boolean;
 } | null {
