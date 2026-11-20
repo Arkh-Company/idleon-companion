@@ -64,7 +64,7 @@ export function shownTerms(
     const names = now.get(t);
     const n = seen.get(t) ?? 0;
     seen.set(t, n + 1);
-    return names && terms.filter((x) => x === t).length === names.length
+    return terms.filter((x) => x === t).length === names?.length
       ? (names[n] ?? t)
       : t;
   });
