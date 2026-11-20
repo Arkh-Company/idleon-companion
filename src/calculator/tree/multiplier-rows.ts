@@ -15,6 +15,21 @@ const BY_SHAPE_SOURCE = /^Multiplier \(.+\)$/;
 /** The constants of 1 + x ÷ 100, which make x a bonus in %. */
 const PERCENT = ["Base 1", "Percent to number (÷ 100)"];
 
+/**
+ * Row `r` of a product with each multiplier in it as its × row (`multiplierRow`), down through the unnamed steps that
+ * only multiply (a part of a working value the game multiplies in several steps, as the max damage's third part).
+ */
+export function multipliersIn(r: Row): Row {
+  const unnamed = !!r.node.flags.unnamed || byShapeOnly(r.node.name);
+  return r.op === "*" &&
+    r.node.code === null &&
+    r.open === null &&
+    unnamed &&
+    r.group
+    ? { ...r, group: r.group.map(multipliersIn) }
+    : multiplierRow(r);
+}
+
 /** Row `r` of a Multi pool as its multiplier's × row, when it is a factor of one source with the code's constants; else `r`. */
 export function multiplierRow(r: Row): Row {
   const n = r.node;

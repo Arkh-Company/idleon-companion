@@ -26,7 +26,7 @@ import type { Cap } from "./caps.ts";
 import { fx3 } from "./curves.ts";
 import { token } from "./formulas.ts";
 import { inlined } from "./inline.ts";
-import { multiplierRow } from "./multiplier-rows.ts";
+import { multipliersIn } from "./multiplier-rows.ts";
 import { strip } from "./scaled.ts";
 import { termOf } from "./share.ts";
 import type { Expr, Step } from "./steps.ts";
@@ -137,11 +137,8 @@ export function makeTerms(ctx: TermContext) {
       : null;
     const v = valueOf(e.v ?? null);
     if (!name || !own || typeof v !== "number") return null;
-    // the multipliers of a product of sources each their × row (rule 2)
-    const part =
-      own.op === "*" && own.group
-        ? { ...own, group: own.group.map(multiplierRow) }
-        : own;
+    // the multipliers of a product of sources each their × row, in its steps that only multiply too (rule 2)
+    const part = multipliersIn(own);
     const xv = Number(x.v);
     const [names, numbers] = caps.reduceRight<[string, string]>(
       (lines, cap, i) => capLines(cap, lines, i < caps.length - 1),
