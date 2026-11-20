@@ -246,7 +246,7 @@ export const SYSTEM_RULES: readonly {
       [
         /^OptionsListAccount\[232\]$/,
         "Sneaking Mastery",
-        "names-static OptionsListAccount[232] (bench [K0-NAME232]): the count of the sneaking masteries completed",
+        "N.js DamageDealed (the count of the sneaking masteries completed, as the names table proves it)",
       ],
       [
         /^GemItemsPurchased\[/,
