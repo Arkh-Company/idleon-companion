@@ -28,6 +28,23 @@ const M = 8 * 6 * 1.15;
 const BONUS = 20 * Math.pow((10 + Math.pow(M - 10, 0.86)) / 20, 0.5);
 const MULTI = 2 * Math.pow((6 * 1.04) / 2, 0.6);
 
+test("the tests' constant is a name of the code's place, Base and its number, never a proven name", () => {
+  expect(
+    [
+      "Base 1",
+      "Base 2500",
+      "Percent to number (÷ 100)",
+      "Minimum 0",
+      "Cap 1.3",
+    ].map((n) => CONSTANT.test(n)),
+  ).toEqual([true, true, true, true, true]);
+  expect(
+    ["Base Damage", "Base statue bonus", "Bonus", "Cotton Candy"].map((n) =>
+      CONSTANT.test(n),
+    ),
+  ).toEqual([false, false, false, false]);
+});
+
 test("two caps of a part summed in the pool are one row of the part's name, its sources its rows, its caps in its ⓘ", () => {
   const { b, add } = caps();
   expect(b.root.value).toBeCloseTo(BASE * BONUS * MULTI * 6, 6);
