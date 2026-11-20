@@ -1203,7 +1203,8 @@ lime.$scripts.N = function (_exports, $global) {
     return d.TreeShape.h.v;
   };
   // The caps of the game, as its max damage writes them (fix tree-shape-091): three parts of a working value, each
-  // capped as c + max((x - c)^e, 0) or c (x / c)^e, twice in a row; the first part summed with sources before its caps
+  // capped as c + max((x - c)^e, 0) or c (x / c)^e, twice in a row; the first part summed with sources before its caps,
+  // two companions among them
   // and with a read after them, the others multiplied, the second by 1 + (a + b) / 100 of two systems too, the third in
   // two steps; then the parts multiplied.
   Blocks._customBlock_TreeShapeCaps = function () {
@@ -1214,6 +1215,8 @@ lime.$scripts.N = function (_exports, $global) {
       L[0] +
       Blocks._customBlock_ArcadeBonus(0) * 1000 +
       Blocks._customBlock_Labb("BaseDamage", 0, 0) +
+      Blocks._customBlock_Companions(26) +
+      Blocks._customBlock_Companions(50) +
       s.TreeLevel;
     L[0] = 4000 + Math.max(Math.pow(L[0] - 4000, 0.9), 0);
     L[0] = 5000 + Math.max(Math.pow(L[0] - 5000, 0.8), 0);

@@ -13,7 +13,7 @@ const caps = () => {
   return { b, add, multi };
 };
 // the parts as the invented block gives them
-const X = 30 + 8000 + 7 + 25;
+const X = 30 + 8000 + 7 + 0.3 + 50 + 25;
 const BASE = 5000 + Math.pow(4000 + Math.pow(X - 4000, 0.9) - 5000, 0.8);
 const M = 8 * 6 * 1.15 * 1.12;
 const BONUS = 20 * Math.pow((10 + Math.pow(M - 10, 0.86)) / 20, 0.5);
@@ -55,6 +55,7 @@ test("two caps of a part summed in the pool are one row of the part's name, its 
   // of no system after them; no constant of its caps among them
   const kids = kidsOpen(b, base);
   expect(kids.map((k) => [k.name, k.code, k.role])).toEqual([
+    ["🐾 Companions", null, "system"],
     ["🕹️ Arcade", null, "system"],
     ["🧪 Lab", null, "system"],
     [
@@ -65,7 +66,7 @@ test("two caps of a part summed in the pool are one row of the part's name, its 
     [expect.any(String), "TreeLevel", "piece"],
   ]);
   expect(
-    kids.slice(0, 2).map((g) => kidsOpen(b, g).map((k) => [k.name, k.code])),
+    kids.slice(1, 3).map((g) => kidsOpen(b, g).map((k) => [k.name, k.code])),
   ).toEqual([
     [["Base Damage", null]],
     [["Base Damage", 'Labb("BaseDamage", 0, 0)']],
@@ -77,10 +78,25 @@ test("two caps of a part summed in the pool are one row of the part's name, its 
     /^5000 \+ max \( pow \( \( 4000 \+ max \( pow \( \( .+ \) − 4000 , 0\.9 \) , 0 \) \) − 5000 , 0\.8 \) , 0 \)$/,
   );
   expect(names).toContain(
-    "( 🕹️ Arcade + 🧪 Lab + Damage working value, part 1 + TreeLevel )",
+    "( 🐾 Companions + 🕹️ Arcade + 🧪 Lab + Damage working value, part 1 + TreeLevel )",
   );
   expect(names).not.toContain("Game value");
   expect(numbers?.split(" ").at(-1)).toBe(String(+BASE.toFixed(3)));
+});
+
+test("a group's ⓘ inside a cap names the rows it shows, as they are placed (a row named by its child too)", () => {
+  // the companions have no name until they are placed: each then takes its child's, "Companion bonus"
+  const { b, add } = caps();
+  const base = kidsOpen(b, add).find((k) => k.name === "Base Damage");
+  const [companions] = kidsOpen(b, base);
+  const rows = kidsOpen(b, companions);
+  expect(rows.map((k) => [k.name, k.code])).toEqual([
+    ["Companion bonus", "Companions(26)"],
+    ["Companion bonus", "Companions(50)"],
+  ]);
+  expect(linesOf(companions?.formula)[0]).toBe(
+    "Companion bonus + Companion bonus",
+  );
 });
 
 test("caps of a part multiplied in the pool are one row each, named by the part; no cap's constant is loose in the pool", () => {
