@@ -3,8 +3,15 @@
 // value are one row, named by what they cap, the part of the game's working value whose sources x sums or multiplies
 // (CAP_NAMES); its constant, exponent and floor are in its ⓘ (tree/terms.ts). A cap whose part has no name in the table
 // stays as it is.
+import { fx3 } from "./curves.ts";
+import { token } from "./formulas.ts";
+import { inlined } from "./inline.ts";
 import { near } from "./math.ts";
+import { multipliersIn } from "./multiplier-rows.ts";
+import { row } from "./rows.ts";
+import type { Row } from "./rows.ts";
 import { strip } from "./scaled.ts";
+import { termOf } from "./share.ts";
 import type { Expr, Step } from "./steps.ts";
 
 /** One cap: added (c + max((x − c)^e, 0)) or scaled (c × (x ÷ c)^e), with its floor of 0 or none, around `x`. */
@@ -18,7 +25,7 @@ export interface Cap {
 
 /**
  * The name of each part of a working value that caps soften, by the read of the part, with its proof. The game has no
- * name for the max damage's second and third parts: their names are Vinicius's (20/11).
+ * name for the max damage's second and third parts: their names are the ones Vinicius chose (19/11).
  */
 export const CAP_NAMES: ReadonlyMap<string, { name: string; proof: string }> =
   new Map([
@@ -27,7 +34,7 @@ export const CAP_NAMES: ReadonlyMap<string, { name: string; proof: string }> =
       {
         name: "Base Damage",
         proof:
-          "N.js DamageDealed Max, part 1 (capped at 4000 and 15000); the game's texts: the stamps' Base Damage, the statue's BASE_DAMAGE, the cards",
+          "N.js DamageDealed Max, part 1 (capped at 4000 and 15000); the game texts of the stamps (Base Damage), the statue (BASE_DAMAGE) and the cards",
       },
     ],
     [
@@ -35,7 +42,7 @@ export const CAP_NAMES: ReadonlyMap<string, { name: string; proof: string }> =
       {
         name: "Damage Bonus",
         proof:
-          "N.js DamageDealed Max, part 2 (capped at 100, 2e6 and 1e8); no name in the game, Vinicius's (20/11)",
+          "N.js DamageDealed Max, part 2 (capped at 100, 2e6 and 1e8); no name in the game, chosen by Vinicius (19/11)",
       },
     ],
     [
@@ -43,7 +50,7 @@ export const CAP_NAMES: ReadonlyMap<string, { name: string; proof: string }> =
       {
         name: "Damage Multi",
         proof:
-          "N.js DamageDealed Max, part 3 (capped at 100 up to 6e10); no name in the game, Vinicius's (20/11)",
+          "N.js DamageDealed Max, part 3 (capped at 100 up to 6e10); no name in the game, chosen by Vinicius (19/11)",
       },
     ],
   ]);
@@ -166,4 +173,60 @@ export function joinedCaps(terms: readonly Expr[], op: "+" | "*"): Expr[] {
     out.splice(Math.max(i, j), 1);
   }
   return out;
+}
+
+/**
+ * The row of the cap step `e`, step `at` of `steps`: the caps one after the other on a part of a working value, one row
+ * by the part's name, its rows the sources of the value they cap (`part` builds that value's row, read in the turn of
+ * its step), their math around its sum or product in its ⓘ; null when `e` is no cap or its part has no name.
+ */
+export function capRow(
+  e: Expr,
+  steps: readonly Step[],
+  at: number,
+  part: (x: Expr, at: number) => Row | null,
+): Row | null {
+  const outer = capOf(e);
+  if (!outer) return null;
+  const caps: Cap[] = [outer];
+  let from = at;
+  let x = outer.x;
+  for (;;) {
+    const y = strip(x);
+    const j =
+      y.t === "val"
+        ? steps.findLastIndex((st, i) => i < from && near(st.v, y.v))
+        : -1;
+    const st = steps[j];
+    const inner = st ? capOf(st.e) : null;
+    if (!inner) break;
+    caps.push(inner);
+    from = j;
+    x = inner.x;
+  }
+  const name = capName(x, steps, from);
+  const own = name ? part(x, from) : null;
+  const v = e.v;
+  if (!name || !own || typeof v !== "number" || !Number.isFinite(v))
+    return null;
+  // the multipliers of a product of sources each their × row, in its steps that only multiply too (rule 2)
+  const sources = multipliersIn(own);
+  const xv = Number(x.v);
+  const [names, numbers] = caps.reduceRight<[string, string]>(
+    (lines, cap, i) => capLines(cap, lines, i < caps.length - 1),
+    [token(`v:${String(xv)}`, termOf(sources.node)), fx3(xv)],
+  );
+  const capped: Row = {
+    node: row({ pieceKey: null, value: v, code: null, name, flags: {} }),
+    open: null,
+    group: [sources],
+    xf: [names, `${numbers} = ${fx3(v)}`],
+  };
+  // the part's own sum or product inside the caps, its rows the cap's (tree/inline.ts)
+  const w = inlined(capped, [sources]);
+  return {
+    ...capped,
+    node: { ...capped.node, formula: w.formula },
+    group: w.rows,
+  };
 }
