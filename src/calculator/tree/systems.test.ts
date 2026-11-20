@@ -282,3 +282,31 @@ test("the count of the sneaking masteries completed is Sneaking Mastery's", () =
   expect(s && systemLabel(s)).toBe("🥷 Sneaking Mastery");
   expect(systemOf("OptionsListAccount[233]")).toBeNull();
 });
+
+// fix tree-shape-091, round 1 (Vinicius, 19/11: "Sim, os quatro"; no source in a group Other): the four systems of the
+// max damage's sources that had none, each by its block or its read
+test.each<[string, string, string]>([
+  [
+    "the vote of the week",
+    'Summoning2("MeritocBonusz", 5, 0)',
+    "🏛️ Meritocracy",
+  ],
+  ["a statue", 'ArbitraryCode("StatueBonusGiven0")', "🗿 Statues"],
+  ["another statue", 'ArbitraryCode("StatueBonusGiven12")', "🗿 Statues"],
+  ["the coral kid", 'Thingies("CoralKidUpgBonus", 11, 0)', "🪸 Coral Reef"],
+  ["the weekly boss", "WeeklyBoss.g", "📅 Weekly Boss"],
+])("%s has its system", (_name, code, label) => {
+  const s = systemOf(code);
+  expect(s && systemLabel(s)).toBe(label);
+});
+
+test("a dream of the weekly boss's table and another mode of the blocks are none of the four", () => {
+  expect(
+    [
+      "WeeklyBoss.d_69",
+      'Summoning2("OtherMode", 5, 0)',
+      'ArbitraryCode("TotalQuestsComplete")',
+      'Thingies("DancingCoralBonus", 3, 0)',
+    ].map((c) => systemOf(c)?.name ?? null),
+  ).toEqual([null, null, null, null]);
+});
