@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.9.0...v0.9.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* tree-shape-091 ([#49](https://github.com/Arkh-Company/idleon-companion/issues/49)) ([9ede10a](https://github.com/Arkh-Company/idleon-companion/commit/9ede10a5412cd5da69ad89200203998ef1d9b85b))
+
 ## [0.9.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.8.0...v0.9.0) (2026-11-19)
 
 
