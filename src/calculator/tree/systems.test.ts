@@ -274,3 +274,11 @@ test("every system a tagged call gives is in the V1 list", () => {
       true,
     ]);
 });
+
+// fix tree-shape-091, round 1 (Vinicius, 19/11: the game has no system Other): the count of the sneaking masteries
+// completed, which the max damage multiplies by, is Sneaking Mastery's
+test("the count of the sneaking masteries completed is Sneaking Mastery's", () => {
+  const s = systemOf("OptionsListAccount[232]");
+  expect(s && systemLabel(s)).toBe("🥷 Sneaking Mastery");
+  expect(systemOf("OptionsListAccount[233]")).toBeNull();
+});
