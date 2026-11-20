@@ -100,6 +100,10 @@ function transformed(transform: string, raw: string): string | null {
 export const NAME_SIGNS =
   /[{};]|=>|&&|\|\||==|_customBlock_|\b(?:function|return|var|let|const|new|if)\s*\(/;
 export const MAX_NAME = 200;
+
+/** A name without the tag in brackets at its end ("Drop Rate (multi)" is "Drop Rate"), as an ⓘ writes it. */
+export const untagged = (name: string): string =>
+  name.replace(/\s*\(.*?\)\s*$/, "").trim();
 /** Whether a table's text may be a name: the host takes it (a text that fails stays out, never the whole tree). */
 export const isNameText = (s: string): boolean =>
   s.length <= MAX_NAME && !NAME_SIGNS.test(s);

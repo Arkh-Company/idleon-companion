@@ -10,7 +10,8 @@
 import { citing } from "./build-up.ts";
 import { byShapeOnly } from "./flatten.ts";
 import { isCond, isConstant } from "./formulas.ts";
-import { inlined } from "./inline.ts";
+import { inlined, roleOf } from "./inline.ts";
+import { untagged as brief } from "./name-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
@@ -21,9 +22,6 @@ const BY_SHAPE_SOURCE = /^Multiplier \(.+\)$/;
 
 /** The constants of 1 + x ÷ 100, which make x a bonus in %. */
 const PERCENT = ["Base 1", "Percent to number (÷ 100)"];
-
-/** A name without the tag at its end, as an ⓘ writes it (tree/formulas.ts `short`). */
-const brief = (name: string) => name.replace(/\s*\(.*?\)\s*$/, "").trim();
 
 /** A count a bonus is multiplied by: a quantity, a level, or a total by its name. */
 const isCount = (r: Row) =>
@@ -95,7 +93,7 @@ export function multiplierRow(r: Row, times = true): Row {
   // the source that says the row's name again is its role, in its row and in the ⓘ (family 7); a yes/no is its bonus,
   // and its check (a companion owned) is said in the ⓘ
   const renamed = vague || brief(head.node.name) === brief(name);
-  const role = head.node.leaf === "level" ? "Level" : "Bonus";
+  const role = roleOf(head);
   const owned =
     renamed && isCond(head) && head.node.condition === "owned"
       ? [

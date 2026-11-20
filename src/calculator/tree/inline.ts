@@ -9,6 +9,7 @@ import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { evaluate, formulaOut, isOperator } from "./math.ts";
+import { untagged } from "./name-text.ts";
 import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -194,7 +195,8 @@ function spliced(
 }
 
 /** The role of a source's own part in its math (decision of 19/11, as in cards and talents). */
-const roleOf = (r: Row) => (r.node.leaf === "level" ? "Level" : "Bonus");
+export const roleOf = (r: Pick<Row, "node">): "Level" | "Bonus" =>
+  r.node.leaf === "level" ? "Level" : "Bonus";
 
 /**
  * The ⓘ and rows of the source `name` (audit family 7, decision of 19/11): a part that says the source's name again
@@ -209,7 +211,7 @@ export function byRole(name: string, w: Built): Built {
   // one role names the source's term in the ⓘ; two would say nothing of which is which. The ⓘ writes a name with a tag
   // at its end short (tree/formulas.ts `short`): that term too, when no other row has that name
   const [role] = roles.size === 1 ? [...roles] : [];
-  const brief = name.replace(/\s*\(.*?\)\s*$/, "").trim();
+  const brief = untagged(name);
   const term = (t: string) =>
     t === name ||
     (brief !== name &&
