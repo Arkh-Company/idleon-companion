@@ -62,8 +62,8 @@ test("a constant of the game's math is never a source of a group: it stays its o
     writerOf,
   );
   expect([k?.node.role, k?.node.value]).toEqual(["piece", 4]);
-  // a constant in % adds a hundredth of its value: it is Other's, never a constant beside the groups; alone in its
-  // system, each stands alone as its +N% (decision of 19/11), the ÷ 100 in its pool's ⓘ
+  // a constant in % adds a hundredth of its value: it is Other's, never a constant beside the groups; a named system's
+  // lone bonus in % is its group in % (fix tree-shape-091, rule 1)
   const pct = bySystem(
     [
       { ...card(30), percent: true },
@@ -76,7 +76,7 @@ test("a constant of the game's math is never a source of a group: it stays its o
   expect(
     pct.map((r) => [r.node.name, r.node.combine, r.node.fmt, r.node.value]),
   ).toEqual([
-    [card(30).node.name, undefined, "%", 30],
+    ["🃏 Cards", "percent", "%", 0.3],
     ["🔹 Other", "percent", "%", 0.07],
   ]);
 });

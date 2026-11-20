@@ -112,7 +112,7 @@ test("a sum the root wrote inside an unnamed sum dissolves too, all the way", ()
 /** A bonus in % the game sums with others and divides by 100 before the sum enters the pool. */
 const pct = (r: Row): Row => ({ ...r, percent: true });
 
-test("bonuses in % the game divides by 100 go by system in % groups, a lone one stands alone as its +N%, and the pool still closes (FR-006, FR-017)", () => {
+test("bonuses in % the game divides by 100 go by system in % groups, a lone one in its system's too, and the pool still closes (FR-017)", () => {
   const rows = poolOf(
     [other(2, 2), pct(card(20)), pct(talent(6)), pct(card(4, 11))],
     2.3,
@@ -125,8 +125,8 @@ test("bonuses in % the game divides by 100 go by system in % groups, a lone one 
       r.node.value,
     ]),
   ).toEqual([
-    // decision of 19/11: the group of one source goes, and the source shows +6% (its pool's ⓘ divides it by 100)
-    ["GetTalentNumber(1, 207)", undefined, "%", 6],
+    // fix tree-shape-091, rule 1: a named system's group of one source stays, +6% as its part 0.06
+    ["🎯 Talents", "percent", "%", 0.06],
     ["🃏 Cards", "percent", "%", 0.24],
     ["InventedBlock(2)", undefined, null, 2],
   ]);
@@ -148,12 +148,12 @@ test("bonuses in % the game divides by 100 go by system in % groups, a lone one 
 test("an unnamed sum of bonuses in % dissolves, its bonuses still in % (FR-017)", () => {
   const rows = poolOf([other(2, 2), pct(unnamedSum())], 2.3);
   expect(brief(rows)).toEqual([
-    // the lone talent stands alone, its bonus in % (decision of 19/11)
-    ["GetTalentNumber(1, 207)", 6, []],
+    // the lone talent in its system's group in % (fix tree-shape-091, rule 1)
+    ["🎯 Talents", 0.06, ["GetTalentNumber(1, 207)"]],
     ["🃏 Cards", 0.24, ["CardBonusREAL(10, 0)", "CardBonusREAL(11, 0)"]],
     ["InventedBlock(2)", 2, []],
   ]);
-  expect(rows[0]?.percent).toBe(true);
+  expect(rows[0]?.group?.[0]?.percent).toBe(true);
 });
 
 test("the pool's ⓘ writes a group in % in its row's unit, +24% as 24 ÷ 100, and still closes on the pool (FR-008)", () => {
@@ -164,7 +164,7 @@ test("the pool's ⓘ writes a group in % in its row's unit, +24% as 24 ÷ 100, a
   ).rows[0];
   expect(pool0?.node.formula).toEqual([
     [
-      "GetTalentNumber(1, 207)",
+      "🎯 Talents",
       "÷",
       "100",
       "+",

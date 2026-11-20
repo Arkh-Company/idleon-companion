@@ -87,10 +87,19 @@ test("no step with no name stays, and every source of the step is a row of it (F
   ).toEqual([]);
 });
 
-test("the Additive pool holds the clamp as its row, its min and max in its ⓘ, its constants its rows (FR-008)", () => {
+test("the Additive pool holds the clamp as its row, in its system's group, its min and max in its ⓘ, its constants its rows (FR-008)", () => {
   const pool = kidsIn(poolOf(multi()));
-  const clamp = pool.find((k) =>
+  // fix tree-shape-091, rule 1: the clamp of one Arcade source sits in the group of Arcade's sources that are no %
+  const own = pool.find((k) =>
     below(k).some((x) => x.code === "ArcadeBonus(3)"),
+  );
+  expect([own?.role, own?.name, own?.combine]).toEqual([
+    "system",
+    "🕹️ Arcade",
+    "sum",
+  ]);
+  const clamp = kidsIn(own).find((k) =>
+    kidsIn(k).some((x) => x.code === "ArcadeBonus(3)"),
   );
   expect([clamp?.value, clamp?.code, clamp?.flags.unnamed]).toEqual([
     8,
@@ -103,17 +112,22 @@ test("the Additive pool holds the clamp as its row, its min and max in its ⓘ, 
   );
 });
 
-test("the bonuses of the Additive pool are by system, each in %: a group of two or more, one source alone (FR-017)", () => {
+test("the bonuses of the Additive pool are by system, each in %: a group of two or more, and of one source (FR-017)", () => {
   const pool = kidsIn(poolOf(multi()));
-  const group = (name: string) =>
-    pool.find((k) => k.role === "system" && k.name === name);
+  const group = (name: string, combine = "percent") =>
+    pool.find(
+      (k) => k.role === "system" && k.name === name && k.combine === combine,
+    );
   const arcade = group("🕹️ Arcade");
   expect(arcade?.combine).toBe("percent");
   expect(kidsIn(arcade).map((k) => k.value)).toEqual([40, 8, 160]);
   // its ⓘ names its rows whole, "Arcade: Total Accuracy" too, and closes
   const af = arcade?.formula;
   expect(Array.isArray(af) && af[1].at(-1)).toBe(2.08);
-  expect(pool.find((k) => k.code === "CardBonusREAL(1)")?.fmt).toBe("%");
+  // fix tree-shape-091, rule 1: the lone card bonus in % is its system's group in %
+  const cards = group("🃏 Cards");
+  expect([cards?.value, cards?.fmt]).toEqual([0.04, "%"]);
+  expect(kidsIn(cards).map((k) => k.code)).toEqual(["CardBonusREAL(1)"]);
   const other = group("🔹 Other");
   expect(other?.combine).toBe("percent");
   expect(kidsIn(other).map((k) => k.code)).toEqual([

@@ -122,7 +122,7 @@ const level = (rows: readonly Row[]) =>
 const sum = (rows: readonly Row[]) =>
   rows.reduce((s, r) => s + Number(r.node.value), 0);
 
-test("the sources go by system in the V1 order, Other last; a lone source stands alone", () => {
+test("the sources go by system in the V1 order, Other last; a named system's lone source is its group", () => {
   const rows = [
     other(7),
     card(20),
@@ -136,7 +136,8 @@ test("the sources go by system in the V1 order, Other last; a lone source stands
   expect(level(out)).toEqual([
     ["🎯 Talents", 15],
     ["🃏 Cards", 24],
-    ["DNSM.InventedCache", 3],
+    // fix tree-shape-091, rule 1: the cache's writer is Alchemy's, a group of one source
+    ["⚗️ Alchemy", 3],
     ["🔹 Other", 8],
   ]);
   // every level adds up to its parent, and nothing leaves
@@ -144,7 +145,7 @@ test("the sources go by system in the V1 order, Other last; a lone source stands
   expect(out.map((r) => r.group?.map((k) => k.node.code))).toEqual([
     ["GetTalentNumber(1, 207)", "GetTalentNumber(1, 208)"],
     ["CardBonusREAL(10, 0)", "CardBonusREAL(11, 0)"],
-    undefined,
+    ["DNSM.InventedCache"],
     ["InventedBlock(1)", "InventedBlock(2)"],
   ]);
 });
@@ -290,9 +291,16 @@ test("pools and groups have no piece, and their ids are the path of their names"
     alchemy?.pieceKey,
     alchemy?.value,
   ]).toEqual(["root/Additive pool/🃏 Cards", "system", null, 80]);
-  // the pools multiply to the root; a Multi pool of one source shows it alone
+  // the pools multiply to the root; a Multi pool of one source shows it in its system's group (fix tree-shape-091,
+  // rule 1)
   expect(placedRows.reduce((p, n) => p * Number(n.value), 1)).toBeCloseTo(10.8);
-  expect(ownKids(placedRows[1]).map((n) => n.code)).toEqual([
+  const [talents] = ownKids(placedRows[1]);
+  expect([talents?.id, talents?.role, talents?.value]).toEqual([
+    "root/Multi pool 1/🎯 Talents",
+    "system",
+    2,
+  ]);
+  expect(ownKids(talents).map((n) => n.code)).toEqual([
     "GetTalentNumber(1, 209)",
   ]);
 });

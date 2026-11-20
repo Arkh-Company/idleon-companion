@@ -95,9 +95,16 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
-  // the family is a system of its own (👪 Family Bonuses), so the other sources are a "🔹 Other" group in %, its rows
-  // the sources, adding 0.2 (FR-005, FR-006; A34's option B is only for a pool all of whose groups are "Other")
-  const [fam, other] = kidsOf(family);
+  // the family is a system of its own, in its group "👪 Family Bonuses" (fix tree-shape-091, rule 1), so the other
+  // sources are a "🔹 Other" group in %, its rows the sources, adding 0.2 (FR-005; A34's option B is only for a pool all
+  // of whose groups are "Other")
+  const [families, other] = kidsOf(family);
+  expect([families?.name, families?.role, families?.value]).toEqual([
+    "👪 Family Bonuses",
+    "system",
+    2,
+  ]);
+  const [fam] = kidsOf(families);
   expect([fam?.code, fam?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
   expect([other?.name, other?.combine, other?.value]).toEqual([
     "🔹 Other",
@@ -159,10 +166,10 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "(", "GfoodSet[0]", "+", "GfoodSet[1]", ")", "÷", "100"],
     [1, 10, 20, 100, 1.3],
   ]);
-  // the family, its system's one source, + the "🔹 Other" group in %, written in its rows' unit with its ÷ 100 (family
-  // 21), its own ⓘ its sources' sum ÷ 100
+  // the family's group of its one source (fix tree-shape-091, rule 1) + the "🔹 Other" group in %, written in its rows'
+  // unit with its ÷ 100, its own ⓘ its sources' sum ÷ 100
   expect(family?.formula).toEqual([
-    ["Invented Family (family bonus)", "+", "🔹 Other", "÷", "100"],
+    ["👪 Family Bonuses", "+", "🔹 Other", "÷", "100"],
     [2, 20, 100, 2.2],
   ]);
   expect(kidsOf(family)[1]?.formula).toEqual({
@@ -186,20 +193,26 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
   // 1.3 × (max(0, 1) + 0.2) = 1.56, by its pools
   const [set, family] = kidsOf(treeOf("DropRatez", 999, 3, 0));
   expect(Number(set?.value) * Number(family?.value)).toBeCloseTo(1.56, 9);
-  // under it, the read without the name the row above says (the 008's rename by the row above) and its minimum
-  expect(rowsOf(kidsOf(family)[0])).toEqual([
+  // in the family's group (fix tree-shape-091, rule 1), the read without the name the row above says (the 008's rename
+  // by the row above) and its minimum
+  const families = kidsOf(family)[0];
+  expect([families?.name, families?.role]).toEqual([
+    "👪 Family Bonuses",
+    "system",
+  ]);
+  expect(rowsOf(kidsOf(families)[0])).toEqual([
     ["Working value of the game", 0, "unknown"],
     ["Minimum 1", 1, "fixedValue"],
   ]);
   // max(family, 1) is the family's row, with its read's name and code, never a row with no name (FR-007)
-  const fam = kidsOf(family)[0];
+  const fam = kidsOf(families)[0];
   expect([fam?.code, fam?.name, fam?.value]).toEqual([
     "DNSM.FamBonusQTYs[66]",
     "Working value of the game (FamBonusQTYs)",
     1,
   ]);
   expect(family?.formula).toEqual([
-    ["DNSM.FamBonusQTYs[66]", "+", "🔹 Other", "÷", "100"],
+    ["👪 Family Bonuses", "+", "🔹 Other", "÷", "100"],
     [1, 20, 100, 1.2],
   ]);
   // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools; the
@@ -209,17 +222,22 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     ["Multi pool", near(1.3)],
     ["Additive pool", near(2.2)],
   ]);
-  expect(rowsOf(kidsOf(pools[1])[0])).toEqual([
+  const twice = kidsOf(pools[1])[0];
+  expect(twice?.name).toBe("👪 Family Bonuses");
+  expect(rowsOf(kidsOf(twice)[0])).toEqual([
     ["Working value of the game", 0, "unknown"],
     ["Minimum 2", 2, "fixedValue"],
   ]);
-  expect(kidsOf(pools[1])[0]?.code).toBe("DNSM.FamBonusQTYs[66]");
+  expect(kidsOf(twice)[0]?.code).toBe("DNSM.FamBonusQTYs[66]");
 });
 
 test("sources taken as a percent by a product are a product of their sum by 0.01, in the chain's pool", () => {
   const [, add] = kidsOf(treeOf("percent"));
   expect([add?.name, add?.value]).toEqual(["Additive pool", near(2.2)]);
-  const [family, ...sources] = kidsOf(add);
+  const [families, ...sources] = kidsOf(add);
+  // the family in its system's group (fix tree-shape-091, rule 1)
+  expect([families?.name, families?.value]).toEqual(["👪 Family Bonuses", 2]);
+  const [family] = kidsOf(families);
   expect([family?.code, family?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
   // the product of their sum by 0.01 has no name: no row (FR-017), its sources rows of the pool, its math in the
   // pool's ⓘ, which closes (FR-008)

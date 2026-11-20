@@ -101,14 +101,17 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
-  // the family is a system of its own (👪 Family Bonuses), so the other sources are a "🔹 Other" group in % (FR-005,
-  // FR-006; A34's option B is only for a pool all of whose groups are "Other")
+  // the family is a system of its own, its group of one source (fix tree-shape-091, rule 1), so the other sources are
+  // a "🔹 Other" group in % (FR-005; A34's option B is only for a pool all of whose groups are "Other")
   expect(
     kidsIn(family).map((k) => [k.code ?? k.name, k.combine, k.value]),
   ).toEqual([
-    ["DNSM.FamBonusQTYs[66]", undefined, 2],
+    ["👪 Family Bonuses", "sum", 2],
     ["🔹 Other", "percent", near(0.2)],
   ]);
+  expect(
+    kidsIn(kidsIn(family)[0]).map((k) => [k.code, k.combine, k.value]),
+  ).toEqual([["DNSM.FamBonusQTYs[66]", undefined, 2]]);
   expect([...sourcesOf(build, set), ...sourcesOf(build, family)]).toEqual(
     MULTI_SOURCES,
   );
