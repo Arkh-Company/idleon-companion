@@ -263,13 +263,33 @@ export function capRow(
   };
 }
 
-/** Row `r` of caps in a pool (rule 4): its rows by system (rule 1), its ⓘ by their groups; any other row as it is. */
-export function capInGroups(r: Row, writerOf: WriterOf): Row {
+/**
+ * Row `r` of caps in a pool (rule 4): its rows by system (rule 1), each factor 1 + (a + b + …) ÷ 100 of several sources
+ * its own Multi pool after them (`asPool`, FR-005 rule Y, FR-017; the session's answer A of round 1), "Multi pool",
+ * numbered when two or more; its ⓘ by their names; any other row as it is.
+ */
+export function capInGroups(
+  r: Row,
+  writerOf: WriterOf,
+  asPool: (factor: Row, name: string) => Row,
+): Row {
   const { capped, group } = r;
   const v = r.node.value;
   if (!capped || !group || typeof v !== "number") return r;
+  const factors = group.filter((k) => k.factorPool?.length);
+  const pools = factors.map((k, i) =>
+    asPool(
+      k,
+      factors.length > 1 ? `Multi pool ${String(i + 1)}` : "Multi pool",
+    ),
+  );
   const rows = [
-    ...bySystem(group, capped.op === "*" ? "product" : "sum", writerOf),
+    ...bySystem(
+      group.filter((k) => !factors.includes(k)),
+      capped.op === "*" ? "product" : "sum",
+      writerOf,
+    ),
+    ...pools,
   ];
   return {
     ...r,

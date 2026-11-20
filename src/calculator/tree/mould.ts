@@ -91,7 +91,20 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
   const product = p.combine === "product";
   const made = new Set<Row>();
   const times = (r: Row): Row => {
-    const m = r.capped ? capInGroups(r, writerOf) : multiplierRow(r, product);
+    const m = r.capped
+      ? capInGroups(r, writerOf, (f, name) =>
+          poolRow(
+            {
+              kind: "multi",
+              name,
+              value: vOf(f),
+              combine: "onePlusPercent",
+              rows: f.factorPool ?? [],
+            },
+            writerOf,
+          ),
+        )
+      : multiplierRow(r, product);
     if (m !== r && !r.capped) made.add(m);
     return m;
   };
