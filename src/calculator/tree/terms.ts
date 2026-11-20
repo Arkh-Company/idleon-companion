@@ -20,6 +20,7 @@ import {
 } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
+import { clampedProduct } from "./clamped.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -345,7 +346,17 @@ export function makeTerms(ctx: TermContext) {
               : e.t === "op" && e.o === "+"
                 ? `Sum of ${String(ns)} sources`
                 : `Formula of ${String(ns)} sources`));
-      const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
+      const r0 = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
+      // a floor or a cap around a product of factors of one source each: each factor its own row too (rule 3 of fix
+      // tree-shape-091), for its system's group
+      const cp = clampedProduct(e);
+      const factors = (cp?.factors ?? []).flatMap(
+        (f) => rowOfTerm(f, "*", d, reads2) ?? [],
+      );
+      const r =
+        cp && factors.length === cp.factors.length
+          ? { ...r0, clamp: { fn: cp.fn, bound: cp.bound, rows: factors } }
+          : r0;
       return own ? { ...r, r1src: own } : r;
     }
     // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the

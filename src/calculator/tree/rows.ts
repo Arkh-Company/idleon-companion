@@ -98,6 +98,12 @@ export interface Row {
    * FR-008): the row above never merges into it nor takes its ⓘ (tree/parent-passes.ts).
    */
   ceiling?: true;
+  /**
+   * A floor or a cap of the game around a product of factors of one source each, max(1, (1 + a) × (1 + 0.5 × b)) (fix
+   * tree-shape-091, rule 3): its rule, its bound and each factor's own row. In its system's group, the factors are the
+   * group's rows and the rule is the group's ⓘ (tree/groups.ts); anywhere else the row is as it is.
+   */
+  clamp?: { fn: "max" | "min"; bound: number; rows: Row[] };
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

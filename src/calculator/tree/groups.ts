@@ -114,6 +114,44 @@ function percentRow(s: System, rows: Row[]): Row {
   };
 }
 
+/**
+ * A system's group in a product with a floor or a cap of the game around some of its sources (fix tree-shape-091, rule
+ * 3; the clamp's answer B): each factor of the floored product a row of the group, the floor and the cap in its ⓘ
+ * ("max(1, Ancient Golem × Chippy) × Santa Snake"), closing on the group's value.
+ */
+function clampedRow(node: Row["node"], rows: readonly Row[]): Row {
+  const shown = rows.flatMap((r) => r.clamp?.rows ?? [r]);
+  const line = (each: (k: Row) => string) =>
+    rows
+      .map((r) =>
+        r.clamp
+          ? `${r.clamp.fn}(${fx3(r.clamp.bound)}, ${r.clamp.rows.map(each).join(" × ")})`
+          : each(r),
+      )
+      .join(" × ");
+  const pair: [string, string] | null =
+    node.value === null
+      ? null
+      : [
+          line((k) => termOf(k.node)),
+          `${line((k) => fx3(vOf(k)))} = ${fx3(Number(node.value))}`,
+        ];
+  const group = withShares(node, pair, shown).rows;
+  return {
+    node: {
+      ...node,
+      formula:
+        pair &&
+        formulaOut(pair, [
+          ...termsOf(group),
+          ...group.map((k) => termOf(k.node)),
+        ]),
+    },
+    open: null,
+    group,
+  };
+}
+
 /** A system's group of `rows`, its value their sum or product, its sources in the game's order (FR-002, FR-013). */
 function systemRow(s: System, combine: Combine, rows: Row[]): Row {
   if (combine === "max" || combine === "min")
@@ -136,7 +174,8 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
     fmt: product ? "x" : combine === "onePlusPercent" ? "%" : "+",
     flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
   });
-  // every source in its place (FR-016)
+  // every source in its place (FR-016); a floored product's factors are rows of the group, its rule in its ⓘ (rule 3)
+  if (product && rows.some((r) => r.clamp)) return clampedRow(node, rows);
   const group = withShares(node, null, rows).rows;
   const pair = value === null ? null : ownPair(group, product, value);
   return {

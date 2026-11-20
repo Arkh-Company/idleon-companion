@@ -119,13 +119,15 @@ const marked = (rows: readonly Row[], moves = isStep): Row[] =>
 /**
  * The ⓘ and rows of a pool or a group (spec 009, FR-017) whose rows hold an unnamed step: each step replaced by its
  * parts and its ⓘ in brackets, as `inlined` does, the ⓘ around them `pairOf` the rows; null when none moves. Only
- * the steps `moves` says move.
+ * the steps `moves` says move, and of their parts only those `shows` says are rows (a pool's take no constant of the
+ * code, which its ⓘ says: fix tree-shape-091).
  */
 export function inPool(
   node: Pick<Row["node"], "name" | "value">,
   rows: Row[],
   pairOf: (rows: readonly Row[]) => [string, string] | null,
   moves: (r: Row) => boolean = isStep,
+  shows: (part: Row) => boolean = () => true,
 ): Built | null {
   if (!rows.some(moves)) return null;
   const m = marked(rows, moves);
@@ -136,7 +138,7 @@ export function inPool(
       pair,
       m.map((r) => termOf(r.node)),
     );
-  return spliced(node, top, rows, moves);
+  return spliced(node, top, rows, moves, shows);
 }
 
 /**
@@ -148,6 +150,7 @@ function spliced(
   top: CalcTreeNode["formula"],
   rows: readonly Row[],
   moves = isStep,
+  shows: (part: Row) => boolean = () => true,
 ): Built | null {
   if (!Array.isArray(top)) return null;
   // the names and the numbers; the game's text of the bonus, when the ⓘ has one, stays its first line
@@ -171,7 +174,7 @@ function spliced(
     }
     atoms = joined;
     moved++;
-    out.push(...movedUp(r, inner.rows));
+    out.push(...movedUp(r, inner.rows.filter(shows)));
   }
   const result = atoms[1].at(-1);
   const v = Number(node.value);
