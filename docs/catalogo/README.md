@@ -36,21 +36,23 @@ Bônus · Ganho por tempo · Custo · Chance e taxa · Limite e tempo · Progres
 
 ## Tipos
 
-| Tipo             | Exemplos                                         |
-| ---------------- | ------------------------------------------------ |
-| Stat             | Drop Rate, Damage, Efficiency                    |
-| Multi            | EXP Multiplier, Loot Value Multi                 |
-| Chance           | Multi-Ore, Card Drop Chance                      |
-| Velocidade       | Build Rate, Brew Speed, Charge Speed             |
-| Ganho por tempo  | Div Pts per hr, Essence Gain /HR                 |
-| Custo            | custo do próximo nível                           |
-| Redutor de custo | Bubble cost reduction                            |
-| Limite           | vagas de Inventory, nível máximo, capacidade     |
-| Contagem         | quanto você tem: penas, baús, Gilded Stamps      |
-| Nível            | nível do stamp, da skill                         |
-| Tempo            | tempo de espera, de incubação                    |
-| Liberado         | sim/não da tela                                  |
-| Outro            | o que não cabe nos anteriores, com `motivo_tipo` |
+| Tipo              | Exemplos                                         |
+| ----------------- | ------------------------------------------------ |
+| Stat              | Drop Rate, Damage, Efficiency                    |
+| Multi             | EXP Multiplier, Loot Value Multi                 |
+| Chance            | Multi-Ore, Card Drop Chance                      |
+| Velocidade        | Build Rate, Brew Speed, Charge Speed             |
+| Ganho por tempo   | Div Pts per hr, Essence Gain /HR                 |
+| Custo             | custo do próximo nível                           |
+| Redutor de custo  | Bubble cost reduction                            |
+| Limite            | vagas de Inventory, nível máximo, capacidade     |
+| Contagem          | quanto você tem: penas, baús, Gilded Stamps      |
+| Nível             | nível do stamp, da skill                         |
+| Tempo             | tempo de espera, de incubação                    |
+| Liberado          | sim/não da tela                                  |
+| Bônus de item     | o bônus de cada stamp, carta, estátua ou bribe   |
+| Valor por unidade | quantidade por drop, por ciclo, por armadilha    |
+| Outro             | o que não cabe nos anteriores, com `motivo_tipo` |
 
 ## Tipos de folha
 
