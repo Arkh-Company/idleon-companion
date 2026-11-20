@@ -5,6 +5,10 @@
 // product by those rows' names, never "Game value"; its constant, exponent and floor in its ⓘ only, never loose in the
 // pool, the cap's c added before its step too. Over the invented game (fake-game.js TreeShapeCaps), invented values.
 import { expect, test } from "vitest";
+import type { CalcTreeNode } from "../tree-contract.ts";
+import { shownTerms } from "./places.ts";
+import { row } from "./rows.ts";
+import type { Row } from "./rows.ts";
 import { CONSTANT, kidsOpen, linesOf, shapeTree } from "./shape-fixture.ts";
 
 const caps = () => {
@@ -169,4 +173,33 @@ test("caps of a part multiplied in the pool are one row each, named by the part;
   expect(
     ["Damage Bonus", "Damage Multi"].map((n) => part(n)?.flags.unnamed),
   ).toEqual([undefined, undefined]);
+});
+
+test("rows that shared a term before their placement each give the ⓘ their own name, in their order", () => {
+  // the Base Damage's ⚗️ Alchemy: three unnamed steps, two of which their placement names after their bubble
+  const step = (v: number): Row => ({
+    node: row({ pieceKey: null, value: v, code: null }),
+    open: null,
+  });
+  const rows = [step(8), step(2), step(5)];
+  const placed = ["Bubble A", "Game value", "Bubble C"].map(
+    (name, i): CalcTreeNode => ({
+      id: String(i),
+      ...row({ pieceKey: null, value: 1, code: null, name }),
+      ...(name === "Game value" ? { flags: { unnamed: true } } : {}),
+    }),
+  );
+  expect(
+    shownTerms(
+      [
+        ["Game value", "+", "Game value", "+", "Game value"],
+        [8, 2, 5, 15],
+      ],
+      rows,
+      placed,
+    ),
+  ).toEqual([
+    ["Bubble A", "+", "Game value", "+", "Bubble C"],
+    [8, 2, 5, 15],
+  ]);
 });

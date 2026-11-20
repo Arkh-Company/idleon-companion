@@ -44,7 +44,7 @@ import type { CacheOpen, Row } from "./rows.ts";
  * otherwise (a vague row named by its child, a step by its source) replaced by its new one, so that the ⓘ names the rows
  * it shows (fix tree-shape-091, round 2); a term two rows share, and any other ⓘ, as it is.
  */
-function shownTerms(
+export function shownTerms(
   f: CalcTreeNode["formula"],
   rows: readonly Row[],
   kids: readonly CalcTreeNode[],
