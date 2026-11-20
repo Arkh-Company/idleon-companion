@@ -12,23 +12,23 @@ O Vinicius validou as marcas do W1 ao W7, do Personagem e da Conta em 20/11/2026
 
 ## Campos de cada número
 
-| Campo                                | O que é                                                                         |
-| ------------------------------------ | ------------------------------------------------------------------------------- |
-| `id`                                 | Identificador estável do número                                                 |
-| `nome`                               | Nome em inglês, pelo texto do jogo                                              |
-| `mundo`                              | W1 a W7, Personagem ou Conta                                                    |
-| `sistema`                            | Sistema do jogo onde o número mora                                              |
-| `caixa`                              | Caixa de organização, a mesma das páginas de inventário                         |
-| `tipo`                               | O que o número é (lista abaixo)                                                 |
-| `tipo_folha`                         | O papel do número dentro de uma conta, quando ele é folha; vazio quando é galho |
-| `destino`                            | Para que o número serve (lista abaixo)                                          |
-| `marca`                              | `sim` (entra no catálogo de árvores), `nao` ou vazio                            |
-| `regra`                              | Número da regra que decidiu a marca, em [regras.md](regras.md)                  |
-| `motivo`                             | Por que o número tem essa marca                                                 |
-| `tela`                               | Onde o número aparece no jogo                                                   |
-| `prova`                              | Referência ao código do jogo (bloco e modo), nunca trecho de código             |
-| `arvore_mae`                         | Só nos de destino `dentro-de-arvore`: as árvores onde o número aparece          |
-| `destino_proposto`, `motivo_destino` | Só nos `a-classificar`: o destino proposto, que ainda falta confirmar           |
+| Campo            | O que é                                                                         |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `id`             | Identificador estável do número                                                 |
+| `nome`           | Nome em inglês, pelo texto do jogo                                              |
+| `mundo`          | W1 a W7, Personagem ou Conta                                                    |
+| `sistema`        | Sistema do jogo onde o número mora                                              |
+| `caixa`          | Caixa de organização, a mesma das páginas de inventário                         |
+| `tipo`           | O que o número é (lista abaixo)                                                 |
+| `tipo_folha`     | O papel do número dentro de uma conta, quando ele é folha; vazio quando é galho |
+| `destino`        | Para que o número serve (lista abaixo)                                          |
+| `marca`          | `sim` (entra no catálogo de árvores), `nao` ou vazio                            |
+| `regra`          | Número da regra que decidiu a marca, em [regras.md](regras.md)                  |
+| `motivo`         | Por que o número tem essa marca                                                 |
+| `tela`           | Onde o número aparece no jogo                                                   |
+| `prova`          | Referência ao código do jogo (bloco e modo), nunca trecho de código             |
+| `arvore_mae`     | Só nos de destino `dentro-de-arvore`: as árvores onde o número aparece          |
+| `motivo_destino` | Nos números sem regra: por que ganharam esse destino                            |
 
 ## Caixas
 
@@ -64,10 +64,9 @@ O papel na conta, do ponto de vista do jogador, nunca a origem do dado: Level, Q
 | ------------------ | ---------------------------------------------------------------------------------------- | ------- |
 | `arvore`           | Entra no catálogo de árvores agora                                                       | 289     |
 | `dentro-de-arvore` | Folha ou galho de uma árvore que existe                                                  | 214     |
-| `planejador`       | Custo, nível, contagem e limite, para uma futura tela de quanto custa e quanto falta     | 392     |
-| `painel-de-farm`   | Ganho por tempo, para a feature futura                                                   | 41      |
-| `alvo-atual`       | Muda com a pedra, o mapa ou o monstro, para uma futura tela do que se está fazendo agora | 40      |
-| `clicker`          | Poppy, Clamworks, Orion e Bubba, que já têm otimizadores                                 | 32      |
-| `copia`            | O mesmo número em outra tela                                                             | 10      |
-| `descartado`       | Simples demais, sim/não da tela ou só dentro de minigame                                 | 136     |
-| `a-classificar`    | Marcado sem uma regra que decidisse; tem `destino_proposto`                              | 135     |
+| `planejador`       | Custo, nível, contagem e limite, para uma futura tela de quanto custa e quanto falta     | 436     |
+| `painel-de-farm`   | Ganho por tempo, para a feature futura                                                   | 61      |
+| `alvo-atual`       | Muda com a pedra, o mapa ou o monstro, para uma futura tela do que se está fazendo agora | 58      |
+| `clicker`          | Poppy, Clamworks, Orion e Bubba, que já têm otimizadores                                 | 40      |
+| `copia`            | O mesmo número em outra tela                                                             | 12      |
+| `descartado`       | Simples demais, sim/não da tela ou só dentro de minigame                                 | 179     |

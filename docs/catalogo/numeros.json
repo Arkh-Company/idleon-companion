@@ -7,7 +7,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "O valor que o stamp dá no nível atual; a tela mostra só o número, sem os multiplicadores escondidos.",
@@ -20,7 +20,6 @@
       "chop-efficiency",
       "death-multikill-total"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: o bônus de cada stamp aparece dentro das árvores dos stats que ele aumenta (Damage, Drop Rate, eficiências, Multikill)."
   },
   {
@@ -31,7 +30,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "É a soma por stat que entra nas outras contas (Drop Rate, Damage, eficiência…); é o que a árvore de cada stat vai mostrar como \"Stamps\".",
@@ -44,7 +43,6 @@
       "chop-efficiency",
       "death-multikill-total"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 8: o total dos Stamps por stat é a linha \"Stamps\" dentro da árvore de cada stat."
   },
   {
@@ -55,13 +53,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos níveis o jogador já comprou em cada stamp.",
     "tela": "Stamps",
     "prova": "estado `StampLevel`; evento `STAMPS3`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de cada stamp, exemplo citado na própria regra."
   },
   {
@@ -72,13 +69,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Até onde o stamp sobe antes de pagar material para subir o teto.",
     "tela": "Stamps",
     "prova": "estado `StampLevelMAX`; bloco `StampCostss`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: o máximo que só sobe pagando, exemplo citado na própria regra (o do stamp)."
   },
   {
@@ -89,13 +85,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto custa o próximo nível; só uma propina reduz.",
     "tela": "Stamps (COST; quando o stamp está abaixo do teto)",
     "prova": "bloco `StampCostss` (ramo Money), `StampDetails`; `GetBribeBonus` 0 (Insider Trading)",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo do próximo nível, com um redutor de uma fonte só (Insider Trading)."
   },
   {
@@ -106,13 +101,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto material custa subir o teto; tem cinco redutores escondidos (átomo, sigil, Meritocracy, vial, Gilded).",
     "tela": "Stamps (COST; quando o stamp está no teto)",
     "prova": "bloco `StampCostss` (ramo do material); `AtomCollider` modo `AtomBonuses` 0, `Labb` modo `SigilBonus` 6, `Summoning2` modo `MeritocBonusz` 14, vial `MatCostStamp`, Gilded Stamps (`OptionsListAccount` 154)",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo de subir o teto; os redutores aparecem como fontes, não como árvore."
   },
   {
@@ -123,13 +117,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos Gilded Stamps o jogador tem; cada um corta 95% do próximo custo de teto.",
     "tela": "Stamps (contador no canto)",
     "prova": "estado `OptionsListAccount` 154; eventos `STAMPS2`, `STAMPS3`; bloco `StampCostss`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: os Gilded Stamps que ele tem são exemplo citado na própria regra."
   },
   {
@@ -170,13 +163,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos stamps ainda podem ser dobrados. O catálogo o arquiva no Compass, mas aparece na tela de Stamps.",
     "tela": "Stamps (botão do doubler)",
     "prova": "`Windwalker` modos `StampDoublersLeft`, `CompassBonus` 44; `Summoning` modo `EventShopOwned` 18",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: é a contagem que sobra do Stamp doublers total (W6, que já tem árvore)."
   },
   {
@@ -187,7 +179,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": "Bônus cru",
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "O efeito de cada propina comprada; 6 das 41 linhas só liberam o próximo conjunto.",
@@ -200,7 +192,6 @@
       "forge-ore-capacity",
       "constr-library-min-lv"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: o efeito de cada bribe aparece dentro da árvore do número que aumenta (Total Damage, Card Drop, AFK Gains, Forge Capacity, Min Book Lv)."
   },
   {
@@ -211,13 +202,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Preço da propina; fixo, nada reduz.",
     "tela": "Stamps › Bribes",
     "prova": "tabela `BribeDescriptions` (coluna do preço); eventos `STAMPS`, `STAMPS2`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: preço fixo da bribe, que nada reduz."
   },
   {
@@ -228,13 +218,12 @@
     "caixa": "Progresso",
     "tipo": "Liberado",
     "tipo_folha": "Condição",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quais propinas o jogador já comprou.",
     "tela": "Stamps › Bribes",
     "prova": "estado `BribeStatus`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 17: é o sim ou não de cada bribe comprada, como o Event Shop item owned."
   },
   {
@@ -245,13 +234,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Preço de um item na loja; a propina Mandatory Fire Sale só desconta. Está arquivado em Bribes, mas é número de loja.",
     "tela": "lojas das cidades (não é a tela de Bribes)",
     "prova": "`RunCodeOfTypeXforThingY` modo `BuyPrice`; `GetBribeBonus` 2 (Mandatory Fire Sale)",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: preço de item de loja, com um desconto de uma fonte só (Mandatory Fire Sale)."
   },
   {
@@ -262,7 +250,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "O bônus que cada estátua dá; tem talento de classe, Onyx/Zenith, Dragon Statue e Vault por trás.",
@@ -275,7 +263,6 @@
       "stats-cash-from-mobs",
       "anvil-production-speed"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: o bônus de cada estátua aparece dentro da árvore do stat que ela aumenta."
   },
   {
@@ -286,13 +273,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Nível de cada estátua.",
     "tela": "Statues",
     "prova": "estado `StatueLevels`; evento `StatuesObolCalc`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de cada estátua."
   },
   {
@@ -303,13 +289,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas estátuas faltam depositar; depende só do nível.",
     "tela": "Statues (barra de depósito)",
     "prova": "`ArbitraryCode` modo `StatueExpReq`; eventos `StatueBars`, `StatuesObolCalc`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: estátuas a depositar para o próximo nível, que só dependem do nível."
   },
   {
@@ -320,13 +305,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto da barra já foi preenchido.",
     "tela": "Statues (barra de depósito)",
     "prova": "estado `StatueLevels`; evento `StatueBars`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: progresso da barra de depósito."
   },
   {
@@ -337,13 +321,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto custa tornar a estátua Gold; depende só da posição da estátua na lista.",
     "tela": "Statues (lista, custo em coins)",
     "prova": "`Tower2Stats` modo `StatueGoldCost`; evento `StatueNewAnvilmark`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo fixo em coins para virar Gold."
   },
   {
@@ -354,13 +337,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Tier",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Em que tier cada estátua está; Onyx e Zenith multiplicam o bônus.",
     "tela": "Statues (cor da estátua)",
     "prova": "estado `StatueG`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: o degrau da estátua (Gold, Onyx, Zenith), como o tier de artefato do W5, que foi ao planejador."
   },
   {
@@ -371,13 +353,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas estátuas são Onyx; outros sistemas leem essa contagem.",
     "tela": "Statues",
     "prova": "`ArbitraryCode` modo `StatueOnyxOwned`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: contagem de estátuas Onyx."
   },
   {
@@ -388,13 +369,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas estátuas são Zenith.",
     "tela": "Statues",
     "prova": "`ArbitraryCode` modo `StatueZenithOwned`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: contagem de estátuas Zenith."
   },
   {
@@ -405,13 +385,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto o Onyx multiplica (2x + artefato). Explica por que a estátua Onyx dá mais.",
     "tela": "não aparece na tela",
     "prova": "`ArbitraryCode` modo `StatueBonusGiven*` (ramo de `StatueG` ≥ 2); `Sailing` modo `ArtifactBonus` 30",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: o multiplicador Onyx (constante mais um artefato) é exemplo citado na própria regra."
   },
   {
@@ -422,13 +401,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto o Zenith multiplica (1.5x + Zenith Market).",
     "tela": "não aparece na tela",
     "prova": "`ArbitraryCode` modo `StatueBonusGiven*` (ramo de `StatueG` ≥ 3); `Thingies` modo `ZenithMarketBonus`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: o multiplicador Zenith (constante mais o Zenith Market) é exemplo citado na própria regra."
   },
   {
@@ -439,14 +417,13 @@
     "caixa": "Outro",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "copia",
     "marca": "nao",
     "regra": null,
     "motivo": "Aparecem na tela de Statues, mas são do Royal Statues (W7, Royal Guardian).",
     "tela": "Statues (aba das Flairs)",
     "prova": "`RoyalG` modos `SF_unlocked`, `SF_bonus`, `SF_maxLV`, `SF_weOwn`, `SF_costo`, `StatueEXPmulti`, `StatueUpgOdds`",
     "motivo_tipo": "Junta três números (bônus, nível máximo e custo) das Flairs.",
-    "destino_proposto": "copia",
     "motivo_destino": "Regra 14: são os mesmos números das Flairs do Royal Statues (W7: rstatues-sf-bonus, rstatues-sf-maxlv, rstatues-sf-cost), que já estão classificados lá."
   },
   {
@@ -457,7 +434,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": "Bônus cru",
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "O valor escrito no signo; no fim ele ainda é multiplicado por Seraph Cosmos, chip e Meritocracy.",
@@ -470,7 +447,6 @@
       "death-multikill-total",
       "stats-damage-max"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: o valor de cada signo aparece dentro da árvore do stat que ele aumenta."
   },
   {
@@ -481,7 +457,7 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "É o valor que entra nas outras contas; a contagem de tipos é aproximada.",
@@ -494,7 +470,6 @@
       "death-multikill-total",
       "stats-damage-max"
     ],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 8: o total dos Star Signs por stat é uma linha dentro da árvore do stat."
   },
   {
@@ -505,14 +480,13 @@
     "caixa": "Progresso",
     "tipo": "Outro",
     "tipo_folha": "Escolha",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quais signos o personagem tem equipados.",
     "tela": "Star Signs e ficha do personagem",
     "prova": "estado `PersonalValuesMap.StarSign`; bloco `StarSigns`",
     "motivo_tipo": "Escolha do slot (quais signos estão equipados), não é número.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 17: é a escolha do slot, não um número, como o Current Link da Divinity (W5)."
   },
   {
@@ -523,13 +497,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos signos cada personagem pode alinhar ao mesmo tempo.",
     "tela": "Star Signs",
     "prova": "tabela `StarSigns` (Chronus Cosmos, Hydron Cosmos); estado `StarSignsUnlocked`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: as vagas só sobem com dois signos do próprio sistema (Chronus e Hydron Cosmos), sem sistema de fora."
   },
   {
@@ -540,13 +513,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos signos valem para todos sem equipar. Vem do Rift (W4).",
     "tela": "Star Signs (signos com o símbolo de infinito)",
     "prova": "`RiftStuff` modo `enabledStarSigns`; evento `StarSignStuff`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: contagem de signos infinitos, que só o Rift aumenta."
   },
   {
@@ -572,14 +544,13 @@
     "caixa": "Progresso",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto falta em cada desafio de constelação.",
     "tela": "Star Signs (mapa de estrelas)",
     "prova": "bloco `ProgressStarsign`; tabelas `StarQuests`, `SSignInfoUI`",
     "motivo_tipo": "Progresso de um desafio (\"x de y\").",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: progresso de cada desafio de constelação."
   },
   {
@@ -590,14 +561,13 @@
     "caixa": "Bônus",
     "tipo": "Contagem",
     "tipo_folha": "Bônus cru",
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "Pontos de talento estrela ganhos ao completar constelações.",
     "tela": "Talents (aba Star); recompensa listada na constelação",
     "prova": "tabela `StarQuests` (coluna da recompensa)",
     "arvore_mae": ["talents-points-per-tab"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: os pontos de cada constelação concluída aparecem dentro da árvore dos Talent points per tab (aba Star)."
   },
   {
@@ -623,13 +593,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas penas o jogador tem agora.",
     "tela": "Orion",
     "prova": "estado da conta (`OptionsListAccount`); evento da tela do Orion",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: penas que ele tem, como os peixes do Poppy (W2), que foram ao planejador."
   },
   {
@@ -640,13 +609,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Nível de cada melhoria do Orion.",
     "tela": "Orion",
     "prova": "estado `OptionsListAccount` 254 a 262; tabela `Owlz`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de cada upgrade do Orion, como o do Poppy."
   },
   {
@@ -657,13 +625,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto custa a próxima melhoria; dois Cheapeners e Megafeathers reduzem.",
     "tela": "Orion",
     "prova": "`Summoning` modo `OwlCost`; `MenagerieStuff` `OrionCheapener`; `OwlMegafeather` 2 e 8; tabela `Owlz`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo do próximo upgrade, como o do Poppy."
   },
   {
@@ -674,14 +641,13 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "Os bônus permanentes que o Orion dá ao jogo; um deles é Drop Rate.",
     "tela": "Orion",
     "prova": "`Summoning2` modo `OwlBonuses`; `Thingies` `LegendPTS_bonus` 26; `Companions` 51; `OwlMegafeather` 1, 3, 5, 7, 9",
     "arvore_mae": ["stats-class-exp", "stats-damage-max", "stats-drop-rate"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: os bônus permanentes do Orion aparecem nas árvores de Class EXP, Damage e Drop Rate, como os Bonuses from Poppy."
   },
   {
@@ -692,13 +658,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos resets grandes o jogador fez.",
     "tela": "Orion",
     "prova": "`Summoning2` modo `OwlMegafeather`; estado `OptionsListAccount` 262",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: contagem de Megafeathers."
   },
   {
@@ -709,14 +674,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": "Bônus cru",
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "O que cada Megafeather libera; penas x10, Bonuses of Orion maiores, upgrades mais baratos.",
     "tela": "Orion (\"Select a Megafeather for details...\")",
     "prova": "`Summoning2` modo `OwlMegafeather` (índices 0 a 9)",
     "arvore_mae": ["stats-class-exp", "stats-damage-max", "stats-drop-rate"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 4: o perk que soma +100% aos Bonuses of Orion aparece dentro das mesmas árvores; os outros perks só mexem no clicker."
   },
   {
@@ -727,13 +691,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Penas raras que somam % à geração.",
     "tela": "Orion",
     "prova": "`Summoning2` modo `OwlFeatherShinyGen`; estado `OptionsListAccount` 264",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: as Shiny Feathers só aceleram a geração de penas dentro do clicker."
   },
   {
@@ -744,13 +707,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Meta fixa para liberar a próxima melhoria.",
     "tela": "Orion (\"_more feathers to unlock the next upgrade\")",
     "prova": "`Summoning2` modo `OwlNextUpgReq`; tabela `Owlz`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: meta fixa para liberar o próximo upgrade, como a do Poppy."
   },
   {
@@ -761,13 +723,12 @@
     "caixa": "Bônus",
     "tipo": "Redutor de custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "copia",
     "marca": "nao",
     "regra": null,
     "motivo": "Desconto nos upgrades do Orion vindo do Luminous Menagerie; o catálogo o arquiva em \"Bubba\".",
     "tela": "não aparece na tela",
     "prova": "`MenagerieStuff` modo `OrionCheapener`",
-    "destino_proposto": "copia",
     "motivo_destino": "Regra 14: é o mesmo número do mena-cheapeners (W7, Luminous Menagerie), que já está no planejador."
   },
   {
@@ -793,14 +754,13 @@
     "caixa": "Bônus",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "Parte da Production Speed sem o bônus de cidade.",
     "tela": "não aparece na tela (parte da Production Speed)",
     "prova": "`AnvilProduceStats` modo `ProdSpdBonus`; `StampBonusOfTypeX` `AnvilPAspd`; `StatueBonusGiven11`; `VaultUpgBonus` 24; bubble `AnvilACTIVE`; `BoxRewards` ProdSpd",
     "arvore_mae": ["anvil-production-speed"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: é uma parte da Production Speed, que já tem árvore."
   },
   {
@@ -811,14 +771,13 @@
     "caixa": "Bônus",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto o AGI do personagem acelera a Anvil.",
     "tela": "Items › Skills (Smithing)",
     "prova": "`AnvilProduceStats` modo `ProdSpdBonusFromAGI`; `TotalStats` AGI",
     "arvore_mae": ["anvil-production-speed"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: é a parte da Production Speed que vem do AGI, como o Speed Multi from WIS da Alchemy."
   },
   {
@@ -844,13 +803,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto já está pronto em cada martelo.",
     "tela": "Anvil › Produce",
     "prova": "estado `AnvilPA`; tabela `AnvilProductionInfo`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: quantidade pronta e guardada de cada material."
   },
   {
@@ -876,13 +834,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto de Smithing EXP cada material dá.",
     "tela": "Anvil › Produce (rodapé)",
     "prova": "`AnvilProduceStats` modo `ProdExpBonus`; `SkillStats` modo `SmithingEXPmulti`; estado `AnvilPAstats` 3",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: vem só dos pontos postos em EXP na Anvil, uma fonte só, e multiplica o EXP por item, que é EXP por alvo (regra 7)."
   },
   {
@@ -893,13 +850,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Pontos investidos",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Pontos para distribuir e onde foram postos.",
     "tela": "Anvil › Produce",
     "prova": "estado `AnvilPAstats` 0, 3, 4, 5",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: pontos livres e distribuídos na Anvil."
   },
   {
@@ -910,13 +866,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Preço do próximo ponto em coins.",
     "tela": "Anvil › Produce",
     "prova": "`AnvilProduceStats` modo `Costs1`; bubble `AnvilProdCost`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo do próximo ponto."
   },
   {
@@ -927,13 +882,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Preço do próximo ponto em material de monstro.",
     "tela": "Anvil › Produce",
     "prova": "`AnvilProduceStats` modo `Costs2`; `RunCodeOfType` `Costs2TypeAnvilPA`; bubble `AnvilProdCost`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo do próximo ponto."
   },
   {
@@ -959,16 +913,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas barras saem de cada ciclo (multi-bar, óleo, gema).",
     "tela": "não aparece na tela",
     "prova": "`ForgeEtcDetails` modo `BarsMade`; `ForgeStats` 4; Oil `DoubleBarsForge`; `GemItemsPurchased` 104",
     "motivo_tipo": "Quantidade por ciclo, parte de um ganho.",
-    "arvore_mae": [],
-    "destino_proposto": "dentro-de-arvore",
-    "motivo_destino": "Regra 5: é parte do ganho de barras; a mãe é o Bars per hour, que está no painel de farm e não tem árvore no arquivo."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "forge-speed",
@@ -1008,13 +960,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos slots a Forge tem.",
     "tela": "Forge (página de upgrades)",
     "prova": "`ForgeStats` 0; estado `FurnaceLevels` 0",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: vagas que só sobem com o upgrade da própria Forge."
   },
   {
@@ -1025,13 +976,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Smithing EXP extra da Forge; é o nível do upgrade.",
     "tela": "Forge (página de upgrades)",
     "prova": "`ForgeStats` 3",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: é o nível de um upgrade da Forge, uma fonte só."
   },
   {
@@ -1072,13 +1022,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Preço do próximo nível de cada upgrade da Forge; nada reduz.",
     "tela": "Forge (página de upgrades, \"Lv._\" e \"COST;\")",
     "prova": "`ForgeUpdateCosts`; estado `FurnaceLevels`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 1: custo do próximo nível de cada upgrade."
   },
   {
@@ -1089,13 +1038,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto tempo cada barra leva.",
     "tela": "Forge (barra de progresso de cada slot)",
     "prova": "`ForgeInterval`; `FoodBonuses` `OreSmithTime`; item `Cooldown`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: o tempo de cada barra depende do minério posto no slot; fica a FORGE SPEED."
   },
   {
@@ -1106,13 +1054,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de um craft sair com stats extras.",
     "tela": "Items › Skills (Smithing)",
     "prova": "`SkillStats` modo `SmithingSpecCraftPCT`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: o Special Craft Chance é citado na própria regra."
   },
   {
@@ -1138,13 +1085,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Nível e barra de EXP do personagem em Smithing.",
     "tela": "Items › Skills",
     "prova": "evento `SkillsInfo2`; estado `Lv0`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de skill."
   },
   {
@@ -1170,15 +1116,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Ganho por tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Golpes que acertam por hora, antes do AFK rate, do multi e do valor por drop. O catálogo o chama só de \"Mining\".",
     "tela": "não aparece na tela (parte do ORES/HR)",
     "prova": "`HourlyKillRate` modo `Mining`; `SkillStats` `MiningSpeed`; `RunCodeOfTypeXforThingY` `ChanceToHarvest`",
-    "arvore_mae": [],
-    "destino_proposto": "dentro-de-arvore",
-    "motivo_destino": "Regra 5: os hits por hora de base são exemplo da regra, como o Fishing catches per hour (W2); a mãe é o ORES/HR, que está no painel de farm."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "mining-exp-hr",
@@ -1218,13 +1162,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de acertar o recurso atual; abaixo de 100% o ganho cai.",
     "tela": "Items › Skills e AFK Gains (painel do alvo AFK)",
     "prova": "`RunCodeOfTypeXforThingY` modo `ChanceToHarvest` (Mining)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: a Mine Chance é exemplo citado na própria regra."
   },
   {
@@ -1250,13 +1193,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Eficiência que o recurso exige; compara com a do personagem.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "definição do monstro/recurso (`Defence`); evento `MenuDrawing`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: é a exigência da pedra atual, como no Fishing e no Catching."
   },
   {
@@ -1297,16 +1239,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos itens cada drop vale.",
     "tela": "Items › Skills e AFK Gains (painel do alvo AFK)",
     "prova": "`SkillStats` modo `MiningOreValue`",
     "motivo_tipo": "Quantidade por drop, parte de um ganho.",
-    "arvore_mae": [],
-    "destino_proposto": "dentro-de-arvore",
-    "motivo_destino": "Regra 5: o QTY PER DROP é exemplo da regra (o Ore Value Per Drop continua fora), como o Fish Value Per Drop (W2); a mãe é o ORES/HR, no painel de farm."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "mining-exp-multi",
@@ -1331,13 +1271,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "De quantas em quantas horas sai uma carta do recurso.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "`ArbitraryCode` modo `CardChanceDaily`; `HourlyKillRate`; `AFKgainrates`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: o Card Odds daquela pedra é exemplo citado na própria regra."
   },
   {
@@ -1363,13 +1302,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto cabe por espaço antes de o AFK desperdiçar.",
     "tela": "Items (capacidade de cada espaço)",
     "prova": "`MaxCapacity` modo `bOre`; `StampBonusOfTypeX` `MinCap`, `AllCarryCap`; `StarSigns` CarryCap",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: capacidade de carregar de um material, como a do Fishing; fica o All Carry Capacity multi."
   },
   {
@@ -1380,13 +1318,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do prêmio do minigame.",
     "tela": "Items › Skills",
     "prova": "`SkillStats` modo `MiningMinigame`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -1412,13 +1349,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Fixo em 100% em mapas de skill.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "evento `MenuDrawing` (fixo em 100%)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: a Survivability é exemplo citado na própria regra."
   },
   {
@@ -1429,13 +1365,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Nível e barra de EXP do personagem; outros sistemas leem o nível.",
     "tela": "Items › Skills",
     "prova": "evento `SkillsInfo2`; estado `Lv0`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de skill."
   },
   {
@@ -1461,15 +1396,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Ganho por tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Golpes que acertam por hora, antes do AFK rate, do multi e do valor por drop. O catálogo o chama só de \"Choppin\".",
     "tela": "não aparece na tela (parte do LOGS/HR)",
     "prova": "`HourlyKillRate` modo `Choppin`; `SkillStats` `ChoppinSpeed`; `RunCodeOfTypeXforThingY` `ChanceToHarvest`",
-    "arvore_mae": [],
-    "destino_proposto": "dentro-de-arvore",
-    "motivo_destino": "Regra 5: os hits por hora de base são exemplo da regra, como no Fishing; a mãe é o LOGS/HR, que está no painel de farm."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "chop-exp-hr",
@@ -1509,13 +1442,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de acertar o recurso atual; abaixo de 100% o ganho cai.",
     "tela": "Items › Skills e AFK Gains (painel do alvo AFK)",
     "prova": "`RunCodeOfTypeXforThingY` modo `ChanceToHarvest` (Choppin)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: a Chop Chance é exemplo citado na própria regra."
   },
   {
@@ -1541,13 +1473,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Eficiência que o recurso exige; compara com a do personagem.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "definição do monstro/recurso (`Defence`); evento `MenuDrawing`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: é a exigência da árvore atual."
   },
   {
@@ -1588,16 +1519,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos itens cada drop vale.",
     "tela": "Items › Skills e AFK Gains (painel do alvo AFK)",
     "prova": "`SkillStats` modo `ChoppinOreValue`",
     "motivo_tipo": "Quantidade por drop, parte de um ganho.",
-    "arvore_mae": [],
-    "destino_proposto": "dentro-de-arvore",
-    "motivo_destino": "Regra 5: o QTY PER DROP é parte do ganho, como no Fishing; a mãe é o LOGS/HR, no painel de farm."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "chop-exp-multi",
@@ -1622,13 +1551,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "De quantas em quantas horas sai uma carta do recurso.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "`ArbitraryCode` modo `CardChanceDaily`; `HourlyKillRate`; `AFKgainrates`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: o Card Odds daquela árvore depende do alvo."
   },
   {
@@ -1654,13 +1582,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto cabe por espaço antes de o AFK desperdiçar.",
     "tela": "Items (capacidade de cada espaço)",
     "prova": "`MaxCapacity` modo `bLog`; `StampBonusOfTypeX` `ChopCap`, `AllCarryCap`; `StarSigns` CarryCap",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 3: capacidade de carregar de um material; fica o All Carry Capacity multi."
   },
   {
@@ -1671,13 +1598,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do prêmio do minigame.",
     "tela": "Items › Skills",
     "prova": "`SkillStats` modo `ChoppinMinigame`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -1703,13 +1629,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Fixo em 100% em mapas de skill.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "evento `MenuDrawing` (fixo em 100%)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: a Survivability é exemplo citado na própria regra."
   },
   {
@@ -1720,13 +1645,12 @@
     "caixa": "Progresso",
     "tipo": "Nível",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Nível e barra de EXP do personagem; outros sistemas leem o nível.",
     "tela": "Items › Skills",
     "prova": "evento `SkillsInfo2`; estado `Lv0`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: nível de skill."
   },
   {
@@ -1917,14 +1841,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Ganho por tempo",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Pescas por hora antes do AFK rate, do multi e do valor por drop.",
     "tela": "não aparece na tela (parte do CATCHES/HR)",
     "prova": "`HourlyKillRate` modo `Fishing`; `SkillStats` `FishingSpeed`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "A mãe é o CATCHES/HR, que está no painel de farm e não tem árvore no arquivo."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "fishing-exp-hr",
@@ -1994,13 +1917,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Eficiência que o lago atual exige.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "definição do alvo; tabela `AFKdescriptions`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: é a exigência do lago atual, como o Fishing card odds e a Chance To Harvest, já em alvo-atual."
   },
   {
@@ -2041,15 +1963,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Quantos itens cada drop vale.",
     "tela": "Items › Skills e AFK Gains (painel do alvo AFK)",
     "prova": "`SkillStats` modo `FishingOreValue`",
     "motivo_tipo": "Quantidade por drop, parte de um ganho.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "A mãe é o CATCHES/HR, que está no painel de farm e não tem árvore no arquivo."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "fishing-exp-multi",
@@ -2119,13 +2040,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do prêmio do minigame de pesca.",
     "tela": "Items › Skills (Fishing)",
     "prova": "`SkillStats` modo `FishingMinigame`; evento `FishingGameOver`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -2243,14 +2163,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Ganho por tempo",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Capturas por hora antes do AFK rate, do multi e do valor por drop. O catálogo o chama só de \"Catching\".",
     "tela": "não aparece na tela (parte do Bugs/HR)",
     "prova": "`HourlyKillRate` modo `Catching`; `SkillStats` `CatchingSpeed`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "A mãe é o Bugs/HR, que está no painel de farm e não tem árvore no arquivo."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "catching-exp-hr",
@@ -2320,13 +2239,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Eficiência que o inseto atual exige.",
     "tela": "AFK Gains (painel do alvo AFK)",
     "prova": "definição do alvo; tabela `AFKdescriptions`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: é a exigência do inseto atual."
   },
   {
@@ -2367,15 +2285,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Quantos itens cada drop vale.",
     "tela": "Items › Skills e AFK Gains",
     "prova": "`SkillStats` modo `CatchingOreValue`",
     "motivo_tipo": "Quantidade por drop, parte de um ganho.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "A mãe é o Bugs/HR, que está no painel de farm e não tem árvore no arquivo."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "catching-exp-multi",
@@ -2445,13 +2362,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do prêmio do minigame.",
     "tela": "Items › Skills (Catching)",
     "prova": "`SkillStats` modo `CatchingMinigame`; evento `CatchingGameOver`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -2507,14 +2423,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": 5,
     "motivo": "Quanto mais dano no ninho, mais insetos no mapa atual; parte do ganho daquele mapa.",
     "tela": "mapa com Bug Nest (número ao lado da barra do ninho)",
     "prova": "estado `BugInfo`; `CreateDmgPixel`; tabelas `BugNestInfo`, `Hints`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "Vale só no mapa do ninho (ganho daquele mapa); nenhuma árvore do arquivo o contém."
+    "motivo_destino": "Vale só no mapa atual."
   },
   {
     "id": "catching-nest-time",
@@ -2524,13 +2439,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Tempo",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Tempo da barra do ninho; fixo.",
     "tela": "mapa com Bug Nest (barra do ninho)",
     "prova": "`SkillStats` modo `CatchingNestTime`; evento `NestBar`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: tempo fixo da barra do ninho, sem fonte nenhuma."
   },
   {
@@ -3294,13 +3208,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 11,
     "motivo": "Chance de ganhar um ponto a mais por pedido; vem só dos artefatos do Sailing.",
     "tela": "não aparece na tela",
     "prova": "`OfficeboxOrders` modo `Complete`; `Sailing` `ArtifactBonus` 6, 14, 19, 22",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: vem só dos artefatos do Sailing, um sistema de fora só, e não passa no corte de 2 sistemas da regra 11."
   },
   {
@@ -3311,14 +3224,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "O que cada pedido entregue paga.",
     "tela": "Post Office › Orders",
     "prova": "`OfficeboxOrders` modos `Complete`, `CompleteAuto`; tabela `PostOfficePossibleOrders`",
     "motivo_tipo": "Ganho por pedido entregue, não por tempo.",
-    "destino_proposto": "painel-de-farm",
     "motivo_destino": "Regra 9: é o que cada pedido paga; com os pedidos por dia forma o ganho do Post Office, que vai para o painel de farm como o Daily POboxes."
   },
   {
@@ -3531,13 +3443,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de cada prêmio ao jogar uma bola.",
     "tela": "Arcade (ao jogar)",
     "prova": "tabela `ArcadeRewardPossibilities`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: chances fixas da tabela de prêmios, sem fonte nenhuma, que só valem ao jogar a bola."
   },
   {
@@ -3645,13 +3556,12 @@
     "caixa": "Outro",
     "tipo": "Liberado",
     "tipo_folha": "Condição",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Diz se o personagem está na sala do Killroy (0 ou 1).",
     "tela": "não aparece na tela",
     "prova": "`RunCodeOfTypeXforThingY` modo `KillroyRoom`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 17: diz só se o personagem está na sala (0 ou 1)."
   },
   {
@@ -3692,14 +3602,13 @@
     "caixa": "Limite e tempo",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Vida do chefe da semana; cresce com as semanas vencidas.",
     "tela": "Weekly Boss",
     "prova": "`WeeklyBoss` modo `BossHPmax`; tabela `WeeklyBOSS`",
     "motivo_tipo": "Vida do chefe da semana.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: vida do chefe, que só vale dentro da luta semanal."
   },
   {
@@ -3710,13 +3619,12 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Força da luta, tirada do stat pedido na tarefa da semana.",
     "tela": "Weekly Boss",
     "prova": "`WeeklyBoss` modos `POW`, `TaskQTY`, `BossTask`; tabela `WeeklyTASK`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: força que só vale dentro da luta semanal."
   },
   {
@@ -3727,14 +3635,13 @@
     "caixa": "Bônus",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto cada ação faz na luta.",
     "tela": "Weekly Boss (ações escolhidas)",
     "prova": "`WeeklyBoss` modos `ChoiceQTY`, `Choice`; tabela `WeeklyACTION`",
     "motivo_tipo": "Efeito de uma ação da luta (dano ou buff).",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: efeito de cada ação, que só vale dentro da luta semanal."
   },
   {
@@ -3745,13 +3652,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Buff de dano de ataque dentro da luta.",
     "tela": "Weekly Boss",
     "prova": "`WeeklyBoss` modo `BonusDmgATTACK`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: buff que só vale dentro da luta semanal."
   },
   {
@@ -3762,13 +3668,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Buff de todo dano dentro da luta.",
     "tela": "Weekly Boss",
     "prova": "`WeeklyBoss` modo `BonusDmgAll`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: buff que só vale dentro da luta semanal."
   },
   {
@@ -3779,13 +3684,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Dobra os buffs dentro da luta.",
     "tela": "Weekly Boss",
     "prova": "`WeeklyBoss` modo `BonusBuffAll`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: buff que só vale dentro da luta semanal."
   },
   {
@@ -3856,15 +3760,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "clicker",
     "marca": "nao",
     "regra": 5,
     "motivo": "Quantos peixes vêm em cada pesca; parte do ganho.",
     "tela": "Poppy",
     "prova": "`Summoning` modo `RooCatchFishQTY`; tabela `Owlz`",
     "motivo_tipo": "Quantidade por pesca, parte de um ganho.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "É parte do ganho do Poppy, um clicker (regra 15); nenhuma árvore do arquivo o contém."
+    "motivo_destino": "Só mexe no próprio clicker."
   },
   {
     "id": "poppy-shiny-rate",
@@ -3889,13 +3792,12 @@
     "caixa": "Bônus",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Tempo de cada pesca Shiny.",
     "tela": "Poppy",
     "prova": "`Summoning` modo `RooCatchREQ_S`; `Summoning` `RooMegafeather`",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: tempo da pesca Shiny, número interno do Poppy."
   },
   {
@@ -3906,13 +3808,12 @@
     "caixa": "Bônus",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Tempo de cada pesca de Tartar.",
     "tela": "Poppy",
     "prova": "`Summoning` modos `RooCatchREQ_T`, `RooCatchRate_T`",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: tempo da pesca de Tartar, número interno do Poppy."
   },
   {
@@ -3923,13 +3824,12 @@
     "caixa": "Bônus",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Sorte dos Shiny; é um dos bônus do reset.",
     "tela": "Poppy",
     "prova": "`Summoning` modos `RooShinyLuck`, `RooRESETbon`",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: sorte dos Shiny, número interno do Poppy."
   },
   {
@@ -3940,13 +3840,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicadores ganhos a cada reset; aumentam o ritmo de peixe.",
     "tela": "Poppy (Fisheroo Reset)",
     "prova": "`Summoning` modo `RooRESETbon`",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: multiplicadores do reset, que só aceleram o próprio Poppy."
   },
   {
@@ -3957,13 +3856,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "clicker",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicadores que aparecem na pesca Shiny.",
     "tela": "Poppy",
     "prova": "`Summoning` modo `RooShinyMulti`",
-    "destino_proposto": "clicker",
     "motivo_destino": "Regra 15: multiplicadores da pesca Shiny, número interno do Poppy."
   },
   {
@@ -3994,14 +3892,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": "Bônus cru",
-    "destino": "dentro-de-arvore",
+    "destino": "clicker",
     "marca": "nao",
     "regra": 4,
     "motivo": "Bônus de cada Megafish ganho no reset maior.",
     "tela": "Poppy (Greatest Catch)",
     "prova": "`Summoning` modo `RooMegafeather`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "Os perks do Megafish só melhoram o próprio Poppy (peixes, Shiny, custos, reset), um clicker; nenhuma árvore do arquivo os contém."
+    "motivo_destino": "Só mexe no próprio clicker."
   },
   {
     "id": "poppy-tar-owned",
@@ -4167,13 +4064,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 13,
     "motivo": "Multiplica todos os bônus Shimmer; vem de um artefato do Sailing.",
     "tela": "não confirmada (o artefato fica no Sailing)",
     "prova": "`Dreamstuff` modo `AllShimmerBonuses`; `Sailing` `ArtifactBonus` 31; tabela `ArtifactInfo`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: o multiplicador Shimmer (constante mais um artefato) é exemplo citado na própria regra."
   },
   {
@@ -4265,13 +4161,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance por hora de um dos 5 tipos de evento; fixa.",
     "tela": "não aparece na tela",
     "prova": "`RandomEvent` modo `EventType`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: chance fixa por hora, sem fonte nenhuma."
   },
   {
@@ -4282,13 +4177,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Valor fixo",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Mortes que faltam para a festa aparecer; depende só do mapa.",
     "tela": "não aparece na tela",
     "prova": "`RandomEvent` modo `KillReqForPTYspawn`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: as mortes para a festa aparecer dependem só do mapa atual."
   },
   {
@@ -4299,13 +4193,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 13,
     "motivo": "Multiplica o loot da festa pelo tamanho do grupo; uma bribe e a conta aumentam.",
     "tela": "não confirmada",
     "prova": "`RandomEvent` modo `PtySizeLootBonus`; `GetBribeBonus` 39",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: o loot da party é exemplo citado na própria regra."
   },
   {
@@ -4316,13 +4209,12 @@
     "caixa": "Outro",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Aumenta a vida dos monstros da festa pelo tamanho do grupo.",
     "tela": "não aparece na tela",
     "prova": "`RandomEvent` modo `PtySizeHPBonus`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 16: a vida extra da festa só depende do tamanho do grupo, sem segredo."
   },
   {
@@ -4384,14 +4276,13 @@
     "caixa": "Outro",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Qual prêmio o minigame dá; muda com o progresso.",
     "tela": "Swishy Hoops (prêmio)",
     "prova": "`RiftStuff` modo `HoopsRewardType`",
     "motivo_tipo": "Tipo de prêmio do minigame, não é valor.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: diz qual prêmio o minigame dá, um número que só vale dentro do minigame."
   },
   {
@@ -4528,14 +4419,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "A soma dos cogs que dão EXP; é um galho do EXP por hora.",
     "tela": "Construction (w28), aba Build: número \"%\"",
     "prova": "evento `WorkbenchStuff2` da tela; mapa `CM.CogMapKeys` (d, f)",
-    "arvore_mae": [],
-    "nota_arvore_mae": "A mãe é o Construct Exp/HR, que está no painel de farm; o EXP Multiplier (constr-exp-multi) não o contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "constr-exp-multi",
@@ -4590,14 +4480,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": 13,
     "motivo": "Multiplicador próprio do Build Rate, com quatro sistemas de fonte.",
     "tela": "não aparece como número próprio (entra no Build Rate)",
     "prova": "`WorkbenchStuff` modo `ExtraBuildSPDmulti` (Research Small Cogs, Companions, Menagerie, Royal Guardian)",
     "arvore_mae": ["constr-build-rate", "constr-player-build-spd"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: o Extra Build SPDmulti é exemplo citado na própria regra; aparece dentro do Build Rate."
   },
   {
@@ -4608,14 +4497,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": 13,
     "motivo": "Multiplicador próprio do Flaggy Rate, com três sistemas de fonte.",
     "tela": "não aparece como número próprio (entra no Flaggy Rate)",
     "prova": "`WorkbenchStuff` modo `ExtraFlaggyRatemulti` (Research Small Cogs e Grid, Menagerie, uma carta de W7)",
     "arvore_mae": ["constr-flaggy-rate"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: o Extra Flaggy Ratemulti é exemplo citado na própria regra; aparece dentro do Flaggy Rate."
   },
   {
@@ -4656,13 +4544,12 @@
     "caixa": "Bônus",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Velocidade de fazer cogs novos na estante.",
     "tela": "Construction (w28), Cog Shelf",
     "prova": "`WorkbenchStuff` modo `CogBuildSpdBonus` (Bubbles, Vials, carta Boss3A)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Marcado não na validação (exceção); a proposta de árvore do agente não vale contra a marca."
   },
   {
@@ -5014,15 +4901,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "A base da impressão: o tamanho de cada amostra.",
     "tela": "3D Printer (w30), amostra guardada",
     "prova": "`CastAttack2` (a amostra é o ganho por hora do recurso vezes o Printer Sample Rate); estado `Printer`",
     "motivo_tipo": "Tamanho de cada amostra (quantidade guardada por amostra).",
-    "arvore_mae": [],
-    "nota_arvore_mae": "É a base do Printing rate /hr, que está no painel de farm; nenhuma árvore do arquivo a contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "printer-sample-slots",
@@ -5175,14 +5061,13 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "A parte fixa do Multikill. Pela regra 5 seria galho, mas o Vinicius pediu esta árvore pelo nome (lista de números que faltam).",
     "tela": "não aparece como número próprio (entra no Multikill)",
     "prova": "`WorkbenchStuff` modo `MultiKill_base` (Star Signs, Salt Lick, Stamps, prédio Death Note, Achievements, Statue Onyx × talento; redução nos mapas de W7)",
     "arvore_mae": ["death-multikill-total"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: a base do Multikill é exemplo citado na própria regra e na lista de números que faltam; aparece dentro do Multikill total."
   },
   {
@@ -5193,14 +5078,13 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto cada tier de Overkill soma ao Multikill. Pela regra 5 seria galho, mas o Vinicius pediu esta árvore pelo nome (lista de números que faltam).",
     "tela": "não aparece como número próprio (entra no Multikill); W7 avisa o corte por tier",
     "prova": "`WorkbenchStuff` modos `MultiKill_perTier`, `OverkillQTY` (ranks do Death Note), mais Vials, buffs, talentos, Arcade, Sailing, Chips, Cards, Star Signs, Prayers, Shiny Pets, Post Office, Bubbles, Card Sets e The Hole",
     "arvore_mae": ["death-multikill-total"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: o per Tier do Multikill é exemplo citado na própria regra; aparece dentro do Multikill total."
   },
   {
@@ -5211,13 +5095,12 @@
     "caixa": "Outro",
     "tipo": "Nível",
     "tipo_folha": "Tier",
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "O tier de Overkill do mapa atual, que multiplica o Multikill per Tier.",
     "tela": "AFK Info (ao lado do Multikill)",
     "prova": "`RunCodeOfTypeXforThingY` modo `OverkillStuffs` (2); lido em `ActorEvents_116` (Menu34)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Regra 6: o Overkill tier do mapa é exemplo citado na própria regra."
   },
   {
@@ -5395,13 +5278,12 @@
     "caixa": "Outro",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto tempo o material guardado mantém a Refinery rodando.",
     "tela": "Refinery (w26): tempo restante de combustível",
     "prova": "`Refinery` modo `FuelCalc`; tabela `RefineryInfo`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Regra 2: é quanto tempo o material guardado dura, um número de planejamento que só depende do estoque."
   },
   {
@@ -5924,13 +5806,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do minigame.",
     "tela": "Items › Skills (Worship)",
     "prova": "`skillstats2` modo `WorshipMinigame`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -5956,14 +5837,13 @@
     "caixa": "Outro",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Pontos para comprar torres durante a defesa.",
     "tela": "Worship Totem (w43), dentro da defesa",
     "prova": "`WorshipStuff` modo `SkullCurrency` (Salt Lick)",
     "motivo_tipo": "Pontos por morte dentro da defesa.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: a Skull Currency do Worship é exemplo citado na própria regra."
   },
   {
@@ -5974,13 +5854,12 @@
     "caixa": "Outro",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Os stats de cada torre na defesa; o catálogo marca a tela como Prayers, mas é o Worship Totem.",
     "tela": "Worship Totem (w43), dentro da defesa",
     "prova": "bloco `TowerStats` modos `damage`, `cost`, `atkcd`, `range` (níveis das Wizard Towers, Atom Collider, Equinox)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: os stats das torres são exemplo citado na própria regra."
   },
   {
@@ -6130,14 +6009,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "dentro-de-arvore",
     "marca": "nao",
     "regra": 13,
     "motivo": "Multiplicador próprio das shiny critters, com fontes de dois sistemas.",
     "tela": "não aparece como número próprio",
     "prova": "`TrappingStuffs` modo `RareBonusOnOpenMULTI` (Meritocracy, Menagerie; uma Prayer multiplica junto)",
     "arvore_mae": ["trap-shiny-bonus"],
-    "destino_proposto": "dentro-de-arvore",
     "motivo_destino": "Regra 5: o Shiny critters multi é exemplo citado na própria regra; aparece dentro do Shiny Critter Chance bonus."
   },
   {
@@ -6225,13 +6103,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Multiplicador do minigame.",
     "tela": "Items › Skills (Trapping)",
     "prova": "`skillstats2` modo `TrappingMinigame`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 18: o Minigame Reward Multi é exemplo citado na própria regra."
   },
   {
@@ -6788,13 +6665,12 @@
     "caixa": "Outro",
     "tipo": "Liberado",
     "tipo_folha": "Condição",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Diz se o Hat Rack está liberado (0 ou 1).",
     "tela": "não aparece como número",
     "prova": "`Gallery` modo `PremHatBonusesSystemON`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 17: diz só se o Hat Rack está liberado (0 ou 1), como o Cape Vine unlocked."
   },
   {
@@ -6872,13 +6748,12 @@
     "caixa": "Outro",
     "tipo": "Liberado",
     "tipo_folha": "Condição",
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Diz se o desbloqueio permanente está liberado (0 ou 1).",
     "tela": "Armor-Set Smithy (w79)",
     "prova": "`GetSetBonus` modos `PermaUnlock`, `PermaUnlockAfford`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Regra 17: \"perma unlock available\" é exemplo citado na própria regra."
   },
   {
@@ -7518,13 +7393,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": 12,
     "motivo": "O limite que trava a produção de ovos; 3 de base mais o upgrade Egg Capacity, a Gem Shop e o Merit Shop (Tasks).",
     "tela": "Breeding (w38): espaços de ovo na incubadora",
     "prova": "`Breeding` modo `TotalEggCapacity`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Limite de vagas de ovo; a auditoria de 20/11 tirou a Egg capacity do catálogo (W4), e limite fora vai para o planejador."
   },
   {
@@ -7881,13 +7755,12 @@
     "caixa": "Outro",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "O poder do pet novo: um sorteio pelo nível de Breeding e pela posição do ovo. Nenhuma regra decide um número sorteado.",
     "tela": "Breeding (w38): poder do mob que nasce",
     "prova": "`Breeding` modo `PetQTYonBreed`",
-    "destino_proposto": "descartado",
     "motivo_destino": "É um sorteio a cada ovo (nível de Breeding e posição do ovo), não um número estável da conta."
   },
   {
@@ -7943,13 +7816,12 @@
     "caixa": "Outro",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "O poder de luta dos pets no território contra o que o território pede. Não conferi todas as fontes; nenhuma regra decide.",
     "tela": "Breeding (w38), Territory",
     "prova": "`PetStuff` modos `TotalTrekkingFightPOW`, `TotalTrekkingFightPowREQ`",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "O poder de luta é comparado com o que cada território pede, então muda com o território escolhido."
   },
   {
@@ -7975,13 +7847,12 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Está no bloco do Breeding, mas é o multiplicador de drop dos Crystal mobs, de fora do W4. O catálogo tem duas linhas para ele, uma com o mob \"mushG\", que sempre dá 1.",
     "tela": "nenhuma tela do Breeding",
     "prova": "`Breeding` modo `crystalmob_DropMulti` devolve `ArbitraryCode(\"CrystalEmbiggener\")` para os Crystal mobs",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Só vale para os Crystal mobs: é o excesso da Crystal Mob Chance (stats-crystal-chance) sobre o teto de 0,1 (ArbitraryCode \"CrystalEmbiggener\"), então depende do alvo."
   },
   {
@@ -8068,13 +7939,12 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Até onde a linha do personagem alcança na rede do Lab; a base vem do nível de Lab e junta uns 8 sistemas: Meals (duas), Cards, o talento Bubonic Conjuror, Chips, Pet Arena, Gem Shop, Divinity, Shiny Pets e o Jewel que dá 1,25x. O catálogo chama de \"Lab connection range\". Nenhuma regra fala de alcance.",
     "tela": "Items › Skills (Laboratory): \"Total_Line_Width:\"; Lab (w39)",
     "prova": "`Labb` modo `Dist` (por personagem), com `BubonicPurple`, `BonusLineWidth`, `chipBonuses(\"linewidth\")`",
-    "destino_proposto": "planejador",
     "motivo_destino": "A auditoria de 20/11 tirou o Total Line Width do catálogo (W4); serve para montar a rede do Lab."
   },
   {
@@ -8085,13 +7955,12 @@
     "caixa": "Bônus",
     "tipo": "Stat",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "O raio em que um jewel ou um bônus do Mainframe pega a linha; 80 de base e 4 sistemas: Laboratory (jewel e Mainframe), Merit Shop (Tasks), Equinox e Summoning. Nenhuma regra fala de alcance.",
     "tela": "Lab (w39): círculo de alcance dos jewels e dos bônus",
     "prova": "`Labb` modo `Dist` (\"Gem\" e \"Bonus\")",
-    "destino_proposto": "planejador",
     "motivo_destino": "Alcance da rede do Lab, irmão do Total Line Width que ficou fora em 20/11; serve para posicionar personagens."
   },
   {
@@ -8690,13 +8559,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos slots dourados a vinha tem: 1 de base, um contador da conta e um bônus em `Thingies(\"Have_ban_o\")`. Não confirmei de que sistemas vêm essas duas fontes.",
     "tela": "The Cape Vine (w110): slots dourados",
     "prova": "`Stuff2` modo `GoldCapeVinesOwned`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Contagem de vagas douradas cujas fontes de fora não estão confirmadas; pela regra de contagem só entraria com 2 ou mais sistemas de fora."
   },
   {
@@ -8874,14 +8742,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "EXP que cada capitão ganha por viagem: a constante da ilha vezes o Captain EXP Multi.",
     "tela": "não aparece como número próprio (entra no nível do capitão)",
     "prova": "`Sailing` modo `CaptainEXPgain`; evento `_event_Sailing` de `ActorEvents_577`",
     "motivo_tipo": "Ganho por viagem (EXP do capitão), não por tempo.",
-    "destino_proposto": "painel-de-farm",
     "motivo_destino": "Ganho por viagem que depende da ilha (alvo); pela regra 19 entra o Captain EXP Multi e o ganho vai para o painel, como o Loot Value."
   },
   {
@@ -9194,14 +9061,13 @@
     "caixa": "Outro",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Sorteio do tipo e dos bônus dos capitães da loja.",
     "tela": "Captain Recruitment (w48)",
     "prova": "`Sailing` modos `CaptainPedastalTypeGen`, `CaptainPedastalBonusGen`, `CaptainPedastalBonusQTYGen`",
     "motivo_tipo": "Sorteio da loja de capitães.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Sorteio dos capitães da loja; não é um número da conta."
   },
   {
@@ -9739,13 +9605,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de espécie nova ao usar DNA; vem do Gaming e do Bonus Ballot (2 sistemas), mas cai a cada espécie que já tem.",
     "tela": "Gaming (w45), DNA",
     "prova": "`GamingStatType` modo `NewMutantChanceDEC`",
-    "destino_proposto": "descartado",
     "motivo_destino": "A auditoria de 20/11 deixou o New Mutant fora (chance com 2 fontes, marcada como ele quis)."
   },
   {
@@ -9971,13 +9836,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "alvo-atual",
     "marca": "nao",
     "regra": null,
     "motivo": "Chance de coroa nova do Rat King; junta Super Bits, Rat Shop, Sushi, Jelly e Arcade, mas muda com o tipo da coroa.",
     "tela": "Gaming (w45), Log Book",
     "prova": "`GamingStatType` modo `RatCrownOdds`; `CL.Research` (crowns)",
-    "destino_proposto": "alvo-atual",
     "motivo_destino": "Muda com o tipo da coroa que se busca, e a auditoria de 20/11 já o deixou fora."
   },
   {
@@ -11390,14 +11254,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto vale cada moeda da Fountain; o jogo não mostra um número por hora.",
     "tela": "Fountain (w69)",
     "prova": "`Holes2` modos `Fount_CurrencyTotValue`, `Fount_CurrencyBaseValue`",
     "motivo_tipo": "Valor de cada moeda, ganho por unidade.",
-    "destino_proposto": "painel-de-farm",
     "motivo_destino": "É base vezes o Fountain currency ALL multi, que já entra; pela regra 19 o valor vai para o painel e o multi fica no catálogo."
   },
   {
@@ -11476,13 +11339,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantas moedas cabem; trava o ganho. Fontes: Fountain, Engineer e Conjuror, todas da The Hole.",
     "tela": "Fountain (w69)",
     "prova": "`Holes2` modos `MaxCoinz`, `SpacesOwned`, `MaxStackSize`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Capacidade que a auditoria deixou fora como exceção à regra 12 (W5); limite fora vai para o planejador."
   },
   {
@@ -13852,13 +13714,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 20,
     "motivo": "Conta curta de duas fontes. Regra 20 (masterclass, decidida no Compass em 20/11): os stats de combate e as chances de drop da forma entram, como na Tempest. (revisto 20/11)",
     "tela": "Tesseract (w81)",
     "prova": "`ArcaneType` modo `TenteyeclePCT` (o menor entre upgrade e talento)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Marcado não na validação (exceção); a proposta de árvore do agente não vale contra a marca."
   },
   {
@@ -13869,13 +13730,12 @@
     "caixa": "Custo",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quanto o cristal pede; além do Tesseract, um sistema de fora só (Talents). Fontes contando as partes: upgrade 13 e Talents reduzem o requisito (2); o requisito é custo (regra 1), mas o redutor dentro dele tem várias fontes, e não há número separado do redutor. (revisto 20/11)",
     "tela": "Tesseract (w81)",
     "prova": "`ArcaneType` modo `CrystalChargeReq` (200 − upgrade 13 − talento, mínimo 50)",
-    "destino_proposto": "planejador",
     "motivo_destino": "É um requisito (custo, regra 1) com redutor de 2 fontes sem número próprio."
   },
   {
@@ -14679,13 +14539,12 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": "Level",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "O máximo que cada nó de recurso guarda; quando enche, a coleta para. Só depende do nível do nó.",
     "tela": "World Map › Collect Resource / Upgrade Outposts",
     "prova": "`RoyalG` modo `ResNodeQTYmax`; evento `CollectAll` (corta a coleta no máximo)",
-    "destino_proposto": "planejador",
     "motivo_destino": "Limite que só depende do nível do nó, de uma fonte só (regra 3)."
   },
   {
@@ -15048,15 +14907,14 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "O valor por drop; é uma parte do ganho, como o QTY PER DROP. Nome corrigido: o Spelunking AFK dá Chapters (as páginas do Lore, itens Chapter One…), não ores (Vinicius, 20/11).",
     "tela": "Items › Skills (Spelunking)",
     "prova": "`Spelunk` modo `SpelunkingOreValue` (Efficiency e Prowess contra o alvo)",
     "motivo_tipo": "Valor de cada drop, parte do ganho.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "É parte do Spelunking pages/HR, que foi para o painel de farm; nenhuma árvore o contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "spel-exp-multi",
@@ -15111,14 +14969,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Ganho por tempo",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Uma parte do ganho, como os hits por hora do Mining.",
     "tela": "Items › Skills (Spelunking)",
     "prova": "`HourlyKillRate(\"Spelunking\")` (3600 / Speed × chance)",
-    "arvore_mae": [],
-    "nota_arvore_mae": "É parte do Spelunking pages/HR, que foi para o painel de farm; nenhuma árvore o contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "spel-harvest-chance",
@@ -15401,13 +15258,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 10,
     "motivo": "Vem só do próprio Spelunking. Fontes contando as partes: Spelunk Shop e Elixirs (2). (revisto 20/11)",
     "tela": "Spelunking (w82)",
     "prova": "`Spelunk` modos `ShadowStrikeChance`, `ShadowStrikeQTY` (Spelunk Shop e Elixir)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Chance de 2 partes do próprio Spelunking, como o Free shaker que ficou fora na auditoria; só vale dentro do delve."
   },
   {
@@ -15433,13 +15289,12 @@
     "caixa": "Outro",
     "tipo": "Custo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "nao",
     "regra": null,
     "motivo": "Quantos buracos faltam para descer; 2 sistemas mexem.",
     "tela": "Spelunking (w82)",
     "prova": "`Spelunk` modo `HolesToNextFloor` (Spelunk Shop e bolha da Alchemy)",
-    "destino_proposto": "planejador",
     "motivo_destino": "Requisito para descer de andar com 1 sistema de fora (bolha da Alchemy); contagem e limite pedem 2 de fora (regra de contagem)."
   },
   {
@@ -16662,13 +16517,12 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Pontos investidos",
-    "destino": "a-classificar",
+    "destino": "planejador",
     "marca": "",
     "regra": null,
     "motivo": "Número do clicker. O Minehead saiu da regra 15 (20/11); reclassificado pelas regras normais.",
     "tela": "Mr. Minehead's Depth Charge (w97)",
     "prova": "`Minehead` modo `DailyTries`",
-    "destino_proposto": "planejador",
     "motivo_destino": "Contagem de 3 mais uma casa do Research Grid, uma fonte de fora só (regra 2), igual ao Jelly daily tries."
   },
   {
@@ -16908,14 +16762,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Partes do Bucks/hr. O catálogo guarda só o tier 20 de uma família.",
     "tela": "Sushi Station (w102)",
     "prova": "`SushiStuff` modos `CurrencyPerTier`, `ComboMulti`, `OvertunedMulti`, `FireplaceEffect`, `SlotEffect`, `UniqueSushi`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "São partes da base do Bucks/hr (painel de farm), fora do Bucks multiplier; nenhuma árvore as contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "sushi-fuel-gen",
@@ -17118,13 +16971,12 @@
     "caixa": "Chance e taxa",
     "tipo": "Chance",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Uma chance do Sushi que 2 sistemas aumentam.",
     "tela": "Sushi Station (w102)",
     "prova": "`SushiStuff` modo `FreeShaker` (upgrade, Knowledge e Research Grid)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Chance com 2 fontes que o Vinicius já marcou fora na auditoria de 20/11 (exceções isoladas)."
   },
   {
@@ -17479,14 +17331,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Valor por unidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": null,
     "motivo": "O valor da transmutação; a base vem do Divinity e do Coral Kid.",
     "tela": "Luminous Menagerie (w109)",
     "prova": "`MenagerieStuff` modos `CK_BaseValue`, `CK_KillMulti`, `CK_TimeMulti`, `CK_TotalValue`, `CK_NonDivHourTime` (pontos do Divinity e Coral Kid)",
     "motivo_tipo": "Valor da transmutação do Coral Kid.",
-    "destino_proposto": "painel-de-farm",
     "motivo_destino": "O valor da transmutação cresce com o tempo (CK_TimeMulti) e os abates; é um ganho por tempo (regra 9)."
   },
   {
@@ -18073,13 +17924,12 @@
     "caixa": "Bônus",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "Recuperação de MP por segundo, com 4 sistemas de fonte, mas não entra em ganho AFK. Nenhuma regra decide.",
     "tela": "não aparece como número próprio",
     "prova": "`ArbitraryCode` modo `PctMPperSec` (comidas, cartas, sigil do Lab, talentos)",
-    "destino_proposto": "descartado",
     "motivo_destino": "Exceção isolada do Personagem (20/11): MP regen fica fora."
   },
   {
@@ -18300,14 +18150,13 @@
     "caixa": "Bônus",
     "tipo": "Multi",
     "tipo_folha": "Escolha",
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Galhos dos abates por hora de base.",
     "tela": "não aparece como número próprio",
     "prova": "`afkAttackBonses` modos `D` e `K` (ataques postos na barra de ataque)",
-    "arvore_mae": [],
-    "nota_arvore_mae": "O código só o lê no HourlyKillRate (KILLS/HR da luta e hits das skills), que foi para o painel de farm."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "stats-afk-survivability",
@@ -18332,14 +18181,13 @@
     "caixa": "Outro",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "dentro-de-arvore",
+    "destino": "painel-de-farm",
     "marca": "nao",
     "regra": 5,
     "motivo": "Quanto da comida o AFK gasta no tempo fora; é um galho do ganho AFK.",
     "tela": "não aparece como número próprio",
     "prova": "bloco `AFKfoodsTimeRedux`; lido em `AFKgains`",
-    "arvore_mae": [],
-    "nota_arvore_mae": "O código só o lê em AFKgains (tempo de comida gasto no AFK); nenhuma árvore o contém."
+    "motivo_destino": "Parte de um ganho por tempo que está no painel de farm; aparece lá, ao abrir o ganho."
   },
   {
     "id": "stats-afk-monster-hp",
@@ -18441,13 +18289,12 @@
     "caixa": "Outro",
     "tipo": "Tempo",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "nao",
     "regra": null,
     "motivo": "NOVO, sem marca. Tempo de volta depois de morrer, com 2 sistemas; entra no `HourlyKillRate`. Nenhuma regra decide um tempo de 2 fontes. Sugestão: não, porque só pesa quando o personagem morre no AFK.",
     "tela": "",
     "prova": "bloco `AutoRespawnTime` (600 s ou o talento 615, dividido por 1 + Post Office); a tela do AFK mostra \"Auto-Respawn in\"; somado no `HourlyKillRate`",
-    "destino_proposto": "descartado",
     "motivo_destino": "Exceção isolada do Personagem (20/11): Auto-Respawn time fica fora."
   },
   {
@@ -20141,15 +19988,14 @@
     "caixa": "Bônus",
     "tipo": "Bônus de item",
     "tipo_folha": "Condição",
-    "destino": "dentro-de-arvore",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 4,
     "motivo": "O efeito de cada trait; aparece dentro do número que ele muda.",
     "tela": "sem tela no mapa de telas",
     "prova": "`DungeonCalc` modo `TraitBonus`",
     "motivo_tipo": "Bônus de cada item de uma família (regra 4); o tipo é o do número que cada item aumenta, e varia.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "Todos os usos no código são dentro da dungeon (stats da run, drops, loja do NPC); nenhuma árvore. Candidato a descartado (regra 18)."
+    "motivo_destino": "Só vale dentro da dungeon ou do torneio; não entra em número com árvore."
   },
   {
     "id": "dung-trait-lv-req",
@@ -20403,15 +20249,14 @@
     "caixa": "Bônus",
     "tipo": "Bônus de item",
     "tipo_folha": "Condição",
-    "destino": "dentro-de-arvore",
+    "destino": "descartado",
     "marca": "nao",
     "regra": 4,
     "motivo": "O prêmio de cada colocação e da inscrição; é recompensa por ação, cada uma de uma fonte.",
     "tela": "The Grand Tournament (w98), aba Rewards",
     "prova": "tabela `TournyRewards` (6 faixas); evento do torneio (Event Shop 41 e 46 na inscrição)",
     "motivo_tipo": "Prêmio de cada colocação.",
-    "arvore_mae": [],
-    "nota_arvore_mae": "Os prêmios são itens e moedas (Gold Balls); não entram em número com árvore. Candidato a descartado."
+    "motivo_destino": "Só vale dentro da dungeon ou do torneio; não entra em número com árvore."
   },
   {
     "id": "quests-status",
@@ -20693,14 +20538,13 @@
     "caixa": "Outro",
     "tipo": "Outro",
     "tipo_folha": null,
-    "destino": "a-classificar",
+    "destino": "descartado",
     "marca": "",
     "regra": null,
     "motivo": "A lista de ganhadores do sorteio de pets; não é número da conta.",
     "tela": "Halloween Lucky Pet Winners (w101)",
     "prova": "tela w101 (lista vinda do servidor)",
     "motivo_tipo": "Lista de ganhadores do sorteio; não é número.",
-    "destino_proposto": "descartado",
     "motivo_destino": "Lista de ganhadores vinda do servidor, não é número da conta (regra 17)."
   }
 ]
