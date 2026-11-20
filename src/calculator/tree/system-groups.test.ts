@@ -60,7 +60,7 @@ test("a lone bonus in % of a named system is its system's group in %, its ⓘ th
   ]);
   const [stamps] = out;
   expect(stamps?.node.formula).toEqual([
-    ['StampBonusOfTypeX("DropRate")', "÷", "100"],
+    ["Stamps: Drop Rate", "÷", "100"],
     [172, 100, 1.72],
   ]);
 });
