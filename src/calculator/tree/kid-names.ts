@@ -119,11 +119,11 @@ function bySystem(r: Row, above: readonly string[]): Row {
 }
 
 /**
- * A pool or a system's group (spec 009): its name is the app's, and its rows keep the names they had at the level above
- * it.
+ * A pool or a system's group (spec 009), or a row of caps (fix tree-shape-091, rule 4): its name, ⓘ and rows are the
+ * app's, and its rows keep the names they had at the level above it.
  */
-export const isMould = (r: Pick<Row, "node">): boolean =>
-  r.node.role === "pool" || r.node.role === "system";
+export const isMould = (r: Pick<Row, "node" | "capped">): boolean =>
+  r.node.role === "pool" || r.node.role === "system" || !!r.capped;
 
 /** A row's text as the levels under it see it: its name and its tag. */
 export const aboveText = (a: { name: string; code: string | null }) =>

@@ -98,6 +98,37 @@ export interface Row {
    * FR-008): the row above never merges into it nor takes its ⓘ (tree/parent-passes.ts).
    */
   ceiling?: true;
+  /**
+   * A floor or a cap of the game around a product of factors of one source each, max(1, (1 + a) × (1 + 0.5 × b)) (fix
+   * tree-shape-091, rule 3): its rule, its bound and each factor's own row. In its system's group, the factors are the
+   * group's rows and the rule is the group's ⓘ (tree/groups.ts); anywhere else the row is as it is.
+   */
+  clamp?: { fn: "max" | "min"; bound: number; rows: Row[] };
+  /**
+   * A part named by its role in the ⓘ of the row above ("Bonus", "Level"; audit family 7): the name holds, never taken
+   * from a child it merges with (tree/one-child.ts), so the ⓘ and the row say the same.
+   */
+  role?: true;
+  /** The source a row of a multiplier or of a bonus times a count is named after: its system is the row's (tree/groups.ts). */
+  head?: Row;
+  /**
+   * A factor 1 + (a + b + …) ÷ 100 of two sources or more inside a step (fix tree-shape-091, round 1; FR-005): its
+   * bonuses in %, which are its own Multi pool (tree/mould.ts).
+   */
+  factorPool?: Row[];
+  /**
+   * A row of caps of the game (tree/caps.ts): the caps, outermost first, and how its rows give the value they cap; its
+   * rows go by system in a pool (rule 4).
+   */
+  capped?: { caps: readonly CapShape[]; op: "+" | "*" | null };
+}
+
+/** A cap of the game, by its shape (tree/caps.ts `Cap`, without the expression it caps). */
+export interface CapShape {
+  kind: "add" | "scale";
+  c: number;
+  e: number;
+  floor: boolean;
 }
 
 /** A row with no rows under it, built (a group) or to build (an opening). */

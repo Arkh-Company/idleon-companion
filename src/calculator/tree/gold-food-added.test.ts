@@ -38,8 +38,14 @@ test("a worn food added to the bonus: the row inside its pool is Equipped: <the 
   useGameTables(TABLES);
   const { build, pools } = poolsOf("added", 0);
   expect(pools.map((p) => p.name)).toEqual(["Additive pool"]);
-  // the pool's rows by system: the worn food's product is the first row of its group
-  const [worn] = kidsIn(pools[0]).flatMap(kidsIn);
+  // the pool's rows by system: the bonus read back, at 0, is its system's group of one source (fix tree-shape-091, rule
+  // 1), and the worn food's product, of no system, is the next row, in no group "🔹 Other" (Vinicius, 19/11)
+  const [cached, worn] = kidsIn(pools[0]);
+  expect([cached?.name, cached?.role, cached?.value]).toEqual([
+    "🍔 Golden Food",
+    "system",
+    0,
+  ]);
   expect([worn?.name, worn?.value]).toEqual([
     "Equipped: Invented Charm",
     expect.closeTo(7.212813084112149, 9),

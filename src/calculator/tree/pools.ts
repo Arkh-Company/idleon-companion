@@ -9,6 +9,7 @@ import { exprText, flat, topOp } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
+import { joinedCaps } from "./caps.ts";
 import { added, addedRows } from "./percent.ts";
 import { additiveRows, kindOf, scaledPools, strip } from "./scaled.ts";
 import { through } from "./tops.ts";
@@ -99,6 +100,9 @@ function named(pools: Omit<Pool, "name">[]): Pool[] {
     return { ...p, name: count(p.kind) > 1 ? `${base} ${String(n)}` : base };
   });
 }
+
+/** Pools named again, after one became two (tree/mould.ts `splitFactors`). */
+export const poolNames = (pools: Omit<Pool, "name">[]): Pool[] => named(pools);
 
 /**
  * The pools of the root's `rows`, in the game's order; `root.expr` is the root's step, read for its additive factors
@@ -342,7 +346,8 @@ export function chainPools(
       flush();
       continue;
     }
-    for (const e of terms) {
+    // a cap the chain split, its constant and its rest, is one term again (fix tree-shape-091, rule 4)
+    for (const e of joinedCaps(terms, op)) {
       const factor =
         op === "*"
           ? additiveRows(e, Number(e.v), (t) => termAt(t, "+", at))

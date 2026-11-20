@@ -17,6 +17,7 @@ import { leafRules, mapsCount } from "./leaf-passes.ts";
 import { mapsByKills } from "./last-renames.ts";
 import type { Level } from "./places.ts";
 import { bare } from "./rows.ts";
+import { ifChecks } from "./build-up.ts";
 import { scaledName } from "./scaled-names.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
@@ -25,12 +26,14 @@ import type { Row } from "./rows.ts";
 export type Under = (r: Row, at: Level) => Level | null;
 
 /**
- * Row `n` in the place of its child `c`: `c`'s rows and the sources of their ⓘ, `n`'s name, value and share, `c`'s code
- * and why when `n` has none (pieces.cjs fixNames' loop).
+ * Row `n` in the place of its child `c`: `c`'s rows and the sources of their ⓘ, `n`'s name (by its role too), value and
+ * share, `c`'s code and why when `n` has none (pieces.cjs fixNames' loop).
  */
 function absorb(n: Row, c: Row): Row {
   return {
     ...c,
+    // a name by its role holds through the merge (tree/rows.ts `role`)
+    ...(n.role ? { role: true as const } : {}),
     node: {
       ...n.node,
       code: n.node.code ?? c.node.code,
@@ -127,6 +130,23 @@ export function parentPasses(
       c.ceiling
     )
       break;
+    // a part named by its role over its one check (a companion owned, its bonus the check's value) is that bonus, the
+    // check in its ⓘ, never a row (FR-018; fix tree-shape-091, round 1)
+    if (bare(c) && n.role && c.node.leaf === "condition") {
+      const leaf = leafOf(n, c);
+      return {
+        row: {
+          ...leaf,
+          node: {
+            ...leaf.node,
+            leaf: "rawBonus",
+            condition: null,
+            formula: ifChecks([c], Number(n.node.value)),
+          },
+        },
+        level: null,
+      };
+    }
     // the bench's passes after structurePass see the leaf with the row's own code
     if (bare(c)) return { row: leafRules(leafOf(n, c)), level: null };
     // a child whose level is cut stays, and says so

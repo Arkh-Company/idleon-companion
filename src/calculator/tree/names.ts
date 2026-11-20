@@ -5,7 +5,13 @@
 // game's table (`resolveNames`): when its table changed, the row has no name, never a wrong one.
 import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
 import type { NamePart, NameRecipe } from "./names-table.ts";
-import { clean, isNameText, tidy, transformText } from "./name-text.ts";
+import {
+  clean,
+  isNameText,
+  tidy,
+  transformText,
+  untagged,
+} from "./name-text.ts";
 import { renameOf } from "./renames.ts";
 import { STATE_NAMES } from "./state-names.ts";
 
@@ -185,7 +191,7 @@ export function pathName(p: string): string {
 /** pieces.cjs `callName`: a call in the ⓘ by its name, any bracket at its end gone; else the call as it is. */
 export function callName(text: string): string {
   const name = termName(text);
-  return name === null ? text : name.replace(/\s*\(.*?\)\s*$/, "").trim();
+  return name === null ? text : untagged(name);
 }
 
 /**

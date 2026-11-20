@@ -9,6 +9,7 @@ import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { evaluate, formulaOut, isOperator } from "./math.ts";
+import { untagged } from "./name-text.ts";
 import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -48,6 +49,7 @@ export function isStep(r: Row): boolean {
     !n.flags.truncated &&
     !r.bySource &&
     !r.ceiling &&
+    !r.role &&
     (!!n.flags.unnamed || byShapeOnly(n.name)) &&
     (r.group?.length ?? 0) > 0
   );
@@ -119,13 +121,15 @@ const marked = (rows: readonly Row[], moves = isStep): Row[] =>
 /**
  * The ⓘ and rows of a pool or a group (spec 009, FR-017) whose rows hold an unnamed step: each step replaced by its
  * parts and its ⓘ in brackets, as `inlined` does, the ⓘ around them `pairOf` the rows; null when none moves. Only
- * the steps `moves` says move.
+ * the steps `moves` says move, and of their parts only those `shows` says are rows (a pool's take no constant of the
+ * code, which its ⓘ says: fix tree-shape-091).
  */
 export function inPool(
   node: Pick<Row["node"], "name" | "value">,
   rows: Row[],
   pairOf: (rows: readonly Row[]) => [string, string] | null,
   moves: (r: Row) => boolean = isStep,
+  shows: (part: Row) => boolean = () => true,
 ): Built | null {
   if (!rows.some(moves)) return null;
   const m = marked(rows, moves);
@@ -136,7 +140,7 @@ export function inPool(
       pair,
       m.map((r) => termOf(r.node)),
     );
-  return spliced(node, top, rows, moves);
+  return spliced(node, top, rows, moves, shows);
 }
 
 /**
@@ -148,6 +152,7 @@ function spliced(
   top: CalcTreeNode["formula"],
   rows: readonly Row[],
   moves = isStep,
+  shows: (part: Row) => boolean = () => true,
 ): Built | null {
   if (!Array.isArray(top)) return null;
   // the names and the numbers; the game's text of the bonus, when the ⓘ has one, stays its first line
@@ -171,7 +176,7 @@ function spliced(
     }
     atoms = joined;
     moved++;
-    out.push(...movedUp(r, inner.rows));
+    out.push(...movedUp(r, inner.rows.filter(shows)));
   }
   const result = atoms[1].at(-1);
   const v = Number(node.value);
@@ -190,7 +195,8 @@ function spliced(
 }
 
 /** The role of a source's own part in its math (decision of 19/11, as in cards and talents). */
-const roleOf = (r: Row) => (r.node.leaf === "level" ? "Level" : "Bonus");
+export const roleOf = (r: Pick<Row, "node">): "Level" | "Bonus" =>
+  r.node.leaf === "level" ? "Level" : "Bonus";
 
 /**
  * The ⓘ and rows of the source `name` (audit family 7, decision of 19/11): a part that says the source's name again
@@ -202,11 +208,18 @@ export function byRole(name: string, w: Built): Built {
   const same = (r: Row) => !r.node.flags.unnamed && r.node.name === name;
   const roles = new Set(w.rows.filter(same).map(roleOf));
   const rows = w.rows.map((r) => (same(r) ? withName(r, roleOf(r)) : r));
-  // one role names the source's term in the ⓘ; two would say nothing of which is which
+  // one role names the source's term in the ⓘ; two would say nothing of which is which. The ⓘ writes a name with a tag
+  // at its end short (tree/formulas.ts `short`): that term too, when no other row has that name
   const [role] = roles.size === 1 ? [...roles] : [];
+  const brief = untagged(name);
+  const term = (t: string) =>
+    t === name ||
+    (brief !== name &&
+      t === brief &&
+      !w.rows.some((r) => r.node.name === brief));
   return {
     formula: role
-      ? [terms.map((t) => (t === name ? role : t)), numbers]
+      ? [terms.map((t) => (term(t) ? role : t)), numbers]
       : w.formula,
     rows,
   };

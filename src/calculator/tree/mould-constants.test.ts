@@ -31,15 +31,19 @@ test("a constant of the game's math is never a source of a group: it stays its o
     other(7, 2),
   ];
   const out = bySystem(rows, "product", writerOf);
+  // a source of no system stands as its row after the groups, before the constants, never in a group "🔹 Other"
+  // (Vinicius, 19/11)
   expect(level(out)).toEqual([
     ["🃏 Cards", 6],
-    ["🔹 Other", 35],
+    ["InventedBlock(1)", 5],
+    ["InventedBlock(2)", 7],
     [null, 2],
     [null, 6],
   ]);
   expect(out.map((r) => r.node.name)).toEqual([
     "🃏 Cards",
-    "🔹 Other",
+    other(5).node.name,
+    other(7, 2).node.name,
     "Fixed ×2",
     "Fixed ×6",
   ]);
@@ -62,8 +66,8 @@ test("a constant of the game's math is never a source of a group: it stays its o
     writerOf,
   );
   expect([k?.node.role, k?.node.value]).toEqual(["piece", 4]);
-  // a constant in % adds a hundredth of its value: it is Other's, never a constant beside the groups; alone in its
-  // system, each stands alone as its +N% (decision of 19/11), the ÷ 100 in its pool's ⓘ
+  // a constant in % adds a hundredth of its value: it stands as its +N%, its pool's ⓘ dividing it by 100, never in a group
+  // "🔹 Other" (Vinicius, 19/11); a named system's lone bonus in % is its group in % (fix tree-shape-091, rule 1)
   const pct = bySystem(
     [
       { ...card(30), percent: true },
@@ -76,7 +80,12 @@ test("a constant of the game's math is never a source of a group: it stays its o
   expect(
     pct.map((r) => [r.node.name, r.node.combine, r.node.fmt, r.node.value]),
   ).toEqual([
-    [card(30).node.name, undefined, "%", 30],
-    ["🔹 Other", "percent", "%", 0.07],
+    ["🃏 Cards", "percent", "%", 0.3],
+    ["Fixed +3", undefined, "%", 3],
+    ["Fixed +4", undefined, "%", 4],
+  ]);
+  // the card in its group, its name and its value
+  expect(pct[0]?.group?.map((k) => [k.node.name, k.node.value])).toEqual([
+    [card(30).node.name, 30],
   ]);
 });

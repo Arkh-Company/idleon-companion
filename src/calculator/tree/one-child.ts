@@ -31,9 +31,12 @@ export const isSum = (name: string, under: string): boolean =>
   (/[+×÷−]/.test(name) || callLit(name) || callLit(under)) &&
   ONE_CHILD.sum.test.test(name);
 
-/** A name that says nothing of its own: vague, or no proven name at all (the generic one, R14). */
+/**
+ * A name that says nothing of its own: vague, or no proven name at all (the generic one, R14); never a name by its role
+ * that the ⓘ above writes (tree/rows.ts `role`, fix tree-shape-091).
+ */
 const vague = (n: Row) =>
-  !!n.node.flags.unnamed || ONE_CHILD.vague.test.test(n.node.name);
+  !n.role && (!!n.node.flags.unnamed || ONE_CHILD.vague.test.test(n.node.name));
 
 /**
  * Row `n` with the name its child `c` gives it: `c`'s when `n`'s says nothing or is only a sum and `c`'s is proven (a

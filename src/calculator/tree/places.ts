@@ -39,6 +39,38 @@ import { parentPasses } from "./parent-passes.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
 
+/**
+ * An ⓘ of atoms written with the terms of `rows` before they were placed, with each term a row that its placement named
+ * otherwise (a vague row named by its child, a step by its source) replaced by its new one, so that the ⓘ names the rows
+ * it shows (fix tree-shape-091, round 2). A term rows shared ("Game value" three times) is read in their order, the n-th
+ * time the n-th row's, when the ⓘ writes it as many times as there are rows with it; any other ⓘ as it is.
+ */
+export function shownTerms(
+  f: CalcTreeNode["formula"],
+  rows: readonly Row[],
+  kids: readonly CalcTreeNode[],
+): CalcTreeNode["formula"] {
+  if (!Array.isArray(f) || kids.length !== rows.length) return f;
+  // each term before, with the names the rows that had it show now, in their order
+  const now = new Map<string, string[]>();
+  rows.forEach((r, i) => {
+    const k = kids[i];
+    const t = termOf(r.node);
+    now.set(t, [...(now.get(t) ?? []), k ? termOf(k) : t]);
+  });
+  const [terms, numbers, ...text] = f;
+  const seen = new Map<string, number>();
+  const named = terms.map((t) => {
+    const names = now.get(t);
+    const n = seen.get(t) ?? 0;
+    seen.set(t, n + 1);
+    return terms.filter((x) => x === t).length === names?.length
+      ? (names[n] ?? t)
+      : t;
+  });
+  return [named, numbers, ...text];
+}
+
 /** Where a level's rows go: their depth, the calls above them and the rows above them in their piece. */
 export interface At {
   depth: number;
@@ -250,16 +282,18 @@ export function makePlaces(ctx: PlaceContext) {
               : null,
           ));
     const reached = up?.maxReached;
-    return {
+    // the reads beside the pools above that its call read, after its rows (audit family 10)
+    const rows = [...w.rows, ...(lv.row.below ?? [])];
+    const kids = placeAt({ id, code: lv.code }, rows, lv.at, {
+      total: vOf(lv.row),
       formula: w.formula,
+      aside: lv.row.below ?? [],
+    });
+    return {
+      // a mould's ⓘ, written before its rows were placed, names them as they are shown (fix tree-shape-091)
+      formula: mould ? shownTerms(w.formula, rows, kids) : w.formula,
       ...(reached ? { maxReached: reached } : {}),
-      // the reads beside the pools above that its call read, after its rows (audit family 10)
-      kids: placeAt(
-        { id, code: lv.code },
-        [...w.rows, ...(lv.row.below ?? [])],
-        lv.at,
-        { total: vOf(lv.row), formula: w.formula, aside: lv.row.below ?? [] },
-      ),
+      kids,
     };
   }
 

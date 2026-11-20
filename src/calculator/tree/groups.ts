@@ -1,6 +1,7 @@
 // The groups by system of a level (spec 009, FR-002 to FR-004, FR-017; T027, T028): a pool's rows, or a root's under a
-// max or a min, one group per system in the V1 order, the systems beyond it after, "🔹 Other" last; a constant of the
-// game's math and a helper with no source stand as their own rows.
+// max or a min, one group per system in the V1 order, the systems beyond it after; a source of no proven system, a
+// constant of the game's math and a helper with no source stand as their own rows after them, never in a group "🔹
+// Other" (Vinicius, 19/11: the game has no system Other).
 import { fx3 } from "./curves.ts";
 import { termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
@@ -28,6 +29,10 @@ const OTHER = V1_SYSTEMS.at(-1) ?? { name: "Other", emoji: "🔹" };
  * same one. Undefined for a row with no source (a constant of the code); null for an unknown or a mixed one.
  */
 function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
+  // a row of a multiplier, or of a bonus times a count, is its source's (tree/multiplier-rows.ts); a row of caps, of no
+  // system, its rows by system (rule 4)
+  if (r.head) return systemOfRow(r.head, writerOf);
+  if (r.capped) return null;
   // a helper's (a curve, a log) is its sources' (T028)
   if (r.node.code !== null && !isHelper(r.node.code))
     return systemOf(r.node.code, writerOf(r));
@@ -114,6 +119,44 @@ function percentRow(s: System, rows: Row[]): Row {
   };
 }
 
+/**
+ * A system's group in a product with a floor or a cap of the game around some of its sources (fix tree-shape-091, rule
+ * 3; the clamp's answer B): each factor of the floored product a row of the group, the floor and the cap in its ⓘ
+ * ("max(1, Ancient Golem × Chippy) × Santa Snake"), closing on the group's value.
+ */
+function clampedRow(node: Row["node"], rows: readonly Row[]): Row {
+  const shown = rows.flatMap((r) => r.clamp?.rows ?? [r]);
+  const line = (each: (k: Row) => string) =>
+    rows
+      .map((r) =>
+        r.clamp
+          ? `${r.clamp.fn}(${fx3(r.clamp.bound)}, ${r.clamp.rows.map(each).join(" × ")})`
+          : each(r),
+      )
+      .join(" × ");
+  const pair: [string, string] | null =
+    node.value === null
+      ? null
+      : [
+          line((k) => termOf(k.node)),
+          `${line((k) => fx3(vOf(k)))} = ${fx3(Number(node.value))}`,
+        ];
+  const group = withShares(node, pair, shown).rows;
+  return {
+    node: {
+      ...node,
+      formula:
+        pair &&
+        formulaOut(pair, [
+          ...termsOf(group),
+          ...group.map((k) => termOf(k.node)),
+        ]),
+    },
+    open: null,
+    group,
+  };
+}
+
 /** A system's group of `rows`, its value their sum or product, its sources in the game's order (FR-002, FR-013). */
 function systemRow(s: System, combine: Combine, rows: Row[]): Row {
   if (combine === "max" || combine === "min")
@@ -136,7 +179,8 @@ function systemRow(s: System, combine: Combine, rows: Row[]): Row {
     fmt: product ? "x" : combine === "onePlusPercent" ? "%" : "+",
     flags: { closed: true, ...(value === null ? { unavailable: true } : {}) },
   });
-  // every source in its place (FR-016)
+  // every source in its place (FR-016); a floored product's factors are rows of the group, its rule in its ⓘ (rule 3)
+  if (product && rows.some((r) => r.clamp)) return clampedRow(node, rows);
   const group = withShares(node, null, rows).rows;
   const pair = value === null ? null : ownPair(group, product, value);
   return {
@@ -162,17 +206,24 @@ export function ownPair(
   const op = product ? " × " : " + ";
   const cut = (r: Row, t: string) => (cuts(r) ? `${t} ÷ 100` : t);
   const shown = (r: Row) => (inPercent(r) ? vOf(r) * 100 : vOf(r));
+  // a product of numbers each rounded to 3 decimals may miss its value by more than the ⓘ's 1e-3: then 7 digits
+  const rounded = rows.reduce((p, r) => p * Number(fx3(vOf(r))), 1);
+  const exact =
+    product && Math.abs(rounded - value) > 1e-3 * Math.max(1, Math.abs(value));
+  const num = (v: number) => (exact ? String(+v.toPrecision(7)) : fx3(v));
   return [
     rows.map((r) => cut(r, termOf(r.node))).join(op),
-    `${rows.map((r) => cut(r, fx3(shown(r)))).join(op)} = ${fx3(value)}`,
+    `${rows.map((r) => cut(r, num(shown(r)))).join(op)} = ${fx3(value)}`,
   ];
 }
 
 /**
  * The rows of a pool (or of the root, with no pool) by system (FR-002, FR-004, FR-006): one group per system in the V1
- * order, "🔹 Other" last, a group at 0 or ×1 in its place; a lone source stands alone; when every source is in "Other",
- * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems. A constant of the game's math (a
- * row with no source) is no system's: it stays its own row, after the groups (T027), but for one in %.
+ * order, a group at 0 or ×1 in its place; a named system's lone source is its group too (fix tree-shape-091, rule 1);
+ * a source of no proven system stands alone after the groups, a bonus in % as its +N% that its pool's ⓘ divides by
+ * 100, never in a group "🔹 Other" (Vinicius, 19/11); when no source has a system, the rows stay as they are (FR-001).
+ * The parts at 0 and at ×1 go to their systems. A constant of the game's math (a row with no source) is no system's: it
+ * stays its own row, after the groups (T027).
  */
 export function bySystem(
   rows: readonly Row[],
@@ -184,7 +235,7 @@ export function bySystem(
   const constants: Row[] = [];
   for (const r of rows) {
     const found = systemOfRow(r, writerOf);
-    // a constant in % adds a hundredth of its value only inside a group in % (FR-017), so it stays in "Other"'s
+    // a constant in % adds a hundredth of its value (FR-017): it stands as its +N%, as a source of no system
     if (found === undefined && !r.percent) {
       constants.push(r);
       continue;
@@ -195,8 +246,8 @@ export function bySystem(
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  // every source in "Other", in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%,
-  // its pool's ⓘ dividing it by 100 (A34, option B of 20/11)
+  // no source of a system, in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%, its
+  // pool's ⓘ dividing it by 100 (A34, option B of 20/11)
   const all = [...groups.values()];
   if (all.every((g) => g.s === OTHER))
     return all.some((g) => g.pct)
@@ -204,28 +255,31 @@ export function bySystem(
           r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
         )
       : rows;
-  // a system beyond the V1 after the V1's, in the order of the sum, "Other" last (FR-004); each system's group in %
-  // right after its own (A34)
+  // a system beyond the V1 after the V1's, in the order of the sum (FR-004); each system's group in % right after its
+  // own (A34)
   const first = all.map((g) => g.s.name);
   const at = (s: System) =>
-    s === OTHER
-      ? SYSTEM_ORDER.length + first.length
-      : SYSTEM_ORDER.includes(s.name)
-        ? SYSTEM_ORDER.indexOf(s.name)
-        : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
+    SYSTEM_ORDER.includes(s.name)
+      ? SYSTEM_ORDER.indexOf(s.name)
+      : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
-  // a lone bonus in % stands alone too, as its +N% (FR-006, decision of 19/11): its pool's ⓘ divides it by 100
+  // a named system is always a group, of one source too, in % or not (fix tree-shape-091, rule 1: Vinicius, 19/11, every
+  // system that weighs on a value shows as its child); a source of no system stands alone after them, in its order
+  const loose = rows.filter((r) => {
+    const g = groups.get(`${OTHER.name}|${String(!!r.percent)}`);
+    return !!g?.rows.includes(r);
+  });
   return [
-    ...[...groups.values()]
+    ...all
+      .filter((g) => g.s !== OTHER)
       .sort((a, b) => rank(a) - rank(b))
-      .flatMap(({ s, pct, rows: rs }) =>
-        rs.length === 1
-          ? rs.map((r) =>
-              pct ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
-            )
-          : [systemRow(s, pct ? "percent" : combine, rs)],
+      .map(({ s, pct, rows: rs }) =>
+        systemRow(s, pct ? "percent" : combine, rs),
       ),
+    ...loose.map((r) =>
+      r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+    ),
     ...constants,
   ];
 }

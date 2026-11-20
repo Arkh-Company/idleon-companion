@@ -123,3 +123,15 @@ Bad: `formula` gains `text?: string` while the JSDoc right above it still says "
 A small helper that two files of `src/calculator/tree/` need (`strip`, `isNum`, the test of a log's argument) is exported once, from the file its theme belongs to, and imported; no file keeps its own copy.
 Good: `import { strip, isNum } from "./expr.ts"` in `gold-food-step.ts`, `gold-food-chain.ts`, `pools.ts` and `tops.ts`.
 Bad: `const strip = (e) => (e.t === "def" ? strip(e.e) : e)` typed again in `gold-food-step.ts`, beside the same copy in `gold-food-chain.ts`, `percent.ts`, `scaled.ts` and `tops.ts`.
+
+### A shape test pins the direct rows
+
+A test of a tree's shape asserts the exact rows of the level it names (name and code, in order), never `some` or `arrayContaining` over the descendants.
+Good: `expect(kidsOpen(b, base).map((k) => [k.name, k.code])).toEqual([["🃏 Cards", undefined], ["📜 Stamps", undefined], …])`.
+Bad: `expect(below(b, base, 3).map((k) => k.code)).toEqual(expect.arrayContaining([...]))`, which passes with an unnamed "Game value" row in between; or `kidsOpen(b, k).some((x) => x.code?.startsWith("Companions("))`, which passes when the row says "Owned".
+
+### An ⓘ names the rows it shows
+
+The test of a level with an ⓘ checks that each name in the ⓘ is the name of one of the level's rows, as it shows after its placement.
+Good: `expect(linesOf(group.formula)[0]).toBe(kidsOpen(b, group).map((k) => k.name).join(" + "))` for the group inside "Base Damage".
+Bad: checking only `names.not.toContain("Game value")` in the cap's ⓘ, while the ⓘ of the group just below says "Game value + Game value + Game value" and its rows say "Big Meaty Claws bubble".

@@ -20,6 +20,9 @@ import {
 } from "./expr.ts";
 import { nameOf, termName } from "./names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
+import { clampedProduct } from "./clamped.ts";
+import { capRow as capRowOf } from "./caps.ts";
+import { additiveRows } from "./scaled.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -97,6 +100,16 @@ export function makeTerms(ctx: TermContext) {
   const terms = (e: Expr, op: "*" | "+", d: number, reads: Reads) =>
     flat(e, op).flatMap((x) => rowOfTerm(x, op, d, reads) ?? []);
 
+  /** A cap's row (tree/caps.ts `capRow`; fix tree-shape-091, rule 4), the value it caps read in its own step's turn. */
+  function capRow(e: Expr, d: number, reads: Reads): Row | null {
+    const t = turn;
+    return t
+      ? capRowOf(e, t.steps, t.at, (x, at) =>
+          withTurn({ ...t, at }, () => rowOfTerm(x, null, d + 1, reads)),
+        )
+      : null;
+  }
+
   /** A value the step took from an earlier step of the same block: that step's terms. */
   function stepRef(v: V, d: number, reads: Reads): Row | null {
     const t = turn;
@@ -104,6 +117,9 @@ export function makeTerms(ctx: TermContext) {
     for (let j = t.at - 1; j >= 0; j--) {
       const st = t.steps[j];
       if (!st || !near(st.v, v)) continue;
+      // a cap of the game is the row of the part it caps (rule 4)
+      const cap = withTurn({ ...t, at: j }, () => capRow(st.e, d, reads));
+      if (cap) return cap;
       const op = topOp(st.e);
       const rows = withTurn({ ...t, at: j }, () => {
         if (op) return terms(st.e, op, d + 1, reads);
@@ -233,6 +249,9 @@ export function makeTerms(ctx: TermContext) {
     d: number,
     reads: Reads,
   ): Row | null {
+    // a cap of the game is the row of the part it caps (fix tree-shape-091, rule 4)
+    const cap = e.t === "op" || e.t === "def" ? capRow(e, d, reads) : null;
+    if (cap) return cap;
     if (e.t === "def") {
       const x = e.e;
       if (["call", "read", "val", "num", "def"].includes(x.t)) {
@@ -345,7 +364,23 @@ export function makeTerms(ctx: TermContext) {
               : e.t === "op" && e.o === "+"
                 ? `Sum of ${String(ns)} sources`
                 : `Formula of ${String(ns)} sources`));
-      const r = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
+      const r0 = branchName(exprRow(e, d - 1, reads2, !adds(e)), e, byCount);
+      // a floor or a cap around a product of factors of one source each: each factor its own row too (rule 3 of fix
+      // tree-shape-091), for its system's group
+      const cp = clampedProduct(e);
+      const factors = (cp?.factors ?? []).flatMap(
+        (f) => rowOfTerm(f, "*", d, reads2) ?? [],
+      );
+      // a factor 1 + (a + b) ÷ 100 of several sources: its bonuses in %, its own Multi pool in a pool (FR-005, round 1)
+      const add = additiveRows(e, Number(e.v), (t, o) =>
+        rowOfTerm(t, o, d, reads2),
+      );
+      const r =
+        factors.length === cp?.factors.length
+          ? { ...r0, clamp: { fn: cp.fn, bound: cp.bound, rows: factors } }
+          : add?.combine === "onePlusPercent" && add.rows.length > 1
+            ? { ...r0, factorPool: add.rows }
+            : r0;
       return own ? { ...r, r1src: own } : r;
     }
     // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the

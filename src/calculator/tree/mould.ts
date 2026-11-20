@@ -2,18 +2,22 @@
 // root's block, in the game's order, as the assembly gives them (tree-build.ts), each with its bonus's name, and never a
 // name by its shape such as "Fixed +2"; a step with no proven name says so: the generic name and `unnamed` (FR-012a).
 // The mould (spec 009, FR-001, FR-002, FR-004 to FR-006): those rows in the game's pools (tree/pools.ts), and inside
-// each pool by system (tree/systems.ts), in the V1 order of the bench (build-v1mold.cjs), "🔹 Other" last.
+// each pool by system (tree/systems.ts), in the V1 order of the bench (build-v1mold.cjs); a source with no proven
+// system is its own row, after the groups.
 import { fx3 } from "./curves.ts";
 import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";
 import { flat, topOp } from "./expr.ts";
 import { isConstant, near, termsOf, vOf } from "./formulas.ts";
 import { inPool, isStep } from "./inline.ts";
+import { multiplierRow } from "./multiplier-rows.ts";
+import { capInGroups } from "./caps.ts";
 import { besidePools } from "./pool-rest.ts";
 import { citing } from "./build-up.ts";
 import { formulaOut } from "./math.ts";
 import {
   chainPools,
+  poolNames,
   poolsOf,
   poolsPair,
   rootExtreme,
@@ -81,7 +85,35 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
       : p.combine === "sum" || p.combine === "onePlusPercent"
         ? "+"
         : null;
-  const rows = op ? dissolve(p.rows, op, joins) : p.rows;
+  const parts = op ? dissolve(p.rows, op, joins) : p.rows;
+  // fix tree-shape-091, rule 2: in a product, each multiplier of one source is its × row by its source's name, the
+  // factors of a floored product too (rule 3); in a product or a sum, a bonus times a count is its bonus's row (round
+  // 1); a row of caps has its rows by system (rule 4)
+  const product = p.combine === "product";
+  const made = new Set<Row>();
+  const times = (r: Row): Row => {
+    const m = r.capped
+      ? capInGroups(r, writerOf, (f, name) =>
+          poolRow(
+            {
+              kind: "multi",
+              name,
+              value: vOf(f),
+              combine: "onePlusPercent",
+              rows: f.factorPool ?? [],
+            },
+            writerOf,
+          ),
+        )
+      : multiplierRow(r, product);
+    if (m !== r && !r.capped) made.add(m);
+    return m;
+  };
+  const rows = parts.map((r) =>
+    r.clamp
+      ? { ...r, clamp: { ...r.clamp, rows: r.clamp.rows.map(times) } }
+      : times(r),
+  );
   const pct = p.combine === "onePlusPercent";
   // 1 + (its groups) ÷ 100: the ⓘ the parts' own sum or product would not give
   const pairOf = (lv: readonly Row[]): [string, string] | null =>
@@ -91,10 +123,11 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
           `1 + (${lv.map((r) => fx3(vOf(r))).join(" + ")}) ÷ 100 = ${fx3(p.value)}`,
         ]
       : ownPair(lv, p.combine === "product", p.value);
-  // FR-017: an unnamed step of a mixed math moves up, its ⓘ in the pool's (tree/inline.ts); the other rows by system.
-  // A step that only adds or only multiplies is no such step: `dissolve` takes in the first kind, and the second is a
-  // term of the pool (a talent times a count, FR-003)
-  const mixed = (r: Row) => isStep(r) && !r.op;
+  // FR-017: an unnamed step of a mixed math moves up, its ⓘ in the pool's (tree/inline.ts), its constants in that ⓘ only
+  // (fix tree-shape-091: no constant loose in a pool); the other rows by system. A step that only adds or only multiplies is no such step:
+  // `dissolve` takes in the first kind, and the second is a term of the pool (a talent times a count, FR-003); a
+  // floored product goes into its system's group (rule 3), and a multiplier's row stays, of a source with no name too
+  const mixed = (r: Row) => isStep(r) && !r.op && !r.clamp && !made.has(r);
   const steps = rows.filter(mixed);
   const apart = steps.length
     ? inPool(
@@ -109,6 +142,7 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
         ],
         pairOf,
         mixed,
+        (k) => !isConstant(k.node),
       )
     : null;
   const level = apart?.rows ?? [...bySystem(rows, p.combine, writerOf)];
@@ -137,6 +171,46 @@ function poolRow(p: Pool, writerOf: WriterOf, joins?: Joins): Row {
     open: null,
     group: apart ? apart.rows : withShares(node, pair, level).rows,
   };
+}
+
+/**
+ * The pools with each factor 1 + (a + b + …) ÷ 100 of several sources inside a product pool (of a step the chain reads
+ * back, tree/terms.ts `factorPool`) its own Multi pool after that pool, its bonuses its rows by system (FR-005, fix
+ * tree-shape-091 round 1), all named again; the pools as they are with none.
+ */
+export function splitFactors(
+  pools: readonly Pool[],
+  joins?: Joins,
+): readonly Pool[] {
+  const out = pools.flatMap((p): Omit<Pool, "name">[] => {
+    if (p.combine !== "product") return [p];
+    const rows = dissolve(p.rows, "*", joins);
+    const factors = rows.filter((r) => r.factorPool?.length);
+    if (!factors.length) return [p];
+    const rest = rows.filter((r) => !factors.includes(r));
+    const own = factors.map((r) => ({
+      kind: "multi" as const,
+      combine: "onePlusPercent" as const,
+      join: "*" as const,
+      value: vOf(r),
+      rows: r.factorPool ?? [],
+    }));
+    const value = rest.reduce((a, r) => a * vOf(r), 1);
+    return rest.length ? [{ ...p, value, rows: rest }, ...own] : own;
+  });
+  const split =
+    out.length !== pools.length || out.some((p, i) => p !== pools[i]);
+  return split
+    ? poolNames(
+        out.map(({ kind, value, rows, combine, join }) => ({
+          kind,
+          value,
+          rows,
+          combine,
+          ...(join ? { join } : {}),
+        })),
+      )
+    : pools;
 }
 
 /** The root's first level as its pools (FR-005), each with its share of the root, and the root's ⓘ. */
@@ -250,11 +324,12 @@ export function chainLevel(
     chain === null && !ctx.passed && factorStep(steps, value)
       ? chainPools(steps, { value }, termAt, ownCache, true)
       : null;
-  const pools =
+  const found =
     Array.isArray(one) && one.some((p) => p.combine !== "product")
       ? one
       : chain;
-  if (!Array.isArray(pools)) return null;
+  if (!Array.isArray(found)) return null;
+  const pools = splitFactors(found, ctx.joins);
   const v = typeof value === "boolean" ? Number(value) : (value ?? NaN);
   // its checks stay rows here: the ⓘ that says them is the pair's, made where the level is placed (tree/places.ts)
   return {
@@ -299,11 +374,15 @@ function pooled(
   const read =
     steps && termAt ? chainPools(steps, root, termAt, ownCache) : null;
   const open = read === "open";
-  const out = (pools: readonly Pool[], chain: boolean, keep = chain) => ({
-    ...pooledLevel(rows, root, pools, chain, ctx, keep),
-    pools,
-    open,
-  });
+  // a factor of several sources inside a product pool is its own pool (round 1)
+  const out = (pools0: readonly Pool[], chain: boolean, keep = chain) => {
+    const pools = splitFactors(pools0, ctx.joins);
+    return {
+      ...pooledLevel(rows, root, pools, chain, ctx, keep),
+      pools,
+      open,
+    };
+  };
   if (Array.isArray(read)) return out(read, true);
   // T025: a round or a clamp at the top that changes nothing is read through
   const v = vOf({ node: root as Node });

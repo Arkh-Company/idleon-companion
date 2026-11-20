@@ -1,6 +1,6 @@
 // The parity against the bench's V1 (spec 009, SC-002, T023): the bench's Drop Rate is its V1 mould, hand-made pools
-// with a group per system ("⚗️ Alchemy", its sources inside), while the app's pools follow the game's chain (rule Y) and
-// a lone source stands alone (FR-006). The parity goes through the bench's system groups as it goes through the app's,
+// with a group per system ("⚗️ Alchemy", its sources inside), while the app's pools follow the game's chain (rule Y), a
+// named system's lone source is its group and a source of no system stands alone (fix tree-shape-091). The parity goes through the bench's system groups as it goes through the app's,
 // and pairs the sources; a source the app files under another system is still a difference. Every name and number here
 // is invented, apart from the V1 systems' names.
 import { expect, test } from "vitest";

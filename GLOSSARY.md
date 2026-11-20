@@ -131,7 +131,8 @@ _Avoid_: formula, equation, ⓘ on screen
 **Pool**:
 One stage of the game's own math on the first level of a **Formula tree**, in the order of the sum: an **Additive pool** or
 a **Multi pool**, with its value, its **Share** and the **System groups** inside; numbered ("Multi pool 1") when there is
-more than one of a kind.
+more than one of a kind. A row of a cap of the game ("Base Damage") holds one too: each factor `1 + (a + b) ÷ 100` of its
+part is a **Multi pool** inside that row.
 _Avoid_: stage, bucket, layer
 
 **Additive pool**:
@@ -144,9 +145,9 @@ A **Pool** that multiplies: the loose multipliers in a row are one, and a multip
 _Avoid_: multiplier pool, product pool, multi group
 
 **System group**:
-The sources of one game system inside a **Pool** or under the root, with its emoji and name, in the V1 order of the bench
-and "🔹 Other" last; its value is the sum or the product of its sources, and a source with no system rule is never
-guessed into one.
+The sources of one game system inside a **Pool** or under the root, with its emoji and name, in the V1 order of the bench;
+its value is the sum or the product of its sources. The lone source of a named system is in its group too. A source with
+no system rule is never guessed into one: it is its own row, after the groups, never in a group "🔹 Other".
 _Avoid_: category, system row, grupo de sistema
 
 **Changes**:

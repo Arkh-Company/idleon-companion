@@ -10,7 +10,7 @@ import { fx3 } from "./curves.ts";
 import { flat, topOp } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
 import { near } from "./math.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText, untagged } from "./name-text.ts";
 import { termName } from "./names.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
@@ -80,9 +80,7 @@ const familyName = () =>
   termName(FAMILY)?.replace(/\s*\(family bonus\)$/, "") ?? null;
 /** A source in the sources' ⓘ: its name without its tag in parentheses, or its code when it has no name. */
 export const sourceTerm = (r: Row) =>
-  r.node.flags.unnamed
-    ? termOf(r.node)
-    : r.node.name.replace(/\s*\(.*?\)\s*$/, "");
+  r.node.flags.unnamed ? termOf(r.node) : untagged(r.node.name);
 /** "<what>: <the food's text>", when the item has a text and the whole is a name. */
 function foodName(what: string, text: string | null): string | null {
   const name = text === null ? null : `${what}: ${text}`;

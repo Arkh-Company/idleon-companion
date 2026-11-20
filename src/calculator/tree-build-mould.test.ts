@@ -1,6 +1,6 @@
 // The first level of a tree built from a recording of the invented game is the game's pools (spec 009, FR-001, FR-005,
-// FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (all of them in
-// "🔹 Other": the invented blocks have no system), and every pool closes to the root.
+// FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (none of them has a
+// system: the invented blocks have none), and every pool closes to the root.
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { checkTree } from "../main/tree-check.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
@@ -188,15 +188,19 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     groups.map((k) => [k.role === "system" ? k.name : k.code, k.value]),
   ).toEqual([
     ["🃏 Cards", 16],
-    ["ArcadeBonus(0)", 8],
-    ['GoldFoodBonuses("DropRatez")', expect.closeTo(13.218813518840708, 9)],
-    ["🔹 Other", 29],
+    // fix tree-shape-091, rule 1: a named system's lone source is its group
+    ["🕹️ Arcade", 8],
+    ["🍔 Golden Food", expect.closeTo(13.218813518840708, 9)],
+    // a source of no system stands as its row, never in a group "🔹 Other" (Vinicius, 19/11)
+    ["TreeBase", 4],
+    ["TreeLevel", 25],
   ]);
   expect(groups.map((g) => kidsIn(g).map((k) => k.code))).toEqual([
     ["CardBonusREAL(3)", "CardBonusREAL(1)"],
+    ["ArcadeBonus(0)"],
+    ['GoldFoodBonuses("DropRatez")'],
     [],
     [],
-    ["TreeBase", "TreeLevel"],
   ]);
   // every level closes: the groups to the pool, each group's sources to it (FR-008)
   const sum = (ns: readonly CalcTreeNode[]) =>
@@ -204,8 +208,8 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
   expect(sum(groups)).toBeCloseTo(Number(add?.value), 9);
   for (const g of groups.filter((k) => k.role === "system"))
     expect(sum(kidsIn(g))).toBeCloseTo(Number(g.value), 9);
-  // the golden food opens with its own chain's pools, its block's own rows after them
-  const gold = groups[2];
+  // the golden food, in its group, opens with its own chain's pools, its block's own rows after them
+  const gold = kidsIn(groups[2])[0];
   const opened = gold?.kids === "lazy" ? build.expand(gold.id) : gold;
   expect(
     kidsIn(opened)
@@ -257,24 +261,30 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     groups.map((k) => [k.name, k.role, k.combine, k.fmt, k.value]),
   ).toEqual([
     ["🃏 Cards", "system", "percent", "%", expect.closeTo(0.16, 9)],
-    // a system of one source in % shows the source, +N% (FR-006, decision of 19/11), by its name
-    ["Base Damage", "piece", undefined, "%", 8],
-    [
-      "Golden Food bonus (Drop Rate)",
-      "piece",
-      undefined,
-      "%",
-      expect.closeTo(gold, 9),
-    ],
+    // a system of one source in % is its group in % (fix tree-shape-091, rule 1)
+    ["🕹️ Arcade", "system", "percent", "%", expect.closeTo(0.08, 9)],
+    ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
     // TreeBase, alone in Other once the constant left the group (T027)
     ["Game value", "piece", undefined, null, 4],
-    ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
+    // the bonuses in % of no system, each its row as its +N%, never in a group "🔹 Other" (Vinicius, 19/11)
+    ["Game value", "piece", undefined, "%", 125],
+    ["Game value", "piece", undefined, "%", 25],
     // the constant of the game's math, its own row after the groups (T027)
     ["Fixed +2", "piece", undefined, null, 2],
   ]);
-  expect([groups[1]?.code, groups[2]?.code]).toEqual([
-    "ArcadeBonus(0)",
-    'GoldFoodBonuses("DropRatez")',
+  expect(
+    [groups[1], groups[2]].map((g) =>
+      kidsIn(g).map((k) => [k.name, k.code, k.value]),
+    ),
+  ).toEqual([
+    [["Base Damage", "ArcadeBonus(0)", 8]],
+    [
+      [
+        "Golden Food bonus (Drop Rate)",
+        'GoldFoodBonuses("DropRatez")',
+        expect.closeTo(gold, 9),
+      ],
+    ],
   ]);
   // every level closes with the game's value: the groups to the pool, each group's bonuses ÷ 100 or sum to it; a
   // source in % alone in the pool adds a hundredth of its value, as the pool's ⓘ says
@@ -288,8 +298,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   );
   const f = add?.formula;
   const names = Array.isArray(f) ? f[0].join(" ") : (f?.rule[0] ?? "");
-  // the two lone sources in % and the two groups in %, each in its row's unit with its ÷ 100
-  expect(names.split("÷ 100").length - 1).toBe(4);
+  // the three groups in % and the two bonuses in % of no system, each in its row's unit with its ÷ 100
+  expect(names.split("÷ 100").length - 1).toBe(5);
   expect(Number(add?.value)).toBeCloseTo(
     4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
     9,
@@ -299,8 +309,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
       Number(g.value),
       9,
     );
-  // the golden food, its system's one source, opens as its own chain
-  const food = groups[2];
+  // the golden food, its system's one source, in its group, opens as its own chain
+  const food = kidsIn(groups[2])[0];
   expect(food?.code).toBe('GoldFoodBonuses("DropRatez")');
   const opened = food?.kids === "lazy" ? build.expand(food.id) : food;
   expect(
