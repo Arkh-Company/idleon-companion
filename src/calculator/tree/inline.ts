@@ -205,11 +205,18 @@ export function byRole(name: string, w: Built): Built {
   const same = (r: Row) => !r.node.flags.unnamed && r.node.name === name;
   const roles = new Set(w.rows.filter(same).map(roleOf));
   const rows = w.rows.map((r) => (same(r) ? withName(r, roleOf(r)) : r));
-  // one role names the source's term in the ⓘ; two would say nothing of which is which
+  // one role names the source's term in the ⓘ; two would say nothing of which is which. The ⓘ writes a name with a tag
+  // at its end short (tree/formulas.ts `short`): that term too, when no other row has that name
   const [role] = roles.size === 1 ? [...roles] : [];
+  const brief = name.replace(/\s*\(.*?\)\s*$/, "").trim();
+  const term = (t: string) =>
+    t === name ||
+    (brief !== name &&
+      t === brief &&
+      !w.rows.some((r) => r.node.name === brief));
   return {
     formula: role
-      ? [terms.map((t) => (t === name ? role : t)), numbers]
+      ? [terms.map((t) => (term(t) ? role : t)), numbers]
       : w.formula,
     rows,
   };
