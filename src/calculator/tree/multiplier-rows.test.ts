@@ -5,6 +5,8 @@
 // TreeShapeMulti), invented values.
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
+import { byRole } from "./inline.ts";
+import { row as nodeOf } from "./rows.ts";
 import { CONSTANT, kidsOpen, linesOf, shapeTree } from "./shape-fixture.ts";
 
 const build = () => shapeTree("TreeShapeMulti");
@@ -65,4 +67,34 @@ test("a factor 1 + k × x ÷ 100 is the × row of its source too, k in its ⓘ; 
       .map((k) => k.name)
       .filter((n) => CONSTANT.test(n)),
   ).toEqual([]);
+});
+
+test("a part named as its row, a tag at its end, takes its role in the ⓘ too, where it is written short", () => {
+  // the Tome's "Drop Rate (multi)" over its source "Drop Rate (multi)", which the ⓘ writes "Drop Rate" (formulas.ts short)
+  const src = {
+    node: nodeOf({
+      pieceKey: "s",
+      value: 27.5,
+      code: 'Summoning("TomeBonus", 7, 0)',
+      name: "Drop Rate (multi)",
+    }),
+    open: null,
+  };
+  const out = byRole("Drop Rate (multi)", {
+    formula: [
+      ["1", "+", "(", "Drop Rate", "÷", "100", ")"],
+      [1, 27.5, 100, 1.275],
+    ],
+    rows: [src],
+  });
+  expect(out.rows.map((k) => k.node.name)).toEqual(["Bonus"]);
+  expect(Array.isArray(out.formula) && out.formula[0]).toEqual([
+    "1",
+    "+",
+    "(",
+    "Bonus",
+    "÷",
+    "100",
+    ")",
+  ]);
 });
