@@ -201,9 +201,14 @@ export function ownPair(
   const op = product ? " × " : " + ";
   const cut = (r: Row, t: string) => (cuts(r) ? `${t} ÷ 100` : t);
   const shown = (r: Row) => (inPercent(r) ? vOf(r) * 100 : vOf(r));
+  // a product of numbers each rounded to 3 decimals may miss its value by more than the ⓘ's 1e-3: then 7 digits
+  const rounded = rows.reduce((p, r) => p * Number(fx3(vOf(r))), 1);
+  const exact =
+    product && Math.abs(rounded - value) > 1e-3 * Math.max(1, Math.abs(value));
+  const num = (v: number) => (exact ? String(+v.toPrecision(7)) : fx3(v));
   return [
     rows.map((r) => cut(r, termOf(r.node))).join(op),
-    `${rows.map((r) => cut(r, fx3(shown(r)))).join(op)} = ${fx3(value)}`,
+    `${rows.map((r) => cut(r, num(shown(r)))).join(op)} = ${fx3(value)}`,
   ];
 }
 
