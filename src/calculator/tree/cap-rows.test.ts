@@ -26,7 +26,7 @@ const X = 30 + 8000 + 25;
 const BASE = 5000 + Math.pow(4000 + Math.pow(X - 4000, 0.9) - 5000, 0.8);
 const M = 8 * 6 * 1.15;
 const BONUS = 20 * Math.pow((10 + Math.pow(M - 10, 0.86)) / 20, 0.5);
-const MULTI = 2 * Math.pow((6 * 1.04) / 2, 0.6);
+const MULTI = 2 * Math.pow((6 * 1.04 * 1.15) / 2, 0.6);
 
 test("the tests' constant is a name of the code's place, Base and its number, never a proven name", () => {
   expect(
@@ -104,6 +104,12 @@ test("caps of a part multiplied in the pool are one row each, named by the part;
     ]),
   );
   expect(all.map((k) => k.name).filter((n) => CONSTANT.test(n))).toEqual([]);
+  // a multiplier of a step under the part's own is its × row too, no constant under the cap (rule 2)
+  const third = below(b, part("Damage Multi"), 2);
+  expect(
+    third.filter((k) => k.name === "Cotton Candy").map((k) => [k.fmt, k.value]),
+  ).toEqual([["x", 1.15]]);
+  expect(third.map((k) => k.name).filter((n) => CONSTANT.test(n))).toEqual([]);
   // the caps' rows have names, never the generic one (the invented calls under them have none in the invented game)
   expect(
     ["Damage Bonus", "Damage Multi"].map((n) => part(n)?.flags.unnamed),

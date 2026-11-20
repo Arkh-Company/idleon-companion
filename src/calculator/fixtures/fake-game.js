@@ -1204,7 +1204,7 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // The caps of the game, as its max damage writes them (fix tree-shape-091): three parts of a working value, each
   // capped as c + max((x - c)^e, 0) or c (x / c)^e, twice in a row; the first part summed with sources before its caps
-  // and with a read after them, the others multiplied; then the parts multiplied.
+  // and with a read after them, the others multiplied, the third in two steps; then the parts multiplied.
   Blocks._customBlock_TreeShapeCaps = function () {
     var s = state();
     var L = a.engine.getGameAttribute("DummyNumbersStatManager").h
@@ -1219,6 +1219,7 @@ lime.$scripts.N = function (_exports, $global) {
       (1 + Blocks._customBlock_Ninja("PristineBon", 3, 0) / 100);
     L[1] = 10 + Math.max(Math.pow(L[1] - 10, 0.86), 0);
     L[1] = 20 * Math.pow(L[1] / 20, 0.5);
+    L[2] = L[2] * (1 + Blocks._customBlock_Ninja("PristineBon", 3, 0) / 100);
     L[2] = L[2] * (1 + Blocks._customBlock_CardBonusREAL(1) / 100);
     L[2] = 2 * Math.pow(L[2] / 2, 0.6);
     L[2] = L[2] * Blocks._customBlock_TreeLoop();
