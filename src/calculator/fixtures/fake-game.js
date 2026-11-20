@@ -1169,6 +1169,39 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // The Multi pools of the game, as its drop rate writes them (fix tree-shape-091): a total multiplied by single factors
+  // of one source each, 1 + x / 100 and 1 + 5 x / 100, then by companions in a product with a floor and a cap,
+  // max(1, min(1.3, 1 + a) (1 + 0.5 b)), beside max(1, min(1.01, 1 + c / 2500)). A companion gives its bonus when it
+  // is in the cache of the owned ones, as in the game; a charm its bonus of the list TreeCharms.
+  Blocks._customBlock_Ninja = function (mode, i) {
+    return mode === "PristineBon" ? state().TreeCharms[i] : 0;
+  };
+  Blocks._customBlock_Companions = function (n) {
+    var bonus = dnsm().CompanionBon.h[n];
+    return bonus === undefined ? 0 : bonus;
+  };
+  Blocks._customBlock_TreeShapeMulti = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeShape = new StringMap();
+    d.TreeShape.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeShape.h.v =
+      d.TreeShape.h.v *
+      (1 + Blocks._customBlock_Ninja("PristineBon", 3, 0) / 100) *
+      (1 + (5 * Blocks._customBlock_CardBonusREAL(1)) / 100);
+    d.TreeShape.h.v =
+      d.TreeShape.h.v *
+      Math.max(
+        1,
+        Math.min(1.3, 1 + Blocks._customBlock_Companions(26)) *
+          (1 + 0.5 * Blocks._customBlock_Companions(160)),
+      ) *
+      Math.max(
+        1,
+        Math.min(1.01, 1 + Blocks._customBlock_Companions(50) / 2500),
+      );
+    return d.TreeShape.h.v;
+  };
   // A running total that starts from a source (TreeBase, 4) and whose turns add 0 (fix/tree-scratch-keys)
   Blocks._customBlock_TreeStartTotal = function () {
     var s = state();
