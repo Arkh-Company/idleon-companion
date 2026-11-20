@@ -168,13 +168,11 @@ export function splitFactors(
   pools: readonly Pool[],
   joins?: Joins,
 ): readonly Pool[] {
-  let split = false;
   const out = pools.flatMap((p): Omit<Pool, "name">[] => {
     if (p.combine !== "product") return [p];
     const rows = dissolve(p.rows, "*", joins);
     const factors = rows.filter((r) => r.factorPool?.length);
     if (!factors.length) return [p];
-    split = true;
     const rest = rows.filter((r) => !factors.includes(r));
     const own = factors.map((r) => ({
       kind: "multi" as const,
@@ -186,6 +184,8 @@ export function splitFactors(
     const value = rest.reduce((a, r) => a * vOf(r), 1);
     return rest.length ? [{ ...p, value, rows: rest }, ...own] : own;
   });
+  const split =
+    out.length !== pools.length || out.some((p, i) => p !== pools[i]);
   return split
     ? poolNames(
         out.map(({ kind, value, rows, combine, join }) => ({

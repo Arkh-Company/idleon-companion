@@ -5,7 +5,6 @@
 // product by those rows' names, never "Game value"; its constant, exponent and floor in its ⓘ only, never loose in the
 // pool, the cap's c added before its step too. Over the invented game (fake-game.js TreeShapeCaps), invented values.
 import { expect, test } from "vitest";
-import type { CalcTreeNode } from "../tree-contract.ts";
 import { CONSTANT, kidsOpen, linesOf, shapeTree } from "./shape-fixture.ts";
 
 const caps = () => {
@@ -13,15 +12,6 @@ const caps = () => {
   const [add, multi] = kidsOpen(b, b.root);
   return { b, add, multi };
 };
-/** Each row under `n`, opened, at any depth below it, down to `depth`. */
-const below = (
-  b: ReturnType<typeof shapeTree>,
-  n: CalcTreeNode | undefined,
-  depth = 3,
-): CalcTreeNode[] =>
-  depth === 0
-    ? []
-    : kidsOpen(b, n).flatMap((k) => [k, ...below(b, k, depth - 1)]);
 // the parts as the invented block gives them
 const X = 30 + 8000 + 7 + 25;
 const BASE = 5000 + Math.pow(4000 + Math.pow(X - 4000, 0.9) - 5000, 0.8);

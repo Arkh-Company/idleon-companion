@@ -29,7 +29,7 @@ const brief = (name: string) => name.replace(/\s*\(.*?\)\s*$/, "").trim();
 const isCount = (r: Row) =>
   r.node.leaf === "quantity" ||
   r.node.leaf === "level" ||
-  /^Total /.test(r.node.name);
+  r.node.name.startsWith("Total ");
 
 /** The bonus of two sources, one of them a count (the talent of a talent times a count, 009 T029); else null. */
 function bonusOf(sources: readonly Row[]): Row | null {
