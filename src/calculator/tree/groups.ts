@@ -170,7 +170,8 @@ export function ownPair(
 
 /**
  * The rows of a pool (or of the root, with no pool) by system (FR-002, FR-004, FR-006): one group per system in the V1
- * order, "🔹 Other" last, a group at 0 or ×1 in its place; a lone source stands alone; when every source is in "Other",
+ * order, "🔹 Other" last, a group at 0 or ×1 in its place; a named system's lone source is its group too, "Other"'s
+ * stands alone (fix tree-shape-091, rule 1); when every source is in "Other",
  * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems. A constant of the game's math (a
  * row with no source) is no system's: it stays its own row, after the groups (T027), but for one in %.
  */
@@ -215,12 +216,14 @@ export function bySystem(
         : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
-  // a lone bonus in % stands alone too, as its +N% (FR-006, decision of 19/11): its pool's ⓘ divides it by 100
+  // a named system is always a group, of one source too, in % or not (fix tree-shape-091, rule 1: Vinicius, 19/11, every
+  // system that weighs on a value shows as its child); a lone source of "Other" stands alone, a bonus in % as its +N%,
+  // its pool's ⓘ dividing it by 100 (A34)
   return [
     ...[...groups.values()]
       .sort((a, b) => rank(a) - rank(b))
       .flatMap(({ s, pct, rows: rs }) =>
-        rs.length === 1
+        s === OTHER && rs.length === 1
           ? rs.map((r) =>
               pct ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
             )
