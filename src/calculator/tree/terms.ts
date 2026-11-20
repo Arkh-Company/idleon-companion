@@ -21,6 +21,14 @@ import {
 import { nameOf, termName } from "./names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
 import { clampedProduct } from "./clamped.ts";
+import { capLines, capName, capOf } from "./caps.ts";
+import type { Cap } from "./caps.ts";
+import { fx3 } from "./curves.ts";
+import { token } from "./formulas.ts";
+import { inlined } from "./inline.ts";
+import { multiplierRow } from "./multiplier-rows.ts";
+import { strip } from "./scaled.ts";
+import { termOf } from "./share.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -98,6 +106,62 @@ export function makeTerms(ctx: TermContext) {
   const terms = (e: Expr, op: "*" | "+", d: number, reads: Reads) =>
     flat(e, op).flatMap((x) => rowOfTerm(x, op, d, reads) ?? []);
 
+  /**
+   * A cap's row (tree/caps.ts; fix tree-shape-091, rule 4): the caps one after the other on a part of a working value,
+   * one row by the part's name, its rows the sources of the value they cap, their math around their sum or product in
+   * its ⓘ; null when `e` is no cap or its part has no name.
+   */
+  function capRow(e: Expr, d: number, reads: Reads): Row | null {
+    const t = turn;
+    const outer = capOf(e);
+    if (!t || !outer) return null;
+    const caps: Cap[] = [outer];
+    let at = t.at;
+    let x = outer.x;
+    for (;;) {
+      const y = strip(x);
+      const j =
+        y.t === "val"
+          ? t.steps.findLastIndex((st, i) => i < at && near(st.v, y.v))
+          : -1;
+      const st = t.steps[j];
+      const inner = st ? capOf(st.e) : null;
+      if (!inner) break;
+      caps.push(inner);
+      at = j;
+      x = inner.x;
+    }
+    const name = capName(x, t.steps, at);
+    const own = name
+      ? withTurn({ ...t, at }, () => rowOfTerm(x, null, d + 1, reads))
+      : null;
+    const v = valueOf(e.v ?? null);
+    if (!name || !own || typeof v !== "number") return null;
+    // the multipliers of a product of sources each their × row (rule 2)
+    const part =
+      own.op === "*" && own.group
+        ? { ...own, group: own.group.map(multiplierRow) }
+        : own;
+    const xv = Number(x.v);
+    const [names, numbers] = caps.reduceRight<[string, string]>(
+      (lines, cap, i) => capLines(cap, lines, i < caps.length - 1),
+      [token(`v:${String(xv)}`, termOf(part.node)), fx3(xv)],
+    );
+    const capped: Row = {
+      node: row({ pieceKey: null, value: v, code: null, name, flags: {} }),
+      open: null,
+      group: [part],
+      xf: [names, `${numbers} = ${fx3(v)}`],
+    };
+    // the part's own sum or product inside the caps, its rows the cap's (tree/inline.ts)
+    const w = inlined(capped, [part]);
+    return {
+      ...capped,
+      node: { ...capped.node, formula: w.formula },
+      group: w.rows,
+    };
+  }
+
   /** A value the step took from an earlier step of the same block: that step's terms. */
   function stepRef(v: V, d: number, reads: Reads): Row | null {
     const t = turn;
@@ -105,6 +169,9 @@ export function makeTerms(ctx: TermContext) {
     for (let j = t.at - 1; j >= 0; j--) {
       const st = t.steps[j];
       if (!st || !near(st.v, v)) continue;
+      // a cap of the game is the row of the part it caps (rule 4)
+      const cap = withTurn({ ...t, at: j }, () => capRow(st.e, d, reads));
+      if (cap) return cap;
       const op = topOp(st.e);
       const rows = withTurn({ ...t, at: j }, () => {
         if (op) return terms(st.e, op, d + 1, reads);
@@ -234,6 +301,9 @@ export function makeTerms(ctx: TermContext) {
     d: number,
     reads: Reads,
   ): Row | null {
+    // a cap of the game is the row of the part it caps (fix tree-shape-091, rule 4)
+    const cap = e.t === "op" || e.t === "def" ? capRow(e, d, reads) : null;
+    if (cap) return cap;
     if (e.t === "def") {
       const x = e.e;
       if (["call", "read", "val", "num", "def"].includes(x.t)) {
