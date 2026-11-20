@@ -9,13 +9,13 @@ import { bootRecorder } from "../tree-record.ts";
 
 let recorder: ReturnType<typeof bootRecorder> | null = null;
 
-/** The tree of `block` over the invented state: the charm 3 at 15, the companions 26, 160 and 50 owned. */
+/** The tree of `block` over the invented state: the charms 2 at 4 and 3 at 15, the companions 26, 160 and 50 owned. */
 export function shapeTree(block: string): TreeBuild {
   recorder ??= bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
   return buildTree(
     recorder.record(
       mosaicOf({
-        TreeCharms: [0, 0, 0, 15],
+        TreeCharms: [0, 0, 4, 15],
         DummyNumbersStatManager: { $m: { DamageDealtLIST: [30, 8, 6] } },
         DNSM: { $m: { CompanionBon: { $m: { 26: 0.3, 160: 1, 50: 50 } } } },
       }),

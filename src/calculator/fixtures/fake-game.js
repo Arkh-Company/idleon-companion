@@ -1209,7 +1209,11 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     var L = a.engine.getGameAttribute("DummyNumbersStatManager").h
       .DamageDealtLIST;
-    L[0] = L[0] + Blocks._customBlock_ArcadeBonus(0) * 1000 + s.TreeLevel;
+    L[0] =
+      L[0] +
+      Blocks._customBlock_ArcadeBonus(0) * 1000 +
+      Blocks._customBlock_Labb("BaseDamage", 0, 0) +
+      s.TreeLevel;
     L[0] = 4000 + Math.max(Math.pow(L[0] - 4000, 0.9), 0);
     L[0] = 5000 + Math.max(Math.pow(L[0] - 5000, 0.8), 0);
     L[0] = L[0] + s.TreeOwned;
@@ -1222,6 +1226,37 @@ lime.$scripts.N = function (_exports, $global) {
     L[2] = L[2] * (1 + Blocks._customBlock_Ninja("PristineBon", 3, 0) / 100);
     L[2] = L[2] * (1 + Blocks._customBlock_CardBonusREAL(1) / 100);
     L[2] = 2 * Math.pow(L[2] / 2, 0.6);
+    L[2] = L[2] * Blocks._customBlock_TreeLoop();
+    return L[0] * L[1] * L[2];
+  };
+  // A block of the Lab whose mode says its bonus, as the game names some: BaseDamage gives 7.
+  Blocks._customBlock_Labb = function (mode) {
+    return mode === "BaseDamage" ? 7 : 0;
+  };
+  // Factors of several sources inside a step the chain reads back (fix tree-shape-091, round 1), as the max damage and
+  // the drop rate write them: a bonus times a count added to the first part, 1 + (a + b) / 100 of two systems and
+  // 1 + min(100, a count times a bonus) / 100 multiplying the second.
+  Blocks._customBlock_TreeShapeLoose = function () {
+    var s = state();
+    var L = a.engine.getGameAttribute("DummyNumbersStatManager").h
+      .DamageDealtLIST;
+    L[0] =
+      L[0] +
+      s.TreeOwned +
+      (Blocks._customBlock_Ninja("PristineBon", 3, 0) * (s.TreeLevel / 1)) /
+        100;
+    L[1] =
+      L[1] *
+      (1 +
+        (Blocks._customBlock_CardBonusREAL(1) +
+          Blocks._customBlock_ArcadeBonus(0)) /
+          100) *
+      (1 +
+        Math.min(
+          100,
+          s.TreeLevel * Blocks._customBlock_Ninja("PristineBon", 2, 0),
+        ) /
+          100);
     L[2] = L[2] * Blocks._customBlock_TreeLoop();
     return L[0] * L[1] * L[2];
   };

@@ -1,8 +1,9 @@
 // Each multiplier is one × row with its source's name (fix tree-shape-091, rule 2; FR-018: each multiplier is its own ×
-// row and opens in its children; audit family 7): a factor 1 + x ÷ 100, or 1 + k × x ÷ 100, of one source in a Multi
-// pool is the row of its source's name, its value the factor; the source under it by its role, "Bonus"; its math, its
-// constants ("Base 1", "÷ 100", "× 5") in its ⓘ only, never loose in the pool. Over the invented game (fake-game.js
-// TreeShapeMulti), invented values.
+// row and opens in its children; audit family 7; the Open Questions' constants of the code, which stay rows): a factor
+// 1 + x ÷ 100, or 1 + k × x ÷ 100, of one source in a Multi pool is the row of its source's name, its value the factor;
+// its parts its rows, the source by its role ("Bonus"), the code's constants ("Base 1", "× 5", "÷ 100") as they are;
+// its math in its ⓘ, which names the source by that same role; never a constant loose in the pool. Over the invented
+// game (fake-game.js TreeShapeMulti), invented values.
 import { expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { byRole } from "./inline.ts";
@@ -38,9 +39,11 @@ test("a factor 1 + x ÷ 100 of one source is the × row of its source's name, th
   const [candy, ...rest] = kidsOpen(b, charms);
   expect(rest).toEqual([]);
   expect(row(candy)).toEqual(["Cotton Candy", 1.15, "x", null, "piece"]);
-  // its rows by their role, no constant among them; its math, the constants too, in its ⓘ, closing (FR-008)
+  // its parts its rows, the source by its role, the code's constants as they are; its math in its ⓘ, closing (FR-008)
   expect(kidsOpen(b, candy).map(row)).toEqual([
+    ["Base 1", 1, null, null, "piece"],
     ["Bonus", 15, "%", 'Ninja("PristineBon", 3, 0)', "piece"],
+    ["Percent to number (÷ 100)", 100, null, null, "piece"],
   ]);
   expect(candy?.formula).toEqual([
     ["1", "+", "(", "Bonus", "÷", "100", ")"],
@@ -48,16 +51,20 @@ test("a factor 1 + x ÷ 100 of one source is the × row of its source's name, th
   ]);
 });
 
-test("a factor 1 + k × x ÷ 100 is the × row of its source too, k in its ⓘ; no constant is loose in the pool", () => {
+test("a factor 1 + k × x ÷ 100 is the × row of its source too, k its row; no constant is loose in the pool", () => {
   const b = build();
   const cards = group(b, "🃏 Cards");
   const [card] = kidsOpen(b, cards);
   expect([card?.value, card?.fmt, card?.code]).toEqual([1.2, "x", null]);
-  expect(kidsOpen(b, card).map((k) => [k.code, k.value])).toEqual([
-    ["CardBonusREAL(1)", 4],
+  // a source with no proven name is its row by its role too, as its ⓘ names it
+  expect(kidsOpen(b, card).map((k) => [k.name, k.code, k.value])).toEqual([
+    ["Base 1", null, 1],
+    ["× 5", null, 5],
+    ["Bonus", "CardBonusREAL(1)", 4],
+    ["Percent to number (÷ 100)", null, 100],
   ]);
   const [names, numbers] = linesOf(card?.formula);
-  expect(names).toContain("5 ×");
+  expect(names).toContain("5 × Bonus");
   expect(numbers?.split(" ").at(-1)).toBe("1.2");
   // the pool's rows are its systems' groups; none of its rows nor of its groups is a constant of the code
   const all = kidsOpen(b, multi(b));
