@@ -3,7 +3,7 @@
 // % or not, the group's ⓘ dividing a bonus in % by 100; a lone source of no system ("Other") still stands alone (A34,
 // answer B). Invented arguments, apart from the game's own block names the rules read.
 import { expect, test } from "vitest";
-import { bySystem } from "./groups.ts";
+import { bySystem, ownPair } from "./groups.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 
@@ -63,4 +63,25 @@ test("a lone bonus in % of a named system is its system's group in %, its ⓘ th
     ["Stamps: Drop Rate", "÷", "100"],
     [172, 100, 1.72],
   ]);
+});
+
+test("a product of groups whose numbers to 3 decimals would not close writes them with more digits, and closes", () => {
+  // the Drop Rate's Multi pool 3: each group rounded up a little, the rounding past the ⓘ's 1e-3
+  const rows = [1.9695, 1.06272, 1.2745129, 1.353625].map((v, i) =>
+    src(`InventedBlock(${String(i)})`, v),
+  );
+  const value = 1.9695 * 1.06272 * 1.2745129 * 1.353625;
+  const [, numbers] = ownPair(rows, true, value) ?? ["", ""];
+  const [left = "", right = ""] = numbers.split(" = ");
+  const product = left.split(" × ").reduce((p, x) => p * Number(x), 1);
+  expect(Math.abs(product - Number(right))).toBeLessThan(1e-3 * value);
+  expect(left).toBe("1.9695 × 1.06272 × 1.274513 × 1.353625");
+  // numbers that close to 3 decimals stay as they are
+  expect(
+    ownPair(
+      [src("InventedBlock(9)", 2), src("InventedBlock(8)", 3)],
+      true,
+      6,
+    )?.[1],
+  ).toBe("2 × 3 = 6");
 });
