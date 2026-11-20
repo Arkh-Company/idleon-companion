@@ -91,6 +91,11 @@ export const EXTRA_SYSTEMS: readonly System[] = (
     // decision of 19/11: Divinity takes 🕊️, as Prayers has 🙏
     ["Divinity", "🕊️"],
     ["Gem Shop", "💎"],
+    // fix tree-shape-091, round 1: the systems of the max damage's sources that had none (Vinicius, 19/11)
+    ["Meritocracy", "🏛️"],
+    ["Statues", "🗿"],
+    ["Coral Reef", "🪸"],
+    ["Weekly Boss", "📅"],
   ] as const
 ).map(([name, emoji]) => ({ name, emoji }));
 
@@ -222,6 +227,22 @@ export const SYSTEM_RULES: readonly {
         "N.js Summoning SummUpgBonus (the Summoning upgrades)",
       ],
       [/^Labb /, "Lab", "N.js Labb (reads Lab)"],
+      // fix tree-shape-091, round 1 (Vinicius, 19/11)
+      [
+        /^Summoning2 MeritocBonusz$/,
+        "Meritocracy",
+        "N.js Summoning2 MeritocBonusz (the bonus of the vote of the week)",
+      ],
+      [
+        /^ArbitraryCode StatueBonusGiven\d+$/,
+        "Statues",
+        "N.js ArbitraryCode StatueBonusGiven (the bonus of a statue)",
+      ],
+      [
+        /^Thingies CoralKidUpgBonus$/,
+        "Coral Reef",
+        "N.js Thingies CoralKidUpgBonus (the upgrades of the coral kid)",
+      ],
       [/^TotalStats /, "LUK / Stats", "N.js TotalStats"],
     ] as const
   ).map(([test, system, proof]) => ({ test, system, proof })),
@@ -242,6 +263,11 @@ export const SYSTEM_RULES: readonly {
       [/^DNSM\.ArcadBonDNz/, "Arcade", "N.js ArcadeBonus (writes ArcadBonDNz)"],
       [/^BundlesReceived\./, "Bundles", "N.js BundlesReceived"],
       [/^Lab\[/, "Lab", "N.js Labb (reads Lab)"],
+      [
+        /^WeeklyBoss\.g$/,
+        "Weekly Boss",
+        "N.js DamageDealed (reads WeeklyBoss, the weekly boss)",
+      ],
       // fix tree-shape-091, round 1: no source in a group Other (Vinicius, 19/11)
       [
         /^OptionsListAccount\[232\]$/,
