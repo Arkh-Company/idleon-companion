@@ -2,7 +2,8 @@
 // root's block, in the game's order, as the assembly gives them (tree-build.ts), each with its bonus's name, and never a
 // name by its shape such as "Fixed +2"; a step with no proven name says so: the generic name and `unnamed` (FR-012a).
 // The mould (spec 009, FR-001, FR-002, FR-004 to FR-006): those rows in the game's pools (tree/pools.ts), and inside
-// each pool by system (tree/systems.ts), in the V1 order of the bench (build-v1mold.cjs), "🔹 Other" last.
+// each pool by system (tree/systems.ts), in the V1 order of the bench (build-v1mold.cjs); a source with no proven
+// system is its own row, after the groups.
 import { fx3 } from "./curves.ts";
 import { dissolve } from "./flatten.ts";
 import type { Joins } from "./flatten.ts";

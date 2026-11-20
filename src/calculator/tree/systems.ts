@@ -1,7 +1,8 @@
 // The system of a source (spec 009, FR-003, FR-004, research R2): pieces.cjs `tagOf` of the bench, from the block a
 // source calls (written "block mode", as tree/tags.ts reads it) or the path it reads; a cache read with no rule of its
-// own goes to the block that writes it. No rule, no system: the caller files the source under "🔹 Other", never by a
-// guess. The order and the emoji are the V1's (bench build-v1mold.cjs V1, the site's lib/dropRate/systems.ts).
+// own goes to the block that writes it. No rule, no system, never by a guess: the source with no proven system is its
+// own row, after the groups (tree/groups.ts). The order and the emoji are the V1's (bench build-v1mold.cjs V1, the
+// site's lib/dropRate/systems.ts).
 import { callKey, SYSTEM_TAGS } from "./tags.ts";
 
 export interface System {
