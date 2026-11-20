@@ -15,7 +15,7 @@ const caps = () => {
 // the parts as the invented block gives them
 const X = 30 + 8000 + 7 + 25;
 const BASE = 5000 + Math.pow(4000 + Math.pow(X - 4000, 0.9) - 5000, 0.8);
-const M = 8 * 6 * 1.15;
+const M = 8 * 6 * 1.15 * 1.12;
 const BONUS = 20 * Math.pow((10 + Math.pow(M - 10, 0.86)) / 20, 0.5);
 const MULTI = 2 * Math.pow((6 * 1.04 * 1.15) / 2, 0.6);
 
@@ -108,15 +108,33 @@ test("caps of a part multiplied in the pool are one row each, named by the part;
   expect(multiNames).toMatch(/^2 × pow \( .+ ÷ 2 , 0\.6 \)$/);
   // the part's sources are its rows by system, the multiplier among them its × row (rule 2)
   expect(
-    kidsOpen(b, part("Damage Bonus")).map((k) => [k.name, k.code]),
+    kidsOpen(b, part("Damage Bonus")).map((k) => [k.name, k.code, k.role]),
   ).toEqual([
-    ["🌟 Pristine Charms", null],
+    ["🌟 Pristine Charms", null, "system"],
     [
       "Damage working value, part 2",
       "DummyNumbersStatManager.DamageDealtLIST[1]",
+      "piece",
     ],
-    [expect.any(String), "TreeLoop()"],
+    [expect.any(String), "TreeLoop()", "piece"],
+    // a factor 1 + (a + b) ÷ 100 of two systems is its own Multi pool inside the cap's row, its sources by system, its
+    // value in the cap's ⓘ (FR-005 rule Y, FR-017; the session's answer A of round 1)
+    ["Multi pool", null, "pool"],
   ]);
+  const own = kidsOpen(b, part("Damage Bonus")).at(-1);
+  expect([own?.combine, own?.poolKind, own?.value]).toEqual([
+    "onePlusPercent",
+    "multi",
+    expect.closeTo(1.12, 9),
+  ]);
+  expect(
+    kidsOpen(b, own).map((g) => [g.name, kidsOpen(b, g).map((k) => k.code)]),
+  ).toEqual([
+    ["🃏 Cards", ["CardBonusREAL(1)"]],
+    ["🕹️ Arcade", ["ArcadeBonus(0)"]],
+  ]);
+  expect(linesOf(own?.formula)[0]).toBe("1 + ( 🃏 Cards + 🕹️ Arcade ) ÷ 100");
+  expect(bonusNames).toContain("Multi pool");
   expect(all.map((k) => k.name).filter((n) => CONSTANT.test(n))).toEqual([]);
   // a multiplier of a step under the part's own is its × row too, in its system's group (rule 2)
   const third = kidsOpen(b, part("Damage Multi"));
