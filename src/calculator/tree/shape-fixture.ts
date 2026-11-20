@@ -16,7 +16,7 @@ export function shapeTree(block: string): TreeBuild {
     recorder.record(
       mosaicOf({
         TreeCharms: [0, 0, 0, 15],
-        DamageParts: [30, 8, 6],
+        DummyNumbersStatManager: { $m: { DamageDealtLIST: [30, 8, 6] } },
         DNSM: { $m: { CompanionBon: { $m: { 26: 0.3, 160: 1, 50: 50 } } } },
       }),
       [[block, []]],

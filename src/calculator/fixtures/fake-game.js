@@ -1202,6 +1202,28 @@ lime.$scripts.N = function (_exports, $global) {
       );
     return d.TreeShape.h.v;
   };
+  // The caps of the game, as its max damage writes them (fix tree-shape-091): three parts of a working value, each
+  // capped as c + max((x - c)^e, 0) or c (x / c)^e, twice in a row; the first part summed with sources before its caps
+  // and with a read after them, the others multiplied; then the parts multiplied.
+  Blocks._customBlock_TreeShapeCaps = function () {
+    var s = state();
+    var L = a.engine.getGameAttribute("DummyNumbersStatManager").h
+      .DamageDealtLIST;
+    L[0] = L[0] + Blocks._customBlock_ArcadeBonus(0) * 1000 + s.TreeLevel;
+    L[0] = 4000 + Math.max(Math.pow(L[0] - 4000, 0.9), 0);
+    L[0] = 5000 + Math.max(Math.pow(L[0] - 5000, 0.8), 0);
+    L[0] = L[0] + s.TreeOwned;
+    L[1] =
+      L[1] *
+      Blocks._customBlock_TreeLoop() *
+      (1 + Blocks._customBlock_Ninja("PristineBon", 3, 0) / 100);
+    L[1] = 10 + Math.max(Math.pow(L[1] - 10, 0.86), 0);
+    L[1] = 20 * Math.pow(L[1] / 20, 0.5);
+    L[2] = L[2] * (1 + Blocks._customBlock_CardBonusREAL(1) / 100);
+    L[2] = 2 * Math.pow(L[2] / 2, 0.6);
+    L[2] = L[2] * Blocks._customBlock_TreeLoop();
+    return L[0] * L[1] * L[2];
+  };
   // A running total that starts from a source (TreeBase, 4) and whose turns add 0 (fix/tree-scratch-keys)
   Blocks._customBlock_TreeStartTotal = function () {
     var s = state();
