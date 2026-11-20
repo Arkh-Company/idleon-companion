@@ -76,7 +76,9 @@ test("an unnamed sum and a working value of the root that only joins sources dis
   expect(brief(rows)).toEqual([
     ["🎯 Talents", 11, ["GetTalentNumber(1, 207)", "GetTalentNumber(1, 208)"]],
     ["🃏 Cards", 24, ["CardBonusREAL(10, 0)", "CardBonusREAL(11, 0)"]],
-    ["🔹 Other", 6, ["InventedBlock(2)", "InventedBlock(1)"]],
+    // a source of no system stands as its row, never in a group "🔹 Other" (Vinicius, 19/11)
+    ["InventedBlock(2)", 2, []],
+    ["InventedBlock(1)", 4, []],
   ]);
   // no source leaves, and the groups sum to the pool
   expect(rows.reduce((s, r) => s + Number(r.node.value), 0)).toBe(41);

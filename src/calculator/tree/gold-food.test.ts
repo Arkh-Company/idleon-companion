@@ -95,10 +95,10 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     ["GfoodSet[0]", 10],
     ["GfoodSet[1]", 20],
   ]);
-  // the family is a system of its own, in its group "👪 Family Bonuses" (fix tree-shape-091, rule 1), so the other
-  // sources are a "🔹 Other" group in %, its rows the sources, adding 0.2 (FR-005; A34's option B is only for a pool all
-  // of whose groups are "Other")
-  const [families, other] = kidsOf(family);
+  // the family is a system of its own, in its group "👪 Family Bonuses" (fix tree-shape-091, rule 1); the other sources,
+  // of no system, stand as their rows in %, the sum's constant too, adding 0.2, never in a group "🔹 Other" (Vinicius,
+  // 19/11)
+  const [families, ...others] = kidsOf(family);
   expect([families?.name, families?.role, families?.value]).toEqual([
     "👪 Family Bonuses",
     "system",
@@ -106,16 +106,16 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
   ]);
   const [fam] = kidsOf(families);
   expect([fam?.code, fam?.value]).toEqual(["DNSM.FamBonusQTYs[66]", 2]);
-  expect([other?.name, other?.combine, other?.value]).toEqual([
-    "🔹 Other",
-    "percent",
-    near(0.2),
+  expect(others.map((k) => [k.code, k.fmt, k.value])).toEqual([
+    ["TreeReads()", "%", 8],
+    ["TreeBase", "%", 4],
+    ["DNSM.GameCache.v", "%", 5],
+    [null, "%", 3],
   ]);
-  expect(sourcesOf(other)).toEqual([
-    ["TreeReads()", 8],
-    ["TreeBase", 4],
-    ["DNSM.GameCache.v", 5],
-  ]);
+  expect(others.reduce((a, k) => a + Number(k.value) / 100, 0)).toBeCloseTo(
+    0.2,
+    9,
+  );
   // the emporium's row: its food's name, and its parts with the shared multiplier, which multiply to it (FR-007, FR-008)
   // the emporium's lone + is its row (decision of 19/11)
   const emp = emporium;
@@ -166,18 +166,16 @@ test("each pool and row of a golden food's chain has the ⓘ of its step", () =>
     ["1", "+", "(", "GfoodSet[0]", "+", "GfoodSet[1]", ")", "÷", "100"],
     [1, 10, 20, 100, 1.3],
   ]);
-  // the family's group of its one source (fix tree-shape-091, rule 1) + the "🔹 Other" group in %, written in its rows'
-  // unit with its ÷ 100, its own ⓘ its sources' sum ÷ 100
+  // the family's group of its one source (fix tree-shape-091, rule 1) + each source of no system and the constant in %,
+  // each with its ÷ 100 (no group "🔹 Other": Vinicius, 19/11)
   expect(family?.formula).toEqual([
-    ["👪 Family Bonuses", "+", "🔹 Other", "÷", "100"],
-    [2, 20, 100, 2.2],
-  ]);
-  expect(kidsOf(family)[1]?.formula).toEqual({
-    rule: [
-      "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
-      "(8 + 4 + 5 + 3) ÷ 100 = 0.2",
+    [
+      ...["👪 Family Bonuses", "+", "TreeReads()", "÷", "100", "+"],
+      ...["TreeBase", "÷", "100", "+", "DNSM.GameCache.v", "÷", "100"],
+      ...["+", "Fixed +3", "÷", "100"],
     ],
-  });
+    [2, 8, 100, 4, 100, 5, 100, 3, 100, 2.2],
+  ]);
   // the emporium's: its parts and its log₁₀ of 1 + 1000 × 10^level, the Beanstalk's level its leaf (19/11)
   const [words, numbers] = (emporium?.formula ?? [[], []]) as [
     string[],
@@ -212,8 +210,12 @@ test("the shared multiplier counts a family below 1 as 1; a step whose family is
     1,
   ]);
   expect(family?.formula).toEqual([
-    ["👪 Family Bonuses", "+", "🔹 Other", "÷", "100"],
-    [1, 20, 100, 1.2],
+    [
+      ...["👪 Family Bonuses", "+", "TreeReads()", "÷", "100", "+"],
+      ...["TreeBase", "÷", "100", "+", "DNSM.GameCache.v", "÷", "100"],
+      ...["+", "Fixed +3", "÷", "100"],
+    ],
+    [1, 8, 100, 4, 100, 5, 100, 3, 100, 1.2],
   ]);
   // the multiplier read back as a value of its step: the set, then max(family, 2) + the sources ÷ 100, as pools; the
   // set's alone of its kind, the worn food's step a row (answer 2 of 19/11)
@@ -279,20 +281,22 @@ test("a set of one part is the chain's first row, with its ⓘ; one written with
 });
 
 test("a source at 0 stays in its place in the shared multiplier, and its ⓘ still names it (spec 009, FR-016)", () => {
-  // the source at 0 stays among the "🔹 Other" group's sources, and its ⓘ names it
+  // the source at 0 stays among the pool's sources of no system, in its place, and the pool's ⓘ names it (no group
+  // "🔹 Other": Vinicius, 19/11)
   const [, family] = kidsOf(treeOf("DropRatez", 999, 3, 2, 0));
-  const sources = kidsOf(family)[1];
-  expect(sourcesOf(sources)).toEqual([
+  expect(sourcesOf(family)).toEqual([
     ["TreeReads()", 8],
     ["TreeBase", 4],
     ["DNSM.GameCache.v", 0],
   ]);
-  expect(sources?.formula).toEqual({
-    rule: [
-      "(TreeReads() + TreeBase + DNSM.GameCache.v + Fixed +3) ÷ 100",
-      "(8 + 4 + 0 + 3) ÷ 100 = 0.15",
+  expect(family?.formula).toEqual([
+    [
+      ...["👪 Family Bonuses", "+", "TreeReads()", "÷", "100", "+"],
+      ...["TreeBase", "÷", "100", "+", "DNSM.GameCache.v", "÷", "100"],
+      ...["+", "Fixed +3", "÷", "100"],
     ],
-  });
+    [2, 8, 100, 4, 100, 0, 100, 3, 100, 2.15],
+  ]);
 });
 
 test("a source in the sources' ⓘ is its name without its tag, or its code with no name", () => {

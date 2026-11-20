@@ -1,6 +1,6 @@
 // The systems beyond the V1 and the helper blocks in a pool (spec 009, FR-004, T028, after the probe of the 716 trees):
-// a system beyond the V1 comes after the V1's, in the order of the sum, "Other" last; a helper (a curve, a log) takes
-// the system of the sources in it, or none. Invented arguments, apart from the game's own block names the rules read.
+// a system beyond the V1 comes after the V1's, in the order of the sum, a source of no system after them as its own row,
+// never in a group "🔹 Other" (Vinicius, 19/11); a helper (a curve, a log) takes the system of the sources in it, or none. Invented arguments, apart from the game's own block names the rules read.
 import { expect, test } from "vitest";
 import { bySystem } from "./mould.ts";
 import { row } from "./rows.ts";
@@ -18,7 +18,7 @@ const level = (rows: readonly Row[]) =>
     r.node.value,
   ]);
 
-test("a system beyond the V1 comes after the V1's, in the order of the sum, and Other last", () => {
+test("a system beyond the V1 comes after the V1's, in the order of the sum, and a source of no system last, as its row", () => {
   const out = bySystem(
     [
       src("InventedBlock(1)", 1),
@@ -37,7 +37,8 @@ test("a system beyond the V1 comes after the V1's, in the order of the sum, and 
     ["🃏 Cards", 12],
     ["⛵ Sailing", 7],
     ["💰 Bribes", 9],
-    ["🔹 Other", 8],
+    ["InventedBlock(1)", 1],
+    ["InventedBlock(2)", 7],
   ]);
 });
 
@@ -57,7 +58,8 @@ test("a helper takes the system of the sources in it; with none, it stands as it
   );
   expect(level(out)).toEqual([
     ["🃏 Cards", 9],
-    ["🔹 Other", 3],
+    ["InventedBlock(1)", 1],
+    ["InventedBlock(2)", 2],
     ['ArbitraryCode5Inputs("add", 1, 0, 101, 0, 0)', 3],
   ]);
 });
@@ -88,7 +90,8 @@ test("a talent multiplied by a count goes to the talent's system (009 T029, deci
   );
   expect(level(out)).toEqual([
     ["🎯 Talents", 66.5],
-    ["🔹 Other", 3],
+    ["InventedBlock(1)", 1],
+    ["InventedBlock(2)", 2],
   ]);
 });
 
@@ -127,6 +130,7 @@ test("a talent times a count divided by a constant, with no step of a product bu
   );
   expect(level(out)).toEqual([
     ["🎯 Talents", 4],
-    ["🔹 Other", 3],
+    ["InventedBlock(1)", 1],
+    ["InventedBlock(2)", 2],
   ]);
 });

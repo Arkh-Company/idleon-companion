@@ -92,9 +92,10 @@ test("the steps at ×1 of the first level are steps in their places (spec 009, F
   ]);
 });
 
-// Spec 009 (FR-002, FR-004, FR-006, FR-008, FR-013): inside a pool, the sources grouped by system, in the V1 order with
-// "🔹 Other" last; a group's value is its sources' sum or product; a lone source stands alone. The game's own block
-// names the system rules read; invented arguments, paths and values.
+// Spec 009 (FR-002, FR-004, FR-006, FR-008, FR-013): inside a pool, the sources grouped by system, in the V1 order; a
+// group's value is its sources' sum or product; a named system's lone source is its group; a source of no system stands
+// alone, after the groups (Vinicius, 19/11: no group "🔹 Other"). The game's own block names the system rules read;
+// invented arguments, paths and values.
 const src = (
   code: string,
   value: number | null,
@@ -122,7 +123,7 @@ const level = (rows: readonly Row[]) =>
 const sum = (rows: readonly Row[]) =>
   rows.reduce((s, r) => s + Number(r.node.value), 0);
 
-test("the sources go by system in the V1 order, Other last; a named system's lone source is its group", () => {
+test("the sources go by system in the V1 order, a source of no system last as its row; a named system's lone source is its group", () => {
   const rows = [
     other(7),
     card(20),
@@ -138,7 +139,9 @@ test("the sources go by system in the V1 order, Other last; a named system's lon
     ["🃏 Cards", 24],
     // fix tree-shape-091, rule 1: the cache's writer is Alchemy's, a group of one source
     ["⚗️ Alchemy", 3],
-    ["🔹 Other", 8],
+    // Vinicius, 19/11: no group "🔹 Other"; a source of no system stands as its row, in its order
+    ["InventedBlock(1)", 7],
+    ["InventedBlock(2)", 1],
   ]);
   // every level adds up to its parent, and nothing leaves
   expect(sum(out)).toBe(sum(rows));
@@ -146,7 +149,8 @@ test("the sources go by system in the V1 order, Other last; a named system's lon
     ["GetTalentNumber(1, 207)", "GetTalentNumber(1, 208)"],
     ["CardBonusREAL(10, 0)", "CardBonusREAL(11, 0)"],
     ["DNSM.InventedCache"],
-    ["InventedBlock(1)", "InventedBlock(2)"],
+    undefined,
+    undefined,
   ]);
 });
 

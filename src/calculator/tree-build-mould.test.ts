@@ -1,6 +1,6 @@
 // The first level of a tree built from a recording of the invented game is the game's pools (spec 009, FR-001, FR-005,
-// FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (all of them in
-// "🔹 Other": the invented blocks have no system), and every pool closes to the root.
+// FR-008): a root that sums is one Additive pool, a root with a max at the top keeps its rows (none of them has a
+// system: the invented blocks have none), and every pool closes to the root.
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { checkTree } from "../main/tree-check.ts";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
@@ -191,13 +191,16 @@ test("a Drop-Rate-shaped chain: its Additive pool shows the system groups, the g
     // fix tree-shape-091, rule 1: a named system's lone source is its group
     ["🕹️ Arcade", 8],
     ["🍔 Golden Food", expect.closeTo(13.218813518840708, 9)],
-    ["🔹 Other", 29],
+    // a source of no system stands as its row, never in a group "🔹 Other" (Vinicius, 19/11)
+    ["TreeBase", 4],
+    ["TreeLevel", 25],
   ]);
   expect(groups.map((g) => kidsIn(g).map((k) => k.code))).toEqual([
     ["CardBonusREAL(3)", "CardBonusREAL(1)"],
     ["ArcadeBonus(0)"],
     ['GoldFoodBonuses("DropRatez")'],
-    ["TreeBase", "TreeLevel"],
+    [],
+    [],
   ]);
   // every level closes: the groups to the pool, each group's sources to it (FR-008)
   const sum = (ns: readonly CalcTreeNode[]) =>
@@ -263,7 +266,9 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
     ["🍔 Golden Food", "system", "percent", "%", expect.closeTo(gold / 100, 9)],
     // TreeBase, alone in Other once the constant left the group (T027)
     ["Game value", "piece", undefined, null, 4],
-    ["🔹 Other", "system", "percent", "%", expect.closeTo(1.5, 9)],
+    // the bonuses in % of no system, each its row as its +N%, never in a group "🔹 Other" (Vinicius, 19/11)
+    ["Game value", "piece", undefined, "%", 125],
+    ["Game value", "piece", undefined, "%", 25],
     // the constant of the game's math, its own row after the groups (T027)
     ["Fixed +2", "piece", undefined, null, 2],
   ]);
@@ -293,8 +298,8 @@ test("a Drop-Rate-shaped chain whose bonuses in % the game divides by 100: its A
   );
   const f = add?.formula;
   const names = Array.isArray(f) ? f[0].join(" ") : (f?.rule[0] ?? "");
-  // the four groups in %, each in its row's unit with its ÷ 100
-  expect(names.split("÷ 100").length - 1).toBe(4);
+  // the three groups in % and the two bonuses in % of no system, each in its row's unit with its ÷ 100
+  expect(names.split("÷ 100").length - 1).toBe(5);
   expect(Number(add?.value)).toBeCloseTo(
     4 + (8 + 16 + 125 + gold + 25) / 100 + 2,
     9,

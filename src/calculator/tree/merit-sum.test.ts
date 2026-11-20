@@ -128,12 +128,16 @@ test("the bonuses of the Additive pool are by system, each in %: a group of two 
   const cards = group("🃏 Cards");
   expect([cards?.value, cards?.fmt]).toEqual([0.04, "%"]);
   expect(kidsIn(cards).map((k) => k.code)).toEqual(["CardBonusREAL(1)"]);
-  const other = group("🔹 Other");
-  expect(other?.combine).toBe("percent");
-  expect(kidsIn(other).map((k) => k.code)).toEqual([
-    "TreeLevel",
-    "TreeReads()",
+  // a bonus in % of no system stands as its row, +N%, never in a group "🔹 Other" (Vinicius, 19/11)
+  expect(
+    pool
+      .filter((k) => k.code === "TreeLevel" || k.code === "TreeReads()")
+      .map((k) => [k.code, k.role, k.fmt]),
+  ).toEqual([
+    ["TreeLevel", "piece", "%"],
+    ["TreeReads()", "piece", "%"],
   ]);
+  expect(pool.some((k) => k.name === "🔹 Other")).toBe(false);
 });
 
 test("each pool closes, and the source's ⓘ is how they join, the lone factor's math in its own, the check after it", () => {
