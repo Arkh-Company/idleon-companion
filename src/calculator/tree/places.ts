@@ -42,7 +42,8 @@ import type { CacheOpen, Row } from "./rows.ts";
 /**
  * An ⓘ of atoms written with the terms of `rows` before they were placed, with each term a row that its placement named
  * otherwise (a vague row named by its child, a step by its source) replaced by its new one, so that the ⓘ names the rows
- * it shows (fix tree-shape-091, round 2); a term two rows share, and any other ⓘ, as it is.
+ * it shows (fix tree-shape-091, round 2). A term rows shared ("Game value" three times) is read in their order, the n-th
+ * time the n-th row's, when the ⓘ writes it as many times as there are rows with it; any other ⓘ as it is.
  */
 export function shownTerms(
   f: CalcTreeNode["formula"],
@@ -50,16 +51,24 @@ export function shownTerms(
   kids: readonly CalcTreeNode[],
 ): CalcTreeNode["formula"] {
   if (!Array.isArray(f) || kids.length !== rows.length) return f;
-  const before = rows.map((r) => termOf(r.node));
-  const now = new Map<string, string>();
-  before.forEach((t, i) => {
+  // each term before, with the names the rows that had it show now, in their order
+  const now = new Map<string, string[]>();
+  rows.forEach((r, i) => {
     const k = kids[i];
-    if (k && before.indexOf(t) === before.lastIndexOf(t) && termOf(k) !== t)
-      now.set(t, termOf(k));
+    const t = termOf(r.node);
+    now.set(t, [...(now.get(t) ?? []), k ? termOf(k) : t]);
   });
-  if (!now.size) return f;
   const [terms, numbers, ...text] = f;
-  return [terms.map((t) => now.get(t) ?? t), numbers, ...text];
+  const seen = new Map<string, number>();
+  const named = terms.map((t) => {
+    const names = now.get(t);
+    const n = seen.get(t) ?? 0;
+    seen.set(t, n + 1);
+    return names && terms.filter((x) => x === t).length === names.length
+      ? (names[n] ?? t)
+      : t;
+  });
+  return [named, numbers, ...text];
 }
 
 /** Where a level's rows go: their depth, the calls above them and the rows above them in their piece. */
