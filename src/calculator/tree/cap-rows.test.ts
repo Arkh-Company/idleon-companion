@@ -104,5 +104,8 @@ test("caps of a part multiplied in the pool are one row each, named by the part;
     ]),
   );
   expect(all.map((k) => k.name).filter((n) => CONSTANT.test(n))).toEqual([]);
-  expect(all.map((k) => k.name)).not.toContain("Game value");
+  // the caps' rows have names, never the generic one (the invented calls under them have none in the invented game)
+  expect(
+    ["Damage Bonus", "Damage Multi"].map((n) => part(n)?.flags.unnamed),
+  ).toEqual([undefined, undefined]);
 });
