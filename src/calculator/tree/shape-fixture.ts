@@ -43,4 +43,4 @@ export const linesOf = (f: CalcTreeNode["formula"] | undefined): string[] =>
 
 /** The names the assembly gives a constant of the game's code by its place, which a pool never shows loose. */
 export const CONSTANT =
-  /^(?:Base |Percent to number|× |Minimum |Cap |Minus |Exponent |Divided by |Fixed ×)/;
+  /^(?:Base d|Percent to number|× |Minimum |Cap |Minus |Exponent |Divided by |Fixed ×)/;
