@@ -1,6 +1,7 @@
 // The groups by system of a level (spec 009, FR-002 to FR-004, FR-017; T027, T028): a pool's rows, or a root's under a
-// max or a min, one group per system in the V1 order, the systems beyond it after, "🔹 Other" last; a constant of the
-// game's math and a helper with no source stand as their own rows.
+// max or a min, one group per system in the V1 order, the systems beyond it after; a source of no proven system, a
+// constant of the game's math and a helper with no source stand as their own rows after them, never in a group "🔹
+// Other" (Vinicius, 19/11: the game has no system Other).
 import { fx3 } from "./curves.ts";
 import { termsOf, vOf } from "./formulas.ts";
 import { formulaOut } from "./math.ts";
@@ -28,6 +29,10 @@ const OTHER = V1_SYSTEMS.at(-1) ?? { name: "Other", emoji: "🔹" };
  * same one. Undefined for a row with no source (a constant of the code); null for an unknown or a mixed one.
  */
 function systemOfRow(r: Row, writerOf: WriterOf): System | null | undefined {
+  // a row of a multiplier, or of a bonus times a count, is its source's (tree/multiplier-rows.ts); a row of caps, of no
+  // system, its rows by system (rule 4)
+  if (r.head) return systemOfRow(r.head, writerOf);
+  if (r.capped) return null;
   // a helper's (a curve, a log) is its sources' (T028)
   if (r.node.code !== null && !isHelper(r.node.code))
     return systemOf(r.node.code, writerOf(r));
@@ -214,10 +219,11 @@ export function ownPair(
 
 /**
  * The rows of a pool (or of the root, with no pool) by system (FR-002, FR-004, FR-006): one group per system in the V1
- * order, "🔹 Other" last, a group at 0 or ×1 in its place; a named system's lone source is its group too, "Other"'s
- * stands alone (fix tree-shape-091, rule 1); when every source is in "Other",
- * the rows stay as they are (FR-001). The parts at 0 and at ×1 go to their systems. A constant of the game's math (a
- * row with no source) is no system's: it stays its own row, after the groups (T027), but for one in %.
+ * order, a group at 0 or ×1 in its place; a named system's lone source is its group too (fix tree-shape-091, rule 1);
+ * a source of no proven system stands alone after the groups, a bonus in % as its +N% that its pool's ⓘ divides by
+ * 100, never in a group "🔹 Other" (Vinicius, 19/11); when no source has a system, the rows stay as they are (FR-001).
+ * The parts at 0 and at ×1 go to their systems. A constant of the game's math (a row with no source) is no system's: it
+ * stays its own row, after the groups (T027).
  */
 export function bySystem(
   rows: readonly Row[],
@@ -229,7 +235,7 @@ export function bySystem(
   const constants: Row[] = [];
   for (const r of rows) {
     const found = systemOfRow(r, writerOf);
-    // a constant in % adds a hundredth of its value only inside a group in % (FR-017), so it stays in "Other"'s
+    // a constant in % adds a hundredth of its value (FR-017): it stands as its +N%, as a source of no system
     if (found === undefined && !r.percent) {
       constants.push(r);
       continue;
@@ -240,8 +246,8 @@ export function bySystem(
     const g = groups.get(key) ?? { s, pct, rows: [] };
     groups.set(key, { ...g, rows: [...g.rows, r] });
   }
-  // every source in "Other", in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%,
-  // its pool's ⓘ dividing it by 100 (A34, option B of 20/11)
+  // no source of a system, in % or not: the rows stay as they are (FR-001), the % forcing no group, each as its +N%, its
+  // pool's ⓘ dividing it by 100 (A34, option B of 20/11)
   const all = [...groups.values()];
   if (all.every((g) => g.s === OTHER))
     return all.some((g) => g.pct)
@@ -249,30 +255,31 @@ export function bySystem(
           r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
         )
       : rows;
-  // a system beyond the V1 after the V1's, in the order of the sum, "Other" last (FR-004); each system's group in %
-  // right after its own (A34)
+  // a system beyond the V1 after the V1's, in the order of the sum (FR-004); each system's group in % right after its
+  // own (A34)
   const first = all.map((g) => g.s.name);
   const at = (s: System) =>
-    s === OTHER
-      ? SYSTEM_ORDER.length + first.length
-      : SYSTEM_ORDER.includes(s.name)
-        ? SYSTEM_ORDER.indexOf(s.name)
-        : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
+    SYSTEM_ORDER.includes(s.name)
+      ? SYSTEM_ORDER.indexOf(s.name)
+      : SYSTEM_ORDER.length - 1 + first.indexOf(s.name);
   const rank = ({ s, pct }: { s: System; pct: boolean }) =>
     at(s) * 2 + Number(pct);
   // a named system is always a group, of one source too, in % or not (fix tree-shape-091, rule 1: Vinicius, 19/11, every
-  // system that weighs on a value shows as its child); a lone source of "Other" stands alone, a bonus in % as its +N%,
-  // its pool's ⓘ dividing it by 100 (A34)
+  // system that weighs on a value shows as its child); a source of no system stands alone after them, in its order
+  const loose = rows.filter((r) => {
+    const g = groups.get(`${OTHER.name}|${String(!!r.percent)}`);
+    return !!g?.rows.includes(r);
+  });
   return [
-    ...[...groups.values()]
+    ...all
+      .filter((g) => g.s !== OTHER)
       .sort((a, b) => rank(a) - rank(b))
-      .flatMap(({ s, pct, rows: rs }) =>
-        s === OTHER && rs.length === 1
-          ? rs.map((r) =>
-              pct ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
-            )
-          : [systemRow(s, pct ? "percent" : combine, rs)],
+      .map(({ s, pct, rows: rs }) =>
+        systemRow(s, pct ? "percent" : combine, rs),
       ),
+    ...loose.map((r) =>
+      r.percent ? { ...r, node: { ...r.node, fmt: "%" as const } } : r,
+    ),
     ...constants,
   ];
 }

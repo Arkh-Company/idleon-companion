@@ -48,6 +48,7 @@ export function isStep(r: Row): boolean {
     !n.flags.truncated &&
     !r.bySource &&
     !r.ceiling &&
+    !r.role &&
     (!!n.flags.unnamed || byShapeOnly(n.name)) &&
     (r.group?.length ?? 0) > 0
   );

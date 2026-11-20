@@ -22,6 +22,7 @@ import { nameOf, termName } from "./names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
 import { clampedProduct } from "./clamped.ts";
 import { capRow as capRowOf } from "./caps.ts";
+import { additiveRows } from "./scaled.ts";
 import type { Expr, Step } from "./steps.ts";
 import { near, num } from "./math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
@@ -370,10 +371,16 @@ export function makeTerms(ctx: TermContext) {
       const factors = (cp?.factors ?? []).flatMap(
         (f) => rowOfTerm(f, "*", d, reads2) ?? [],
       );
+      // a factor 1 + (a + b) ÷ 100 of several sources: its bonuses in %, its own Multi pool in a pool (FR-005, round 1)
+      const add = additiveRows(e, Number(e.v), (t, o) =>
+        rowOfTerm(t, o, d, reads2),
+      );
       const r =
         factors.length === cp?.factors.length
           ? { ...r0, clamp: { fn: cp.fn, bound: cp.bound, rows: factors } }
-          : r0;
+          : add?.combine === "onePlusPercent" && add.rows.length > 1
+            ? { ...r0, factorPool: add.rows }
+            : r0;
       return own ? { ...r, r1src: own } : r;
     }
     // the expression around the call when it has two named parts or more, else the call's own ⓘ (the call row's: the

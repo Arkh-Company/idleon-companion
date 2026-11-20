@@ -101,6 +101,9 @@ function named(pools: Omit<Pool, "name">[]): Pool[] {
   });
 }
 
+/** Pools named again, after one became two (tree/mould.ts `splitFactors`). */
+export const poolNames = (pools: Omit<Pool, "name">[]): Pool[] => named(pools);
+
 /**
  * The pools of the root's `rows`, in the game's order; `root.expr` is the root's step, read for its additive factors
  * with `term`. Null when the rows neither add up nor multiply to the root's value.

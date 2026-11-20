@@ -84,6 +84,7 @@ function sourceName(
 export function scaledName(r: Row, at: Level | null, under: Under): Row {
   // a name by shape only ("Multiplier from 2 sources") is none (FR-007)
   const none = !!r.node.flags.unnamed || byShapeOnly(r.node.name);
-  if (!at || !none || r.node.role !== "piece") return r;
+  // a name by its role in the ⓘ above holds (tree/rows.ts `role`)
+  if (!at || !none || r.node.role !== "piece" || r.role) return r;
   return withName(r, sourceName(at, r.op, under, 0));
 }

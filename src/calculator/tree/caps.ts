@@ -4,22 +4,20 @@
 // (CAP_NAMES); its constant, exponent and floor are in its ⓘ (tree/terms.ts). A cap whose part has no name in the table
 // stays as it is.
 import { fx3 } from "./curves.ts";
-import { token } from "./formulas.ts";
-import { inlined } from "./inline.ts";
-import { near } from "./math.ts";
-import { multipliersIn } from "./multiplier-rows.ts";
+import { dissolve } from "./flatten.ts";
+import { termsOf, vOf } from "./formulas.ts";
+import { bySystem, ownPair } from "./groups.ts";
+import type { WriterOf } from "./groups.ts";
+import { formulaOut, near } from "./math.ts";
+import { multiplierRow, multipliersIn } from "./multiplier-rows.ts";
 import { row } from "./rows.ts";
-import type { Row } from "./rows.ts";
+import type { CapShape, Row } from "./rows.ts";
 import { strip } from "./scaled.ts";
 import { termOf } from "./share.ts";
 import type { Expr, Step } from "./steps.ts";
 
 /** One cap: added (c + max((x − c)^e, 0)) or scaled (c × (x ÷ c)^e), with its floor of 0 or none, around `x`. */
-export interface Cap {
-  kind: "add" | "scale";
-  c: number;
-  e: number;
-  floor: boolean;
+export interface Cap extends CapShape {
   x: Expr;
 }
 
@@ -97,7 +95,7 @@ export function capOf(e: Expr): Cap | null {
 
 /** The two lines of a cap around the lines of its `x`, in brackets when `x` is an expression (another cap). */
 export function capLines(
-  cap: Cap,
+  cap: CapShape,
   x: [string, string],
   bracket: boolean,
 ): [string, string] {
@@ -176,9 +174,35 @@ export function joinedCaps(terms: readonly Expr[], op: "+" | "*"): Expr[] {
 }
 
 /**
+ * The ⓘ of a row of caps `caps` (outermost first) of value `v` around the rows `rows` of the value they cap, which
+ * `op` joins: their sum or product by their names (a group by its system's), never a name of their own.
+ */
+function capFormula(
+  caps: readonly CapShape[],
+  rows: readonly Row[],
+  op: "+" | "*" | null,
+  v: number,
+): Row["node"]["formula"] {
+  const [only] = rows;
+  const pair = op && rows.length > 1 ? ownPair(rows, op === "*", v) : null;
+  const inner: [string, string] = pair
+    ? [`(${pair[0]})`, `(${pair[1].replace(/ = [^=]*$/, "")})`]
+    : [only ? termOf(only.node) : "", only ? fx3(vOf(only)) : ""];
+  const [names, numbers] = caps.reduceRight<[string, string]>(
+    (lines, cap, i) => capLines(cap, lines, i < caps.length - 1),
+    inner,
+  );
+  return formulaOut(
+    [names, `${numbers} = ${fx3(v)}`],
+    [...termsOf(rows), ...rows.map((r) => termOf(r.node))],
+  );
+}
+
+/**
  * The row of the cap step `e`, step `at` of `steps`: the caps one after the other on a part of a working value, one row
  * by the part's name, its rows the sources of the value they cap (`part` builds that value's row, read in the turn of
- * its step), their math around its sum or product in its ⓘ; null when `e` is no cap or its part has no name.
+ * its step; a step of it that only adds or only multiplies gives its rows), their math around their sum or product in
+ * its ⓘ; null when `e` is no cap or its part has no name.
  */
 export function capRow(
   e: Expr,
@@ -209,24 +233,50 @@ export function capRow(
   const v = e.v;
   if (!name || !own || typeof v !== "number" || !Number.isFinite(v))
     return null;
-  // the multipliers of a product of sources each their × row, in its steps that only multiply too (rule 2)
-  const sources = multipliersIn(own);
-  const xv = Number(x.v);
-  const [names, numbers] = caps.reduceRight<[string, string]>(
-    (lines, cap, i) => capLines(cap, lines, i < caps.length - 1),
-    [token(`v:${String(xv)}`, termOf(sources.node)), fx3(xv)],
+  // the sources of the value they cap, its unnamed steps that only add or only multiply taken apart (tree/flatten.ts),
+  // the multipliers of a product each their × row and a bonus times a count its bonus's row (rule 2)
+  const op =
+    own.op && own.node.code === null && own.open === null && own.group?.length
+      ? own.op
+      : null;
+  const rows = (op ? dissolve(own.group ?? [], op) : [own]).map((r) =>
+    op === "*" ? multipliersIn(r) : multiplierRow(r, false),
   );
-  const capped: Row = {
-    node: row({ pieceKey: null, value: v, code: null, name, flags: {} }),
-    open: null,
-    group: [sources],
-    xf: [names, `${numbers} = ${fx3(v)}`],
-  };
-  // the part's own sum or product inside the caps, its rows the cap's (tree/inline.ts)
-  const w = inlined(capped, [sources]);
+  const shapes = caps.map(({ kind, c, e: exp, floor }) => ({
+    kind,
+    c,
+    e: exp,
+    floor,
+  }));
   return {
-    ...capped,
-    node: { ...capped.node, formula: w.formula },
-    group: w.rows,
+    node: row({
+      pieceKey: null,
+      value: v,
+      code: null,
+      name,
+      flags: {},
+      formula: capFormula(shapes, rows, op, v),
+    }),
+    open: null,
+    group: rows,
+    capped: { caps: shapes, op },
+  };
+}
+
+/** Row `r` of caps in a pool (rule 4): its rows by system (rule 1), its ⓘ by their groups; any other row as it is. */
+export function capInGroups(r: Row, writerOf: WriterOf): Row {
+  const { capped, group } = r;
+  const v = r.node.value;
+  if (!capped || !group || typeof v !== "number") return r;
+  const rows = [
+    ...bySystem(group, capped.op === "*" ? "product" : "sum", writerOf),
+  ];
+  return {
+    ...r,
+    node: {
+      ...r.node,
+      formula: capFormula(capped.caps, rows, capped.op, v),
+    },
+    group: rows,
   };
 }
