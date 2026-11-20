@@ -242,6 +242,12 @@ export const SYSTEM_RULES: readonly {
       [/^DNSM\.ArcadBonDNz/, "Arcade", "N.js ArcadeBonus (writes ArcadBonDNz)"],
       [/^BundlesReceived\./, "Bundles", "N.js BundlesReceived"],
       [/^Lab\[/, "Lab", "N.js Labb (reads Lab)"],
+      // fix tree-shape-091, round 1: no source in a group Other (Vinicius, 19/11)
+      [
+        /^OptionsListAccount\[232\]$/,
+        "Sneaking Mastery",
+        "names-static OptionsListAccount[232] (bench [K0-NAME232]): the count of the sneaking masteries completed",
+      ],
       [
         /^GemItemsPurchased\[/,
         "Gem Shop",
