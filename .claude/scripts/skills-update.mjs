@@ -113,14 +113,20 @@ try {
           // passam a chamar pelo novo: sem isso, os botões da barra do ponytail não acham as skills
           const manifesto = join(destino, ".claude-plugin", "plugin.json");
           const json = JSON.parse(readFileSync(manifesto, "utf8"));
-          const antigo = new RegExp(`\\b${json.name}:(?=${json.name})`, "g");
+          // E o dono do estado do band ($.state): o atom e o PluginState também passam para o name novo, ou o motor
+          // recusa a gravação ("only a value's owner writes it") e o band não aparece
+          const trocas = [
+            [new RegExp(`\\b${json.name}:(?=${json.name})`, "g"), `${c.plugin}:`],
+            [new RegExp(`(\\bplugin: )(['"])${json.name}\\2`, "g"), `$1$2${c.plugin}$2`],
+            [new RegExp(`(interface PluginState \\{\\s*)${json.name}:`, "g"), `$1'${c.plugin}':`],
+          ];
           writeFileSync(manifesto, `${JSON.stringify({ ...json, name: c.plugin }, null, 2)}\n`);
           for (const arquivo of readdirSync(join(destino, "hooks"), { recursive: true })) {
             const caminho = join(destino, "hooks", arquivo);
             if (!statSync(caminho).isFile()) continue;
             const texto = readFileSync(caminho, "utf8");
-            if (antigo.test(texto)) writeFileSync(caminho, texto.replace(antigo, `${c.plugin}:`));
-            antigo.lastIndex = 0;
+            const novo = trocas.reduce((t, [de, para]) => t.replace(de, para), texto);
+            if (novo !== texto) writeFileSync(caminho, novo);
           }
         }
         const registro = { repo: url, ref, commit, path: c.path, tree: c.tree };

@@ -72,7 +72,7 @@ const TASK = {
   openCallers: [],
   tests: { state: 'none' as const },
 }
-const band = atom({ plugin: 'ponytail', key: 'band' } as const, EMPTY)
+const band = atom({ plugin: 'ponytail-kit', key: 'band' } as const, EMPTY)
 // State kept from an older version of the band lacks newer fields.
 const load = async ($: EngineInterface): Promise<Band> => ({ ...EMPTY, ...(await read($, band)) })
 
