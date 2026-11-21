@@ -5,6 +5,8 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
+import { recordingOf } from "../fixtures/recording-fixture.ts";
+import type { Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
 import {
@@ -139,6 +141,31 @@ test("the probe records each sketch's root and classifies its form", () => {
   });
   expect(report.liveMap).toEqual(["map-monster"]);
   expect(report.outOfRule.map((r) => r.id)).toEqual(["decl-swap"]);
+});
+
+test("a root whose answer key throws is an error of its own, and the run goes on", () => {
+  // a recording the answer key cannot read: no writes list
+  const broken = () =>
+    ({
+      ...recordingOf(
+        [
+          { b: "(root)", c: [1] },
+          { b: "Invented", v: 3 },
+        ],
+        [],
+        {
+          root: 0,
+        },
+      ),
+      writes: undefined,
+    }) as unknown as Recording;
+  const probe = probeRoot(broken, recorder.ops, sketch("broken", "Invented"));
+  expect(probe).toMatchObject({
+    id: "broken",
+    form: "error",
+    pools: [],
+    reason: "o gabarito falhou (TypeError)",
+  });
 });
 
 test("the summary line has only the id, the result and the time, never a character's name", () => {

@@ -113,26 +113,28 @@ export function probeRoot(
     reason,
     ms: performance.now() - t0,
   });
-  let rec: Recording;
+  // A root that breaks is an error of its own: the run goes on to the others.
+  let stage = "a gravação";
   try {
-    rec = record(rootCallOf(bp));
+    const rec: Recording = record(rootCallOf(bp));
+    const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+    if (typeof top?.v !== "number") return done("liveMap", [], NO_VALUE);
+    stage = "o gabarito";
+    const key = answerKey(rec, ops);
+    if ("error" in key) return done("outOfRule", [], key.reason);
+    return done(
+      key.form,
+      key.pools.map((p) => p.kind),
+      null,
+    );
   } catch (e) {
     // only the error's kind: its message could carry a text of the save
     return done(
       "error",
       [],
-      `a gravação falhou (${e instanceof Error ? e.name : "erro"})`,
+      `${stage} falhou (${e instanceof Error ? e.name : "erro"})`,
     );
   }
-  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
-  if (typeof top?.v !== "number") return done("liveMap", [], NO_VALUE);
-  const key = answerKey(rec, ops);
-  if ("error" in key) return done("outOfRule", [], key.reason);
-  return done(
-    key.form,
-    key.pools.map((p) => p.kind),
-    null,
-  );
 }
 
 /** `roots.json`: the count of each form, every root, the ones out of the rule and the ones that need the live map. */
