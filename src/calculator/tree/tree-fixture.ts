@@ -1,6 +1,8 @@
 // A recording written by hand for the assembly's tests (spec 008, T017): the shape recorder.js gives, with invented
 // blocks and paths. Each node's id is its place in `nodes`, and its children run in the order of `c`.
-import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import { recordingOf } from "../fixtures/recording-fixture.ts";
+import type { NodeSpec as Spec } from "../fixtures/recording-fixture.ts";
+import type { RecNode, Recording } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { TreeBuild } from "../tree-build.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
@@ -10,38 +12,8 @@ import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Step } from "./steps.ts";
 
-type Spec = Partial<RecNode> & Pick<RecNode, "b">;
-
-/** A recording from its nodes in id order; `p` and `pxi` are filled from the children lists. */
-export function recordingOf(
-  specs: Spec[],
-  writes: (Omit<RecWrite, "xi"> & Partial<Pick<RecWrite, "xi">>)[] = [],
-  roles: Partial<Pick<Recording, "setup" | "root" | "fromGame">> = {},
-): Recording {
-  const nodes: RecNode[] = specs.map((s, id) => ({
-    id,
-    a: [],
-    c: [],
-    p: null,
-    pxi: 0,
-    ...s,
-  }));
-  for (const n of nodes)
-    for (const c of n.c) {
-      const kid = nodes[c];
-      if (kid) kid.p = n.id;
-    }
-  return {
-    nodes,
-    writes: writes.map((w) => ({ xi: 0, ...w })),
-    spliced: [],
-    bpStart: null,
-    setup: roles.setup ?? null,
-    root: roles.root ?? null,
-    builders: null,
-    fromGame: roles.fromGame ?? [],
-  };
-}
+// (moved out of tree/ by spec 010, so recorded/ and declared/ may use it)
+export { recordingOf };
 
 /**
  * The pieces case: `Part(1)` is called twice under the root with different rows (a conflict), `Hit(2)` reads the cache
