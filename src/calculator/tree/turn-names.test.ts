@@ -4,8 +4,8 @@
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import type { TurnRead } from "./entries.ts";
-import { nameOf, NAMES_BY_LABEL } from "./names.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { nameOf, NAMES_BY_LABEL } from "../names/names.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { fixed, read } from "./tree-fixture.ts";

@@ -22,7 +22,7 @@ import type { LevelOf } from "./one-of-each.ts";
 import { besideArena } from "./arena.ts";
 import { flatten } from "./flatten.ts";
 import { byRole, inlined, isStep } from "./inline.ts";
-import { formulaOut } from "./math.ts";
+import { formulaOut } from "../recorded/math.ts";
 import { baseStatue } from "./last-renames.ts";
 import {
   asideInFormula,

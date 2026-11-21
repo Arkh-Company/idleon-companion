@@ -21,11 +21,11 @@ import { oneTurnFormula, turnFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
 import type { CacheContext } from "./cache-context.ts";
 import type { Entry, TurnRead } from "./entries.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { MAX_DEPTH } from "./pieces.ts";
 import { callText, openingOf, row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
-import type { Expr, LoopTurn, Step } from "./steps.ts";
+import type { Expr, LoopTurn, Step } from "../recorded/steps.ts";
 import { flat } from "./expr.ts";
 import {
   LOOP_ENTRY_CACHES,

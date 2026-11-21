@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { aboveRenames } from "./above-renames.ts";
 import { MAPS_COUNT } from "./leaf-passes.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { placed, read } from "./tree-fixture.ts";

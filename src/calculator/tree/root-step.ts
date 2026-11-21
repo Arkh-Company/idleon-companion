@@ -9,11 +9,11 @@ import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { termsOf } from "./formulas.ts";
-import { formulaOut, near } from "./math.ts";
+import { formulaOut, near } from "../recorded/math.ts";
 import { finish, row, withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 
 const OP: Readonly<Record<string, string>> = {
   "+": "+",

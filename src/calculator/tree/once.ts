@@ -5,7 +5,7 @@ import type { RecNode } from "../recording.ts";
 import { withWriterFormula } from "./cache-formulas.ts";
 import type { Opened } from "./cache-formulas.ts";
 import type { Pair } from "./formulas.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { WORN_TURN } from "./term-passes.ts";
 import { row } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";

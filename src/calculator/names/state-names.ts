@@ -1,8 +1,8 @@
 // The game state paths named by a game table (FR-012a, the families of 16/11; research R14): each family a rule by the
-// path's shape, whose text is read over the installed game's table the boot checked by its hash (tree/table-names.ts),
+// path's shape, whose text is read over the installed game's table the boot checked by its hash (names/table-names.ts),
 // so a table that changed names nothing. The Tome's rule is one rule: the path the game keeps in DNSM.TomeQTY[k] has the
-// name of the Tome's line k. A character is only its slot. The rules in words are in tree/state-words.ts. A name that
-// already exists wins (tree/names.ts): an item's bonus value keeps the rename's, now that the item's table is checked.
+// name of the Tome's line k. A character is only its slot. The rules in words are in names/state-words.ts. A name that
+// already exists wins (names/names.ts): an item's bonus value keeps the rename's, now that the item's table is checked.
 import { killroyName } from "./killroy-names.ts";
 import { tableRows, tableText } from "./table-names.ts";
 import { escape, GEN_INFO, n, rule, WORD_RULES } from "./state-words.ts";

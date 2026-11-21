@@ -1,10 +1,10 @@
 // pieces.cjs `tidy` (spec 008, T022) from the bench at BASELINE-4, with no group of the parts at ×1 (spec 009, FR-016):
 // the rows of a step's terms with the repeats of an earlier value and of a cache read taken out.
 import type { RecNode, RecValue } from "../recording.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { topOp } from "./expr.ts";
-import { termName } from "./names.ts";
-import { near, num } from "./math.ts";
+import { termName } from "../names/names.ts";
+import { near, num } from "../recorded/math.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
 

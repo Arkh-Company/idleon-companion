@@ -2,12 +2,12 @@
 // block read from the account's state and did not already show as a part of its formula: levels, counts, owned items.
 // The game's own tables are constants and stay out, as do a length, a text and the block's own working values.
 import type { RecNode } from "../recording.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
 import { systemOf } from "./systems.ts";
-import { lastReads } from "./steps.ts";
-import type { Expr } from "./steps.ts";
+import { lastReads } from "../recorded/steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 /** The read paths a block's steps show (pieces.cjs dataRows `used`). */
 function readsIn(e: Expr | undefined, out: Set<string>): Set<string> {

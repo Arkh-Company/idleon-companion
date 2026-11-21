@@ -7,7 +7,7 @@ import { near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { tableNumber } from "./table-names.ts";
+import { tableNumber } from "../names/table-names.ts";
 import { built, fixedRow, renamed } from "./build-up-rows.ts";
 import type { BuildUpContext, BuiltUp } from "./build-up-rows.ts";
 

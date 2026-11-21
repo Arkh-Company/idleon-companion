@@ -8,7 +8,7 @@ import type { RecNode } from "../recording.ts";
 import { buildTree } from "../tree-build.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { wornItem } from "./term-passes.ts";
 import { call, nodes, num, op, read, termsOf, val } from "./term-fixture.ts";
 import { openPath, recordingOf } from "./tree-fixture.ts";

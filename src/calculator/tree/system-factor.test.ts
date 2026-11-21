@@ -9,7 +9,7 @@ import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { RecNode, RecValue } from "../recording.ts";
 import { systemFactorName } from "./shapes.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { kidsIn } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

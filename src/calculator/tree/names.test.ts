@@ -19,10 +19,10 @@ import {
   resolveNames,
   transformText,
   useGameNames,
-} from "./names.ts";
-import { NAME_RECIPES, partTable, STATIC_NAMES } from "./names-table.ts";
-import { renameOf } from "./renames.ts";
-import type { NameRecipe } from "./names-table.ts";
+} from "../names/names.ts";
+import { NAME_RECIPES, partTable, STATIC_NAMES } from "../names/names-table.ts";
+import { renameOf } from "../names/renames.ts";
+import type { NameRecipe } from "../names/names-table.ts";
 
 afterEach(() => {
   useGameNames(new Map());

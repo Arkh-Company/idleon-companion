@@ -1,8 +1,8 @@
 // The tops of a root's step a value passes through or that round it (spec 009, T025, T030): a round, a floor or a ceil
 // that changes nothing, or a clamp that does not bite, is read through (tree/pools.ts); a rounding that changes the
 // value keeps the pools of the value before it, and stays in sight in the root's ⓘ (tree/mould.ts).
-import { near } from "./math.ts";
-import type { Expr, Step } from "./steps.ts";
+import { near } from "../recorded/math.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 

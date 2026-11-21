@@ -3,7 +3,7 @@
 import { expect, test } from "vitest";
 import { bySystem, firstLevel, mould, poolRows } from "./mould.ts";
 import type { Pool } from "./pools.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { branch, fixed, placed, read } from "./tree-fixture.ts";

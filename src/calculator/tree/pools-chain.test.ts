@@ -5,7 +5,7 @@ import { chainPools, poolsPair, through } from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { fixed } from "./tree-fixture.ts";
 import { poolRows } from "./mould.ts";
 

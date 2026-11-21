@@ -1,19 +1,19 @@
-// The names that come from the installed game's tables (spec 008, T023; tree/names.ts): the recipes' cells and tables
+// The names that come from the installed game's tables (spec 008, T023; names/names.ts): the recipes' cells and tables
 // are read inside the context (names-reader.js) and cross as JSON text; each table is hashed here, and a recipe whose
 // table's sha256 is not the bench's leaves its row with no name.
 import { createHash } from "node:crypto";
 import type { Context } from "./boot.ts";
-import { resolveNames } from "./tree/names.ts";
-import { NAME_RECIPES, TABLE_HASHES } from "./tree/names-table.ts";
-import { isTextTable } from "./tree/table-names.ts";
-import type { NamePart, NameRecipe } from "./tree/names-table.ts";
+import { resolveNames } from "./names/names.ts";
+import { NAME_RECIPES, TABLE_HASHES } from "./names/names-table.ts";
+import { isTextTable } from "./names/table-names.ts";
+import type { NamePart, NameRecipe } from "./names/names-table.ts";
 
 const cellId = (p: NamePart) => JSON.stringify([p.table, p.index, p.field]);
 const isTextOrNull = (v: unknown) => v === null || typeof v === "string";
 
 export interface GameNames {
   names: Map<string, string>;
-  /** The tables a table text reads (tree/table-names.ts) whose sha256 is the bench's, in the bench's canonical form. */
+  /** The tables a table text reads (names/table-names.ts) whose sha256 is the bench's, in the bench's canonical form. */
   tables: Map<string, unknown>;
 }
 const nothing = (): GameNames => ({ names: new Map(), tables: new Map() });

@@ -1,7 +1,7 @@
 // pieces.cjs `rename` NAMES from the bench at BASELINE-4 (spec 008, T023): the names proven in the before/after table of
 // 10/11, by the row's code, over every other name (the bench renames the finished tree). The first rule that matches
 // decides; a leaf takes the rule's type too. A name from a game table's text comes from the installed game's checked
-// table (tree/table-names.ts), else the bench's words for a row with no text; an item with no text keeps the name it had
+// table (names/table-names.ts), else the bench's words for a row with no text; an item with no text keeps the name it had
 // (the bench writes the item's id). Left out: the two rules on a row's name with no code (the app names a row by its
 // code) and a second rule of the minor link's top no row reaches (the first one matches the same codes).
 import { FIXED_RENAMES, rule } from "./rename-list.ts";
@@ -256,7 +256,7 @@ export const RENAMES: readonly Rename[] = [
     null,
     "dream; N.js Dreamstuff",
   ),
-  // a merit shop's purchase by what it raises (tree/merit-names.ts), its text to the ⓘ (name-descs.ts)
+  // a merit shop's purchase by what it raises (names/merit-names.ts), its text to the ⓘ (name-descs.ts)
   rule(
     MERIT_SHOP.test,
     (m) => meritName(n(m), n(m, 2)),

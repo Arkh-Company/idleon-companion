@@ -4,7 +4,7 @@
 import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import type { TurnRead } from "./entries.ts";
-import { TABLE_HASHES } from "./names-table.ts";
+import { TABLE_HASHES } from "../names/names-table.ts";
 import { row } from "./rows.ts";
 import {
   isTextTable,
@@ -12,7 +12,7 @@ import {
   TABLE_TEXTS,
   tableText,
   useGameTables,
-} from "./table-names.ts";
+} from "../names/table-names.ts";
 import { NO_NAME, turnName } from "./turn-names.ts";
 
 afterEach(() => {

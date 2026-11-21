@@ -3,8 +3,8 @@
 // the names table is taken from the table itself, so this file holds no game text.
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
-import { nameOf } from "./names.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { nameOf } from "../names/names.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
 import { GENERIC_NAME } from "./rows.ts";
 import { brief, kidsOf } from "./tree-fixture.ts";
 import { loopOf, loopRows } from "./loop-fixture.ts";

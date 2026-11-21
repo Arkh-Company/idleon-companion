@@ -3,8 +3,8 @@
 // walk that builds the rows (caches.ts).
 import type { RecNode } from "../recording.ts";
 import type { Entry, TurnRead } from "./entries.ts";
-import { near } from "./math.ts";
-import type { Expr } from "./steps.ts";
+import { near } from "../recorded/math.ts";
+import type { Expr } from "../recorded/steps.ts";
 import type { Reads } from "./val-path.ts";
 
 /** Writer `w`'s reads, with the reads of its turn after them; a turn read of 0 names nothing (0 is every unset total). */

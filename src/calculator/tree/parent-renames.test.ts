@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import type { RecNode } from "../recording.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import {
   nametagGrade,
   PARENT_RENAMES,

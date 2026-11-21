@@ -1,5 +1,5 @@
 // pieces.cjs `rename` NAMES (the names proven in the before/after table of 10/11) from the bench at BASELINE-4, the
-// rules whose name is the bench's own English, the same for every row they match (tree/renames.ts has the rest and the
+// rules whose name is the bench's own English, the same for every row they match (names/renames.ts has the rest and the
 // order). Each takes the leaf's type the bench gives it, and its proof by reference.
 import type {
   CALC_CONDITION_KINDS,
@@ -254,7 +254,7 @@ const fixed = (list: readonly Fixed[]): Rename[] =>
   list.map(([test, name, leaf, where, condition]) =>
     rule(test, name, leaf, where, condition),
   );
-/** The fixed names, by their place in NAMES (tree/renames.ts puts the others between them). */
+/** The fixed names, by their place in NAMES (names/renames.ts puts the others between them). */
 export const FIXED_RENAMES = {
   first: fixed(FIXED),
   cooking: fixed(FIXED_2),

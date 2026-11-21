@@ -9,7 +9,7 @@ import type { CalcTreeNode } from "./tree-contract.ts";
 import { buildTree } from "./tree-build.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { TABLES } from "./tree/gold-food-fixture.ts";
-import { useGameTables } from "./tree/table-names.ts";
+import { useGameTables } from "./names/table-names.ts";
 import { kidsIn } from "./tree/tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

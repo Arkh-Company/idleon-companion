@@ -7,13 +7,17 @@ import { checkTree } from "../../main/tree-check.ts";
 import type { RecNode } from "../recording.ts";
 import { BAN_FLAG, makeConditions } from "./conditions.ts";
 import { classify } from "./kinds.ts";
-import { nameOf } from "./names.ts";
-import { NAME_RECIPES, STATIC_NAMES, TABLE_HASHES } from "./names-table.ts";
+import { nameOf } from "../names/names.ts";
+import {
+  NAME_RECIPES,
+  STATIC_NAMES,
+  TABLE_HASHES,
+} from "../names/names-table.ts";
 import { TABLES } from "./gold-food-fixture.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Check, Expr } from "./steps.ts";
+import type { Check, Expr } from "../recorded/steps.ts";
 
 const node = (id: number, b: string, a: RecNode["a"] = [], v = 1): RecNode => ({
   id,

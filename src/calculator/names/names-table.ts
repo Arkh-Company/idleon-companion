@@ -2,7 +2,7 @@
 // names-008 export over the BASELINE-4 (pieces.cjs `nameOf` and `readName`, with names-sailing, names-rest and
 // names-other, and the recorder's names of build-tree.cjs 8a, 8a1, 8a2 and 8f `inputOf`), without the 007 index.
 // A static name is the bench's own English, each with its proof by reference; a recipe names a row with a text of a
-// game table, read in the worker over the installed game (tree/names.ts), and only when that table's sha256 is the one
+// game table, read in the worker over the installed game (names/names.ts), and only when that table's sha256 is the one
 // the bench saw: a patched table leaves the row `no name yet`, never with a wrong name. The JSON files say how they
 // were converted from the export.
 import recipes from "./names-recipes.json" with { type: "json" };
@@ -14,7 +14,7 @@ export interface NamePart {
   table: string;
   index: readonly (string | number)[];
   field: string | null;
-  /** How the table's text becomes the name (tree/names.ts `transformText`). */
+  /** How the table's text becomes the name (names/names.ts `transformText`). */
   transform: string;
 }
 
@@ -90,7 +90,7 @@ export const NAME_RECIPES: readonly NameRecipe[] = [
 ];
 
 /** The sha256 of each table a recipe reads, at the version the bench saw, by table id (`partTable`); then the tables
- * only the game state paths' rules read (tree/state-names.ts), at 0e47e87b, and the form at the boot of the two tables
+ * only the game state paths' rules read (names/state-names.ts), at 0e47e87b, and the form at the boot of the two tables
  * the game changes after it (LabMainBonus and NinjaInfo), over the bench's hash of a loaded game. */
 export const TABLE_HASHES: ReadonlyMap<string, string> = new Map(
   [...recipes.hashes, ...stateHashes.hashes].map(([sha = "", id = ""]) => [

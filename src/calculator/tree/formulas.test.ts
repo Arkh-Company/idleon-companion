@@ -7,7 +7,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 import type { Row } from "./rows.ts";
 import { at, branch, cond, fixed, read } from "./tree-fixture.ts";
 

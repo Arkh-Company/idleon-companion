@@ -7,7 +7,7 @@ import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { makeConditions } from "./conditions.ts";
 import type { Row } from "./rows.ts";
-import type { Check, Expr } from "./steps.ts";
+import type { Check, Expr } from "../recorded/steps.ts";
 import { check, leaf, named, placed, read } from "./tree-fixture.ts";
 
 const node: RecNode = { id: 0, b: "Top", a: [], c: [], p: null, pxi: 0, v: 1 };

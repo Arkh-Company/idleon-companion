@@ -13,7 +13,7 @@ const rootFormula = (pools: readonly Pool[], value: number) =>
   poolRows(pools, { name: "", value }, () => undefined).formula;
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { branch, fixed, read } from "./tree-fixture.ts";
 
 const src = (code: string, value: number): Row => ({

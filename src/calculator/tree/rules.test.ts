@@ -23,10 +23,10 @@ import {
 } from "./term-passes.ts";
 import { GAME_BUGS } from "./game-bugs.ts";
 import { COUNT_LEAVES, KIND_PATHS, RULES } from "./kinds.ts";
-import { SHAPE_NAMES } from "./names.ts";
+import { SHAPE_NAMES } from "../names/names.ts";
 import { BRANCH_SHAPES } from "./shapes.ts";
-import { TABLE_TEXTS } from "./table-names.ts";
-import { RENAMES } from "./renames.ts";
+import { TABLE_TEXTS } from "../names/table-names.ts";
+import { RENAMES } from "../names/renames.ts";
 import { CARD_STAR, CONTEXT_READS, LEVEL_RENAMES } from "./level-renames.ts";
 import {
   BANNED,
@@ -45,16 +45,16 @@ import {
   BUBBLE_FACTOR,
   BUBBLE_SCRATCH,
 } from "./above-renames.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
 import { FIX_NAMES } from "./kid-names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import { SYSTEM_RULES } from "./systems.ts";
 import { DESCS } from "./name-descs.ts";
-import { MERIT_SHOP } from "./merit-names.ts";
+import { MERIT_SHOP } from "../names/merit-names.ts";
 import { PARENT_RENAMES } from "./parent-renames.ts";
 
 import { ONE_CHILD } from "./one-child.ts";
-import { GAME_TABLE } from "./steps.ts";
+import { GAME_TABLE } from "../recorded/steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
 const TABLES = {

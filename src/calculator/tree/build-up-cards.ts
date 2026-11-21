@@ -14,7 +14,7 @@ import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";
-import { GEN_INFO } from "./state-words.ts";
+import { GEN_INFO } from "../names/state-words.ts";
 import {
   built,
   codeOf,
