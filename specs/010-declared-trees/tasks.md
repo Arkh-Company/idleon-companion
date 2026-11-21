@@ -153,7 +153,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Files: `src/calculator/declared/refs.ts`
   - Signatures: `type Ref = { call: string; args: readonly (string | number)[] } | { read: string }`; `refKey(ref: Ref, character: number): string`; `matchRead(pattern: string, recorded: readonly string[], character: number): { path: string; matches: number } | null`; `pieceKeyOf(ref: Ref, character: number): string`; `nodeId(numberId: string, pool: number, system: string, keys: readonly string[]): string`; `hasRawCharacterIndex(read: string): boolean`; `isPathRead(read: string): boolean`.
   - Cases: os da T011, que esta tarefa faz passar.
-- [ ] T013 [P] Testes da receita e da conferência na carga em `src/calculator/declared/blueprint.test.ts` (FR-002, FR-002a–c, FR-003–FR-007, FR-018; contracts/blueprint.md)
+- [X] T013 [P] Testes da receita e da conferência na carga em `src/calculator/declared/blueprint.test.ts` (FR-002, FR-002a–c, FR-003–FR-007, FR-018; contracts/blueprint.md)
   - Files: `src/calculator/declared/blueprint.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases, cada regra da conferência com um caso que passa e um que é recusado com o motivo:
@@ -168,7 +168,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - chave fora das listadas;
     - os estágios: só `id` e `root` → `sketch`; com `pending` (lista `{ where, kind: "name" | "system" | "leaf" | "descend" }`) e `name: null` só onde a pendência diz → `draft`; a forma inteira sem `pending` → `complete`;
     - um grupo com pesos misturados é recusado.
-- [ ] T014 A receita em `src/calculator/declared/blueprint.ts` (depende de T012, T013)
+- [X] T014 A receita em `src/calculator/declared/blueprint.ts` (depende de T012, T013)
   - Files: `src/calculator/declared/blueprint.ts`
   - Signatures: `Blueprint`, `BlueprintPool`, `BlueprintGroup`, `BlueprintNode`, `LeafKind` (os 9), `ConditionKind` (os da 008); `parseBlueprint(raw: unknown, ctx: { fileId: string; systemIds: ReadonlySet<string> }): { ok: true; stage: "sketch" | "draft" | "complete"; blueprint: Blueprint } | { ok: false; reason: string }`.
   - A calculadora não importa `src/shared/` (`calculator-alone`): a conferência de que o id está no catálogo fica no teste de CI (T023, T124), não na carga.
