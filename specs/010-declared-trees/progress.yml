@@ -33,5 +33,6 @@ execution:
     - {name: "Polish (T135-T142)", status: pending}
   # um PR de código por fase do plano (plan.md:225), decisão do Vinicius em 21/11/2026
   pr_groups: [[1, 2], [3], [4, 5], [6], [7], [8, 9, 10, 11, 12, 13, 14, 15, 16, 17], [18, 19, 20, 21]]
+  group_prs: [55]
   feature_review: pending
   code_pr: null
