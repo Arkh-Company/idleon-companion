@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/Arkh-Company/idleon-companion/compare/v0.9.1...v0.9.2) (2026-11-21)
+
+
+### Bug Fixes
+
+* dono do estado do band do ponytail-kit ([#52](https://github.com/Arkh-Company/idleon-companion/issues/52)) ([d073315](https://github.com/Arkh-Company/idleon-companion/commit/d073315c11ce50220fe0780601bd1b62fad5f6ad))
+
 ## [0.9.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.9.0...v0.9.1) (2026-11-20)
 
 
