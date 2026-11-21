@@ -240,7 +240,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Signatures: nenhuma (dados).
   - A raiz casada com o `root-calls.json` de hoje pela chamada; o que não casar, escrito a partir da `prova` do catálogo. O script que gera os esboços fica fora do repositório. Commit só de dados, separado da lógica (lição 3 da 008).
   - Cases: `just test-one src/calculator/declared/blueprints.test.ts` passa; o scan da T009 passa sobre os 289.
-- [ ] T025 A conferência real no modo `roots` em `src/calculator/declared/real-trees.integration.test.ts`, com os ajudantes em `real-trees-run.ts` (contracts/real-trees-run.md; FR-026, NFR-003; depende de T019, T022)
+- [X] T025 A conferência real no modo `roots` em `src/calculator/declared/real-trees.integration.test.ts`, com os ajudantes em `real-trees-run.ts` (contracts/real-trees-run.md; FR-026, NFR-003; depende de T019, T022)
   - Files: `src/calculator/declared/real-trees-run.test.ts` (primeiro), `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `treesEnv(env: NodeJS.ProcessEnv): { gameDir: string; snapshot: string; out: string; target: string; mode: "check" | "draft" | "roots" } | null`; `targetIds(target: string, catalog: readonly { id: string; lot: string }[]): string[]` (na ordem do catálogo); `rootCallOf(bp: Blueprint): RootCall`; `summaryLine(id: string, outcome): string`.
   - Cases (no `real-trees-run.test.ts`, em CI):
