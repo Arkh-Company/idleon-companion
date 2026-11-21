@@ -231,11 +231,11 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Files: `src/calculator/declared/blueprints.ts`, `src/calculator/declared/blueprints-load.test.ts`, `src/calculator/declared/index.ts`
   - Signatures: `loadBlueprints(files: Readonly<Record<string, unknown>>): { complete: ReadonlyMap<string, Blueprint>; refused: { file: string; reason: string }[]; stages: ReadonlyMap<string, "sketch" | "draft" | "complete"> }`; `BLUEPRINTS` (o `import.meta.glob` eager de `../blueprints/**/*.blueprint.json`); `blueprintOf(id: string): Blueprint | null` (só `complete`).
   - Cases: um esboço e um rascunho não são servidos (`blueprintOf` → `null`, o que vira `unknownNumber`); uma receita recusada não derruba as outras; os `*.review.json` nunca são importados.
-- [ ] T023 Teste "uma receita por número" em `src/calculator/declared/blueprints.test.ts` (FR-001, FR-024a; depende de T022)
+- [X] T023 Teste "uma receita por número" em `src/calculator/declared/blueprints.test.ts` (FR-001, FR-024a; depende de T022)
   - Files: `src/calculator/declared/blueprints.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: cada número `arvore` de `docs/catalogo/numeros.json` tem exatamente um `<id>.blueprint.json`, na pasta do lote do `mundo` dele (`W1` → `w1` …, `Personagem` → `character`, `Conta` → `account`); nenhum arquivo a mais; todo arquivo carrega num estágio; o nome do arquivo é o id.
-- [ ] T024 Commit de dados com os 289 esboços (só `id` e `root`) em `src/calculator/blueprints/<lote>/` (plan Fase 2; depende de T023)
+- [X] T024 Commit de dados com os 289 esboços (só `id` e `root`) em `src/calculator/blueprints/<lote>/` (plan Fase 2; depende de T023)
   - Files: `src/calculator/blueprints/{w1…w7,character,account}/<id>.blueprint.json` (289)
   - Signatures: nenhuma (dados).
   - A raiz casada com o `root-calls.json` de hoje pela chamada; o que não casar, escrito a partir da `prova` do catálogo. O script que gera os esboços fica fora do repositório. Commit só de dados, separado da lógica (lição 3 da 008).
