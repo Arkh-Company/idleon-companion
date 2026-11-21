@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 
 const ROOT = join(import.meta.dirname, "..", "..");
-const FOLDERS = ["src", "specs/008-formula-trees"];
+const FOLDERS = ["src", "specs/008-formula-trees", "specs/010-declared-trees"];
 const TEXT = /\.(?:tsx?|c?js|mjs|json|md|ya?ml|css|html|svg)$/;
 // Rebuilt by `just diagramas` and ignored by git: never in the repository.
 const IGNORED = /(?:^|\/)(?:diagramas\/local|node_modules)\//;
@@ -59,6 +59,12 @@ test("the scan reads the code, the tests, the invented games and the spec's docu
     "specs/008-formula-trees/prototipo/load-game.cjs",
     "src/calculator/names/names-static.json",
     "src/calculator/names/names-recipes.json",
+    // spec 010: its documents, its frozen prototype, and the blueprints' folder through src/
+    "specs/010-declared-trees/spec.md",
+    "specs/010-declared-trees/contracts/blueprint.md",
+    "specs/010-declared-trees/prototipo/receita-dropRate.json",
+    "specs/010-declared-trees/prototipo/trava.ts",
+    "src/calculator/blueprints/systems.json",
   ])
     expect(files).toContain(f);
 });
@@ -92,6 +98,15 @@ test.each([
   ["a quoted proof", `{ ${KEY}: 'N.js Boat "Upgrade LV"' }`],
   ["a proof with the game's code", `"${KEY}": "N.js Boat return a*b;"`],
   ["a proof with a curly quote", `${KEY}: "N.js Boat “Upgrade”"`],
+  // spec 010 (T009): a test's invented blueprint, written as its file is
+  [
+    "a quoted proof inside an invented blueprint",
+    JSON.stringify(
+      { id: "invented-number", system: "x", [KEY]: 'N.js Boat "Upgrade"' },
+      null,
+      2,
+    ),
+  ],
 ])("the scan catches %s", (_, line) => {
   expect(gameText(line)).not.toEqual([]);
 });

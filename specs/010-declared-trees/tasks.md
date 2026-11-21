@@ -109,7 +109,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
   - Signatures: `interface SystemEntry { id: string; name: string; emoji: string; proof: string }`; `SYSTEMS: readonly SystemEntry[]`; `systemById(id: string): SystemEntry | null`; `systemLabel(e: SystemEntry): string` ("🎯 Talents").
   - Semeada por `V1_SYSTEMS` e `EXTRA_SYSTEMS`, sem "Other". `tree/systems.test.ts` passa sem mudança de caso.
   - Cases: os da T007; `src/calculator/tree/systems.test.ts` passa sem mudança de caso.
-- [ ] T009 [P] O `no-game-text.test.ts` passa a varrer `specs/010-declared-trees` (contracts/blueprint.md; FR-003, FR-007)
+- [X] T009 [P] O `no-game-text.test.ts` passa a varrer `specs/010-declared-trees` (contracts/blueprint.md; FR-003, FR-007)
   - Files: `src/main/no-game-text.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: `FOLDERS` ganha `specs/010-declared-trees`; as receitas em `src/calculator/blueprints/` já entram pelo `src`; um `proof` com aspas dentro de uma receita inventada de teste é acusado.
