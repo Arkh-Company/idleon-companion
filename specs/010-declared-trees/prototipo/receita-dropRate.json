@@ -1,0 +1,1142 @@
+{
+  "numero": "dropRate",
+  "raiz": {
+    "nome": "Drop Rate",
+    "ref": "TotalStats(\"Drop_Rarity\",0,0)",
+    "codigo": "TotalStats, modo \"Drop_Rarity\" (acumula em DNSM.TotStatMAP.Drop_Rarity)"
+  },
+  "pools": [
+    {
+      "kind": "Additive",
+      "peso": 0.01,
+      "codigo": "TotalStats, modo \"Drop_Rarity\": escritas 1 e 2 de DNSM.TotStatMAP.Drop_Rarity (via DNSM.DropRateLUK e DNSM.DropRateLUK2)",
+      "grupos": [
+        {
+          "sistema": "LUK",
+          "emoji": "🍀",
+          "fontes": [
+            {
+              "nome": "LUK",
+              "ref": "TotalStats(\"LUK\")",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK",
+              "peso": 1,
+              "filhos": [
+                {
+                  "nome": "Total LUK",
+                  "ref": "TotalStats(\"LUK\")",
+                  "codigo": "TotalStats, modo \"LUK\"",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Talents",
+          "emoji": "🎯",
+          "fontes": [
+            {
+              "nome": "Robbinghood",
+              "ref": "GetTalentNumber(1,279)",
+              "codigo": "GetTalentNumber, talento 279",
+              "a_descer": true
+            },
+            {
+              "nome": "Curse Of Mr Looty Booty",
+              "ref": "GetTalentNumber(1,24)",
+              "codigo": "GetTalentNumber, talento 24",
+              "a_descer": true
+            },
+            {
+              "nome": "Boss Battle Spillover",
+              "ref": "GetTalentNumber(1,655)",
+              "codigo": "TotalStats, modo \"Drop_Rarity\"",
+              "filhos": [
+                {
+                  "nome": "Boss Battle Spillover bonus",
+                  "ref": "GetTalentNumber(1,655)",
+                  "codigo": "GetTalentNumber, talento 655; tabela CustomLists.TalentDescriptions[655][1]",
+                  "filhos": [
+                    {
+                      "nome": "Curve top (25)",
+                      "ref": "CustomLists.TalentDescriptions[655][1][0]",
+                      "folha": "Valor fixo"
+                    },
+                    {
+                      "nome": "Curve half-point (100)",
+                      "ref": "CustomLists.TalentDescriptions[655][1][1]",
+                      "folha": "Valor fixo"
+                    },
+                    {
+                      "nome": "Talent points",
+                      "ref": "SkillLevels[655]",
+                      "folha": "Pontos investidos"
+                    },
+                    {
+                      "nome": "Bonus talent levels",
+                      "ref": "RunCodeOfTypeXforThingY(\"AllTalentLV\",\"655\")",
+                      "a_descer": true
+                    }
+                  ]
+                },
+                {
+                  "nome": "Boss battle best (nome a provar)",
+                  "ref": "OptionsListAccount[189]",
+                  "folha": "Recorde"
+                }
+              ]
+            },
+            {
+              "nome": "Graded Rate",
+              "ref": "GetTalentNumber(1,239)",
+              "codigo": "TotalStats, modo \"Drop_Rarity\"",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Loot Box",
+          "emoji": "📦",
+          "fontes": [
+            {
+              "nome": "Non Predatory Loot Box",
+              "ref": "DNSM.BoxRewards.DropRate",
+              "codigo": "cache DNSM.BoxRewards",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Equipment",
+          "emoji": "🎽",
+          "fontes": [
+            {
+              "nome": "Drop Rate",
+              "ref": "EtcBonuses(\"2\")",
+              "codigo": "EtcBonuses, linha 2 de CustomMaps.IDforETCbonus",
+              "a_descer": true
+            },
+            {
+              "nome": "Drop Chance",
+              "ref": "EtcBonuses(\"102\")",
+              "codigo": "EtcBonuses, linha 102",
+              "a_descer": true
+            },
+            {
+              "nome": "Efaunt Set",
+              "ref": "GetSetBonus(\"EFAUNT_SET\",\"Bonus\",0,0)",
+              "codigo": "GetSetBonus EFAUNT_SET",
+              "folha": "Bônus cru"
+            }
+          ]
+        },
+        {
+          "sistema": "Alchemy",
+          "emoji": "⚗️",
+          "fontes": [
+            {
+              "nome": "Droppin Loads bubble",
+              "ref": "DNSM.AlchBubbles.DropRate",
+              "codigo": "cache DNSM.AlchBubbles",
+              "a_descer": true
+            },
+            {
+              "nome": "Trove",
+              "ref": "Labb(\"SigilBonus\",\"Blank\",11,0)",
+              "codigo": "Labb, modo \"SigilBonus\", sigilo 11",
+              "filhos": [
+                {
+                  "nome": "Sigil bonus at its tier",
+                  "ref": "CustomLists.SigilDesc[11][12]",
+                  "folha": "Valor fixo",
+                  "condicao": {
+                    "nome": "Sigil tier",
+                    "ref": "CauldronP2W[4][23]",
+                    "folha": "Tier"
+                  }
+                },
+                {
+                  "nome": "Artifact bonus",
+                  "ref": "Sailing(\"ArtifactBonus\",16,0)",
+                  "codigo": "Sailing ArtifactBonus 16",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Meritocracy bonus",
+                  "ref": "Summoning2(\"MeritocBonusz\",21,0)",
+                  "codigo": "Summoning2 MeritocBonusz 21",
+                  "folha": "Condição"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Cards",
+          "emoji": "🃏",
+          "fontes": [
+            {
+              "nome": "Total Drop Rate",
+              "ref": "CardBonusREAL(10)",
+              "codigo": "CardBonusREAL 10",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Dmg, Drop, and EXP",
+              "ref": "CardSetBonuses(0,\"5\")",
+              "codigo": "CardSetBonuses set 5",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Drop Rate (card set)",
+              "ref": "CardSetBonuses(0,\"6\")",
+              "codigo": "CardSetBonuses set 6",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Domeo Magmus",
+              "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"mini5a\")",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Card stars",
+                  "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"mini5a\")",
+                  "folha": "Tier"
+                }
+              ]
+            },
+            {
+              "nome": "Ancient Golem and Crystal Glunko cards",
+              "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"caveC\")",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Ancient Golem card stars",
+                  "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"caveC\")",
+                  "folha": "Tier"
+                },
+                {
+                  "nome": "Crystal Glunko card stars",
+                  "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"caveD\")",
+                  "folha": "Tier"
+                }
+              ]
+            },
+            {
+              "nome": "IdleOn 4th Anniversary",
+              "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"anni4Event1\")",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Card stars",
+                  "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"anni4Event1\")",
+                  "folha": "Tier"
+                }
+              ]
+            },
+            {
+              "nome": "Luckulyte",
+              "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"luckEvent1\")",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Card stars",
+                  "ref": "RunCodeOfTypeXforThingY(\"CardLv\",\"luckEvent1\")",
+                  "folha": "Tier"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Star Signs",
+          "emoji": "⭐",
+          "fontes": [
+            {
+              "nome": "Star Signs total: Drop Rate",
+              "ref": "DNSM.StarSigns.Drop",
+              "codigo": "cache DNSM.StarSigns",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Guild",
+          "emoji": "🛡️",
+          "fontes": [
+            {
+              "nome": "Gold Charm",
+              "ref": "GuildBonuses(10)",
+              "codigo": "GuildBonuses 10; tabela CustomLists.GuildBonuses[10]",
+              "filhos": [
+                {
+                  "nome": "Curve top (40)",
+                  "ref": "CustomLists.GuildBonuses[10][4]",
+                  "folha": "Valor fixo"
+                },
+                {
+                  "nome": "Curve half-point (50)",
+                  "ref": "CustomLists.GuildBonuses[10][5]",
+                  "folha": "Valor fixo"
+                },
+                {
+                  "nome": "Gold Charm level",
+                  "ref": "GuildTasks[0][10]",
+                  "folha": "Level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Shrines",
+          "emoji": "⛩️",
+          "fontes": [
+            {
+              "nome": "Clover Shrine",
+              "ref": "Shrine(4)",
+              "codigo": "Shrine 4",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Prayers",
+          "emoji": "🙏",
+          "fontes": [
+            {
+              "nome": "Midas Minded",
+              "ref": "prayersReal(7,0)",
+              "codigo": "prayersReal 7",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Breeding",
+          "emoji": "🐣",
+          "fontes": [
+            {
+              "nome": "Shiny pets: Drop Rate",
+              "ref": "Breeding(\"ShinyBonusS\",\"Nah\",0,-1)",
+              "codigo": "Breeding ShinyBonusS",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Arcade",
+          "emoji": "🕹️",
+          "fontes": [
+            {
+              "nome": "Arcade: Drop Rate",
+              "ref": "ArcadeBonus(27)",
+              "codigo": "ArcadeBonus 27",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Companions",
+          "emoji": "🐾",
+          "fontes": [
+            {
+              "nome": "Crystal Custard",
+              "ref": "Companions(3)",
+              "codigo": "Companions 3 (DNSM.CompanionBon[3])",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Santa Snake",
+              "ref": "Companions(50)",
+              "codigo": "Companions 50",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Quenchie",
+              "ref": "Companions(22)",
+              "codigo": "Companions 22",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Lucky Slug",
+              "ref": "Companions(158)",
+              "codigo": "Companions 158",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Clammie",
+              "ref": "Companions(111)",
+              "codigo": "Companions 111",
+              "folha": "Bônus cru"
+            },
+            {
+              "nome": "Mama Troll",
+              "ref": "Companions(132)",
+              "codigo": "Companions 132",
+              "folha": "Bônus cru"
+            }
+          ]
+        },
+        {
+          "sistema": "Stamps",
+          "emoji": "📮",
+          "fontes": [
+            {
+              "nome": "Stamps: Drop Rate",
+              "ref": "StampBonusOfTypeX(\"DropRate\")",
+              "codigo": "StampBonusOfTypeX DropRate",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Equinox",
+          "emoji": "☁️",
+          "fontes": [
+            {
+              "nome": "Faux Jewels",
+              "ref": "Dream[10]",
+              "codigo": "TotalStats, modo \"Drop_Rarity\"",
+              "filhos": [
+                {
+                  "nome": "Faux Jewels level",
+                  "ref": "Dream[10]",
+                  "folha": "Level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Summoning",
+          "emoji": "🔮",
+          "fontes": [
+            {
+              "nome": "Summoning: Drop Rate",
+              "ref": "Summoning(\"WinBonus\",9,0)",
+              "codigo": "Summoning, modo \"WinBonus\", linha 9",
+              "filhos": [
+                {
+                  "nome": "Summoning wins (row 9)",
+                  "ref": "DNSM.SummWinBonus[9]",
+                  "codigo": "cache DNSM.SummWinBonus",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Pristine charm 8",
+                  "ref": "Ninja(\"PristineBon\",8,0)",
+                  "folha": "Bônus cru"
+                },
+                {
+                  "nome": "Gem shop purchases (item 11)",
+                  "ref": "GemItemsPurchased[11]",
+                  "folha": "Quantidade"
+                },
+                {
+                  "nome": "Artifact bonus 32",
+                  "ref": "Sailing(\"ArtifactBonus\",32,0)",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Task progress (merit 2-5-4)",
+                  "ref": "Tasks[2][5][4]",
+                  "folha": "Quantidade"
+                },
+                {
+                  "nome": "Achievement 379",
+                  "ref": "AchieveStatus(379)",
+                  "folha": "Condição"
+                },
+                {
+                  "nome": "Achievement 373",
+                  "ref": "AchieveStatus(373)",
+                  "folha": "Condição"
+                },
+                {
+                  "nome": "Summoning bonus 31",
+                  "ref": "Summoning(\"WinBonus\",31,0)",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Emperor bonus 8",
+                  "ref": "Thingies(\"EmperorBon\",8,0)",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Godshard Set",
+                  "ref": "GetSetBonus(\"GODSHARD_SET\",\"Bonus\",0,0)",
+                  "folha": "Bônus cru"
+                },
+                {
+                  "nome": "Gem shop pack ban_i",
+                  "ref": "Thingies(\"Have_ban_i\",0,0)",
+                  "folha": "Condição"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Tome",
+          "emoji": "📖",
+          "fontes": [
+            {
+              "nome": "Tome: Drop Rate",
+              "ref": "Summoning(\"TomeBonus\",2,0)",
+              "codigo": "Summoning, modo \"TomeBonus\", linha 2",
+              "condicao": {
+                "nome": "Tome unlocked",
+                "ref": "OptionsListAccount[197]",
+                "folha": "Condição"
+              },
+              "filhos": [
+                {
+                  "nome": "Tome score",
+                  "ref": "PixelHelperActor[4].behaviors.getBehavior(ActorEvents_229)._GenInfo[84]",
+                  "folha": "Quantidade"
+                },
+                {
+                  "nome": "Grimoire upgrade 17",
+                  "ref": "Summoning(\"GrimoireUpgBonus\",17,0)",
+                  "filhos": [
+                    {
+                      "nome": "Grimoire upgrade level",
+                      "ref": "Grimoire[17]",
+                      "folha": "Level"
+                    },
+                    {
+                      "nome": "Bonus per level",
+                      "ref": "CustomLists.GrimoireUpg[17][5]",
+                      "folha": "Valor fixo"
+                    }
+                  ]
+                },
+                {
+                  "nome": "Troll Set",
+                  "ref": "GetSetBonus(\"TROLL_SET\",\"Bonus\",0,0)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Golden Food",
+          "emoji": "🍗",
+          "fontes": [
+            {
+              "nome": "Golden Food bonus (Drop Rate)",
+              "ref": "GoldFoodBonuses(\"DropRatez\")",
+              "codigo": "GoldFoodBonuses DropRatez",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Achievements",
+          "emoji": "🏆",
+          "fontes": [
+            {
+              "nome": "Summoning GM",
+              "ref": "AchieveStatus(377)",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Summoning GM done",
+                  "ref": "AchieveStatus(377)",
+                  "folha": "Condição"
+                }
+              ]
+            },
+            {
+              "nome": "Big Big Hampter",
+              "ref": "AchieveStatus(381)",
+              "codigo": "TotalStats, modo \"Drop_Rarity\", via DNSM.DropRateLUK2",
+              "filhos": [
+                {
+                  "nome": "Big Big Hampter done",
+                  "ref": "AchieveStatus(381)",
+                  "folha": "Condição"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Owl",
+          "emoji": "🦉",
+          "fontes": [
+            {
+              "nome": "Super Feather Production",
+              "ref": "Summoning(\"OwlBonuses\",4,0)",
+              "codigo": "Summoning OwlBonuses 4",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Farming",
+          "emoji": "🌾",
+          "fontes": [
+            {
+              "nome": "Seed of Loot",
+              "ref": "FarmingStuffs(\"LankRankUpgBonus\",9,0)",
+              "codigo": "FarmingStuffs LankRankUpgBonus 9",
+              "a_descer": true
+            },
+            {
+              "nome": "Science Highlighter",
+              "ref": "FarmingStuffs(\"CropSCbonus\",7,0)",
+              "codigo": "FarmingStuffs CropSCbonus 7",
+              "a_descer": true
+            },
+            {
+              "nome": "Pommelion Seed",
+              "ref": "FarmingStuffs(\"ExoticBonusQTY\",59,0)",
+              "codigo": "FarmingStuffs ExoticBonusQTY 59",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Voting",
+          "emoji": "🗳️",
+          "fontes": [
+            {
+              "nome": "Increases Drop Rate for all your characters",
+              "ref": "Summoning(\"VotingBonusz\",27,0)",
+              "codigo": "Summoning VotingBonusz 27",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Holes",
+          "emoji": "🕳️",
+          "fontes": [
+            {
+              "nome": "Gloomie Lootie",
+              "ref": "Holes(\"B_UPG\",46,0)",
+              "codigo": "Holes B_UPG 46",
+              "a_descer": true
+            },
+            {
+              "nome": "Measurement: Drop Rate",
+              "ref": "Holes(\"MeasurementBonusTOTAL\",15,0)",
+              "codigo": "Holes MeasurementBonusTOTAL 15",
+              "a_descer": true
+            },
+            {
+              "nome": "Sanctum of LOOT",
+              "ref": "Holes(\"B_UPG\",82,20)",
+              "codigo": "Holes B_UPG 82",
+              "a_descer": true
+            },
+            {
+              "nome": "Player Drop Rate",
+              "ref": "Holes(\"MonumentROGbonuses\",2,6)",
+              "codigo": "Holes MonumentROGbonuses 2",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Grimoire",
+          "emoji": "💀",
+          "fontes": [
+            {
+              "nome": "Skull of Major Droprate",
+              "ref": "Summoning(\"GrimoireUpgBonus\",44,0)",
+              "codigo": "Summoning GrimoireUpgBonus 44",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Upgrade Vault",
+          "emoji": "🏦",
+          "fontes": [
+            {
+              "nome": "Drops for Days",
+              "ref": "Summoning(\"VaultUpgBonus\",18,0)",
+              "codigo": "Summoning VaultUpgBonus 18",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Emperor",
+          "emoji": "👑",
+          "fontes": [
+            {
+              "nome": "Emperor: Drop Rate",
+              "ref": "Thingies(\"EmperorBon\",11,0)",
+              "codigo": "Thingies EmperorBon 11",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Friends",
+          "emoji": "🤝",
+          "fontes": [
+            {
+              "nome": "Friend Bonuses (all)",
+              "ref": "Thingies(\"FriendBonusStatz\",3,0)",
+              "codigo": "Thingies FriendBonusStatz 3",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Legend Talents",
+          "emoji": "🌟",
+          "fontes": [
+            {
+              "nome": "Greatest Drop Party Ever",
+              "ref": "Thingies(\"LegendPTS_bonus\",1,0)",
+              "codigo": "Thingies LegendPTS_bonus 1",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Spelunking",
+          "emoji": "⛏️",
+          "fontes": [
+            {
+              "nome": "Golden Hardhat",
+              "ref": "Spelunk(\"ShopUpgBonus\",50,0)",
+              "codigo": "Spelunk ShopUpgBonus 50",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Research",
+          "emoji": "🔬",
+          "fontes": [
+            {
+              "nome": "Divine Design",
+              "ref": "ResearchStuff(\"Grid_Bonus\",173,0)",
+              "codigo": "ResearchStuff Grid_Bonus 173",
+              "a_descer": true
+            }
+          ]
+        },
+        {
+          "sistema": "Base",
+          "emoji": "🔢",
+          "fontes": [
+            {
+              "nome": "Base 1",
+              "constante": 1,
+              "codigo": "TotalStats, modo \"Drop_Rarity\"",
+              "folha": "Valor fixo"
+            },
+            {
+              "nome": "Gem shop pack bun_v",
+              "constante": 2,
+              "codigo": "TotalStats, modo \"Drop_Rarity\", condição BundlesReceived.bun_v",
+              "folha": "Valor fixo",
+              "condicao": {
+                "nome": "Gem shop pack bun_v received",
+                "ref": "BundlesReceived.bun_v",
+                "folha": "Condição"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "Multi",
+      "codigo": "TotalStats, modo \"Drop_Rarity\": escrita 3 de DNSM.TotStatMAP.Drop_Rarity",
+      "grupos": [
+        {
+          "sistema": "Talents",
+          "emoji": "🎯",
+          "fontes": [
+            {
+              "nome": "Extra EXP and Drop Rate (talent 328)",
+              "ref": "WorkbenchStuff(\"AdditionExtraEXPnDR\",0,0)",
+              "codigo": "WorkbenchStuff, modo \"AdditionExtraEXPnDR\"",
+              "filhos": [
+                {
+                  "nome": "Talent 328 bonus (best character)",
+                  "ref": "getbonus2(1,328,-1)",
+                  "codigo": "getbonus2, talento 328; tabela CustomLists.TalentDescriptions[328][1]",
+                  "filhos": [
+                    {
+                      "nome": "Curve top (6)",
+                      "ref": "CustomLists.TalentDescriptions[328][1][0]",
+                      "folha": "Valor fixo"
+                    },
+                    {
+                      "nome": "Curve half-point (150)",
+                      "ref": "CustomLists.TalentDescriptions[328][1][1]",
+                      "folha": "Valor fixo"
+                    },
+                    {
+                      "nome": "Talent points (character 2)",
+                      "ref": "PlayerDATABASE[1].SkillLevels[328]",
+                      "folha": "Pontos investidos"
+                    },
+                    {
+                      "nome": "Bonus talent levels",
+                      "ref": "RunCodeOfTypeXforThingY(\"AllTalentLVz\",\"328|1\")",
+                      "a_descer": true
+                    }
+                  ]
+                },
+                {
+                  "nome": "Plunderous Kills (account total)",
+                  "ref": "OptionsListAccount[139]",
+                  "folha": "Quantidade"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "Additive",
+      "codigo": "TotalStats, modo \"Drop_Rarity\": escrita 4 de DNSM.TotStatMAP.Drop_Rarity",
+      "grupos": [
+        {
+          "sistema": "Sneaking",
+          "emoji": "🥷",
+          "fontes": [
+            {
+              "nome": "Sneaking mastery bonus",
+              "constante": 0.3,
+              "folha": "Valor fixo",
+              "condicao": {
+                "nome": "Sneaking Masteries completed",
+                "ref": "OptionsListAccount[232]",
+                "folha": "Condição"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "Multi",
+      "codigo": "TotalStats, modo \"Drop_Rarity\": escritas 5 a 8 de DNSM.TotStatMAP.Drop_Rarity",
+      "grupos": [
+        {
+          "sistema": "Gem Shop",
+          "emoji": "💎",
+          "fontes": [
+            {
+              "nome": "Gem shop pack bun_p",
+              "constante": 1.2,
+              "folha": "Valor fixo",
+              "condicao": {
+                "nome": "Gem shop pack bun_p received",
+                "ref": "BundlesReceived.bun_p",
+                "folha": "Condição"
+              }
+            }
+          ]
+        },
+        {
+          "sistema": "Arcane",
+          "emoji": "🔷",
+          "fontes": [
+            {
+              "nome": "Arcane map multi",
+              "ref": "ArcaneType(\"ArcaneMapMulti_bon\",0,0)",
+              "filhos": [
+                {
+                  "nome": "Arcane map bonus",
+                  "ref": "ArcaneType(\"ArcaneMapMulti_bon\",0,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Royal Guardian",
+          "emoji": "🏰",
+          "fontes": [
+            {
+              "nome": "Royal Guardian: Drop Rate",
+              "ref": "RoyalG(\"StatueBon\",1,0)",
+              "filhos": [
+                {
+                  "nome": "Statue bonus 1",
+                  "ref": "RoyalG(\"StatueBon\",1,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Menagerie",
+          "emoji": "🦁",
+          "fontes": [
+            {
+              "nome": "Multiplier (Drop Rate)",
+              "ref": "MenagerieStuff(\"BoostQTY\",24,0)",
+              "filhos": [
+                {
+                  "nome": "Menagerie boost 24",
+                  "ref": "MenagerieStuff(\"BoostQTY\",24,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Cards",
+          "emoji": "🃏",
+          "fontes": [
+            {
+              "nome": "Drop Rate Multi (card)",
+              "ref": "CardBonusREAL(101)",
+              "filhos": [
+                {
+                  "nome": "Card bonus 101",
+                  "ref": "CardBonusREAL(101)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Family",
+          "emoji": "👪",
+          "fontes": [
+            {
+              "nome": "Drop Rate Multiplier (family bonus)",
+              "ref": "DNSM.FamBonusQTYs[32]",
+              "filhos": [
+                {
+                  "nome": "Family bonus 32",
+                  "ref": "DNSM.FamBonusQTYs[32]",
+                  "codigo": "cache DNSM.FamBonusQTYs",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Companions",
+          "emoji": "🐾",
+          "fontes": [
+            {
+              "nome": "Crystal Glunko",
+              "ref": "Companions(168)",
+              "filhos": [
+                {
+                  "nome": "Companion 168 bonus",
+                  "ref": "Companions(168)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            },
+            {
+              "nome": "Mama Troll",
+              "ref": "Companions(132)",
+              "filhos": [
+                {
+                  "nome": "Mama Troll bonus",
+                  "ref": "Companions(132)",
+                  "folha": "Bônus cru"
+                },
+                {
+                  "nome": "Mama Troll: version",
+                  "ref": "CompLV2(132)",
+                  "folha": "Level"
+                }
+              ]
+            },
+            {
+              "nome": "Mallay and Glunko The Massive",
+              "ref": "Companions(26)",
+              "filhos": [
+                {
+                  "nome": "Mallay",
+                  "ref": "Companions(26)",
+                  "folha": "Bônus cru"
+                },
+                {
+                  "nome": "Glunko The Massive",
+                  "ref": "Companions(160)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            },
+            {
+              "nome": "Santa Snake",
+              "ref": "Companions(50)",
+              "filhos": [
+                {
+                  "nome": "Santa Snake bonus",
+                  "ref": "Companions(50)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Sushi",
+          "emoji": "🍣",
+          "fontes": [
+            {
+              "nome": "Unagi Nigiri and Gold Bangle",
+              "ref": "SushiStuff(\"RoG_BonusQTY\",48,0)",
+              "filhos": [
+                {
+                  "nome": "Unagi Nigiri",
+                  "ref": "SushiStuff(\"RoG_BonusQTY\",48,0)",
+                  "a_descer": true
+                },
+                {
+                  "nome": "Gold Bangle",
+                  "ref": "JellyOperation(\"RoG_BonusQTY\",14,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Minehead",
+          "emoji": "💎",
+          "fontes": [
+            {
+              "nome": "Glimbo Drop Rate multi",
+              "ref": "Minehead(\"GlimboDRmulti\",0,0)",
+              "filhos": [
+                {
+                  "nome": "Glimbo multi",
+                  "ref": "Minehead(\"GlimboDRmulti\",0,0)",
+                  "a_descer": true
+                }
+              ]
+            },
+            {
+              "nome": "Total Damage and Drop Rate",
+              "ref": "Minehead(\"BonusQTY\",0,0)",
+              "filhos": [
+                {
+                  "nome": "Minehead bonus 0",
+                  "ref": "Minehead(\"BonusQTY\",0,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Tome",
+          "emoji": "📖",
+          "fontes": [
+            {
+              "nome": "Drop Rate (multi)",
+              "ref": "Summoning(\"TomeBonus\",7,0)",
+              "filhos": [
+                {
+                  "nome": "Tome bonus 7",
+                  "ref": "Summoning(\"TomeBonus\",7,0)",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Equipment",
+          "emoji": "🎽",
+          "fontes": [
+            {
+              "nome": "Bonus Drop Rate",
+              "ref": "EtcBonuses(\"99\")",
+              "filhos": [
+                {
+                  "nome": "Equipment bonus 99",
+                  "ref": "EtcBonuses(\"99\")",
+                  "a_descer": true
+                }
+              ]
+            },
+            {
+              "nome": "Drop Rate Multi",
+              "ref": "EtcBonuses(\"91\")",
+              "filhos": [
+                {
+                  "nome": "Equipment bonus 91",
+                  "ref": "EtcBonuses(\"91\")",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Equinox",
+          "emoji": "☁️",
+          "fontes": [
+            {
+              "nome": "1.05x Drop Rate multi",
+              "ref": "Dreamstuff(\"CloudBonus\",69)",
+              "filhos": [
+                {
+                  "nome": "Dream challenge 69 done",
+                  "ref": "Dreamstuff(\"CloudBonus\",69)",
+                  "folha": "Condição"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Sneaking",
+          "emoji": "🥷",
+          "fontes": [
+            {
+              "nome": "Cotton Candy",
+              "ref": "Ninja(\"PristineBon\",3,0)",
+              "filhos": [
+                {
+                  "nome": "Pristine charm 3",
+                  "ref": "Ninja(\"PristineBon\",3,0)",
+                  "folha": "Bônus cru"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sistema": "Alchemy",
+          "emoji": "⚗️",
+          "fontes": [
+            {
+              "nome": "Shipinabottle vial",
+              "ref": "DNSM.AlchVials.7drMulto",
+              "filhos": [
+                {
+                  "nome": "Vial bonus",
+                  "ref": "DNSM.AlchVials.7drMulto",
+                  "codigo": "cache DNSM.AlchVials",
+                  "a_descer": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
