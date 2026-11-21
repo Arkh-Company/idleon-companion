@@ -14,6 +14,16 @@ Os valores das árvores sempre bateram com o jogo, porque o app roda o código d
 
 Esta feature troca a forma adivinhada por uma forma **declarada**. O catálogo validado (`docs/catalogo/numeros.json`, regras em `docs/catalogo/regras.md`) diz quais números ganham árvore: os 289 com destino `arvore`. Para cada um, uma receita declara a forma; a gravação entrega só um gabarito (ordem dos pools, fontes que entraram, valores) para guiar e conferir a receita.
 
+## Clarifications
+
+### Session 2026-11-20
+
+- Q: Num número que depende da classe do personagem, como a receita trata as fontes que só algumas classes têm? → A: Uma receita por número com todas as fontes; cada fonte de classe leva a classe dela e só aparece para o personagem que pode ter (mockup `mockup-classe.html`, opção B).
+- Q: Em que ordem os lotes de receitas chegam à galeria? → A: W1 → W7, depois Personagem, depois Conta: a ordem do catálogo.
+- Q: O que acontece com os Pins e marcas salvos nas árvores antigas? → A: Um aviso, uma vez, e eles são apagados; nada é levado para a árvore nova.
+- Q: Os padrões do agente (tolerância, ordem dos grupos, sistema só de outra classe, cartão da galeria, contagem, onde fica a aprovação, aviso dos Pins, versão só com as 289) valem? → A: Confirmados todos (mockup `mockup-galeria.html`).
+- Q: Até onde a imagem da galeria abre a árvore? → A: Até as folhas: a árvore inteira aberta.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Abrir um número e ver por que ele tem esse valor (Priority: P1)
@@ -103,11 +113,11 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 **Acceptance Scenarios**:
 
-1. **Given** Pins e marcas da versão anterior, **When** o app abre pela primeira vez na versão nova, **Then** um aviso diz que eles deixaram de valer, e nenhum Pin aponta para peça inexistente.
+1. **Given** Pins e marcas da versão anterior, **When** o app abre pela primeira vez na versão nova, **Then** um aviso diz que eles deixaram de valer, eles são apagados, e o aviso não volta nas aberturas seguintes.
 
 ### Edge Cases
 
-- **Número que varia por personagem ou classe** (talentos de classe, por exemplo): o gabarito vem da gravação do personagem aberto; a receita declara as fontes possíveis, e uma fonte que não entra para aquele personagem aparece conforme a regra de valor neutro da 009 (no lugar, com 0 ou ×1).
+- **Número que varia por classe** (talentos de classe, por exemplo): o gabarito vem da gravação do personagem aberto; a receita declara todas as fontes, cada fonte de classe marcada com a classe dela, e o personagem só vê as fontes da classe dele. O grupo do sistema aparece sempre.
 - **Fonte com valor zero ou ×1 no gabarito**: continua na árvore, no seu lugar, com o valor em cinza (FR-016 da 009).
 - **Número que precisa do jogo vivo no mapa**: continua "Needs the live map", sem árvore parcial.
 - **Fonte que o gabarito traz e que não tem nome nas tabelas de texto do jogo**: a receita não é aprovada pela trava até ter um nome provado; nunca "no name yet" nem "Game value".
@@ -121,7 +131,8 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 - **FR-001**: Cada um dos 289 números com destino `arvore` em `docs/catalogo/numeros.json` MUST ter exatamente uma receita declarada, e nenhum número fora desse destino ganha receita nesta feature.
 - **FR-002**: A receita MUST declarar a forma inteira da árvore: os pools (Additive ou Multi) na ordem do jogo, os grupos por sistema com emoji dentro de cada pool, as fontes dentro dos grupos e os filhos de cada fonte até a folha.
-- **FR-003**: Cada fonte da receita MUST apontar para o ponto do código do jogo onde entra, por referência (bloco e modo), nunca por trecho de código.
+- **FR-002a**: Cada número MUST ter uma receita só, mesmo quando varia por classe. Uma fonte que só algumas classes têm MUST levar a classe na receita e MUST aparecer só para o personagem dessa classe; o grupo do sistema aparece sempre que tiver ao menos uma fonte que a classe do personagem pode ter, e some só quando todas as fontes dele são de outras classes.
+- **FR-003**: Cada fonte da receita MUST apontar para o ponto do código do jogo onde entra, por referência: o nome do bloco, o modo e, quando houver, a tabela e a linha; nunca uma expressão, uma linha ou um trecho do código.
 - **FR-004**: Todo nome na receita MUST vir do texto do jogo, com prova; nenhum nome é inventado, e nenhuma linha usa "no name yet", "Game value" ou nome feito só da forma da conta.
 - **FR-005**: Toda folha MUST ter um dos 9 tipos de folha (Level, Quantidade, Valor fixo, Bônus cru, Condição, Escolha, Tier, Recorde, Pontos investidos); galho, progresso e contexto não são folha.
 - **FR-006**: Toda fonte MUST pertencer a um sistema real do jogo, com prova; não existe grupo "Other".
@@ -129,7 +140,7 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 **Gabarito e trava**
 
-- **FR-008**: Para cada número, a gravação MUST entregar um gabarito com a ordem dos pools na raiz (onde o jogo soma e onde multiplica), a lista das fontes que entraram na conta com o valor de cada uma, e o valor final.
+- **FR-008**: Para cada número, a gravação MUST entregar um gabarito com a ordem dos pools na raiz (onde o jogo soma e onde multiplica), a lista das fontes que entraram na conta com o valor de cada uma, e o valor final. A extração MUST só ler: nunca chama função do jogo em execução nem grava no save.
 - **FR-009**: A forma da árvore MUST NOT ser tirada do rastro da gravação; o rastro serve só para montar o gabarito e para dar os valores.
 - **FR-010**: Uma trava MUST conferir cada receita contra o gabarito: a ordem dos pools, a presença de toda fonte do gabarito e o fechamento de cada nível com o valor gravado. Uma receita que falha MUST ser reprovada com o motivo (fonte que falta, ordem esperada ou nível que não fecha, com os dois valores).
 - **FR-011**: Só receitas aprovadas pela trava MUST chegar à galeria.
@@ -137,13 +148,14 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 **Na tela do app**
 
 - **FR-012**: Na hora de mostrar uma árvore, o app MUST só ler a receita e preencher os valores com a gravação; ele MUST NOT deduzir forma.
-- **FR-013**: A árvore MUST manter o visual da 009: pools no primeiro nível, grupos por sistema com emoji, ⓘ, botão Changes e fatia escondida por padrão, todos os pools e grupos começando fechados.
+- **FR-013**: A árvore MUST manter o visual da 009: pools no primeiro nível, grupos por sistema com emoji, ⓘ, botão Changes e fatia escondida por padrão, todos os pools e grupos começando fechados, o mesmo formato de valor ("+80%" no que soma, "×1.06" no que multiplica) e as mesmas regras de acessibilidade da treeview (nome, valor, fatia quando ligada e "N sources" lidos pelo leitor de tela).
+- **FR-013a**: Dentro de um pool, os grupos de sistema MUST seguir a ordem em que o jogo os soma ou multiplica, a ordem do gabarito; dentro de um grupo, as fontes seguem a mesma ordem.
 - **FR-014**: Todo sistema que influi num valor MUST aparecer como filho, mesmo com uma única fonte ou com contribuição 0; a regra "grupo de uma fonte só some" (família 21) e a regra "passo sem nome sobe" (FR-007 da 009) deixam de existir.
-- **FR-015**: Cada nível MUST fechar com o pai (soma ou produto), e a raiz MUST fechar com o valor do jogo.
-- **FR-016**: A curva e as checagens de ramo MUST ir para o ⓘ da linha; cada multiplicador é a sua própria linha × que abre nos filhos.
+- **FR-015**: Cada nível MUST fechar com o pai (soma ou produto), e a raiz MUST fechar com o valor do jogo. Quando um nível não fecha (FR-019), cada linha continua mostrando o valor do jogo, e a diferença aparece só no alerta.
+- **FR-016**: A curva e as checagens de ramo MUST ir para o ⓘ da linha, e o ⓘ da raiz MUST mostrar como os pools se juntam, como na 009; cada multiplicador é a sua própria linha × que abre nos filhos.
 - **FR-017**: Os valores da árvore aberta MUST se atualizar ao vivo, como na 009, sem mudar a forma.
 - **FR-018**: As árvores MUST estar em inglês.
-- **FR-019**: Quando o valor do jogo e a receita não fecham num nível, a árvore MUST NOT ganhar linha extra; o app MUST registrar um alerta com o número, o nível e a diferença, e as checagens MUST mostrar o mesmo alerta.
+- **FR-019**: Quando o valor do jogo e a receita não fecham num nível, a árvore MUST NOT ganhar linha extra; o app MUST registrar um alerta estruturado, com rótulo e o id do número, contendo só o número, o nível e a diferença (nunca código do jogo nem nome de personagem), e as checagens MUST mostrar o mesmo alerta.
 
 **Regras de forma**
 
@@ -153,22 +165,26 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 **Aprovação**
 
-- **FR-023**: O app MUST gerar a imagem de cada árvore a partir da gravação real, igual à que o jogador vê.
-- **FR-024**: Uma galeria por mundo (W1 a W7, Personagem e Conta), dividida por sistema, MUST mostrar as imagens com "Aprova" e "Corrigir + nota" em cada árvore, e guardar as respostas.
+- **FR-023**: O app MUST gerar a imagem de cada árvore a partir da gravação real, igual à que o jogador vê, com a árvore inteira aberta até as folhas: pools, grupos, fontes e os filhos de cada fonte. Na tela do app tudo continua começando fechado (FR-013); só a imagem da galeria abre tudo.
+- **FR-024**: Uma galeria por mundo (W1 a W7, Personagem e Conta), dividida por sistema, MUST mostrar as imagens com "Aprova" e "Corrigir + nota" em cada árvore, e guardar as respostas. Cada cartão MUST mostrar o nome do número, o sistema, a imagem da árvore, os dois botões e o campo de nota; os botões e o campo MUST ser alcançáveis pelo teclado e ter nome para o leitor de tela. A galeria de um mundo MUST abrir em até 5 s.
+- **FR-024b**: O topo da galeria MUST mostrar, para a última mudança de receita ou de regra, quantas árvores mudaram, agrupadas por tipo de mudança (FR-022), e quantos números do mundo ainda não têm receita aprovada pela trava; esses números não ganham cartão até passarem na trava.
+- **FR-024c**: A aprovação e a nota de cada árvore MUST ficar registradas junto da receita, no repositório; as imagens MUST ficar só no PC do Vinicius.
+- **FR-024a**: Os lotes de receitas MUST chegar à galeria na ordem do catálogo: W1, W2, W3, W4, W5, W6, W7, Personagem e Conta.
 - **FR-025**: Cada "Corrigir + nota" MUST virar uma mudança de receita ou de regra registrada, e a árvore volta à galeria depois da mudança.
 - **FR-026**: As capturas e as conferências sobre a gravação real MUST rodar no PC do Vinicius, fora da CI, porque os dados reais não podem ir à CI.
 
 **Troca da forma antiga**
 
 - **FR-027**: A montagem de forma adivinhada atual MUST sair do app ao fim da feature.
-- **FR-028**: As chaves das peças MUST seguir as receitas; Pins e marcas da versão anterior MUST deixar de valer, e o app MUST avisar isso uma vez, sem mostrar peça quebrada.
+- **FR-028**: As chaves das peças MUST seguir as receitas. Pins e marcas da versão anterior MUST ser apagados, e o app MUST avisar isso uma vez, na primeira abertura da versão nova; nada é levado para as peças novas, nem pelo nome. O aviso MUST ser uma faixa no topo do app com o texto "Pins and marks from the old trees were removed: the trees were rebuilt.", que some ao ser fechada e não volta. Apagar MUST tocar só os dados que o próprio app salvou.
+- **FR-029**: A versão do app com as árvores declaradas MUST sair só com as 289 receitas aprovadas; um número sem receita não abre árvore.
 
 ### Non-Functional Requirements
 
 - **NFR-001 (tempo)**: A árvore do Drop Rate MUST abrir em até 5 s, o limite da 009, e a Stats MUST continuar abaixo de 1 s com a árvore aberta.
 - **NFR-002 (ao vivo)**: Os valores da árvore aberta MUST se atualizar a cada leitura do jogo (1 s).
 - **NFR-003 (máquina)**: Os testes MUST rodar com um processo de trabalho por vez em threads, porque o PC do Vinicius dá tela azul quando muitos processos de teste fecham juntos; a conferência das 289 árvores reais MUST rodar num processo só.
-- **NFR-004 (honestidade)**: Nenhum código do jogo, gravação, árvore montada ou nome de personagem MUST entrar no Git; o jogo é só lido, sem rede.
+- **NFR-004 (honestidade)**: Nenhum código do jogo, gravação, árvore montada, imagem de árvore da galeria ou nome de personagem MUST entrar no Git; receitas, notas e alertas não levam nome de personagem; o jogo é só lido, e nada desta feature, galeria e gerador de imagens incluídos, usa a rede.
 
 ### Key Entities
 
@@ -187,7 +203,7 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 ### Measurable Outcomes
 
-- **SC-001**: As 289 árvores do catálogo têm receita, e as 289 passam na trava: em cada nível, as partes fecham com o valor gravado, dentro do arredondamento que o jogo mostra.
+- **SC-001**: As 289 árvores do catálogo têm receita, e as 289 passam na trava: em cada nível, as partes fecham com o valor gravado, com diferença relativa de até 0,0001%.
 - **SC-002**: As 289 árvores estão aprovadas pelo Vinicius na galeria, sobre a imagem real do app.
 - **SC-003**: Nenhuma árvore tem linha "no name yet", "Game value" ou grupo "Other" (0 ocorrências nas 289).
 - **SC-004**: Toda regra de forma tem número e checagem, e a última rodada das checagens sobre as 289 árvores termina sem falha nem conflito aberto.
@@ -219,6 +235,15 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 | Como as receitas nascem | resolved | Escritas a partir do código do jogo, guiadas e conferidas pelo gabarito da gravação (mistura escolhida no brainstorming). |
 | O que o jogador vê quando a árvore não fecha | resolved | Nada a mais na árvore; só um alerta fora dela, no registro e nas checagens. |
 | Como o Vinicius aprova | resolved | Galeria por mundo, dividida por sistema, sobre a imagem real do app. |
-| Número que varia por personagem ou classe: uma receita com todas as fontes possíveis, ou uma receita por classe? | open | |
-| Em que ordem os lotes de receitas chegam à galeria (por mundo, por sistema, pelos números mais usados)? | open | |
-| Pins e marcas antigos: só avisar que deixaram de valer, ou tentar levar para a peça equivalente quando o nome bater? | open | |
+| Número que varia por personagem ou classe: uma receita com todas as fontes possíveis, ou uma receita por classe? | resolved | Uma receita com todas as fontes; a fonte de classe só aparece para quem pode ter (FR-002a). |
+| Em que ordem os lotes de receitas chegam à galeria (por mundo, por sistema, pelos números mais usados)? | resolved | W1 → W7, Personagem, Conta (FR-024a). |
+| Pins e marcas antigos: só avisar que deixaram de valer, ou tentar levar para a peça equivalente quando o nome bater? | resolved | Só avisar, uma vez, e apagar (FR-028). |
+| Quanto de diferença ainda conta como "fecha com o jogo" (SC-001, FR-010, FR-015)? | resolved | Padrão do agente: diferença relativa de até 0,0001% (1 em 1 milhão) entre a soma ou o produto das partes e o valor gravado; acima disso, o nível não fecha. |
+| Em que ordem ficam os grupos de sistema dentro de um pool (ux CHK010)? | resolved | Padrão do agente: na ordem em que o jogo os soma ou multiplica, a ordem do gabarito; as fontes de um grupo também (FR-013a). |
+| Um sistema cujas fontes são todas de outras classes aparece para o personagem (ux CHK012)? | resolved | Padrão do agente: não; o grupo aparece sempre que tiver ao menos uma fonte que a classe pode ter, e some só quando todas são de outras classes (FR-002a). |
+| O que cada cartão da galeria mostra, como se usa pelo teclado e em quanto tempo a galeria abre (ux CHK004, CHK017, CHK019)? | resolved | Padrão do agente: nome do número, sistema, imagem, "Aprova", "Corrigir + nota" e o campo de nota; botões e campo alcançáveis pelo teclado e com nome para o leitor de tela; a galeria de um mundo abre em até 5 s (FR-024). |
+| Onde a galeria mostra a contagem de árvores mudadas e o que acontece com os números sem receita aprovada (ux CHK005, CHK007)? | resolved | Padrão do agente: no topo da galeria, para a última mudança, agrupada por tipo; os números sem receita aprovada pela trava aparecem só como contagem, sem cartão (FR-024b). |
+| Onde ficam a aprovação e a nota de cada árvore (security CHK006)? | resolved | Padrão do agente: junto da receita, no repositório; as imagens ficam só no PC do Vinicius (FR-024c). |
+| Qual o texto e o lugar do aviso dos Pins e marcas antigos (ux CHK006)? | resolved | Padrão do agente: uma faixa no topo do app, "Pins and marks from the old trees were removed: the trees were rebuilt.", que some ao ser fechada e não volta (FR-028). |
+| O que o jogador vê num número sem receita aprovada (ux CHK016)? | resolved | Padrão do agente: a versão com as árvores declaradas só sai com as 289 receitas aprovadas; sem receita, o número não abre árvore (FR-029). |
+| A imagem da galeria mostra a árvore aberta até onde: só os pools e grupos, até as fontes, ou até as folhas (ux CHK009, CHK011)? | resolved | Até as folhas: a árvore inteira aberta (FR-023). |
