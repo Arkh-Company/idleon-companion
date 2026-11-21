@@ -506,18 +506,19 @@ fica de fora.
   - **Manter os 716 e abrir árvore só onde há receita:** descartada pela FR-029.
   - **Editar o JSON à mão:** descartada pela regra "não editar arquivo gerado".
 
-### R19. O que fica igual: Onde isto entra, radar e faixa de versão
+### R19. O que fica igual e o que sai: Onde isto entra, faixa de versão e radar
 
 - **Decisão:**
-  - **Onde isto entra e o radar:** continuam lendo as formas pelo pedido `shape`, que agora caminha a árvore declarada.
-    O `tree-shapes.json` recomeça vazio na versão 2 (R12).
+  - **Onde isto entra:** continua lendo as formas pelo pedido `shape`, que agora caminha a árvore declarada. O
+    `tree-shapes.json` recomeça vazio na versão 2 (R12).
   - **A faixa de versão:** continua. O que muda é a fonte do "conferido nesta versão": a receita conferida pela trava
     num hash do jogo (`lock.gameSha` do arquivo de revisão) e o worker comparando esse hash com o do `N.js` aberto.
-- **Justificativa:** a spec não toca nesses três, e mantê-los é o menor diff.
-- **Nota para depois:** com a forma declarada, o radar só acende quando uma receita muda, o que não acontece numa
-  atualização do jogo, porque o hash do jogo sozinho não muda a forma. Quem avisa de uma conta que mudou no jogo passa a
-  ser o alerta (R16). Tirar ou repensar o radar fica como pendência para o Vinicius, fora desta feature.
-- **Alternativas:** tirar o radar agora. Descartada: está fora do escopo e da spec.
+  - **O radar de patch da 008 sai** (decisão do Vinicius durante o plano, registrada na spec: Out of Scope e Open
+    Questions). Com a forma declarada, ele só acenderia quando uma receita muda, nunca numa atualização do jogo; quem
+    avisa de uma conta que mudou passa a ser o alerta de fechamento (R16, FR-019). A saída é a tarefa T142.
+- **Justificativa:** Onde isto entra e a faixa de versão continuam úteis com a forma declarada; o radar ficaria morto.
+- **Alternativas:** um radar de fontes novas (fonte do gabarito que a receita não tem, mesmo valendo 0). Descartada pelo
+  Vinicius: o alerta de fechamento cobre o que muda o valor.
 
 ## Candidatas a ADR
 
