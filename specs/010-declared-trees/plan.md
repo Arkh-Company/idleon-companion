@@ -335,7 +335,7 @@ Nove sub-fases, na ordem da FR-024a: W1, W2, W3, W4, W5, W6, W7, Personagem e Co
 | Fase 2, depois da sonda | Cada raiz fora da regra dos pools (R1), numa tabela |
 | Fase 5 e cada rodada | Cada conflito entre regras de forma (FR-021) |
 | Fase 6, cada lote | A galeria |
-| Fase 7 | O sim para tirar a `just parity`; as candidatas a ADR; o futuro do radar (research R19) |
+| Fase 7 | O sim para tirar a `just parity`; as candidatas a ADR; a saída do radar de patch (research R19, tarefa T142) |
 
 ## Complexity Tracking
 
