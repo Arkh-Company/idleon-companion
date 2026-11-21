@@ -11,7 +11,7 @@ execution:
   branch: feat/010-declared-trees
   phases:
     - {name: "Done gate", status: done, commits: 0f133a5..a9e272a}
-    - {name: "Setup (T002, T004-T010)", status: pending}
+    - {name: "Setup (T002, T004-T010)", status: done, commits: dadeb0c..2cbd7b2}
     - {name: "Foundational (T011-T026)", status: pending}
     - {name: "US2 (T027-T035)", status: pending}
     - {name: "US1 piloto (T036-T041)", status: pending}
