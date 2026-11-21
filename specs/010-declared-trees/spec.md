@@ -247,3 +247,6 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 | Qual o texto e o lugar do aviso dos Pins e marcas antigos (ux CHK006)? | resolved | Padrão do agente: uma faixa no topo do app, "Pins and marks from the old trees were removed: the trees were rebuilt.", que some ao ser fechada e não volta (FR-028). |
 | O que o jogador vê num número sem receita aprovada (ux CHK016)? | resolved | Padrão do agente: a versão com as árvores declaradas só sai com as 289 receitas aprovadas; sem receita, o número não abre árvore (FR-029). |
 | A imagem da galeria mostra a árvore aberta até onde: só os pools e grupos, até as fontes, ou até as folhas (ux CHK009, CHK011)? | resolved | Até as folhas: a árvore inteira aberta (FR-023). |
+| Abaixo do pool, "cada nível fecha" (FR-010, FR-015, SC-001) é a conferência da conta, com a trava remontando a conta a partir dos passos gravados sem guardá-la, ou só a conferência de que os filhos declarados são as partes que o jogo gravou? | open | |
+| Um termo que junta duas fontes (talento × recorde, Sushi + Jelly) aparece como uma linha com a segunda fonte como filho, ou como linhas separadas? | open | |
+| Escritas seguidas do mesmo tipo formam um pool só (no Drop Rate dá 4 pools; a 0.9 mostrava 7 itens no primeiro nível)? | open | |
