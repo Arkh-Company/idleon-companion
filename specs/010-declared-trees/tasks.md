@@ -114,7 +114,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
   - Signatures: nenhuma (só teste)
   - Cases: `FOLDERS` ganha `specs/010-declared-trees`; as receitas em `src/calculator/blueprints/` já entram pelo `src`; um `proof` com aspas dentro de uma receita inventada de teste é acusado.
   - Se o protótipo congelado (`prototipo/`) falhar no scan, a falha vai ao Vinicius antes de qualquer exceção: a spec está congelada e não se edita.
-- [ ] T010 [P] `.env.example` ganha `TREES_GAME_DIR`, `TREES_SNAPSHOT` e `TREES_OUT`, sem valor (contracts/real-trees-run.md)
+- [X] T010 [P] `.env.example` ganha `TREES_GAME_DIR`, `TREES_SNAPSHOT` e `TREES_OUT`, sem valor (contracts/real-trees-run.md)
   - Files: `.env.example`
   - Signatures: nenhuma (configuração)
   - Um comentário por variável, como o `PARITY_*`: o que é, que o `just` não lê o arquivo, e que `TREES_OUT` fica fora do repositório. `TREES_TARGET` e `TREES_MODE` não entram: a receita os põe.
