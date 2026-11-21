@@ -63,9 +63,9 @@ checksum = "sha256:d2046d28c2c3dcd211ac5145c0bf30e2047ef9dfb306693c8c6e2eccd8b95
 url = "https://nodejs.org/dist/v24.22.1/node-v24.22.1-win-x64.zip"
 
 [[tools."npm:@colbymchenry/codegraph"]]
-version = "1.6.2"
+version = "1.6.4"
 backend = "npm:@colbymchenry/codegraph"
-specifiers = ["1.6.2"]
+specifiers = ["1.6.4"]
 
 [[tools."npm:typescript-language-server"]]
 version = "6.0.1"
@@ -78,9 +78,9 @@ backend = "pipx:semgrep"
 specifiers = ["1.182.1"]
 
 [[tools."pipx:specify-cli"]]
-version = "1.2.3"
+version = "1.4.3"
 backend = "pipx:specify-cli"
-specifiers = ["1.2.3"]
+specifiers = ["1.4.3"]
 
 [[tools.pnpm]]
 version = "11.28.8"
