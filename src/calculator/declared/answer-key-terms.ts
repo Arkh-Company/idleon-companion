@@ -56,15 +56,13 @@ export function termReader(ctx: TermContext) {
   };
   const usedSteps = new Set<number>();
 
-  /** The expression that gave a passage's value: a step of the root, or a child call with that value. */
-  function passageExpr(v: number): Expr | null {
+  /** The expression that gave a passage's value: a step of the root (with its index), or a child call with that value. */
+  function passageExpr(v: number): { e: Expr; step: number | null } | null {
     const i = ctx.steps.findIndex((s) => near(s.v, v));
-    if (i >= 0) {
-      usedSteps.add(i);
-      return ctx.steps[i]?.e ?? null;
-    }
+    const s = ctx.steps[i];
+    if (s) return { e: s.e, step: i };
     const k = ctx.kids.find((n) => near(n.v, v));
-    return k ? { t: "call", id: k.id, v } : null;
+    return k ? { e: { t: "call", id: k.id, v }, step: null } : null;
   }
   const passagePathOf = (v: unknown): string | null => {
     if (typeof v !== "number" || v === 0 || v === 1) return null;
@@ -72,8 +70,17 @@ export function termReader(ctx: TermContext) {
     return null;
   };
 
-  /** Takes the wrappers off: a variable's definition and a passage read back. */
-  function unwrap(e: Expr, via: string[], quiet = false): Expr {
+  /**
+   * Takes the wrappers off: a variable's definition and a passage read back. `seen` holds the steps already crossed on
+   * the way down (it grows here): a passage whose step is among them stays its own value, so a step that holds the
+   * value it gave (a running total) never loops.
+   */
+  function unwrap(
+    e: Expr,
+    via: string[],
+    quiet = false,
+    seen = new Set<number>(),
+  ): Expr {
     const count = (k: string) => {
       if (!quiet) bump(k);
     };
@@ -97,10 +104,19 @@ export function termReader(ctx: TermContext) {
               : null
             : passagePathOf(e.v);
         const x = p && typeof e.v === "number" ? passageExpr(e.v) : null;
+        const step = x?.step ?? null;
+        if (step !== null && seen.has(step)) {
+          count("passageCycle");
+          return e;
+        }
         if (p && x) {
           count(e.t === "val" ? "passageVal" : "passageRead");
+          if (step !== null) {
+            seen.add(step);
+            usedSteps.add(step);
+          }
           via.push(p);
-          e = x;
+          e = x.e;
           continue;
         }
       }
@@ -113,8 +129,13 @@ export function termReader(ctx: TermContext) {
     via: string[],
     out: string[],
     nodes: (number | null)[],
+    seen: ReadonlySet<number> = new Set(),
   ): void {
-    const u = unwrap(e, via);
+    const s = new Set(seen);
+    const u = unwrap(e, via, false, s);
+    const down = (x: Expr) => {
+      refsOf(x, via, out, nodes, s);
+    };
     switch (u.t) {
       case "call": {
         const n = ctx.nodes[u.id];
@@ -134,14 +155,14 @@ export function termReader(ctx: TermContext) {
         bump("valueNoSource");
         return;
       case "op":
-        refsOf(u.l, via, out, nodes);
-        refsOf(u.r, via, out, nodes);
+        down(u.l);
+        down(u.r);
         return;
       case "fn":
-        for (const a of u.args) refsOf(a, via, out, nodes);
+        u.args.forEach(down);
         return;
       case "not":
-        refsOf(u.a, via, out, nodes);
+        down(u.a);
         return;
       default:
         return;
@@ -173,17 +194,19 @@ export function termReader(ctx: TermContext) {
     weight: number,
     out: RawTerm[],
     via: string[],
+    seen: ReadonlySet<number> = new Set(),
   ): void {
     const v0 = [...via];
-    const u = unwrap(e, v0);
+    const s0 = new Set(seen);
+    const u = unwrap(e, v0, false, s0);
     if (u.t === "op" && u.o === op) {
-      flat(u.l, op, weight, out, v0);
-      flat(u.r, op, weight, out, v0);
+      flat(u.l, op, weight, out, v0, s0);
+      flat(u.r, op, weight, out, v0, s0);
       return;
     }
     if (op === "+" && u.t === "op" && u.o === "-") {
-      flat(u.l, op, weight, out, v0);
-      flat(u.r, op, -weight, out, v0);
+      flat(u.l, op, weight, out, v0, s0);
+      flat(u.r, op, -weight, out, v0, s0);
       return;
     }
     if (
@@ -193,10 +216,10 @@ export function termReader(ctx: TermContext) {
       u.r.t === "num" &&
       typeof u.r.v === "number"
     ) {
-      const inner = unwrap(u.l, [...v0], true);
+      const inner = unwrap(u.l, [...v0], true, new Set(s0));
       if (inner.t === "op" && inner.o === "+") {
         bump("divideBy100");
-        flat(u.l, op, weight / u.r.v, out, v0);
+        flat(u.l, op, weight / u.r.v, out, v0, s0);
         return;
       }
     }
@@ -211,7 +234,7 @@ export function termReader(ctx: TermContext) {
     const saved = sink;
     const local: Record<string, number> = {};
     sink = local;
-    refsOf(u, tv, refs, nodes);
+    refsOf(u, tv, refs, nodes, s0);
     const [ref] = refs;
     if (!ref) bump("termNoRef");
     sink = saved;

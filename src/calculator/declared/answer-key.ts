@@ -6,7 +6,7 @@
 import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
-import type { Expr } from "../recorded/steps.ts";
+import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
   callRef,
   near,
@@ -75,20 +75,33 @@ const strip = (t: RawTerm): AnswerTerm => ({
   via: t.via,
 });
 
+const outOfRule = (why: string): RootFormError => ({
+  error: "rootForm",
+  reason: `${OUT_OF_RULE}: ${why}`,
+});
+const topOf = (rec: Recording) =>
+  rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+
 export function answerKey(
   rec: Recording,
   ops: readonly Op[],
 ): AnswerKey | RootFormError {
-  const out = (why: string): RootFormError => ({
-    error: "rootForm",
-    reason: `${OUT_OF_RULE}: ${why}`,
-  });
-  const topId = rec.nodes[rec.root ?? -1]?.c[0];
-  const top = topId === undefined ? undefined : rec.nodes[topId];
+  const top = topOf(rec);
+  return top
+    ? answerKeyOfSteps(rec, makeSteps(rec, ops).of(top.id))
+    : outOfRule("a gravação não tem raiz");
+}
+
+/** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
+export function answerKeyOfSteps(
+  rec: Recording,
+  { steps, checks }: BlockSteps,
+): AnswerKey | RootFormError {
+  const out = outOfRule;
+  const top = topOf(rec);
   if (!top) return out("a gravação não tem raiz");
   const final = top.v;
   if (typeof final !== "number") return out("a raiz não deu número");
-  const { steps, checks } = makeSteps(rec, ops).of(top.id);
   const writes = rec.writes.filter((w) => w.node === top.id);
 
   // 1. The accumulator: the path the root wrote most, more than once, whose last write is the final value.
@@ -180,38 +193,48 @@ export function answerKey(
 
   // 3. An expression: the operands of its top operator; the leftmost one is an earlier stretch when it is a sum inside
   // a product (in parentheses), or a product that starts with such a sum; otherwise it is the first pool's term.
-  function operands(e: Expr, kind: PoolKind, w = 1): { e: Expr; w: number }[] {
-    const u = r.unwrap(e, [], true);
+  // `seen`: the passage steps already crossed on the way down (answer-key-terms.ts, unwrap).
+  type Seen = ReadonlySet<number>;
+  function operands(
+    e: Expr,
+    kind: PoolKind,
+    w = 1,
+    seen: Seen = new Set(),
+  ): { e: Expr; w: number }[] {
+    const s = new Set(seen);
+    const u = r.unwrap(e, [], true, s);
     if (
       u.t === "op" &&
       KIND[u.o] === kind &&
       (kind === "additive" || u.o === "*")
     )
       return [
-        ...operands(u.l, kind, w),
-        ...operands(u.r, kind, u.o === "-" ? -w : w),
+        ...operands(u.l, kind, w, s),
+        ...operands(u.r, kind, u.o === "-" ? -w : w, s),
       ];
     return [{ e, w }];
   }
-  const kindOf = (e: Expr): PoolKind | undefined => {
-    const u = r.unwrap(e, [], true);
+  const kindOf = (e: Expr, seen: Seen): PoolKind | undefined => {
+    const u = r.unwrap(e, [], true, new Set(seen));
     return u.t === "op" ? KIND[u.o] : undefined;
   };
-  function stretches(e: Expr, step: number): RawPool[] {
-    const u = r.unwrap(e, [], true);
-    const kind = kindOf(u);
+  function stretches(e: Expr, step: number, seen: Seen = new Set()): RawPool[] {
+    const s = new Set(seen);
+    const u = r.unwrap(e, [], true, s);
+    const kind = kindOf(u, s);
     if (!kind || typeof u.v !== "number")
       throw new OutOfRule("a expressão da raiz não soma nem multiplica");
-    const [first, ...rest] = operands(u, kind);
-    const inner = first ? kindOf(first.e) : undefined;
+    const [first, ...rest] = operands(u, kind, 1, s);
+    const inner = first ? kindOf(first.e, s) : undefined;
     const earlier =
       first &&
       inner &&
       inner !== kind &&
       (kind === "multi" ||
-        kindOf(operands(first.e, inner)[0]?.e ?? first.e) === "additive");
+        kindOf(operands(first.e, inner, 1, s)[0]?.e ?? first.e, s) ===
+          "additive");
     if (earlier) {
-      const before = stretches(first.e, step);
+      const before = stretches(first.e, step, s);
       return [
         ...before,
         { kind, terms: kept(termsOf(rest, kind), 0), step, after: u.v },

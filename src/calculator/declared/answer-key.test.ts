@@ -4,7 +4,9 @@ import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
-import { answerKey } from "./answer-key.ts";
+import { recordingOf } from "../fixtures/recording-fixture.ts";
+import type { Expr } from "../recorded/steps.ts";
+import { answerKey, answerKeyOfSteps } from "./answer-key.ts";
 import type { AnswerKey } from "./answer-key.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
@@ -126,6 +128,48 @@ test("the pollution counts each kind", () => {
     conditionedStep: 3,
     mergedSteps: 2,
   });
+});
+
+test("a passage whose step leads back to itself ends: the passage already crossed stays its value (the root probe, T026)", () => {
+  // two steps with the value a passage holds, each one holding that value with no name: crossing it again never ends
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "InventedLoopy", a: [0, 0, 0], v: 84 },
+    ],
+    [
+      { path: "DNSM.Loopy.p", node: 1, v: 80, seq: 1 },
+      { path: "DNSM.Loopy.p", node: 1, v: 80, seq: 2 },
+    ],
+    { root: 0 },
+  );
+  const val: Expr = { t: "val", v: 80 };
+  const op = (o: string, l: Expr, r: Expr, v: number): Expr => ({
+    t: "op",
+    o,
+    l,
+    r,
+    v,
+  });
+  const steps = [
+    { v: 80, e: op("+", val, { t: "num", v: 0 }, 80) },
+    { v: 80, e: op("*", val, { t: "num", v: 1 }, 80) },
+    {
+      v: 84,
+      e: op(
+        "+",
+        { t: "read", p: "TreeBase", v: 4 },
+        { t: "read", p: "DNSM.Loopy.p", v: 80 },
+        84,
+      ),
+    },
+  ];
+  const key = answerKeyOfSteps(rec, { steps, checks: [] });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.form).toBe("expression");
+  expect(key.pools.map((p) => [p.kind, p.value])).toEqual([["additive", 84]]);
+  expect(key.pools[0]?.error).toBeLessThanOrEqual(1e-6);
+  expect(key.pollution.passageCycle).toBeGreaterThan(0);
 });
 
 test("the extraction only reads: the recording is the same after it", () => {
