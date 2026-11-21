@@ -1,0 +1,14 @@
+{
+  "repo": "https://github.com/DietrichGebert/ponytail",
+  "ref": "v5.3.3",
+  "commit": "7801d061243d7b753bad0e0b3c057cd250b11755",
+  "path": "",
+  "tree": "f5b46ca29f49b07da6390dc57803d3d0e7856bad",
+  "excluded": [
+    "assets",
+    "benchmarks",
+    "examples",
+    "tests"
+  ],
+  "plugin": "ponytail-kit"
+}
