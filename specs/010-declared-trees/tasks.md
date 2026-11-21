@@ -195,7 +195,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - uma fonte que só uma classe tem;
     - uma fonte declarada que a gravação não usa.
   - Cases: cada bloco roda no gravador do jogo inventado sem erro; cada receita inventada carrega no `parseBlueprint` no estágio `complete`; o scan da T009 passa sobre o `fake-game.js`.
-- [ ] T018 Testes do gabarito em `src/calculator/declared/answer-key.test.ts` (FR-002c, FR-008, FR-009; research R1, R9; depende de T017)
+- [X] T018 Testes do gabarito em `src/calculator/declared/answer-key.test.ts` (FR-002c, FR-008, FR-009; research R1, R9; depende de T017)
   - Files: `src/calculator/declared/answer-key.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -208,7 +208,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - uma constante solta vira termo `constant`; o termo de duas fontes tem `refs` na ordem do código;
     - `pollution` conta cada tipo;
     - a extração só lê: a gravação passada é a mesma depois (`structuredClone` antes e `toEqual` depois), e nada do contexto do jogo é chamado.
-- [ ] T019 O gabarito em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T016, T018)
+- [X] T019 O gabarito em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T016, T018)
   - Files: `src/calculator/declared/answer-key.ts` (a corrente, as formas de raiz e os pools), `src/calculator/declared/answer-key-terms.ts` (os termos, as passagens e o `/ 100`)
   - Signatures: `interface AnswerKey { root: string; final: number; form: "chain" | "expression"; accumulator: string | null; pools: AnswerPool[]; pollution: Record<string, number> }`; `AnswerPool`, `AnswerTerm` (data-model.md); `answerKey(rec: Recording, ops: readonly Op[]): AnswerKey | { error: "rootForm"; reason: string }`.
   - Porta o `gabarito.ts` do protótipo; cada arquivo abaixo de 400 linhas.
