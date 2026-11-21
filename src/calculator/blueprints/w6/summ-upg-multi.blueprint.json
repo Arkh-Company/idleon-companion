@@ -1,0 +1,10 @@
+{
+  "id": "summ-upg-multi",
+  "root": {
+    "name": "Summoning upgrade multiplier (Summoning Stones, The Hole)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["SummUpgBonus", 33, 0]
+    }
+  }
+}

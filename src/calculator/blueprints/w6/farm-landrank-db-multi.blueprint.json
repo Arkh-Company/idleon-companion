@@ -1,0 +1,10 @@
+{
+  "id": "farm-landrank-db-multi",
+  "root": {
+    "name": "Land Rank Database multiplier",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["LankRankUpgBonus", 0, 0]
+    }
+  }
+}

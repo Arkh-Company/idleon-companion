@@ -1,0 +1,10 @@
+{
+  "id": "farm-landrank-exp-multi",
+  "root": {
+    "name": "Land Rank EXP Multi",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["PlotRankGain", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "gfood-quantity",
+  "root": {
+    "name": "Quantity of each Golden Food stack",
+    "ref": {
+      "call": "EquipmentQuantity",
+      "args": [0, 0, 0]
+    }
+  }
+}

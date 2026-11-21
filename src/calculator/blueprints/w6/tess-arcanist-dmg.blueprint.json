@@ -1,0 +1,10 @@
+{
+  "id": "tess-arcanist-dmg",
+  "root": {
+    "name": "Arcanist damage",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["Arcane_DMG", 0, 0]
+    }
+  }
+}

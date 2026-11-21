@@ -1,0 +1,10 @@
+{
+  "id": "farm-bean-multi",
+  "root": {
+    "name": "Magic Bean Bonus",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["BeanTradeQTY", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "div-pts-hr",
+  "root": {
+    "name": "Div Pts per hr (per character and total)",
+    "ref": {
+      "call": "Divinity",
+      "args": ["DivPTSPerHr", 0, 0]
+    }
+  }
+}

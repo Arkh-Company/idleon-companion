@@ -1,0 +1,10 @@
+{
+  "id": "constr-trimmed-slot-speed",
+  "root": {
+    "name": "Trimmed Slot Speed (Total Gilded Boostio)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["TotalGildedBoostio", 0, 0]
+    }
+  }
+}

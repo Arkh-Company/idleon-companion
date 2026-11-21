@@ -1,0 +1,10 @@
+{
+  "id": "sneak-door",
+  "root": {
+    "name": "Door damage",
+    "ref": {
+      "call": "Ninja",
+      "args": ["door", 0, 0]
+    }
+  }
+}

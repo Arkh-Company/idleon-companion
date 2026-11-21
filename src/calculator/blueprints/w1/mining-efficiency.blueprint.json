@@ -1,0 +1,10 @@
+{
+  "id": "mining-efficiency",
+  "root": {
+    "name": "Mining Efficiency",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["MiningEfficiency", 0, 0]
+    }
+  }
+}

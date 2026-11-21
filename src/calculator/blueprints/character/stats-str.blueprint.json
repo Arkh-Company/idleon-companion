@@ -1,0 +1,10 @@
+{
+  "id": "stats-str",
+  "root": {
+    "name": "STR",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["STR", 0, 0]
+    }
+  }
+}

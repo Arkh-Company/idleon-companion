@@ -1,0 +1,10 @@
+{
+  "id": "summ-exp-multi",
+  "root": {
+    "name": "EXP Multi (Summoning)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["SummEXPgain", 33, 0]
+    }
+  }
+}

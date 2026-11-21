@@ -1,0 +1,10 @@
+{
+  "id": "outposts-resource-rate",
+  "root": {
+    "name": "Resource Collection Rate (/HR, per outpost)",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["OutpostResourceRate", 0, 0]
+    }
+  }
+}

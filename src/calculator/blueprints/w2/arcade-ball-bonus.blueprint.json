@@ -1,0 +1,10 @@
+{
+  "id": "arcade-ball-bonus",
+  "root": {
+    "name": "Arcade Ball Bonus (% faster balls)",
+    "ref": {
+      "call": "DungeonStat",
+      "args": ["Arcade_BallBonus"]
+    }
+  }
+}

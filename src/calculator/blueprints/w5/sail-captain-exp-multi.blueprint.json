@@ -1,0 +1,10 @@
+{
+  "id": "sail-captain-exp-multi",
+  "root": {
+    "name": "Captain EXP Multi (CaptainEXPmulti)",
+    "ref": {
+      "call": "Sailing",
+      "args": ["CaptainEXPmulti", 0, 0]
+    }
+  }
+}

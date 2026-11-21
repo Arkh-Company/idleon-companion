@@ -1,0 +1,10 @@
+{
+  "id": "outposts-clear-multi",
+  "root": {
+    "name": "Mob clearing multiplier (kills to build outposts)",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["XtraClearKillz", 0, 0]
+    }
+  }
+}

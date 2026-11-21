@@ -1,0 +1,10 @@
+{
+  "id": "farm-exotic-free-chance",
+  "root": {
+    "name": "Free exotic purchase chance",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["PCTofExoticPurchasesFREE", 0, 0]
+    }
+  }
+}

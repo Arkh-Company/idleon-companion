@@ -1,0 +1,10 @@
+{
+  "id": "farm-growth-rate",
+  "root": {
+    "name": "Farming Speed Multi",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["GrowthRate", 0, 0]
+    }
+  }
+}

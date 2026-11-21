@@ -1,0 +1,10 @@
+{
+  "id": "sail-min-travel",
+  "root": {
+    "name": "Minimum Travel Time",
+    "ref": {
+      "call": "Sailing",
+      "args": ["Minimumtraveltime", 0, 0]
+    }
+  }
+}

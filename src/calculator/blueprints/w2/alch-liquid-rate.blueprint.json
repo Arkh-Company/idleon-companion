@@ -1,0 +1,10 @@
+{
+  "id": "alch-liquid-rate",
+  "root": {
+    "name": "Liquid regen rate (/HR, each liquid)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["LiquidHRrate", 0, 0, 0]
+    }
+  }
+}

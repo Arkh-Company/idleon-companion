@@ -1,0 +1,10 @@
+{
+  "id": "hole-monument-multi",
+  "root": {
+    "name": "Monument Reward Multi",
+    "ref": {
+      "call": "Holes",
+      "args": ["MonumentRewardMulti", 0, 0]
+    }
+  }
+}

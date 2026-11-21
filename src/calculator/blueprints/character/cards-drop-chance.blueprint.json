@@ -1,0 +1,10 @@
+{
+  "id": "cards-drop-chance",
+  "root": {
+    "name": "Card Drop Chance",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["CardChanceMulti"]
+    }
+  }
+}

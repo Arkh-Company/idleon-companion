@@ -1,0 +1,10 @@
+{
+  "id": "compass-effect",
+  "root": {
+    "name": "Elemental effect amount",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["EffectAmount", 0, 0]
+    }
+  }
+}

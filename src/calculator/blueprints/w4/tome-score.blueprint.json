@@ -1,0 +1,10 @@
+{
+  "id": "tome-score",
+  "root": {
+    "name": "Tome Score (total points)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["TomePTS", 33, 0]
+    }
+  }
+}

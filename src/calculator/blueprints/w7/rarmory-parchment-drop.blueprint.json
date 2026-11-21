@@ -1,0 +1,10 @@
+{
+  "id": "rarmory-parchment-drop",
+  "root": {
+    "name": "Parchment of Enchantment drop chance (\"1 in N\")",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["ParchmentDrop", 0, 0]
+    }
+  }
+}

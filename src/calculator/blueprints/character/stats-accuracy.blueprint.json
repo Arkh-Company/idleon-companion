@@ -1,0 +1,10 @@
+{
+  "id": "stats-accuracy",
+  "root": {
+    "name": "Accuracy",
+    "ref": {
+      "call": "PlayerAccTot",
+      "args": [0, 0, 0]
+    }
+  }
+}

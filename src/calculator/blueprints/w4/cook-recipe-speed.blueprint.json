@@ -1,0 +1,10 @@
+{
+  "id": "cook-recipe-speed",
+  "root": {
+    "name": "New Recipe Speed (fire, /hr, per kitchen)",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingFIRE", 0, 0]
+    }
+  }
+}

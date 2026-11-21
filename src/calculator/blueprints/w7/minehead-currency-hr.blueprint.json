@@ -1,0 +1,10 @@
+{
+  "id": "minehead-currency-hr",
+  "root": {
+    "name": "Minehead currency (/hr)",
+    "ref": {
+      "call": "Minehead",
+      "args": ["CurrencyGain", 0, 0]
+    }
+  }
+}

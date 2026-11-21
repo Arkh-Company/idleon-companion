@@ -1,0 +1,10 @@
+{
+  "id": "cape-bonus-multi",
+  "root": {
+    "name": "Cape Vine bonus multi",
+    "ref": {
+      "call": "Gallery",
+      "args": ["CapevineBonusMulti", 0, 0]
+    }
+  }
+}

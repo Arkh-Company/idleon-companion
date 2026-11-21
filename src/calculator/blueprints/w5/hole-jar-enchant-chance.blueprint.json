@@ -1,0 +1,10 @@
+{
+  "id": "hole-jar-enchant-chance",
+  "root": {
+    "name": "Jar Enchant Chance",
+    "ref": {
+      "call": "Holes",
+      "args": ["JarEnchantChance", 0, 0]
+    }
+  }
+}

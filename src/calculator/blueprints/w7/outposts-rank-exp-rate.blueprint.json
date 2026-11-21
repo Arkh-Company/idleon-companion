@@ -1,0 +1,10 @@
+{
+  "id": "outposts-rank-exp-rate",
+  "root": {
+    "name": "Rank EXP rate (per outpost)",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["BarExpRate", 0, 0]
+    }
+  }
+}

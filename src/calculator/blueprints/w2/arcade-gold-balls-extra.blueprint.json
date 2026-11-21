@@ -1,0 +1,10 @@
+{
+  "id": "arcade-gold-balls-extra",
+  "root": {
+    "name": "Arcade Gballs Extra PCT",
+    "ref": {
+      "call": "Summoning",
+      "args": ["ArcadeGballsExtraPCT", 0, 0]
+    }
+  }
+}

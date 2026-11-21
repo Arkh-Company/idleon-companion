@@ -1,0 +1,10 @@
+{
+  "id": "farm-crop-value",
+  "root": {
+    "name": "Crop Value Multi (crops per harvest)",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["CropsBonusValue", 0, 0]
+    }
+  }
+}

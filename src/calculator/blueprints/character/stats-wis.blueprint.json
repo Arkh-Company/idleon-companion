@@ -1,0 +1,10 @@
+{
+  "id": "stats-wis",
+  "root": {
+    "name": "WIS",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["WIS", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "summ-essence-hr",
+  "root": {
+    "name": "Essence Gain /HR (per color)",
+    "ref": {
+      "call": "Summoning2",
+      "args": ["SummRockEssGen", 0, 0]
+    }
+  }
+}

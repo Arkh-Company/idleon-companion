@@ -1,0 +1,10 @@
+{
+  "id": "signs-seraph-multi",
+  "root": {
+    "name": "Seraph Cosmos multiplier (1.10x per 20 Summoning LV)",
+    "ref": {
+      "call": "StarSigns",
+      "args": [0, 0, 0]
+    }
+  }
+}

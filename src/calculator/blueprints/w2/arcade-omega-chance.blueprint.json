@@ -1,0 +1,10 @@
+{
+  "id": "arcade-omega-chance",
+  "root": {
+    "name": "Omega arc ball chance",
+    "ref": {
+      "call": "MenagerieStuff",
+      "args": ["OmegaArcBallChance", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "hole-lamp-wishes-day",
+  "root": {
+    "name": "Lamp wishes per day",
+    "ref": {
+      "call": "Holes",
+      "args": ["LampWishPerDay", 0, 0]
+    }
+  }
+}

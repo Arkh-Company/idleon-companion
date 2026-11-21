@@ -1,0 +1,10 @@
+{
+  "id": "friends-slots",
+  "root": {
+    "name": "Friend Bonus Slots",
+    "ref": {
+      "call": "Thingies",
+      "args": ["FriendBonusSlots", 0, 0]
+    }
+  }
+}

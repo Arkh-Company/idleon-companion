@@ -1,0 +1,10 @@
+{
+  "id": "sneak-exp-multi",
+  "root": {
+    "name": "EXP Multi (Sneaking)",
+    "ref": {
+      "call": "Ninja",
+      "args": ["xp", 0, 0]
+    }
+  }
+}

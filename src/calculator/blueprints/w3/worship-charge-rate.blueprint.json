@@ -1,0 +1,10 @@
+{
+  "id": "worship-charge-rate",
+  "root": {
+    "name": "Charge Speed (Worship charge per hour)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["WorshipSpeed"]
+    }
+  }
+}

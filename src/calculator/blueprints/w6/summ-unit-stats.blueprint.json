@@ -1,0 +1,10 @@
+{
+  "id": "summ-unit-stats",
+  "root": {
+    "name": "Unit stats (HP, Damage, Speed, Dodge)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["UnitHP", 33, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "worship-charge-max",
+  "root": {
+    "name": "Max Charge",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["WorshipChargeMax"]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "spel-grand-chance",
+  "root": {
+    "name": "Grand Discovery chance",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["GrandDiscoveries_FindChance", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "farm-exotic-lv-qty",
+  "root": {
+    "name": "Exotic level quantity (levels per purchase)",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["ExoticLVQTY", 0, 0]
+    }
+  }
+}

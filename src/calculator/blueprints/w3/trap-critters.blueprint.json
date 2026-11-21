@@ -1,0 +1,10 @@
+{
+  "id": "trap-critters",
+  "root": {
+    "name": "Critters per trap (TotalQTY)",
+    "ref": {
+      "call": "TrappingStuffs",
+      "args": ["TotalQTY", 0]
+    }
+  }
+}

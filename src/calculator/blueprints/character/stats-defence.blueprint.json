@@ -1,0 +1,10 @@
+{
+  "id": "stats-defence",
+  "root": {
+    "name": "Defence",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["Defence", 0, 0]
+    }
+  }
+}

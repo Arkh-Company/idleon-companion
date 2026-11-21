@@ -1,0 +1,10 @@
+{
+  "id": "hole-monument-maxtime",
+  "root": {
+    "name": "Monument max linear time",
+    "ref": {
+      "call": "Holes",
+      "args": ["MonumentRewardMulti_MaxLinearTime", 0, 0]
+    }
+  }
+}

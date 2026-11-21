@@ -1,0 +1,10 @@
+{
+  "id": "alch-bubble-cost-reduction",
+  "root": {
+    "name": "Bubble Upgr. Costs reduced (Cost upgrade and other reducers)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["CauldronCosts", 0, 0, 0]
+    }
+  }
+}

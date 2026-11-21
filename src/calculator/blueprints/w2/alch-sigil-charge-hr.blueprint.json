@@ -1,0 +1,10 @@
+{
+  "id": "alch-sigil-charge-hr",
+  "root": {
+    "name": "Sigil charge rate (per character, per hour)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["ResearchSpeed", 0, 0, 0]
+    }
+  }
+}

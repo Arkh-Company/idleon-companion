@@ -1,0 +1,10 @@
+{
+  "id": "spel-prowess",
+  "root": {
+    "name": "Spelunking Prowess",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["SpelunkingProwess"]
+    }
+  }
+}

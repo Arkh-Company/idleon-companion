@@ -1,0 +1,10 @@
+{
+  "id": "atom-cost-reduction",
+  "root": {
+    "name": "Atom upgrade cost reduction (total)",
+    "ref": {
+      "call": "AtomCollider",
+      "args": ["AtomCost", 0, 0]
+    }
+  }
+}

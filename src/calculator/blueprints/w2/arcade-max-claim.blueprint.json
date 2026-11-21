@@ -1,0 +1,10 @@
+{
+  "id": "arcade-max-claim",
+  "root": {
+    "name": "Arcade Max Claim Time",
+    "ref": {
+      "call": "DungeonStat",
+      "args": ["Arcade_MaxClaimTime"]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "cook-meal-max-lv",
+  "root": {
+    "name": "Meal max level",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingMealMaxLVlol", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "stats-damage-max",
+  "root": {
+    "name": "Damage (max)",
+    "ref": {
+      "call": "DamageDealed",
+      "args": ["Max", 0, 0]
+    }
+  }
+}

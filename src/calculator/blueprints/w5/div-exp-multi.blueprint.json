@@ -1,0 +1,10 @@
+{
+  "id": "div-exp-multi",
+  "root": {
+    "name": "EXP Multi (Divinity)",
+    "ref": {
+      "call": "SkillDescriptions",
+      "args": [0, 0, 0]
+    }
+  }
+}

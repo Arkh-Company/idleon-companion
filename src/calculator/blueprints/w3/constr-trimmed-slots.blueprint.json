@@ -1,0 +1,10 @@
+{
+  "id": "constr-trimmed-slots",
+  "root": {
+    "name": "Gold trimmed slots (count)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["TotalGildedSlots", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "stats-afk-gains-rate",
+  "root": {
+    "name": "AFK Gains Rate (fighting)",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Fighting", 0, 0]
+    }
+  }
+}

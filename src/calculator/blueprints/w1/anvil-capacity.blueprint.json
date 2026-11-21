@@ -1,0 +1,10 @@
+{
+  "id": "anvil-capacity",
+  "root": {
+    "name": "Production capacity (per material)",
+    "ref": {
+      "call": "AnvilProduceStats",
+      "args": ["Cap"]
+    }
+  }
+}

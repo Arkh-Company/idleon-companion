@@ -1,0 +1,10 @@
+{
+  "id": "forge-ore-capacity",
+  "root": {
+    "name": "MAX ORE CAPACITY",
+    "ref": {
+      "call": "ForgeStats",
+      "args": [1]
+    }
+  }
+}

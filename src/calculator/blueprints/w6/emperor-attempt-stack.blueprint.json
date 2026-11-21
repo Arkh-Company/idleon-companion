@@ -1,0 +1,10 @@
+{
+  "id": "emperor-attempt-stack",
+  "root": {
+    "name": "Emperor attempt stack cap",
+    "ref": {
+      "call": "Thingies",
+      "args": ["MaxEmperorAttemptStack", 0, 0]
+    }
+  }
+}

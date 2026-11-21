@@ -1,0 +1,10 @@
+{
+  "id": "catching-afk-rate",
+  "root": {
+    "name": "AFK GAINS RATE (Catching)",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Fighting", 0, 0]
+    }
+  }
+}

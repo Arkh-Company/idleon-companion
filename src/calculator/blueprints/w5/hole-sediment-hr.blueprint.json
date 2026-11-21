@@ -1,0 +1,10 @@
+{
+  "id": "hole-sediment-hr",
+  "root": {
+    "name": "Bucket Fill Rate (sediment per hour)",
+    "ref": {
+      "call": "Holes",
+      "args": ["BucketFillRate", 0, 0]
+    }
+  }
+}

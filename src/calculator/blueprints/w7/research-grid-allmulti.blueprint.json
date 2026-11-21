@@ -1,0 +1,10 @@
+{
+  "id": "research-grid-allmulti",
+  "root": {
+    "name": "All Research Grid bonuses multi",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["Grid_Bonus_Allmulti", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "constr-library-min-lv",
+  "root": {
+    "name": "Min Book Lv (Talent Library)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["minBookLv", 0, 0]
+    }
+  }
+}

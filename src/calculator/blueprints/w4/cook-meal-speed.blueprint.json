@@ -1,0 +1,10 @@
+{
+  "id": "cook-meal-speed",
+  "root": {
+    "name": "Meal Cooking Speed (/hr, per kitchen)",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingSPEED", 0, 0]
+    }
+  }
+}

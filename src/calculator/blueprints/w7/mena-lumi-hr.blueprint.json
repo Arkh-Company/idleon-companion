@@ -1,0 +1,10 @@
+{
+  "id": "mena-lumi-hr",
+  "root": {
+    "name": "Lumi gains rate (/hr)",
+    "ref": {
+      "call": "MenagerieStuff",
+      "args": ["LumiGainRate", 0, 0]
+    }
+  }
+}

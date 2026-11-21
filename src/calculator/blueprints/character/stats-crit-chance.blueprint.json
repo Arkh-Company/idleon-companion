@@ -1,0 +1,10 @@
+{
+  "id": "stats-crit-chance",
+  "root": {
+    "name": "Crit Chance",
+    "ref": {
+      "call": "CritChance",
+      "args": [0, 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "stats-hp",
+  "root": {
+    "name": "Max HP",
+    "ref": {
+      "call": "PlayerHPmax",
+      "args": [0, 0, 0]
+    }
+  }
+}

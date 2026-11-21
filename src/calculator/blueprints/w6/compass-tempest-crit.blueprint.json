@@ -1,0 +1,10 @@
+{
+  "id": "compass-tempest-crit",
+  "root": {
+    "name": "Tempest crit chance",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["Compass_CRITPCT", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "research-grid-pts-earned",
+  "root": {
+    "name": "Grid points earned",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["Grid_PTSearned", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "slab-all-multi",
+  "root": {
+    "name": "Slab bonus multi (SlabboBonus_AllMulti)",
+    "ref": {
+      "call": "Sailing",
+      "args": ["SlabboBonus_AllMulti", 0, 0]
+    }
+  }
+}

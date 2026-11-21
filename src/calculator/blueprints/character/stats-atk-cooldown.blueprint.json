@@ -1,0 +1,10 @@
+{
+  "id": "stats-atk-cooldown",
+  "root": {
+    "name": "Talent cooldown reduction",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["AtkCooldownDEC"]
+    }
+  }
+}

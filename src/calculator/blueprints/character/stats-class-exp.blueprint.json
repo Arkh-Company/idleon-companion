@@ -1,0 +1,10 @@
+{
+  "id": "stats-class-exp",
+  "root": {
+    "name": "Class EXP (multiplier)",
+    "ref": {
+      "call": "ExpMulti",
+      "args": [0, 0, 0]
+    }
+  }
+}

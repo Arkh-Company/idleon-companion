@@ -1,0 +1,10 @@
+{
+  "id": "farm-exp-multi",
+  "root": {
+    "name": "EXP Multi (Farming)",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["FarmingEXP", 0, 0]
+    }
+  }
+}

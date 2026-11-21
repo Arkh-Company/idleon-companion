@@ -1,0 +1,10 @@
+{
+  "id": "spel-speed",
+  "root": {
+    "name": "Spelunking Speed",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["SpelunkingSpeed", 0, 0]
+    }
+  }
+}

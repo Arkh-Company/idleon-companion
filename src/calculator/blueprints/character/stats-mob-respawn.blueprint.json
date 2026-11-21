@@ -1,0 +1,10 @@
+{
+  "id": "stats-mob-respawn",
+  "root": {
+    "name": "Faster Monster Respawning",
+    "ref": {
+      "call": "performETCaction",
+      "args": ["MonsterRespawnTimeReset", 0, 0]
+    }
+  }
+}

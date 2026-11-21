@@ -1,0 +1,10 @@
+{
+  "id": "gallery-podiums",
+  "root": {
+    "name": "Podiums owned",
+    "ref": {
+      "call": "Gallery",
+      "args": ["PodiumsOwned", 0, 0]
+    }
+  }
+}

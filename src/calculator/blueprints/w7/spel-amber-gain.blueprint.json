@@ -1,0 +1,10 @@
+{
+  "id": "spel-amber-gain",
+  "root": {
+    "name": "Amber gain multiplier",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["AmberGain", 0, 0]
+    }
+  }
+}

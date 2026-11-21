@@ -1,0 +1,10 @@
+{
+  "id": "tome-bonus-multi",
+  "root": {
+    "name": "Tome bonus multiplier",
+    "ref": {
+      "call": "Summoning",
+      "args": ["TomeBonus", 33, 0]
+    }
+  }
+}

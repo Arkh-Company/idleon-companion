@@ -1,0 +1,10 @@
+{
+  "id": "forge-card-chance",
+  "root": {
+    "name": "CARD DROP CHANCE",
+    "ref": {
+      "call": "ForgeStats",
+      "args": [5]
+    }
+  }
+}

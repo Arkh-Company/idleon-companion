@@ -1,0 +1,10 @@
+{
+  "id": "vault-max-lv",
+  "root": {
+    "name": "Vault upgrade Max LV",
+    "ref": {
+      "call": "Summoning",
+      "args": ["VaultUpgMaxLV", 33, 0]
+    }
+  }
+}

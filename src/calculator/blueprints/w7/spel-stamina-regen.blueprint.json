@@ -1,0 +1,10 @@
+{
+  "id": "spel-stamina-regen",
+  "root": {
+    "name": "Stamina regen rate (/hr)",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["StaminaRegenRate", 0, 0]
+    }
+  }
+}

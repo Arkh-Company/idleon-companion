@@ -1,0 +1,10 @@
+{
+  "id": "alch-brew-per-hour",
+  "root": {
+    "name": "Brew points per hour (each cauldron)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["ResearchSpeed", 0, 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "constr-library-book-time",
+  "root": {
+    "name": "Talent Library checkout refresh time (BookReqTime)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["BookReqTime", 0, 0]
+    }
+  }
+}

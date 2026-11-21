@@ -1,0 +1,10 @@
+{
+  "id": "research-kalei-tot",
+  "root": {
+    "name": "Kaleidoscope multiplier",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["Kalei_MultiTot", 0, 0]
+    }
+  }
+}

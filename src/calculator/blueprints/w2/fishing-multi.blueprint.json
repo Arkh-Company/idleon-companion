@@ -1,0 +1,10 @@
+{
+  "id": "fishing-multi",
+  "root": {
+    "name": "Multi-Fish Chance",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["FishingMultiOre", 0, 0]
+    }
+  }
+}

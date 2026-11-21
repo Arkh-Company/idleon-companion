@@ -1,0 +1,10 @@
+{
+  "id": "stats-agi",
+  "root": {
+    "name": "AGI",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["AGI", 0, 0]
+    }
+  }
+}

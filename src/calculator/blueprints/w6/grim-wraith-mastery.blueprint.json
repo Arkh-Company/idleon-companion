@@ -1,0 +1,10 @@
+{
+  "id": "grim-wraith-mastery",
+  "root": {
+    "name": "Wraith mastery",
+    "ref": {
+      "call": "Summoning",
+      "args": ["Grimoire_MASTERY", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fishing-afk-rate",
+  "root": {
+    "name": "AFK GAINS RATE (Fishing)",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Fighting", 0, 0]
+    }
+  }
+}

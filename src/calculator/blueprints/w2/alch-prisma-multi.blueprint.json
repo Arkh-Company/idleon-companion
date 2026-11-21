@@ -1,0 +1,10 @@
+{
+  "id": "alch-prisma-multi",
+  "root": {
+    "name": "Prisma Bubble bonus multi",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["BubbleBonus", 0, 0, 0]
+    }
+  }
+}

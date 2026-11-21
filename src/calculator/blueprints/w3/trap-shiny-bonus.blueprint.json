@@ -1,0 +1,10 @@
+{
+  "id": "trap-shiny-bonus",
+  "root": {
+    "name": "Shiny Critter Chance bonus (RareBonusOnOpen)",
+    "ref": {
+      "call": "TrappingStuffs",
+      "args": ["RareBonusOnOpen", 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "stats-food-not-consume",
+  "root": {
+    "name": "Chance to not consume Food",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["FoodNOTconsume"]
+    }
+  }
+}

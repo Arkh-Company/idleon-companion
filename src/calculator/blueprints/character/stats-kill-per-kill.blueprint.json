@@ -1,0 +1,10 @@
+{
+  "id": "stats-kill-per-kill",
+  "root": {
+    "name": "Kill per Kill",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["KillPerKill"]
+    }
+  }
+}

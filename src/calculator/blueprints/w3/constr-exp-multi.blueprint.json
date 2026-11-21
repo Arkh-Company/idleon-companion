@@ -1,0 +1,10 @@
+{
+  "id": "constr-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Construction)",
+    "ref": {
+      "call": "SkillDescriptions",
+      "args": [0, 0, 0]
+    }
+  }
+}

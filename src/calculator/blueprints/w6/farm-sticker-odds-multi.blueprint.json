@@ -1,0 +1,10 @@
+{
+  "id": "farm-sticker-odds-multi",
+  "root": {
+    "name": "Sticker odds multiplier",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["StickerOddsMulti", 0, 0]
+    }
+  }
+}

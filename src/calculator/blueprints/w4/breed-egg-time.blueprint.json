@@ -1,0 +1,10 @@
+{
+  "id": "breed-egg-time",
+  "root": {
+    "name": "Egg incubation time (Next In) / eggs per hour",
+    "ref": {
+      "call": "Breeding",
+      "args": ["TotalTimeForEgg", "0", 0, 0]
+    }
+  }
+}

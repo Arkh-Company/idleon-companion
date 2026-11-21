@@ -1,0 +1,10 @@
+{
+  "id": "tess-arcanist-acc",
+  "root": {
+    "name": "Arcanist accuracy",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["Arcane_ACC", 0, 0]
+    }
+  }
+}

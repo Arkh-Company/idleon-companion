@@ -1,0 +1,10 @@
+{
+  "id": "friends-xtra-multi",
+  "root": {
+    "name": "Friend Bonus Xtra Multi",
+    "ref": {
+      "call": "Thingies",
+      "args": ["FriendBonusXtraMulti", 0, 0]
+    }
+  }
+}

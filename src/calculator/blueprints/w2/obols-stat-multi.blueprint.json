@@ -1,0 +1,10 @@
+{
+  "id": "obols-stat-multi",
+  "root": {
+    "name": "Obol stat multiplier (talents, Super Bit, Menagerie)",
+    "ref": {
+      "call": "TotalStats",
+      "args": [0, 0, 0]
+    }
+  }
+}

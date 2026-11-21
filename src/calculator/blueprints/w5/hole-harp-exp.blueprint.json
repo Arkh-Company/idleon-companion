@@ -1,0 +1,10 @@
+{
+  "id": "hole-harp-exp",
+  "root": {
+    "name": "Harp string EXP gain",
+    "ref": {
+      "call": "Holes",
+      "args": ["HarpEXPgain", 0, 0]
+    }
+  }
+}

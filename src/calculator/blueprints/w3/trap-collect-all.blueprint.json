@@ -1,0 +1,10 @@
+{
+  "id": "trap-collect-all",
+  "root": {
+    "name": "Collect All PCT (Trap-O-Vision critters)",
+    "ref": {
+      "call": "TrappingStuffs",
+      "args": ["CollectAllPCT", 0]
+    }
+  }
+}

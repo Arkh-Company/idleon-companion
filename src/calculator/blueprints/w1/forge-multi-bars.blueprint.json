@@ -1,0 +1,10 @@
+{
+  "id": "forge-multi-bars",
+  "root": {
+    "name": "CHANCE FOR MULTI BARS",
+    "ref": {
+      "call": "ForgeStats",
+      "args": [4]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "catching-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Catching)",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["CatchingEXPmulti", 0, 0]
+    }
+  }
+}

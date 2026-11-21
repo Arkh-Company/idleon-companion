@@ -1,0 +1,10 @@
+{
+  "id": "vault-cost-reduction",
+  "root": {
+    "name": "Vault upgrade cost reduction (total)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["VaultUpgCost", 33, 0]
+    }
+  }
+}

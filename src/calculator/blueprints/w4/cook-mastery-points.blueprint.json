@@ -1,0 +1,10 @@
+{
+  "id": "cook-mastery-points",
+  "root": {
+    "name": "Cooking Mastery points (P and Y, total)",
+    "ref": {
+      "call": "Summoning2",
+      "args": ["PtsLeftCook_P", 0, 0]
+    }
+  }
+}

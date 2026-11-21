@@ -1,0 +1,10 @@
+{
+  "id": "farm-depot-multi",
+  "root": {
+    "name": "Crop Depot multiplier",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["CropSCbonMulti", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "anvil-production-speed",
+  "root": {
+    "name": "Production Speed (per hour)",
+    "ref": {
+      "call": "AnvilProduceStats",
+      "args": ["ProductionSpeed"]
+    }
+  }
+}

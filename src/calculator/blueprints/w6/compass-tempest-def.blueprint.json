@@ -1,0 +1,10 @@
+{
+  "id": "compass-tempest-def",
+  "root": {
+    "name": "Tempest defence",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["Compass_DEF", 0, 0]
+    }
+  }
+}

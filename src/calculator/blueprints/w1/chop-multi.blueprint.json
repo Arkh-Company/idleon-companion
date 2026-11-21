@@ -1,0 +1,10 @@
+{
+  "id": "chop-multi",
+  "root": {
+    "name": "Multi-Log Drop Chance",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["ChoppinMultiOre", 0, 0]
+    }
+  }
+}

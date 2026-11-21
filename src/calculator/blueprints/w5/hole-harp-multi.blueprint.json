@@ -1,0 +1,10 @@
+{
+  "id": "hole-harp-multi",
+  "root": {
+    "name": "Harp Note Multi (all notes)",
+    "ref": {
+      "call": "Holes",
+      "args": [0, 0, 0]
+    }
+  }
+}

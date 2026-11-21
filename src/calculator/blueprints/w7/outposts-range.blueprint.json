@@ -1,0 +1,10 @@
+{
+  "id": "outposts-range",
+  "root": {
+    "name": "Outpost connection range",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["OutpostRange", 0, 0]
+    }
+  }
+}

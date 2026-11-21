@@ -1,0 +1,10 @@
+{
+  "id": "constr-player-build-spd",
+  "root": {
+    "name": "Build Rate (per character)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["PlayerBuildSpd", 0, 0]
+    }
+  }
+}

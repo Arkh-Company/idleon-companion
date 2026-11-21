@@ -1,0 +1,10 @@
+{
+  "id": "spel-lore-epilogue-multi",
+  "root": {
+    "name": "Lore epilogue bonus multiplier",
+    "ref": {
+      "call": "Thingies",
+      "args": ["LoreEpiBon", 0, 0]
+    }
+  }
+}

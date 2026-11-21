@@ -1,0 +1,10 @@
+{
+  "id": "talents-max-level",
+  "root": {
+    "name": "Talent Max LV",
+    "ref": {
+      "call": "SkillLevelsMAX",
+      "args": [0, 0, 0]
+    }
+  }
+}

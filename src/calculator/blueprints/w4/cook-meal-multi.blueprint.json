@@ -1,0 +1,10 @@
+{
+  "id": "cook-meal-multi",
+  "root": {
+    "name": "Meal bonus multi",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingMealBonusMultioo", 0, 0]
+    }
+  }
+}

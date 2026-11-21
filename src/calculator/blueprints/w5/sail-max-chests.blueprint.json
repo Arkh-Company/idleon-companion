@@ -1,0 +1,10 @@
+{
+  "id": "sail-max-chests",
+  "root": {
+    "name": "Max Chests (loot pile)",
+    "ref": {
+      "call": "Sailing",
+      "args": ["MaxChests", 0, 0]
+    }
+  }
+}

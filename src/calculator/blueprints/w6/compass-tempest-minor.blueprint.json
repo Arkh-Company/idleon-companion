@@ -1,0 +1,10 @@
+{
+  "id": "compass-tempest-minor",
+  "root": {
+    "name": "Tempest crit damage, attack speed, invulnerability, range, move speed, mastery, multishot",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["Compass_CRITDMG", 0, 0]
+    }
+  }
+}

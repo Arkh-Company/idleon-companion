@@ -1,0 +1,10 @@
+{
+  "id": "legend-talent-maxlv",
+  "root": {
+    "name": "Legend Talent Max LV",
+    "ref": {
+      "call": "Thingies",
+      "args": ["LegendTalent_MaxLV", 0, 0]
+    }
+  }
+}

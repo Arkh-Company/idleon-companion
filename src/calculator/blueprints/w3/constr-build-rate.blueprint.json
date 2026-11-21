@@ -1,0 +1,10 @@
+{
+  "id": "constr-build-rate",
+  "root": {
+    "name": "Build Rate (/HR, total of the Cog Board)",
+    "ref": {
+      "call": "WorkbenchStuff2",
+      "args": [0, 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "compass-novadust",
+  "root": {
+    "name": "Novadust chance",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["TempestNovadustChance", 0, 0]
+    }
+  }
+}

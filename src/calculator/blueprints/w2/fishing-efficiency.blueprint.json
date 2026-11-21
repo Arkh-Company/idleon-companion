@@ -1,0 +1,10 @@
+{
+  "id": "fishing-efficiency",
+  "root": {
+    "name": "Fishing Efficiency",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["FishingEfficiency", 0, 0]
+    }
+  }
+}

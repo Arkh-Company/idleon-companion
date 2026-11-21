@@ -1,0 +1,10 @@
+{
+  "id": "sneak-stealth",
+  "root": {
+    "name": "Ninja Twin Stealth",
+    "ref": {
+      "call": "Ninja",
+      "args": ["Stealth", 0, 0]
+    }
+  }
+}

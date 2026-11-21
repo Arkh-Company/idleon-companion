@@ -1,0 +1,10 @@
+{
+  "id": "hole-amp-multi",
+  "root": {
+    "name": "Amp Multi (The Den)",
+    "ref": {
+      "call": "Holes",
+      "args": ["AmpMulti", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "equinox-bar-rate",
+  "root": {
+    "name": "Bar Fill Rate",
+    "ref": {
+      "call": "Dreamstuff",
+      "args": ["BarFillRate", 0]
+    }
+  }
+}

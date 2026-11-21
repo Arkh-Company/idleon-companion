@@ -1,0 +1,10 @@
+{
+  "id": "worship-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Worship)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["WorshipEXPmulti"]
+    }
+  }
+}

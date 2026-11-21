@@ -1,0 +1,10 @@
+{
+  "id": "trap-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Trapping)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["TrappingEXPmulti"]
+    }
+  }
+}

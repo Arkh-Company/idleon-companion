@@ -1,0 +1,10 @@
+{
+  "id": "tess-drop-chance",
+  "root": {
+    "name": "Weapon and ring drop chance",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["WepDropChance", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "spel-afk-gains",
+  "root": {
+    "name": "Spelunking AFK Gains Rate",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Spelunking", 0, 0]
+    }
+  }
+}

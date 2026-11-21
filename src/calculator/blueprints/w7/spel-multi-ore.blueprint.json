@@ -1,0 +1,10 @@
+{
+  "id": "spel-multi-ore",
+  "root": {
+    "name": "Multi-Page Drop Chance (Spelunking)",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["SpelunkingMultiOre", 0, 0]
+    }
+  }
+}

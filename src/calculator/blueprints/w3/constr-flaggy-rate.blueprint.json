@@ -1,0 +1,10 @@
+{
+  "id": "constr-flaggy-rate",
+  "root": {
+    "name": "Flaggy Rate (/HR)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["FlagSpeed", 0, 0]
+    }
+  }
+}

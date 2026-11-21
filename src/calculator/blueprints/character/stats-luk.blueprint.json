@@ -1,0 +1,10 @@
+{
+  "id": "stats-luk",
+  "root": {
+    "name": "LUK",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["LUK", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "atom-max-lv",
+  "root": {
+    "name": "Atom Max Lv",
+    "ref": {
+      "call": "AtomCollider",
+      "args": ["AtomMaxLv", 0, 0]
+    }
+  }
+}

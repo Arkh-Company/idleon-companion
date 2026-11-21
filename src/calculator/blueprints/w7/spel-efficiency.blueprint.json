@@ -1,0 +1,10 @@
+{
+  "id": "spel-efficiency",
+  "root": {
+    "name": "Spelunking Efficiency",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["SpelunkingEfficiency", 0, 0]
+    }
+  }
+}

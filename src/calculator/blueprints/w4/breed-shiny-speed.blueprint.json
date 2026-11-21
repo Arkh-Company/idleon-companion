@@ -1,0 +1,10 @@
+{
+  "id": "breed-shiny-speed",
+  "root": {
+    "name": "Shiny Mob LV Up Rate (ShinySpdMulti)",
+    "ref": {
+      "call": "Breeding",
+      "args": ["ShinySpdMulti", "0", 0, 0]
+    }
+  }
+}

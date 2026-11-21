@@ -1,0 +1,10 @@
+{
+  "id": "sneak-charm-max-lv",
+  "root": {
+    "name": "Max LV of Charms found",
+    "ref": {
+      "call": "Ninja",
+      "args": ["NLbonuses", 0, 0]
+    }
+  }
+}

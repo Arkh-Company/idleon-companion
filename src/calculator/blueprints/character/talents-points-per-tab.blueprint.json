@@ -1,0 +1,10 @@
+{
+  "id": "talents-points-per-tab",
+  "root": {
+    "name": "Talent points per tab",
+    "ref": {
+      "call": "TotalTalentPoints",
+      "args": [0, 0, 0]
+    }
+  }
+}

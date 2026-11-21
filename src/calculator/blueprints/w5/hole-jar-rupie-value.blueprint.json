@@ -1,0 +1,10 @@
+{
+  "id": "hole-jar-rupie-value",
+  "root": {
+    "name": "Jar Rupie Value",
+    "ref": {
+      "call": "Holes",
+      "args": ["JarRupieValue", 0, 0]
+    }
+  }
+}

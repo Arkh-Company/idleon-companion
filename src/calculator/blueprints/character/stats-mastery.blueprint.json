@@ -1,0 +1,10 @@
+{
+  "id": "stats-mastery",
+  "root": {
+    "name": "Mastery (min damage %)",
+    "ref": {
+      "call": "DamageDealed",
+      "args": ["Mastery", 0, 0]
+    }
+  }
+}

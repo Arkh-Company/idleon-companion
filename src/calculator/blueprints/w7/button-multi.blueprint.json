@@ -1,0 +1,10 @@
+{
+  "id": "button-multi",
+  "root": {
+    "name": "Button bonus multiplier",
+    "ref": {
+      "call": "Minehead",
+      "args": ["Button_BonusMULTI", 0, 0]
+    }
+  }
+}

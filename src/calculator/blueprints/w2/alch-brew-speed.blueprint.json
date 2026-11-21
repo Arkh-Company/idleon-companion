@@ -1,0 +1,10 @@
+{
+  "id": "alch-brew-speed",
+  "root": {
+    "name": "Total Brew Speed (/HR)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["ResearchSpeed", 0, 0, 0]
+    }
+  }
+}

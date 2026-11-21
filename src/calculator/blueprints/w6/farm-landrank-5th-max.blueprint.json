@@ -1,0 +1,10 @@
+{
+  "id": "farm-landrank-5th-max",
+  "root": {
+    "name": "Land Rank 5th column max level",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["LandRank5thColumnMaxLV", 0, 0]
+    }
+  }
+}

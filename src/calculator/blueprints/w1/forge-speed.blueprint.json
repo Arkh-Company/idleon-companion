@@ -1,0 +1,10 @@
+{
+  "id": "forge-speed",
+  "root": {
+    "name": "FORGE SPEED",
+    "ref": {
+      "call": "ForgeStats",
+      "args": [2]
+    }
+  }
+}
