@@ -40,7 +40,7 @@ para cada edição (AGENTS.md) e faz o commit antes da Fase 1. Cada mudança fun
 termina sem teste e sem erro (`--passWithNoTests`); `just --list` mostra `trees`, `draft` e `gallery` e não mostra mais
 `parity`.
 
-- [ ] T001 [sessão] Receitas `trees`, `draft` e `gallery` no `justfile`, e a receita `parity` sai (contracts/real-trees-run.md, contracts/gallery.md; FR-026, NFR-003)
+- [X] T001 [sessão] Receitas `trees`, `draft` e `gallery` no `justfile`, e a receita `parity` sai (contracts/real-trees-run.md, contracts/gallery.md; FR-026, NFR-003)
   - Files: `justfile`
   - Signatures:
     - `trees target`: `pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/declared/real-trees.integration.test.ts`, com `TREES_TARGET` = o alvo e `TREES_MODE` = `roots` quando o alvo é `roots`, senão `check`;
@@ -58,7 +58,7 @@ termina sem teste e sem erro (`--passWithNoTests`); `just --list` mostra `trees`
   - Regra: de `^src/calculator/(declared|recorded|names)/` para `^src/calculator/(tree/|tree-build\.ts$|tree-roots\.ts$|root-calls\.json$|parity)`, `severity: "error"`, testes incluídos.
   - Por quê: o motor novo não cresce sobre a forma adivinhada, e `recorded/` e `names/` (que ficam depois da Fase 11) não podem depender do que sai.
   - Cases: `just arch` passa hoje (as três pastas ainda não existem); um import de `tree/` dentro de `declared/` faz o `just arch` falhar.
-- [ ] T003 [sessão] Configuração de montagem da galeria em `scripts/gallery/vite.config.ts` (contracts/gallery.md; FR-023, FR-024, NFR-004)
+- [X] T003 [sessão] Configuração de montagem da galeria em `scripts/gallery/vite.config.ts` (contracts/gallery.md; FR-023, FR-024, NFR-004)
   - Files: `scripts/gallery/vite.config.ts` (`vite.config.*` em qualquer pasta é portão)
   - Signatures: `export default defineConfig(...)` com as quatro entradas e `build.outDir` em `TREES_OUT/gallery-app/`
   - Monta o main da ferramenta (Node), o preload (CommonJS, para `sandbox`) e as duas páginas (`tree-page.html`, `gallery-page.html`) em `TREES_OUT/gallery-app/`; recusa montar sem `TREES_OUT`; nenhum plugin que use a rede; os caminhos das entradas são texto, então o `tsc` e o `eslint` passam antes de os arquivos existirem.
