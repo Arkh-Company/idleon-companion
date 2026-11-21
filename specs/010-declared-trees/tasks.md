@@ -213,7 +213,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Signatures: `interface AnswerKey { root: string; final: number; form: "chain" | "expression"; accumulator: string | null; pools: AnswerPool[]; pollution: Record<string, number> }`; `AnswerPool`, `AnswerTerm` (data-model.md); `answerKey(rec: Recording, ops: readonly Op[]): AnswerKey | { error: "rootForm"; reason: string }`.
   - Porta o `gabarito.ts` do protótipo; cada arquivo abaixo de 400 linhas.
   - Cases: os da T018, que esta tarefa faz passar; cada arquivo abaixo de 400 linhas.
-- [ ] T020 [P] Testes primeiro, depois a lista das partes que não são folha em `src/calculator/declared/not-leaves.ts` (research R6; FR-016)
+- [X] T020 [P] Testes primeiro, depois a lista das partes que não são folha em `src/calculator/declared/not-leaves.ts` (research R6; FR-016)
   - Files: `src/calculator/declared/not-leaves.test.ts`, `src/calculator/declared/not-leaves.ts`
   - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string): NotLeaf | null`.
   - Cases: a curva `decay`, o `getLOG`, a masmorra e o mapa atual, o `GurtBonuzz` e a leitura de outro personagem casam; uma chamada comum não casa; toda entrada tem `reason`; nenhuma entrada é um texto do jogo.
