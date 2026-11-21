@@ -1,4 +1,5 @@
 feature: 010-declared-trees
+spec_pr: 51
 phases:
   brainstorm: {status: done, date: 2026-11-20}
   specify: {status: done, date: 2026-11-20}
