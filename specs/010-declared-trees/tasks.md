@@ -1038,7 +1038,7 @@ Drop Rate em até 5 s, com 0 "no name yet", "Game value" e "Other" nas 289.
     - um Pin e uma marca da 0.9 dão a faixa uma vez;
     - a contagem de "no name yet", "Game value" e "Other" nas 289 árvores = 0;
     - o resultado em `registro.md`.
-- [ ] T141 [sessão] Pendências do fim levadas ao Vinicius: o futuro do radar de patch (research R19) e a regra `declared-not-guessed`, que fica sem objeto depois da T135
+- [ ] T141 [sessão] Pendência do fim levada ao Vinicius: a regra `declared-not-guessed`, que fica sem objeto depois da T135
   - Files: `spec.md` (linha `resolved` de Open Questions, "durante a implementação", quando só esclarece); mudar a regra é mudança do portão, num PR próprio, com o sim dele.
   - Signatures: nenhuma (decisão)
   - Cases: a resposta registrada; nenhuma edição do portão nesta tarefa.
@@ -1048,6 +1048,12 @@ Drop Rate em até 5 s, com 0 "no name yet", "Game value" e "Other" nas 289.
 Verify: `just check` - passa; `just trees all` (PC do Vinicius) - 289 passaram, 0 reprovaram; o app empacotado - Drop Rate em até 5 s, 0 "no name yet", "Game value" e "Other".
 
 ---
+
+- [ ] T142 [US5] Tirar o radar de patch da 008 (spec Out of Scope; research R19; FR-019 assume o papel dele; depende de T120)
+  - Files: `src/main/radar.ts`, `src/main/radar.test.ts`, `src/renderer/PatchBand.tsx` e o teste dele, `src/shared/types.ts` (`radar:update`, `radar:dismiss`, `RadarUpdate`), `src/preload/api.ts`, `src/renderer/App.tsx`, `src/main/pipelines.ts`, `src/main/formula-pipeline.ts`, `src/main/formula-pipeline-api.ts`, `src/main/saved-files.ts` (só o que é do radar)
+  - Signatures: saem `radar:update`, `radar:dismiss` e `RadarUpdate`; o `tree-shapes.json` e o pedido `shape` ficam, porque Onde isto entra usa os dois.
+  - Cases (testes primeiro): o IPC não tem mais os canais do radar; o preload não expõe `onRadar`; a janela não desenha a faixa do radar numa troca de versão do jogo; Onde isto entra continua lendo as formas.
+  - Apagar `radar.test.ts` e o teste do `PatchBand` junto com o código que eles testam é mudança de teste existente: só com o sim do Vinicius, pedido na parada desta fase.
 
 ## Dependencies & Execution Order
 
