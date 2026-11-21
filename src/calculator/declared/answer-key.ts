@@ -132,12 +132,17 @@ export function answerKeyOfSteps(
     writes.filter((w) => w.path.startsWith(SCRATCH)).length,
   );
 
-  const termsOf = (
-    parts: readonly { e: Expr; w: number }[],
-    kind: PoolKind,
-  ): RawTerm[] => {
+  // `seen`: the root's steps already opened on the way down to a part, the one being opened included
+  // (answer-key-terms.ts, unwrap): a passage never leads back into them.
+  type Seen = ReadonlySet<number>;
+  interface Part {
+    e: Expr;
+    w: number;
+    seen: Seen;
+  }
+  const termsOf = (parts: readonly Part[], kind: PoolKind): RawTerm[] => {
     const terms: RawTerm[] = [];
-    for (const p of parts) r.flat(p.e, OP[kind], p.w, terms, []);
+    for (const p of parts) r.flat(p.e, OP[kind], p.w, terms, [], p.seen);
     return terms;
   };
   const kept = (terms: RawTerm[], prev: number | null): AnswerTerm[] => {
@@ -166,11 +171,12 @@ export function answerKeyOfSteps(
         );
       r.usedSteps.add(i);
       from = i + 1;
-      const u = r.unwrap(s.e, [], true);
+      const opened = new Set([i]);
+      const u = r.unwrap(s.e, [], true, new Set(opened));
       const kind = u.t === "op" ? KIND[u.o] : undefined;
       if (!kind || (u.t === "op" && u.o === "-"))
         throw new OutOfRule(`o passo ${String(i)} não soma nem multiplica`);
-      const terms = termsOf([{ e: s.e, w: 1 }], kind);
+      const terms = termsOf([{ e: s.e, w: 1, seen: opened }], kind);
       if (prev !== null) {
         const pv = prev;
         const k = terms.findIndex(
@@ -193,14 +199,12 @@ export function answerKeyOfSteps(
 
   // 3. An expression: the operands of its top operator; the leftmost one is an earlier stretch when it is a sum inside
   // a product (in parentheses), or a product that starts with such a sum; otherwise it is the first pool's term.
-  // `seen`: the passage steps already crossed on the way down (answer-key-terms.ts, unwrap).
-  type Seen = ReadonlySet<number>;
   function operands(
     e: Expr,
     kind: PoolKind,
     w = 1,
     seen: Seen = new Set(),
-  ): { e: Expr; w: number }[] {
+  ): Part[] {
     const s = new Set(seen);
     const u = r.unwrap(e, [], true, s);
     if (
@@ -212,7 +216,7 @@ export function answerKeyOfSteps(
         ...operands(u.l, kind, w, s),
         ...operands(u.r, kind, u.o === "-" ? -w : w, s),
       ];
-    return [{ e, w }];
+    return [{ e, w, seen }];
   }
   const kindOf = (e: Expr, seen: Seen): PoolKind | undefined => {
     const u = r.unwrap(e, [], true, new Set(seen));
@@ -225,16 +229,17 @@ export function answerKeyOfSteps(
     if (!kind || typeof u.v !== "number")
       throw new OutOfRule("a expressão da raiz não soma nem multiplica");
     const [first, ...rest] = operands(u, kind, 1, s);
-    const inner = first ? kindOf(first.e, s) : undefined;
+    const inner = first ? kindOf(first.e, first.seen) : undefined;
+    const lead =
+      first && inner ? operands(first.e, inner, 1, first.seen)[0] : undefined;
     const earlier =
       first &&
       inner &&
       inner !== kind &&
       (kind === "multi" ||
-        kindOf(operands(first.e, inner, 1, s)[0]?.e ?? first.e, s) ===
-          "additive");
+        (lead !== undefined && kindOf(lead.e, lead.seen) === "additive"));
     if (earlier) {
-      const before = stretches(first.e, step, s);
+      const before = stretches(first.e, step, first.seen);
       return [
         ...before,
         { kind, terms: kept(termsOf(rest, kind), 0), step, after: u.v },
@@ -254,7 +259,7 @@ export function answerKeyOfSteps(
     const s = steps[i];
     if (!s) throw new OutOfRule("nenhum passo dá o valor final");
     r.usedSteps.add(i);
-    return stretches(s.e, i);
+    return stretches(s.e, i, new Set([i]));
   }
 
   let raw: RawPool[];

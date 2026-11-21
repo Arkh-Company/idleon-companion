@@ -56,9 +56,15 @@ export function termReader(ctx: TermContext) {
   };
   const usedSteps = new Set<number>();
 
-  /** The expression that gave a passage's value: a step of the root (with its index), or a child call with that value. */
-  function passageExpr(v: number): { e: Expr; step: number | null } | null {
-    const i = ctx.steps.findIndex((s) => near(s.v, v));
+  /**
+   * The expression that gave a passage's value: a step of the root not crossed yet on this way down (with its index), or
+   * else a child call with that value (a call the root wrote with `=` makes no step).
+   */
+  function passageExpr(
+    v: number,
+    seen: ReadonlySet<number>,
+  ): { e: Expr; step: number | null } | null {
+    const i = ctx.steps.findIndex((s, j) => !seen.has(j) && near(s.v, v));
     const s = ctx.steps[i];
     if (s) return { e: s.e, step: i };
     const k = ctx.kids.find((n) => near(n.v, v));
@@ -71,9 +77,9 @@ export function termReader(ctx: TermContext) {
   };
 
   /**
-   * Takes the wrappers off: a variable's definition and a passage read back. `seen` holds the steps already crossed on
-   * the way down (it grows here): a passage whose step is among them stays its own value, so a step that holds the
-   * value it gave (a running total) never loops.
+   * Takes the wrappers off: a variable's definition and a passage read back. `seen` holds the steps already opened on
+   * the way down (it grows here), the one the caller opens included: a passage never leads back to one of them, so a
+   * step that holds the value it gave never loops, and one that copies a passage reaches where the value came from.
    */
   function unwrap(
     e: Expr,
@@ -103,9 +109,10 @@ export function termReader(ctx: TermContext) {
               ? e.p
               : null
             : passagePathOf(e.v);
-        const x = p && typeof e.v === "number" ? passageExpr(e.v) : null;
+        const x = p && typeof e.v === "number" ? passageExpr(e.v, seen) : null;
         const step = x?.step ?? null;
-        if (step !== null && seen.has(step)) {
+        if (p && !x) {
+          // no step left on this way down and no child call: the passage stays its own value
           count("passageCycle");
           return e;
         }

@@ -130,6 +130,57 @@ test("the pollution counts each kind", () => {
   });
 });
 
+test("a passage copied by a step that keeps its value still reaches the child call it came from, and the step's own constant counts once", () => {
+  // the root wrote a child call's 80 to DNSM.q with `=` (no step), then a step reads it back `+ 0`
+  const termsOf = (
+    writes: { path: string; v: number }[],
+    steps: { v: number; e: Expr }[],
+  ) => {
+    const rec = recordingOf(
+      [
+        { b: "(root)", c: [1] },
+        { b: "InventedRoot", a: [0, 0, 0], v: 84, c: [2] },
+        { b: "InventedTalent", a: [3], v: 80 },
+      ],
+      writes.map((w, i) => ({ ...w, node: 1, seq: i + 1 })),
+      { root: 0 },
+    );
+    const key = answerKeyOfSteps(rec, { steps, checks: [] });
+    if ("error" in key) throw new Error(key.reason);
+    return key.pools.flatMap((p) => p.terms);
+  };
+  const q: Expr = { t: "read", p: "DNSM.q", v: 80 };
+  const copy = {
+    v: 80,
+    e: { t: "op", o: "+", l: q, r: { t: "num", v: 0 }, v: 80 } as Expr,
+  };
+  const plus4 = (l: Expr) => ({
+    v: 84,
+    e: { t: "op", o: "+", l, r: { t: "num", v: 4 }, v: 84 } as Expr,
+  });
+  // a later step (the root's expression) reads the passage
+  const later = termsOf([{ path: "DNSM.q", v: 80 }], [copy, plus4(q)]);
+  expect(later.flatMap((t) => t.refs)).toContain("InventedTalent(3)");
+  expect(
+    later.filter((t) => t.ref === "0").map((t) => [t.kind, t.value]),
+  ).toEqual([["constant", 0]]);
+  // the copy is the chain's first step, opened by the chain: never again inside itself
+  const acc = { t: "read", p: "DNSM.acc", v: 80 } as Expr;
+  const itself = termsOf(
+    [
+      { path: "DNSM.q", v: 80 },
+      { path: "DNSM.acc", v: 80 },
+      { path: "DNSM.acc", v: 84 },
+    ],
+    [copy, plus4(acc)],
+  );
+  expect(itself.map((t) => [t.kind, t.ref])).toEqual([
+    ["source", "InventedTalent(3)"],
+    ["constant", "0"],
+    ["constant", "4"],
+  ]);
+});
+
 test("a passage whose step leads back to itself ends: the passage already crossed stays its value (the root probe, T026)", () => {
   // two steps with the value a passage holds, each one holding that value with no name: crossing it again never ends
   const rec = recordingOf(
