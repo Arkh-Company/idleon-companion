@@ -3,7 +3,7 @@
 import type { RecNode } from "../recording.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { makeTerms } from "./terms.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
 

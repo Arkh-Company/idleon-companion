@@ -3,12 +3,12 @@
 // OPUS1-P5), a table the block writes in its own code (FIX-4, Holes), a working value that is the progress of the
 // loop of the call that wrote it (DEEP3-FIX-5) and a turn of the worn items' loop (NR-G 2).
 import type { RecNode, RecValue } from "../recording.ts";
-import { near } from "./math.ts";
-import { cacheOf, termName } from "./names.ts";
+import { near } from "../recorded/math.ts";
+import { cacheOf, termName } from "../names/names.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import type { Reads, Rule } from "./val-path.ts";
 
 /**

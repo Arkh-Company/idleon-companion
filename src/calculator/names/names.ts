@@ -1,4 +1,4 @@
-// The name of a row (spec 008, T023, FR-012a): the names table first (tree/names-table.ts), then the bench's rules that
+// The name of a row (spec 008, T023, FR-012a): the names table first (names/names-table.ts), then the bench's rules that
 // name any argument by its shape (names-008 rule 6): `getLOG` and `Log2` (pieces.cjs CALL_NAMES, [F5B-LOG2]), a block's
 // mode in words (pieces.cjs `nameOf`, proposal P2) and the recorder's label of a game's working value (build-tree.cjs
 // `inputOf`). A row with none of them keeps the generic name and `unnamed`. A recipe's name comes from the installed
@@ -88,7 +88,7 @@ export const SHAPE_NAMES: readonly {
     proof: "bench pieces.cjs NAMES_BY_LABEL",
     name: () => name,
   })),
-  // the game state paths' families of 16/11 (tree/state-names.ts), before the calls' rules: a path of a helper actor
+  // the game state paths' families of 16/11 (names/state-names.ts), before the calls' rules: a path of a helper actor
   // holds a call
   ...STATE_NAMES,
   {

@@ -5,8 +5,8 @@ import { checkTree } from "../../main/tree-check.ts";
 import { withFormula } from "./formulas.ts";
 import { row } from "./rows.ts";
 import { read } from "./tree-fixture.ts";
-import { useGameNames } from "./names.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameNames } from "../names/names.ts";
+import { useGameTables } from "../names/table-names.ts";
 
 afterEach(() => {
   useGameTables(new Map());

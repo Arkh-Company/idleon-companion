@@ -3,10 +3,10 @@
 import { afterEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { buildTree } from "../tree-build.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import { finish, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 import { kidsOf, read, recordingOf } from "./tree-fixture.ts";
 
 afterEach(() => {

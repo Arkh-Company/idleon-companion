@@ -3,9 +3,9 @@
 // too, as a work list, because a cache builder reads other caches. And the write a scratch read comes from
 // (`scratchWrites`), and its piece key (`scratchKey`).
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { callText } from "./rows.ts";
-import type { LoopTurn } from "./steps.ts";
+import type { LoopTurn } from "../recorded/steps.ts";
 
 /** Where a cache read came from: a call of the game (offline), the helpers' setup, the running game, or unknown. */
 export type Origin = "offline" | "offline-helper" | "game" | "unknown";

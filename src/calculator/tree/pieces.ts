@@ -4,7 +4,7 @@
 // are those of its first call under the root in the order the game ran them, whichever place is opened first.
 import type { RecNode, Recording } from "../recording.ts";
 import type { Link } from "./links.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 
 /** pieces.cjs MAX_DEPTH [NR-P]: the depth limit of `explain`. */
 export const MAX_DEPTH = 16;

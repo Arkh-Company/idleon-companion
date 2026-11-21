@@ -63,10 +63,24 @@ test-one target *args:
 test-edge $IDLEON_EDGE_TESTS="1":
     pnpm exec vitest run --pool=threads --dir src src/keeper/reader.integration.test.ts
 
-# O teste se pula sozinho sem PARITY_BENCH_DIR, PARITY_SNAPSHOT e PARITY_GAME_DIR no ambiente (veja o .env.example).
-# Paridade App = bancada (spec 008, SC-002): só na máquina com a bancada, fora do check e da CI
-parity:
-    pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/parity.integration.test.ts
+# Árvores declaradas sobre o jogo real (spec 010, contracts/real-trees-run.md e gallery.md): só no PC com o jogo, fora
+# do check e da CI. Um processo só: nunca duas rodadas juntas (trees, draft ou gallery), nunca em laço (o PC dá tela azul).
+# TREES_GAME_DIR, TREES_SNAPSHOT e TREES_OUT vêm do ambiente do terminal: o just não lê o .env. O alvo passa por uma
+# regex, como o dono do `github`, e vai entre aspas simples ao pwsh.
+TREES_ERRO := "alvo inválido: um id do catálogo ([a-z0-9-], até 80), w1 a w7, character, account, all ou roots"
+GALERIA_ERRO := "lote inválido: pilot, w1 a w7, character ou account"
+
+# Conferência real: trava, montagem e checagens de cada número do alvo; `just trees roots` é a sonda das raízes
+trees target:
+    $env:TREES_TARGET = '{{ if target =~ '^[a-z0-9-]{1,80}$' { target } else { error(TREES_ERRO) } }}'; $env:TREES_MODE = '{{ if target == "roots" { "roots" } else { "check" } }}'; pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/declared/real-trees.integration.test.ts
+
+# Rascunho das receitas do alvo que ainda não têm receita escrita
+draft target:
+    $env:TREES_TARGET = '{{ if target =~ '^[a-z0-9-]{1,80}$' { target } else { error(TREES_ERRO) } }}'; $env:TREES_MODE = 'draft'; pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/declared/real-trees.integration.test.ts
+
+# Galeria de aprovação de um lote: monta a ferramenta em TREES_OUT/gallery-app/ e abre (nunca entra no instalador)
+gallery lot:
+    pnpm exec vite build --config scripts/gallery/vite.config.ts && pnpm exec electron "$env:TREES_OUT/gallery-app/main.js" '{{ if lot =~ '^(?:pilot|w[1-7]|character|account)$' { lot } else { error(GALERIA_ERRO) } }}'
 
 lint:
     pnpm exec eslint .

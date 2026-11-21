@@ -40,7 +40,7 @@ para cada edição (AGENTS.md) e faz o commit antes da Fase 1. Cada mudança fun
 termina sem teste e sem erro (`--passWithNoTests`); `just --list` mostra `trees`, `draft` e `gallery` e não mostra mais
 `parity`.
 
-- [ ] T001 [sessão] Receitas `trees`, `draft` e `gallery` no `justfile`, e a receita `parity` sai (contracts/real-trees-run.md, contracts/gallery.md; FR-026, NFR-003)
+- [X] T001 [sessão] Receitas `trees`, `draft` e `gallery` no `justfile`, e a receita `parity` sai (contracts/real-trees-run.md, contracts/gallery.md; FR-026, NFR-003)
   - Files: `justfile`
   - Signatures:
     - `trees target`: `pnpm exec vitest run --pool=threads --dir src --passWithNoTests src/calculator/declared/real-trees.integration.test.ts`, com `TREES_TARGET` = o alvo e `TREES_MODE` = `roots` quando o alvo é `roots`, senão `check`;
@@ -52,13 +52,13 @@ termina sem teste e sem erro (`--passWithNoTests`); `just --list` mostra `trees`
     - um comentário diz: um processo só, nunca duas rodadas juntas, nunca em laço; fora do `check` e da CI;
     - a receita `parity` sai: a paridade com a bancada não é usada na 010, e o `parity.integration.test.ts` continua no `just test` (se pula sem as variáveis) até sair com o código dele na Fase 11.
   - Cases: `just check` passa; `just trees roots` sem o arquivo de teste passa sem teste; `just trees "x; rm"` é recusado pela regex.
-- [ ] T002 [sessão] Regra `declared-not-guessed` no `.dependency-cruiser.cjs` (research R17; FR-009, FR-027)
+- [X] T002 [sessão] Regra `declared-not-guessed` no `.dependency-cruiser.cjs` (research R17; FR-009, FR-027)
   - Files: `.dependency-cruiser.cjs`
   - Signatures: a regra `declared-not-guessed` (`name`, `comment`, `severity`, `from`, `to`) na lista `forbidden`
   - Regra: de `^src/calculator/(declared|recorded|names)/` para `^src/calculator/(tree/|tree-build\.ts$|tree-roots\.ts$|root-calls\.json$|parity)`, `severity: "error"`, testes incluídos.
   - Por quê: o motor novo não cresce sobre a forma adivinhada, e `recorded/` e `names/` (que ficam depois da Fase 11) não podem depender do que sai.
   - Cases: `just arch` passa hoje (as três pastas ainda não existem); um import de `tree/` dentro de `declared/` faz o `just arch` falhar.
-- [ ] T003 [sessão] Configuração de montagem da galeria em `scripts/gallery/vite.config.ts` (contracts/gallery.md; FR-023, FR-024, NFR-004)
+- [X] T003 [sessão] Configuração de montagem da galeria em `scripts/gallery/vite.config.ts` (contracts/gallery.md; FR-023, FR-024, NFR-004)
   - Files: `scripts/gallery/vite.config.ts` (`vite.config.*` em qualquer pasta é portão)
   - Signatures: `export default defineConfig(...)` com as quatro entradas e `build.outDir` em `TREES_OUT/gallery-app/`
   - Monta o main da ferramenta (Node), o preload (CommonJS, para `sandbox`) e as duas páginas (`tree-page.html`, `gallery-page.html`) em `TREES_OUT/gallery-app/`; recusa montar sem `TREES_OUT`; nenhum plugin que use a rede; os caminhos das entradas são texto, então o `tsc` e o `eslint` passam antes de os arquivos existirem.
@@ -78,7 +78,7 @@ variáveis e o scan. A árvore da 0.9 segue igual.
 **Independent Test**: os testes de caracterização passam antes e depois da mudança de pasta, sem nenhuma alteração; a
 suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorded/` e `names/` sem importar `tree/`.
 
-- [ ] T004 [P] Testes de caracterização das peças que ficam, em `src/calculator/kept-pieces.test.ts` (research R17)
+- [X] T004 [P] Testes de caracterização das peças que ficam, em `src/calculator/kept-pieces.test.ts` (research R17)
   - Files: `src/calculator/kept-pieces.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases, sobre gravações do jogo inventado (`fake-game.js`, `fake-mosaic.ts`):
@@ -86,15 +86,15 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
     - os nomes lidos das tabelas de texto (`readGameNames`, `useGameTables`, `tableText`, `nameOf`) de cinco códigos;
     - a classe dos talentos nos nomes (`clean` / `CLASS_OF` de `name-text.ts`: as marcas `~R`, `~G`, `~P`);
     - os imports apontam para os caminhos de hoje; a T005 e a T006 só trocam os caminhos.
-- [ ] T005 Mover `tree/steps.ts`, `tree/ast.ts` e `tree/math.ts` para `src/calculator/recorded/`, com os testes deles (research R17; depende de T004)
+- [X] T005 Mover `tree/steps.ts`, `tree/ast.ts` e `tree/math.ts` para `src/calculator/recorded/`, com os testes deles (research R17; depende de T004)
   - Files: `src/calculator/recorded/steps.ts`, `ast.ts`, `math.ts`, `steps.test.ts`, `math.test.ts`; os imports em `src/calculator/tree/*.ts`, `tree-build.ts` e `kept-pieces.test.ts`
   - Signatures: nenhuma muda (`makeSteps(rec: Recording, ops: readonly Op[])`, `Expr`, `Step`, `Check`, `near`).
   - Cases: `kept-pieces.test.ts` e os testes movidos passam sem mudança de caso; `recorded/` não importa nada de `tree/`.
-- [ ] T006 Mover os nomes para `src/calculator/names/` (research R17; depende de T004)
+- [X] T006 Mover os nomes para `src/calculator/names/` (research R17; depende de T004)
   - Files: `tree/names.ts`, `names-table.ts`, `table-names.ts`, `name-text.ts`, os JSON de nomes (`names-recipes.json`, `names-static.json`, `state-hashes.json`) e o fecho do que eles importam de `tree/` (hoje `renames.ts`, `rename-list.ts`, `state-names.ts`, `state-words.ts`, `merit-names.ts`, `killroy-names.ts`), com os testes; `src/calculator/game-names.ts` passa a importar de `names/`.
   - Signatures: nenhuma muda (`useGameNames`, `nameOf`, `resolveNames`, `useGameTables`, `tableText`, `isNameText`, `NAME_RECIPES`).
   - Cases: `kept-pieces.test.ts`, `game-names.test.ts`, `catalog-names.test.ts` e os testes movidos passam sem mudança de caso; `names/` não importa nada de `tree/` (`just arch`); cada arquivo segue abaixo de 400 linhas.
-- [ ] T007 [P] Testes da tabela de sistemas em `src/calculator/declared/systems.test.ts` (FR-006; data-model "Tabela de sistemas")
+- [X] T007 [P] Testes da tabela de sistemas em `src/calculator/declared/systems.test.ts` (FR-006; data-model "Tabela de sistemas")
   - Files: `src/calculator/declared/systems.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -104,17 +104,17 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
     - nenhuma entrada "Other";
     - a ordem e os emojis da V1 (`V1_SYSTEMS` de hoje) são os mesmos;
     - `systemById("talents")` dá nome e emoji; um id desconhecido dá `null`.
-- [ ] T008 A tabela de sistemas vira `src/calculator/blueprints/systems.json`, lida por `src/calculator/declared/systems.ts` (research R8; depende de T007)
+- [X] T008 A tabela de sistemas vira `src/calculator/blueprints/systems.json`, lida por `src/calculator/declared/systems.ts` (research R8; depende de T007)
   - Files: `src/calculator/blueprints/systems.json`, `src/calculator/declared/systems.ts`, `src/calculator/tree/systems.ts` (passa a ler nome e emoji do JSON; o "Other" fica só nele, para a árvore antiga)
   - Signatures: `interface SystemEntry { id: string; name: string; emoji: string; proof: string }`; `SYSTEMS: readonly SystemEntry[]`; `systemById(id: string): SystemEntry | null`; `systemLabel(e: SystemEntry): string` ("🎯 Talents").
   - Semeada por `V1_SYSTEMS` e `EXTRA_SYSTEMS`, sem "Other". `tree/systems.test.ts` passa sem mudança de caso.
   - Cases: os da T007; `src/calculator/tree/systems.test.ts` passa sem mudança de caso.
-- [ ] T009 [P] O `no-game-text.test.ts` passa a varrer `specs/010-declared-trees` (contracts/blueprint.md; FR-003, FR-007)
+- [X] T009 [P] O `no-game-text.test.ts` passa a varrer `specs/010-declared-trees` (contracts/blueprint.md; FR-003, FR-007)
   - Files: `src/main/no-game-text.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: `FOLDERS` ganha `specs/010-declared-trees`; as receitas em `src/calculator/blueprints/` já entram pelo `src`; um `proof` com aspas dentro de uma receita inventada de teste é acusado.
   - Se o protótipo congelado (`prototipo/`) falhar no scan, a falha vai ao Vinicius antes de qualquer exceção: a spec está congelada e não se edita.
-- [ ] T010 [P] `.env.example` ganha `TREES_GAME_DIR`, `TREES_SNAPSHOT` e `TREES_OUT`, sem valor (contracts/real-trees-run.md)
+- [X] T010 [P] `.env.example` ganha `TREES_GAME_DIR`, `TREES_SNAPSHOT` e `TREES_OUT`, sem valor (contracts/real-trees-run.md)
   - Files: `.env.example`
   - Signatures: nenhuma (configuração)
   - Um comentário por variável, como o `PARITY_*`: o que é, que o `just` não lê o arquivo, e que `TREES_OUT` fica fora do repositório. `TREES_TARGET` e `TREES_MODE` não entram: a receita os põe.

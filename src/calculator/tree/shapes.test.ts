@@ -5,7 +5,7 @@ import { checkTree } from "../../main/tree-check.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { shapeName } from "./shapes.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { branch, cond, fixed, read as part } from "./tree-fixture.ts";
 import { fn, num, op, read } from "./term-fixture.ts";
 

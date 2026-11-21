@@ -8,7 +8,7 @@
 import type { Above } from "./above-renames.ts";
 import { aboveText, collapsed, kidNames, shinyLevel } from "./kid-names.ts";
 import { nametagGrade, petsEarlier, stampBonus } from "./parent-renames.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { leafOf, MERGES, nameFrom } from "./one-child.ts";
 import { artifactPick } from "./sailing.ts";
 import { arenaPasses } from "./arena.ts";

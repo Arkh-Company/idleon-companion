@@ -5,9 +5,9 @@
 // a turn that reads another cache asks for that cache's entries too), each under its writer and path.
 import type { RecNode, Recording, RecValue, RecWrite } from "../recording.ts";
 import type { Linked } from "./links.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { callText } from "./rows.ts";
-import type { LoopTurn, Step } from "./steps.ts";
+import type { LoopTurn, Step } from "../recorded/steps.ts";
 
 /** A turn's read: [path, value] and, for a cache read, the call that wrote it. */
 export type TurnRead = [path: string, value: RecValue, writer?: number];

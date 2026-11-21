@@ -1,7 +1,7 @@
 // The game state paths named in words (FR-012a, the families of 16/11): what the game's code proves of a path no table
 // names, or what its use only suggests, whose proof then says "inferred" (Vinicius, 16/11: an inferred name names the
 // row). Each rule by the path's shape, so an index the snapshot did not show is named too; the rules that read a game
-// table are in tree/state-names.ts.
+// table are in names/state-names.ts.
 import { isNameText } from "./name-text.ts";
 
 export interface StateRule {

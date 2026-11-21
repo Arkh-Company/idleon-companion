@@ -9,10 +9,10 @@ import type { RecNode } from "../recording.ts";
 import { curveFormula, curveOf, fx3 } from "./curves.ts";
 import { near as nearRounded, token } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
-import { near } from "./math.ts";
-import { callName, pathName } from "./names.ts";
+import { near } from "../recorded/math.ts";
+import { callName, pathName } from "../names/names.ts";
 import { callText } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { valPath } from "./val-path.ts";
 import type { Reads } from "./val-path.ts";
 

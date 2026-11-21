@@ -3,7 +3,7 @@ import type { RecNode } from "../recording.ts";
 import type { CodeFormulas } from "./code-formulas.ts";
 import type { Entries } from "./entries.ts";
 import type { Row } from "./rows.ts";
-import type { Step } from "./steps.ts";
+import type { Step } from "../recorded/steps.ts";
 import type { Terms } from "./terms.ts";
 
 export interface CacheContext {

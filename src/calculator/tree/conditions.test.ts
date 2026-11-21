@@ -5,7 +5,7 @@ import type { RecNode } from "../recording.ts";
 import { makeConditions } from "./conditions.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { BlockSteps, Check, Expr } from "./steps.ts";
+import type { BlockSteps, Check, Expr } from "../recorded/steps.ts";
 
 const node = (n: Partial<RecNode> = {}): RecNode => ({
   id: 0,

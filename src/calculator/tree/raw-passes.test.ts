@@ -6,7 +6,7 @@ import { instrument } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { buildTree } from "../tree-build.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import { kidsOf, recordingOf } from "./tree-fixture.ts";
 
 type Spec = Partial<RecNode> & Pick<RecNode, "b">;

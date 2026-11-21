@@ -9,14 +9,14 @@ import type { CodeFormulas } from "./code-formulas.ts";
 import { fx3 } from "./curves.ts";
 import { flat, topOp } from "./expr.ts";
 import type { Pair } from "./formulas.ts";
-import { near } from "./math.ts";
-import { isNameText, untagged } from "./name-text.ts";
-import { termName } from "./names.ts";
+import { near } from "../recorded/math.ts";
+import { isNameText, untagged } from "../names/name-text.ts";
+import { termName } from "../names/names.ts";
 import { row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { termOf } from "./share.ts";
-import { tableText } from "./table-names.ts";
+import { tableText } from "../names/table-names.ts";
 import type { Reads } from "./val-path.ts";
 
 export const GOLD_FOOD = {

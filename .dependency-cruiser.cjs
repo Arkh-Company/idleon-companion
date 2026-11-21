@@ -98,6 +98,16 @@ module.exports = {
       from: { path: "^src/", pathNot: ["^src/calculator/", "\\.test\\.tsx?$"] },
       to: { path: "^(node:)?vm$", dependencyTypes: ["core"] },
     },
+    {
+      name: "declared-not-guessed",
+      comment:
+        "The declared engine never grows on the guessed shape, and recorded/ and names/ (which outlive feature 010) never depend on what leaves (spec 010, research R17), tests included.",
+      severity: "error",
+      from: { path: "^src/calculator/(declared|recorded|names)/" },
+      to: {
+        path: "^src/calculator/(tree/|tree-build\\.ts$|tree-roots\\.ts$|root-calls\\.json$|parity)",
+      },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

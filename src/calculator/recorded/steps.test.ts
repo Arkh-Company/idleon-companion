@@ -4,7 +4,7 @@ import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { instrument } from "../instrument.ts";
 import { bootRecorder } from "../tree-record.ts";
-import { recordingOf } from "./tree-fixture.ts";
+import { recordingOf } from "../fixtures/recording-fixture.ts";
 import { lastReads, makeSteps } from "./steps.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

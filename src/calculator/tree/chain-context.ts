@@ -7,12 +7,12 @@ import type { Opened } from "./cache-formulas.ts";
 import { readsPath } from "./cache-picks.ts";
 import { isClamp, topOp } from "./expr.ts";
 import { goldFoodTerm, wornStep } from "./gold-food-chain.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import type { FirstLevelContext } from "./mould.ts";
 import type { TermAt } from "./pools.ts";
 import { callText } from "./rows.ts";
 import type { CacheOpen, Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import type { Terms } from "./terms.ts";
 import type { Reads } from "./val-path.ts";
 

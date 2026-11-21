@@ -4,11 +4,11 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { classify } from "./kinds.ts";
-import { nameOf } from "./names.ts";
-import { STATIC_NAMES } from "./names-table.ts";
-import { renameKind, renameOf, RENAMES } from "./renames.ts";
+import { nameOf } from "../names/names.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
+import { renameKind, renameOf, RENAMES } from "../names/renames.ts";
 import { row } from "./rows.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 
 const at = (i: number, v: unknown) => {
   const list: unknown[] = [];

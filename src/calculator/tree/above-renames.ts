@@ -10,7 +10,7 @@
 import type { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
 import { atOneParts } from "./formulas.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { lastAbove } from "./last-renames.ts";
 import { bare, unlinked } from "./rows.ts";
 import { isLeaf, untyped } from "./row-checks.ts";

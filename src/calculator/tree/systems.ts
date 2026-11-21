@@ -3,6 +3,7 @@
 // own goes to the block that writes it. No rule, no system, never by a guess: the source with no proven system is its
 // own row, after the groups (tree/groups.ts). The order and the emoji are the V1's (bench build-v1mold.cjs V1, the
 // site's lib/dropRate/systems.ts).
+import { SYSTEMS } from "../declared/systems.ts";
 import { callKey, SYSTEM_TAGS } from "./tags.ts";
 
 export interface System {
@@ -10,60 +11,16 @@ export interface System {
   emoji: string;
 }
 
+// spec 010 (T008): the names and emojis live in blueprints/systems.json, the V1 systems first, then the systems beyond it
+// from Meals on (each emoji decision of 18/11 and 19/11 kept); "Other" lives only here, for this tree.
+const FIRST_EXTRA = SYSTEMS.findIndex((s) => s.id === "meals");
+const nameAndEmoji = ({ name, emoji }: System): System => ({ name, emoji });
+
 /** The V1 systems, in the V1 order, "Other" last. */
-export const V1_SYSTEMS: readonly System[] = (
-  [
-    ["LUK / Stats", "🍀"],
-    ["Talents", "🎯"],
-    ["Cards", "🃏"],
-    ["Star Signs", "⭐"],
-    ["Achievements", "🏆"],
-    ["Companions", "🐾"],
-    ["Friends", "🤝"],
-    ["Stamps", "📜"],
-    ["Alchemy", "⚗️"],
-    ["Sigils", "🔮"],
-    ["Prayers", "🙏"],
-    ["Shrines", "⛩️"],
-    ["Guild", "🛡️"],
-    ["Arcade", "🕹️"],
-    ["Voting", "🗳️"],
-    ["Post Office", "📮"],
-    ["Shiny Pets", "🐉"],
-    ["Tome", "📖"],
-    ["Researching", "🔬"],
-    // decision of 19/11: 🧩, as the Gem Shop takes 💎
-    ["Chips", "🧩"],
-    ["Dreams", "💭"],
-    ["Cloud Bonus", "☁️"],
-    ["Owl", "🦉"],
-    ["Grimoire", "📕"],
-    ["Vault", "🏦"],
-    ["Farming", "🌾"],
-    ["Holes", "🕳️"],
-    ["Emperor", "👑"],
-    ["Legend Talents", "⚔️"],
-    ["Spelunk Shop", "🪨"],
-    ["Sushi", "🍣"],
-    ["Minehead", "⛏️"],
-    ["Menagerie", "🪼"],
-    ["Arcane Map", "🗺️"],
-    ["Glimbo", "🎲"],
-    ["Equipment", "🎽"],
-    ["Obols", "🪙"],
-    ["Gallery", "🖼️"],
-    ["Hatrack", "🎩"],
-    ["Cape Vine", "🧣"],
-    ["Golden Food", "🍔"],
-    ["Set Bonuses", "🧰"],
-    ["Bundles", "🎁"],
-    ["Pristine Charms", "🌟"],
-    ["Sneaking Mastery", "🥷"],
-    ["Summoning", "🐲"],
-    ["Royal Guardian", "🏰"],
-    ["Other", "🔹"],
-  ] as const
-).map(([name, emoji]) => ({ name, emoji }));
+export const V1_SYSTEMS: readonly System[] = [
+  ...SYSTEMS.slice(0, FIRST_EXTRA).map(nameAndEmoji),
+  { name: "Other", emoji: "🔹" },
+];
 
 export const SYSTEM_ORDER: readonly string[] = V1_SYSTEMS.map((s) => s.name);
 
@@ -71,34 +28,8 @@ export const SYSTEM_ORDER: readonly string[] = V1_SYSTEMS.map((s) => s.name);
  * The systems beyond the V1 (T028, from the probe of the 716 trees): after the V1's, in the order the sum gives them
  * (FR-004), "Other" still last.
  */
-export const EXTRA_SYSTEMS: readonly System[] = (
-  [
-    ["Meals", "🍲"],
-    ["Bribes", "💰"],
-    ["Jelly Operator", "🫧"],
-    ["Atom Collider", "⚛️"],
-    ["Compass", "🧭"],
-    ["Gaming", "🎮"],
-    ["Spelunking", "🔦"],
-    ["Trapping", "🪤"],
-    ["Sailing", "⛵"],
-    ["Lab", "🧪"],
-    // family 15 of the audit of 19/11, the names and emojis of Vinicius's decision 4
-    ["Family Bonuses", "👪"],
-    ["Bubba", "🥩"],
-    ["Clam", "🐚"],
-    ["Rift", "🌀"],
-    ["Killroy", "💀"],
-    // decision of 19/11: Divinity takes 🕊️, as Prayers has 🙏
-    ["Divinity", "🕊️"],
-    ["Gem Shop", "💎"],
-    // fix tree-shape-091, round 1: the systems of the max damage's sources that had none (Vinicius, 19/11)
-    ["Meritocracy", "🏛️"],
-    ["Statues", "🗿"],
-    ["Coral Reef", "🪸"],
-    ["Weekly Boss", "📅"],
-  ] as const
-).map(([name, emoji]) => ({ name, emoji }));
+export const EXTRA_SYSTEMS: readonly System[] =
+  SYSTEMS.slice(FIRST_EXTRA).map(nameAndEmoji);
 
 const TAG_OF = "bench pieces.cjs tagOf";
 

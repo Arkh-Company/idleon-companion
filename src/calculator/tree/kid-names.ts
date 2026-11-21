@@ -3,7 +3,7 @@
 // gets its place, over the level under it built then (tree/places.ts, tree/parent-passes.ts). Left out, each a
 // deviation (research R14): the pet's own name in its shiny level (the pets' table is not one the names table reads,
 // and the bench's fallback is the game's code), and the names of the root's first level (the steps, FR-006).
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { named } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tagOf } from "./tags.ts";

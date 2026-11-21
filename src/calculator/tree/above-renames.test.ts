@@ -9,7 +9,7 @@ import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { aboveRenames } from "./above-renames.ts";
 import type { Above } from "./above-renames.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { fixed, kidsIn, kidsOf, openPath, read } from "./tree-fixture.ts";

@@ -5,12 +5,12 @@
 // in the level's `finish` and on the leaf a merge makes (tree/parent-passes.ts). Left out, a deviation (research R14): F's measured amount
 // under a row that opens later (the app builds a level when its row gets its place: the reads F renames are found in
 // the call's level and in the branches built in it).
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import type { Level } from "./places.ts";
 import { bare, unlinked } from "./rows.ts";
 import { untyped, withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { tableText } from "./table-names.ts";
+import { tableText } from "../names/table-names.ts";
 
 /** A: the arena's count, the waves of the arena's list its best round reached (each one a turn, tree/turn-names.ts). */
 export const ARENA = {

@@ -2,7 +2,7 @@
 // (HaveW6Trophy: the cache = Cards[1] contains the trophy) is said by what it found, "Found <item>". The names of a
 // check's sides in tree/conditions.ts take it first.
 import type { RecNode } from "../recording.ts";
-import { tableText } from "./table-names.ts";
+import { tableText } from "../names/table-names.ts";
 
 /** The name of the read `p` of block `n`, "Found <item>"; null for any other read, or an item with no name in the game's
  * table (never its raw id). `writersOf`: the calls that wrote each path (the recording's writes). */

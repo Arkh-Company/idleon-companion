@@ -3,7 +3,7 @@
 // BASELINE-4. A curve is the calculation, not a value: its two constants are fixed values named by their role, and the
 // value it curves is the caller's read with the same value. The share of the maximum (FR-015a) is new in the app: only
 // the two decay curves have a maximum.
-import { num } from "./math.ts";
+import { num } from "../recorded/math.ts";
 
 /** [F5-NUM] 3 decimals, or 3 significant digits below 0.01, so the ⓘ's line of numbers recomputes (rule 160). */
 export const fx3 = (v: number): string =>

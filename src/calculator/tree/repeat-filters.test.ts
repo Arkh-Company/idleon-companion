@@ -5,7 +5,7 @@
 import { expect, test } from "vitest";
 import { instrument } from "../instrument.ts";
 import { buildTree } from "../tree-build.ts";
-import { NAMES_BY_LABEL } from "./names.ts";
+import { NAMES_BY_LABEL } from "../names/names.ts";
 import { PROGRESS_BY_LABEL } from "./term-passes.ts";
 import { call, nodes, op, read, termsOf } from "./term-fixture.ts";
 import { brief, kidsOf, openPath, recordingOf } from "./tree-fixture.ts";

@@ -3,7 +3,7 @@
 // order is the bench's (build-v1mold.cjs V1). Invented blocks and paths, apart from the game's own block names the
 // rules read.
 import { expect, test } from "vitest";
-import { isNameText } from "./names.ts";
+import { isNameText } from "../names/names.ts";
 import { SYSTEM_TAGS } from "./tags.ts";
 import {
   EXTRA_SYSTEMS,

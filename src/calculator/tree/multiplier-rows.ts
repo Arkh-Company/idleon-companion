@@ -11,7 +11,7 @@ import { citing } from "./build-up.ts";
 import { byShapeOnly } from "./flatten.ts";
 import { isCond, isConstant } from "./formulas.ts";
 import { inlined, roleOf } from "./inline.ts";
-import { untagged as brief } from "./name-text.ts";
+import { untagged as brief } from "../names/name-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";

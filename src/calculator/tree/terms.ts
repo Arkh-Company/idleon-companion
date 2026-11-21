@@ -18,13 +18,13 @@ import {
   stateSrc,
   topOp,
 } from "./expr.ts";
-import { nameOf, termName } from "./names.ts";
+import { nameOf, termName } from "../names/names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
 import { clampedProduct } from "./clamped.ts";
 import { capRow as capRowOf } from "./caps.ts";
 import { additiveRows } from "./scaled.ts";
-import type { Expr, Step } from "./steps.ts";
-import { near, num } from "./math.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
+import { near, num } from "../recorded/math.ts";
 import { fixed, hasKids, tidy } from "./tidy.ts";
 import { any, BUBBLE_VALUES, valPath } from "./val-path.ts";
 import {
