@@ -217,7 +217,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Files: `src/calculator/declared/not-leaves.test.ts`, `src/calculator/declared/not-leaves.ts`
   - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string): NotLeaf | null`.
   - Cases: a curva `decay`, o `getLOG`, a masmorra e o mapa atual, o `GurtBonuzz` e a leitura de outro personagem casam; uma chamada comum não casa; toda entrada tem `reason`; nenhuma entrada é um texto do jogo.
-- [ ] T021 [P] Testes primeiro, depois a revisão em `src/calculator/declared/review.ts` (contracts/review.md; FR-024c, FR-025)
+- [X] T021 [P] Testes primeiro, depois a revisão em `src/calculator/declared/review.ts` (contracts/review.md; FR-024c, FR-025)
   - Files: `src/calculator/declared/review.test.ts`, `src/calculator/declared/review.ts`
   - Signatures: `interface Review { version: 1; blueprintSha: string; lock: { ok: boolean; gameSha: string; at: string } | null; verdict: "approved" | "fix" | null; note: string | null; history: ReviewEntry[] }`; `parseReview(raw: unknown): Review | null`; `blueprintSha(raw: unknown): string` (sha256 da forma canônica: chaves em ordem, sem espaço); `withLock(prev: Review | null, sha: string, lock: Review["lock"]): Review`; `withVerdict(prev: Review, verdict, note, sha, at): Review`; `reviewJson(r: Review): string`; `saoPauloTime(d: Date): string`.
   - Cases:
