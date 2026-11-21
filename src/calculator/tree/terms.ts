@@ -18,7 +18,7 @@ import {
   stateSrc,
   topOp,
 } from "./expr.ts";
-import { nameOf, termName } from "./names.ts";
+import { nameOf, termName } from "../names/names.ts";
 import { boundRead, branchName, numRole, sourcesName } from "./shapes.ts";
 import { clampedProduct } from "./clamped.ts";
 import { capRow as capRowOf } from "./caps.ts";

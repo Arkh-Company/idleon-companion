@@ -15,7 +15,7 @@ import { leafPasses } from "./leaf-passes.ts";
 import { levelRenames } from "./level-renames.ts";
 import { formulaOut } from "../recorded/math.ts";
 import { descFormula } from "./name-descs.ts";
-import { isGeneric, nameOf } from "./names.ts";
+import { isGeneric, nameOf } from "../names/names.ts";
 import { kidShares, termOf } from "./share.ts";
 
 /** The generic name of a part with no proven name (design.md C7, FR-012a). */

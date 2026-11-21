@@ -7,7 +7,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { list } from "./state-fixture.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 import { cond, kidsIn, placed, recNode } from "./tree-fixture.ts";
 
 afterEach(() => {

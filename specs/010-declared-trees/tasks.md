@@ -90,7 +90,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
   - Files: `src/calculator/recorded/steps.ts`, `ast.ts`, `math.ts`, `steps.test.ts`, `math.test.ts`; os imports em `src/calculator/tree/*.ts`, `tree-build.ts` e `kept-pieces.test.ts`
   - Signatures: nenhuma muda (`makeSteps(rec: Recording, ops: readonly Op[])`, `Expr`, `Step`, `Check`, `near`).
   - Cases: `kept-pieces.test.ts` e os testes movidos passam sem mudança de caso; `recorded/` não importa nada de `tree/`.
-- [ ] T006 Mover os nomes para `src/calculator/names/` (research R17; depende de T004)
+- [X] T006 Mover os nomes para `src/calculator/names/` (research R17; depende de T004)
   - Files: `tree/names.ts`, `names-table.ts`, `table-names.ts`, `name-text.ts`, os JSON de nomes (`names-recipes.json`, `names-static.json`, `state-hashes.json`) e o fecho do que eles importam de `tree/` (hoje `renames.ts`, `rename-list.ts`, `state-names.ts`, `state-words.ts`, `merit-names.ts`, `killroy-names.ts`), com os testes; `src/calculator/game-names.ts` passa a importar de `names/`.
   - Signatures: nenhuma muda (`useGameNames`, `nameOf`, `resolveNames`, `useGameTables`, `tableText`, `isNameText`, `NAME_RECIPES`).
   - Cases: `kept-pieces.test.ts`, `game-names.test.ts`, `catalog-names.test.ts` e os testes movidos passam sem mudança de caso; `names/` não importa nada de `tree/` (`just arch`); cada arquivo segue abaixo de 400 linhas.

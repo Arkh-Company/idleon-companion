@@ -3,10 +3,10 @@
 // table's sha256 is not the bench's leaves its row with no name.
 import { createHash } from "node:crypto";
 import type { Context } from "./boot.ts";
-import { resolveNames } from "./tree/names.ts";
-import { NAME_RECIPES, TABLE_HASHES } from "./tree/names-table.ts";
-import { isTextTable } from "./tree/table-names.ts";
-import type { NamePart, NameRecipe } from "./tree/names-table.ts";
+import { resolveNames } from "./names/names.ts";
+import { NAME_RECIPES, TABLE_HASHES } from "./names/names-table.ts";
+import { isTextTable } from "./names/table-names.ts";
+import type { NamePart, NameRecipe } from "./names/names-table.ts";
 
 const cellId = (p: NamePart) => JSON.stringify([p.table, p.index, p.field]);
 const isTextOrNull = (v: unknown) => v === null || typeof v === "string";

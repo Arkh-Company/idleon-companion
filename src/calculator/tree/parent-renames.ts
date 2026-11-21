@@ -6,7 +6,7 @@
 // with the talent's curve in it, tree/code-formulas.ts).
 import { LEVEL_RENAMES } from "./level-renames.ts";
 import { near } from "../recorded/math.ts";
-import { nameOf } from "./names.ts";
+import { nameOf } from "../names/names.ts";
 import { bare, GENERIC_NAME, named } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { tagOf } from "./tags.ts";

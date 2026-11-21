@@ -3,10 +3,10 @@
 // ClassFamilyBonuses[k ÷ 2], by the rule of tree/state-names.ts (no recipe names a key any more). The table holds only the
 // cells read, game text.
 import { afterEach, expect, test } from "vitest";
-import { nameOf, resolveNames, useGameNames } from "./names.ts";
-import { NAME_RECIPES } from "./names-table.ts";
-import type { NamePart } from "./names-table.ts";
-import { useGameTables } from "./table-names.ts";
+import { nameOf, resolveNames, useGameNames } from "../names/names.ts";
+import { NAME_RECIPES } from "../names/names-table.ts";
+import type { NamePart } from "../names/names-table.ts";
+import { useGameTables } from "../names/table-names.ts";
 import { list } from "./state-fixture.ts";
 
 afterEach(() => {

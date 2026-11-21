@@ -11,7 +11,7 @@ import { bootRecorder } from "../tree-record.ts";
 import { sourceTerm } from "./gold-food.ts";
 import { golden, TABLES } from "./gold-food-fixture.ts";
 import { row } from "./rows.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {

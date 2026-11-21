@@ -57,8 +57,8 @@ test("the scan reads the code, the tests, the invented games and the spec's docu
     "specs/008-formula-trees/design.md",
     "specs/008-formula-trees/catalogo-de-arvores.md",
     "specs/008-formula-trees/prototipo/load-game.cjs",
-    "src/calculator/tree/names-static.json",
-    "src/calculator/tree/names-recipes.json",
+    "src/calculator/names/names-static.json",
+    "src/calculator/names/names-recipes.json",
   ])
     expect(files).toContain(f);
 });

@@ -4,7 +4,7 @@
 // loop of the call that wrote it (DEEP3-FIX-5) and a turn of the worn items' loop (NR-G 2).
 import type { RecNode, RecValue } from "../recording.ts";
 import { near } from "../recorded/math.ts";
-import { cacheOf, termName } from "./names.ts";
+import { cacheOf, termName } from "../names/names.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";

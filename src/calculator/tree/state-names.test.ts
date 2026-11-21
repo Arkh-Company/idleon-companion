@@ -9,12 +9,12 @@ import {
   pathName,
   SHAPE_NAMES,
   useGameNames,
-} from "./names.ts";
+} from "../names/names.ts";
 import { GENERIC_NAME, row } from "./rows.ts";
-import { useGameTables } from "./table-names.ts";
-import { TOME_PATHS } from "./state-names.ts";
-import { STATIC_NAMES, TABLE_HASHES } from "./names-table.ts";
-import { renameOf } from "./renames.ts";
+import { useGameTables } from "../names/table-names.ts";
+import { TOME_PATHS } from "../names/state-names.ts";
+import { STATIC_NAMES, TABLE_HASHES } from "../names/names-table.ts";
+import { renameOf } from "../names/renames.ts";
 import { GAME, list } from "./state-fixture.ts";
 
 afterEach(() => {

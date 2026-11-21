@@ -32,7 +32,7 @@ test("the rules' version is the N.js the names table was checked on", () => {
   // read as a file: the main never imports the calculator
   const table = JSON.parse(
     readFileSync(
-      join(import.meta.dirname, "../calculator/tree/names-static.json"),
+      join(import.meta.dirname, "../calculator/names/names-static.json"),
       "utf8",
     ),
   ) as { njsIndex: string };

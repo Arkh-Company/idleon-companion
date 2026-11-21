@@ -10,7 +10,7 @@ import type { Level } from "./places.ts";
 import { bare, unlinked } from "./rows.ts";
 import { untyped, withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
-import { tableText } from "./table-names.ts";
+import { tableText } from "../names/table-names.ts";
 
 /** A: the arena's count, the waves of the arena's list its best round reached (each one a turn, tree/turn-names.ts). */
 export const ARENA = {

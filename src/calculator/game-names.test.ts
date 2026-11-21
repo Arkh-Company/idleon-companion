@@ -4,10 +4,10 @@ import { createHash } from "node:crypto";
 import { beforeAll, expect, test } from "vitest";
 import { GAME, PAK } from "./fixtures/fake-mosaic.ts";
 import { readGameNames } from "./game-names.ts";
-import { nameOf, useGameNames } from "./tree/names.ts";
-import { NAME_RECIPES } from "./tree/names-table.ts";
-import { tableText, useGameTables } from "./tree/table-names.ts";
-import type { NameRecipe } from "./tree/names-table.ts";
+import { nameOf, useGameNames } from "./names/names.ts";
+import { NAME_RECIPES } from "./names/names-table.ts";
+import { tableText, useGameTables } from "./names/table-names.ts";
+import type { NameRecipe } from "./names/names-table.ts";
 import { createTreeEngine } from "./tree-engine.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
 

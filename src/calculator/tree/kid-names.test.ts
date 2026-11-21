@@ -4,7 +4,7 @@
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { collapsed, FIX_NAMES, kidNames, shinyLevel } from "./kid-names.ts";
-import { isNameText } from "./name-text.ts";
+import { isNameText } from "../names/name-text.ts";
 import { makePlaces } from "./places.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";

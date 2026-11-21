@@ -6,7 +6,7 @@ import { formulaLines } from "../../renderer/tree-text.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import { GEN_INFO } from "./state-words.ts";
+import { GEN_INFO } from "../names/state-words.ts";
 import { cond, fixed, kidsOf, placed } from "./tree-fixture.ts";
 
 const lazy = (name: string, open: number, value: number, code: string) => ({

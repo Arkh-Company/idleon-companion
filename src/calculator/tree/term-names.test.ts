@@ -4,8 +4,8 @@
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import { exprText, isFormulaName } from "./expr.ts";
-import { nameOf, useGameNames } from "./names.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { nameOf, useGameNames } from "../names/names.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
 import { finish, GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Expr } from "../recorded/steps.ts";

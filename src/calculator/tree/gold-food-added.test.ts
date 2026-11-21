@@ -8,7 +8,7 @@ import { GAME, PAK } from "../fixtures/fake-mosaic.ts";
 import { buildTree } from "../tree-build.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { golden, TABLES } from "./gold-food-fixture.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 import { kidsIn, openPath } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

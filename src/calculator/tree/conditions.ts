@@ -9,7 +9,7 @@
 import type { CALC_CONDITION_KINDS } from "../tree-contract.ts";
 import type { RecNode } from "../recording.ts";
 import { classify } from "./kinds.ts";
-import { isNameText, termName } from "./names.ts";
+import { isNameText, termName } from "../names/names.ts";
 import { callText, row } from "./rows.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";

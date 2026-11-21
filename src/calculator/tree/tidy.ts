@@ -3,7 +3,7 @@
 import type { RecNode, RecValue } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { topOp } from "./expr.ts";
-import { termName } from "./names.ts";
+import { termName } from "../names/names.ts";
 import { near, num } from "../recorded/math.ts";
 import { callText, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";

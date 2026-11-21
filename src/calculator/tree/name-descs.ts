@@ -5,10 +5,10 @@
 // of its own (review r1 and r2, tree/formulas.ts withFormula).
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
-import { KILLROY } from "./killroy-names.ts";
-import { MERIT_SHOP } from "./merit-names.ts";
-import { recipeName } from "./names.ts";
-import { partText, tableText } from "./table-names.ts";
+import { KILLROY } from "../names/killroy-names.ts";
+import { MERIT_SHOP } from "../names/merit-names.ts";
+import { recipeName } from "../names/names.ts";
+import { partText, tableText } from "../names/table-names.ts";
 
 const n = (m: RegExpExecArray, k = 1) => Number(m[k]);
 /** The game's whole text of a row's bonus, by its code, each with its proof by reference. */

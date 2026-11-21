@@ -3,8 +3,8 @@
 // id. The names are kept in number-catalog.json, since the window cannot import the calculator; this test pins them.
 import { expect, test } from "vitest";
 import { TREE_CATALOG } from "../shared/index.ts";
-import { isNameText, SHAPE_NAMES } from "./tree/names.ts";
-import { STATIC_NAMES } from "./tree/names-table.ts";
+import { isNameText, SHAPE_NAMES } from "./names/names.ts";
+import { STATIC_NAMES } from "./names/names-table.ts";
 import { TARGETS } from "./targets.ts";
 import { TREE_ROOTS } from "./tree-roots.ts";
 

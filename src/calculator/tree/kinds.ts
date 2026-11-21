@@ -4,7 +4,7 @@
 // code, then the same rules on the name. Every rule carries its proof as a reference, never as the game's text (FR-032).
 // The bench's last step, the 007 dictionary (`dictKind`), stays out of the app.
 import type { CALC_CONDITION_KINDS, CalcTreeNode } from "../tree-contract.ts";
-import { renameKind } from "./renames.ts";
+import { renameKind } from "../names/renames.ts";
 
 type Leaf = NonNullable<CalcTreeNode["leaf"]>;
 type Condition = (typeof CALC_CONDITION_KINDS)[number];

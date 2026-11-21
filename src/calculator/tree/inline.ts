@@ -9,7 +9,7 @@ import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { evaluate, formulaOut, isOperator } from "../recorded/math.ts";
-import { untagged } from "./name-text.ts";
+import { untagged } from "../names/name-text.ts";
 import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";

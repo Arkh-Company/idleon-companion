@@ -7,9 +7,9 @@
 // writes its id). Left out: the bench's "Part N" (a part with no name keeps the generic one, FR-012a).
 import { isConstant } from "./formulas.ts";
 import type { Entry, TurnRead } from "./entries.ts";
-import { clean, isNameText, termName } from "./names.ts";
+import { clean, isNameText, termName } from "../names/names.ts";
 import { near } from "../recorded/math.ts";
-import { tableText } from "./table-names.ts";
+import { tableText } from "../names/table-names.ts";
 import type { Node, Row } from "./rows.ts";
 import type { Rule } from "./val-path.ts";
 

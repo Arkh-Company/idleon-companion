@@ -1,9 +1,9 @@
 // The calls the 007 catalog names from the game's own tables (proven at 0e47e87b): the Arcade shop, the Lab's bonuses
 // and jewels, talents, buffs, the Flurbo shop, a pet and a distance, each a static name of the names table (FR-012a).
 import { expect, test } from "vitest";
-import { nameOf } from "./names.ts";
-import { isNameText } from "./name-text.ts";
-import { STATIC_NAMES } from "./names-table.ts";
+import { nameOf } from "../names/names.ts";
+import { isNameText } from "../names/name-text.ts";
+import { STATIC_NAMES } from "../names/names-table.ts";
 import { row } from "./rows.ts";
 
 const CALLS: readonly (readonly [code: string, name: string])[] = [

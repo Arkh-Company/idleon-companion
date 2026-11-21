@@ -6,13 +6,13 @@ import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import { readGameNames } from "./game-names.ts";
 import { bootRecorder, TREE_LIMITS } from "./tree-record.ts";
-import { clean, isNameText } from "./tree/name-text.ts";
-import { nameOf, useGameNames } from "./tree/names.ts";
-import { NAME_RECIPES } from "./tree/names-table.ts";
-import type { NameRecipe } from "./tree/names-table.ts";
+import { clean, isNameText } from "./names/name-text.ts";
+import { nameOf, useGameNames } from "./names/names.ts";
+import { NAME_RECIPES } from "./names/names-table.ts";
+import type { NameRecipe } from "./names/names-table.ts";
 import { makeSteps } from "./recorded/steps.ts";
 import type { Expr } from "./recorded/steps.ts";
-import { tableText, useGameTables } from "./tree/table-names.ts";
+import { tableText, useGameTables } from "./names/table-names.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {

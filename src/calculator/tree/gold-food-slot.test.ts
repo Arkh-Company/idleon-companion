@@ -6,7 +6,7 @@ import { afterEach, expect, test } from "vitest";
 import type { RecValue } from "../recording.ts";
 import { emporiumName, equippedName } from "./gold-food.ts";
 import { TABLES } from "./gold-food-fixture.ts";
-import { useGameTables } from "./table-names.ts";
+import { useGameTables } from "../names/table-names.ts";
 
 afterEach(() => {
   useGameTables(new Map());

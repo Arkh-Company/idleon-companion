@@ -10,7 +10,7 @@ import { evaluate } from "../recorded/math.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import type { RecNode } from "../recording.ts";
-import { nameOf } from "./names.ts";
+import { nameOf } from "../names/names.ts";
 import { callText } from "./rows.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { num } from "../recorded/math.ts";
