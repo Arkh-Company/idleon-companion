@@ -160,7 +160,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - `id` diferente do nome do arquivo; `pools` vazio; dois pools seguidos do mesmo `kind`;
     - `system` fora de `systems.json`; "Other" recusado;
     - `key` fora do slug ou repetida entre irmãos;
-    - `name` vazio, "no name yet" ou "Game value"; `nameProof` ausente;
+    - `name` vazio, "no name yet" ou "Game value" (o `nameProof` é opcional: spec, Open Questions, 21/11);
     - `ref` e `constant` juntos, ou nenhum dos dois;
     - `leaf` com `children`, ou sem os dois; `leaf` fora dos 9 tipos (o `unknown` da 008 é recusado);
     - `conditionKind` sem `leaf: "condition"`; `classes` ou `weight` fora de fonte de pool; `termPart` fora de filho;
@@ -1009,7 +1009,7 @@ Verify: `just test-one src/main/old-trees.test.ts` - passa; `just test-one src/r
 Drop Rate em até 5 s, com 0 "no name yet", "Game value" e "Other" nas 289.
 
 - [ ] T135 A saída da forma antiga, num commit próprio (FR-027; research R17; depende de T123)
-  - Files: apagados com os testes deles: `src/calculator/tree-build.ts`, o resto de `src/calculator/tree/`, `src/calculator/tree-roots.ts`, `src/calculator/root-calls.json`, `src/calculator/parity*.ts`; o tipo `TreeRoot` de que o `tree-recipe.ts` precisa muda para `tree-record.ts`; `.env.example` perde os `PARITY_*`.
+  - Files: apagados com os testes deles: `src/calculator/tree-build.ts`, o resto de `src/calculator/tree/`, `src/calculator/tree-roots.ts`, `src/calculator/root-calls.json`, `src/calculator/parity*.ts`, e também `src/calculator/names/`, `game-names.ts` e `names-reader.js`, se o gerador de rascunho não os usar (nesse caso ficam só para ele, fora do worker do app: spec, Open Questions, 21/11); o tipo `TreeRoot` de que o `tree-recipe.ts` precisa muda para `tree-record.ts`; `.env.example` perde os `PARITY_*`.
   - Signatures: nenhuma nova; `TreeRoot` passa a ser exportado de `tree-record.ts`
   - Cases: `just check` passa; nenhum import para um arquivo apagado; `just arch` passa; a lista de testes apagados vai na descrição do PR, cada um com o código que ele testava.
 - [ ] T136 [P] `ARCHITECTURE.md`: o motor declarado, as receitas como dado, a revisão, a ferramenta da galeria, as regras do dependency-cruiser e o que saiu (constituição, Architecture; depende de T135)
