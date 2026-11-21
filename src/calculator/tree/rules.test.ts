@@ -54,7 +54,7 @@ import { MERIT_SHOP } from "./merit-names.ts";
 import { PARENT_RENAMES } from "./parent-renames.ts";
 
 import { ONE_CHILD } from "./one-child.ts";
-import { GAME_TABLE } from "./steps.ts";
+import { GAME_TABLE } from "../recorded/steps.ts";
 import { BUBBLE_VALUES, COINCIDENT_READS, TABLE_READ } from "./val-path.ts";
 
 const TABLES = {

@@ -6,7 +6,7 @@ import type { Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { entriesOf } from "./entries.ts";
 import { linkReads } from "./links.ts";
-import { makeSteps } from "./steps.ts";
+import { makeSteps } from "../recorded/steps.ts";
 import { recordingOf } from "./tree-fixture.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

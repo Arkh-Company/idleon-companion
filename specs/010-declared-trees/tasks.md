@@ -86,7 +86,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
     - os nomes lidos das tabelas de texto (`readGameNames`, `useGameTables`, `tableText`, `nameOf`) de cinco códigos;
     - a classe dos talentos nos nomes (`clean` / `CLASS_OF` de `name-text.ts`: as marcas `~R`, `~G`, `~P`);
     - os imports apontam para os caminhos de hoje; a T005 e a T006 só trocam os caminhos.
-- [ ] T005 Mover `tree/steps.ts`, `tree/ast.ts` e `tree/math.ts` para `src/calculator/recorded/`, com os testes deles (research R17; depende de T004)
+- [X] T005 Mover `tree/steps.ts`, `tree/ast.ts` e `tree/math.ts` para `src/calculator/recorded/`, com os testes deles (research R17; depende de T004)
   - Files: `src/calculator/recorded/steps.ts`, `ast.ts`, `math.ts`, `steps.test.ts`, `math.test.ts`; os imports em `src/calculator/tree/*.ts`, `tree-build.ts` e `kept-pieces.test.ts`
   - Signatures: nenhuma muda (`makeSteps(rec: Recording, ops: readonly Op[])`, `Expr`, `Step`, `Check`, `near`).
   - Cases: `kept-pieces.test.ts` e os testes movidos passam sem mudança de caso; `recorded/` não importa nada de `tree/`.

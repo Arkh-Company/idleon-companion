@@ -10,8 +10,8 @@ import { clean, isNameText } from "./tree/name-text.ts";
 import { nameOf, useGameNames } from "./tree/names.ts";
 import { NAME_RECIPES } from "./tree/names-table.ts";
 import type { NameRecipe } from "./tree/names-table.ts";
-import { makeSteps } from "./tree/steps.ts";
-import type { Expr } from "./tree/steps.ts";
+import { makeSteps } from "./recorded/steps.ts";
+import type { Expr } from "./recorded/steps.ts";
 import { tableText, useGameTables } from "./tree/table-names.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;

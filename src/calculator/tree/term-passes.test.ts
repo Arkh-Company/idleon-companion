@@ -3,7 +3,7 @@
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { instrument } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
 import { buildTree } from "../tree-build.ts";

@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import { asideCaches, dataRows } from "./data-rows.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { recNode } from "./tree-fixture.ts";
 
 const readRow = (path: string, value: number): Row => ({

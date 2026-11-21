@@ -8,13 +8,13 @@ import { dissolve } from "./flatten.ts";
 import { termsOf, vOf } from "./formulas.ts";
 import { bySystem, ownPair } from "./groups.ts";
 import type { WriterOf } from "./groups.ts";
-import { formulaOut, near } from "./math.ts";
+import { formulaOut, near } from "../recorded/math.ts";
 import { multiplierRow, multipliersIn } from "./multiplier-rows.ts";
 import { row } from "./rows.ts";
 import type { CapShape, Row } from "./rows.ts";
 import { strip } from "./scaled.ts";
 import { termOf } from "./share.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 
 /** One cap: added (c + max((x − c)^e, 0)) or scaled (c × (x ÷ c)^e), with its floor of 0 or none, around `x`. */
 export interface Cap extends CapShape {

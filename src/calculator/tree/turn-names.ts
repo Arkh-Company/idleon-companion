@@ -8,7 +8,7 @@
 import { isConstant } from "./formulas.ts";
 import type { Entry, TurnRead } from "./entries.ts";
 import { clean, isNameText, termName } from "./names.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { tableText } from "./table-names.ts";
 import type { Node, Row } from "./rows.ts";
 import type { Rule } from "./val-path.ts";

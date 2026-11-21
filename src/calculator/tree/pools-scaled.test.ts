@@ -8,7 +8,7 @@ import { chainPools, poolsOf, poolsPair } from "./pools.ts";
 import type { Pool } from "./pools.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { branch } from "./tree-fixture.ts";
 
 const src = (code: string, value: number): Row => ({

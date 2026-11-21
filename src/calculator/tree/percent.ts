@@ -4,7 +4,7 @@
 import { flat } from "./expr.ts";
 import { near, vOf } from "./formulas.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 

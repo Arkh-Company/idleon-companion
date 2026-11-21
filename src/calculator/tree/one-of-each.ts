@@ -8,7 +8,7 @@
 // times as the ⓘ cites it, a leaf or a call (FR-008, the review of the phase); a rule ⓘ and a check keep the rule above.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { vOf } from "./formulas.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { bare } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import { termOf } from "./share.ts";

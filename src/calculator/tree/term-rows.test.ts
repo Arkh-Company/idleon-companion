@@ -2,7 +2,7 @@
 // read and call as a plain row (term-fixture.ts), so only the term's own rule is under test.
 import { expect, test } from "vitest";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { formulaFor, token } from "./formulas.ts";
 import { finish } from "./rows.ts";
 import { at, read as part } from "./tree-fixture.ts";

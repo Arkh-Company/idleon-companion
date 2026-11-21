@@ -6,14 +6,14 @@
 import { exprText, isFormulaName } from "./expr.ts";
 import { fx3 } from "./curves.ts";
 import { atOneParts, isCond, near, vOf } from "./formulas.ts";
-import { evaluate } from "./math.ts";
+import { evaluate } from "../recorded/math.ts";
 import { withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import type { RecNode } from "../recording.ts";
 import { nameOf } from "./names.ts";
 import { callText } from "./rows.ts";
-import type { Expr } from "./steps.ts";
-import { num } from "./math.ts";
+import type { Expr } from "../recorded/steps.ts";
+import { num } from "../recorded/math.ts";
 import { systemOf } from "./systems.ts";
 
 /** formulas.cjs SHAPES: the sum with each distinct number written as a letter, in order of first place. */

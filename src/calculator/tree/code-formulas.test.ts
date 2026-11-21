@@ -8,7 +8,7 @@ import { makeCodeFormulas } from "./code-formulas.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
 import { NAMES_BY_LABEL } from "./names.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import {
   at,
   callOf,

@@ -3,7 +3,7 @@
 // factors are rows of their own (tree/terms.ts), which go into their system's group with the rule in its ⓘ.
 import { flat, stateSrc } from "./expr.ts";
 import { strip } from "./scaled.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 /** The rule, the bound and the factors of max(c, product) or min(c, product) of two factors or more, each of one source; else null. */
 export function clampedProduct(

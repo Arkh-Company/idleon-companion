@@ -13,7 +13,7 @@
 import { curveFormula, curveText, fx3, maxReachedOf } from "./curves.ts";
 import { isCond, isConstant, near, vOf } from "./formulas.ts";
 import type { Pair } from "./formulas.ts";
-import { isOperator } from "./math.ts";
+import { isOperator } from "../recorded/math.ts";
 import { notState } from "./expr.ts";
 import type { Level } from "./places.ts";
 import type { Row } from "./rows.ts";

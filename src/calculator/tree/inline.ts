@@ -8,7 +8,7 @@ import type { CalcTreeNode } from "../tree-contract.ts";
 import { byShapeOnly, movedUp } from "./flatten.ts";
 import { isCond, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
-import { evaluate, formulaOut, isOperator } from "./math.ts";
+import { evaluate, formulaOut, isOperator } from "../recorded/math.ts";
 import { untagged } from "./name-text.ts";
 import { withName } from "./row-checks.ts";
 import { withShares } from "./rows.ts";

@@ -10,7 +10,7 @@ import { makePlaces } from "./places.ts";
 import type { FormulaRow } from "./formulas.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Step } from "./steps.ts";
+import type { Step } from "../recorded/steps.ts";
 
 // (moved out of tree/ by spec 010, so recorded/ and declared/ may use it)
 export { recordingOf };

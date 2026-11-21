@@ -9,7 +9,7 @@
 // rows.ts); `borrowStep` (it reads a game table the recording does not keep). The R1 source names are rows.ts `finish`'s.
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { fx3 } from "./curves.ts";
-import { formulaOut } from "./math.ts";
+import { formulaOut } from "../recorded/math.ts";
 import { descText, withText } from "./name-descs.ts";
 import { withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";

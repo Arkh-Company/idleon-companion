@@ -8,7 +8,7 @@ import { nameOf, useGameNames } from "./names.ts";
 import { STATIC_NAMES } from "./names-table.ts";
 import { finish, GENERIC_NAME, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { buildTree } from "../tree-build.ts";
 import { branch, kidsOf, read as read2, recordingOf } from "./tree-fixture.ts";
 import { loneCall } from "./tidy.ts";

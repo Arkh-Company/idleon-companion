@@ -7,7 +7,7 @@ import { node } from "../../renderer/formula-fixture.ts";
 import { formulaLines } from "../../renderer/tree-text.ts";
 import { formulaFor, token, withFormula } from "./formulas.ts";
 import type { FormulaRow } from "./formulas.ts";
-import { formulaOut } from "./math.ts";
+import { formulaOut } from "../recorded/math.ts";
 import type { Row } from "./rows.ts";
 import { at, cond, fixed, read } from "./tree-fixture.ts";
 

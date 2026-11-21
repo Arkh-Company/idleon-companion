@@ -10,7 +10,7 @@ import type { Entry } from "./entries.ts";
 import { fx3 } from "./curves.ts";
 import type { FormulaRow, Pair } from "./formulas.ts";
 import type { Part } from "./loop-parts.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import type { Row } from "./rows.ts";
 
 /** A cache's rows and the ⓘ its writer gives it (null: none). */

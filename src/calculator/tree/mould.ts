@@ -14,7 +14,7 @@ import { multiplierRow } from "./multiplier-rows.ts";
 import { capInGroups } from "./caps.ts";
 import { besidePools } from "./pool-rest.ts";
 import { citing } from "./build-up.ts";
-import { formulaOut } from "./math.ts";
+import { formulaOut } from "../recorded/math.ts";
 import {
   chainPools,
   poolNames,
@@ -30,7 +30,7 @@ import type { OwnCache, Pool, TermAt, TermRow } from "./pools.ts";
 import { GENERIC_NAME, row, withShares } from "./rows.ts";
 import type { Node, Row } from "./rows.ts";
 import { termOf } from "./share.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import { bySystem, ownPair } from "./groups.ts";
 import type { WriterOf } from "./groups.ts";
 

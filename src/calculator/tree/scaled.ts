@@ -9,7 +9,7 @@ import { added, addedRows } from "./percent.ts";
 import { finish } from "./rows.ts";
 import type { Row } from "./rows.ts";
 import type { Combine, Pool, PoolKind, TermRow } from "./pools.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 export const strip = (e: Expr): Expr => (e.t === "def" ? strip(e.e) : e);
 

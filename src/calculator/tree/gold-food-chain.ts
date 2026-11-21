@@ -18,11 +18,11 @@ import {
   multiFormula,
   sourceTerm,
 } from "./gold-food.ts";
-import { formulaOut, near } from "./math.ts";
+import { formulaOut, near } from "../recorded/math.ts";
 import { withName } from "./row-checks.ts";
 import { finish, row, valueOf } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 import type { Reads } from "./val-path.ts";
 
 /** Each name by its role, with its proof by reference (the worn food's factor; the shared multiplier). */

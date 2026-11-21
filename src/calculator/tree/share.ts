@@ -4,7 +4,7 @@
 // (a kid that feeds a sibling by name weighs through it): a level is built before its siblings' rows are, so a context
 // kid keeps a null share where the bench gave it one.
 import type { CalcTreeNode } from "../tree-contract.ts";
-import { evaluate } from "./math.ts";
+import { evaluate } from "../recorded/math.ts";
 
 /** A row as the share reads it: its formula is the bench's pair of lines, with names and with numbers. */
 export interface ShareNode {

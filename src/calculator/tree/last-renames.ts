@@ -15,7 +15,7 @@
 import type { RecNode } from "../recording.ts";
 import type { Above } from "./above-renames.ts";
 import { fx3 } from "./curves.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { nameOf } from "./names.ts";
 import { bare, row, unlinked } from "./rows.ts";
 import { untyped, withName } from "./row-checks.ts";

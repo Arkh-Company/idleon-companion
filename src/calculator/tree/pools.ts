@@ -18,7 +18,7 @@ export { through } from "./tops.ts";
 import { finish } from "./rows.ts";
 import { termOf } from "./share.ts";
 import type { Row } from "./rows.ts";
-import type { Expr, Step } from "./steps.ts";
+import type { Expr, Step } from "../recorded/steps.ts";
 
 export type Combine = NonNullable<CalcTreeNode["combine"]>;
 export type PoolKind = NonNullable<CalcTreeNode["poolKind"]>;

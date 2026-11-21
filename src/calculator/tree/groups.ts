@@ -4,7 +4,7 @@
 // Other" (Vinicius, 19/11: the game has no system Other).
 import { fx3 } from "./curves.ts";
 import { termsOf, vOf } from "./formulas.ts";
-import { formulaOut } from "./math.ts";
+import { formulaOut } from "../recorded/math.ts";
 import type { Combine } from "./pools.ts";
 import { row, withShares } from "./rows.ts";
 import type { Row } from "./rows.ts";

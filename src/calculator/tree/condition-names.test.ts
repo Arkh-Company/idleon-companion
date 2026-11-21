@@ -13,7 +13,7 @@ import { TABLES } from "./gold-food-fixture.ts";
 import { useGameTables } from "./table-names.ts";
 import { callText, row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Check, Expr } from "./steps.ts";
+import type { Check, Expr } from "../recorded/steps.ts";
 
 const node = (id: number, b: string, a: RecNode["a"] = [], v = 1): RecNode => ({
   id,

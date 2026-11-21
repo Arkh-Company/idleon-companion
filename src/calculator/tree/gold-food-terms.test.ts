@@ -6,7 +6,7 @@ import type { RecNode, RecValue } from "../recording.ts";
 import { goldFoodTerm } from "./gold-food-chain.ts";
 import { row } from "./rows.ts";
 import type { Row } from "./rows.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { useGameTables } from "./table-names.ts";
 
 afterEach(() => {

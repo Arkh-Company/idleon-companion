@@ -5,7 +5,7 @@ import { oneTurnFormula, turnFormula } from "./cache-formulas.ts";
 import { makeCodeFormulas } from "./code-formulas.ts";
 import type { Entry } from "./entries.ts";
 import { token } from "./formulas.ts";
-import type { Expr } from "./steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { recNode } from "./tree-fixture.ts";
 
 const rift = recNode(1, "RiftStuff", {

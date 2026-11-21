@@ -14,7 +14,7 @@ import type {
   CALC_CONDITION_KINDS,
   CALC_LEAF_KINDS,
 } from "../tree-contract.ts";
-import { near } from "./math.ts";
+import { near } from "../recorded/math.ts";
 import { isLeaf, untyped, withName } from "./row-checks.ts";
 import type { Row } from "./rows.ts";
 import { tableText } from "./table-names.ts";

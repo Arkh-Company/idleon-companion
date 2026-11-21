@@ -1,8 +1,8 @@
 // The parts of a step's expression (spec 008, T022): the helpers of pieces.cjs `rowOfTerm` from the bench at
 // BASELINE-4 that read an expression tree of tree/steps.ts: its top operator, its terms, its first source, how many
 // sources of the player's state it has, the value a read took in it, whether it adds anything, and its text with numbers.
-import { num } from "./math.ts";
-import type { Expr } from "./steps.ts";
+import { num } from "../recorded/math.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 type V = Expr["v"];
 
