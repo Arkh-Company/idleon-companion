@@ -227,7 +227,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - nota só com `fix`, até 2.000 caracteres;
     - o horário sai no fuso `America/Sao_Paulo`;
     - o `reviewJson` já sai como o prettier o deixaria (o teste formata com o `prettier` instalado e compara), para o `just fmt-check` não acusar o que a ferramenta grava.
-- [ ] T022 Carga das receitas em `src/calculator/declared/blueprints.ts` e a API em `src/calculator/declared/index.ts` (research R8; depende de T014)
+- [X] T022 Carga das receitas em `src/calculator/declared/blueprints.ts` e a API em `src/calculator/declared/index.ts` (research R8; depende de T014)
   - Files: `src/calculator/declared/blueprints.ts`, `src/calculator/declared/blueprints-load.test.ts`, `src/calculator/declared/index.ts`
   - Signatures: `loadBlueprints(files: Readonly<Record<string, unknown>>): { complete: ReadonlyMap<string, Blueprint>; refused: { file: string; reason: string }[]; stages: ReadonlyMap<string, "sketch" | "draft" | "complete"> }`; `BLUEPRINTS` (o `import.meta.glob` eager de `../blueprints/**/*.blueprint.json`); `blueprintOf(id: string): Blueprint | null` (só `complete`).
   - Cases: um esboço e um rascunho não são servidos (`blueprintOf` → `null`, o que vira `unknownNumber`); uma receita recusada não derruba as outras; os `*.review.json` nunca são importados.
