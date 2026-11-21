@@ -138,7 +138,7 @@ fora da regra.
 troca o acumulador sai certo ou recusado com o motivo; as 289 receitas-esboço carregam, uma por número `arvore`; no PC do
 Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada raiz.
 
-- [ ] T011 [P] Testes das referências em `src/calculator/declared/refs.test.ts` (FR-003; research R5, R12)
+- [X] T011 [P] Testes das referências em `src/calculator/declared/refs.test.ts` (FR-003; research R5, R12)
   - Files: `src/calculator/declared/refs.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -149,7 +149,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - `nodeId("stats-drop-rate", 0, "talents", ["boss-battle-spillover", "talent-points"])` → `stats-drop-rate/0/talents/boss-battle-spillover/talent-points`;
     - `hasRawCharacterIndex("PlayerDATABASE[1].SkillLevels[3]")` é verdadeiro; com `{character}` ou `*` é falso;
     - `isPathRead` recusa operador, parêntese, aspas e espaço.
-- [ ] T012 As referências em `src/calculator/declared/refs.ts` (depende de T011)
+- [X] T012 As referências em `src/calculator/declared/refs.ts` (depende de T011)
   - Files: `src/calculator/declared/refs.ts`
   - Signatures: `type Ref = { call: string; args: readonly (string | number)[] } | { read: string }`; `refKey(ref: Ref, character: number): string`; `matchRead(pattern: string, recorded: readonly string[], character: number): { path: string; matches: number } | null`; `pieceKeyOf(ref: Ref, character: number): string`; `nodeId(numberId: string, pool: number, system: string, keys: readonly string[]): string`; `hasRawCharacterIndex(read: string): boolean`; `isPathRead(read: string): boolean`.
   - Cases: os da T011, que esta tarefa faz passar.
