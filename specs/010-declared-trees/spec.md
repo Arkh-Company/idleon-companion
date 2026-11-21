@@ -29,6 +29,7 @@ Esta feature troca a forma adivinhada por uma forma **declarada**. O catálogo v
 - Q: Abaixo do pool, a trava confere se a conta de cada fonte fecha, ou só se os filhos existem na gravação? → A: Remonta a conta a partir da gravação, na hora de conferir, e confere o fechamento em todos os níveis, sem guardar a conta.
 - Q: Quando o jogo junta duas fontes antes de pôr no pool (talento 239 × Kingdom stats), aparece uma linha só ou linhas separadas? → A: Uma linha só, com o nome da primeira fonte, e a segunda fonte como filho, com o sistema dela.
 - Q: Contas seguidas do mesmo tipo viram um pool só? → A: Sim: cada trecho seguido de somas é um Additive pool, e cada trecho seguido de multiplicações é um Multi pool (no Drop Rate, 4 pools).
+- Q: O radar de patch da 008 continua? → A: Não; ele sai, e o alerta de fechamento (FR-019) faz o papel dele (decidido durante o plano).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -233,6 +234,7 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 - Mudança no visual da árvore: o visual é o da 009.
 - Troca de linguagem ou de plataforma: continua TypeScript com Electron.
 - Árvores para números fora do destino `arvore` (os 214 "dentro de árvore" aparecem dentro das árvores, não como árvore própria).
+- O radar de patch da 008: sai com a forma deduzida; uma atualização do jogo que muda uma conta aparece no alerta de fechamento (FR-019).
 - Forma automática na hora de mostrar, mesmo com correções declaradas: é o modelo que quebrou e foi descartado no brainstorming.
 
 ## Open Questions *(mandatory)*
@@ -258,3 +260,4 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 | Abaixo do pool, "cada nível fecha" (FR-010, FR-015, SC-001) é a conferência da conta, com a trava remontando a conta a partir dos passos gravados sem guardá-la, ou só a conferência de que os filhos declarados são as partes que o jogo gravou? | resolved | A trava remonta a conta dos passos gravados na hora, sem guardar, e confere todos os níveis (FR-010). |
 | Um termo que junta duas fontes (talento × recorde, Sushi + Jelly) aparece como uma linha com a segunda fonte como filho, ou como linhas separadas? | resolved | Uma linha, com a segunda fonte como filho (FR-002b). |
 | Escritas seguidas do mesmo tipo formam um pool só (no Drop Rate dá 4 pools; a 0.9 mostrava 7 itens no primeiro nível)? | resolved | Sim: um pool por trecho seguido do mesmo tipo (FR-002c). |
+| O radar de patch da 008 continua com a forma declarada? | resolved | Não: sai, e o alerta de fechamento faz o papel dele (Out of Scope, FR-019). |
