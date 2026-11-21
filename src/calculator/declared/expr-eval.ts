@@ -65,9 +65,7 @@ export function evalExpr(
     case "fn": {
       const f = e.name === null ? undefined : FNS[e.name];
       const args = e.args.map(ev);
-      return f && args.every((a) => a !== null)
-        ? finite(f(...(args as number[])))
-        : null;
+      return f && args.every((a) => a !== null) ? finite(f(...args)) : null;
     }
     default:
       // a call, a read or a value with no source: only its child's value

@@ -40,7 +40,9 @@
                 {
                   "key": "points",
                   "name": "Talent points",
-                  "ref": { "read": "PlayerDATABASE[{character}].SkillLevels[0]" },
+                  "ref": {
+                    "read": "PlayerDATABASE[{character}].SkillLevels[0]"
+                  },
                   "leaf": "investedPoints"
                 },
                 {
@@ -185,7 +187,9 @@
                 {
                   "key": "points",
                   "name": "Talent points",
-                  "ref": { "read": "PlayerDATABASE[{character}].SkillLevels[1]" },
+                  "ref": {
+                    "read": "PlayerDATABASE[{character}].SkillLevels[1]"
+                  },
                   "leaf": "investedPoints"
                 }
               ]

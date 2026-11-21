@@ -123,7 +123,7 @@ export function withLock(
   sha: string,
   lock: Review["lock"],
 ): Review {
-  if (prev && prev.blueprintSha === sha) return { ...prev, lock };
+  if (prev?.blueprintSha === sha) return { ...prev, lock };
   const history = prev
     ? pushed(prev, lock?.at ?? saoPauloTime(new Date()))
     : [];

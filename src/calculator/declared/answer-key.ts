@@ -45,7 +45,10 @@ export interface AnswerKey {
   pollution: Record<string, number>;
 }
 
-export type RootFormError = { error: "rootForm"; reason: string };
+export interface RootFormError {
+  error: "rootForm";
+  reason: string;
+}
 
 const OUT_OF_RULE = "forma de raiz fora da regra dos pools";
 const KIND: Record<string, PoolKind> = {
@@ -62,7 +65,15 @@ interface RawPool {
   after: number;
 }
 
-const strip = ({ e: _e, noise: _n, ...t }: RawTerm): AnswerTerm => t;
+const strip = (t: RawTerm): AnswerTerm => ({
+  kind: t.kind,
+  ref: t.ref,
+  refs: t.refs,
+  nodes: t.nodes,
+  value: t.value,
+  weight: t.weight,
+  via: t.via,
+});
 
 export function answerKey(
   rec: Recording,
@@ -235,7 +246,7 @@ export function answerKey(
   const pools: AnswerPool[] = [];
   for (const p of raw) {
     const last = pools.at(-1);
-    if (last && last.kind === p.kind) {
+    if (last?.kind === p.kind) {
       last.terms.push(...p.terms);
       if (!last.steps.includes(p.step)) last.steps.push(p.step);
       last.after = p.after;
