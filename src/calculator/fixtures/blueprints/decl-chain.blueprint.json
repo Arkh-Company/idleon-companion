@@ -1,0 +1,209 @@
+{
+  "id": "decl-chain",
+  "root": {
+    "name": "Invented Drop",
+    "ref": { "call": "TreeDeclChain", "args": [0, 0, 0] }
+  },
+  "pools": [
+    {
+      "kind": "additive",
+      "weight": 0.01,
+      "groups": [
+        {
+          "system": "luk-stats",
+          "sources": [
+            {
+              "key": "luck",
+              "name": "Invented Luck",
+              "ref": { "call": "TreeDeclLuck", "args": [] },
+              "weight": 1,
+              "children": [
+                {
+                  "key": "level",
+                  "name": "Invented Level",
+                  "ref": { "read": "TreeLevel" },
+                  "leaf": "level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "talents",
+          "sources": [
+            {
+              "key": "talent",
+              "name": "Invented Talent",
+              "ref": { "call": "TreeDeclTalent", "args": [0] },
+              "classes": [3],
+              "children": [
+                {
+                  "key": "points",
+                  "name": "Talent points",
+                  "ref": { "read": "PlayerDATABASE[{character}].SkillLevels[0]" },
+                  "leaf": "investedPoints"
+                },
+                {
+                  "key": "twin",
+                  "name": "Invented Twin",
+                  "ref": { "read": "TreeTwins[0]" },
+                  "termPart": { "system": "achievements" },
+                  "leaf": "record"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "arcade",
+          "sources": [
+            {
+              "key": "arcade",
+              "name": "Invented Arcade",
+              "ref": { "call": "ArcadeBonus", "args": [0] },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "family-bonuses",
+          "sources": [
+            {
+              "key": "best",
+              "name": "Invented Best",
+              "ref": { "call": "TreeDeclBest", "args": [] },
+              "children": [
+                {
+                  "key": "best-lv",
+                  "name": "Invented Best Level",
+                  "ref": { "read": "PlayerDATABASE[*].SkillLevels[1]" },
+                  "leaf": "choice"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "cards",
+          "sources": [
+            {
+              "key": "capped",
+              "name": "Invented Capped",
+              "ref": { "read": "TreeCapped" },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "bundles",
+          "sources": [
+            {
+              "key": "bundle",
+              "name": "Invented Bundle",
+              "constant": 2,
+              "weight": 1,
+              "leaf": "fixedValue",
+              "condition": {
+                "key": "owned",
+                "name": "Invented Bundle Owned",
+                "ref": { "read": "TreeFlagOn" },
+                "leaf": "condition",
+                "conditionKind": "owned"
+              }
+            }
+          ]
+        },
+        {
+          "system": "shrines",
+          "sources": [
+            {
+              "key": "stock",
+              "name": "Invented Owned",
+              "ref": { "read": "TreeOwned" },
+              "weight": 1,
+              "leaf": "quantity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "stamps",
+          "sources": [
+            {
+              "key": "loop",
+              "name": "Invented Loop",
+              "ref": { "call": "TreeLoop", "args": [] },
+              "leaf": "quantity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "guild",
+          "sources": [
+            {
+              "key": "half",
+              "name": "Invented Half",
+              "constant": 0.5,
+              "leaf": "fixedValue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "prayers",
+          "sources": [
+            {
+              "key": "prayer",
+              "name": "Invented Prayer",
+              "ref": { "read": "TreeStats.b" },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "talents",
+          "sources": [
+            {
+              "key": "talent",
+              "name": "Invented Talent",
+              "ref": { "call": "TreeDeclTalent", "args": [1] },
+              "classes": [7],
+              "children": [
+                {
+                  "key": "points",
+                  "name": "Talent points",
+                  "ref": { "read": "PlayerDATABASE[{character}].SkillLevels[1]" },
+                  "leaf": "investedPoints"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "gem-shop",
+          "sources": [
+            {
+              "key": "gem",
+              "name": "Invented Gem",
+              "constant": 1.2,
+              "leaf": "fixedValue"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

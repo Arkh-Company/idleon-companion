@@ -1,0 +1,74 @@
+{
+  "id": "decl-expr",
+  "root": {
+    "name": "Invented Expression",
+    "ref": { "call": "TreeDeclExpr", "args": [0, 0, 0] }
+  },
+  "pools": [
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "cards",
+          "sources": [
+            {
+              "key": "reads",
+              "name": "Invented Reads",
+              "ref": { "call": "TreeReads", "args": [] },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "stamps",
+          "sources": [
+            {
+              "key": "capped",
+              "name": "Invented Capped",
+              "ref": { "read": "TreeCapped" },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "bundles",
+          "sources": [
+            {
+              "key": "two",
+              "name": "Invented Two",
+              "constant": 2,
+              "leaf": "fixedValue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "stamps",
+          "sources": [
+            {
+              "key": "loop",
+              "name": "Invented Loop",
+              "ref": { "call": "TreeLoop", "args": [] },
+              "leaf": "quantity"
+            }
+          ]
+        },
+        {
+          "system": "prayers",
+          "sources": [
+            {
+              "key": "prayer",
+              "name": "Invented Prayer",
+              "ref": { "read": "TreeStats.b" },
+              "leaf": "rawBonus"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

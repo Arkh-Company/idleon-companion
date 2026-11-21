@@ -243,8 +243,8 @@ test("each invented blueprint of the tests (fixtures/blueprints) loads complete 
     return [fileId, out.ok ? out.stage : out.reason];
   });
   expect(Object.fromEntries(loaded)).toEqual({
-    "tree-decl-chain": "complete",
-    "tree-decl-expr": "complete",
+    "decl-chain": "complete",
+    "decl-expr": "complete",
   });
 });
 
