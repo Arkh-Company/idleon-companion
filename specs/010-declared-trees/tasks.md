@@ -142,7 +142,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Files: `src/calculator/declared/refs.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
-    - `refKey({ call: "GetTalentNumber", args: [1, 655] }, 0)` → `GetTalentNumber([1,655])` na forma do protótipo; `"0"` texto e `0` número dão chaves diferentes;
+    - `refKey({ call: "GetTalentNumber", args: [1, 655] }, 0)` → `GetTalentNumber(1,655)` na forma do protótipo; `"0"` texto e `0` número dão chaves diferentes;
     - `{ read: "PlayerDATABASE[{character}].SkillLevels[328]" }` com o personagem 3 → o caminho com `[3]`;
     - `*` casa a primeira leitura gravada de qualquer personagem e conta quantas casaram; nenhuma leitura → `null`, nunca 0;
     - `pieceKeyOf` de uma chamada = `JSON.stringify([personagem, bloco, ...args])`, igual à 008; de uma leitura = `JSON.stringify([personagem, caminho])`;
@@ -215,7 +215,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Cases: os da T018, que esta tarefa faz passar; cada arquivo abaixo de 400 linhas.
 - [X] T020 [P] Testes primeiro, depois a lista das partes que não são folha em `src/calculator/declared/not-leaves.ts` (research R6; FR-016)
   - Files: `src/calculator/declared/not-leaves.test.ts`, `src/calculator/declared/not-leaves.ts`
-  - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string): NotLeaf | null`.
+  - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string, character: number): NotLeaf | null` (a entrada `otherCharacter` só casa um índice diferente de `character`).
   - Cases: a curva `decay`, o `getLOG`, a masmorra e o mapa atual, o `GurtBonuzz` e a leitura de outro personagem casam; uma chamada comum não casa; toda entrada tem `reason`; nenhuma entrada é um texto do jogo.
 - [X] T021 [P] Testes primeiro, depois a revisão em `src/calculator/declared/review.ts` (contracts/review.md; FR-024c, FR-025)
   - Files: `src/calculator/declared/review.test.ts`, `src/calculator/declared/review.ts`

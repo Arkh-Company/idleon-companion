@@ -23,7 +23,7 @@ Vinicius na galeria. Nunca é importado pelo app: só a conferência real, a gal
 - **`lock`:** quem escreve é a conferência real (`just trees`); `null` enquanto a receita nunca passou por uma rodada.
   `ok: false` guarda só que falhou; os motivos ficam em `TREES_OUT/lock/<id>.json`.
 - **`verdict` e `note`:** quem escreve é a galeria (`just gallery`). `note` só com `fix`, até 2.000 caracteres.
-- **`history`:** cada resposta anterior entra aqui quando chega uma nova, com o hash que ela viu.
+- **`history`:** cada resposta anterior entra aqui quando chega uma nova, com o hash que ela viu; o `at` dessa entrada é a hora em que a resposta saiu do lugar (uma resposta nova ou a receita mudada).
 - **Horários:** no fuso `America/Sao_Paulo`.
 
 ## Quem grava e o que confere
