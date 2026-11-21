@@ -1,0 +1,410 @@
+[
+  {
+    "id": "luk-stats",
+    "name": "LUK / Stats",
+    "emoji": "🍀",
+    "proof": "bench build-v1mold.cjs V1; N.js TotalStats"
+  },
+  {
+    "id": "talents",
+    "name": "Talents",
+    "emoji": "🎯",
+    "proof": "bench build-v1mold.cjs V1; N.js GetTalentNumber"
+  },
+  {
+    "id": "cards",
+    "name": "Cards",
+    "emoji": "🃏",
+    "proof": "bench build-v1mold.cjs V1; N.js CardBonusREAL"
+  },
+  {
+    "id": "star-signs",
+    "name": "Star Signs",
+    "emoji": "⭐",
+    "proof": "bench build-v1mold.cjs V1; N.js StarSigns"
+  },
+  {
+    "id": "achievements",
+    "name": "Achievements",
+    "emoji": "🏆",
+    "proof": "bench build-v1mold.cjs V1; N.js AchieveStatus"
+  },
+  {
+    "id": "companions",
+    "name": "Companions",
+    "emoji": "🐾",
+    "proof": "bench build-v1mold.cjs V1; N.js Companions"
+  },
+  {
+    "id": "friends",
+    "name": "Friends",
+    "emoji": "🤝",
+    "proof": "bench build-v1mold.cjs V1; N.js Thingies FriendBonusStatz"
+  },
+  {
+    "id": "stamps",
+    "name": "Stamps",
+    "emoji": "📜",
+    "proof": "bench build-v1mold.cjs V1; N.js StampBonusOfTypeX"
+  },
+  {
+    "id": "alchemy",
+    "name": "Alchemy",
+    "emoji": "⚗️",
+    "proof": "bench build-v1mold.cjs V1; N.js CauldronStats"
+  },
+  {
+    "id": "sigils",
+    "name": "Sigils",
+    "emoji": "🔮",
+    "proof": "bench build-v1mold.cjs V1; N.js Labb SigilBonus"
+  },
+  {
+    "id": "prayers",
+    "name": "Prayers",
+    "emoji": "🙏",
+    "proof": "bench build-v1mold.cjs V1; N.js prayersReal"
+  },
+  {
+    "id": "shrines",
+    "name": "Shrines",
+    "emoji": "⛩️",
+    "proof": "bench build-v1mold.cjs V1; N.js Shrine"
+  },
+  {
+    "id": "guild",
+    "name": "Guild",
+    "emoji": "🛡️",
+    "proof": "bench build-v1mold.cjs V1; N.js GuildBonuses"
+  },
+  {
+    "id": "arcade",
+    "name": "Arcade",
+    "emoji": "🕹️",
+    "proof": "bench build-v1mold.cjs V1; N.js ArcadeBonus"
+  },
+  {
+    "id": "voting",
+    "name": "Voting",
+    "emoji": "🗳️",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning VotingBonusz"
+  },
+  {
+    "id": "post-office",
+    "name": "Post Office",
+    "emoji": "📮",
+    "proof": "bench build-v1mold.cjs V1; N.js BoxRewards"
+  },
+  {
+    "id": "shiny-pets",
+    "name": "Shiny Pets",
+    "emoji": "🐉",
+    "proof": "bench build-v1mold.cjs V1; N.js Breeding"
+  },
+  {
+    "id": "tome",
+    "name": "Tome",
+    "emoji": "📖",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning TomeBonus"
+  },
+  {
+    "id": "researching",
+    "name": "Researching",
+    "emoji": "🔬",
+    "proof": "bench build-v1mold.cjs V1; N.js ResearchStuff"
+  },
+  {
+    "id": "chips",
+    "name": "Chips",
+    "emoji": "🧩",
+    "proof": "bench build-v1mold.cjs V1; N.js chipBonuses"
+  },
+  {
+    "id": "dreams",
+    "name": "Dreams",
+    "emoji": "💭",
+    "proof": "bench build-v1mold.cjs V1; N.js Dreamstuff"
+  },
+  {
+    "id": "cloud-bonus",
+    "name": "Cloud Bonus",
+    "emoji": "☁️",
+    "proof": "bench build-v1mold.cjs V1"
+  },
+  {
+    "id": "owl",
+    "name": "Owl",
+    "emoji": "🦉",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning OwlBonuses"
+  },
+  {
+    "id": "grimoire",
+    "name": "Grimoire",
+    "emoji": "📕",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning GrimoireUpgBonus"
+  },
+  {
+    "id": "vault",
+    "name": "Vault",
+    "emoji": "🏦",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning VaultUpgBonus"
+  },
+  {
+    "id": "farming",
+    "name": "Farming",
+    "emoji": "🌾",
+    "proof": "bench build-v1mold.cjs V1; N.js FarmingStuffs"
+  },
+  {
+    "id": "holes",
+    "name": "Holes",
+    "emoji": "🕳️",
+    "proof": "bench build-v1mold.cjs V1; N.js Holes"
+  },
+  {
+    "id": "emperor",
+    "name": "Emperor",
+    "emoji": "👑",
+    "proof": "bench build-v1mold.cjs V1; N.js Thingies EmperorBon"
+  },
+  {
+    "id": "legend-talents",
+    "name": "Legend Talents",
+    "emoji": "⚔️",
+    "proof": "bench build-v1mold.cjs V1; N.js Thingies LegendPTS_bonus"
+  },
+  {
+    "id": "spelunk-shop",
+    "name": "Spelunk Shop",
+    "emoji": "🪨",
+    "proof": "bench build-v1mold.cjs V1; N.js Spelunk ShopUpgBonus"
+  },
+  {
+    "id": "sushi",
+    "name": "Sushi",
+    "emoji": "🍣",
+    "proof": "bench build-v1mold.cjs V1; N.js SushiStuff"
+  },
+  {
+    "id": "minehead",
+    "name": "Minehead",
+    "emoji": "⛏️",
+    "proof": "bench build-v1mold.cjs V1; N.js Minehead"
+  },
+  {
+    "id": "menagerie",
+    "name": "Menagerie",
+    "emoji": "🪼",
+    "proof": "bench build-v1mold.cjs V1; N.js MenagerieStuff"
+  },
+  {
+    "id": "arcane-map",
+    "name": "Arcane Map",
+    "emoji": "🗺️",
+    "proof": "bench build-v1mold.cjs V1; N.js ArcaneType"
+  },
+  {
+    "id": "glimbo",
+    "name": "Glimbo",
+    "emoji": "🎲",
+    "proof": "bench build-v1mold.cjs V1; N.js Minehead GlimboDRmulti"
+  },
+  {
+    "id": "equipment",
+    "name": "Equipment",
+    "emoji": "🎽",
+    "proof": "bench build-v1mold.cjs V1; N.js EtcBonuses"
+  },
+  {
+    "id": "obols",
+    "name": "Obols",
+    "emoji": "🪙",
+    "proof": "bench build-v1mold.cjs V1"
+  },
+  {
+    "id": "gallery",
+    "name": "Gallery",
+    "emoji": "🖼️",
+    "proof": "bench build-v1mold.cjs V1"
+  },
+  {
+    "id": "hatrack",
+    "name": "Hatrack",
+    "emoji": "🎩",
+    "proof": "bench build-v1mold.cjs V1"
+  },
+  {
+    "id": "cape-vine",
+    "name": "Cape Vine",
+    "emoji": "🧣",
+    "proof": "bench build-v1mold.cjs V1"
+  },
+  {
+    "id": "golden-food",
+    "name": "Golden Food",
+    "emoji": "🍔",
+    "proof": "bench build-v1mold.cjs V1; N.js GoldFoodBonuses"
+  },
+  {
+    "id": "set-bonuses",
+    "name": "Set Bonuses",
+    "emoji": "🧰",
+    "proof": "bench build-v1mold.cjs V1; N.js GetSetBonus"
+  },
+  {
+    "id": "bundles",
+    "name": "Bundles",
+    "emoji": "🎁",
+    "proof": "bench build-v1mold.cjs V1; N.js BundlesReceived"
+  },
+  {
+    "id": "pristine-charms",
+    "name": "Pristine Charms",
+    "emoji": "🌟",
+    "proof": "bench build-v1mold.cjs V1; N.js Ninja"
+  },
+  {
+    "id": "sneaking-mastery",
+    "name": "Sneaking Mastery",
+    "emoji": "🥷",
+    "proof": "bench build-v1mold.cjs V1; N.js DamageDealed (the count of the sneaking masteries completed)"
+  },
+  {
+    "id": "summoning",
+    "name": "Summoning",
+    "emoji": "🐲",
+    "proof": "bench build-v1mold.cjs V1; N.js Summoning WinBonus"
+  },
+  {
+    "id": "royal-guardian",
+    "name": "Royal Guardian",
+    "emoji": "🏰",
+    "proof": "bench build-v1mold.cjs V1; N.js RoyalG"
+  },
+  {
+    "id": "meals",
+    "name": "Meals",
+    "emoji": "🍲",
+    "proof": "N.js MealBonus"
+  },
+  {
+    "id": "bribes",
+    "name": "Bribes",
+    "emoji": "💰",
+    "proof": "N.js GetBribeBonus"
+  },
+  {
+    "id": "jelly-operator",
+    "name": "Jelly Operator",
+    "emoji": "🫧",
+    "proof": "N.js JellyOperation"
+  },
+  {
+    "id": "atom-collider",
+    "name": "Atom Collider",
+    "emoji": "⚛️",
+    "proof": "N.js AtomCollider"
+  },
+  {
+    "id": "compass",
+    "name": "Compass",
+    "emoji": "🧭",
+    "proof": "N.js Windwalker CompassBonus"
+  },
+  {
+    "id": "gaming",
+    "name": "Gaming",
+    "emoji": "🎮",
+    "proof": "N.js GamingStatType"
+  },
+  {
+    "id": "spelunking",
+    "name": "Spelunking",
+    "emoji": "🔦",
+    "proof": "N.js Spelunk"
+  },
+  {
+    "id": "trapping",
+    "name": "Trapping",
+    "emoji": "🪤",
+    "proof": "N.js TrappingStuffs"
+  },
+  {
+    "id": "sailing",
+    "name": "Sailing",
+    "emoji": "⛵",
+    "proof": "N.js Sailing"
+  },
+  {
+    "id": "lab",
+    "name": "Lab",
+    "emoji": "🧪",
+    "proof": "N.js Labb; N.js MainframeBonus"
+  },
+  {
+    "id": "family-bonuses",
+    "name": "Family Bonuses",
+    "emoji": "👪",
+    "proof": "N.js FamBonusQTYs (the family bonus of each class)"
+  },
+  {
+    "id": "bubba",
+    "name": "Bubba",
+    "emoji": "🥩",
+    "proof": "N.js Bubbastuff"
+  },
+  {
+    "id": "clam",
+    "name": "Clam",
+    "emoji": "🐚",
+    "proof": "N.js Thingies ClamWorkBonus"
+  },
+  {
+    "id": "rift",
+    "name": "Rift",
+    "emoji": "🌀",
+    "proof": "N.js RiftStuff"
+  },
+  {
+    "id": "killroy",
+    "name": "Killroy",
+    "emoji": "💀",
+    "proof": "N.js RandomEvent KillroyBonuses"
+  },
+  {
+    "id": "divinity",
+    "name": "Divinity",
+    "emoji": "🕊️",
+    "proof": "N.js Divinity"
+  },
+  {
+    "id": "gem-shop",
+    "name": "Gem Shop",
+    "emoji": "💎",
+    "proof": "N.js GemItemsPurchased"
+  },
+  {
+    "id": "meritocracy",
+    "name": "Meritocracy",
+    "emoji": "🏛️",
+    "proof": "N.js Summoning2 MeritocBonusz"
+  },
+  {
+    "id": "statues",
+    "name": "Statues",
+    "emoji": "🗿",
+    "proof": "N.js ArbitraryCode StatueBonusGiven"
+  },
+  {
+    "id": "coral-reef",
+    "name": "Coral Reef",
+    "emoji": "🪸",
+    "proof": "N.js Thingies CoralKidUpgBonus"
+  },
+  {
+    "id": "weekly-boss",
+    "name": "Weekly Boss",
+    "emoji": "📅",
+    "proof": "N.js DamageDealed (reads WeeklyBoss)"
+  }
+]

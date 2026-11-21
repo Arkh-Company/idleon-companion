@@ -94,7 +94,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
   - Files: `tree/names.ts`, `names-table.ts`, `table-names.ts`, `name-text.ts`, os JSON de nomes (`names-recipes.json`, `names-static.json`, `state-hashes.json`) e o fecho do que eles importam de `tree/` (hoje `renames.ts`, `rename-list.ts`, `state-names.ts`, `state-words.ts`, `merit-names.ts`, `killroy-names.ts`), com os testes; `src/calculator/game-names.ts` passa a importar de `names/`.
   - Signatures: nenhuma muda (`useGameNames`, `nameOf`, `resolveNames`, `useGameTables`, `tableText`, `isNameText`, `NAME_RECIPES`).
   - Cases: `kept-pieces.test.ts`, `game-names.test.ts`, `catalog-names.test.ts` e os testes movidos passam sem mudança de caso; `names/` não importa nada de `tree/` (`just arch`); cada arquivo segue abaixo de 400 linhas.
-- [ ] T007 [P] Testes da tabela de sistemas em `src/calculator/declared/systems.test.ts` (FR-006; data-model "Tabela de sistemas")
+- [X] T007 [P] Testes da tabela de sistemas em `src/calculator/declared/systems.test.ts` (FR-006; data-model "Tabela de sistemas")
   - Files: `src/calculator/declared/systems.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -104,7 +104,7 @@ suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorde
     - nenhuma entrada "Other";
     - a ordem e os emojis da V1 (`V1_SYSTEMS` de hoje) são os mesmos;
     - `systemById("talents")` dá nome e emoji; um id desconhecido dá `null`.
-- [ ] T008 A tabela de sistemas vira `src/calculator/blueprints/systems.json`, lida por `src/calculator/declared/systems.ts` (research R8; depende de T007)
+- [X] T008 A tabela de sistemas vira `src/calculator/blueprints/systems.json`, lida por `src/calculator/declared/systems.ts` (research R8; depende de T007)
   - Files: `src/calculator/blueprints/systems.json`, `src/calculator/declared/systems.ts`, `src/calculator/tree/systems.ts` (passa a ler nome e emoji do JSON; o "Other" fica só nele, para a árvore antiga)
   - Signatures: `interface SystemEntry { id: string; name: string; emoji: string; proof: string }`; `SYSTEMS: readonly SystemEntry[]`; `systemById(id: string): SystemEntry | null`; `systemLabel(e: SystemEntry): string` ("🎯 Talents").
   - Semeada por `V1_SYSTEMS` e `EXTRA_SYSTEMS`, sem "Other". `tree/systems.test.ts` passa sem mudança de caso.
