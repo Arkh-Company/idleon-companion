@@ -78,7 +78,7 @@ variáveis e o scan. A árvore da 0.9 segue igual.
 **Independent Test**: os testes de caracterização passam antes e depois da mudança de pasta, sem nenhuma alteração; a
 suíte inteira da 009 passa sem mudança de caso; `just arch` passa com `recorded/` e `names/` sem importar `tree/`.
 
-- [ ] T004 [P] Testes de caracterização das peças que ficam, em `src/calculator/kept-pieces.test.ts` (research R17)
+- [X] T004 [P] Testes de caracterização das peças que ficam, em `src/calculator/kept-pieces.test.ts` (research R17)
   - Files: `src/calculator/kept-pieces.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases, sobre gravações do jogo inventado (`fake-game.js`, `fake-mosaic.ts`):
