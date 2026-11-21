@@ -52,7 +52,7 @@ termina sem teste e sem erro (`--passWithNoTests`); `just --list` mostra `trees`
     - um comentário diz: um processo só, nunca duas rodadas juntas, nunca em laço; fora do `check` e da CI;
     - a receita `parity` sai: a paridade com a bancada não é usada na 010, e o `parity.integration.test.ts` continua no `just test` (se pula sem as variáveis) até sair com o código dele na Fase 11.
   - Cases: `just check` passa; `just trees roots` sem o arquivo de teste passa sem teste; `just trees "x; rm"` é recusado pela regex.
-- [ ] T002 [sessão] Regra `declared-not-guessed` no `.dependency-cruiser.cjs` (research R17; FR-009, FR-027)
+- [X] T002 [sessão] Regra `declared-not-guessed` no `.dependency-cruiser.cjs` (research R17; FR-009, FR-027)
   - Files: `.dependency-cruiser.cjs`
   - Signatures: a regra `declared-not-guessed` (`name`, `comment`, `severity`, `from`, `to`) na lista `forbidden`
   - Regra: de `^src/calculator/(declared|recorded|names)/` para `^src/calculator/(tree/|tree-build\.ts$|tree-roots\.ts$|root-calls\.json$|parity)`, `severity: "error"`, testes incluídos.
