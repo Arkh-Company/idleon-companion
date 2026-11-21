@@ -11,7 +11,7 @@ test.each([
   ['GurtBonuzz("x",3)', "loopCounter"],
   ["PlayerDATABASE[4].SkillLevels[328]", "otherCharacter"],
 ])("%s is a %s", (key, role) => {
-  expect(notLeafOf(key)?.role).toBe(role);
+  expect(notLeafOf(key, 0)?.role).toBe(role);
 });
 
 test.each([
@@ -21,7 +21,17 @@ test.each([
   "CurrentMapDone",
   "getLOGX(3)",
 ])("an ordinary part does not match: %s", (key) => {
-  expect(notLeafOf(key)).toBe(null);
+  expect(notLeafOf(key, 0)).toBe(null);
+});
+
+test("a read of the tree's own character is no other character's: it is a part to declare", () => {
+  expect(notLeafOf("PlayerDATABASE[4].SkillLevels[328]", 4)).toBe(null);
+  expect(notLeafOf("PlayerDATABASE[4].SkillLevels[328]", 3)?.role).toBe(
+    "otherCharacter",
+  );
+  expect(notLeafOf("PlayerDATABASE[14].SkillLevels[328]", 4)?.role).toBe(
+    "otherCharacter",
+  );
 });
 
 test("every entry has a reason, and none is a text of the game", () => {

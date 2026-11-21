@@ -62,18 +62,30 @@ const readPattern = (read: string) =>
     `^${read
       .split("[*]")
       .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-      .join("\\[\\d+\\]")}(?:$|[.[])`,
+      .join("\\[(\\d+)\\]")}(?:$|[.[])`,
   );
 
-/** The entry a reference key (`Block(args)` or a path) falls under, or null for an ordinary part. */
-export function notLeafOf(key: string): NotLeaf | null {
+/**
+ * The entry a reference key (`Block(args)` or a path) falls under, or null for an ordinary part. A read of the tree's
+ * own `character` is never another character's: it is a part the blueprint declares.
+ */
+export function notLeafOf(key: string, character: number): NotLeaf | null {
   const call = CALL.exec(key);
+  const readMatches = (n: NotLeaf, read: string): boolean => {
+    const m = call ? null : readPattern(read).exec(key);
+    return (
+      !!m &&
+      (n.role !== "otherCharacter" ||
+        m.slice(1).every((i) => Number(i) !== character))
+    );
+  };
   return (
-    NOT_LEAVES.find(({ match }) =>
-      "call" in match
-        ? call?.[1] === match.call &&
-          (match.mode === undefined || firstArg(call[2] ?? "") === match.mode)
-        : !call && readPattern(match.read).test(key),
+    NOT_LEAVES.find((n) =>
+      "call" in n.match
+        ? call?.[1] === n.match.call &&
+          (n.match.mode === undefined ||
+            firstArg(call[2] ?? "") === n.match.mode)
+        : readMatches(n, n.match.read),
     ) ?? null
   );
 }
