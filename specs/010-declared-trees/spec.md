@@ -24,6 +24,12 @@ Esta feature troca a forma adivinhada por uma forma **declarada**. O catálogo v
 - Q: Os padrões do agente (tolerância, ordem dos grupos, sistema só de outra classe, cartão da galeria, contagem, onde fica a aprovação, aviso dos Pins, versão só com as 289) valem? → A: Confirmados todos (mockup `mockup-galeria.html`).
 - Q: Até onde a imagem da galeria abre a árvore? → A: Até as folhas: a árvore inteira aberta.
 
+### Session 2026-11-20 (depois do protótipo)
+
+- Q: Abaixo do pool, a trava confere se a conta de cada fonte fecha, ou só se os filhos existem na gravação? → A: Remonta a conta a partir da gravação, na hora de conferir, e confere o fechamento em todos os níveis, sem guardar a conta.
+- Q: Quando o jogo junta duas fontes antes de pôr no pool (talento 239 × Kingdom stats), aparece uma linha só ou linhas separadas? → A: Uma linha só, com o nome da primeira fonte, e a segunda fonte como filho, com o sistema dela.
+- Q: Contas seguidas do mesmo tipo viram um pool só? → A: Sim: cada trecho seguido de somas é um Additive pool, e cada trecho seguido de multiplicações é um Multi pool (no Drop Rate, 4 pools).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Abrir um número e ver por que ele tem esse valor (Priority: P1)
@@ -131,7 +137,9 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 - **FR-001**: Cada um dos 289 números com destino `arvore` em `docs/catalogo/numeros.json` MUST ter exatamente uma receita declarada, e nenhum número fora desse destino ganha receita nesta feature.
 - **FR-002**: A receita MUST declarar a forma inteira da árvore: os pools (Additive ou Multi) na ordem do jogo, os grupos por sistema com emoji dentro de cada pool, as fontes dentro dos grupos e os filhos de cada fonte até a folha.
+- **FR-002c**: Os pools MUST seguir os trechos da conta do jogo na raiz: cada trecho seguido de somas é um Additive pool, cada trecho seguido de multiplicações é um Multi pool, e cada troca de soma para multiplicação, ou o contrário, abre um pool novo. Um pedaço de uma mesma multiplicação nunca vira pool próprio (no Drop Rate: Additive, Multi, Additive, Multi).
 - **FR-002a**: Cada número MUST ter uma receita só, mesmo quando varia por classe. Uma fonte que só algumas classes têm MUST levar a classe na receita e MUST aparecer só para o personagem dessa classe; o grupo do sistema aparece sempre que tiver ao menos uma fonte que a classe do personagem pode ter, e some só quando todas as fontes dele são de outras classes.
+- **FR-002b**: Quando o jogo junta duas fontes num termo só antes de pôr no pool (por exemplo, um talento multiplicado pelo Kingdom stats, ou Sushi somado a Jelly), a receita MUST declarar uma linha só, com o nome da primeira fonte, e a segunda fonte como filho, com o emoji do sistema dela; o termo nunca aparece como duas linhas soltas no pool.
 - **FR-003**: Cada fonte da receita MUST apontar para o ponto do código do jogo onde entra, por referência: o nome do bloco, o modo e, quando houver, a tabela e a linha; nunca uma expressão, uma linha ou um trecho do código.
 - **FR-004**: Todo nome na receita MUST vir do texto do jogo, com prova; nenhum nome é inventado, e nenhuma linha usa "no name yet", "Game value" ou nome feito só da forma da conta.
 - **FR-005**: Toda folha MUST ter um dos 9 tipos de folha (Level, Quantidade, Valor fixo, Bônus cru, Condição, Escolha, Tier, Recorde, Pontos investidos); galho, progresso e contexto não são folha.
@@ -142,7 +150,7 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 
 - **FR-008**: Para cada número, a gravação MUST entregar um gabarito com a ordem dos pools na raiz (onde o jogo soma e onde multiplica), a lista das fontes que entraram na conta com o valor de cada uma, e o valor final. A extração MUST só ler: nunca chama função do jogo em execução nem grava no save.
 - **FR-009**: A forma da árvore MUST NOT ser tirada do rastro da gravação; o rastro serve só para montar o gabarito e para dar os valores.
-- **FR-010**: Uma trava MUST conferir cada receita contra o gabarito: a ordem dos pools, a presença de toda fonte do gabarito e o fechamento de cada nível com o valor gravado. Uma receita que falha MUST ser reprovada com o motivo (fonte que falta, ordem esperada ou nível que não fecha, com os dois valores).
+- **FR-010**: Uma trava MUST conferir cada receita contra o gabarito: a ordem dos pools, a presença de toda fonte do gabarito e o fechamento de cada nível com o valor gravado, da raiz até a folha. Abaixo do pool, a trava MUST remontar a conta de cada nível a partir dos passos gravados, na hora de conferir, e MUST NOT guardar essa conta na receita nem no repositório (a receita guarda só a forma, os nomes e as referências). Uma receita que falha MUST ser reprovada com o motivo (fonte que falta, ordem esperada ou nível que não fecha, com os dois valores).
 - **FR-011**: Só receitas aprovadas pela trava MUST chegar à galeria.
 
 **Na tela do app**
@@ -247,6 +255,6 @@ A forma adivinhada sai do app. Os Pins e as marcas que apontavam para peças das
 | Qual o texto e o lugar do aviso dos Pins e marcas antigos (ux CHK006)? | resolved | Padrão do agente: uma faixa no topo do app, "Pins and marks from the old trees were removed: the trees were rebuilt.", que some ao ser fechada e não volta (FR-028). |
 | O que o jogador vê num número sem receita aprovada (ux CHK016)? | resolved | Padrão do agente: a versão com as árvores declaradas só sai com as 289 receitas aprovadas; sem receita, o número não abre árvore (FR-029). |
 | A imagem da galeria mostra a árvore aberta até onde: só os pools e grupos, até as fontes, ou até as folhas (ux CHK009, CHK011)? | resolved | Até as folhas: a árvore inteira aberta (FR-023). |
-| Abaixo do pool, "cada nível fecha" (FR-010, FR-015, SC-001) é a conferência da conta, com a trava remontando a conta a partir dos passos gravados sem guardá-la, ou só a conferência de que os filhos declarados são as partes que o jogo gravou? | open | |
-| Um termo que junta duas fontes (talento × recorde, Sushi + Jelly) aparece como uma linha com a segunda fonte como filho, ou como linhas separadas? | open | |
-| Escritas seguidas do mesmo tipo formam um pool só (no Drop Rate dá 4 pools; a 0.9 mostrava 7 itens no primeiro nível)? | open | |
+| Abaixo do pool, "cada nível fecha" (FR-010, FR-015, SC-001) é a conferência da conta, com a trava remontando a conta a partir dos passos gravados sem guardá-la, ou só a conferência de que os filhos declarados são as partes que o jogo gravou? | resolved | A trava remonta a conta dos passos gravados na hora, sem guardar, e confere todos os níveis (FR-010). |
+| Um termo que junta duas fontes (talento × recorde, Sushi + Jelly) aparece como uma linha com a segunda fonte como filho, ou como linhas separadas? | resolved | Uma linha, com a segunda fonte como filho (FR-002b). |
+| Escritas seguidas do mesmo tipo formam um pool só (no Drop Rate dá 4 pools; a 0.9 mostrava 7 itens no primeiro nível)? | resolved | Sim: um pool por trecho seguido do mesmo tipo (FR-002c). |

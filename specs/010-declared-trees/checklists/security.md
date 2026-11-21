@@ -1,6 +1,6 @@
 # Security Checklist: Árvores declaradas
 
-**Purpose**: Validate the quality of the security and privacy requirements: read-only access to the game, no network, what may enter Git, local storage of approvals and notes, and the logged alerts
+**Purpose**: Validate the quality of the security and privacy requirements after the prototype findings: read-only access to the game, no network, what may enter Git (the recalculated formulas included), local storage of approvals and notes, and the logged alerts
 **Created**: 2026-11-20
 **Feature**: [spec.md](../spec.md)
 
@@ -10,24 +10,25 @@
 
 ## Read-only access and no network
 
-- [x] CHK001 Is it stated that the gabarito extraction reads the game only, with no call into the running game and no write to the save? [Completeness, Spec §NFR-004, §FR-008]
-- [x] CHK002 Is it stated that the gallery and the capture generator work without any network access? [Gap, Spec §NFR-004]
+- [x] CHK001 Is it stated that the gabarito extraction reads the game only, with no call into the running game and no write to the save? [Completeness, Spec §FR-008]
+- [x] CHK002 Is it stated that the lock, the gallery and the image generator work without any network access? [Completeness, Spec §NFR-004]
 
 ## What may enter Git
 
-- [x] CHK003 Is the boundary between "reference" (block and mode) and "game code" defined clearly enough to judge a recipe line? [Clarity, Spec §FR-003, §FR-007]
-- [x] CHK004 Is it stated that the tree images of the gallery, which come from real recordings, stay out of Git? [Gap, Spec §FR-023, §NFR-004]
-- [x] CHK005 Is it stated that character names never appear in recipes, gallery images that may be shared, notes or alerts? [Completeness, Spec §NFR-004]
+- [x] CHK003 Is the boundary between a "reference" (block, mode, table, row) and "game code" defined clearly enough to judge a recipe line? [Clarity, Spec §FR-003, §FR-007]
+- [x] CHK004 Is it stated that the calculation the lock rebuilds from the recording is never stored in the recipe or in the repository? [Completeness, Spec §FR-010]
+- [x] CHK005 Is it stated that the gallery images, which come from real recordings, stay out of Git? [Completeness, Spec §NFR-004, §FR-024c]
+- [x] CHK006 Is it stated that character names never appear in recipes, notes or alerts? [Completeness, Spec §NFR-004]
 
 ## Local storage
 
-- [x] CHK006 Is it specified where the approvals and notes of the gallery are kept, and that they stay on the player's machine? [Gap, Spec §FR-024]
-- [x] CHK007 Is it specified that deleting old Pins and marks touches only the app's own saved data? [Clarity, Spec §FR-028]
+- [x] CHK007 Is it specified where the approvals and notes of the gallery are kept? [Completeness, Spec §FR-024c]
+- [x] CHK008 Is it specified that deleting old Pins and marks touches only the app's own saved data? [Clarity, Spec §FR-028]
 
 ## Logged alerts
 
-- [x] CHK008 Is the content of a closing alert limited to the number, the level and the difference, with no game code and no character name? [Clarity, Spec §FR-019]
-- [x] CHK009 Are the logged alerts required to be structured, with a label and an ID, as the constitution asks? [Consistency, Spec §FR-019]
+- [x] CHK009 Is the content of a closing alert limited to the number, the level and the difference, with no game code and no character name? [Clarity, Spec §FR-019]
+- [x] CHK010 Are the logged alerts required to be structured, with a label and an ID, as the constitution asks? [Consistency, Spec §FR-019]
 
 ## Notes
 
