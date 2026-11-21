@@ -7,3 +7,31 @@ phases:
   prototype: {status: done, date: 2026-11-20}
   plan: {status: done, date: 2026-11-20}
   tasks: {status: done, date: 2026-11-20}
+execution:
+  branch: feat/010-declared-trees
+  phases:
+    - {name: "Done gate", status: pending}
+    - {name: "Setup (T004-T010)", status: pending}
+    - {name: "Foundational (T011-T026)", status: pending}
+    - {name: "US2 (T027-T035)", status: pending}
+    - {name: "US1 piloto (T036-T041)", status: pending}
+    - {name: "US3 (T042-T051)", status: pending}
+    - {name: "US4 (T052-T058)", status: pending}
+    - {name: "Gerador de rascunho (T059-T060)", status: pending}
+    - {name: "Lote W1 (T061-T066)", status: pending}
+    - {name: "Lote W2 (T067-T072)", status: pending}
+    - {name: "Lote W3 (T073-T078)", status: pending}
+    - {name: "Lote W4 (T079-T084)", status: pending}
+    - {name: "Lote W5 (T085-T090)", status: pending}
+    - {name: "Lote W6 (T091-T096)", status: pending}
+    - {name: "Lote W7 (T097-T102)", status: pending}
+    - {name: "Lote Personagem (T103-T108)", status: pending}
+    - {name: "Lote Conta (T109-T114)", status: pending}
+    - {name: "US5 (T115-T119)", status: pending}
+    - {name: "US1 troca (T120-T127)", status: pending}
+    - {name: "US6 (T128-T134)", status: pending}
+    - {name: "Polish (T135-T142)", status: pending}
+  # um PR de código por fase do plano (plan.md:225), decisão do Vinicius em 21/11/2026
+  pr_groups: [[1, 2], [3], [4, 5], [6], [7], [8, 9, 10, 11, 12, 13, 14, 15, 16, 17], [18, 19, 20, 21]]
+  feature_review: pending
+  code_pr: null
