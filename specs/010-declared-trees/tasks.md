@@ -182,7 +182,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Files: `src/calculator/declared/expr-eval.ts`
   - Signature: `evalExpr(e: Expr, valueOf: (e: Expr) => number | undefined): number | null` (`Expr` de `recorded/steps.ts`).
   - Cases: os da T015, que esta tarefa faz passar.
-- [ ] T017 [P] Blocos novos no jogo inventado e receitas inventadas para eles (lição 4 da 009; depende de T013)
+- [X] T017 [P] Blocos novos no jogo inventado e receitas inventadas para eles (lição 4 da 009; depende de T013)
   - Files: `src/calculator/fixtures/fake-game.js`, `src/calculator/fixtures/blueprints/*.blueprint.json`, `src/calculator/fixtures/recording-fixture.ts` (gravação feita à mão; não importa `tree/tree-fixture.ts`, que sai na Fase 11)
   - Signatures: `recordingOf(nodes, writes): Recording` em `recording-fixture.ts`; os blocos `Blocks._customBlock_<Nome>` do jogo inventado
   - Blocos, cada um conferido com a conta real no N.js (njs-index) antes de virar fixture, com linhas curtas (o scan da T009):

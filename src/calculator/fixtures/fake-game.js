@@ -1321,6 +1321,74 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeBubbleInner() + dnsm().CalcTalentDN2;
     return d.AlchBubbles.h.W2 * 2;
   };
+  // Spec 010 (T017): the roots of the answer key. A curve by its mode; a talent of the tree character on a curve whose
+  // arguments differ, a luck on a curve with three equal arguments, and the best of all characters.
+  Blocks._customBlock_TreeDeclCurve = function (mode, top, mid, level) {
+    return mode === "decay" ? (top * level) / (level + mid) : 0;
+  };
+  Blocks._customBlock_TreeDeclTalent = function (i) {
+    var s = state();
+    var level = s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[i];
+    return Blocks._customBlock_TreeDeclCurve("decay", 40, 100, level);
+  };
+  Blocks._customBlock_TreeDeclLuck = function () {
+    var level = state().TreeLevel - 5;
+    return Blocks._customBlock_TreeDeclCurve("decay", 20, 20, level);
+  };
+  Blocks._customBlock_TreeDeclBest = function () {
+    var s = state();
+    var best = 0;
+    var names = s.GetPlayersUsernames;
+    for (var i = 0; i < names.length; i++)
+      best = Math.max(best, s.PlayerDATABASE.h[names[i]].h.SkillLevels[1]);
+    return best;
+  };
+  // The Drop Rate shape: scratch counters, a working value read back, a sum in percent divided by 100 with a
+  // two-source term and two curves, constants behind a condition, a source only one character has, a source the
+  // recording never runs; the running total is summed, multiplied, summed and multiplied.
+  Blocks._customBlock_TreeDeclChain = function () {
+    var s = state();
+    var d = dnsm();
+    s.DummyNumbersStatManager = new StringMap();
+    for (var i = 0; i < 3; i++) s.DummyNumbersStatManager.h.n = i;
+    d.TreeDecl = new StringMap();
+    d.TreeDeclPart = new StringMap();
+    d.TreeDeclPart.h.v = Blocks._customBlock_TreeDeclBest() + s.TreeCapped;
+    d.TreeDecl.h.v =
+      Blocks._customBlock_TreeDeclLuck() +
+      (Blocks._customBlock_TreeDeclTalent(0) * s.TreeTwins[0] +
+        Blocks._customBlock_ArcadeBonus(0) +
+        d.TreeDeclPart.h.v) /
+        100;
+    s.TreeFlagOn == 1 && (d.TreeDecl.h.v = d.TreeDecl.h.v + 2);
+    s.TreeOwned > 0 && (d.TreeDecl.h.v = d.TreeDecl.h.v + s.TreeOwned);
+    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDecl.h.v = d.TreeDecl.h.v + 0.5;
+    d.TreeDecl.h.v = d.TreeDecl.h.v * (1 + s.TreeStats.h.b / 100);
+    s.CurrentMap == 7 &&
+      (d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeDeclTalent(1));
+    d.TreeDecl.h.v = d.TreeDecl.h.v * 1.2;
+    return d.TreeDecl.h.v;
+  };
+  // A root with no running total: a sum, then a product.
+  Blocks._customBlock_TreeDeclExpr = function () {
+    var s = state();
+    return (
+      (Blocks._customBlock_TreeReads() + s.TreeCapped + 2) *
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.b / 100)
+    );
+  };
+  // A root whose last write swaps the running total instead of adding to it or multiplying it.
+  Blocks._customBlock_TreeDeclSwap = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclSwap = new StringMap();
+    d.TreeDeclSwap.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeDeclSwap.h.v = d.TreeDeclSwap.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDeclSwap.h.v = s.TreeCapped + s.TreeLevel;
+    return d.TreeDeclSwap.h.v;
+  };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {
     everySceneInit.call(this);

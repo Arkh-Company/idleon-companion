@@ -2,6 +2,7 @@
 // passes and one that is refused with its reason, and the three stages. The blueprints here are invented.
 import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
+import { SYSTEMS as SYSTEMS_TABLE } from "./systems.ts";
 
 const SYSTEMS = new Set(["talents", "cards", "achievements", "bundles"]);
 const ctx = { fileId: "invented-number", systemIds: SYSTEMS };
@@ -228,6 +229,23 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
   ],
 ])("refused: %s", (_, change, reason) => {
   expect(refused(change)).toMatch(reason);
+});
+
+test("each invented blueprint of the tests (fixtures/blueprints) loads complete over the real systems table", () => {
+  const files = import.meta.glob<unknown>(
+    "../fixtures/blueprints/*.blueprint.json",
+    { eager: true, import: "default" },
+  );
+  const ids = new Set(SYSTEMS_TABLE.map((s) => s.id));
+  const loaded = Object.entries(files).map(([path, raw]) => {
+    const fileId = /([^/]+)\.blueprint\.json$/.exec(path)?.[1] ?? "";
+    const out = parseBlueprint(raw, { fileId, systemIds: ids });
+    return [fileId, out.ok ? out.stage : out.reason];
+  });
+  expect(Object.fromEntries(loaded)).toEqual({
+    "tree-decl-chain": "complete",
+    "tree-decl-expr": "complete",
+  });
 });
 
 test("only id and root is a sketch", () => {
