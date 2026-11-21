@@ -174,11 +174,11 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - A calculadora não importa `src/shared/` (`calculator-alone`): a conferência de que o id está no catálogo fica no teste de CI (T023, T124), não na carga.
   - O campo `pending` dos rascunhos completa o contrato (contracts/blueprint.md lista as chaves da receita completa; o rascunho do research R7 precisa de onde guardar as pendências).
   - Cases: os da T013, que esta tarefa faz passar.
-- [ ] T015 [P] Testes do avaliador em `src/calculator/declared/expr-eval.test.ts` (FR-010; research R2)
+- [X] T015 [P] Testes do avaliador em `src/calculator/declared/expr-eval.test.ts` (FR-010; research R2)
   - Files: `src/calculator/declared/expr-eval.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: soma, produto, divisão, potência e menos unário sobre um `Expr` gravado; as funções de `Math` que o `makeSteps` grava (`min`, `max`, `floor`, `ceil`, `pow`, `log`); uma referência trocada pelo valor do filho; uma referência sem valor → `null`; um operador desconhecido → `null`, nunca uma exceção; divisão por zero → `null`; nenhum `eval` nem `Function` (o teste lê o arquivo e procura os dois).
-- [ ] T016 O avaliador em `src/calculator/declared/expr-eval.ts` (depende de T015)
+- [X] T016 O avaliador em `src/calculator/declared/expr-eval.ts` (depende de T015)
   - Files: `src/calculator/declared/expr-eval.ts`
   - Signature: `evalExpr(e: Expr, valueOf: (e: Expr) => number | undefined): number | null` (`Expr` de `recorded/steps.ts`).
   - Cases: os da T015, que esta tarefa faz passar.
