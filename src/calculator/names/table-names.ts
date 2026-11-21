@@ -173,7 +173,7 @@ export const TABLE_TEXTS = {
     "raw",
     "bench pieces.cjs rename NAMES deep-2 skillNameOf; N.js RiftStuff",
   ),
-  // the game state paths' rules (tree/state-names.ts)
+  // the game state paths' rules (names/state-names.ts)
   compass: text(
     "CustomLists.CompassUpg",
     (n) => [n, 0],

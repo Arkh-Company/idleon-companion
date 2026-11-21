@@ -1,4 +1,4 @@
-// The formula line's arithmetic, without eval (tree/math.ts).
+// The formula line's arithmetic, without eval (recorded/math.ts).
 import { expect, test } from "vitest";
 import { evaluate, formulaAtoms, formulaOut, isOperator } from "./math.ts";
 

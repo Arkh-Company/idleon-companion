@@ -1,4 +1,4 @@
-// The tree worker's reader of the installed game's tables for the names (spec 008, T023; tree/names.ts), loaded as text
+// The tree worker's reader of the installed game's tables for the names (spec 008, T023; names/names.ts), loaded as text
 // and run inside the context after the context's own code. It gives, as JSON text only, the text of each cell the name
 // recipes read (null when it is no text) and each table the recipes read in the bench's canonical form (every {h: ...}
 // wrapper unwrapped, the keys sorted), which the worker hashes to tell a patched table.

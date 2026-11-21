@@ -85,7 +85,7 @@ export function createTreeEngine(
   recipe: Recipe = TREE_RECIPE,
 ): TreeEngine {
   const recorder = bootRecorder(code, pak);
-  // The names of the game's tables, once per game: the rows of every tree read them (tree/names.ts, tree/table-names.ts).
+  // The names of the game's tables, once per game: the rows of every tree read them (names/names.ts, names/table-names.ts).
   const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
   useGameNames(game.names);
   useGameTables(game.tables);

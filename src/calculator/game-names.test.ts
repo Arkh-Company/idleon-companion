@@ -216,7 +216,7 @@ test("[turn recipes] a table a table text reads is kept in the bench's form, onl
   ]);
   expect(read(sha("[]"), isList).size).toBe(0);
   expect(read(sha(LIST), () => false).size).toBe(0);
-  // by default, only the tables of tree/table-names.ts
+  // by default, only the tables of names/table-names.ts
   expect(
     readGameNames(
       context,
