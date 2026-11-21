@@ -19,8 +19,9 @@ const OPS: Record<string, (l: number, r: number) => number> = {
   "===": (l, r) => bool(l === r),
   "!=": (l, r) => bool(l !== r),
   "!==": (l, r) => bool(l !== r),
-  "&&": (l, r) => (l === 0 ? l : r),
-  "||": (l, r) => (l === 0 ? r : l),
+  // && and ||: the right side only when the left one did not settle it (evalExpr stops before it otherwise)
+  "&&": (_l, r) => r,
+  "||": (_l, r) => r,
 };
 const FNS: Record<string, (...a: number[]) => number> = {
   min: Math.min,
@@ -59,6 +60,12 @@ export function evalExpr(
     case "op": {
       const f = OPS[e.o];
       const l = ev(e.l);
+      // the side the game never ran has no value: && stops at a 0, || at anything else
+      if (
+        l !== null &&
+        ((e.o === "&&" && l === 0) || (e.o === "||" && l !== 0))
+      )
+        return l;
       const r = ev(e.r);
       return f && l !== null && r !== null ? finite(f(l, r)) : null;
     }

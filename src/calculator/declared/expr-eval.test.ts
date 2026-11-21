@@ -65,6 +65,15 @@ test("an unknown operator or function, and a division by zero, give null and nev
   expect(run({ t: "num", v: "(text)" })).toBe(null);
 });
 
+test("&& and || stop at the left side, as the game did: the side it never ran has no value and is not read", () => {
+  const unrun: Expr = { t: "val", v: undefined };
+  expect(run(op("&&", num(0), unrun))).toBe(0);
+  expect(run(op("||", call(1), unrun))).toBe(4);
+  expect(run(op("&&", call(1), call(2)))).toBe(10);
+  expect(run(op("||", num(0), call(2)))).toBe(10);
+  expect(run(op("&&", call(1), unrun))).toBe(null);
+});
+
 test("the evaluator never uses eval nor Function", () => {
   const code = readFileSync(join(import.meta.dirname, "expr-eval.ts"), "utf8");
   expect(code).not.toMatch(/\beval\s*\(/);
