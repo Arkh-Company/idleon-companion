@@ -24,9 +24,7 @@
   var seed = 12345;
   Math.random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
-  // The places of the infinite numbers the recording keeps (spec 010, T162): JSON makes them null, and infAt() names
-  // where they were, for the answer key, never a pass over the whole recording (seconds on the real game). A node's
-  // place is its path from the recording's top, the sign last; a write's is the write (the builders' pass moves them).
+  // The places of the infinite numbers the recording keeps (spec 010, T162), for infAt() in recorder-pass.js.
   var isInf = (v) => v === Infinity || v === -Infinity;
   var mark = (path, v) => S.infs.push(path.concat(v > 0 ? 1 : -1));
 
@@ -396,21 +394,6 @@
         builders: S.builders ? S.builders.id : null,
         fromGame: S.fromGame || [],
       }),
-    // For the answer key only (spec 010, T162: a cost that overflows): the place of each infinite number in the text
-    // take() made, as [...path, sign]; tree-record.ts puts it back there.
-    infAt: () => {
-      var out = (S.infs || []).slice();
-      if (S.infWrites && S.infWrites.length) {
-        var where = new Map();
-        S.writes.forEach((w, i) => where.set(w, ["writes", i, "v"]));
-        S.spliced.forEach((w, i) => where.set(w, ["spliced", i, "v"]));
-        S.infWrites.forEach((w) => {
-          var p = where.get(w);
-          if (p) out.push(p.concat(w.v > 0 ? 1 : -1));
-        });
-      }
-      return JSON.stringify(out);
-    },
   };
   G.__rec.state = S;
 })();
