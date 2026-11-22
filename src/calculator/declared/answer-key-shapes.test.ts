@@ -319,3 +319,71 @@ test("a part in a second running total the root builds itself, never in the tota
     ["TreeReads()", "TreeStats.b"],
   ]);
 });
+
+// Spec 010, T161 (spec, Open Questions 22/11): a root that returns no number takes a part; the same part in each turn
+// of a loop, with the same terms and the same value, is one part; in a ➗ line, the part is in %.
+test("a part in each turn of a loop, with the same terms and value, is one part, and the root needs no number (the Seraph)", () => {
+  const rec = record("TreeSignLoop");
+  expect(typeof rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1]?.v).not.toBe(
+    "number",
+  );
+  const key = answerKey(rec, recorder.ops, {
+    part: ["TreeStats.a", "TreeLevel"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  // min(5, (1.1 + 3 / 100) ^ ceil(26 / 20))
+  expect(key.final).toBeCloseTo(1.13 ** 2, 12);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.refs))).toEqual([
+    ["TreeStats.a", "TreeLevel"],
+  ]);
+});
+
+test("a part whose value changes from turn to turn of the loop is refused", () => {
+  const key = answerKey(record("TreeSignTurns"), recorder.ops, {
+    part: ["TreeStats.a"],
+  });
+  expect("reason" in key ? key.reason : "no refusal").toMatch(
+    /a parte muda entre as voltas do laço/,
+  );
+});
+
+test("a part in the ➗ line of each turn (the Mob respawn): its terms in %", () => {
+  // each time ÷ (1 + (TreeReads() + TreeBase + TreeList[i]) / 100): the part is 8 + 4
+  const key = answerKey(record("TreeRespawnLoop"), recorder.ops, {
+    part: ["TreeReads()", "TreeBase"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(12, 12);
+  expect(
+    key.pools.map((p) => [p.kind, p.terms.map((t) => [t.ref, t.weight])]),
+  ).toEqual([
+    [
+      "additive",
+      [
+        ["TreeReads()", 1],
+        ["TreeBase", 1],
+      ],
+    ],
+  ]);
+});
+
+// Spec 010, T162 (spec, Open Questions 22/11): the recording keeps an infinite cost, and `K < x && (x = K)` is a Cap K.
+test("a cost that overflows to Infinity and is cut by `K < x && (x = K)`: a chain with a Cap K, and its part", () => {
+  const rec = record("TreeCostInf");
+  expect(rec.writes.some((w) => w.v === Infinity)).toBe(true);
+  const key = answerKey(rec, recorder.ops);
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.form).toBe("chain");
+  expect(key.top.map((l) => [l.kind, l.value ?? null, l.after])).toEqual([
+    ["round", null, 1000],
+    ["cap", 1000, 1000],
+  ]);
+  expect(key.top[1]?.before).toBe(Infinity);
+  const part = answerKey(rec, recorder.ops, {
+    part: ["TreeTwins[0]", "TreeStats.a"],
+  });
+  expect("error" in part ? part.reason : part.final).toBeCloseTo(
+    0.421875 * 0.97,
+    12,
+  );
+});

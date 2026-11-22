@@ -1795,6 +1795,102 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeListD.push(s.TreeBase + 1);
     return d.TreeListC.slice();
   };
+  // Spec 010 (T161, T162; spec, Open Questions 22/11): a cost that overflows to Infinity and is cut by a constant
+  // written under a test (the Bubble cost's 1e9); a total raised to 1 the same way (a floor); a first write divided
+  // (New bubble chance), then only multiplied, or then added to; a factor multiplied into each sign in a loop, the root
+  // returning nothing (the Seraph), and one that changes each turn; each monster's time divided by 1 + a sum / 100 in a
+  // loop (the Mob respawn).
+  Blocks._customBlock_TreeCostInf = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostInf = new StringMap();
+    d.TreeCostInf.h.v = s.TreeCapped * Math.pow(10, 400);
+    d.TreeCostInf.h.v =
+      d.TreeCostInf.h.v *
+      Math.max(0.1, Math.pow(0.75, s.TreeTwins[0])) *
+      Math.max(0.9, 1 - s.TreeStats.h.a / 100);
+    1000 < d.TreeCostInf.h.v && (d.TreeCostInf.h.v = 1000);
+    1 > d.TreeCostInf.h.v && (d.TreeCostInf.h.v = 1);
+    return Math.round(d.TreeCostInf.h.v);
+  };
+  Blocks._customBlock_TreeFloorIf = function () {
+    var d = dnsm();
+    d.TreeFloorIf = new StringMap();
+    d.TreeFloorIf.h.v = Blocks._customBlock_TreeReads() - 10;
+    d.TreeFloorIf.h.v = d.TreeFloorIf.h.v * 2;
+    1 > d.TreeFloorIf.h.v && (d.TreeFloorIf.h.v = 1);
+    return d.TreeFloorIf.h.v;
+  };
+  Blocks._customBlock_TreeChainDiv = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeChainDiv = new StringMap();
+    d.TreeChainDiv.h.v =
+      (139 * Math.pow(0.73, s.TreeTwins[0] + 1)) /
+      Math.max(0.1 * s.TreeTwins[0] + 1, 1);
+    d.TreeChainDiv.h.v =
+      d.TreeChainDiv.h.v *
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.b / 100);
+    return d.TreeChainDiv.h.v;
+  };
+  Blocks._customBlock_TreeChainDivAdd = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeChainDivAdd = new StringMap();
+    d.TreeChainDivAdd.h.v =
+      (139 * Math.pow(0.73, s.TreeTwins[0] + 1)) /
+      Math.max(0.1 * s.TreeTwins[0] + 1, 1);
+    d.TreeChainDivAdd.h.v = d.TreeChainDivAdd.h.v + s.TreeCapped;
+    return d.TreeChainDivAdd.h.v;
+  };
+  Blocks._customBlock_TreeSignLoop = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeSigns = new StringMap();
+    d.TreeSigns.h.x = s.TreeBase;
+    d.TreeSigns.h.y = s.TreeCapped;
+    var keys = Object.keys(d.TreeSigns.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      d.TreeSigns.h[p] =
+        d.TreeSigns.h[p] *
+        (1 + s.TreeStats.h.b / 100) *
+        Math.min(
+          5,
+          Math.pow(
+            1.1 + s.TreeStats.h.a / 100,
+            Math.ceil((s.TreeLevel + 1) / 20),
+          ),
+        );
+    }
+  };
+  Blocks._customBlock_TreeSignTurns = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeSignTurns = new StringMap();
+    d.TreeSignTurns.h.x = s.TreeBase;
+    d.TreeSignTurns.h.y = s.TreeCapped;
+    var keys = Object.keys(d.TreeSignTurns.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      d.TreeSignTurns.h[p] =
+        d.TreeSignTurns.h[p] *
+        (1 + s.TreeStats.h.b / 100) *
+        Math.min(5, Math.pow(1.1 + s.TreeStats.h.a / 100, i + 1));
+    }
+  };
+  Blocks._customBlock_TreeRespawnLoop = function () {
+    var s = state();
+    var keys = Object.keys(s.TreeBig.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      s.TreeBig.h[p] =
+        s.TreeBig.h[p] /
+        (1 +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeList[i]) / 100);
+    }
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

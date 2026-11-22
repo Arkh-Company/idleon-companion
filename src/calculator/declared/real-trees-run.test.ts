@@ -306,3 +306,15 @@ test("a root with an item whose call fails gives no value, as the live map", () 
   });
   expect(probeRoot(record, recorder.ops, failing).form).toBe("liveMap");
 });
+
+// Spec 010, T161: a root that returns no number takes a part (the Seraph): no live map.
+test("a root that returns no number, with a part, is no live map", () => {
+  const seraph = rooted("signs", {
+    ref: { call: "TreeSignLoop", args: [0, 0, 0] },
+    part: [{ read: "TreeStats.a" }, { read: "TreeLevel" }],
+  });
+  expect(probeRoot(record, recorder.ops, seraph)).toMatchObject({
+    pools: ["multi"],
+    reason: null,
+  });
+});

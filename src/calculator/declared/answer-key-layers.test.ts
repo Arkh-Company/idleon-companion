@@ -287,3 +287,55 @@ test("a side that is a min of two sides starting with constants is the cap", () 
     ],
   ]);
 });
+
+// Spec 010, T162 (spec, Open Questions 22/11): `K > x && (x = K)` raises the total to K, a Floor K.
+test("a total raised by `K > x && (x = K)` is a chain with a Floor K", () => {
+  const key = keyOf("TreeFloorIf");
+  // (TreeReads() − 10) × 2 = −4, raised to 1
+  expect(key.final).toBe(1);
+  expect(key.form).toBe("chain");
+  expect(layers(key)).toEqual([["floor-min", 1, -4, 1]]);
+  expect(pools(key.pools)).toEqual([
+    [
+      "additive",
+      [
+        ["TreeReads()", 1],
+        ["10", -1],
+      ],
+    ],
+    ["multi", [["2", 1]]],
+  ]);
+});
+
+// Spec 010, T162: a division in the first write of a chain is a ➗ line when every later write only multiplies.
+test("a first write divided, then only multiplied: a ➗ line of the root over the numerator's pools", () => {
+  const key = keyOf("TreeChainDiv");
+  const n = 139 * 0.73 ** 4;
+  expect(key.final).toBeCloseTo((n / 1.3) * 6 * 1.05, 9);
+  expect(key.form).toBe("chain");
+  expect(key.top.map((l) => [l.kind, l.value ?? null])).toEqual([
+    ["div", null],
+  ]);
+  expect(key.top[0]?.before).toBeCloseTo(1.3, 12);
+  expect(key.top[0]?.after).toBeCloseTo(key.final, 12);
+  expect(pools(key.pools)).toEqual([
+    [
+      "multi",
+      [
+        ["139", 1],
+        ["TreeTwins[0]", 1],
+        ["TreeLoop()", 1],
+        ["TreeStats.b", 1],
+      ],
+    ],
+  ]);
+  expect(key.pools[0]?.value).toBeCloseTo(n * 6 * 1.05, 9);
+  expect(key.pools[0]?.error).toBeLessThanOrEqual(1e-9);
+  expect(pools(key.divisors)).toEqual([["multi", [["TreeTwins[0]", 1]]]]);
+});
+
+test("a first write divided, then added to, is refused", () => {
+  expect(refusal("TreeChainDivAdd")).toMatch(
+    /a divisão da primeira escrita não fica no topo/,
+  );
+});
