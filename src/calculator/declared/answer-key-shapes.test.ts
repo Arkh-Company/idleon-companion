@@ -9,7 +9,12 @@ import { answerKey } from "./answer-key.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
-  recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  recorder = bootRecorder(
+    GAME,
+    PAK,
+    { startMs: 5_000, numberMs: 500 },
+    { infinite: true },
+  );
 });
 
 const record = (block: string): Recording =>
@@ -343,7 +348,7 @@ test("a part whose value changes from turn to turn of the loop is refused", () =
     part: ["TreeStats.a"],
   });
   expect("reason" in key ? key.reason : "no refusal").toMatch(
-    /a parte muda entre as voltas do laço/,
+    /a parte não tem os mesmos termos e o mesmo valor em todas as voltas do laço/,
   );
 });
 
