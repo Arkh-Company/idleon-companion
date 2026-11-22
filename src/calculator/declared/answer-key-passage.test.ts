@@ -156,6 +156,23 @@ test("a step log at the cap: a later write of the path, by another call, may be 
   );
 });
 
+test("the reason of more than one write names the path, the call and the seq of each write, and a log at the cap", () => {
+  const rx: NonNullable<RecNode["rx"]> = [
+    ["DNSM.p", 6, 1, 1],
+    ["DNSM.p", 6, 3, 2],
+  ];
+  const writes =
+    "(DNSM.p de InventedRoot(0,0,0), seq 1; DNSM.p de InventedRoot(0,0,0), seq 2)";
+  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toContain(
+    `a passagem 6 sai de mais de uma escrita ${writes}, e a posição não decide entre elas`,
+  );
+  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).not.toMatch(/limite/);
+  while (rx.length < LOG_CAP) rx.push(["InventedPad", 0, 0]);
+  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toMatch(
+    /não decide entre elas \(o log da chamada chegou ao limite\)/,
+  );
+});
+
 test("a child call written with `=` and then used in a later step: the place does not decide, refused", () => {
   // `x = B(2); DNSM.b = x; u = x * 3; return 5 + DNSM.b + u`
   const used = recordingOf(
