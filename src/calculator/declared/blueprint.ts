@@ -240,6 +240,7 @@ function checkRoot(raw: unknown): void {
       "combine",
       "calls",
       "part",
+      "branch",
       "scratch",
       "routine",
       "sum",
@@ -258,6 +259,9 @@ function checkRoot(raw: unknown): void {
     no("root", "item é o índice de um item da lista que a chamada ref devolve");
   if (root.item !== undefined && root.part !== undefined)
     no("root", "item não vai junto com part");
+  const okBranch = typeof root.branch === "string" && isPathRead(root.branch);
+  if (root.branch !== undefined && (root.part === undefined || !okBranch))
+    no("root", "branch é o caminho da lista que o ramo procura, só com part");
   if (root.routine !== undefined) {
     checkRoutine(root);
     return;

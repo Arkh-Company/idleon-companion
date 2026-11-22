@@ -153,7 +153,7 @@ export function probeRoot(
   character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const { ref, calls, part, scratch, routine, sum, item } = bp.root;
+  const { ref, calls, part, branch, scratch, routine, sum, item } = bp.root;
   const first = routine ? stepsOf(routine)[0] : undefined;
   const base = {
     id: bp.id,
@@ -201,7 +201,12 @@ export function probeRoot(
         : calls
           ? { sum: calls.length }
           : part
-            ? { part: part.map((r) => refKey(r, character)) }
+            ? {
+                part: part.map((r) => refKey(r, character)),
+                ...(branch === undefined
+                  ? {}
+                  : { branch: refKey({ read: branch }, character) }),
+              }
             : null;
     const key = answerKey(rec, ops, shape);
     if ("error" in key) return done("outOfRule", [], key.reason);

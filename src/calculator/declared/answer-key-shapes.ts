@@ -118,15 +118,20 @@ export function partKey(
     return refused("ambiguous", "os termos da parte estão em pools diferentes");
   const terms = found.map((f) => f.t);
   if (at < key.pools.length) return partOfPool(key, pool, terms);
+  // a term scaled by a constant (the 0.65 of W7, T163) keeps the constant in its weight
+  const scaleOf = (t: AnswerTerm) => t.scale ?? 1;
   if (
     pool.kind !== "additive" ||
-    terms.some((t) => !near(Math.abs(t.weight), 0.01))
+    terms.some((t) => !near(Math.abs(t.weight / scaleOf(t)), 0.01))
   )
     return refused("ambiguous", "a parte da linha ➗ não está em %");
   return partOfPool(
     key,
     pool,
-    terms.map((t) => ({ ...t, weight: t.weight * 100 })),
+    terms.map((t) => ({
+      ...t,
+      weight: Math.round((t.weight / scaleOf(t)) * 100) * scaleOf(t),
+    })),
   );
 }
 
@@ -138,6 +143,8 @@ export function partKey(
  * of more than one call are refused. A write in a turn of a loop is keyed with the steps of its turn (the Seraph, the
  * Mob respawn: the step that gave it was recorded again after it); the same part in each turn, with the same terms
  * and the same value, is one part, and a part that changes from turn to turn is refused (spec, Open Questions 22/11).
+ * With a `branch` (T163, a world of the Mob respawn), only the turns whose search of that list found the item count,
+ * whatever their order, and none of them is left out: a turn without the part refuses the root.
  */
 export function partInWriters(
   rec: Recording,
@@ -148,6 +155,7 @@ export function partInWriters(
     value: number,
     turn?: { from: number; to: number },
   ) => AnswerKey | RootFormError,
+  branch?: string,
 ): AnswerKey | RootFormError | null {
   // the log too: the first reads stop at the recorder's cap
   const read = new Set([
@@ -163,12 +171,22 @@ export function partInWriters(
     string,
     { node: number; value: number; turn: { from: number; to: number } }
   >();
+  // the branch's search that found the item, logged in the turn (the steps run when it searched)
+  const found = (node: number, from: number, to: number) =>
+    (rec.nodes[node]?.rx ?? []).some(
+      ([p, v, at]) =>
+        v === true &&
+        p.startsWith(`${branch ?? ""} contains `) &&
+        at >= from &&
+        at <= to,
+    );
   // a turn: the steps its call recorded since the call's write before it
   const lastXi = new Map<number, number>();
   for (const w of rec.writes) {
     if (w.node === null || !under(w.node)) continue;
     const from = lastXi.get(w.node) ?? 0;
     lastXi.set(w.node, w.xi);
+    if (branch !== undefined && !found(w.node, from, w.xi)) continue;
     if (read.has(w.path) && typeof w.v === "number")
       writers.set(`${String(w.node)} ${w.path}`, {
         node: w.node,
@@ -183,7 +201,7 @@ export function partInWriters(
   const parts = [...writers.values()].flatMap(({ node, value, turn }) => {
     let part = partOf(keyOf(node, value));
     if (!kept(part)) part = partOf(keyOf(node, value, turn));
-    return kept(part) ? [{ node, part }] : [];
+    return branch !== undefined || kept(part) ? [{ node, part }] : [];
   });
   const [first, ...rest] = parts;
   if (!first) return null;

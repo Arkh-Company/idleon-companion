@@ -82,7 +82,7 @@ export interface AnswerKey {
 /** The blueprint's root shape, its references already turned into keys: a sum of calls, or a part of the call. */
 export type RootShape =
   | { sum: number }
-  | { part: readonly string[] }
+  | { part: readonly string[]; branch?: string }
   | { routine: string }
   | { item: number }
   | null;
@@ -115,10 +115,6 @@ export function answerKey(
   }
   const key = answerKeyOfSteps(rec, blockSteps, { gate, branches, ops });
   if (!shape || !("part" in shape)) return key;
-  const own = "error" in key ? key : partKey(key, shape.part);
-  // found, or refused as ambiguous in the root: never looked for again elsewhere
-  if (!("error" in own) || ("part" in own && own.part === "ambiguous"))
-    return own;
   const inner = (
     node: number,
     value: number,
@@ -128,6 +124,16 @@ export function answerKey(
     const steps = turn && n ? made.turnOf(n, turn) : made.of(node);
     return answerKeyOfSteps(rec, steps, { node, value, ops });
   };
+  // a branch's part is only in the loop's turns of that branch (T163)
+  if (shape.branch !== undefined)
+    return (
+      partInWriters(rec, top, shape.part, inner, shape.branch) ??
+      outOfRule(`nenhuma volta achou o item na lista ${shape.branch}`)
+    );
+  const own = "error" in key ? key : partKey(key, shape.part);
+  // found, or refused as ambiguous in the root: never looked for again elsewhere
+  if (!("error" in own) || ("part" in own && own.part === "ambiguous"))
+    return own;
   return partInWriters(rec, top, shape.part, inner) ?? own;
 }
 
@@ -256,9 +262,14 @@ export function answerKeyOfSteps(
   // `seen`: the root's steps already opened on the way down to a part, the one being opened included
   // (answer-key-terms.ts, unwrap): a passage never leads back into them.
   type Seen = ReadonlySet<number>;
-  const termsOf = (parts: readonly Part[], kind: PoolKind): RawTerm[] => {
+  // `scale`: a ➗ line, where a constant times a sum scales each term of the sum
+  const termsOf = (
+    parts: readonly Part[],
+    kind: PoolKind,
+    scale?: number,
+  ): RawTerm[] => {
     const terms: RawTerm[] = [];
-    for (const p of parts) r.flat(p.e, OP[kind], p.w, terms, [], p.seen);
+    for (const p of parts) r.flat(p.e, OP[kind], p.w, terms, [], p.seen, scale);
     return terms;
   };
   const kept = (terms: RawTerm[], prev: number | null): AnswerTerm[] => {
@@ -389,9 +400,9 @@ export function answerKeyOfSteps(
   /** Each factor of each top division's divisor, as a ➗ line; and each Cap's or Floor's limit, as its sources. */
   function divisorsAndLimits(): AnswerPool[] {
     // a factor of a divisor, or a limit: a line with its sources and constants, as a pool of its own kind
-    const lineOf = (f: Part, step: number): AnswerPool => {
+    const lineOf = (f: Part, step: number, divisor = false): AnswerPool => {
       const kind = kindOf(f.e, f.seen) === "additive" ? "additive" : "multi";
-      const terms = kept(termsOf([f], kind), null);
+      const terms = kept(termsOf([f], kind, divisor ? 1 : undefined), null);
       const value = Number(f.e.v);
       const parts =
         kind === "additive"
@@ -406,7 +417,7 @@ export function answerKeyOfSteps(
     // the divisor of a chain's first write (answer-key-chain.ts)
     const fromChain = chainDivisors.flatMap((d) =>
       operands(d.e, "multi", 1, new Set([d.step])).map((f) =>
-        lineOf(f, d.step),
+        lineOf(f, d.step, true),
       ),
     );
     if (!at || !peeled) return fromChain;
@@ -416,7 +427,7 @@ export function answerKeyOfSteps(
     return [
       ...fromChain,
       ...peeled.divisors.flatMap((b) =>
-        operands(b, "multi", 1, seen).map((f) => lineOf(f, at.step)),
+        operands(b, "multi", 1, seen).map((f) => lineOf(f, at.step, true)),
       ),
     ];
   }

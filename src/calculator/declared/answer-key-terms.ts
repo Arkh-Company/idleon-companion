@@ -36,6 +36,8 @@ export interface AnswerTerm {
   value: number;
   /** 1, or 1/100 when the game divides the whole sum by 100; negative for a subtracted term. */
   weight: number;
+  /** In a ➗ line, the constant that multiplies the sum the term is in (the 0.65 of W7, T163), already in `weight`. */
+  scale?: number;
   /** The passage values crossed to reach the term. */
   via: string[];
 }
@@ -247,7 +249,10 @@ export function termReader(ctx: TermContext) {
     noise,
   });
 
-  /** Opens an expression by the pool's operation (+ or *), crossing passages and the "/ 100" of a whole sum. */
+  /**
+   * Opens an expression by the pool's operation (+ or *), crossing passages and the "/ 100" of a whole sum. With a
+   * `scale` (a ➗ line only), a constant times a sum opens the sum, each term scaled by the constant.
+   */
   function flat(
     e: Expr,
     op: "+" | "*",
@@ -255,19 +260,33 @@ export function termReader(ctx: TermContext) {
     out: RawTerm[],
     via: string[],
     seen: ReadonlySet<number> = new Set(),
+    scale?: number,
   ): void {
     const v0 = [...via];
     const s0 = new Set(seen);
     const u = unwrap(e, v0, false, s0);
     if (u.t === "op" && u.o === op) {
-      flat(u.l, op, weight, out, v0, s0);
-      flat(u.r, op, weight, out, v0, s0);
+      flat(u.l, op, weight, out, v0, s0, scale);
+      flat(u.r, op, weight, out, v0, s0, scale);
       return;
     }
     if (op === "+" && u.t === "op" && u.o === "-") {
-      flat(u.l, op, weight, out, v0, s0);
-      flat(u.r, op, -weight, out, v0, s0);
+      flat(u.l, op, weight, out, v0, s0, scale);
+      flat(u.r, op, -weight, out, v0, s0, scale);
       return;
+    }
+    if (scale !== undefined && op === "+" && u.t === "op" && u.o === "*") {
+      const [k, sum] = u.l.t === "num" ? [u.l.v, u.r] : [u.r.v, u.l];
+      const inner = unwrap(sum, [...v0], true, new Set(s0));
+      if (
+        typeof k === "number" &&
+        (u.l.t === "num" || u.r.t === "num") &&
+        inner.t === "op" &&
+        (inner.o === "+" || inner.o === "-")
+      ) {
+        flat(sum, op, weight * k, out, v0, s0, scale * k);
+        return;
+      }
     }
     if (
       op === "+" &&
@@ -279,13 +298,14 @@ export function termReader(ctx: TermContext) {
       const inner = unwrap(u.l, [...v0], true, new Set(s0));
       if (inner.t === "op" && inner.o === "+") {
         bump("divideBy100");
-        flat(u.l, op, weight / u.r.v, out, v0, s0);
+        flat(u.l, op, weight / u.r.v, out, v0, s0, scale);
         return;
       }
     }
     if (typeof u.v !== "number") throw new OutOfRule("um termo sem número");
+    const scaled = scale !== undefined && scale !== 1 ? { scale } : {};
     if (u.t === "num") {
-      out.push(constant(u, u.v, weight, v0, {}));
+      out.push({ ...constant(u, u.v, weight, v0, {}), ...scaled });
       return;
     }
     const refs: string[] = [];
@@ -307,11 +327,12 @@ export function termReader(ctx: TermContext) {
             nodes,
             value: u.v,
             weight,
+            ...scaled,
             via: tv,
             e: u,
             noise: local,
           }
-        : constant(u, u.v, weight, tv, local),
+        : { ...constant(u, u.v, weight, tv, local), ...scaled },
     );
   }
 
@@ -326,6 +347,7 @@ export const strip = (t: RawTerm): AnswerTerm => ({
   nodes: t.nodes,
   value: t.value,
   weight: t.weight,
+  ...(t.scale === undefined ? {} : { scale: t.scale }),
   via: t.via,
 });
 

@@ -55,6 +55,8 @@ export interface BlueprintRoot {
   combine?: "sum";
   calls?: readonly CallRef[];
   part?: readonly Ref[];
+  /** The list a branch of the call's loop searches: only the turns that found their item there give the part (T163). */
+  branch?: string;
   scratch?: Readonly<Record<string, string | number>>;
   /** A routine of the game run on the recorder's copy only (a block, or a helper actor's event; T152)… */
   routine?: RoutineStep | readonly RoutineStep[];
