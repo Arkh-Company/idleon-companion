@@ -1622,6 +1622,47 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return Math.min(5 + Blocks._customBlock_TreeReads(), 90 + s.TreeLevel);
   };
+  // Spec 010 (T158): the chains the fourth probe still refused. A first step that is a max (Trap collect all, New
+  // bubble chance, Arcade ball); a last write that is the floor of a sum (Legend talent max LV); a counter set to 0
+  // twice and returned in a product (Research insight); a cost multiplied in place by a curve (Bubble cost).
+  Blocks._customBlock_TreeChainMaxFirst = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeMaxFirst = new StringMap();
+    d.TreeMaxFirst.h.v = Math.max(
+      1,
+      Blocks._customBlock_TreeReads() + s.TreeBase,
+    );
+    d.TreeMaxFirst.h.v = d.TreeMaxFirst.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeMaxFirst.h.v;
+  };
+  Blocks._customBlock_TreeChainFloorLast = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorLast = new StringMap();
+    d.TreeFloorLast.h.v = 0;
+    d.TreeFloorLast.h.v = Math.floor(3 + s.TreeLevel / 10);
+    return d.TreeFloorLast.h.v;
+  };
+  Blocks._customBlock_TreeCountNone = function () {
+    var s = state();
+    var d = dnsm();
+    var i;
+    d.TreeCount = new StringMap();
+    d.TreeCount.h.v = 0;
+    for (d.TreeCount.h.v = 0, i = 0; i < s.TreeOwned; i++)
+      d.TreeCount.h.v = d.TreeCount.h.v + 1;
+    return 3 * d.TreeCount.h.v * Blocks._customBlock_TreeLoop();
+  };
+  Blocks._customBlock_TreeCostCurve = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostCurve = new StringMap();
+    d.TreeCostCurve.h.v = s.TreeCapped * 100;
+    d.TreeCostCurve.h.v *= Math.max(0.1, Math.pow(0.75, s.TreeTwins[0]));
+    d.TreeCostCurve.h.v *= Math.max(0.9, 1 - s.TreeStats.h.a / 100);
+    return Math.round(d.TreeCostCurve.h.v);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

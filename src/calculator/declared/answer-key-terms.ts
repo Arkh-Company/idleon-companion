@@ -50,6 +50,12 @@ export const OP: Readonly<Record<PoolKind, "+" | "*">> = {
   additive: "+",
   multi: "*",
 };
+/** An expression to open into terms, with its weight and the steps already opened on the way down to it. */
+export interface Part {
+  e: Expr;
+  w: number;
+  seen: ReadonlySet<number>;
+}
 /** A stretch of the root before same-kind ones in a row are joined into one pool. */
 export interface RawPool {
   kind: PoolKind;

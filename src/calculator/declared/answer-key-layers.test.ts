@@ -190,9 +190,12 @@ test("pow with a constant is a curve: a term of its pool (its ⓘ), never a pool
   ]);
 });
 
-test("a running total whose last write has a layer with no chain under it is refused, never a leaf", () => {
-  // 12, 24, then min(24, 5): the cap bites, and nothing under it is the running total
-  expect(refusal("TreeCapWrite")).toMatch(/não soma nem multiplica/);
+test("a running total whose last write has a layer over the total is a chain with that layer, never a leaf", () => {
+  // 12, 24, then min(24, 5): the cap bites; since T158 a layer on a step of the chain is a line of the root
+  const cap = keyOf("TreeCapWrite");
+  expect(cap.form).toBe("chain");
+  expect(layers(cap)).toEqual([["cap", 5, 24, 5]]);
+  expect(cap.pools.map((p) => p.kind)).toEqual(["additive", "multi"]);
   // the Drop Rate shape keeps its chain
   const chain = keyOf("TreeDeclChain");
   expect(chain.form).toBe("chain");
@@ -210,7 +213,7 @@ test("a layer over an expression of the total that keeps the last write's value 
     /a corrente e o último passo dão o mesmo valor/,
   );
   // a layer over the total itself stays the chain's (the cap that bites) or its layer (the Multi-Ore)
-  expect(refusal("TreeCapWrite")).toMatch(/não soma nem multiplica/);
+  expect(keyOf("TreeCapWrite").form).toBe("chain");
   expect(keyOf("TreeCapAcc").form).toBe("chain");
 });
 

@@ -25,6 +25,7 @@ import {
 } from "./answer-key-terms.ts";
 import type {
   AnswerTerm,
+  Part,
   PoolKind,
   RawPool,
   RawTerm,
@@ -36,6 +37,7 @@ import {
   routineKey,
   sumKey,
 } from "./answer-key-shapes.ts";
+import { chainPools, matchChain } from "./answer-key-chain.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
@@ -134,7 +136,10 @@ export function answerKeyOfSteps(
   /** The running total that ends in `v`: the path written most, more than once, whose last write is `v`. */
   const chainFor = (v: number) =>
     [...byPath]
-      .filter(([, vs]) => vs.length > 1 && near(vs.at(-1), v))
+      .filter(
+        ([, vs]) =>
+          vs.length > 1 && near(vs.at(-1), v) && matchChain(steps, vs) !== null,
+      )
       .sort((a, b) => b[1].length - a[1].length)[0] ?? null;
 
   // 1. What the pools are below: the root's last step under its layers, or a running total (under them, or alone).
@@ -160,9 +165,13 @@ export function answerKeyOfSteps(
     layered && (peeled.rest.t === "read" || peeled.rest.t === "val");
   const under = onTotal && typeof v === "number" ? chainFor(v) : null;
   let acc = chainFor(final);
-  // a layer over an expression, with a chain whose last write is the same value: either could be the root
-  if (layered && !onTotal && acc)
-    return out("a corrente e o último passo dão o mesmo valor");
+  // a layer over an expression, with a chain whose last write is the same value: either could be the root, unless the
+  // chain's last write is that very step (Legend talent max LV: the chain, its last write floored)
+  if (layered && !onTotal && acc) {
+    const m = matchChain(steps, acc[1]);
+    if (!m || !("writes" in m) || m.writes.at(-1)?.step !== i)
+      return out("a corrente e o último passo dão o mesmo valor");
+  }
   // the peeled step only with a chain under its layer, or with no chain for the final value: a running total whose
   // last write has a layer over the total and nothing under it goes to the chain, which refuses that write
   const at = last && (under || !acc) ? { e: last.e, step: i } : null;
@@ -199,11 +208,6 @@ export function answerKeyOfSteps(
   // `seen`: the root's steps already opened on the way down to a part, the one being opened included
   // (answer-key-terms.ts, unwrap): a passage never leads back into them.
   type Seen = ReadonlySet<number>;
-  interface Part {
-    e: Expr;
-    w: number;
-    seen: Seen;
-  }
   const termsOf = (parts: readonly Part[], kind: PoolKind): RawTerm[] => {
     const terms: RawTerm[] = [];
     for (const p of parts) r.flat(p.e, OP[kind], p.w, terms, [], p.seen);
@@ -220,59 +224,17 @@ export function answerKeyOfSteps(
     return terms.map(strip);
   };
 
-  // 2. A chain: each accumulator write matched, in order, with the step that gave it; each step adds to or multiplies
-  // the running total, found among its terms by the value it had just before. A write no step gave is the total's
-  // start (a 0 in a for loop's init) or an earlier turn of the loop whose last turn is a step; never the last write.
-  function chainPools(values: readonly number[]): RawPool[] {
-    const raw: RawPool[] = [];
-    let from = 0;
-    let before: number | null = null;
-    values.forEach((w, n) => {
-      const i = steps.findIndex((s, j) => j >= from && near(s.v, w));
-      const s = steps[i];
-      if (!s) {
-        if (n === values.length - 1)
-          throw new OutOfRule(
-            `nenhum passo deu a escrita ${String(w)} do acumulador`,
-          );
-        r.bump("loopWrite");
-        before = w;
-        return;
-      }
-      r.usedSteps.add(i);
-      from = i + 1;
-      const opened = new Set([i]);
-      const u = r.unwrap(s.e, [], true, new Set(opened));
-      const kind = u.t === "op" ? KIND[u.o] : undefined;
-      if (!kind || (u.t === "op" && u.o === "-"))
-        throw new OutOfRule(`o passo ${String(i)} não soma nem multiplica`);
-      const terms = termsOf([{ e: s.e, w: 1, seen: opened }], kind);
-      const pv = before;
-      const k =
-        pv === null
-          ? -1
-          : terms.findIndex(
-              (t) =>
-                near(t.value, pv) &&
-                (t.e.t === "val" || t.e.t === "read" || t.e.t === "def"),
-            );
-      if (k >= 0) {
-        r.bump(
-          terms[k]?.e.t === "read" ? "readAccumulator" : "unnamedAccumulator",
-        );
-        terms.splice(k, 1);
-      } else if (pv !== null && raw.length > 0)
-        throw new OutOfRule(`o passo ${String(i)} troca o acumulador`);
-      raw.push({
-        kind,
-        terms: kept(terms, raw.length > 0 ? pv : null),
-        step: i,
-        after: s.v,
-      });
-      before = s.v;
-    });
-    return raw;
-  }
+  // 2. A chain (answer-key-chain.ts): the layers its steps carry, and their limits, go to the root's layers.
+  const stepLimits: { limits: Map<TopLayer, Expr>; step: number }[] = [];
+  const chain = {
+    steps,
+    reader: r,
+    termsOf,
+    kept,
+    fromRoot,
+    layers,
+    stepLimits,
+  };
 
   // 3. An expression: the operands of its top operator; the leftmost one is an earlier stretch when it is a sum inside
   // a product (in parentheses), or a product that starts with such a sum; otherwise it is the first pool's term.
@@ -374,10 +336,8 @@ export function answerKeyOfSteps(
 
   /** Each factor of each top division's divisor, as a ➗ line; and each Cap's or Floor's limit, as its sources. */
   function divisorsAndLimits(): AnswerPool[] {
-    if (!at || !peeled) return [];
-    const seen = new Set([at.step]);
     // a factor of a divisor, or a limit: a line with its sources and constants, as a pool of its own kind
-    const lineOf = (f: Part): AnswerPool => {
+    const lineOf = (f: Part, step: number): AnswerPool => {
       const kind = kindOf(f.e, f.seen) === "additive" ? "additive" : "multi";
       const terms = kept(termsOf([f], kind), null);
       const value = Number(f.e.v);
@@ -386,19 +346,24 @@ export function answerKeyOfSteps(
           ? terms.reduce((s, t) => s + t.value * t.weight, 0)
           : terms.reduce((s, t) => s * t.value, 1);
       const error = relDiff(parts, value);
-      return { kind, value, after: value, steps: [at.step], error, terms };
+      return { kind, value, after: value, steps: [step], error, terms };
     };
+    for (const { limits, step } of stepLimits)
+      for (const [layer, e] of limits)
+        layer.limit = lineOf({ e, w: 1, seen: new Set([step]) }, step);
+    if (!at || !peeled) return [];
+    const seen = new Set([at.step]);
     for (const [layer, e] of peeled.limits)
-      layer.limit = lineOf({ e, w: 1, seen });
+      layer.limit = lineOf({ e, w: 1, seen }, at.step);
     return peeled.divisors.flatMap((b) =>
-      operands(b, "multi", 1, seen).map(lineOf),
+      operands(b, "multi", 1, seen).map((f) => lineOf(f, at.step)),
     );
   }
 
   let raw: RawPool[];
   let divisors: AnswerPool[];
   try {
-    raw = acc ? chainPools(acc[1]) : expressionPools();
+    raw = acc ? chainPools(chain, acc[1]) : expressionPools();
     divisors = divisorsAndLimits();
   } catch (e) {
     if (e instanceof OutOfRule) return out(e.message);

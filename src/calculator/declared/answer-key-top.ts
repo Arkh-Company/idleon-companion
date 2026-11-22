@@ -42,6 +42,7 @@ const startsConst = (e: Expr) => bare(e).t === "op" && leftmost(e).t === "num";
 export function peelTop(
   e: Expr,
   own: (e: Expr) => boolean = () => false,
+  noDivision = false,
 ): {
   layers: TopLayer[];
   limits: Map<TopLayer, Expr>;
@@ -112,6 +113,7 @@ export function peelTop(
       }
     }
     if (
+      !noDivision &&
       e.t === "op" &&
       e.o === "/" &&
       typeof e.l.v === "number" &&
