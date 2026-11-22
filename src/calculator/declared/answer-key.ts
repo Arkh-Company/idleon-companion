@@ -132,12 +132,10 @@ export function answerKeyOfSteps(
   // 1. What the pools are below: a running total, or the root's last step under its layers.
   const layers: TopLayer[] = opts.gate ? [opts.gate] : [];
   let target = final;
-  let at: { e: Expr; step: number } | null = null;
-  let acc: [string, number[]] | null = null;
-  acc = chainFor(final);
+  let acc = chainFor(final);
   const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
   const last = steps[i];
-  if (last) at = { e: last.e, step: i };
+  const at = last ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
   if (at) {
     const peeled = peelTop(at.e);
