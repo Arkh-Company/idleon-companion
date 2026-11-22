@@ -100,6 +100,10 @@ test("every output falls inside TREES_OUT; a path with .. or / out of it is refu
   expect(() => outPath("C:/out", "trees", "../../x.json")).toThrow();
   expect(() => outPath("C:/out", "../elsewhere.json")).toThrow();
   expect(() => outPath("C:/out", "/elsewhere/x.json")).toThrow();
+  // a name inside TREES_OUT that starts with two dots is inside it
+  expect(outPath("C:/out", "..notes.json")).toBe(
+    resolve("C:/out", "..notes.json"),
+  );
 });
 
 let recorder: ReturnType<typeof bootRecorder>;

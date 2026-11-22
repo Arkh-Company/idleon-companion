@@ -101,6 +101,10 @@ test("a note only with fix, up to 2,000 characters", () => {
   expect(parseReview(JSON.parse(reviewJson(ok)))).toEqual(ok);
   expect(parseReview({ ...ok, verdict: "approved" })).toBe(null);
   expect(parseReview({ ...ok, note: "x".repeat(2001) })).toBe(null);
+  // fix needs a note on load too, as withVerdict asks, and in the history
+  expect(parseReview({ ...ok, note: null })).toBe(null);
+  const entry = { at: LOCK.at, verdict: "fix", note: null, blueprintSha: SHA };
+  expect(parseReview({ ...ok, history: [entry] })).toBe(null);
 });
 
 test("parseReview takes only the contract's shape", () => {
