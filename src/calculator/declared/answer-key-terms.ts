@@ -12,6 +12,14 @@ export const callRef = (n: Pick<RecNode, "b" | "a">): string =>
   `${n.b}(${n.a.map((x) => JSON.stringify(x)).join(",")})`;
 /** A root whose shape is outside the pools' rule (research R1): the answer key refuses it with this reason. */
 export class OutOfRule extends Error {}
+export interface RootFormError {
+  error: "rootForm";
+  reason: string;
+}
+export const outOfRule = (why: string): RootFormError => ({
+  error: "rootForm",
+  reason: `forma de raiz fora da regra dos pools: ${why}`,
+});
 /** The game's loop counters of a block's preamble: noise, never a passage value. */
 export const SCRATCH = "DummyNumbersStatManager.";
 

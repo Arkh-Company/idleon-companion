@@ -1,8 +1,11 @@
 // The answer key of a number (spec 010, FR-002c, FR-008, research R1 and R9; the prototype's gabarito.ts): what the
-// recording gives, read from the root block's steps and writes only, never calling the game. The root's form is a
-// chain (a running total written more than once, the last write the final value) or an expression (no running total:
-// the root's last step, split along its left side). Each write, or each stretch of the expression, adds or multiplies;
-// same-kind ones in a row are one pool. Any other form is refused with the reason, never guessed.
+// recording gives, read from the root block's steps and writes only, never calling the game. Above the pools, the root
+// may have a top layer (answer-key-top.ts). Below it, the root's form is a chain (a running total written more than
+// once, the last write the value), an expression (no running total: the root's last step, split along its left side)
+// or a leaf (a value read or a constant, no pool). Each write, or each stretch of the expression, adds or multiplies;
+// same-kind ones in a row are one pool. Any other form is refused with the reason, never guessed. Two root shapes of
+// the blueprint come here too (spec, Open Questions 21/11): a sum of calls, and a part of a call (the smallest recorded
+// sub-expression of the root that holds the given references).
 import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
@@ -11,13 +14,18 @@ import {
   callRef,
   near,
   OutOfRule,
+  outOfRule,
   relDiff,
   SCRATCH,
   termReader,
 } from "./answer-key-terms.ts";
-import type { AnswerTerm, RawTerm } from "./answer-key-terms.ts";
+import type { AnswerTerm, RawTerm, RootFormError } from "./answer-key-terms.ts";
+import { partOf, sumKey } from "./answer-key-shapes.ts";
+import { gateOf, peelTop } from "./answer-key-top.ts";
+import type { TopLayer } from "./answer-key-top.ts";
 
-export type { AnswerTerm } from "./answer-key-terms.ts";
+export type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
+export type { TopLayer } from "./answer-key-top.ts";
 export type PoolKind = "additive" | "multi";
 
 export interface AnswerPool {
@@ -37,20 +45,19 @@ export interface AnswerKey {
   /** The root call's reference key. */
   root: string;
   final: number;
-  form: "chain" | "expression";
+  form: "chain" | "expression" | "leaf" | "sum";
   /** The path written in a chain. */
   accumulator: string | null;
+  /** The layers above the pools, from outside in. */
+  top: TopLayer[];
   pools: AnswerPool[];
   /** What the trace had that the answer key skipped or crossed, by kind. */
   pollution: Record<string, number>;
 }
 
-export interface RootFormError {
-  error: "rootForm";
-  reason: string;
-}
+/** The blueprint's root shape, its references already turned into keys: a sum of calls, or a part of the call. */
+export type RootShape = { sum: number } | { part: readonly string[] } | null;
 
-const OUT_OF_RULE = "forma de raiz fora da regra dos pools";
 const KIND: Record<string, PoolKind> = {
   "+": "additive",
   "-": "additive",
@@ -75,27 +82,28 @@ const strip = (t: RawTerm): AnswerTerm => ({
   via: t.via,
 });
 
-const outOfRule = (why: string): RootFormError => ({
-  error: "rootForm",
-  reason: `${OUT_OF_RULE}: ${why}`,
-});
 const topOf = (rec: Recording) =>
   rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
 
 export function answerKey(
   rec: Recording,
   ops: readonly Op[],
+  shape: RootShape = null,
 ): AnswerKey | RootFormError {
+  if (shape && "sum" in shape) return sumKey(rec, shape.sum);
   const top = topOf(rec);
-  return top
-    ? answerKeyOfSteps(rec, makeSteps(rec, ops).of(top.id))
-    : outOfRule("a gravação não tem raiz");
+  if (!top) return outOfRule("a gravação não tem raiz");
+  const part = shape?.part ?? null;
+  const gate =
+    part || typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
+  return answerKeyOfSteps(rec, makeSteps(rec, ops).of(top.id), { gate, part });
 }
 
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
 export function answerKeyOfSteps(
   rec: Recording,
   { steps, checks }: BlockSteps,
+  opts: { gate?: TopLayer | null; part?: readonly string[] | null } = {},
 ): AnswerKey | RootFormError {
   const out = outOfRule;
   const top = topOf(rec);
@@ -103,16 +111,51 @@ export function answerKeyOfSteps(
   const final = top.v;
   if (typeof final !== "number") return out("a raiz não deu número");
   const writes = rec.writes.filter((w) => w.node === top.id);
-
-  // 1. The accumulator: the path the root wrote most, more than once, whose last write is the final value.
   const byPath = new Map<string, number[]>();
   for (const w of writes)
     if (typeof w.v === "number")
       byPath.set(w.path, [...(byPath.get(w.path) ?? []), w.v]);
-  const finals = [...byPath].filter(([, vs]) => near(vs.at(-1), final));
-  finals.sort((a, b) => b[1].length - a[1].length);
-  const best = finals[0];
-  const acc = best && best[1].length > 1 ? best : null;
+  /** The running total that ends in `v`: the path written most, more than once, whose last write is `v`. */
+  const chainFor = (v: number) =>
+    [...byPath]
+      .filter(([, vs]) => vs.length > 1 && near(vs.at(-1), v))
+      .sort((a, b) => b[1].length - a[1].length)[0] ?? null;
+
+  // 1. What the pools are below: a part of the call, a running total, or the root's last step under its layers.
+  const layers: TopLayer[] = opts.gate ? [opts.gate] : [];
+  let target = final;
+  let at: { e: Expr; step: number } | null = null;
+  let acc: [string, number[]] | null = null;
+  if (opts.part) {
+    at = partOf(rec, steps, opts.part);
+    if (!at || typeof at.e.v !== "number")
+      return out("a parte indicada não está nos passos gravados da raiz");
+    target = at.e.v;
+  } else {
+    acc = chainFor(final);
+    const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
+    const s = steps[i];
+    if (s) at = { e: s.e, step: i };
+  }
+  let rest: Expr | null = null;
+  if (at) {
+    const peeled = peelTop(at.e);
+    layers.push(...peeled.layers);
+    rest = peeled.rest;
+    // a running total under the layer (Anvil Capacity: the chain, then a floor)
+    const v = rest.v;
+    if (
+      !opts.part &&
+      peeled.layers.length > 0 &&
+      typeof v === "number" &&
+      (rest.t === "read" || rest.t === "val")
+    ) {
+      acc = chainFor(v);
+      if (acc) target = v;
+    }
+  }
+
+  const finals = [...byPath].filter(([, vs]) => near(vs.at(-1), target));
   const passage = new Map(
     [...byPath].filter(
       ([p]) => !finals.some(([q]) => q === p) && !p.startsWith(SCRATCH),
@@ -157,18 +200,24 @@ export function answerKeyOfSteps(
   };
 
   // 2. A chain: each accumulator write matched, in order, with the step that gave it; each step adds to or multiplies
-  // the running total, found among its terms by the value it had.
-  function chainPools(writes: readonly number[]): RawPool[] {
+  // the running total, found among its terms by the value it had just before. A write no step gave is the total's
+  // start (a 0 in a for loop's init) or an earlier turn of the loop whose last turn is a step; never the last write.
+  function chainPools(values: readonly number[]): RawPool[] {
     const raw: RawPool[] = [];
     let from = 0;
-    let prev: number | null = null;
-    for (const w of writes) {
+    let before: number | null = null;
+    values.forEach((w, n) => {
       const i = steps.findIndex((s, j) => j >= from && near(s.v, w));
       const s = steps[i];
-      if (!s)
-        throw new OutOfRule(
-          `nenhum passo deu a escrita ${String(w)} do acumulador`,
-        );
+      if (!s) {
+        if (n === values.length - 1)
+          throw new OutOfRule(
+            `nenhum passo deu a escrita ${String(w)} do acumulador`,
+          );
+        r.bump("loopWrite");
+        before = w;
+        return;
+      }
       r.usedSteps.add(i);
       from = i + 1;
       const opened = new Set([i]);
@@ -177,23 +226,30 @@ export function answerKeyOfSteps(
       if (!kind || (u.t === "op" && u.o === "-"))
         throw new OutOfRule(`o passo ${String(i)} não soma nem multiplica`);
       const terms = termsOf([{ e: s.e, w: 1, seen: opened }], kind);
-      if (prev !== null) {
-        const pv = prev;
-        const k = terms.findIndex(
-          (t) =>
-            near(t.value, pv) &&
-            (t.e.t === "val" || t.e.t === "read" || t.e.t === "def"),
-        );
-        if (k < 0)
-          throw new OutOfRule(`o passo ${String(i)} troca o acumulador`);
+      const pv = before;
+      const k =
+        pv === null
+          ? -1
+          : terms.findIndex(
+              (t) =>
+                near(t.value, pv) &&
+                (t.e.t === "val" || t.e.t === "read" || t.e.t === "def"),
+            );
+      if (k >= 0) {
         r.bump(
           terms[k]?.e.t === "read" ? "readAccumulator" : "unnamedAccumulator",
         );
         terms.splice(k, 1);
-      }
-      raw.push({ kind, terms: kept(terms, prev), step: i, after: s.v });
-      prev = s.v;
-    }
+      } else if (pv !== null && raw.length > 0)
+        throw new OutOfRule(`o passo ${String(i)} troca o acumulador`);
+      raw.push({
+        kind,
+        terms: kept(terms, raw.length > 0 ? pv : null),
+        step: i,
+        after: s.v,
+      });
+      before = s.v;
+    });
     return raw;
   }
 
@@ -254,12 +310,16 @@ export function answerKeyOfSteps(
       },
     ];
   }
+  /** Below the layers: the pools of an expression, or none for a value read or a constant (a leaf). */
   function expressionPools(): RawPool[] {
-    const i = steps.findLastIndex((s) => near(s.v, final));
-    const s = steps[i];
-    if (!s) throw new OutOfRule("nenhum passo dá o valor final");
-    r.usedSteps.add(i);
-    return stretches(s.e, i, new Set([i]));
+    if (!at || !rest) return [];
+    r.usedSteps.add(at.step);
+    const seen = new Set([at.step]);
+    const u = r.unwrap(rest, [], true, new Set(seen));
+    if (u.t === "op" && KIND[u.o]) return stretches(rest, at.step, seen);
+    if (u.t === "call" || u.t === "read" || u.t === "val" || u.t === "num")
+      return [];
+    throw new OutOfRule("a expressão da raiz não soma nem multiplica");
   }
 
   let raw: RawPool[];
@@ -311,9 +371,10 @@ export function answerKeyOfSteps(
   r.bump("mergedSteps", raw.length - pools.length);
   return {
     root: callRef(top),
-    final,
-    form: acc ? "chain" : "expression",
+    final: opts.part ? target : final,
+    form: acc ? "chain" : pools.length > 0 ? "expression" : "leaf",
     accumulator: acc?.[0] ?? null,
+    top: layers,
     pools,
     pollution: r.pollution,
   };

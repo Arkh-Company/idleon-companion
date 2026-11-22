@@ -7,7 +7,7 @@ import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
-import type { PoolKind } from "./answer-key.ts";
+import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint, BlueprintStage } from "./blueprint.ts";
 import { refKey } from "./refs.ts";
 
@@ -79,7 +79,10 @@ export const rootCallOf = (bp: Blueprint): RootCall => [
 ];
 
 export type RootForm =
-  "chain" | "expression" | "outOfRule" | "liveMap" | "error";
+  | AnswerKey["form"]
+  | "outOfRule"
+  | "liveMap"
+  | "error";
 export interface RootProbe {
   id: string;
   /** The root's reference key. */
@@ -142,6 +145,8 @@ export function rootsReport(probes: readonly RootProbe[]) {
   const counts: Record<RootForm, number> = {
     chain: 0,
     expression: 0,
+    leaf: 0,
+    sum: 0,
     outOfRule: 0,
     liveMap: 0,
     error: 0,

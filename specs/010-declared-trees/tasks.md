@@ -258,14 +258,14 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
 
 ### Fase 2b: as raízes fora da regra (decisão do Vinicius na T026, 21/11; spec, Open Questions de 21/11)
 
-- [ ] T143 [P] Testes do gabarito com a camada de topo em `src/calculator/declared/answer-key.test.ts` (FR-002c; spec, Open Questions 21/11)
+- [X] T143 [P] Testes do gabarito com a camada de topo em `src/calculator/declared/answer-key.test.ts` (FR-002c; spec, Open Questions 21/11)
   - Cases, no jogo inventado (blocos novos em `fake-game.js`, como na T017):
     - `round(min(C, a × b))` → camada `[round, cap C]` e um Multi pool; o mesmo com `floor`, `ceil` e `max(c, x)` (floor);
     - `cond ? 0 : a + b` (portão) → camada `[cond]` e um Additive pool; o caminho que não rodou fica sem valor;
     - `K ÷ (1 + Σ ÷ 100)` → constante K e um divisor ➗ com as fontes;
     - a ordem das camadas é a do código, de fora para dentro;
     - uma raiz que só lê um valor ou devolve uma constante → `form: "leaf"`, sem pool.
-- [ ] T144 O gabarito com a camada de topo em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T143)
+- [X] T144 O gabarito com a camada de topo em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T143)
   - Signatures: `AnswerKey` ganha `top: TopLayer[]` com `TopLayer = { kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div"; value?: number; before: number; after: number }`; `form` ganha `"leaf"`.
   - Regra: a camada é tirada antes da regra dos pools; o resto segue a FR-002c sem mudança. Nada de palpite: uma forma que não for camada conhecida continua `outOfRule` com o motivo.
 - [ ] T145 Testes e código de duas formas de raiz novas em `src/calculator/declared/blueprint.ts`, `answer-key.ts` e `real-trees-run.ts` (spec, Open Questions 21/11; ADR 0010: a receita nunca guarda conta)
@@ -281,7 +281,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Catálogo: saem `alch-brew-per-hour` e `alch-liquid-rate` (destino painel de farm); `alch-bubble-cost-reduction` vira `-bits` e `-item`; `farm-market-cost-reduction` vira `-day` e `-night`; continua com 289.
   - Raízes: a tabela de raízes corrigidas da sonda (pasta de trabalho da 010, `raizes-corrigidas.md`), com a forma "parte de uma chamada" nos casos sem chamada própria; as raízes que são só leitura do save ficam para a T149.
   - Cases: o teste "uma receita por número" (T023) passa com os ids novos.
-- [ ] T148 [P] A sonda vê o zero do acumulador posto no começo de um laço `for` (`arcade-ball-bonus`, `research-insight-rate`) em `answer-key.ts` (research R1)
+- [X] T148 [P] A sonda vê o zero do acumulador posto no começo de um laço `for` (`arcade-ball-bonus`, `research-insight-rate`) em `answer-key.ts` (research R1)
   - Cases: um bloco inventado com o zero no init do `for` dá `chain`, não `outOfRule`.
 - [ ] T149 [sessão] Sonda das raízes de novo: `just trees roots` no PC do Vinicius (depende de T143–T148) — **Parada:** se sobrar raiz fora da regra, a tabela vai ao Vinicius.
 

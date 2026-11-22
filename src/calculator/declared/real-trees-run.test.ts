@@ -135,6 +135,8 @@ test("the probe records each sketch's root and classifies its form", () => {
   expect(report.counts).toEqual({
     chain: 1,
     expression: 1,
+    leaf: 0,
+    sum: 0,
     outOfRule: 1,
     liveMap: 1,
     error: 0,

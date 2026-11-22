@@ -1389,6 +1389,48 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeDeclSwap.h.v = s.TreeCapped + s.TreeLevel;
     return d.TreeDeclSwap.h.v;
   };
+  // Spec 010 (T143): a top layer above the pools, from outside in, as the code writes it; a gate; a divisor; a leaf.
+  Blocks._customBlock_TreeLayerRound = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.round(Math.min(20, p));
+  };
+  Blocks._customBlock_TreeLayerFloor = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.floor(Math.min(50, p));
+  };
+  Blocks._customBlock_TreeLayerCeil = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.ceil(Math.min(50, p));
+  };
+  Blocks._customBlock_TreeLayerMax = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.floor(Math.max(30, p));
+  };
+  Blocks._customBlock_TreeLayerGate = function () {
+    var s = state();
+    return s.TreeOwned > 0 ? 0 : Blocks._customBlock_TreeReads() + s.TreeCapped;
+  };
+  Blocks._customBlock_TreeLayerDiv = function () {
+    var s = state();
+    return 100 / (1 + (Blocks._customBlock_TreeReads() + s.TreeCapped) / 100);
+  };
+  Blocks._customBlock_TreeLayerRead = function () {
+    return state().TreeCapped;
+  };
+  Blocks._customBlock_TreeLayerConstant = function () {
+    return 7;
+  };
+  // Spec 010 (T148): the running total set to 0 in the init of a for loop, summed in the loop, then multiplied.
+  Blocks._customBlock_TreeLoopZero = function () {
+    var list = state().TreeList;
+    var d = dnsm();
+    var i;
+    d.TreeLoopZero = new StringMap();
+    for (d.TreeLoopZero.h.v = 0, i = 0; i < list.length; i++)
+      d.TreeLoopZero.h.v = d.TreeLoopZero.h.v + list[i] * 2;
+    d.TreeLoopZero.h.v = d.TreeLoopZero.h.v * state().TreeBase;
+    return d.TreeLoopZero.h.v;
+  };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {
     everySceneInit.call(this);

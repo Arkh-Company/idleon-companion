@@ -232,3 +232,82 @@ test("the extraction only reads: the recording is the same after it", () => {
   expect(rec).toEqual(before);
   expect(ops.length).toBe(opsBefore);
 });
+
+// Spec 010, T143: a top layer above the pools (spec, Open Questions 21/11), from outside in, as the code writes it.
+const layers = (key: AnswerKey) =>
+  key.top.map((l) => [l.kind, l.value ?? null, l.before, l.after]);
+
+test("round(min(C, a × b)): the layer [round, cap C] over one Multi pool", () => {
+  const key = keyOf("TreeLayerRound");
+  expect(key.final).toBe(20);
+  expect(layers(key)).toEqual([
+    ["round", null, 20, 20],
+    ["cap", 20, 26.400000000000002, 20],
+  ]);
+  expect(key.form).toBe("expression");
+  expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
+    ["multi", ["TreeReads()", "TreeTwins[0]", "1.1"]],
+  ]);
+  expect(key.pools[0]?.after).toBe(26.400000000000002);
+  expect(key.pools[0]?.error).toBeLessThanOrEqual(1e-6);
+});
+
+test("the same with floor, ceil, and max(c, x) as a floor", () => {
+  const kinds = (block: string) =>
+    keyOf(block).top.map((l) => [l.kind, l.value ?? null]);
+  expect(kinds("TreeLayerFloor")).toEqual([
+    ["floor", null],
+    ["cap", 50],
+  ]);
+  expect(kinds("TreeLayerCeil")).toEqual([
+    ["ceil", null],
+    ["cap", 50],
+  ]);
+  const max = keyOf("TreeLayerMax");
+  expect(layers(max)).toEqual([
+    ["floor", null, 30, 30],
+    ["floor-min", 30, 26.400000000000002, 30],
+  ]);
+  expect(max.pools.map((p) => p.kind)).toEqual(["multi"]);
+});
+
+test("cond ? 0 : a + b (a gate): the layer [cond] over one Additive pool; the path that did not run has no value", () => {
+  const key = keyOf("TreeLayerGate");
+  expect(layers(key)).toEqual([["cond", 0, 88, 88]]);
+  expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
+    ["additive", ["TreeReads()", "TreeCapped"]],
+  ]);
+});
+
+test("K ÷ (1 + Σ ÷ 100): the constant K and a divisor with the sources", () => {
+  const key = keyOf("TreeLayerDiv");
+  expect(layers(key)).toEqual([["div", 100, 1.88, key.final]]);
+  expect(
+    key.pools.map((p) => [p.kind, p.terms.map((t) => [t.ref, t.weight])]),
+  ).toEqual([
+    [
+      "additive",
+      [
+        ["1", 1],
+        ["TreeReads()", 0.01],
+        ["TreeCapped", 0.01],
+      ],
+    ],
+  ]);
+});
+
+test("a root that only reads a value or gives a constant is a leaf, with no pool", () => {
+  for (const block of ["TreeLayerRead", "TreeLayerConstant"]) {
+    const key = keyOf(block);
+    expect([key.form, key.pools, key.top]).toEqual(["leaf", [], []]);
+  }
+});
+
+// Spec 010, T148: the running total set to 0 in a for loop's init (arcade-ball-bonus, research-insight-rate).
+test("a running total set to 0 in a for loop's init is a chain, not out of the rule", () => {
+  const key = keyOf("TreeLoopZero");
+  expect(key.form).toBe("chain");
+  expect(key.accumulator).toBe("DNSM.TreeLoopZero.v");
+  expect(key.pools.map((p) => p.kind)).toEqual(["additive", "multi"]);
+  expect(key.final).toBe(48);
+});
