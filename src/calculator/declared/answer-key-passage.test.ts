@@ -90,7 +90,10 @@ test("a step in 0 and then a child call in 0 written with `=`: both came before 
 });
 
 // `DNSM.p = A(1) * 2`, `return 5 + DNSM.p`'s step, then `DNSM.p = B(2) * 3` again, also 6, with the root's reads
-const twice = (r: RecNode["r"], rx: RecNode["rx"]) => {
+const twice = (
+  r: NonNullable<RecNode["r"]>,
+  rx: NonNullable<RecNode["rx"]> = [],
+) => {
   const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
@@ -132,7 +135,7 @@ test("a path written twice with the same value, before and after the read: the r
 });
 
 test("the read after both writes opens the second one, by the seq of the write it saw", () => {
-  expect(refsVia(twice([["DNSM.p", 6, 2]], undefined))).toEqual([
+  expect(refsVia(twice([["DNSM.p", 6, 2]]))).toEqual([
     ["5", []],
     ["InventedB(2)", ["DNSM.p"]],
   ]);
