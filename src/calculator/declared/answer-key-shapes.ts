@@ -51,13 +51,18 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
   };
 }
 
-/** The smallest recorded sub-expression of the root's steps (no bare reference) that holds every key of `refs`. */
+/**
+ * The smallest recorded sub-expression of the root's steps (no bare reference) that holds every key of `refs`, with
+ * the keys of calls and reads it holds beyond them (`extra`): a part with extra references is not the one the
+ * blueprint names.
+ */
 export function partOf(
   rec: Recording,
   steps: readonly Step[],
   refs: readonly string[],
-): { e: Expr; step: number } | null {
-  let best: { e: Expr; step: number; size: number } | null = null;
+): { e: Expr; step: number; extra: string[] } | null {
+  let best: { e: Expr; step: number; size: number; extra: string[] } | null =
+    null;
   steps.forEach((s, step) => {
     const visit = (e: Expr): { keys: Set<string>; size: number } => {
       const keys = new Set<string>();
@@ -83,7 +88,12 @@ export function partOf(
         refs.every((k) => keys.has(k)) &&
         (!best || size < best.size)
       )
-        best = { e, step, size };
+        best = {
+          e,
+          step,
+          size,
+          extra: [...keys].filter((k) => !refs.includes(k)),
+        };
       return { keys, size };
     };
     visit(s.e);

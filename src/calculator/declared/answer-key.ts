@@ -127,10 +127,15 @@ export function answerKeyOfSteps(
   let at: { e: Expr; step: number } | null = null;
   let acc: [string, number[]] | null = null;
   if (opts.part) {
-    at = partOf(rec, steps, opts.part);
-    if (!at || typeof at.e.v !== "number")
+    const found = partOf(rec, steps, opts.part);
+    if (!found || typeof found.e.v !== "number")
       return out("a parte indicada não está nos passos gravados da raiz");
-    target = at.e.v;
+    if (found.extra.length > 0)
+      return out(
+        `o passo da parte tem referências a mais: ${found.extra.join(", ")}`,
+      );
+    at = found;
+    target = found.e.v;
   } else {
     acc = chainFor(final);
     const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
@@ -162,6 +167,7 @@ export function answerKeyOfSteps(
     ),
   );
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
+  const reads = top.r ?? [];
   const r = termReader({
     nodes: rec.nodes,
     steps,
@@ -310,15 +316,26 @@ export function answerKeyOfSteps(
       },
     ];
   }
-  /** Below the layers: the pools of an expression, or none for a value read or a constant (a leaf). */
+  /**
+   * Below the layers: the pools of an expression, or none for a leaf with its proof: a value the root read (a read
+   * in the step, or with no step a recorded read of the root with the final value) or a constant (a number of the
+   * code, or with no step a root that read and called nothing).
+   */
   function expressionPools(): RawPool[] {
-    if (!at || !rest) return [];
+    if (!at || !rest) {
+      if (reads.some(([, v]) => near(v, target))) return [];
+      if (reads.length === 0 && kids.length === 0) return [];
+      if (kids.some((k) => near(k.v, target)))
+        throw new OutOfRule("a raiz só repassa uma chamada");
+      throw new OutOfRule("nenhum passo dá o valor final");
+    }
     r.usedSteps.add(at.step);
     const seen = new Set([at.step]);
     const u = r.unwrap(rest, [], true, new Set(seen));
     if (u.t === "op" && KIND[u.o]) return stretches(rest, at.step, seen);
-    if (u.t === "call" || u.t === "read" || u.t === "val" || u.t === "num")
-      return [];
+    if (u.t === "read" || u.t === "num") return [];
+    if (u.t === "call") throw new OutOfRule("a raiz só repassa uma chamada");
+    if (u.t === "val") throw new OutOfRule("nenhum passo dá o valor final");
     throw new OutOfRule("a expressão da raiz não soma nem multiplica");
   }
 

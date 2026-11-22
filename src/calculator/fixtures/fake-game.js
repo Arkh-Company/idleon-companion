@@ -1420,6 +1420,13 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeLayerConstant = function () {
     return 7;
   };
+  // No leaf: a text the game turns into a number, and a call passed on as it is.
+  Blocks._customBlock_TreeLayerNumber = function () {
+    return Number(state().TreeLabelNum);
+  };
+  Blocks._customBlock_TreeLayerPass = function () {
+    return Blocks._customBlock_TreeReads();
+  };
   // Spec 010 (T145): a factor of a product, the part a blueprint can point at; a marker that changes the path, put
   // only in the copy the recorder runs on; a call that fails.
   Blocks._customBlock_TreeDeclFactor = function () {
