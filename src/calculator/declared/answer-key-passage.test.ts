@@ -265,11 +265,10 @@ test("a step log at the cap: a later write of the path, by another call, may be 
   );
 });
 
-test("the reason of more than one write names the path, the call and the seq of each write, and a log at the cap", () => {
+test("the reason of more than one write names the path, the seq and the candidate of each write, and a log at the cap", () => {
   // no read of the path in the log: both writes may be the one read back
   const rx: NonNullable<RecNode["rx"]> = [];
-  const writes =
-    "(DNSM.p de InventedRoot(0,0,0), seq 1; DNSM.p de InventedRoot(0,0,0), seq 2)";
+  const writes = "(DNSM.p seq 1 ← passo 0; DNSM.p seq 2 ← passo 2)";
   expect(reasonOf(twice([], rx))).toContain(
     `a passagem 6 sai de mais de uma escrita ${writes}, e a posição não decide entre elas`,
   );
@@ -277,6 +276,40 @@ test("the reason of more than one write names the path, the call and the seq of 
   while (rx.length < LOG_CAP) rx.push(["InventedPad", 0, 0]);
   expect(reasonOf(twice([], rx))).toMatch(
     /não decide entre elas \(o log da chamada chegou ao limite\)/,
+  );
+});
+
+test("one write and two candidates, a step and a child call after it: the reason names each candidate", () => {
+  // `t = A(1) * 2` (6), then `DNSM.p = B(2)` (6) with no step between them, then `5 + DNSM.p`
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "InventedRoot",
+        a: [0, 0, 0],
+        v: 11,
+        c: [2, 3],
+        rx: [["DNSM.p", 6, 1, 1]],
+      },
+      { b: "InventedA", a: [1], v: 3, pxi: 0 },
+      { b: "InventedB", a: [2], v: 6, pxi: 1 },
+    ],
+    [{ path: "DNSM.p", node: 1, v: 6, xi: 1, seq: 1 }],
+    { root: 0 },
+  );
+  const key = answerKeyOfSteps(rec, {
+    steps: [
+      { v: 6, e: op("*", call(2, 3), { t: "num", v: 2 }, 6) },
+      {
+        v: 11,
+        e: op("+", { t: "num", v: 5 }, { t: "read", p: "DNSM.p", v: 6 }, 11),
+      },
+    ],
+    checks: [],
+    stepAt: [0, 1],
+  });
+  expect(reasonOf(key)).toContain(
+    "a passagem 6 sai de mais de uma escrita (DNSM.p seq 1 ← passo 0; DNSM.p seq 1 ← InventedB(2)), e a posição não decide entre elas",
   );
 });
 
