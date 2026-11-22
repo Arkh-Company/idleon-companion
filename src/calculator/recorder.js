@@ -24,12 +24,22 @@
   var seed = 12345;
   Math.random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
+  // An infinite number seen anywhere in the recording (spec 010, T162): only then does take() label it, a pass over
+  // the whole recording that costs seconds on the real game.
+  var inf = (v) => {
+    if (v === Infinity || v === -Infinity) S.inf = true;
+    return v;
+  };
+
   // 4b. Each step of a block's arithmetic lands on the row of the block that runs it (only numbers and yes/no).
   G.__X = (i, v) => {
     if (S.on && S.cur) {
       var x = S.cur.x || (S.cur.x = []);
       if (x.length < STEP_CAP)
-        x.push([i, typeof v === "number" || typeof v === "boolean" ? v : null]);
+        x.push([
+          i,
+          typeof v === "number" ? inf(v) : typeof v === "boolean" ? v : null,
+        ]);
     }
     return v;
   };
@@ -65,7 +75,8 @@
     return n;
   };
   function simple(x) {
-    if (x === null || typeof x === "number" || typeof x === "boolean") return x;
+    if (typeof x === "number") return inf(x);
+    if (x === null || typeof x === "boolean") return x;
     if (typeof x !== "string") return "(" + typeof x + ")";
     return S.names.has(x)
       ? "(character " + S.names.get(x) + ")"
@@ -83,11 +94,13 @@
       try {
         var v = f.apply(this, arguments);
         node.v =
-          typeof v === "number" || typeof v === "boolean"
-            ? v
-            : v === undefined
-              ? "(undefined)"
-              : "(" + typeof v + ")";
+          typeof v === "number"
+            ? inf(v)
+            : typeof v === "boolean"
+              ? v
+              : v === undefined
+                ? "(undefined)"
+                : "(" + typeof v + ")";
         // a list or a map of the state returned: its path (spec 010, T162: the list whose item is the number)
         var vp = v !== null && typeof v === "object" ? S.PATH.get(v) : null;
         if (vp) node.vp = vp;
@@ -103,7 +116,8 @@
 
   // 3. Reads and writes over the whole state. Text stays out, except a game id the game's own tables name.
   function valueOut(v) {
-    if (typeof v === "number" || typeof v === "boolean" || v === null) return v;
+    if (typeof v === "number") return inf(v);
+    if (typeof v === "boolean" || v === null) return v;
     if (typeof v !== "string") return "(" + typeof v + ")";
     return hasOwn(S.mon, v) || hasOwn(S.item, v) ? v : "(text)";
   }
@@ -140,7 +154,12 @@
     var numeric = typeof v === "string" && v.trim() !== "" && !isNaN(Number(v));
     // the fourth field is the last write before this read: the write it saw, at every read and not only the first
     if (typeof v === "number" || numeric)
-      log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
+      log([
+        path,
+        typeof v === "number" ? inf(v) : v.slice(0, 40),
+        stepAt(),
+        S.seq,
+      ]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
     if (fresh) r.push([path, valueOut(v), S.seq]);
   }
@@ -272,6 +291,7 @@
     begin: (recipeJson) => {
       S.recipe = JSON.parse(recipeJson);
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
+      S.inf = false;
       S.searching = 0; // a search cut by a time limit never ran its `finally`
       Object.assign(S, {
         seq: 0,
@@ -373,14 +393,14 @@
           builders: S.builders ? S.builders.id : null,
           fromGame: S.fromGame || [],
         },
-        (k, v) =>
-          !infinite
-            ? v
-            : v === Infinity
-              ? "(Infinity)"
-              : v === -Infinity
-                ? "(-Infinity)"
-                : v,
+        infinite && S.inf
+          ? (k, v) =>
+              v === Infinity
+                ? "(Infinity)"
+                : v === -Infinity
+                  ? "(-Infinity)"
+                  : v
+          : undefined,
       ),
   };
   G.__rec.state = S;

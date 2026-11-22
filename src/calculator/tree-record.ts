@@ -99,7 +99,9 @@ export function bootRecorder(
         });
         const json = run(`__rec.take(${String(infinite)})`, startMs);
         if (typeof json !== "string") throw new Error("no recording");
-        if (!infinite) return JSON.parse(json) as Recording;
+        // the label only when take() put one: a reviver over the whole recording costs seconds on the real game
+        if (!infinite || !json.includes('Infinity)"'))
+          return JSON.parse(json) as Recording;
         // an infinite number crossed as a label (recorder.js, take)
         return JSON.parse(json, (_, v: unknown) =>
           v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
