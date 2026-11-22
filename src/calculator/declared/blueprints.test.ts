@@ -4,39 +4,18 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..");
 const DIR = join(ROOT, "src", "calculator", "blueprints");
-const LOT: Record<string, string> = {
-  W1: "w1",
-  W2: "w2",
-  W3: "w3",
-  W4: "w4",
-  W5: "w5",
-  W6: "w6",
-  W7: "w7",
-  Personagem: "character",
-  Conta: "account",
-};
-
-const catalog = (
-  JSON.parse(
-    readFileSync(join(ROOT, "docs", "catalogo", "numeros.json"), "utf8"),
-  ) as {
-    id: string;
-    mundo: string;
-    destino: string;
-  }[]
-).filter((n) => n.destino === "arvore");
+const catalog = treeCatalog();
 const files = readdirSync(DIR, { recursive: true, encoding: "utf8" })
   .map((f) => f.replaceAll("\\", "/"))
   .filter((f) => f.endsWith(".blueprint.json"));
 
 test("each tree number of the catalog has exactly one blueprint, in its lot's folder, and no file is extra", () => {
   expect(catalog).toHaveLength(301);
-  const expected = catalog.map(
-    (n) => `${LOT[n.mundo] ?? `?${n.mundo}`}/${n.id}.blueprint.json`,
-  );
+  const expected = catalog.map((n) => `${n.lot}/${n.id}.blueprint.json`);
   expect(files.toSorted()).toEqual(expected.toSorted());
 });
 

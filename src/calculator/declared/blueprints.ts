@@ -10,10 +10,13 @@ const FILE = /(?:^|\/)([^/]+)\.blueprint\.json$/;
 
 export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
   complete: ReadonlyMap<string, Blueprint>;
+  /** Every blueprint loaded, in any stage (the real-trees run probes a sketch's root). */
+  all: ReadonlyMap<string, Blueprint>;
   refused: { file: string; reason: string }[];
   stages: ReadonlyMap<string, BlueprintStage>;
 } {
   const complete = new Map<string, Blueprint>();
+  const all = new Map<string, Blueprint>();
   const stages = new Map<string, BlueprintStage>();
   const refused: { file: string; reason: string }[] = [];
   for (const [file, raw] of Object.entries(files)) {
@@ -29,9 +32,10 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
       continue;
     }
     stages.set(fileId, out.stage);
+    all.set(fileId, out.blueprint);
     if (out.stage === "complete") complete.set(fileId, out.blueprint);
   }
-  return { complete, refused, stages };
+  return { complete, all, refused, stages };
 }
 
 export const BLUEPRINTS = import.meta.glob<unknown>(

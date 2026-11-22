@@ -1,8 +1,7 @@
 // The helpers of the real-trees run (spec 010, FR-026, NFR-003, contracts/real-trees-run.md), in CI over the invented
 // game: the variables, the target, the plan of the check mode, the summary line, the paths of the output and the probe
 // of the roots. The run itself is real-trees.integration.test.ts, only on Vinicius's PC.
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
@@ -10,6 +9,7 @@ import type { Recording, RoutineRun } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { RootCall } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
+import { treeCatalog } from "./tree-catalog-fixture.ts";
 import {
   checkPlan,
   outPath,
@@ -22,22 +22,7 @@ import {
   treesEnv,
 } from "./real-trees-run.ts";
 
-const ROOT = join(import.meta.dirname, "..", "..", "..");
-const LOT: Record<string, string> = {
-  Personagem: "character",
-  Conta: "account",
-};
-const CATALOG = (
-  JSON.parse(
-    readFileSync(join(ROOT, "docs", "catalogo", "numeros.json"), "utf8"),
-  ) as {
-    id: string;
-    mundo: string;
-    destino: string;
-  }[]
-)
-  .filter((n) => n.destino === "arvore")
-  .map((n) => ({ id: n.id, lot: LOT[n.mundo] ?? n.mundo.toLowerCase() }));
+const CATALOG = treeCatalog();
 
 const VARS = {
   TREES_GAME_DIR: "C:/game",

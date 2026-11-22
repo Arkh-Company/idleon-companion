@@ -12,9 +12,7 @@ import { dirname, join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { bootRecorder } from "../tree-record.ts";
 import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
-import { parseBlueprint } from "./blueprint.ts";
-import type { Blueprint, BlueprintStage } from "./blueprint.ts";
-import { BLUEPRINTS } from "./blueprints.ts";
+import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import {
   checkPlan,
   mosaicWith,
@@ -26,42 +24,14 @@ import {
   treesEnv,
 } from "./real-trees-run.ts";
 import type { RootProbe } from "./real-trees-run.ts";
-import { SYSTEMS } from "./systems.ts";
+import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ENV = treesEnv(process.env);
 /** About 3 s a recording (prototype), 301 roots, and the boot. */
 const RUN_MS = 90 * 60_000;
-const ROOT = join(import.meta.dirname, "..", "..", "..");
-const LOT: Record<string, string> = {
-  Personagem: "character",
-  Conta: "account",
-};
 
 const readJson = (file: string): unknown =>
   JSON.parse(readFileSync(file, "utf8"));
-
-function catalog(): { id: string; lot: string }[] {
-  const all = readJson(join(ROOT, "docs", "catalogo", "numeros.json")) as {
-    id: string;
-    mundo: string;
-    destino: string;
-  }[];
-  return all
-    .filter((n) => n.destino === "arvore")
-    .map((n) => ({ id: n.id, lot: LOT[n.mundo] ?? n.mundo.toLowerCase() }));
-}
-
-/** Every blueprint by id, in any stage. */
-function blueprints(): Map<string, { stage: BlueprintStage; bp: Blueprint }> {
-  const systemIds = new Set(SYSTEMS.map((s) => s.id));
-  const out = new Map<string, { stage: BlueprintStage; bp: Blueprint }>();
-  for (const [file, raw] of Object.entries(BLUEPRINTS)) {
-    const fileId = /([^/]+)\.blueprint\.json$/.exec(file)?.[1] ?? "";
-    const r = parseBlueprint(raw, { fileId, systemIds });
-    if (r.ok) out.set(fileId, { stage: r.stage, bp: r.blueprint });
-  }
-  return out;
-}
 
 /** The active character's place in the snapshot's list of characters; 0 when the snapshot does not say. */
 function activeCharacter(snapshot: string): number {
@@ -96,18 +66,15 @@ describe.skipIf(!ENV)("the real-trees run", () => {
     () => {
       if (!ENV) return;
       const { gameDir, snapshot, out, target, mode } = ENV;
-      const ids = targetIds(target, catalog());
-      const all = blueprints();
+      const ids = targetIds(target, treeCatalog());
+      const loaded = loadBlueprints(BLUEPRINTS);
       mkdirSync(out, { recursive: true });
       const lines: string[] = [];
       const t0 = performance.now();
       let peak = process.memoryUsage().rss;
 
       if (mode === "check") {
-        const plan = checkPlan(
-          ids,
-          new Map([...all].map(([id, b]) => [id, b.stage])),
-        );
+        const plan = checkPlan(ids, loaded.stages);
         for (const id of plan.notWritten)
           lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
         if (plan.lock.length > 0)
@@ -126,8 +93,8 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         const character = activeCharacter(snapshot);
         const probes: RootProbe[] = [];
         for (const id of ids) {
-          const b = all.get(id);
-          if (!b) {
+          const bp = loaded.all.get(id);
+          if (!bp) {
             lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
             continue;
           }
@@ -142,7 +109,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
                 routine,
               ),
             recorder.ops,
-            b.bp,
+            bp,
             character,
           );
           probes.push(probe);
