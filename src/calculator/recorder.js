@@ -358,9 +358,10 @@
     stop: () => S.stopped(),
     isOn: () => S.on,
 
-    // The recording, as text made here: nothing of the context crosses as an object. An infinite number crosses as a
-    // label JSON keeps (spec 010, T162: a cost that overflows), and tree-record.ts reads it back as the number.
-    take: () =>
+    // The recording, as text made here: nothing of the context crosses as an object. For the answer key only (spec 010,
+    // T162: a cost that overflows), an infinite number crosses as a label JSON keeps and tree-record.ts reads it back;
+    // otherwise it is null, as the live tree always had it.
+    take: (infinite) =>
       JSON.stringify(
         {
           nodes: S.nodes || [],
@@ -373,7 +374,13 @@
           fromGame: S.fromGame || [],
         },
         (k, v) =>
-          v === Infinity ? "(Infinity)" : v === -Infinity ? "(-Infinity)" : v,
+          !infinite
+            ? v
+            : v === Infinity
+              ? "(Infinity)"
+              : v === -Infinity
+                ? "(-Infinity)"
+                : v,
       ),
   };
   G.__rec.state = S;

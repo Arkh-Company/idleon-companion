@@ -201,7 +201,9 @@ export function partInWriters(
         !near(part.final, one.final),
     )
   )
-    return outOfRule("a parte muda entre as voltas do laço");
+    return outOfRule(
+      "a parte não tem os mesmos termos e o mesmo valor em todas as voltas do laço",
+    );
   return one;
 }
 

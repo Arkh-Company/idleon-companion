@@ -104,7 +104,12 @@ test("every output falls inside TREES_OUT; a path with .. or / out of it is refu
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
-  recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  recorder = bootRecorder(
+    GAME,
+    PAK,
+    { startMs: 5_000, numberMs: 500 },
+    { infinite: true },
+  );
 });
 const sketch = (id: string, call: string): Blueprint => ({
   id,

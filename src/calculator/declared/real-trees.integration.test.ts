@@ -118,6 +118,8 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         const recorder = bootRecorder(
           readFileSync(join(gameDir, "N.js"), "utf8"),
           new Uint8Array(readFileSync(join(gameDir, "lib", "default.pak"))),
+          undefined,
+          { infinite: true },
         );
         lines.push(`boot\t${String(Math.round(performance.now() - t0))} ms`);
         const state = mosaic(snapshot);

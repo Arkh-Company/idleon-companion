@@ -69,6 +69,14 @@ export function matchChain(
         return {
           refused: `a escrita ${String(w)} do acumulador é um corte e também sai de um passo`,
         };
+      // a Cap cuts a total above K, a Floor raises one below it: otherwise the test was on another value
+      if (
+        pv === null ||
+        (bound.kind === "cap" ? !(pv > bound.value) : !(pv < bound.value))
+      )
+        return {
+          refused: `a escrita ${String(w)} do acumulador é um corte que não vem do total`,
+        };
       writes.push({ value: w, step: null, compound: null, bound });
       before = w;
       continue;

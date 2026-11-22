@@ -33,6 +33,8 @@ export function bootRecorder(
   code: string,
   pak: Uint8Array,
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
+  /** Keep an infinite number as a number (spec 010, T162: the answer key only); the live tree gets null, as always. */
+  { infinite = false }: { infinite?: boolean } = {},
 ): {
   context: Context;
   /** The instrumentation's steps, by the id the recording's `x` gives them (they never leave the worker). */
@@ -95,8 +97,9 @@ export function bootRecorder(
             run("__rec.abandonBuilder()", startMs);
           }
         });
-        const json = run("__rec.take()", startMs);
+        const json = run(`__rec.take(${String(infinite)})`, startMs);
         if (typeof json !== "string") throw new Error("no recording");
+        if (!infinite) return JSON.parse(json) as Recording;
         // an infinite number crossed as a label (recorder.js, take)
         return JSON.parse(json, (_, v: unknown) =>
           v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
