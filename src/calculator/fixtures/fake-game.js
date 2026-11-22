@@ -1813,6 +1813,26 @@ lime.$scripts.N = function (_exports, $global) {
     1 > d.TreeCostInf.h.v && (d.TreeCostInf.h.v = 1);
     return Math.round(d.TreeCostInf.h.v);
   };
+  // The review of T162: a number that overflows, as the live tree shows it.
+  Blocks._customBlock_TreeInfKid = function () {
+    return state().TreeCapped * Math.pow(10, 400);
+  };
+  Blocks._customBlock_TreeInfRoot = function () {
+    return (
+      Math.min(Blocks._customBlock_TreeInfKid(), 50) +
+      Blocks._customBlock_TreeReads()
+    );
+  };
+  // A cut whose test is on another value than the total, the total already below it: no cut of the total.
+  Blocks._customBlock_TreeCutOther = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCutOther = new StringMap();
+    d.TreeCutOther.h.v = s.TreeBase + 2;
+    d.TreeCutOther.h.v = d.TreeCutOther.h.v * 2;
+    s.TreeLevel > 20 && (d.TreeCutOther.h.v = 20);
+    return d.TreeCutOther.h.v;
+  };
   Blocks._customBlock_TreeFloorIf = function () {
     var d = dnsm();
     d.TreeFloorIf = new StringMap();

@@ -342,3 +342,11 @@ test("a first write divided, then added to, is refused", () => {
     /a divisão da primeira escrita não fica no topo/,
   );
 });
+
+// Review of T162 (I2): a cut is a Cap only over a total above it, and a Floor only over a total below it.
+test("a cut written under a test whose total is already on the other side of K is refused", () => {
+  // (TreeBase + 2) × 2 = 12, then TreeLevel > 20 && (total = 20): the test is not on the total
+  expect(refusal("TreeCutOther")).toMatch(
+    /a escrita 20 do acumulador é um corte que não vem do total/,
+  );
+});

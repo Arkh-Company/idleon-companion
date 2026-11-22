@@ -296,3 +296,28 @@ test("the engine's log says a number's chain of steps could not be read, for tha
   logged.tree(expand("open", branch?.id ?? ""), undefined);
   expect(logged.log?.()).toBeNull();
 });
+
+// Review of T162 (I1): the infinite number the answer key keeps never reaches the live tree, neither as a label nor as
+// a number; the live tree has what it had before (no value).
+test("a live tree over a cost that overflows shows no infinite value and no label of one", () => {
+  const live = createTreeEngine(GAME, PAK, {
+    ...TREE_ROOTS,
+    infinite: ["TreeInfRoot", [0, 0, 0]],
+  });
+  const root = live.tree(number("infinite"), mosaicOf());
+  if (root === "unknownNumber") throw new Error("no tree");
+  // every branch opened, down to the leaves
+  const all: unknown[] = [];
+  const open = (n: CalcTreeNode) => {
+    all.push(n);
+    const kids =
+      n.kids === "lazy" ? live.tree(expand("infinite", n.id), undefined) : n;
+    if (kids === "unknownNumber" || kids.kids === "lazy") return;
+    kids.kids.forEach(open);
+  };
+  open(root);
+  const text = JSON.stringify(all, (_, v: unknown) =>
+    typeof v === "number" && !Number.isFinite(v) ? "non-finite number" : v,
+  );
+  expect(text).not.toMatch(/Infinity|non-finite number/);
+});
