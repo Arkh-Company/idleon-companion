@@ -92,10 +92,17 @@ function checkRef(x: unknown, where: string): void {
       !r.args.every(
         (a) =>
           (typeof a === "number" && Number.isFinite(a)) ||
-          (typeof a === "string" && a.length <= 60),
+          (typeof a === "string" && a.length <= 60) ||
+          (Array.isArray(a) &&
+            a.length > 0 &&
+            a.length <= 8 &&
+            a.every((x) => typeof x === "number" && Number.isFinite(x))),
       )
     )
-      no(where, "ref.args só leva números e textos curtos");
+      no(
+        where,
+        "ref.args só leva números, textos curtos e listas de até 8 números",
+      );
     return;
   }
   const r = obj(x, ["read"], `${where}/ref`);
@@ -235,11 +242,19 @@ function checkRoot(raw: unknown): void {
       "scratch",
       "routine",
       "sum",
+      "item",
     ],
     "root",
   );
   checkName(root.name, "root");
   if (root.nameProof !== undefined) checkProof(root.nameProof, "root");
+  if (
+    root.item !== undefined &&
+    (!Number.isInteger(root.item) ||
+      (root.item as number) < 0 ||
+      root.ref === undefined)
+  )
+    no("root", "item é o índice de um item da lista que a chamada ref devolve");
   if (root.routine !== undefined) {
     checkRoutine(root);
     return;

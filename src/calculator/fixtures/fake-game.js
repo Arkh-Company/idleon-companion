@@ -1663,6 +1663,17 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeCostCurve.h.v *= Math.max(0.9, 1 - s.TreeStats.h.a / 100);
     return Math.round(d.TreeCostCurve.h.v);
   };
+  // Spec 010 (T159): a block that takes a list (points spent per tab) and returns the list it builds, one push per tab,
+  // as the game builds the talent points of each tab.
+  Blocks._customBlock_TreeTabs = function (spent) {
+    var s = state();
+    var d = dnsm();
+    d.TreeTabs = [];
+    d.TreeTabs.push(s.TreeList[0] * 10 - spent[0]);
+    d.TreeTabs.push(s.TreeList[1] * 10 - spent[1]);
+    d.TreeTabs.push(s.TreeLevel + s.TreeBase - spent[2]);
+    return d.TreeTabs;
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

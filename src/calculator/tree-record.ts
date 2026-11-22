@@ -25,7 +25,8 @@ export type FollowCall = readonly [
 ];
 export type RootCall = readonly [
   block: string,
-  args: readonly (string | number)[],
+  /** A number, a text, or a short list of numbers (spec 010, T159). */
+  args: readonly (string | number | readonly number[])[],
 ];
 
 export function bootRecorder(

@@ -153,7 +153,7 @@ export function probeRoot(
   character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const { ref, calls, part, scratch, routine, sum } = bp.root;
+  const { ref, calls, part, scratch, routine, sum, item } = bp.root;
   const first = routine ? stepsOf(routine)[0] : undefined;
   const base = {
     id: bp.id,
@@ -183,19 +183,22 @@ export function probeRoot(
       .slice(0, roots.length)
       .map((id) => rec.nodes[id]);
     // a call that failed (the recorder marks it) or gave no number: the live map, or a wrong call
+    // a root that returns a list (an item of it is the number) gives no number of its own
     if (
       tops.length < roots.length ||
-      tops.some((n) => typeof n?.v !== "number")
+      (item === undefined && tops.some((n) => typeof n?.v !== "number"))
     )
       return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";
     const shape = routine
       ? { routine: refKey({ read: sum ?? "" }, character) }
-      : calls
-        ? { sum: calls.length }
-        : part
-          ? { part: part.map((r) => refKey(r, character)) }
-          : null;
+      : item !== undefined
+        ? { item }
+        : calls
+          ? { sum: calls.length }
+          : part
+            ? { part: part.map((r) => refKey(r, character)) }
+            : null;
     const key = answerKey(rec, ops, shape);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(

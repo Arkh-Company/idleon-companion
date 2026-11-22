@@ -230,3 +230,20 @@ test("a part ambiguous inside the one call that builds what the root reads is re
     /a parte está em mais de um termo/,
   );
 });
+
+// Spec 010, T159: a root that takes a short list of numbers and names an item of the list it returns.
+test("an item of the list a root returns: the root's last write to that item, and its pools", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeTabs", [[0, 0, 0]]]], {
+    recompute: [],
+    builders: [],
+  });
+  // the third tab: TreeLevel + TreeBase − 0
+  const key = answerKey(rec, recorder.ops, { item: 2 });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBe(29);
+  expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
+    ["additive", ["TreeLevel", "TreeBase", "0"]],
+  ]);
+  const none = answerKey(rec, recorder.ops, { item: 7 });
+  expect(none).toMatchObject({ error: "rootForm" });
+});

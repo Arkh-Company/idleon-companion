@@ -52,7 +52,7 @@ export interface Recording {
 }
 
 export type RecipeStep =
-  | { block: string; args: (string | number)[] }
+  | { block: string; args: (string | number | readonly number[])[] }
   | {
       slot: number;
       behavior: string;

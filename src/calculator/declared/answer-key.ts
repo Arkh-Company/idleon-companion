@@ -32,6 +32,7 @@ import type {
   RootFormError,
 } from "./answer-key-terms.ts";
 import {
+  itemOf,
   partInWriters,
   partKey,
   routineKey,
@@ -79,7 +80,11 @@ export interface AnswerKey {
 
 /** The blueprint's root shape, its references already turned into keys: a sum of calls, or a part of the call. */
 export type RootShape =
-  { sum: number } | { part: readonly string[] } | { routine: string } | null;
+  | { sum: number }
+  | { part: readonly string[] }
+  | { routine: string }
+  | { item: number }
+  | null;
 
 /** The functions a top layer is made of: one of them holds a value of the root when one of its arguments does. */
 const LAYERED = new Set(["min", "max", "round", "floor", "ceil"]);
@@ -99,6 +104,11 @@ export function answerKey(
   const made = makeSteps(rec, ops);
   const blockSteps = made.of(top.id);
   const branches = branchesOf(top, ops, blockSteps.exprOf);
+  if (shape && "item" in shape) {
+    const value = itemOf(rec, top, shape.item);
+    if (typeof value !== "number") return value;
+    return answerKeyOfSteps(rec, blockSteps, { branches, value });
+  }
   const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
   if (!shape || !("part" in shape)) return key;
   const own = "error" in key ? key : partKey(key, shape.part);

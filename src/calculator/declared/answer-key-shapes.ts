@@ -51,6 +51,34 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
   };
 }
 
+/**
+ * The value of an item of the list the root returns (T159: TotalTalentPoints(…)[tab]): the root's last write to
+ * `<path>[item]`; with no such path, or with more than one, the root is refused.
+ */
+export function itemOf(
+  rec: Recording,
+  top: RecNode,
+  item: number,
+): number | RootFormError {
+  const last = new Map<string, number>();
+  for (const w of rec.writes) {
+    const m = /^(.*)\[(\d+)\]$/.exec(w.path);
+    if (
+      w.node === top.id &&
+      m?.[1] &&
+      Number(m[2]) === item &&
+      typeof w.v === "number"
+    )
+      last.set(m[1], w.v);
+  }
+  const [only, ...more] = [...last.values()];
+  if (only === undefined)
+    return outOfRule(`a raiz não escreveu o item ${String(item)} de uma lista`);
+  if (more.length > 0)
+    return outOfRule(`o item ${String(item)} está em mais de uma lista`);
+  return only;
+}
+
 /** Why a part was refused: a reference that is no term (`missing`), or more than one candidate (`ambiguous`). */
 export type PartRefusal = RootFormError & { part: "missing" | "ambiguous" };
 const refused = (part: PartRefusal["part"], why: string): PartRefusal => ({

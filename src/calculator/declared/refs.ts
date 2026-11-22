@@ -2,8 +2,9 @@
 // path the game read, never an expression. `{character}` stands for the tree's character and `*` for any character
 // (the best of them, or their sum); a character's index is never written out.
 
-export type Ref =
-  { call: string; args: readonly (string | number)[] } | { read: string };
+/** A call's argument: a number, a short text, or a short list of numbers (the points spent per tab, T159). */
+export type RefArg = string | number | readonly number[];
+export type Ref = { call: string; args: readonly RefArg[] } | { read: string };
 
 const CHARACTER = "{character}";
 const ANY = "[*]";
@@ -15,8 +16,7 @@ const resolve = (read: string, character: number): string =>
 export const callArgs = (
   ref: Extract<Ref, { call: string }>,
   character: number,
-): (string | number)[] =>
-  ref.args.map((a) => (a === CHARACTER ? character : a));
+): RefArg[] => ref.args.map((a) => (a === CHARACTER ? character : a));
 
 /** The key that ties a blueprint node to an answer-key term and a recorded node: `Block(args in JSON)`, or the path. */
 export const refKey = (ref: Ref, character: number): string =>

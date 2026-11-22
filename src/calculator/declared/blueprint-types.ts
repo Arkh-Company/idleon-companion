@@ -60,6 +60,8 @@ export interface BlueprintRoot {
   routine?: RoutineStep | readonly RoutineStep[];
   /** …and the state path, `[*]` for any index, whose written values it sums (through a helper too). */
   sum?: string;
+  /** The index of the item of the list the call returns (TotalTalentPoints(…)[tab], T159). */
+  item?: number;
 }
 export type RoutineStep =
   | CallRef
