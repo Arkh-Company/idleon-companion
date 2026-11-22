@@ -89,3 +89,59 @@ export function gateOf(
   }
   return null;
 }
+
+/** The path that ran of a condition outside the root's `return`: its recorded value and expression, and the test. */
+export interface Branch {
+  value: number;
+  /** The test's result: 1 yes, 0 no. */
+  test: number;
+  e: Expr;
+}
+
+/**
+ * The paths that ran of the root's conditions outside its `return` (spec 010, T151), read from the recorded test op,
+ * never guessed: the branch inside the conditional's own recorded op (a conditional inside a step), or the next top op
+ * after the test that the code puts right after its `?` (yes) or its `:` (no) (a conditional set in a variable). Two
+ * paths with the same value are left out: nothing tells them apart.
+ */
+export function branchesOf(
+  top: RecNode,
+  ops: readonly Op[],
+  exprOf: ((op: number) => Expr | null) | undefined,
+): Branch[] {
+  if (!exprOf) return [];
+  const x = top.x ?? [];
+  const valueOf = new Map(x.map(([id, v]) => [id, v]));
+  const out: Branch[] = [];
+  x.forEach(([tid, tv], at) => {
+    const t = ops[tid];
+    if (t?.kind !== "test" || t.block !== top.b) return;
+    const text = t.fnText;
+    if (/\breturn\s*\(?\s*$/.test(text.slice(0, t.node.range[0] - 1))) return;
+    const yes = tv ? 1 : 0;
+    const end = t.node.range[1] - 1;
+    const follows = (id: number) => {
+      const o = ops[id];
+      if (!o || o.kind === "test" || o.parent !== t.parent) return false;
+      const between = text.slice(end, o.node.range[0] - 1);
+      return yes
+        ? /^[\s)]*\?[\s(]*$/.test(between)
+        : /^[\s)]*\?[^?]*:[\s(]*$/.test(between);
+    };
+    const inside =
+      t.parent !== undefined &&
+      ops[t.parent]?.node.type === "ConditionalExpression";
+    const branch = x
+      .slice(at + 1)
+      .map(([id]) => id)
+      .find((id) =>
+        inside
+          ? ops[id]?.parent === t.parent && ops[id]?.kind !== "test"
+          : follows(id),
+      );
+    const v = branch === undefined ? undefined : valueOf.get(branch);
+    const e = branch === undefined ? null : exprOf(branch);
+    if (typeof v === "number" && e) out.push({ value: v, test: yes, e });
+  });
+  return out.filter((b) => out.filter((o) => o.value === b.value).length === 1);
+}

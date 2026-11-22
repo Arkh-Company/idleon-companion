@@ -49,6 +49,8 @@ export interface TermContext {
   /** Paths the root wrote and may read back, with the values written. */
   passage: ReadonlyMap<string, readonly number[]>;
   accumulator: string | null;
+  /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
+  branches?: readonly { value: number; e: Expr }[];
 }
 
 export function termReader(ctx: TermContext) {
@@ -63,6 +65,9 @@ export function termReader(ctx: TermContext) {
       pollution[k] = (pollution[k] ?? 0) + n;
   };
   const usedSteps = new Set<number>();
+  /** The branches crossed, by index: each one is a ❓ layer of the root. */
+  const crossed = new Set<number>();
+  const branches = ctx.branches ?? [];
 
   /**
    * The expression that gave a passage's value: a step of the root not crossed yet on this way down (with its index), or
@@ -132,6 +137,19 @@ export function termReader(ctx: TermContext) {
           }
           via.push(p);
           e = x.e;
+          continue;
+        }
+      }
+      // a value with no name that a condition's path gave: that path's expression (never twice on one way down)
+      if (e.t === "val" && typeof e.v === "number") {
+        const v = e.v;
+        const bi = branches.findIndex((b) => near(b.value, v));
+        const b = branches[bi];
+        if (b && !seen.has(-1 - bi)) {
+          count("conditionPath");
+          seen.add(-1 - bi);
+          crossed.add(bi);
+          e = b.e;
           continue;
         }
       }
@@ -270,5 +288,5 @@ export function termReader(ctx: TermContext) {
     );
   }
 
-  return { pollution, bump, keep, usedSteps, unwrap, flat };
+  return { pollution, bump, keep, usedSteps, crossed, unwrap, flat };
 }

@@ -1427,6 +1427,31 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeLayerPass = function () {
     return Blocks._customBlock_TreeReads();
   };
+  // Spec 010 (T151): a condition and its two paths outside the return: in a variable, inside the last step, and in
+  // a step of a running total.
+  Blocks._customBlock_TreeGateVar = function () {
+    var s = state();
+    var x = s.TreeOwned > 0 ? s.TreeBase + 1 : s.TreeCapped + s.TreeLevel;
+    return x * s.TreeTwins[0];
+  };
+  Blocks._customBlock_TreeGateInline = function () {
+    var s = state();
+    return (
+      (s.TreeOwned > 0 ? s.TreeBase + 1 : s.TreeCapped + s.TreeLevel) *
+      s.TreeTwins[0]
+    );
+  };
+  Blocks._customBlock_TreeGateChain = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeGateChain = new StringMap();
+    d.TreeGateChain.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeGateChain.h.v =
+      s.TreeOwned > 0
+        ? d.TreeGateChain.h.v * 2
+        : d.TreeGateChain.h.v * s.TreeTwins[0];
+    return d.TreeGateChain.h.v;
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

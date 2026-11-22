@@ -21,8 +21,8 @@ import {
 } from "./answer-key-terms.ts";
 import type { AnswerTerm, RawTerm, RootFormError } from "./answer-key-terms.ts";
 import { partOf, sumKey } from "./answer-key-shapes.ts";
-import { gateOf, peelTop } from "./answer-key-top.ts";
-import type { TopLayer } from "./answer-key-top.ts";
+import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
+import type { Branch, TopLayer } from "./answer-key-top.ts";
 
 export type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
 export type { TopLayer } from "./answer-key-top.ts";
@@ -96,14 +96,20 @@ export function answerKey(
   const part = shape?.part ?? null;
   const gate =
     part || typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
-  return answerKeyOfSteps(rec, makeSteps(rec, ops).of(top.id), { gate, part });
+  const blockSteps = makeSteps(rec, ops).of(top.id);
+  const branches = branchesOf(top, ops, blockSteps.exprOf);
+  return answerKeyOfSteps(rec, blockSteps, { gate, part, branches });
 }
 
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
 export function answerKeyOfSteps(
   rec: Recording,
   { steps, checks }: BlockSteps,
-  opts: { gate?: TopLayer | null; part?: readonly string[] | null } = {},
+  opts: {
+    gate?: TopLayer | null;
+    part?: readonly string[] | null;
+    branches?: readonly Branch[];
+  } = {},
 ): AnswerKey | RootFormError {
   const out = outOfRule;
   const top = topOf(rec);
@@ -174,6 +180,7 @@ export function answerKeyOfSteps(
     kids,
     passage,
     accumulator: acc?.[0] ?? null,
+    branches: opts.branches ?? [],
   });
   r.bump("totalCopy", finals.length - (acc ? 1 : 0));
   r.bump(
@@ -392,7 +399,18 @@ export function answerKeyOfSteps(
     final: opts.part ? target : final,
     form: acc ? "chain" : pools.length > 0 ? "expression" : "leaf",
     accumulator: acc?.[0] ?? null,
-    top: layers,
+    // each condition whose path the pools crossed is a ❓ layer, in the code's order
+    top: [
+      ...layers,
+      ...(opts.branches ?? [])
+        .filter((_, i) => r.crossed.has(i))
+        .map((b): TopLayer => ({
+          kind: "cond",
+          value: b.test,
+          before: b.value,
+          after: b.value,
+        })),
+    ],
     pools,
     pollution: r.pollution,
   };

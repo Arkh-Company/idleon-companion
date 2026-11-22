@@ -31,6 +31,8 @@ export interface Check {
 export interface BlockSteps {
   steps: Step[];
   checks: Check[];
+  /** Any recorded step of the block (by its op id) as an expression, as the steps build it (spec 010, T151). */
+  exprOf?: (op: number) => Expr | null;
 }
 
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
@@ -327,7 +329,11 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (JSON.stringify(ex).includes('"v":""')) continue;
       steps.push({ v, e: ex });
     }
-    return { steps, checks };
+    const exprOf = (op: number): Expr | null => {
+      const o = ops[op];
+      return o && vals.has(op) ? e(o.node) : null;
+    };
+    return { steps, checks, exprOf };
   }
 
   return {

@@ -389,3 +389,21 @@ test("a running total set to 0 in a for loop's init is a chain, not out of the r
   expect(key.pools.map((p) => p.kind)).toEqual(["additive", "multi"]);
   expect(key.final).toBe(48);
 });
+
+// Spec 010, T151: a condition and its two paths outside the return (Mining and Chop Speed, Multi-Ore, Gilded Stamp
+// Chance): the path that ran is opened, and the condition is a ❓ layer.
+test("x = cond ? a : b; return x * k: the path that ran opens into its sources, and the condition is a layer", () => {
+  for (const block of ["TreeGateVar", "TreeGateInline"]) {
+    const key = keyOf(block);
+    expect(key.final, block).toBe(315);
+    expect(layers(key), block).toEqual([["cond", 0, 105, 105]]);
+    expect(
+      key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)]),
+      block,
+    ).toEqual([
+      ["additive", ["TreeCapped", "TreeLevel"]],
+      ["multi", ["TreeTwins[0]"]],
+    ]);
+    for (const p of key.pools) expect(p.error, block).toBeLessThanOrEqual(1e-6);
+  }
+});
