@@ -35,17 +35,19 @@ export function matchChain(
   for (const [n, w] of values.entries()) {
     const i = steps.findIndex((s, j) => j >= from && near(s.v, w));
     const pv = before;
-    // in place only when the write changed a total that is not 0 (0 × anything is 0)
-    const inPlace = pv !== null && pv !== 0 && !near(w, pv);
+    // in place only over a total that is not 0 (0 × anything is 0); a write equal to the total is in place only when
+    // no step gives it (`path *= 1`, the factor of a locked bonus)
+    const inPlace = pv !== null && pv !== 0 && (i < 0 || !near(w, pv));
     const times = inPlace
-      ? steps.findIndex((s, j) => j >= from && near(pv * s.v, w))
+      ? steps.findIndex((s, j) => j >= from && j !== i && near(pv * s.v, w))
       : -1;
     const plus = inPlace
-      ? steps.findIndex((s, j) => j >= from && near(pv + s.v, w))
+      ? steps.findIndex((s, j) => j >= from && j !== i && near(pv + s.v, w))
       : -1;
-    if (i >= 0 && ((times >= 0 && times < i) || (plus >= 0 && plus < i)))
+    // a step that gives the write and another that gives it in place: ambiguous, whichever comes first
+    if (i >= 0 && (times >= 0 || plus >= 0))
       return {
-        refused: `a escrita ${String(w)} do acumulador casa com um passo e com outro no lugar antes dele`,
+        refused: `a escrita ${String(w)} do acumulador casa com um passo e com outro no lugar`,
       };
     if (i < 0 && times >= 0 && plus >= 0)
       return {
