@@ -1560,6 +1560,26 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeCostBuild();
     return Math.round(first + dnsm().TreeCost.h.v);
   };
+  // The second review of T154 to T156: a running total whose last write is a cap that bites; a part in two factors
+  // of the root and once in the cost a call builds.
+  Blocks._customBlock_TreeCapWrite = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapWrite = new StringMap();
+    d.TreeCapWrite.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapWrite.h.v = d.TreeCapWrite.h.v * 2;
+    d.TreeCapWrite.h.v = Math.min(d.TreeCapWrite.h.v, 5);
+    return d.TreeCapWrite.h.v;
+  };
+  Blocks._customBlock_TreePartBoth = function () {
+    var s = state();
+    Blocks._customBlock_TreeCostBuild();
+    return (
+      Math.round(dnsm().TreeCost.h.v) *
+      (1 + s.TreeTwins[0] / 100) *
+      (2 + s.TreeTwins[0] / 50)
+    );
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

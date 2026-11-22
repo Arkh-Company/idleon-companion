@@ -189,3 +189,17 @@ test("pow with a constant is a curve: a term of its pool (its ⓘ), never a pool
     ["multi", ["10", "TreeLevel", "TreeStats.b"]],
   ]);
 });
+
+test("a running total whose last write has a layer with no chain under it is refused, never a leaf", () => {
+  // 12, 24, then min(24, 5): the cap bites, and nothing under it is the running total
+  expect(refusal("TreeCapWrite")).toMatch(/não soma nem multiplica/);
+  // the Drop Rate shape keeps its chain
+  const chain = keyOf("TreeDeclChain");
+  expect(chain.form).toBe("chain");
+  expect(chain.pools.map((p) => p.kind)).toEqual([
+    "additive",
+    "multi",
+    "additive",
+    "multi",
+  ]);
+});

@@ -100,7 +100,9 @@ export function answerKey(
   const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
   if (!shape || !("part" in shape)) return key;
   const own = "error" in key ? key : partKey(key, shape.part);
-  if (!("error" in own)) return own;
+  // found, or refused as ambiguous in the root: never looked for again elsewhere
+  if (!("error" in own) || ("part" in own && own.part === "ambiguous"))
+    return own;
   const inner = (node: number, value: number) =>
     answerKeyOfSteps(rec, made.of(node), { node, value });
   return partInWriters(rec, top, shape.part, inner) ?? own;
@@ -152,21 +154,24 @@ export function answerKeyOfSteps(
   const peeled = last ? peelTop(last.e, fromRoot) : null;
   if (peeled?.refused) return out(peeled.refused);
   const layered = !!peeled && peeled.layers.length > 0;
+  // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
+  const v = peeled?.rest.v;
+  const under =
+    layered &&
+    typeof v === "number" &&
+    (peeled.rest.t === "read" || peeled.rest.t === "val")
+      ? chainFor(v)
+      : null;
   let acc = chainFor(final);
-  const at = last && (layered || !acc) ? { e: last.e, step: i } : null;
+  // the peeled step only with a chain under its layer, or with no chain for the final value: a running total whose
+  // last write has a layer and nothing under it goes to the chain, which refuses that write with the reason
+  const at = last && (under || !acc) ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
   if (at && peeled) {
     layers.push(...peeled.layers);
     rest = peeled.rest;
-    // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
-    const v = rest.v;
-    if (layered) {
-      acc =
-        typeof v === "number" && (rest.t === "read" || rest.t === "val")
-          ? chainFor(v)
-          : null;
-      if (acc) target = v as number;
-    }
+    if (layered) acc = under;
+    if (under && typeof v === "number") target = v;
   }
 
   const finals = [...byPath].filter(([, vs]) => near(vs.at(-1), target));

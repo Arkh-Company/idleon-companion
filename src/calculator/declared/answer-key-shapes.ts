@@ -56,20 +56,30 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
  * value is their product (a Multi pool) or their weighted sum (an Additive pool). A reference that is no term of a
  * pool, or terms in two pools, are refused with the reason.
  */
+/** Why a part was refused: a reference that is no term (`missing`), or more than one candidate (`ambiguous`). */
+export type PartRefusal = RootFormError & { part: "missing" | "ambiguous" };
+const refused = (part: PartRefusal["part"], why: string): PartRefusal => ({
+  ...outOfRule(why),
+  part,
+});
+
 export function partKey(
   key: AnswerKey,
   refs: readonly string[],
-): AnswerKey | RootFormError {
+): AnswerKey | PartRefusal {
   const all = key.pools.flatMap((pool, p) => pool.terms.map((t) => ({ p, t })));
   // each reference the main reference of one term; a reference in two terms is ambiguous, never taken by order
   const each = refs.map((ref) => all.filter((x) => x.t.ref === ref));
   if (each.some((c) => c.length > 1))
-    return outOfRule("a parte está em mais de um termo");
+    return refused("ambiguous", "a parte está em mais de um termo");
   const found = each.flat();
   if (found.length === refs.length) {
     const pool = key.pools[found[0]?.p ?? -1];
     if (new Set(found.map((f) => f.p)).size !== 1 || !pool)
-      return outOfRule("os termos da parte estão em pools diferentes");
+      return refused(
+        "ambiguous",
+        "os termos da parte estão em pools diferentes",
+      );
     return partOfPool(
       key,
       pool,
@@ -78,12 +88,14 @@ export function partKey(
   }
   // or the one term that holds all the references (a factor (1 + (A + B) / 100))
   const holders = all.filter((x) => refs.every((r) => x.t.refs.includes(r)));
-  if (holders.length > 1) return outOfRule("a parte está em mais de um termo");
+  if (holders.length > 1)
+    return refused("ambiguous", "a parte está em mais de um termo");
   const [one] = holders;
   const pool = one && key.pools[one.p];
   if (one && pool) return partOfPool(key, pool, [one.t]);
   const missing = refs.filter((_, i) => each[i]?.length === 0);
-  return outOfRule(
+  return refused(
+    "missing",
     `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
   );
 }

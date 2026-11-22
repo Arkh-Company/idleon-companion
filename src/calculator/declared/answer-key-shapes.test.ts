@@ -208,3 +208,14 @@ test("a part that more than one call gives, in the paths the root reads, is refu
     /a parte vem de mais de uma chamada/,
   );
 });
+
+test("a part ambiguous in the root is refused there, never looked for in the calls the root reads", () => {
+  // TreePartBoth: round(the cost TreeCostBuild built) × (1 + TreeTwins[0] / 100) × (2 + TreeTwins[0] / 50)
+  const key = answerKey(record("TreePartBoth"), recorder.ops, {
+    part: ["TreeStats.a", "TreeTwins[0]"],
+  });
+  expect(key).toMatchObject({ error: "rootForm" });
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a parte está em mais de um termo/,
+  );
+});
