@@ -1605,6 +1605,23 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeCostAmbBuild();
     return Math.round(dnsm().TreeCostAmb.h.v);
   };
+  // Spec 010 (T157): with no side from what the root wrote, the cap is the side that starts with a constant of the
+  // code (Food not consume: 90 + …; Crop value: 10000 × …); both sides starting with one is ambiguous.
+  Blocks._customBlock_TreeCapConstPlus = function () {
+    var s = state();
+    return Math.min(Blocks._customBlock_TreeReads() * 2, 90 + s.TreeLevel);
+  };
+  Blocks._customBlock_TreeCapConstTimes = function () {
+    var s = state();
+    return Math.min(
+      10000 * s.TreeTwins[0],
+      Blocks._customBlock_TreeLoop() + s.TreeCapped,
+    );
+  };
+  Blocks._customBlock_TreeCapConstBoth = function () {
+    var s = state();
+    return Math.min(5 + Blocks._customBlock_TreeReads(), 90 + s.TreeLevel);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

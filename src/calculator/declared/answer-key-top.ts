@@ -26,6 +26,12 @@ const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
 };
 
 const bare = (e: Expr): Expr => (e.t === "def" ? bare(e.e) : e);
+const leftmost = (e: Expr): Expr => {
+  const b = bare(e);
+  return b.t === "op" ? leftmost(b.l) : b;
+};
+/** An expression that starts with a constant of the code: `90 + …`, `10000 × …`. */
+const startsConst = (e: Expr) => bare(e).t === "op" && leftmost(e).t === "num";
 
 /**
  * The known layers of the root's last step, from outside in, and the rest below them: with each layer whose limit is
@@ -66,7 +72,22 @@ export function peelTop(
       ) {
         const kind = e.name === "min" ? "cap" : "floor-min";
         const k = a.t === "num" ? a : b.t === "num" ? b : null;
-        if (!k && own(a) === own(b))
+        // with no constant: the value is the side from what the root wrote; with neither, the cap is the side that
+        // starts with a constant of the code (spec, Open Questions 22/11); anything else is ambiguous
+        const value = k
+          ? k === a
+            ? b
+            : a
+          : own(a) !== own(b)
+            ? own(a)
+              ? a
+              : b
+            : !own(a) && startsConst(a) !== startsConst(b)
+              ? startsConst(a)
+                ? b
+                : a
+              : null;
+        if (!value)
           return {
             layers,
             limits,
@@ -74,7 +95,7 @@ export function peelTop(
             rest: e,
             refused: "o limite do min/max não se distingue do valor",
           };
-        const main = k ? (k === a ? b : a) : own(a) ? a : b;
+        const main = value;
         const limit = main === a ? b : a;
         if (typeof main.v === "number" && typeof limit.v === "number") {
           const layer: TopLayer = {

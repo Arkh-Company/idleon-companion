@@ -213,3 +213,46 @@ test("a layer over an expression of the total that keeps the last write's value 
   expect(refusal("TreeCapWrite")).toMatch(/não soma nem multiplica/);
   expect(keyOf("TreeCapAcc").form).toBe("chain");
 });
+
+// Spec 010, T157 (spec, Open Questions 22/11): with no side from what the root wrote, the cap is the side that starts
+// with a constant of the code; both or neither starting with one is refused.
+test("the cap is the side that starts with a constant: 90 + …, or 10000 × …", () => {
+  const plus = keyOf("TreeCapConstPlus");
+  // min(TreeReads() × 2 = 16, 90 + TreeLevel 25 = 115)
+  expect(layers(plus)).toEqual([["cap", 115, 16, 16]]);
+  expect(limitOf(plus.top[0])).toEqual([
+    "additive",
+    [
+      ["90", 1],
+      ["TreeLevel", 1],
+    ],
+  ]);
+  expect(pools(plus.pools)).toEqual([
+    [
+      "multi",
+      [
+        ["TreeReads()", 1],
+        ["2", 1],
+      ],
+    ],
+  ]);
+  const times = keyOf("TreeCapConstTimes");
+  // min(10000 × TreeTwins[0] = 30000, TreeLoop() + TreeCapped = 86)
+  expect(layers(times)).toEqual([["cap", 30000, 86, 86]]);
+  expect(limitOf(times.top[0])).toEqual([
+    "multi",
+    [
+      ["10000", 1],
+      ["TreeTwins[0]", 1],
+    ],
+  ]);
+});
+
+test("both sides starting with a constant, or neither, is refused", () => {
+  expect(refusal("TreeCapConstBoth")).toMatch(
+    /o limite do min\/max não se distingue do valor/,
+  );
+  expect(refusal("TreeCapAny")).toMatch(
+    /o limite do min\/max não se distingue do valor/,
+  );
+});
