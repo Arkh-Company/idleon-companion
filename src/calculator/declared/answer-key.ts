@@ -12,21 +12,38 @@ import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
   callRef,
+  KIND,
   near,
+  OP,
   OutOfRule,
   outOfRule,
   relDiff,
   SCRATCH,
+  strip,
   termReader,
 } from "./answer-key-terms.ts";
-import type { AnswerTerm, RawTerm, RootFormError } from "./answer-key-terms.ts";
-import { partKey, routineKey, sumKey } from "./answer-key-shapes.ts";
+import type {
+  AnswerTerm,
+  PoolKind,
+  RawPool,
+  RawTerm,
+  RootFormError,
+} from "./answer-key-terms.ts";
+import {
+  partInWriters,
+  partKey,
+  routineKey,
+  sumKey,
+} from "./answer-key-shapes.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
-export type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
+export type {
+  AnswerTerm,
+  PoolKind,
+  RootFormError,
+} from "./answer-key-terms.ts";
 export type { TopLayer } from "./answer-key-top.ts";
-export type PoolKind = "additive" | "multi";
 
 export interface AnswerPool {
   kind: PoolKind;
@@ -61,30 +78,6 @@ export interface AnswerKey {
 export type RootShape =
   { sum: number } | { part: readonly string[] } | { routine: string } | null;
 
-const KIND: Record<string, PoolKind> = {
-  "+": "additive",
-  "-": "additive",
-  "*": "multi",
-};
-const OP: Record<PoolKind, "+" | "*"> = { additive: "+", multi: "*" };
-
-interface RawPool {
-  kind: PoolKind;
-  terms: AnswerTerm[];
-  step: number;
-  after: number;
-}
-
-const strip = (t: RawTerm): AnswerTerm => ({
-  kind: t.kind,
-  ref: t.ref,
-  refs: t.refs,
-  nodes: t.nodes,
-  value: t.value,
-  weight: t.weight,
-  via: t.via,
-});
-
 const topOf = (rec: Recording) =>
   rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
 
@@ -98,12 +91,16 @@ export function answerKey(
   const top = topOf(rec);
   if (!top) return outOfRule("a gravação não tem raiz");
   const gate = typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
-  const blockSteps = makeSteps(rec, ops).of(top.id);
+  const made = makeSteps(rec, ops);
+  const blockSteps = made.of(top.id);
   const branches = branchesOf(top, ops, blockSteps.exprOf);
   const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
-  return shape && "part" in shape && !("error" in key)
-    ? partKey(key, shape.part)
-    : key;
+  if (!shape || !("part" in shape)) return key;
+  const own = "error" in key ? key : partKey(key, shape.part);
+  if (!("error" in own)) return own;
+  const inner = (node: number, value: number) =>
+    answerKeyOfSteps(rec, made.of(node), { node, value });
+  return partInWriters(rec, top, shape.part, inner) ?? own;
 }
 
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
@@ -113,12 +110,16 @@ export function answerKeyOfSteps(
   opts: {
     gate?: TopLayer | null;
     branches?: readonly Branch[];
+    /** Another recorded call than the root's (a call that builds a path the root reads)… */
+    node?: number;
+    /** …and the value it built there, in place of what it returned. */
+    value?: number;
   } = {},
 ): AnswerKey | RootFormError {
   const out = outOfRule;
-  const top = topOf(rec);
+  const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
   if (!top) return out("a gravação não tem raiz");
-  const final = top.v;
+  const final = opts.value ?? top.v;
   if (typeof final !== "number") return out("a raiz não deu número");
   const writes = rec.writes.filter((w) => w.node === top.id);
   const byPath = new Map<string, number[]>();

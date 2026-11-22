@@ -118,3 +118,30 @@ test("a routine's root: the sum of the state paths the routine writes, each path
   const none = answerKey(rec, recorder.ops, { routine: "TreeNothing[*]" });
   expect(none).toMatchObject({ error: "rootForm" });
 });
+
+// Spec 010, T155: a part can be one term that holds all its references, and it is looked for in the pools of a
+// running total the root only reads.
+test("a part can be one term that holds all its references: its value", () => {
+  // TreePartTerm: TreeLoop() × (1 + (TreeStats.a + TreeStats.b) / 100)
+  const key = answerKey(record("TreePartTerm"), recorder.ops, {
+    part: ["TreeStats.a", "TreeStats.b"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(1.08, 12);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.refs))).toEqual([
+    ["TreeStats.a", "TreeStats.b"],
+  ]);
+});
+
+test("a part is looked for in the running total a call builds in a scratch path that the root only reads", () => {
+  // TreeCostRead rounds DNSM.TreeCost.v, which TreeCostBuild writes: TreeCapped × 100 × max(0.1, 1 − 3/100) ×
+  // max(0.9, 1 − 3/100)
+  const key = answerKey(record("TreeCostRead"), recorder.ops, {
+    part: ["TreeStats.a", "TreeTwins[0]"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(0.97 * 0.97, 12);
+  expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
+    ["multi", ["TreeStats.a", "TreeTwins[0]"]],
+  ]);
+});

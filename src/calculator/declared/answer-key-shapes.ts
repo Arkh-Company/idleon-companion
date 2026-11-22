@@ -2,7 +2,7 @@
 // blueprint never stores a calculation): a sum of calls (Tome Score), each recorded under the root; a part of a call,
 // terms of its recorded pool named by reference (a reducer multiplied loose with the cost); and a routine run on the
 // recorder's copy, the sum of the state it writes (the Cog Board). All read from the recording only.
-import type { Recording } from "../recording.ts";
+import type { RecNode, Recording } from "../recording.ts";
 import type { AnswerKey } from "./answer-key.ts";
 import { callRef, outOfRule } from "./answer-key-terms.ts";
 import type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
@@ -72,15 +72,62 @@ export function partKey(
     return null;
   });
   const missing = refs.filter((_, i) => !found[i]);
-  if (missing.length > 0)
+  if (missing.length > 0) {
+    // or one term that holds all the references (a factor (1 + (A + B) / 100))
+    for (const pool of key.pools) {
+      const t = pool.terms.find((x) => refs.every((r) => x.refs.includes(r)));
+      if (t) return partOfPool(key, pool, [t]);
+    }
     return outOfRule(
       `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
     );
+  }
   const pools = new Set(found.map((f) => f?.p));
   const pool = key.pools[found[0]?.p ?? -1];
   if (pools.size !== 1 || !pool)
     return outOfRule("os termos da parte estão em pools diferentes");
-  const terms = found.flatMap((f) => (f ? [f.t] : []));
+  return partOfPool(
+    key,
+    pool,
+    found.flatMap((f) => (f ? [f.t] : [])),
+  );
+}
+
+/**
+ * The part in the running total a call builds in a scratch path that the root only reads (a bubble's cost, T155):
+ * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there; the first one whose
+ * pools hold the part, or null.
+ */
+export function partInWriters(
+  rec: Recording,
+  top: RecNode,
+  refs: readonly string[],
+  keyOf: (node: number, value: number) => AnswerKey | RootFormError,
+): AnswerKey | null {
+  const read = new Set((top.r ?? []).map(([p]) => p));
+  const writers = new Map<string, { node: number; value: number }>();
+  for (const w of rec.writes)
+    if (
+      w.node !== null &&
+      w.node !== top.id &&
+      read.has(w.path) &&
+      typeof w.v === "number"
+    )
+      writers.set(`${String(w.node)} ${w.path}`, { node: w.node, value: w.v });
+  for (const { node, value } of writers.values()) {
+    const inner = keyOf(node, value);
+    const part = "error" in inner ? inner : partKey(inner, refs);
+    if (!("error" in part)) return part;
+  }
+  return null;
+}
+
+/** The part's key: the terms chosen of one pool, its value their product (Multi) or their weighted sum (Additive). */
+function partOfPool(
+  key: AnswerKey,
+  pool: AnswerKey["pools"][number],
+  terms: AnswerTerm[],
+): AnswerKey {
   const value =
     pool.kind === "multi"
       ? terms.reduce((s, t) => s * t.value, 1)

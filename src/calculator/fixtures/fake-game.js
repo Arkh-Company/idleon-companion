@@ -1489,6 +1489,28 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return 10 * Math.pow(s.TreeLevel, 0.5) * (1 + s.TreeStats.h.b / 100);
   };
+  // Spec 010 (T155): a factor that holds two sources (one term), and a cost a call builds in a scratch path with
+  // its reducers, that the root only reads and rounds.
+  Blocks._customBlock_TreePartTerm = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100)
+    );
+  };
+  Blocks._customBlock_TreeCostBuild = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCost = new StringMap();
+    d.TreeCost.h.v = s.TreeCapped * 100;
+    d.TreeCost.h.v = d.TreeCost.h.v * Math.max(0.1, 1 - s.TreeStats.h.a / 100);
+    d.TreeCost.h.v = d.TreeCost.h.v * Math.max(0.9, 1 - s.TreeTwins[0] / 100);
+    return 0;
+  };
+  Blocks._customBlock_TreeCostRead = function () {
+    Blocks._customBlock_TreeCostBuild();
+    return Math.round(dnsm().TreeCost.h.v);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

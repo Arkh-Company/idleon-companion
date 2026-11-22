@@ -38,6 +38,24 @@ export interface AnswerTerm {
   /** The passage values crossed to reach the term. */
   via: string[];
 }
+export type PoolKind = "additive" | "multi";
+/** The pool each operator makes, and the operator of each pool. */
+export const KIND: Readonly<Record<string, PoolKind>> = {
+  "+": "additive",
+  "-": "additive",
+  "*": "multi",
+};
+export const OP: Readonly<Record<PoolKind, "+" | "*">> = {
+  additive: "+",
+  multi: "*",
+};
+/** A stretch of the root before same-kind ones in a row are joined into one pool. */
+export interface RawPool {
+  kind: PoolKind;
+  terms: AnswerTerm[];
+  step: number;
+  after: number;
+}
 /** A term still with its expression and its own noise, before it is known whether it is the accumulator. */
 export type RawTerm = AnswerTerm & { e: Expr; noise: Record<string, number> };
 
@@ -290,3 +308,14 @@ export function termReader(ctx: TermContext) {
 
   return { pollution, bump, keep, usedSteps, crossed, unwrap, flat };
 }
+
+/** A term as the answer key keeps it: without its expression and its noise. */
+export const strip = (t: RawTerm): AnswerTerm => ({
+  kind: t.kind,
+  ref: t.ref,
+  refs: t.refs,
+  nodes: t.nodes,
+  value: t.value,
+  weight: t.weight,
+  via: t.via,
+});
