@@ -210,6 +210,21 @@ test("a root whose answer key throws is an error of its own, and the run goes on
   });
 });
 
+test("a root whose recording runs out of time keeps, in its error, the stages measured before", () => {
+  const slow = (): Recording => {
+    throw Object.assign(new Error("out of time"), {
+      ms: { mosaic: 1.4, helpers: 2.6 },
+    });
+  };
+  expect(
+    probeRoot(slow, recorder.ops, sketch("slow", "Invented")),
+  ).toMatchObject({
+    form: "error",
+    reason: "a gravação falhou (Error)",
+    stages: { mosaic: 1, helpers: 3 },
+  });
+});
+
 test("the summary line has only the id, the result and the time, never a character's name", () => {
   expect(summaryLine("stats-drop-rate", { result: "passed", ms: 1234.6 })).toBe(
     "stats-drop-rate\tpassed\t1235 ms",

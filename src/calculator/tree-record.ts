@@ -30,7 +30,10 @@ export type RootCall = readonly [
 ];
 
 /** Puts an infinite number back at its place: the path from the recording's top, then its sign (recorder.js, infAt). */
-function putInfinity(rec: Recording, path: readonly (string | number)[]) {
+export function putInfinity(
+  rec: Recording,
+  path: readonly (string | number)[],
+) {
   let o = rec as unknown as Record<string | number, unknown>;
   for (const k of path.slice(0, -2))
     o = o[k] as Record<string | number, unknown>;
