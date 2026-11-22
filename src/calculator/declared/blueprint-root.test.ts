@@ -44,6 +44,8 @@ test("the root's shapes (spec, Open Questions 21/11): a sum of calls, a part of 
       { name: "Invented", ref: call(0), scratch: { TreeMark: { a: 1 } } },
       /scratch/,
     ],
+    [{ name: "Invented", ref: call(0), scratch: null }, /scratch/],
+    [{ name: "Invented", ref: call(0), scratch: [] }, /scratch/],
     [{ name: "Invented" }, /ref/],
   ] as const) {
     const out = sketch(root);
@@ -175,6 +177,37 @@ test("a part may name the branch of its loop's turns by the list it searches (T1
     const out = sketch(root);
     expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
       reason,
+    );
+  }
+});
+
+test("a character's index written out in the branch or the sum is refused by that reason, as the ref.read is", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const ref = { call: "Invented", args: ["Reset", 0, 0] };
+  const event = {
+    slot: 0,
+    behavior: "ActorEvents_29",
+    event: "_customEvent_B",
+  };
+  for (const [root, where] of [
+    [
+      {
+        name: "Invented",
+        ref,
+        part: [{ read: "A[1]" }],
+        branch: "PlayerDATABASE[0].Lists[3]",
+      },
+      "branch",
+    ],
+    [
+      { name: "Invented", routine: event, sum: "PlayerDATABASE[0].Board[*]" },
+      "sum",
+    ],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason).toBe(
+      `root: índice de personagem por extenso no ${where}`,
     );
   }
 });
