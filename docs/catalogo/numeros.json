@@ -567,7 +567,7 @@
     "motivo": "Pontos de talento estrela ganhos ao completar constelações.",
     "tela": "Talents (aba Star); recompensa listada na constelação",
     "prova": "tabela `StarQuests` (coluna da recompensa)",
-    "arvore_mae": ["talents-points-per-tab"],
+    "arvore_mae": ["talents-points-per-tab-6"],
     "motivo_destino": "Regra 4: os pontos de cada constelação concluída aparecem dentro da árvore dos Talent points per tab (aba Star)."
   },
   {
@@ -2688,7 +2688,7 @@
     "arvore_mae": [
       "alch-brew-per-hour",
       "alch-new-bubble-chance",
-      "alch-bubble-cost-reduction"
+      "alch-bubble-cost-reduction-item"
     ]
   },
   {
@@ -4166,7 +4166,7 @@
     "arvore_mae": [
       "dung-credit-multi",
       "dung-flurbo-multi",
-      "talents-points-per-tab",
+      "talents-points-per-tab-6",
       "sail-arti-multi"
     ]
   },
@@ -4363,7 +4363,7 @@
     "prova": "`DamageDealed`; `TotalTalentPoints`; `PlayerSpeedBonus`",
     "arvore_mae": [
       "stats-damage-max",
-      "talents-points-per-tab",
+      "talents-points-per-tab-1",
       "stats-move-speed"
     ]
   },
@@ -17447,7 +17447,7 @@
     "tela": "Obols, Arcade",
     "prova": "`MenagerieStuff` modos `ObolMISCmulti`, `ObolAutoTrashRate`, `RedJellyReadingMulti`, `OmegaArcBallChance`",
     "motivo_tipo": "Bônus de cada item de uma família (regra 4); o tipo é o do número que cada item aumenta, e varia.",
-    "arvore_mae": ["obols-stat-multi", "arcade-omega-chance"]
+    "arvore_mae": ["arcade-omega-chance"]
   },
   {
     "id": "mena-unlocks",
