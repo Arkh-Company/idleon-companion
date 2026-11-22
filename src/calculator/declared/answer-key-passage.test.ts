@@ -156,6 +156,36 @@ test("a step log at the cap: a later write of the path, by another call, may be 
   );
 });
 
+test("a child call written with `=` and then used in a later step: the place does not decide, refused", () => {
+  // `x = B(2); DNSM.b = x; u = x * 3; return 5 + DNSM.b + u`
+  const used = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "InventedRoot", a: [0, 0, 0], v: 13, c: [2], r: [["DNSM.b", 2, 1]] },
+      { b: "InventedB", a: [2], v: 2, pxi: 0 },
+    ],
+    [{ path: "DNSM.b", node: 1, v: 2, xi: 0, seq: 1 }],
+    { root: 0 },
+  );
+  const x: Expr = { t: "def", e: { t: "call", id: 2, v: 2 }, v: 2 };
+  const read: Expr = { t: "read", p: "DNSM.b", v: 2 };
+  const ret = op(
+    "+",
+    op("+", { t: "num", v: 5 }, read, 7),
+    { t: "val", v: 6 },
+    13,
+  );
+  const key = answerKeyOfSteps(used, {
+    steps: [
+      { v: 6, e: op("*", x, { t: "num", v: 3 }, 6) },
+      { v: 13, e: ret },
+    ],
+    checks: [],
+    stepAt: [0, 1],
+  });
+  expect(reasonOf(key)).toMatch(/a posição não decide entre elas/);
+});
+
 test("two child calls that start at the same place give two writes in 0: the place does not decide, refused", () => {
   // `DNSM.a = A(1); DNSM.b = B(2);` with no step between them, then the sum
   const same = recordingOf(
