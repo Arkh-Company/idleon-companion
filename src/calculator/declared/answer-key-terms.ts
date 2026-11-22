@@ -78,8 +78,10 @@ export interface TermContext {
   steps: readonly Step[];
   /** The root's child calls. */
   kids: readonly RecNode[];
-  /** Paths the root wrote and may read back, with the values written. */
-  passage: ReadonlyMap<string, readonly number[]>;
+  /** Paths the root wrote and may read back, with each write's value and place in the root's step log. */
+  passage: ReadonlyMap<string, readonly { v: number; xi: number }[]>;
+  /** Where each step was last recorded in the root's step log (BlockSteps.stepAt), to tell which step gave a write. */
+  stepAt?: readonly number[];
   accumulator: string | null;
   /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
   branches?: readonly { value: number; e: Expr }[];
@@ -101,25 +103,84 @@ export function termReader(ctx: TermContext) {
   const crossed = new Set<number>();
   const branches = ctx.branches ?? [];
 
+  type Giver = { e: Expr; step: number | null };
+  const callOf = (k: RecNode, v: number): Giver => ({
+    e: { t: "call", id: k.id, v },
+    step: null,
+  });
   /**
-   * The expression that gave a passage's value: a step of the root not crossed yet on this way down (with its index), or
-   * else a child call with that value (a call the root wrote with `=` makes no step).
+   * What gave a write, by its place (like matchChain): the step with its value recorded last before it; with no such
+   * step, the child call with its value that started last before it (a call the root wrote with `=` makes no step).
+   * Two of them at that same place: the place does not decide.
+   */
+  function giversOf(
+    w: { v: number; xi: number },
+    stepAt: readonly number[],
+  ): Giver[] {
+    const steps = ctx.steps.flatMap((s, j) => {
+      const at = stepAt[j] ?? -1;
+      return at < w.xi && near(s.v, w.v) ? [{ at, j, e: s.e }] : [];
+    });
+    const lastStep = Math.max(...steps.map((s) => s.at));
+    if (steps.length > 0)
+      return steps
+        .filter((s) => s.at === lastStep)
+        .map((s) => ({ e: s.e, step: s.j }));
+    const kids = ctx.kids.filter((n) => n.pxi <= w.xi && near(n.v, w.v));
+    const lastKid = Math.max(...kids.map((n) => n.pxi));
+    return kids.filter((n) => n.pxi === lastKid).map((n) => callOf(n, w.v));
+  }
+  /**
+   * The expression that gave a passage's value, with the path it crossed: with the steps' places, what gave the
+   * passage's writes with that value (the same one for all of them, or the place does not decide), null when it is a
+   * step already opened on this way down. With no places: a step of the root not opened yet on this way down (with its
+   * index), or else a child call with that value; when another passage holds the value too, more than one of them is
+   * ambiguous.
    */
   function passageExpr(
+    paths: readonly string[],
     v: number,
     seen: ReadonlySet<number>,
-  ): { e: Expr; step: number | null } | null {
-    const i = ctx.steps.findIndex((s, j) => !seen.has(j) && near(s.v, v));
-    const s = ctx.steps[i];
-    if (s) return { e: s.e, step: i };
-    const k = ctx.kids.find((n) => near(n.v, v));
-    return k ? { e: { t: "call", id: k.id, v }, step: null } : null;
+  ): (Giver & { path: string }) | null {
+    const [first] = paths;
+    if (first === undefined) return null;
+    if (ctx.stepAt) {
+      const found = new Map<string, Giver & { path: string }>();
+      for (const path of paths)
+        for (const w of ctx.passage.get(path) ?? [])
+          if (near(w.v, v))
+            for (const g of giversOf(w, ctx.stepAt))
+              found.set(JSON.stringify([g.step, g.e]), { ...g, path });
+      if (found.size > 1)
+        throw new OutOfRule(
+          `a passagem ${String(v)} sai de mais de uma escrita, e a posição não decide entre elas`,
+        );
+      const [g] = found.values();
+      return g && (g.step === null || !seen.has(g.step)) ? g : null;
+    }
+    const steps = ctx.steps.flatMap((s, j) =>
+      !seen.has(j) && near(s.v, v) ? [{ e: s.e, step: j }] : [],
+    );
+    const kids = ctx.kids.filter((n) => near(n.v, v));
+    const holders = [...ctx.passage].filter(([, ws]) =>
+      ws.some((w) => near(w.v, v)),
+    );
+    if (holders.length > 1 && steps.length + kids.length > 1)
+      throw new OutOfRule(
+        `mais de uma passagem tem o valor ${String(v)}, e sem a posição dos passos não se sabe qual passo deu cada uma`,
+      );
+    const [s] = steps;
+    if (s) return { ...s, path: first };
+    const [k] = kids;
+    return k ? { ...callOf(k, v), path: first } : null;
   }
-  const passagePathOf = (v: unknown): string | null => {
-    if (typeof v !== "number" || v === 0 || v === 1) return null;
-    for (const [p, vs] of ctx.passage) if (vs.some((x) => near(x, v))) return p;
-    return null;
-  };
+  /** The passages that hold a value with no name: never 0 or 1, which any step may give. */
+  const passagePathsOf = (v: unknown): string[] =>
+    typeof v !== "number" || v === 0 || v === 1
+      ? []
+      : [...ctx.passage]
+          .filter(([, ws]) => ws.some((w) => near(w.v, v)))
+          .map(([p]) => p);
 
   /**
    * Takes the wrappers off: a variable's definition and a passage read back. `seen` holds the steps already opened on
@@ -148,14 +209,18 @@ export function termReader(ctx: TermContext) {
       }
       if (e.t === "read" || e.t === "val") {
         // a read is a passage by its path; a value with no name, by the value the root wrote
-        const p =
+        const ps =
           e.t === "read"
             ? ctx.passage.has(e.p)
-              ? e.p
-              : null
-            : passagePathOf(e.v);
-        const x = p && typeof e.v === "number" ? passageExpr(e.v, seen) : null;
+              ? [e.p]
+              : []
+            : passagePathsOf(e.v);
+        const x =
+          ps.length > 0 && typeof e.v === "number"
+            ? passageExpr(ps, e.v, seen)
+            : null;
         const step = x?.step ?? null;
+        const p = x?.path ?? ps[0];
         if (p && !x) {
           // no step left on this way down and no child call: the passage stays its own value
           count("passageCycle");
