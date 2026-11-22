@@ -28,10 +28,7 @@
   // where they were, for the answer key, never a pass over the whole recording (seconds on the real game). A node's
   // place is its path from the recording's top, the sign last; a write's is the write (the builders' pass moves them).
   var isInf = (v) => v === Infinity || v === -Infinity;
-  var mark = (path, v) => {
-    S.inf = true;
-    S.infs.push(path.concat(v > 0 ? 1 : -1));
-  };
+  var mark = (path, v) => S.infs.push(path.concat(v > 0 ? 1 : -1));
 
   // 4b. Each step of a block's arithmetic lands on the row of the block that runs it (only numbers and yes/no).
   G.__X = (i, v) => {
@@ -89,8 +86,8 @@
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
       var node = S.newNode(name, args, S.cur);
-      for (var k = 0; k < args.length; k++)
-        if (isInf(args[k])) mark(["nodes", node.id, "a", k], args[k]);
+      for (var i = 0; i < args.length; i++)
+        if (isInf(args[i])) mark(["nodes", node.id, "a", i], args[i]);
       var parent = S.cur;
       S.cur = node;
       try {
@@ -131,10 +128,7 @@
       seq: ++S.seq,
     };
     S.writes.push(w);
-    if (isInf(w.v)) {
-      S.inf = true;
-      S.infWrites.push(w);
-    }
+    if (isInf(w.v)) S.infWrites.push(w);
   };
   function checkNote(path, exists) {
     if (!S.on || !S.cur || S.searching) return;
@@ -298,7 +292,7 @@
     begin: (recipeJson) => {
       S.recipe = JSON.parse(recipeJson);
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
-      Object.assign(S, { inf: false, infs: [], infWrites: [] });
+      Object.assign(S, { infs: [], infWrites: [] });
       S.searching = 0; // a search cut by a time limit never ran its `finally`
       Object.assign(S, {
         seq: 0,
