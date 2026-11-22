@@ -12,7 +12,6 @@ import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
   callRef,
-  KIND,
   near,
   OP,
   OutOfRule,
@@ -39,6 +38,7 @@ import {
   sumKey,
 } from "./answer-key-shapes.ts";
 import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
+import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
@@ -264,9 +264,6 @@ export function answerKeyOfSteps(
     writes.filter((w) => w.path.startsWith(SCRATCH)).length,
   );
 
-  // `seen`: the root's steps already opened on the way down to a part, the one being opened included
-  // (answer-key-terms.ts, unwrap): a passage never leads back into them.
-  type Seen = ReadonlySet<number>;
   // `scale`: a ➗ line, where a constant times a sum scales each term of the sum
   const termsOf = (
     parts: readonly Part[],
@@ -304,103 +301,11 @@ export function answerKeyOfSteps(
     stepLimits,
   };
 
-  // 3. An expression: the operands of its top operator; the leftmost one is an earlier stretch when it is a sum inside
-  // a product (in parentheses), or a product that starts with such a sum; otherwise it is the first pool's term.
-  function operands(
-    e: Expr,
-    kind: PoolKind,
-    w = 1,
-    seen: Seen = new Set(),
-  ): Part[] {
-    const s = new Set(seen);
-    const u = r.unwrap(e, [], true, s);
-    if (
-      u.t === "op" &&
-      KIND[u.o] === kind &&
-      (kind === "additive" || u.o === "*")
-    )
-      return [
-        ...operands(u.l, kind, w, s),
-        ...operands(u.r, kind, u.o === "-" ? -w : w, s),
-      ];
-    return [{ e, w, seen }];
-  }
-  const kindOf = (e: Expr, seen: Seen): PoolKind | undefined => {
-    const u = r.unwrap(e, [], true, new Set(seen));
-    return u.t === "op" ? KIND[u.o] : undefined;
-  };
-  function stretches(e: Expr, step: number, seen: Seen = new Set()): RawPool[] {
-    const s = new Set(seen);
-    const u = r.unwrap(e, [], true, s);
-    const kind = kindOf(u, s);
-    if (!kind || typeof u.v !== "number")
-      throw new OutOfRule("a expressão da raiz não soma nem multiplica");
-    const [first, ...rest] = operands(u, kind, 1, s);
-    const inner = first ? kindOf(first.e, first.seen) : undefined;
-    const lead =
-      first && inner ? operands(first.e, inner, 1, first.seen)[0] : undefined;
-    const earlier =
-      first &&
-      inner &&
-      inner !== kind &&
-      (kind === "multi" ||
-        (lead !== undefined && kindOf(lead.e, lead.seen) === "additive"));
-    if (earlier) {
-      const before = stretches(first.e, step, first.seen);
-      return [
-        ...before,
-        { kind, terms: kept(termsOf(rest, kind), 0), step, after: u.v },
-      ];
-    }
-    return [
-      {
-        kind,
-        terms: kept(termsOf(first ? [first, ...rest] : rest, kind), null),
-        step,
-        after: u.v,
-      },
-    ];
-  }
-  /**
-   * Below the layers: the pools of an expression, or none for a leaf with its proof: a value the root read (a read
-   * in the step, or with no step a recorded read of the root with the final value) or a constant (a number of the
-   * code, or with no step a root that read and called nothing).
-   */
-  function expressionPools(): RawPool[] {
-    if (!at || !rest) {
-      // a child call with the final value wins over a read with it: the root passes the call on
-      if (kids.some((k) => near(k.v, target)))
-        throw new OutOfRule("a raiz só repassa uma chamada");
-      if (reads.some(([, v]) => near(v, target))) return [];
-      if (reads.length === 0 && kids.length === 0) return [];
-      throw new OutOfRule("nenhum passo dá o valor final");
-    }
-    r.usedSteps.add(at.step);
-    const seen = new Set([at.step]);
-    const u = r.unwrap(rest, [], true, new Set(seen));
-    if (u.t === "op" && KIND[u.o]) return stretches(rest, at.step, seen);
-    // a curve with a constant (pow) is a term, its curve in the term's ⓘ: never a pool of its own
-    if (
-      u.t === "fn" &&
-      u.name === "pow" &&
-      u.args.some((a) => a.t === "num") &&
-      typeof u.v === "number"
-    ) {
-      const terms = termsOf([{ e: rest, w: 1, seen }], "additive");
-      return [
-        {
-          kind: "additive",
-          terms: kept(terms, null),
-          step: at.step,
-          after: u.v,
-        },
-      ];
-    }
-    if (u.t === "read" || u.t === "num") return [];
-    if (u.t === "call") throw new OutOfRule("a raiz só repassa uma chamada");
-    if (u.t === "val") throw new OutOfRule("nenhum passo dá o valor final");
-    throw new OutOfRule("a expressão da raiz não soma nem multiplica");
-  }
+  const { operands, kindOf, expressionPools } = expressionReader({
+    reader: r,
+    termsOf,
+    kept,
+  });
 
   /** Each factor of each top division's divisor, as a ➗ line; and each Cap's or Floor's limit, as its sources. */
   function divisorsAndLimits(): AnswerPool[] {
@@ -442,7 +347,7 @@ export function answerKeyOfSteps(
   try {
     raw = acc
       ? chainPools(chain, acc[1], metaOf.get(acc[0]))
-      : expressionPools();
+      : expressionPools(at, rest, { kids, reads, target });
     divisors = divisorsAndLimits();
   } catch (e) {
     if (e instanceof OutOfRule) return outOfRule(e.message);
