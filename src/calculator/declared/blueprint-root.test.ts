@@ -150,6 +150,26 @@ test("a root with a short list of numbers as an argument and an item of its resu
   }
 });
 
+test("a part may name the branch of its loop's turns by the list it searches (T163), and only a part", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const ref = { call: "Invented", args: ["Reset", 0, 0] };
+  const part = [{ read: "A[1]" }];
+  expect(
+    sketch({ name: "Invented", ref, part, branch: "InventedLists[3]" }),
+  ).toMatchObject({ ok: true, stage: "sketch" });
+  for (const [root, reason] of [
+    [{ name: "Invented", ref, branch: "InventedLists[3]" }, /branch/],
+    [{ name: "Invented", ref, part, branch: "A[1] + B[2]" }, /branch/],
+    [{ name: "Invented", ref, part, branch: 3 }, /branch/],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
+      reason,
+    );
+  }
+});
+
 test("an item never goes with a part, and a list of numbers is an argument of the root's call only", () => {
   const sketch = (root: object) =>
     parseBlueprint({ id: "invented-number", root }, ctx);

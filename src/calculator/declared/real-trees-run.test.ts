@@ -323,3 +323,23 @@ test("a root that returns no number, with a part, is no live map", () => {
     reason: null,
   });
 });
+
+// Spec 010, T163: a world of the Mob respawn, its turns by the list its branch searches.
+test("a part with its branch takes only that world's turns", () => {
+  const world = (branch: string) =>
+    rooted("respawn", {
+      ref: { call: "TreeRespawnWorlds", args: [0, 0, 0] },
+      part: [
+        { call: "TreeReads", args: [] },
+        { read: "TreeBase" },
+        { read: "TreeStats.a" },
+      ],
+      branch,
+    });
+  expect(probeRoot(record, recorder.ops, world("TreeWorlds[0]"))).toMatchObject(
+    { pools: ["additive"], reason: null },
+  );
+  expect(probeRoot(record, recorder.ops, world("TreeWorlds[2]"))).toMatchObject(
+    { form: "outOfRule" },
+  );
+});

@@ -87,6 +87,20 @@ export const BASE = {
   TreeFlagOn: 1,
   TreeBig: { $m: { k1: 1, k2: 7 } },
   TreeItems: [{ v: 3 }, { v: 5 }],
+  // The monsters of TreeRespawnWorlds, the worlds mixed, and the list each world's branch searches.
+  TreeMobs: {
+    $m: Object.fromEntries(
+      ["mA", "mC", "mB", "mE", "cave", "mD", "mF"].map((k, i) => [
+        k,
+        { $m: { Time: 100 * (i + 1) } },
+      ]),
+    ),
+  },
+  TreeWorlds: [
+    ["mA", "mB"],
+    ["mC", "mD"],
+    ["mE", "mF"],
+  ],
   // The first character active: its own keys, as the game keeps them outside PlayerDATABASE.
   ...activeAs(0),
   GetPlayersUsernames: [...CHARACTERS],

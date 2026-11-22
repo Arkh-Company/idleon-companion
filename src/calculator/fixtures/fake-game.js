@@ -1911,6 +1911,40 @@ lime.$scripts.N = function (_exports, $global) {
           (Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeList[i]) / 100);
     }
   };
+  // Spec 010 (T163): the Mob respawn by world. Each turn's branch is the list whose search found the turn's key; each
+  // world divides by its own sum (the second scales its common part by 0.65, the third changes from turn to turn), and
+  // the key in no list (a cave) has a line of its own. The keys come with the worlds mixed.
+  Blocks._customBlock_TreeRespawnWorlds = function () {
+    var s = state();
+    var U = A["com.stencyl.utils.Utils"];
+    var keys = Object.keys(s.TreeMobs.h);
+    for (var i = 0; i < keys.length; i++) {
+      var g = keys[i];
+      var m = s.TreeMobs.h[g];
+      U.contains(s.TreeWorlds[0], g)
+        ? (m.h.Time =
+            m.h.Time /
+            (1 +
+              (Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeStats.h.a) /
+                100))
+        : U.contains(s.TreeWorlds[1], g)
+          ? (m.h.Time =
+              m.h.Time /
+              (1 +
+                (0.65 * (Blocks._customBlock_TreeReads() + s.TreeBase) +
+                  s.TreeStats.h.b) /
+                  100))
+          : U.contains(s.TreeWorlds[2], g)
+            ? (m.h.Time =
+                m.h.Time /
+                (1 +
+                  (Blocks._customBlock_TreeReads() +
+                    s.TreeBase +
+                    s.TreeStats.h.a * (i + 1)) /
+                    100))
+            : (m.h.Time = m.h.Time / (1 + (s.TreeBase + s.TreeLevel) / 100));
+    }
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;
