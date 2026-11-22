@@ -261,8 +261,61 @@ test("an item whose value more than one step gives, or that is in more than one 
   );
   const third = answerKey(tabs, recorder.ops, { item: 2 });
   expect("error" in third ? third.reason : third.final).toBe(29);
-  const two = answerKey(record("TreeTwoLists"), recorder.ops, { item: 0 });
+  // T162: two lists, the root returning a copy of one (no path to tell which): refused
+  const two = answerKey(record("TreeTwoListsCopy"), recorder.ops, { item: 0 });
   expect("reason" in two ? two.reason : "no refusal").toMatch(
     /o item 0 está em mais de uma lista/,
   );
+});
+
+// Spec 010, T162 (1): the item is looked for only in the list the root returned (Talent points per tab: the root also
+// writes its working lists, TalentDL and TalentDLbonus).
+test("an item of the list the root returns, beside another list the root wrote", () => {
+  // TreeTwoLists returns TreeListA: TreeLevel + 1
+  const key = answerKey(record("TreeTwoLists"), recorder.ops, { item: 0 });
+  expect("error" in key ? key.reason : key.final).toBe(26);
+});
+
+// Spec 010, T162: the part, on the fifth probe's cases.
+test("a part reference inside another term takes that term (the Super Bit beside the talent)", () => {
+  // TreeLoop() × (1 + TreeStats.a / 100) × (1 + (TreeCapped + 40 × TreeStats.b) / 100)
+  const key = answerKey(record("TreePartSplit"), recorder.ops, {
+    part: ["TreeStats.a", "TreeStats.b"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  // (1 + 3 / 100) × (1 + (80 + 40 × 5) / 100)
+  expect(key.final).toBeCloseTo(1.03 * 3.8, 12);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+    "TreeStats.a",
+    "TreeCapped",
+  ]);
+});
+
+test("a part is looked for only in the calls under the root, never in another root of the same recording", () => {
+  // a second root, beside the first, builds the same cost again
+  const rec = recorder.record(
+    mosaicOf(),
+    [
+      ["TreeCostRead", [0, 0, 0]],
+      ["TreeCostBuild", [0, 0, 0]],
+    ],
+    { recompute: [], builders: [] },
+  );
+  const key = answerKey(rec, recorder.ops, {
+    part: ["TreeStats.a", "TreeTwins[0]"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(0.97 * 0.97, 12);
+});
+
+test("a part in a second running total the root builds itself, never in the total that adds it (the Obol stat multi)", () => {
+  // TreeStatTwo.v = (TreeLevel + TreeBase) × (1 + (TreeReads() + 40 × TreeStats.b) / 100), added to a scratch total
+  const key = answerKey(record("TreeStatMulti"), recorder.ops, {
+    part: ["TreeReads()", "TreeStats.b"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(3.08, 12);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.refs))).toEqual([
+    ["TreeReads()", "TreeStats.b"],
+  ]);
 });

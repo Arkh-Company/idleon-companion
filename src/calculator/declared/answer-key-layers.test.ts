@@ -271,3 +271,19 @@ test("a layer on the root's last step knows its step", () => {
   // the product is step 0; round(min(20, it)) is step 1
   expect(keyOf("TreeLayerRound").top.map((l) => l.step)).toEqual([1, 1]);
 });
+
+// Spec 010, T162 (3): a min or max whose arguments all start with a constant starts with a constant (Food not consume).
+test("a side that is a min of two sides starting with constants is the cap", () => {
+  // min(min(90 + TreeLevel, 98 + TreeBase) = 102, TreeReads() × 20 = 160)
+  const key = keyOf("TreeCapConstFn");
+  expect(layers(key)).toEqual([["cap", 102, 160, 102]]);
+  expect(pools(key.pools)).toEqual([
+    [
+      "multi",
+      [
+        ["TreeReads()", 1],
+        ["20", 1],
+      ],
+    ],
+  ]);
+});

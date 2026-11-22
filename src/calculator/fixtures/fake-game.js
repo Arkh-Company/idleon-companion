@@ -1750,6 +1750,51 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeFloorMid.h.v = d.TreeFloorMid.h.v * 2;
     return d.TreeFloorMid.h.v;
   };
+  // Spec 010 (T162): a part whose second reference is inside another term (the Super Bit beside the talent); a cap that
+  // is a min of two sides starting with constants (Food not consume).
+  Blocks._customBlock_TreePartSplit = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.a / 100) *
+      (1 + (s.TreeCapped + 40 * s.TreeStats.h.b) / 100)
+    );
+  };
+  Blocks._customBlock_TreeCapConstFn = function () {
+    var s = state();
+    return Math.min(
+      Math.min(90 + s.TreeLevel, 98 + s.TreeBase),
+      Blocks._customBlock_TreeReads() * 20,
+    );
+  };
+  // Spec 010 (T162): a stat multiplier on a second running total the root builds itself and adds to its scratch total
+  // (the Obol stat multi inside TotalStats); a list returned as a copy beside a second list (the list the root returns
+  // has no path).
+  Blocks._customBlock_TreeStatMulti = function () {
+    var s = state();
+    var d = dnsm();
+    s.DummyNumbersStatManager = new StringMap();
+    s.DummyNumbersStatManager.h.tot = s.TreeBase;
+    d.TreeStatTwo = new StringMap();
+    d.TreeStatTwo.h.v = s.TreeLevel + s.TreeBase;
+    d.TreeStatTwo.h.v =
+      d.TreeStatTwo.h.v *
+      (1 + (Blocks._customBlock_TreeReads() + 40 * s.TreeStats.h.b) / 100);
+    s.DummyNumbersStatManager.h.tot =
+      s.DummyNumbersStatManager.h.tot + d.TreeStatTwo.h.v;
+    return Math.floor(
+      s.DummyNumbersStatManager.h.tot * (1 + s.TreeStats.h.a / 100),
+    );
+  };
+  Blocks._customBlock_TreeTwoListsCopy = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeListC = [];
+    d.TreeListD = [];
+    d.TreeListC.push(s.TreeLevel + 1);
+    d.TreeListD.push(s.TreeBase + 1);
+    return d.TreeListC.slice();
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;
