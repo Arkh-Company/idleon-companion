@@ -3,6 +3,8 @@
 // place does not decide between two passages with that value, the answer key refuses it with the reason.
 import { expect, test } from "vitest";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
+import { LOG_CAP } from "../recording.ts";
+import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { answerKeyOfSteps } from "./answer-key.ts";
 
@@ -87,19 +89,12 @@ test("a step in 0 and then a child call in 0 written with `=`: both came before 
   );
 });
 
-test("a path written twice with the same value, before and after the read: the read opens the write it saw", () => {
-  // `DNSM.p = A(1) * 2`, `return 5 + DNSM.p`'s step, then `DNSM.p = B(2) * 3` again, also 6
-  const twice = recordingOf(
+// `DNSM.p = A(1) * 2`, `return 5 + DNSM.p`'s step, then `DNSM.p = B(2) * 3` again, also 6, with the root's reads
+const twice = (r: RecNode["r"], rx: RecNode["rx"]) => {
+  const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
-      {
-        b: "InventedRoot",
-        a: [0, 0, 0],
-        v: 11,
-        c: [2, 3],
-        r: [["DNSM.p", 6, 1]],
-        rx: [["DNSM.p", 6, 1, 1]],
-      },
+      { b: "InventedRoot", a: [0, 0, 0], v: 11, c: [2, 3], r, rx },
       { b: "InventedA", a: [1], v: 3, pxi: 0 },
       { b: "InventedB", a: [2], v: 2, pxi: 2 },
     ],
@@ -109,7 +104,7 @@ test("a path written twice with the same value, before and after the read: the r
     ],
     { root: 0 },
   );
-  const key = answerKeyOfSteps(twice, {
+  return answerKeyOfSteps(rec, {
     steps: [
       { v: 6, e: op("*", { t: "call", id: 2, v: 3 }, { t: "num", v: 2 }, 6) },
       {
@@ -121,11 +116,44 @@ test("a path written twice with the same value, before and after the read: the r
     checks: [],
     stepAt: [0, 1, 2],
   });
+};
+const refsVia = (key: ReturnType<typeof answerKeyOfSteps>) => {
   if ("error" in key) throw new Error(key.reason);
-  expect(key.pools.flatMap((p) => p.terms.map((t) => [t.ref, t.via]))).toEqual([
+  return key.pools.flatMap((p) => p.terms.map((t) => [t.ref, t.via]));
+};
+const reasonOf = (key: ReturnType<typeof answerKeyOfSteps>) =>
+  "reason" in key ? key.reason : "no refusal";
+
+test("a path written twice with the same value, before and after the read: the read opens the write it saw", () => {
+  expect(refsVia(twice([["DNSM.p", 6, 1]], [["DNSM.p", 6, 1, 1]]))).toEqual([
     ["5", []],
     ["InventedA(1)", ["DNSM.p"]],
   ]);
+});
+
+test("the read after both writes opens the second one, by the seq of the write it saw", () => {
+  expect(refsVia(twice([["DNSM.p", 6, 2]], undefined))).toEqual([
+    ["5", []],
+    ["InventedB(2)", ["DNSM.p"]],
+  ]);
+});
+
+test("two reads that saw the two writes (seq 1 and 2): the place does not decide, refused", () => {
+  const rx: RecNode["rx"] = [
+    ["DNSM.p", 6, 1, 1],
+    ["DNSM.p", 6, 3, 2],
+  ];
+  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toMatch(
+    /a posição não decide entre elas/,
+  );
+});
+
+test("a step log at the cap: a later write of the path, by another call, may be what an unlogged read saw, refused", () => {
+  const rx: NonNullable<RecNode["rx"]> = [["DNSM.p", 6, 1, 1]];
+  while (rx.length < LOG_CAP) rx.push(["InventedPad", 0, 0]);
+  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toMatch(
+    /a posição não decide entre elas/,
+  );
 });
 
 test("two child calls that start at the same place give two writes in 0: the place does not decide, refused", () => {
