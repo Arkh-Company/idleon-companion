@@ -54,7 +54,10 @@ export function bootRecorder(
   code: string,
   pak: Uint8Array,
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
-  /** Keep an infinite number as a number (spec 010, T162: the answer key only); the live tree gets null, as always. */
+  /**
+   * Keep an infinite number as a number, and the `vp` of a call (the state path of the list or the map it returned)
+   * (spec 010, T162: the answer key only); the live tree gets null, as always, and no `vp`.
+   */
   { infinite = false }: { infinite?: boolean } = {},
 ): {
   context: Context;
