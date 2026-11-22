@@ -283,6 +283,10 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
   - Cases: o teste "uma receita por número" (T023) passa com os ids novos.
 - [X] T148 [P] A sonda vê o zero do acumulador posto no começo de um laço `for` (`arcade-ball-bonus`, `research-insight-rate`) em `answer-key.ts` (research R1)
   - Cases: um bloco inventado com o zero no init do `for` dá `chain`, não `outOfRule`.
+- [ ] T150 [P] Folha só com prova também quando uma leitura e uma chamada filha têm o valor final (`answer-key.ts:326`): a chamada filha com o valor final vence ("a raiz só repassa uma chamada"); teste com um bloco inventado que lê um atributo 7 e devolve uma chamada que dá 7 (revisão da continuação, 22/11)
+- [ ] T151 Portão e dois caminhos fora do `return` (as 21 raízes da segunda sonda: Mining e Chop Speed, Multi-Ore, Gilded Stamp Chance…): o gabarito acha a condição gravada dentro do último passo e a trata como a camada ❓ (spec, Open Questions 21/11: alvo = só o caminho padrão, estado = ❓ com os caminhos); teste com um bloco inventado `x = cond ? a : b; return x * k`
+- [ ] T152 Raiz "rotina na cópia" (`constr-build-rate`): `root` aceita `{ routine: <evento do jogo>, sum: <caminho do estado> }`; o gravador roda o evento só na cópia de gravação e a raiz é a soma do estado que ele escreve; o Total Build Rate é a soma das casas do Cog Board × (1 + % das engrenagens) (spec, Open Questions 22/11); teste com um evento inventado
+- [ ] T153 Commit de dados: `talents-max-level` vira a soma de `WorkbenchStuff(maxBookLv)` e `RunCodeOfTypeXforThingY(AllTalentLV)`; saem `gfood-quantity` e `storage-slots-total` do catálogo (287); as referências do `part` das 7 raízes recusadas (Market Day e Night, Vault, Glimbo, Exotic, Bubble cost Bits e Item) acertadas pelas chaves que a gravação mostra
 - [ ] T149 [sessão] Sonda das raízes de novo: `just trees roots` no PC do Vinicius (depende de T143–T148) — **Parada:** se sobrar raiz fora da regra, a tabela vai ao Vinicius.
 
 **Checkpoint**: `just check` passa; a decisão das raízes fora da regra está registrada.
