@@ -9,7 +9,7 @@ import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint, BlueprintStage } from "./blueprint.ts";
-import { refKey } from "./refs.ts";
+import { callArgs, refKey } from "./refs.ts";
 
 export type TreesMode = "check" | "draft" | "roots";
 const MODES: readonly string[] = ["check", "draft", "roots"];
@@ -73,16 +73,30 @@ export function checkPlan(
   return { lock, notWritten: ids.filter((id) => !lock.includes(id)) };
 }
 
-export const rootCallOf = (bp: Blueprint): RootCall => [
-  bp.root.ref.call,
-  bp.root.ref.args,
-];
+/** The root's call (a root of one call), with `{character}` in its arguments resolved. */
+export function rootCallOf(bp: Blueprint, character = 0): RootCall {
+  const { ref } = bp.root;
+  if (!ref) throw new Error(`a raiz de ${bp.id} é uma soma de chamadas`);
+  return [ref.call, callArgs(ref, character)];
+}
 
-export type RootForm =
-  | AnswerKey["form"]
-  | "outOfRule"
-  | "liveMap"
-  | "error";
+/** Every call the root records: its one call, or each call of a sum, in order. */
+export const rootCallsOf = (bp: Blueprint, character = 0): RootCall[] =>
+  bp.root.calls
+    ? bp.root.calls.map((c) => [c.call, callArgs(c, character)] as const)
+    : [rootCallOf(bp, character)];
+
+/** The recorder's copy of the state with the root's marker set on it (never the save, never the running app). */
+export function mosaicWith(
+  mosaic: string,
+  scratch: Readonly<Record<string, string | number>> | undefined,
+): string {
+  if (!scratch) return mosaic;
+  const m = JSON.parse(mosaic) as { attrs: Record<string, unknown> };
+  return JSON.stringify({ ...m, attrs: { ...m.attrs, ...scratch } });
+}
+
+export type RootForm = AnswerKey["form"] | "outOfRule" | "liveMap" | "error";
 export interface RootProbe {
   id: string;
   /** The root's reference key. */
@@ -97,14 +111,27 @@ export interface RootProbe {
 const NO_VALUE =
   "a raiz não deu número: pede o mapa vivo, ou a chamada da raiz está errada";
 
-/** Records one sketch's root and classifies its form (research R1); a recording that fails is an `error`, by kind. */
+/**
+ * Records one sketch's root and classifies its form (research R1); a recording or an answer key that fails, or a call
+ * of the root that fails, is an `error` of that root, by kind.
+ */
 export function probeRoot(
-  record: (root: RootCall) => Recording,
+  record: (
+    roots: readonly RootCall[],
+    scratch?: Readonly<Record<string, string | number>>,
+  ) => Recording,
   ops: readonly Op[],
   bp: Blueprint,
+  character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const base = { id: bp.id, call: refKey(bp.root.ref, 0) };
+  const { ref, calls, part, scratch } = bp.root;
+  const base = {
+    id: bp.id,
+    call: ref
+      ? refKey(ref, character)
+      : `sum of ${String(calls?.length ?? 0)} calls`,
+  };
   const done = (
     form: RootForm,
     pools: PoolKind[],
@@ -119,11 +146,24 @@ export function probeRoot(
   // A root that breaks is an error of its own: the run goes on to the others.
   let stage = "a gravação";
   try {
-    const rec: Recording = record(rootCallOf(bp));
-    const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
-    if (typeof top?.v !== "number") return done("liveMap", [], NO_VALUE);
+    const roots = rootCallsOf(bp, character);
+    const rec: Recording = record(roots, scratch);
+    const tops = (rec.nodes[rec.root ?? -1]?.c ?? [])
+      .slice(0, roots.length)
+      .map((id) => rec.nodes[id]);
+    // a call that failed (the recorder marks it) or gave no number: the live map, or a wrong call
+    if (
+      tops.length < roots.length ||
+      tops.some((n) => typeof n?.v !== "number")
+    )
+      return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";
-    const key = answerKey(rec, ops);
+    const shape = calls
+      ? { sum: calls.length }
+      : part
+        ? { part: part.map((r) => refKey(r, character)) }
+        : null;
+    const key = answerKey(rec, ops, shape);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(
       key.form,

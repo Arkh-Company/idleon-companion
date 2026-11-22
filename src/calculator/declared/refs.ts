@@ -11,10 +11,19 @@ const ANY = "[*]";
 const resolve = (read: string, character: number): string =>
   read.replaceAll(CHARACTER, String(character));
 
+/** A call's arguments as the game gets them: an argument `{character}` is the tree's character. */
+export const callArgs = (
+  ref: Extract<Ref, { call: string }>,
+  character: number,
+): (string | number)[] =>
+  ref.args.map((a) => (a === CHARACTER ? character : a));
+
 /** The key that ties a blueprint node to an answer-key term and a recorded node: `Block(args in JSON)`, or the path. */
 export const refKey = (ref: Ref, character: number): string =>
   "call" in ref
-    ? `${ref.call}(${ref.args.map((a) => JSON.stringify(a)).join(",")})`
+    ? `${ref.call}(${callArgs(ref, character)
+        .map((a) => JSON.stringify(a))
+        .join(",")})`
     : resolve(ref.read, character);
 
 /** The recorded read a path stands for: with `*`, the first one of any character and how many matched. */
@@ -41,7 +50,7 @@ export function matchRead(
 /** Spec 008's piece key, so `values`, "Where this goes" and the radar read it as today. */
 export const pieceKeyOf = (ref: Ref, character: number): string =>
   "call" in ref
-    ? JSON.stringify([character, ref.call, ...ref.args])
+    ? JSON.stringify([character, ref.call, ...callArgs(ref, character)])
     : JSON.stringify([character, resolve(ref.read, character)]);
 
 /** `<number>/<pool>/<system>/<key>/<key>…`: the blueprint's keys, never the raw reference. */

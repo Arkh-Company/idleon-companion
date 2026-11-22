@@ -268,7 +268,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
 - [X] T144 O gabarito com a camada de topo em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T143)
   - Signatures: `AnswerKey` ganha `top: TopLayer[]` com `TopLayer = { kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div"; value?: number; before: number; after: number }`; `form` ganha `"leaf"`.
   - Regra: a camada é tirada antes da regra dos pools; o resto segue a FR-002c sem mudança. Nada de palpite: uma forma que não for camada conhecida continua `outOfRule` com o motivo.
-- [ ] T145 Testes e código de duas formas de raiz novas em `src/calculator/declared/blueprint.ts`, `answer-key.ts` e `real-trees-run.ts` (spec, Open Questions 21/11; ADR 0010: a receita nunca guarda conta)
+- [X] T145 Testes e código de duas formas de raiz novas em `src/calculator/declared/blueprint.ts`, `answer-key.ts` e `real-trees-run.ts` (spec, Open Questions 21/11; ADR 0010: a receita nunca guarda conta)
   - **Soma de chamadas** (Tome Score): `root` aceita `{ combine: "sum"; calls: { call: string; args: (number | string)[] }[] }`; o gabarito grava cada chamada e soma.
   - **Parte de uma chamada** (Glimbo, Vault, Exotic, Market Day e Night, Bubble cost Bits e Item): `root` aceita `{ call, args, part: <referência ao passo gravado> }`; o gabarito grava a chamada original e o valor da raiz é o do passo indicado (o redutor dentro do custo, por exemplo), tirado da gravação; nenhuma conta fica na receita.
   - **Marcador na cópia de gravação** (Brew Speed): `root` aceita `scratch: { [atributo]: valor }`, posto só na cópia do jogo usada para gravar, antes da chamada (o `gimmeBrewSPDnonLiquid`); nunca no save, nunca no app em execução.

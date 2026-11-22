@@ -2,6 +2,7 @@
 // the recording, the character markers, the piece key of spec 008 and the node's id.
 import { expect, test } from "vitest";
 import {
+  callArgs,
   hasRawCharacterIndex,
   isPathRead,
   matchRead,
@@ -20,6 +21,15 @@ test("a call's key is the block and its arguments in JSON, as the prototype wrot
   expect(refKey({ call: "TotalStats", args: ["Drop_Rarity", 0, 0] }, 2)).toBe(
     'TotalStats("Drop_Rarity",0,0)',
   );
+});
+
+test("a call's argument {character} is the tree's character, as the game passes it (WorkbenchStuff PlayerBuildSpd)", () => {
+  const ref = { call: "Divinity", args: ["DivPerHr_EXP", "{character}", 0] };
+  expect(refKey(ref, 3)).toBe('Divinity("DivPerHr_EXP",3,0)');
+  expect(pieceKeyOf(ref, 3)).toBe(
+    JSON.stringify([3, "Divinity", "DivPerHr_EXP", 3, 0]),
+  );
+  expect(callArgs(ref, 3)).toEqual(["DivPerHr_EXP", 3, 0]);
 });
 
 test("a read's key is its path, with the tree's character in place of {character}", () => {

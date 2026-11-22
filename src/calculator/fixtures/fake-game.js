@@ -1420,6 +1420,25 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeLayerConstant = function () {
     return 7;
   };
+  // Spec 010 (T145): a factor of a product, the part a blueprint can point at; a marker that changes the path, put
+  // only in the copy the recorder runs on; a call that fails.
+  Blocks._customBlock_TreeDeclFactor = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeReads() *
+      (Blocks._customBlock_TreeLoop() * s.TreeTwins[0]) *
+      s.TreeBase
+    );
+  };
+  Blocks._customBlock_TreeDeclMarked = function () {
+    var s = state();
+    if (s.TreeMark === "gimme")
+      return Blocks._customBlock_TreeReads() * s.TreeBase;
+    return Blocks._customBlock_TreeReads() + s.TreeBase;
+  };
+  Blocks._customBlock_TreeDeclFails = function () {
+    return state().TreeMissing.h.v + 1;
+  };
   // Spec 010 (T148): the running total set to 0 in the init of a for loop, summed in the loop, then multiplied.
   Blocks._customBlock_TreeLoopZero = function () {
     var list = state().TreeList;

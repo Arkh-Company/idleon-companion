@@ -248,6 +248,50 @@ test("each invented blueprint of the tests (fixtures/blueprints) loads complete 
   });
 });
 
+test("the root's shapes (spec, Open Questions 21/11): a sum of calls, a part of a call, a marker on the recording's copy", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const call = (n: number) => ({ call: "Invented", args: ["Pts", n, 0] });
+  expect(
+    sketch({ name: "Invented", combine: "sum", calls: [call(0), call(1)] }),
+  ).toMatchObject({ ok: true, stage: "sketch" });
+  expect(
+    sketch({
+      name: "Invented",
+      ref: call(0),
+      part: [
+        { call: "Other", args: [38, 0] },
+        { read: "OptionsListAccount[62]" },
+      ],
+    }),
+  ).toMatchObject({ ok: true });
+  expect(
+    sketch({ name: "Invented", ref: call(0), scratch: { TreeMark: "gimme" } }),
+  ).toMatchObject({ ok: true });
+  for (const [root, reason] of [
+    [{ name: "Invented", combine: "sum", calls: [] }, /calls/],
+    [{ name: "Invented", combine: "sum", calls: [{ read: "A[1]" }] }, /calls/],
+    [{ name: "Invented", combine: "product", calls: [call(0)] }, /combine/],
+    [
+      { name: "Invented", combine: "sum", calls: [call(0)], ref: call(1) },
+      /ref/,
+    ],
+    [{ name: "Invented", ref: call(0), part: "the third step" }, /part/],
+    [{ name: "Invented", ref: call(0), part: [] }, /part/],
+    [{ name: "Invented", ref: call(0), part: [{ formula: "a*b" }] }, /part/],
+    [
+      { name: "Invented", ref: call(0), scratch: { TreeMark: { a: 1 } } },
+      /scratch/,
+    ],
+    [{ name: "Invented" }, /ref/],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
+      reason,
+    );
+  }
+});
+
 test("only id and root is a sketch", () => {
   const { id, root } = complete();
   expect(parseBlueprint({ id, root }, ctx)).toMatchObject({

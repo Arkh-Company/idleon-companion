@@ -42,13 +42,24 @@ export interface BlueprintPending {
   where: string;
   kind: "name" | "system" | "leaf" | "descend";
 }
+export type CallRef = Extract<Ref, { call: string }>;
+/**
+ * The root (spec, Open Questions 21/11; ADR 0010: never a calculation): one call, or the sum of several calls (Tome
+ * Score); a call may name its `part`, the recorded step that holds those references (a reducer inside a cost), and a
+ * `scratch` marker, set only on the copy of the game the recorder runs on, before the call.
+ */
+export interface BlueprintRoot {
+  name: string;
+  nameProof?: NameProof;
+  ref?: CallRef;
+  combine?: "sum";
+  calls?: readonly CallRef[];
+  part?: readonly Ref[];
+  scratch?: Readonly<Record<string, string | number>>;
+}
 export interface Blueprint {
   id: string;
-  root: {
-    name: string;
-    nameProof?: NameProof;
-    ref: Extract<Ref, { call: string }>;
-  };
+  root: BlueprintRoot;
   /** Empty in a sketch. */
   pools: readonly BlueprintPool[];
   pending?: readonly BlueprintPending[];
@@ -251,6 +262,62 @@ function checkPools(raw: unknown, w: Walk): void {
   });
 }
 
+const isCall = (x: unknown): boolean => isObj(x) && "call" in x;
+
+function checkRoot(raw: unknown): void {
+  const root = obj(
+    raw,
+    ["name", "nameProof", "ref", "combine", "calls", "part", "scratch"],
+    "root",
+  );
+  checkName(root.name, "root");
+  if (root.nameProof !== undefined) checkProof(root.nameProof, "root");
+  if (root.combine !== undefined) {
+    if (root.combine !== "sum") no("root", "combine só é sum");
+    if (
+      root.ref !== undefined ||
+      root.part !== undefined ||
+      root.scratch !== undefined
+    )
+      no("root", "a soma de chamadas não tem ref, part nem scratch");
+    list(root.calls, "root", "calls").forEach((c, i) => {
+      if (!isCall(c)) no("root", "calls só tem chamadas");
+      checkRef(c, `root/calls/${String(i)}`);
+    });
+    return;
+  }
+  if (root.calls !== undefined) no("root", "calls só com combine: sum");
+  if (!isCall(root.ref)) no("root", "a raiz é uma chamada (ref.call)");
+  checkRef(root.ref, "root");
+  if (root.part !== undefined) {
+    if (!Array.isArray(root.part) || root.part.length === 0)
+      no("root", "part é uma lista de referências");
+    (root.part as unknown[]).forEach((r, i) => {
+      if (!isObj(r) || !("call" in r || "read" in r))
+        no("root", "part só tem referências (call ou read)");
+      checkRef(r, `root/part/${String(i)}`);
+    });
+  }
+  if (root.scratch !== undefined) {
+    const m = obj(
+      root.scratch,
+      Object.keys(root.scratch as object),
+      "root/scratch",
+    );
+    const entries = Object.entries(m);
+    if (
+      entries.length === 0 ||
+      !entries.every(
+        ([k, v]) =>
+          IDENT.test(k) &&
+          ((typeof v === "string" && v.length <= 60) ||
+            (typeof v === "number" && Number.isFinite(v))),
+      )
+    )
+      no("root", "scratch é { atributo: texto curto ou número }");
+  }
+}
+
 export function parseBlueprint(
   raw: unknown,
   ctx: { fileId: string; systemIds: ReadonlySet<string> },
@@ -260,12 +327,7 @@ export function parseBlueprint(
   try {
     const bp = obj(raw, ["id", "root", "pools", "pending"], "");
     if (bp.id !== ctx.fileId) no("id", "id diferente do nome do arquivo");
-    const root = obj(bp.root, ["name", "nameProof", "ref"], "root");
-    checkName(root.name, "root");
-    if (root.nameProof !== undefined) checkProof(root.nameProof, "root");
-    if (!isObj(root.ref) || !("call" in root.ref))
-      no("root", "a raiz é uma chamada (ref.call)");
-    checkRef(root.ref, "root");
+    checkRoot(bp.root);
     if (bp.pools === undefined && bp.pending === undefined)
       return {
         ok: true,

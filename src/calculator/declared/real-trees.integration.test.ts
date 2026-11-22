@@ -17,6 +17,7 @@ import type { Blueprint, BlueprintStage } from "./blueprint.ts";
 import { BLUEPRINTS } from "./blueprints.ts";
 import {
   checkPlan,
+  mosaicWith,
   outPath,
   probeRoot,
   rootsReport,
@@ -60,6 +61,17 @@ function blueprints(): Map<string, { stage: BlueprintStage; bp: Blueprint }> {
     if (r.ok) out.set(fileId, { stage: r.stage, bp: r.blueprint });
   }
   return out;
+}
+
+/** The active character's place in the snapshot's list of characters; 0 when the snapshot does not say. */
+function activeCharacter(snapshot: string): number {
+  const snap = readJson(snapshot) as {
+    attrs?: { UserInfo?: unknown; GetPlayersUsernames?: unknown };
+  };
+  const info = snap.attrs?.UserInfo;
+  const names = snap.attrs?.GetPlayersUsernames;
+  if (!Array.isArray(info) || !Array.isArray(names)) return 0;
+  return Math.max(0, names.indexOf(info[0]));
 }
 
 /** The snapshot with the newest `vars-*.json` of its folder, as the recorder takes it. */
@@ -109,6 +121,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         );
         lines.push(`boot\t${String(Math.round(performance.now() - t0))} ms`);
         const state = mosaic(snapshot);
+        const character = activeCharacter(snapshot);
         const probes: RootProbe[] = [];
         for (const id of ids) {
           const b = all.get(id);
@@ -117,16 +130,17 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             continue;
           }
           const probe = probeRoot(
-            (root) =>
+            (roots, scratch) =>
               recorder.record(
-                state,
-                [root, ...EXTRA_ROOTS],
+                mosaicWith(state, scratch),
+                [...roots, ...EXTRA_ROOTS],
                 TREE_RECIPE,
                 false,
                 FOLLOW_CALLS,
               ),
             recorder.ops,
             b.bp,
+            character,
           );
           probes.push(probe);
           lines.push(summaryLine(id, { result: probe.form, ms: probe.ms }));

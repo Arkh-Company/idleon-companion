@@ -8,12 +8,14 @@ import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
 import type { Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
+import type { RootCall } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
 import {
   checkPlan,
   outPath,
+  mosaicWith,
   probeRoot,
-  rootCallOf,
+  rootCallsOf,
   rootsReport,
   summaryLine,
   targetIds,
@@ -109,8 +111,14 @@ const sketch = (id: string, call: string): Blueprint => ({
   root: { name: "Invented", ref: { call, args: [0, 0, 0] } },
   pools: [],
 });
-const record = (root: ReturnType<typeof rootCallOf>) =>
-  recorder.record(mosaicOf(), [root], { recompute: [], builders: [] });
+const record = (
+  roots: readonly RootCall[],
+  scratch?: Readonly<Record<string, string | number>>,
+) =>
+  recorder.record(mosaicWith(mosaicOf(), scratch), roots, {
+    recompute: [],
+    builders: [],
+  });
 
 test("the probe records each sketch's root and classifies its form", () => {
   const probes = [
@@ -182,4 +190,88 @@ test("the summary line has only the id, the result and the time, never a charact
     JSON.stringify(rootsReport(probes)),
   ].join("\n");
   for (const name of CHARACTERS) expect(text).not.toContain(name);
+});
+
+// Spec 010, T145: the root's shapes of the blueprint (spec, Open Questions 21/11; ADR 0010).
+const rooted = (id: string, root: Partial<Blueprint["root"]>): Blueprint => ({
+  id,
+  root: { name: "Invented", ...root },
+  pools: [],
+});
+
+test("a sum of calls: each call recorded and summed, one Additive pool of the calls", () => {
+  const bp = rooted("summed", {
+    combine: "sum",
+    calls: [
+      { call: "TreeReads", args: [0, 0, 0] },
+      { call: "TreeLoop", args: [0, 0, 0] },
+    ],
+  });
+  expect(rootCallsOf(bp, 0)).toEqual([
+    ["TreeReads", [0, 0, 0]],
+    ["TreeLoop", [0, 0, 0]],
+  ]);
+  expect(probeRoot(record, recorder.ops, bp)).toMatchObject({
+    call: "sum of 2 calls",
+    form: "sum",
+    pools: ["additive"],
+    reason: null,
+  });
+});
+
+test("a part of a call: the call is recorded whole, and the root is the recorded step that holds the references", () => {
+  const bp = rooted("factor", {
+    ref: { call: "TreeDeclFactor", args: [0, 0, 0] },
+    part: [{ call: "TreeLoop", args: [] }, { read: "TreeTwins[0]" }],
+  });
+  expect(probeRoot(record, recorder.ops, bp)).toMatchObject({
+    form: "expression",
+    pools: ["multi"],
+    reason: null,
+  });
+  const missing = rooted("factor-missing", {
+    ref: { call: "TreeDeclFactor", args: [0, 0, 0] },
+    part: [{ call: "TreeNowhere", args: [] }],
+  });
+  expect(probeRoot(record, recorder.ops, missing)).toMatchObject({
+    form: "outOfRule",
+  });
+});
+
+test("a marker set only on the recording's copy changes the block's path", () => {
+  const plain = rooted("plain", {
+    ref: { call: "TreeDeclMarked", args: [0, 0, 0] },
+  });
+  const marked = rooted("marked", {
+    ref: { call: "TreeDeclMarked", args: [0, 0, 0] },
+    scratch: { TreeMark: "gimme" },
+  });
+  expect(probeRoot(record, recorder.ops, plain).pools).toEqual(["additive"]);
+  expect(probeRoot(record, recorder.ops, marked).pools).toEqual(["multi"]);
+  // the copy only: the mosaic given to the recorder keeps its own attributes
+  expect(JSON.parse(mosaicWith(mosaicOf(), undefined))).toEqual(
+    JSON.parse(mosaicOf()),
+  );
+});
+
+test("a call that fails stops its root only, never the run: no value, as the live map", () => {
+  const sum = rooted("summed-failing", {
+    combine: "sum",
+    calls: [
+      { call: "TreeReads", args: [0, 0, 0] },
+      { call: "TreeDeclFails", args: [0, 0, 0] },
+    ],
+  });
+  const one = rooted("failing", {
+    ref: { call: "TreeDeclFails", args: [0, 0, 0] },
+  });
+  expect(probeRoot(record, recorder.ops, sum).form).toBe("liveMap");
+  expect(probeRoot(record, recorder.ops, one).form).toBe("liveMap");
+  expect(
+    probeRoot(
+      record,
+      recorder.ops,
+      rooted("next", { ref: { call: "TreeLayerRead", args: [0, 0, 0] } }),
+    ).form,
+  ).toBe("leaf");
 });
