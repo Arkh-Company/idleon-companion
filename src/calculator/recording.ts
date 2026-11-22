@@ -4,6 +4,9 @@
 /** A value as recorded: numbers and yes/no as they are; any other thing as a label like "(text)" or a game id. */
 export type RecValue = number | boolean | string | null;
 
+/** How many entries recorder.js keeps in a call's step log (`rx`); the rest is dropped. */
+export const LOG_CAP = 20_000;
+
 export interface RecNode {
   id: number;
   /** The block's name, or a structural label: "(setup: game helpers)", "(root)"… */

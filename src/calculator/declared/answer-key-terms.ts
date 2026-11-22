@@ -34,7 +34,10 @@ export interface AnswerTerm {
   nodes: (number | null)[];
   /** The term's value as it enters the pool, before its weight. */
   value: number;
-  /** 1, or 1/100 when the game divides the whole sum by 100; negative for a subtracted term. */
+  /**
+   * 1, or 1/100 when the game divides the whole sum by 100; negative for a subtracted term; in a ➗ line, times the
+   * `scale` of a constant that multiplies the sum the term is in (the 0.65 of W7).
+   */
   weight: number;
   /** In a ➗ line, the constant that multiplies the sum the term is in (the 0.65 of W7, T163), already in `weight`. */
   scale?: number;

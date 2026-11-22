@@ -229,6 +229,9 @@ function checkPools(raw: unknown, w: Walk): void {
 }
 
 const isCall = (x: unknown): boolean => isObj(x) && "call" in x;
+/** A state path of the root (branch, sum): the ref.read's checks, a character's index never written out. */
+const isStatePath = (p: unknown): boolean =>
+  typeof p === "string" && isPathRead(p) && !hasRawCharacterIndex(p);
 
 function checkRoot(raw: unknown): void {
   const root = obj(
@@ -259,8 +262,10 @@ function checkRoot(raw: unknown): void {
     no("root", "item é o índice de um item da lista que a chamada ref devolve");
   if (root.item !== undefined && root.part !== undefined)
     no("root", "item não vai junto com part");
-  const okBranch = typeof root.branch === "string" && isPathRead(root.branch);
-  if (root.branch !== undefined && (root.part === undefined || !okBranch))
+  if (
+    root.branch !== undefined &&
+    (root.part === undefined || !isStatePath(root.branch))
+  )
     no("root", "branch é o caminho da lista que o ramo procura, só com part");
   if (root.routine !== undefined) {
     checkRoutine(root);
@@ -329,7 +334,7 @@ function checkRoutine(root: Record<string, unknown>): void {
     typeof root.sum === "string"
       ? root.sum.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior")
       : null;
-  if (sum === null || !isPathRead(sum))
+  if (sum === null || !isStatePath(sum))
     no("root", "sum é um caminho do estado");
 }
 

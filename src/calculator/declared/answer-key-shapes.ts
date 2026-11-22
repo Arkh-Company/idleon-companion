@@ -2,6 +2,7 @@
 // blueprint never stores a calculation): a sum of calls (Tome Score), each recorded under the root; a part of a call,
 // terms of its recorded pool named by reference (a reducer multiplied loose with the cost); and a routine run on the
 // recorder's copy, the sum of the state it writes (the Cog Board). All read from the recording only.
+import { LOG_CAP } from "../recording.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import type { AnswerKey } from "./answer-key.ts";
 import { callRef, near, outOfRule } from "./answer-key-terms.ts";
@@ -186,7 +187,14 @@ export function partInWriters(
     if (w.node === null || !under(w.node)) continue;
     const from = lastXi.get(w.node) ?? 0;
     lastXi.set(w.node, w.xi);
-    if (branch !== undefined && !found(w.node, from, w.xi)) continue;
+    if (branch !== undefined) {
+      // a log cut at the recorder's cap could leave turns of the branch out
+      if ((rec.nodes[w.node]?.rx?.length ?? 0) >= LOG_CAP)
+        return outOfRule(
+          "o log da chamada chegou ao limite antes das voltas do ramo",
+        );
+      if (!found(w.node, from, w.xi)) continue;
+    }
     if (read.has(w.path) && typeof w.v === "number")
       writers.set(`${String(w.node)} ${w.path}`, {
         node: w.node,
