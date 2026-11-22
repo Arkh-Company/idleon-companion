@@ -2,9 +2,16 @@
   "id": "talents-max-level",
   "root": {
     "name": "Talent Max LV",
-    "ref": {
-      "call": "SkillLevelsMAX",
-      "args": [0, 0, 0]
-    }
+    "combine": "sum",
+    "calls": [
+      {
+        "call": "WorkbenchStuff",
+        "args": ["maxBookLv", 0, 0]
+      },
+      {
+        "call": "RunCodeOfTypeXforThingY",
+        "args": ["AllTalentLV", "0"]
+      }
+    ]
   }
 }

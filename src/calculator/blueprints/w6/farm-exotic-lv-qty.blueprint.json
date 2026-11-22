@@ -4,7 +4,7 @@
     "name": "Exotic Level Qty multi",
     "ref": {
       "call": "FarmingStuffs",
-      "args": ["ExoticLVQTY", 0, 0]
+      "args": ["ExoticLVQTY", 1000, 0]
     },
     "part": [
       {

@@ -18563,12 +18563,13 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "arvore",
+    "destino": "dentro-de-arvore",
     "marca": "sim",
     "regra": 2,
     "motivo": "Quantas comidas há em cada pilha.",
     "tela": "Items › Equipment › Foods",
-    "prova": "estado `EquipmentQuantity` (posição 2)"
+    "prova": "estado `EquipmentQuantity` (posição 2)",
+    "motivo_destino": "Sonda das raízes (22/11): sai das árvores (spec 010, Open Questions de 22/11). É um contador e já aparece nas árvores da Golden Food."
   },
   {
     "id": "talents-bonus-each",
@@ -18662,7 +18663,7 @@
     "regra": 3,
     "motivo": "O nível máximo dos talentos, que vários sistemas aumentam; é o exemplo da exceção da regra 3.",
     "tela": "Talents: \"Lv x/y\" (o y)",
-    "prova": "estado `SkillLevelsMAX`; montado em `TotalTalentPoints` (outros talentos, `getbonus2`, níveis dos caldeirões da Alchemy, Meals, Upgrade Vault)"
+    "prova": "soma de `WorkbenchStuff` modo `maxBookLv` (Max Book LV) e `RunCodeOfTypeXforThingY` modo `AllTalentLV` (All Talent LV); estado `SkillLevelsMAX`, montado em `TotalTalentPoints`"
   },
   {
     "id": "talents-all-talent-lv",
@@ -20419,12 +20420,13 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "descartado",
     "marca": "sim",
     "regra": 3,
     "motivo": "É o número que a tela Storage mostra. Quatro sistemas de fora o aumentam: Construction (Chest Space), Gem Shop (item 109 e 5 pacotes), Event Shop (Storage Chest, Storage Vault) e Upgrade Vault (33), além dos baús do próprio Storage. Limite que vários sistemas de fora aumentam: exceção da regra 3. Substitui o `storage-slots`, que é uma parte dele (regra 5).",
     "tela": "",
-    "prova": "`ChestSlotsOwned`, montado em `Design_23_23_EveryScene.init` e em `ActorEvents_38._event_InvItem4custom`: 54 + baús usados (`InvStorageUsed`) + 2 × `TowerInfo`[4] (Chest Space) + pacotes `bun_i` (8), `bun_c` (16), `bon_a` (20) + 9 × `GemItemsPurchased`[109] + `Thingies(\"ExtraStorage\")`; mostrado em `ActorEvents_312._event_StorgInfoTALENT` como \"Storage_Slots_Owned:\""
+    "prova": "`ChestSlotsOwned`, montado em `Design_23_23_EveryScene.init` e em `ActorEvents_38._event_InvItem4custom`: 54 + baús usados (`InvStorageUsed`) + 2 × `TowerInfo`[4] (Chest Space) + pacotes `bun_i` (8), `bun_c` (16), `bon_a` (20) + 9 × `GemItemsPurchased`[109] + `Thingies(\"ExtraStorage\")`; mostrado em `ActorEvents_312._event_StorgInfoTALENT` como \"Storage_Slots_Owned:\"",
+    "motivo_destino": "Sonda das raízes (22/11): sai das árvores (spec 010, Open Questions de 22/11). Nenhum bloco do jogo faz a conta: é montado em eventos de cena e do inventário."
   },
   {
     "id": "acclv-account-lv",
