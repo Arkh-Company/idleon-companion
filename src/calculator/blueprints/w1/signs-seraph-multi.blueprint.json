@@ -5,6 +5,14 @@
     "ref": {
       "call": "StarSigns",
       "args": [0, 0, 0]
-    }
+    },
+    "part": [
+      {
+        "read": "Arcane[40]"
+      },
+      {
+        "read": "Lv0[18]"
+      }
+    ]
   }
 }

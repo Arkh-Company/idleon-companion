@@ -5,6 +5,27 @@
     "ref": {
       "call": "performETCaction",
       "args": ["MonsterRespawnTimeReset", 0, 0]
-    }
+    },
+    "part": [
+      {
+        "call": "Holes",
+        "args": ["B_UPG", 44, 10]
+      },
+      {
+        "call": "Shrine",
+        "args": [7]
+      },
+      {
+        "call": "chipBonuses",
+        "args": ["resp"]
+      },
+      {
+        "call": "EtcBonuses",
+        "args": ["47"]
+      },
+      {
+        "read": "DNSM.StarSigns.MobRespawn"
+      }
+    ]
   }
 }
