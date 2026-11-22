@@ -1,17 +1,22 @@
-// The top layer of a root (spec 010, FR-002c; spec, Open Questions 21/11): what the root does above its pools, from
-// outside in, as the code writes it. A round, a floor or a ceiling; the game's `min` with a constant is a Cap and its
-// `max` a Floor; a constant divided by a sum is a divisor (➗); a root that returns `test ? a : b` has a gate. Only
-// these: anything else stays below and goes to the pools' rule, or is refused there with the reason.
+// The top layer of a root (spec 010, FR-002c; spec, Open Questions 21 and 22/11): what the root does above its pools,
+// from outside in, as the code writes it. A round, a floor or a ceiling; the game's `min` is a Cap and its `max` a
+// Floor, with a constant limit or a limit that is a line of its own (it opens into its sources); a division `A ÷ B`
+// (➗): the numerator goes on to the pools, and each factor of B is a ➗ line; a root that returns `test ? a : b` has a
+// gate, and a condition outside the return has its two paths (branchesOf). Only these: anything else stays below and
+// goes to the pools' rule, or is refused there with the reason.
 import type { Op } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
+import type { AnswerTerm } from "./answer-key-terms.ts";
 
 export interface TopLayer {
   kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div";
-  /** The cap's or the floor's constant, the divisor's numerator, or the gate's test (1 yes, 0 no). */
+  /** The cap's or the floor's limit, a constant numerator of a division, or the gate's test (1 yes, 0 no). */
   value?: number;
   before: number;
   after: number;
+  /** A Cap's or a Floor's limit that is no constant: its sources. */
+  limit?: AnswerTerm[];
 }
 
 const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
@@ -20,11 +25,24 @@ const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
   ceil: "ceil",
 };
 
-/** The known layers of the root's last step, from outside in, and the rest below them. */
-export function peelTop(e: Expr): { layers: TopLayer[]; rest: Expr } {
+const bare = (e: Expr): Expr => (e.t === "def" ? bare(e.e) : e);
+const isLeaf = (e: Expr) => ["read", "call", "val", "num"].includes(bare(e).t);
+
+/**
+ * The known layers of the root's last step, from outside in, and the rest below them: with each layer whose limit is
+ * no constant, that limit's expression; with each division, its divisor's expression, in the same order.
+ */
+export function peelTop(e: Expr): {
+  layers: TopLayer[];
+  limits: Map<TopLayer, Expr>;
+  divisors: Expr[];
+  rest: Expr;
+} {
   const layers: TopLayer[] = [];
+  const limits = new Map<TopLayer, Expr>();
+  const divisors: Expr[] = [];
   for (;;) {
-    while (e.t === "def") e = e.e;
+    e = bare(e);
     const after = e.v;
     if (typeof after !== "number") break;
     if (e.t === "fn" && e.name !== null) {
@@ -41,16 +59,21 @@ export function peelTop(e: Expr): { layers: TopLayer[]; rest: Expr } {
         b &&
         e.args.length === 2
       ) {
+        const kind = e.name === "min" ? "cap" : "floor-min";
         const k = a.t === "num" ? a : b.t === "num" ? b : null;
-        const other = k === a ? b : a;
-        if (k && typeof k.v === "number" && typeof other.v === "number") {
-          layers.push({
-            kind: e.name === "min" ? "cap" : "floor-min",
-            value: k.v,
-            before: other.v,
+        // with no constant: the main path is the first one, unless it is a bare value and the other is not
+        const main = k ? (k === a ? b : a) : isLeaf(a) && !isLeaf(b) ? b : a;
+        const limit = main === a ? b : a;
+        if (typeof main.v === "number" && typeof limit.v === "number") {
+          const layer: TopLayer = {
+            kind,
+            value: limit.v,
+            before: main.v,
             after,
-          });
-          e = other;
+          };
+          layers.push(layer);
+          if (!k) limits.set(layer, limit);
+          e = main;
           continue;
         }
       }
@@ -58,17 +81,23 @@ export function peelTop(e: Expr): { layers: TopLayer[]; rest: Expr } {
     if (
       e.t === "op" &&
       e.o === "/" &&
-      e.l.t === "num" &&
       typeof e.l.v === "number" &&
       typeof e.r.v === "number"
     ) {
-      layers.push({ kind: "div", value: e.l.v, before: e.r.v, after });
-      e = e.r;
+      const n = bare(e.l);
+      layers.push({
+        kind: "div",
+        ...(n.t === "num" && typeof n.v === "number" ? { value: n.v } : {}),
+        before: e.r.v,
+        after,
+      });
+      divisors.push(e.r);
+      e = e.l;
       continue;
     }
     break;
   }
-  return { layers, rest: e };
+  return { layers, limits, divisors, rest: e };
 }
 
 /**

@@ -282,8 +282,10 @@ test("cond ? 0 : a + b (a gate): the layer [cond] over one Additive pool; the pa
 test("K ÷ (1 + Σ ÷ 100): the constant K and a divisor with the sources", () => {
   const key = keyOf("TreeLayerDiv");
   expect(layers(key)).toEqual([["div", 100, 1.88, key.final]]);
+  // the divisor is a ➗ line, never a pool (T154); the constant numerator has no pool
+  expect(key.pools).toEqual([]);
   expect(
-    key.pools.map((p) => [p.kind, p.terms.map((t) => [t.ref, t.weight])]),
+    key.divisors.map((p) => [p.kind, p.terms.map((t) => [t.ref, t.weight])]),
   ).toEqual([
     [
       "additive",

@@ -51,6 +51,8 @@ export interface AnswerKey {
   /** The layers above the pools, from outside in. */
   top: TopLayer[];
   pools: AnswerPool[];
+  /** Each factor of a top division's divisor, a ➗ line with its sources and constants (never a pool). */
+  divisors: AnswerPool[];
   /** What the trace had that the answer key skipped or crossed, by kind. */
   pollution: Record<string, number>;
 }
@@ -137,8 +139,8 @@ export function answerKeyOfSteps(
   const last = steps[i];
   const at = last ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
-  if (at) {
-    const peeled = peelTop(at.e);
+  const peeled = at ? peelTop(at.e) : null;
+  if (at && peeled) {
     layers.push(...peeled.layers);
     rest = peeled.rest;
     // a running total under the layer (Anvil Capacity: the chain, then a floor)
@@ -328,15 +330,55 @@ export function answerKeyOfSteps(
     const seen = new Set([at.step]);
     const u = r.unwrap(rest, [], true, new Set(seen));
     if (u.t === "op" && KIND[u.o]) return stretches(rest, at.step, seen);
+    // a curve with a constant (pow) is a term, its curve in the term's ⓘ: never a pool of its own
+    if (
+      u.t === "fn" &&
+      u.name === "pow" &&
+      u.args.some((a) => a.t === "num") &&
+      typeof u.v === "number"
+    ) {
+      const terms = termsOf([{ e: rest, w: 1, seen }], "additive");
+      return [
+        {
+          kind: "additive",
+          terms: kept(terms, null),
+          step: at.step,
+          after: u.v,
+        },
+      ];
+    }
     if (u.t === "read" || u.t === "num") return [];
     if (u.t === "call") throw new OutOfRule("a raiz só repassa uma chamada");
     if (u.t === "val") throw new OutOfRule("nenhum passo dá o valor final");
     throw new OutOfRule("a expressão da raiz não soma nem multiplica");
   }
 
+  /** Each factor of each top division's divisor, as a ➗ line; and each Cap's or Floor's limit, as its sources. */
+  function divisorsAndLimits(): AnswerPool[] {
+    if (!at || !peeled) return [];
+    const seen = new Set([at.step]);
+    for (const [layer, e] of peeled.limits)
+      layer.limit = termsOf([{ e, w: 1, seen }], "additive").map(strip);
+    return peeled.divisors.flatMap((b) =>
+      operands(b, "multi", 1, seen).map((f): AnswerPool => {
+        const kind = kindOf(f.e, f.seen) === "additive" ? "additive" : "multi";
+        const terms = kept(termsOf([f], kind), null);
+        const value = Number(f.e.v);
+        const parts =
+          kind === "additive"
+            ? terms.reduce((s, t) => s + t.value * t.weight, 0)
+            : terms.reduce((s, t) => s * t.value, 1);
+        const error = relDiff(parts, value);
+        return { kind, value, after: value, steps: [at.step], error, terms };
+      }),
+    );
+  }
+
   let raw: RawPool[];
+  let divisors: AnswerPool[];
   try {
     raw = acc ? chainPools(acc[1]) : expressionPools();
+    divisors = divisorsAndLimits();
   } catch (e) {
     if (e instanceof OutOfRule) return out(e.message);
     throw e;
@@ -384,7 +426,11 @@ export function answerKeyOfSteps(
   return {
     root: callRef(top),
     final,
-    form: acc ? "chain" : pools.length > 0 ? "expression" : "leaf",
+    form: acc
+      ? "chain"
+      : pools.length + divisors.length > 0
+        ? "expression"
+        : "leaf",
     accumulator: acc?.[0] ?? null,
     // each condition whose path the pools crossed is a ❓ layer, in the code's order
     top: [
@@ -399,6 +445,7 @@ export function answerKeyOfSteps(
         })),
     ],
     pools,
+    divisors,
     pollution: r.pollution,
   };
 }

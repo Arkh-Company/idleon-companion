@@ -1459,6 +1459,36 @@ lime.$scripts.N = function (_exports, $global) {
         : d.TreeGateChain.h.v * s.TreeTwins[0];
     return d.TreeGateChain.h.v;
   };
+  // Spec 010 (T154): the general top layer: a division with any numerator and a divisor of two factors; a cap whose
+  // limit is no constant; a floor and a cap nested; a curve, alone and as a term of a product.
+  Blocks._customBlock_TreeDivAny = function () {
+    var s = state();
+    return (
+      (s.TreeCapped - Blocks._customBlock_TreeReads()) /
+      ((1 + s.TreeStats.h.b / 100) * Blocks._customBlock_TreeLoop())
+    );
+  };
+  Blocks._customBlock_TreeCapAny = function () {
+    var s = state();
+    return Math.min(
+      Blocks._customBlock_TreeReads() + s.TreeBase,
+      s.TreeCapped / 10,
+    );
+  };
+  Blocks._customBlock_TreeCapNested = function () {
+    var s = state();
+    return Math.max(
+      Math.min(Blocks._customBlock_TreeReads() * 2, s.TreeCapped),
+      s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreePowTop = function () {
+    return Math.pow(2, state().TreeTwins[0]);
+  };
+  Blocks._customBlock_TreePowTerm = function () {
+    var s = state();
+    return 10 * Math.pow(s.TreeLevel, 0.5) * (1 + s.TreeStats.h.b / 100);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

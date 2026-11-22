@@ -46,6 +46,7 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
         terms,
       },
     ],
+    divisors: [],
     pollution: {},
   };
 }
@@ -88,6 +89,7 @@ export function partKey(
     ...key,
     final: value,
     top: [],
+    divisors: [],
     pools: [
       {
         kind: pool.kind,
@@ -154,6 +156,7 @@ export function routineKey(
         terms,
       },
     ],
+    divisors: [],
     pollution: {},
   };
 }
