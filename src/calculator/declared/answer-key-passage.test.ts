@@ -55,7 +55,77 @@ test("two passages in 0: each read opens the step that gave its own write, by th
 test("two passages in 0 with no place to tell their steps apart: refused with the reason", () => {
   const key = answerKeyOfSteps(rec, { steps, checks: [] });
   expect(key).toMatchObject({ error: "rootForm" });
-  expect("reason" in key ? key.reason : "").toMatch(/mais de uma passagem/);
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a posição não decide entre elas/,
+  );
+});
+
+test("a step in 0 and then a child call in 0 written with `=`: both came before the write, the place does not decide, refused", () => {
+  // `t = A(1) * 2`, then `DNSM.b = B(2)`, then `5 + DNSM.b`
+  const later = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      { b: "InventedRoot", a: [0, 0, 0], v: 5, c: [2, 3] },
+      { b: "InventedA", a: [1], v: 0, pxi: 0 },
+      { b: "InventedB", a: [2], v: 0, pxi: 1 },
+    ],
+    [{ path: "DNSM.b", node: 1, v: 0, xi: 1, seq: 1 }],
+    { root: 0 },
+  );
+  const sum = {
+    v: 5,
+    e: op("+", { t: "num", v: 5 }, { t: "read", p: "DNSM.b", v: 0 }, 5),
+  };
+  const key = answerKeyOfSteps(later, {
+    steps: [steps[0] ?? total, sum],
+    checks: [],
+    stepAt: [0, 1],
+  });
+  expect(key).toMatchObject({ error: "rootForm" });
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a posição não decide entre elas/,
+  );
+});
+
+test("a path written twice with the same value, before and after the read: the read opens the write it saw", () => {
+  // `DNSM.p = A(1) * 2`, `return 5 + DNSM.p`'s step, then `DNSM.p = B(2) * 3` again, also 6
+  const twice = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "InventedRoot",
+        a: [0, 0, 0],
+        v: 11,
+        c: [2, 3],
+        r: [["DNSM.p", 6, 1]],
+        rx: [["DNSM.p", 6, 1, 1]],
+      },
+      { b: "InventedA", a: [1], v: 3, pxi: 0 },
+      { b: "InventedB", a: [2], v: 2, pxi: 2 },
+    ],
+    [
+      { path: "DNSM.p", node: 1, v: 6, xi: 1, seq: 1 },
+      { path: "DNSM.p", node: 1, v: 6, xi: 3, seq: 2 },
+    ],
+    { root: 0 },
+  );
+  const key = answerKeyOfSteps(twice, {
+    steps: [
+      { v: 6, e: op("*", { t: "call", id: 2, v: 3 }, { t: "num", v: 2 }, 6) },
+      {
+        v: 11,
+        e: op("+", { t: "num", v: 5 }, { t: "read", p: "DNSM.p", v: 6 }, 11),
+      },
+      { v: 6, e: op("*", { t: "call", id: 3, v: 2 }, { t: "num", v: 3 }, 6) },
+    ],
+    checks: [],
+    stepAt: [0, 1, 2],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => [t.ref, t.via]))).toEqual([
+    ["5", []],
+    ["InventedA(1)", ["DNSM.p"]],
+  ]);
 });
 
 test("two child calls that start at the same place give two writes in 0: the place does not decide, refused", () => {

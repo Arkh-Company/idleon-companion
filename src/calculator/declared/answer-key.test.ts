@@ -131,21 +131,28 @@ test("the pollution counts each kind", () => {
 });
 
 test("a passage copied by a step that keeps its value still reaches the child call it came from, and the step's own constant counts once", () => {
-  // the root wrote a child call's 80 to DNSM.q with `=` (no step), then a step reads it back `+ 0`
+  // the root wrote a child call's 80 to DNSM.q with `=` (no step, before any step: xi 0), then a step reads it back
+  // `+ 0`; each step writes, if it writes, right after it (xi), as the recording places them
   const termsOf = (
-    writes: { path: string; v: number }[],
+    writes: { path: string; v: number; xi: number }[],
     steps: { v: number; e: Expr }[],
   ) => {
     const rec = recordingOf(
       [
         { b: "(root)", c: [1] },
-        { b: "InventedRoot", a: [0, 0, 0], v: 84, c: [2] },
-        { b: "InventedTalent", a: [3], v: 80 },
+        {
+          b: "InventedRoot",
+          a: [0, 0, 0],
+          v: 84,
+          c: [2],
+          r: [["DNSM.q", 80, 1]],
+        },
+        { b: "InventedTalent", a: [3], v: 80, pxi: 0 },
       ],
       writes.map((w, i) => ({ ...w, node: 1, seq: i + 1 })),
       { root: 0 },
     );
-    const key = answerKeyOfSteps(rec, { steps, checks: [] });
+    const key = answerKeyOfSteps(rec, { steps, checks: [], stepAt: [0, 1] });
     if ("error" in key) throw new Error(key.reason);
     return key.pools.flatMap((p) => p.terms);
   };
@@ -158,19 +165,20 @@ test("a passage copied by a step that keeps its value still reaches the child ca
     v: 84,
     e: { t: "op", o: "+", l, r: { t: "num", v: 4 }, v: 84 } as Expr,
   });
-  // a later step (the root's expression) reads the passage
-  const later = termsOf([{ path: "DNSM.q", v: 80 }], [copy, plus4(q)]);
-  expect(later.flatMap((t) => t.refs)).toContain("InventedTalent(3)");
-  expect(
-    later.filter((t) => t.ref === "0").map((t) => [t.kind, t.value]),
-  ).toEqual([["constant", 0]]);
+  // a later step (the root's expression) reads the passage: its write came from the child call, before the copy, so
+  // the read reaches the call by the write's place and the copy (and its 0) is not on the way
+  const later = termsOf([{ path: "DNSM.q", v: 80, xi: 0 }], [copy, plus4(q)]);
+  expect(later.map((t) => [t.kind, t.ref])).toEqual([
+    ["source", "InventedTalent(3)"],
+    ["constant", "4"],
+  ]);
   // the copy is the chain's first step, opened by the chain: never again inside itself
   const acc = { t: "read", p: "DNSM.acc", v: 80 } as Expr;
   const itself = termsOf(
     [
-      { path: "DNSM.q", v: 80 },
-      { path: "DNSM.acc", v: 80 },
-      { path: "DNSM.acc", v: 84 },
+      { path: "DNSM.q", v: 80, xi: 0 },
+      { path: "DNSM.acc", v: 80, xi: 1 },
+      { path: "DNSM.acc", v: 84, xi: 2 },
     ],
     [copy, plus4(acc)],
   );
@@ -182,15 +190,29 @@ test("a passage copied by a step that keeps its value still reaches the child ca
 });
 
 test("a passage whose step leads back to itself ends: the passage already crossed stays its value (the root probe, T026)", () => {
-  // two steps with the value a passage holds, each one holding that value with no name: crossing it again never ends
+  // two steps with the value a passage holds, each one holding that value with no name and writing it (xi: right after
+  // the step): the last step's read saw the second write (seq 2), whose step leads back to it; crossing it again never
+  // ends
   const rec = recordingOf(
     [
       { b: "(root)", c: [1] },
-      { b: "InventedLoopy", a: [0, 0, 0], v: 84 },
+      {
+        b: "InventedLoopy",
+        a: [0, 0, 0],
+        v: 84,
+        r: [
+          ["TreeBase", 4, 2],
+          ["DNSM.Loopy.p", 80, 2],
+        ],
+        rx: [
+          ["TreeBase", 4, 2, 2],
+          ["DNSM.Loopy.p", 80, 2, 2],
+        ],
+      },
     ],
     [
-      { path: "DNSM.Loopy.p", node: 1, v: 80, seq: 1 },
-      { path: "DNSM.Loopy.p", node: 1, v: 80, seq: 2 },
+      { path: "DNSM.Loopy.p", node: 1, v: 80, xi: 1, seq: 1 },
+      { path: "DNSM.Loopy.p", node: 1, v: 80, xi: 2, seq: 2 },
     ],
     { root: 0 },
   );
@@ -215,7 +237,7 @@ test("a passage whose step leads back to itself ends: the passage already crosse
       ),
     },
   ];
-  const key = answerKeyOfSteps(rec, { steps, checks: [] });
+  const key = answerKeyOfSteps(rec, { steps, checks: [], stepAt: [0, 1, 2] });
   if ("error" in key) throw new Error(key.reason);
   expect(key.form).toBe("expression");
   expect(key.pools.map((p) => [p.kind, p.value])).toEqual([["additive", 84]]);
