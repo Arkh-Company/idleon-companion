@@ -104,13 +104,14 @@ export function termReader(ctx: TermContext) {
       return at < w.xi && near(s.v, w.v) ? [{ at, j, e: s.e }] : [];
     });
     const lastStep = Math.max(...steps.map((s) => s.at));
-    const kids = ctx.kids.filter(
-      (n) =>
-        !inSteps.has(n.id) &&
-        n.pxi > lastStep &&
-        n.pxi <= w.xi &&
-        near(n.v, w.v),
-    );
+    const fits = (n: RecNode) =>
+      n.pxi > lastStep && n.pxi <= w.xi && near(n.v, w.v);
+    const kids = ctx.kids.filter((n) => !inSteps.has(n.id) && fits(n));
+    // a call written with `=` and then used in a later step: it gave the write too
+    if (steps.length + kids.length === 0 && ctx.kids.some(fits))
+      throw new OutOfRule(
+        `a passagem ${String(w.v)} vem de uma chamada filha que também entra num passo, e a posição não decide entre elas`,
+      );
     const lastKid = Math.max(...kids.map((n) => n.pxi));
     return [
       ...steps
