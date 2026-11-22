@@ -109,10 +109,15 @@ export function passageReader(ctx: PassageContext) {
       n.pxi > lastStep && n.pxi <= w.xi && near(n.v, w.v);
     const kids = ctx.kids.filter((n) => !inSteps.has(n.id) && fits(n));
     // a call written with `=` and then used in a later step: it gave the write too
-    if (steps.length + kids.length === 0 && ctx.kids.some(fits))
+    if (steps.length + kids.length === 0 && ctx.kids.some(fits)) {
+      const calls = ctx.kids.filter(fits).map((n) => {
+        const j = ctx.steps.findIndex((s) => callsIn(s.e).includes(n.id));
+        return `${path} seq ${String(w.seq)} ← ${callRef(n)}, que entra no passo ${String(j)}`;
+      });
       throw new OutOfRule(
-        `a passagem ${String(w.v)} vem de uma chamada filha que também entra num passo, e a posição não decide entre elas`,
+        `a passagem ${String(w.v)} vem de uma chamada filha que também entra num passo (${calls.join("; ")}), e a posição não decide entre elas`,
       );
+    }
     const lastKid = Math.max(...kids.map((n) => n.pxi));
     return [
       ...steps
