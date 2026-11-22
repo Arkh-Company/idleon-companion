@@ -54,6 +54,12 @@ test("a sketch and a draft are not served; a complete one is; a refused one does
     ["complete-one", "complete"],
   ]);
   expect([...out.complete.keys()]).toEqual(["complete-one"]);
+  // every loaded one, in any stage, for the real-trees run
+  expect([...out.all].map(([id, bp]) => [id, bp.id])).toEqual([
+    ["sketch-one", "sketch-one"],
+    ["draft-one", "draft-one"],
+    ["complete-one", "complete-one"],
+  ]);
   expect(out.refused.map((r) => r.file)).toEqual([
     "../blueprints/w2/broken-one.blueprint.json",
     "../blueprints/w3/complete-one.blueprint.json",
