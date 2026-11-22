@@ -15,6 +15,8 @@ export interface RecNode {
   /** How many steps the parent had run when this call started. */
   pxi: number;
   v?: RecValue;
+  /** The state path of the list or the map the call returned, when it returned one of the state's. */
+  vp?: string;
   err?: true;
   /** State reads: [path, value, the last write's number before the first read]; table texts have no number. */
   r?: ([string, RecValue] | [string, RecValue, number])[];

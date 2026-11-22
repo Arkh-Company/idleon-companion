@@ -32,8 +32,13 @@ const leftmost = (e: Expr): Expr => {
   const b = bare(e);
   return b.t === "op" ? leftmost(b.l) : b;
 };
-/** An expression that starts with a constant of the code: `90 + …`, `10000 × …`. */
-const startsConst = (e: Expr) => bare(e).t === "op" && leftmost(e).t === "num";
+/** An expression that starts with a constant of the code: `90 + …`, `10000 × …`, or a min/max of such sides (T162). */
+const startsConst = (e: Expr): boolean => {
+  const b = bare(e);
+  if (b.t === "fn" && (b.name === "min" || b.name === "max"))
+    return b.args.length > 0 && b.args.every(startsConst);
+  return b.t === "op" && leftmost(e).t === "num";
+};
 
 /**
  * The known layers of a step, from outside in, and the rest below them: with each layer whose limit is no constant,

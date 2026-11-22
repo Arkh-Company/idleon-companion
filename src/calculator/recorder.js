@@ -88,6 +88,9 @@
             : v === undefined
               ? "(undefined)"
               : "(" + typeof v + ")";
+        // a list or a map of the state returned: its path (spec 010, T162: the list whose item is the number)
+        var vp = v !== null && typeof v === "object" ? S.PATH.get(v) : null;
+        if (vp) node.vp = vp;
         return v;
       } catch (e) {
         node.err = true;

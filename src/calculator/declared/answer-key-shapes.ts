@@ -53,7 +53,8 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
 
 /**
  * The value of an item of the list the root returns (T159: TotalTalentPoints(…)[tab]): the root's last write to
- * `<path>[item]`; with no such path, or with more than one, the root is refused.
+ * `<path>[item]`, only in the list it returned when the recording has its path (T162: the root's working lists stay
+ * out); with no such path, or with more than one, the root is refused.
  */
 export function itemOf(
   rec: Recording,
@@ -66,6 +67,7 @@ export function itemOf(
     if (
       w.node === top.id &&
       m?.[1] &&
+      (top.vp === undefined || m[1] === top.vp) &&
       Number(m[2]) === item &&
       typeof w.v === "number"
     )
@@ -96,43 +98,34 @@ export function partKey(
   refs: readonly string[],
 ): AnswerKey | PartRefusal {
   const all = key.pools.flatMap((pool, p) => pool.terms.map((t) => ({ p, t })));
-  // each reference the main reference of one term; a reference in two terms is ambiguous, never taken by order
-  const each = refs.map((ref) => all.filter((x) => x.t.ref === ref));
+  // each reference in one term, as its main reference or inside it (a factor (1 + (A + 40 × B) / 100), T155 and
+  // T162); a reference in two terms is ambiguous, never taken by order; terms that hold more than one are one term
+  const each = refs.map((ref) => all.filter((x) => x.t.refs.includes(ref)));
   if (each.some((c) => c.length > 1))
     return refused("ambiguous", "a parte está em mais de um termo");
-  const found = each.flat();
-  if (found.length === refs.length) {
-    const pool = key.pools[found[0]?.p ?? -1];
-    if (new Set(found.map((f) => f.p)).size !== 1 || !pool)
-      return refused(
-        "ambiguous",
-        "os termos da parte estão em pools diferentes",
-      );
-    return partOfPool(
-      key,
-      pool,
-      found.map((f) => f.t),
-    );
-  }
-  // or the one term that holds all the references (a factor (1 + (A + B) / 100))
-  const holders = all.filter((x) => refs.every((r) => x.t.refs.includes(r)));
-  if (holders.length > 1)
-    return refused("ambiguous", "a parte está em mais de um termo");
-  const [one] = holders;
-  const pool = one && key.pools[one.p];
-  if (one && pool) return partOfPool(key, pool, [one.t]);
   const missing = refs.filter((_, i) => each[i]?.length === 0);
-  return refused(
-    "missing",
-    `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
+  if (missing.length > 0)
+    return refused(
+      "missing",
+      `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
+    );
+  const found = [...new Set(each.flat())];
+  const pool = key.pools[found[0]?.p ?? -1];
+  if (new Set(found.map((f) => f.p)).size !== 1 || !pool)
+    return refused("ambiguous", "os termos da parte estão em pools diferentes");
+  return partOfPool(
+    key,
+    pool,
+    found.map((f) => f.t),
   );
 }
 
 /**
- * The part in the running total a call builds in a scratch path that the root only reads (a bubble's cost, T155):
- * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there. A call that holds the
- * part, or where the part is ambiguous, is a candidate: one gives its part or its refusal, none gives null, and more
- * than one is ambiguous and refused.
+ * The part in a running total that the root reads and that the root itself or a call under it builds (a bubble's cost
+ * in a scratch path, T155; the Obol stat multi's second total, T162): each path written there, keyed by `keyOf` at the
+ * last value written to it; calls outside the root (the helpers, another root) never count. A path that holds the part,
+ * or where the part is ambiguous, is a candidate: one gives its part or its refusal, none gives null, and more than one
+ * is ambiguous and refused.
  */
 export function partInWriters(
   rec: Recording,
@@ -140,12 +133,21 @@ export function partInWriters(
   refs: readonly string[],
   keyOf: (node: number, value: number) => AnswerKey | RootFormError,
 ): AnswerKey | RootFormError | null {
-  const read = new Set((top.r ?? []).map(([p]) => p));
+  // the log too: the first reads stop at the recorder's cap
+  const read = new Set([
+    ...(top.r ?? []).map(([p]) => p),
+    ...(top.rx ?? []).map(([p]) => p),
+  ]);
+  const under = (id: number | null): boolean => {
+    for (let n = id; n !== null; n = rec.nodes[n]?.p ?? null)
+      if (n === top.id) return true;
+    return false;
+  };
   const writers = new Map<string, { node: number; value: number }>();
   for (const w of rec.writes)
     if (
       w.node !== null &&
-      w.node !== top.id &&
+      under(w.node) &&
       read.has(w.path) &&
       typeof w.v === "number"
     )
