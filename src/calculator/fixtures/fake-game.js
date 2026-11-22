@@ -1823,6 +1823,11 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeReads()
     );
   };
+  // The seventh probe: an infinite argument and a number below every other, each back at its place in the recording.
+  Blocks._customBlock_TreeInfNeg = function () {
+    var low = -state().TreeCapped * Math.pow(10, 400);
+    return Blocks._customBlock_TreeDeclCurve("decay", low, 1, 1);
+  };
   // A cut whose test is on another value than the total, the total already below it: no cut of the total.
   Blocks._customBlock_TreeCutOther = function () {
     var s = state();

@@ -163,6 +163,28 @@ test("the probe records each sketch's root and classifies its form", () => {
   expect(report.outOfRule.map((r) => r.id)).toEqual(["decl-swap"]);
 });
 
+// The seventh probe's time (4× the fifth's): each root's record says where its time went, stage by stage.
+test("the probe keeps the time of each stage of the root: the recording's and the answer key's", () => {
+  const probe = probeRoot(
+    record,
+    recorder.ops,
+    sketch("decl-chain", "TreeDeclChain"),
+  );
+  expect(Object.keys(probe.stages)).toEqual([
+    "mosaic",
+    "helpers",
+    "roots",
+    "builders",
+    "take",
+    "parse",
+    "answerKey",
+  ]);
+  for (const ms of Object.values(probe.stages)) {
+    expect(Number.isInteger(ms)).toBe(true);
+    expect(ms).toBeGreaterThanOrEqual(0);
+  }
+});
+
 test("a root whose answer key throws is an error of its own, and the run goes on", () => {
   // a recording the answer key cannot read: no writes list
   const broken = () =>

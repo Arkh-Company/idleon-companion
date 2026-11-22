@@ -54,6 +54,8 @@ export interface Recording {
   builders: number | null;
   /** The DNSM caches that came in the mosaic, from the running game. */
   fromGame: string[];
+  /** The time of each stage of this recording, in ms (spec 010: the probe's time, root by root); never recorded. */
+  ms?: Record<string, number>;
 }
 
 export type RecipeStep =

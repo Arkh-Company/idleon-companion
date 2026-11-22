@@ -29,6 +29,16 @@ export type RootCall = readonly [
   args: readonly (string | number | readonly number[])[],
 ];
 
+/** Puts an infinite number back at its place: the path from the recording's top, then its sign (recorder.js, infAt). */
+function putInfinity(rec: Recording, path: readonly (string | number)[]) {
+  let o = rec as unknown as Record<string | number, unknown>;
+  for (const k of path.slice(0, -2))
+    o = o[k] as Record<string | number, unknown>;
+  const key = path.at(-2);
+  if (key !== undefined)
+    o[key] = Number(path.at(-1)) < 0 ? -Infinity : Infinity;
+}
+
 export function bootRecorder(
   code: string,
   pak: Uint8Array,
@@ -72,13 +82,22 @@ export function bootRecorder(
     record(mosaicJson, roots, recipe, scene = false, follow = [], routine) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);
+      const ms: Record<string, number> = {};
+      let t = performance.now();
+      const lap = (stage: string) => {
+        const now = performance.now();
+        ms[stage] = now - t;
+        t = now;
+      };
       try {
         run("__calc.loadMosaic()", startMs);
+        lap("mosaic");
         run("__rec.begin(__recipe)", startMs);
         run(`__calc.helperPlan(${lazyDnsm})`, startMs);
         run("__calc.helperSteps()", startMs);
         run("__rec.afterHelpers()", startMs);
         if (scene) rebuildScene((text) => run(text, startMs));
+        lap("helpers");
         run(
           `__rec.roots(${JSON.stringify(roots)}, ${JSON.stringify(follow)})`,
           numberMs,
@@ -88,6 +107,7 @@ export function bootRecorder(
             `__rec.routine(${JSON.stringify(JSON.stringify(routine))})`,
             numberMs,
           );
+        lap("roots");
         run("__rec.startBuilders()", startMs);
         recipe.builders.forEach((_, i) => {
           try {
@@ -97,15 +117,21 @@ export function bootRecorder(
             run("__rec.abandonBuilder()", startMs);
           }
         });
-        const json = run(`__rec.take(${String(infinite)})`, startMs);
+        lap("builders");
+        const json = run("__rec.take()", startMs);
         if (typeof json !== "string") throw new Error("no recording");
-        // the label only when take() put one: a reviver over the whole recording costs seconds on the real game
-        if (!infinite || !json.includes('Infinity)"'))
-          return JSON.parse(json) as Recording;
-        // an infinite number crossed as a label (recorder.js, take)
-        return JSON.parse(json, (_, v: unknown) =>
-          v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
-        ) as Recording;
+        lap("take");
+        const rec = JSON.parse(json) as Recording;
+        // an infinite number crossed as null, and its place apart (recorder.js, infAt): no label pass over the whole
+        // recording, seconds on the real game (the seventh probe)
+        if (infinite) {
+          const at = run("__rec.infAt()", startMs);
+          for (const p of JSON.parse(String(at)) as (string | number)[][])
+            putInfinity(rec, p);
+        }
+        lap("parse");
+        rec.ms = ms;
+        return rec;
       } finally {
         run("__rec.stop()", startMs);
       }

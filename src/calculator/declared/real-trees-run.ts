@@ -133,6 +133,8 @@ export interface RootProbe {
   /** Why a root is out of the rule, has no value or failed; null for a root in the rule. */
   reason: string | null;
   ms: number;
+  /** The time of each stage, in ms: the recording's (tree-record.ts), then the answer key's. */
+  stages: Record<string, number>;
 }
 
 const NO_VALUE =
@@ -163,6 +165,7 @@ export function probeRoot(
         ? `routine ${"call" in first ? refKey(first, character) : first.event}`
         : `sum of ${String(calls?.length ?? 0)} calls`,
   };
+  const stages: Record<string, number> = {};
   const done = (
     form: RootForm,
     pools: PoolKind[],
@@ -173,12 +176,15 @@ export function probeRoot(
     pools,
     reason,
     ms: performance.now() - t0,
+    stages,
   });
   // A root that breaks is an error of its own: the run goes on to the others.
   let stage = "a gravação";
   try {
     const roots = rootCallsOf(bp, character);
     const rec: Recording = record(roots, scratch, routineStepOf(bp, character));
+    for (const [k, ms] of Object.entries(rec.ms ?? {}))
+      stages[k] = Math.round(ms);
     const tops = (rec.nodes[rec.root ?? -1]?.c ?? [])
       .slice(0, roots.length)
       .map((id) => rec.nodes[id]);
@@ -208,7 +214,9 @@ export function probeRoot(
                   : { branch: refKey({ read: branch }, character) }),
               }
             : null;
+    const t1 = performance.now();
     const key = answerKey(rec, ops, shape);
+    stages.answerKey = Math.round(performance.now() - t1);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(
       key.form,

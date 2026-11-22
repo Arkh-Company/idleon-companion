@@ -24,22 +24,23 @@
   var seed = 12345;
   Math.random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
-  // An infinite number seen anywhere in the recording (spec 010, T162): only then does take() label it, a pass over
-  // the whole recording that costs seconds on the real game.
-  var inf = (v) => {
-    if (v === Infinity || v === -Infinity) S.inf = true;
-    return v;
+  // The places of the infinite numbers the recording keeps (spec 010, T162): JSON makes them null, and infAt() names
+  // where they were, for the answer key, never a pass over the whole recording (seconds on the real game). A node's
+  // place is its path from the recording's top, the sign last; a write's is the write (the builders' pass moves them).
+  var isInf = (v) => v === Infinity || v === -Infinity;
+  var mark = (path, v) => {
+    S.inf = true;
+    S.infs.push(path.concat(v > 0 ? 1 : -1));
   };
 
   // 4b. Each step of a block's arithmetic lands on the row of the block that runs it (only numbers and yes/no).
   G.__X = (i, v) => {
     if (S.on && S.cur) {
       var x = S.cur.x || (S.cur.x = []);
-      if (x.length < STEP_CAP)
-        x.push([
-          i,
-          typeof v === "number" ? inf(v) : typeof v === "boolean" ? v : null,
-        ]);
+      if (x.length < STEP_CAP) {
+        x.push([i, typeof v === "number" || typeof v === "boolean" ? v : null]);
+        if (isInf(v)) mark(["nodes", S.cur.id, "x", x.length - 1, 1], v);
+      }
     }
     return v;
   };
@@ -75,8 +76,7 @@
     return n;
   };
   function simple(x) {
-    if (typeof x === "number") return inf(x);
-    if (x === null || typeof x === "boolean") return x;
+    if (x === null || typeof x === "number" || typeof x === "boolean") return x;
     if (typeof x !== "string") return "(" + typeof x + ")";
     return S.names.has(x)
       ? "(character " + S.names.get(x) + ")"
@@ -89,18 +89,19 @@
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
       var node = S.newNode(name, args, S.cur);
+      for (var k = 0; k < args.length; k++)
+        if (isInf(args[k])) mark(["nodes", node.id, "a", k], args[k]);
       var parent = S.cur;
       S.cur = node;
       try {
         var v = f.apply(this, arguments);
         node.v =
-          typeof v === "number"
-            ? inf(v)
-            : typeof v === "boolean"
-              ? v
-              : v === undefined
-                ? "(undefined)"
-                : "(" + typeof v + ")";
+          typeof v === "number" || typeof v === "boolean"
+            ? v
+            : v === undefined
+              ? "(undefined)"
+              : "(" + typeof v + ")";
+        if (isInf(v)) mark(["nodes", node.id, "v"], v);
         // a list or a map of the state returned: its path (spec 010, T162: the list whose item is the number)
         var vp = v !== null && typeof v === "object" ? S.PATH.get(v) : null;
         if (vp) node.vp = vp;
@@ -116,20 +117,24 @@
 
   // 3. Reads and writes over the whole state. Text stays out, except a game id the game's own tables name.
   function valueOut(v) {
-    if (typeof v === "number") return inf(v);
-    if (typeof v === "boolean" || v === null) return v;
+    if (typeof v === "number" || typeof v === "boolean" || v === null) return v;
     if (typeof v !== "string") return "(" + typeof v + ")";
     return hasOwn(S.mon, v) || hasOwn(S.item, v) ? v : "(text)";
   }
   S.addWrite = (path, v) => {
     var node = S.cur ? S.cur.id : null;
-    S.writes.push({
+    var w = {
       path: path,
       node: node,
       v: valueOut(v),
       xi: stepAt(),
       seq: ++S.seq,
-    });
+    };
+    S.writes.push(w);
+    if (isInf(w.v)) {
+      S.inf = true;
+      S.infWrites.push(w);
+    }
   };
   function checkNote(path, exists) {
     if (!S.on || !S.cur || S.searching) return;
@@ -139,7 +144,11 @@
   }
   function log(entry) {
     var rx = S.cur.rx || (S.cur.rx = []);
-    if (rx.length < LOG_CAP) rx.push(entry);
+    if (rx.length < LOG_CAP) {
+      rx.push(entry);
+      if (isInf(entry[1]))
+        mark(["nodes", S.cur.id, "rx", rx.length - 1, 1], entry[1]);
+    }
   }
   function note(path, v) {
     if (S.searching || !S.on || !S.cur) return; // inside one of the game's searches: the search is one read (3b)
@@ -154,14 +163,12 @@
     var numeric = typeof v === "string" && v.trim() !== "" && !isNaN(Number(v));
     // the fourth field is the last write before this read: the write it saw, at every read and not only the first
     if (typeof v === "number" || numeric)
-      log([
-        path,
-        typeof v === "number" ? inf(v) : v.slice(0, 40),
-        stepAt(),
-        S.seq,
-      ]);
+      log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
-    if (fresh) r.push([path, valueOut(v), S.seq]);
+    if (fresh) {
+      r.push([path, valueOut(v), S.seq]);
+      if (isInf(v)) mark(["nodes", S.cur.id, "r", r.length - 1, 1], v);
+    }
   }
   function join(base, k) {
     if (S.names.has(k)) return base + "[" + S.names.get(k) + "]";
@@ -291,7 +298,7 @@
     begin: (recipeJson) => {
       S.recipe = JSON.parse(recipeJson);
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
-      S.inf = false;
+      Object.assign(S, { inf: false, infs: [], infWrites: [] });
       S.searching = 0; // a search cut by a time limit never ran its `finally`
       Object.assign(S, {
         seq: 0,
@@ -378,30 +385,34 @@
     stop: () => S.stopped(),
     isOn: () => S.on,
 
-    // The recording, as text made here: nothing of the context crosses as an object. For the answer key only (spec 010,
-    // T162: a cost that overflows), an infinite number crosses as a label JSON keeps and tree-record.ts reads it back;
-    // otherwise it is null, as the live tree always had it.
-    take: (infinite) =>
-      JSON.stringify(
-        {
-          nodes: S.nodes || [],
-          writes: S.writes || [],
-          spliced: S.spliced || [],
-          bpStart: S.bpStart === Infinity ? null : S.bpStart,
-          setup: S.setup ? S.setup.id : null,
-          root: S.root ? S.root.id : null,
-          builders: S.builders ? S.builders.id : null,
-          fromGame: S.fromGame || [],
-        },
-        infinite && S.inf
-          ? (k, v) =>
-              v === Infinity
-                ? "(Infinity)"
-                : v === -Infinity
-                  ? "(-Infinity)"
-                  : v
-          : undefined,
-      ),
+    // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as
+    // the live tree always had it.
+    take: () =>
+      JSON.stringify({
+        nodes: S.nodes || [],
+        writes: S.writes || [],
+        spliced: S.spliced || [],
+        bpStart: S.bpStart === Infinity ? null : S.bpStart,
+        setup: S.setup ? S.setup.id : null,
+        root: S.root ? S.root.id : null,
+        builders: S.builders ? S.builders.id : null,
+        fromGame: S.fromGame || [],
+      }),
+    // For the answer key only (spec 010, T162: a cost that overflows): the place of each infinite number in the text
+    // take() made, as [...path, sign]; tree-record.ts puts it back there.
+    infAt: () => {
+      var out = (S.infs || []).slice();
+      if (S.infWrites && S.infWrites.length) {
+        var where = new Map();
+        S.writes.forEach((w, i) => where.set(w, ["writes", i, "v"]));
+        S.spliced.forEach((w, i) => where.set(w, ["spliced", i, "v"]));
+        S.infWrites.forEach((w) => {
+          var p = where.get(w);
+          if (p) out.push(p.concat(w.v > 0 ? 1 : -1));
+        });
+      }
+      return JSON.stringify(out);
+    },
   };
   G.__rec.state = S;
 })();
