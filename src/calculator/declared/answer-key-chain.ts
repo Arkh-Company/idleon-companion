@@ -3,6 +3,8 @@
 // step, `path *= x` or `path += x` in place, when the next step's value times or plus the total gives it (both is
 // ambiguous and refused); or a turn of a loop (the 0 of its start, an earlier turn), never the last write. A step may
 // carry a layer (a max, a floor…): the layer is a line of the root, and a step that only caps the total makes no pool.
+import type { Op } from "../instrument.ts";
+import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
 import { KIND, near, OutOfRule } from "./answer-key-terms.ts";
 import type {
@@ -264,4 +266,38 @@ export function chainPools(
     c.divisors.push({ e: div.e, step: div.step });
   }
   return raw;
+}
+
+/**
+ * A write that cuts the total to a constant under a test (T162; spec, Open Questions 22/11): the last step the call
+ * recorded before it is a comparison that held, between a number of the code equal to the written value and the
+ * total. `K < x` or `x > K` cuts it down (a Cap); `K > x` or `x < K` raises it (a Floor). Read in memory only.
+ */
+export function boundOf(
+  top: RecNode,
+  w: RecWrite,
+  ops: readonly Op[] | undefined,
+): Bound | null {
+  const last = top.x?.[w.xi - 1];
+  const op = last ? ops?.[last[0]] : undefined;
+  if (op?.kind !== "cmp" || last?.[1] !== true) return null;
+  const num = (side: unknown): number | null => {
+    const n = side as { type?: unknown; value?: unknown } | undefined;
+    return n?.type === "Literal" && typeof n.value === "number"
+      ? n.value
+      : null;
+  };
+  const l = num(op.node.left);
+  const r = num(op.node.right);
+  const k = l ?? r;
+  if (k === null || (l !== null && r !== null) || !near(k, w.v)) return null;
+  const o = op.node.operator;
+  const above =
+    o === "<" || o === "<="
+      ? l !== null
+      : o === ">" || o === ">="
+        ? r !== null
+        : null;
+  if (above === null) return null;
+  return { kind: above ? "cap" : "floor-min", value: k };
 }

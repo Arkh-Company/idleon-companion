@@ -7,7 +7,7 @@
 // the blueprint come here too (spec, Open Questions 21 and 22/11): a sum of calls, a routine run on the recorder's copy,
 // and a part of a call (terms of its recorded pool, by reference; answer-key-shapes.ts).
 import type { Op } from "../instrument.ts";
-import type { Recording, RecNode, RecWrite } from "../recording.ts";
+import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
@@ -38,8 +38,8 @@ import {
   routineKey,
   sumKey,
 } from "./answer-key-shapes.ts";
-import { chainPools, matchChain } from "./answer-key-chain.ts";
-import type { Bound, WriteMeta } from "./answer-key-chain.ts";
+import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
+import type { WriteMeta } from "./answer-key-chain.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
@@ -469,38 +469,4 @@ export function answerKeyOfSteps(
     divisors,
     pollution: r.pollution,
   };
-}
-
-/**
- * A write that cuts the total to a constant under a test (T162; spec, Open Questions 22/11): the last step the call
- * recorded before it is a comparison that held, between a number of the code equal to the written value and the
- * total. `K < x` or `x > K` cuts it down (a Cap); `K > x` or `x < K` raises it (a Floor). Read in memory only.
- */
-function boundOf(
-  top: RecNode,
-  w: RecWrite,
-  ops: readonly Op[] | undefined,
-): Bound | null {
-  const last = top.x?.[w.xi - 1];
-  const op = last && ops?.[last[0]];
-  if (!op || op.kind !== "cmp" || last[1] !== true) return null;
-  const num = (side: unknown): number | null => {
-    const n = side as { type?: unknown; value?: unknown } | undefined;
-    return n?.type === "Literal" && typeof n.value === "number"
-      ? n.value
-      : null;
-  };
-  const l = num(op.node.left);
-  const r = num(op.node.right);
-  const k = l ?? r;
-  if (k === null || (l !== null && r !== null) || !near(k, w.v)) return null;
-  const o = op.node.operator;
-  const above =
-    o === "<" || o === "<="
-      ? l !== null
-      : o === ">" || o === ">="
-        ? r !== null
-        : null;
-  if (above === null) return null;
-  return { kind: above ? "cap" : "floor-min", value: k };
 }
