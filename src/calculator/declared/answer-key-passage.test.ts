@@ -341,6 +341,10 @@ test("a child call written with `=` and then used in a later step: the place doe
     stepAt: [0, 1],
   });
   expect(reasonOf(key)).toMatch(/a posição não decide entre elas/);
+  // the reason names the write and each child call with the step it goes into
+  expect(reasonOf(key)).toContain(
+    "(DNSM.b seq 1 ← InventedB(2), que entra no passo 0)",
+  );
 });
 
 test("two child calls that start at the same place give two writes in 0: the place does not decide, refused", () => {
