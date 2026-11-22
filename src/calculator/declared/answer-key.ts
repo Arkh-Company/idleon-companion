@@ -4,8 +4,8 @@
 // once, the last write the value), an expression (no running total: the root's last step, split along its left side)
 // or a leaf (a value read or a constant, no pool). Each write, or each stretch of the expression, adds or multiplies;
 // same-kind ones in a row are one pool. Any other form is refused with the reason, never guessed. Two root shapes of
-// the blueprint come here too (spec, Open Questions 21/11): a sum of calls, and a part of a call (the smallest recorded
-// sub-expression of the root that holds the given references).
+// the blueprint come here too (spec, Open Questions 21 and 22/11): a sum of calls, a routine run on the recorder's copy,
+// and a part of a call (terms of its recorded pool, by reference; answer-key-shapes.ts).
 import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
@@ -20,7 +20,7 @@ import {
   termReader,
 } from "./answer-key-terms.ts";
 import type { AnswerTerm, RawTerm, RootFormError } from "./answer-key-terms.ts";
-import { partOf, routineKey, sumKey } from "./answer-key-shapes.ts";
+import { partKey, routineKey, sumKey } from "./answer-key-shapes.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
@@ -95,12 +95,13 @@ export function answerKey(
   if (shape && "routine" in shape) return routineKey(rec, shape.routine);
   const top = topOf(rec);
   if (!top) return outOfRule("a gravação não tem raiz");
-  const part = shape && "part" in shape ? shape.part : null;
-  const gate =
-    part || typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
+  const gate = typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
   const blockSteps = makeSteps(rec, ops).of(top.id);
   const branches = branchesOf(top, ops, blockSteps.exprOf);
-  return answerKeyOfSteps(rec, blockSteps, { gate, part, branches });
+  const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
+  return shape && "part" in shape && !("error" in key)
+    ? partKey(key, shape.part)
+    : key;
 }
 
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
@@ -109,7 +110,6 @@ export function answerKeyOfSteps(
   { steps, checks }: BlockSteps,
   opts: {
     gate?: TopLayer | null;
-    part?: readonly string[] | null;
     branches?: readonly Branch[];
   } = {},
 ): AnswerKey | RootFormError {
@@ -129,27 +129,15 @@ export function answerKeyOfSteps(
       .filter(([, vs]) => vs.length > 1 && near(vs.at(-1), v))
       .sort((a, b) => b[1].length - a[1].length)[0] ?? null;
 
-  // 1. What the pools are below: a part of the call, a running total, or the root's last step under its layers.
+  // 1. What the pools are below: a running total, or the root's last step under its layers.
   const layers: TopLayer[] = opts.gate ? [opts.gate] : [];
   let target = final;
   let at: { e: Expr; step: number } | null = null;
   let acc: [string, number[]] | null = null;
-  if (opts.part) {
-    const found = partOf(rec, steps, opts.part);
-    if (!found || typeof found.e.v !== "number")
-      return out("a parte indicada não está nos passos gravados da raiz");
-    if (found.extra.length > 0)
-      return out(
-        `o passo da parte tem referências a mais: ${found.extra.join(", ")}`,
-      );
-    at = found;
-    target = found.e.v;
-  } else {
-    acc = chainFor(final);
-    const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
-    const s = steps[i];
-    if (s) at = { e: s.e, step: i };
-  }
+  acc = chainFor(final);
+  const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
+  const last = steps[i];
+  if (last) at = { e: last.e, step: i };
   let rest: Expr | null = null;
   if (at) {
     const peeled = peelTop(at.e);
@@ -158,7 +146,6 @@ export function answerKeyOfSteps(
     // a running total under the layer (Anvil Capacity: the chain, then a floor)
     const v = rest.v;
     if (
-      !opts.part &&
       peeled.layers.length > 0 &&
       typeof v === "number" &&
       (rest.t === "read" || rest.t === "val")
@@ -398,7 +385,7 @@ export function answerKeyOfSteps(
   r.bump("mergedSteps", raw.length - pools.length);
   return {
     root: callRef(top),
-    final: opts.part ? target : final,
+    final,
     form: acc ? "chain" : pools.length > 0 ? "expression" : "leaf",
     accumulator: acc?.[0] ?? null,
     // each condition whose path the pools crossed is a ❓ layer, in the code's order

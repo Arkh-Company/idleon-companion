@@ -18,26 +18,50 @@ const record = (block: string): Recording =>
     builders: [],
   });
 
-// Spec 010, T145: the root's shapes, with their values (the review's I3).
-test("a part of a call: the value is the recorded step that holds the references, and its terms are them", () => {
+// Spec 010, T145 and T153: a part is terms of the recorded pool, by reference; its value is their product (Multi) or
+// their sum (Additive). The game multiplies a reducer loose together with the cost (the Market), so no sub-expression
+// holds the reducer alone.
+test("a part of a Multi pool: the product of the terms it names, and its terms are them", () => {
+  // TreeDeclFactor: TreeReads() × (TreeLoop() × TreeTwins[0]) × TreeBase, one Multi pool of four terms
   const key = answerKey(record("TreeDeclFactor"), recorder.ops, {
     part: ["TreeLoop()", "TreeTwins[0]"],
   });
   if ("error" in key) throw new Error(key.reason);
   // TreeLoop() sums TreeList (1 + 2 + 3) and TreeTwins[0] is 3 (fake-mosaic.ts)
   expect(key.final).toBe(18);
+  expect(key.pools.map((p) => [p.kind, p.value])).toEqual([["multi", 18]]);
   expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
     "TreeLoop()",
     "TreeTwins[0]",
   ]);
+  // two terms loose in the same product, as the Market's reducer next to its cost
+  const loose = answerKey(record("TreeDeclFactor"), recorder.ops, {
+    part: ["TreeReads()", "TreeBase"],
+  });
+  expect("error" in loose ? loose.reason : loose.final).toBe(32);
 });
 
-test("a part whose step holds a reference outside it is refused, with the references too many", () => {
-  const key = answerKey(record("TreeDeclFactor"), recorder.ops, {
-    part: ["TreeLoop()", "TreeReads()"],
+test("a part of an Additive pool: the sum of the terms it names", () => {
+  // TreeDeclExpr: (TreeReads() + TreeCapped + 2) × TreeLoop() × (1 + TreeStats.b / 100)
+  const key = answerKey(record("TreeDeclExpr"), recorder.ops, {
+    part: ["TreeReads()", "TreeCapped"],
   });
-  expect(key).toMatchObject({ error: "rootForm" });
-  expect("reason" in key ? key.reason : "").toMatch(/TreeTwins\[0\]/);
+  expect("error" in key ? key.reason : [key.final, key.pools[0]?.kind]).toEqual(
+    [88, "additive"],
+  );
+});
+
+test("a part is refused when a reference is no term of a recorded pool, or when its terms are in two pools", () => {
+  const nowhere = answerKey(record("TreeDeclFactor"), recorder.ops, {
+    part: ["TreeLoop()", "TreeNowhere()"],
+  });
+  expect(nowhere).toMatchObject({ error: "rootForm" });
+  expect("reason" in nowhere ? nowhere.reason : "").toMatch(/TreeNowhere\(\)/);
+  const split = answerKey(record("TreeDeclExpr"), recorder.ops, {
+    part: ["TreeReads()", "TreeLoop()"],
+  });
+  expect(split).toMatchObject({ error: "rootForm" });
+  expect("reason" in split ? split.reason : "").toMatch(/pools diferentes/);
 });
 
 test("a sum of calls: the final is the sum of the recorded values, the calls' refs in order", () => {

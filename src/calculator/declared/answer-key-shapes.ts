@@ -1,9 +1,8 @@
-// Two root shapes of the blueprint (spec 010; spec, Open Questions 21/11; ADR 0010, the blueprint never stores a
-// calculation): a sum of calls (Tome Score), each recorded under the root; and a part of a call, the smallest recorded
-// sub-expression of the root's steps that holds the given references (a reducer inside a cost), read from the
-// recording only.
+// The root shapes of the blueprint beyond one call (spec 010; spec, Open Questions 21 and 22/11; ADR 0010, the
+// blueprint never stores a calculation): a sum of calls (Tome Score), each recorded under the root; a part of a call,
+// terms of its recorded pool named by reference (a reducer multiplied loose with the cost); and a routine run on the
+// recorder's copy, the sum of the state it writes (the Cog Board). All read from the recording only.
 import type { Recording } from "../recording.ts";
-import type { Expr, Step } from "../recorded/steps.ts";
 import type { AnswerKey } from "./answer-key.ts";
 import { callRef, outOfRule } from "./answer-key-terms.ts";
 import type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
@@ -52,53 +51,54 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
 }
 
 /**
- * The smallest recorded sub-expression of the root's steps (no bare reference) that holds every key of `refs`, with
- * the keys of calls and reads it holds beyond them (`extra`): a part with extra references is not the one the
- * blueprint names.
+ * A part of a call (T153): the terms of one recorded pool that the blueprint names by reference, each once; the root's
+ * value is their product (a Multi pool) or their weighted sum (an Additive pool). A reference that is no term of a
+ * pool, or terms in two pools, are refused with the reason.
  */
-export function partOf(
-  rec: Recording,
-  steps: readonly Step[],
+export function partKey(
+  key: AnswerKey,
   refs: readonly string[],
-): { e: Expr; step: number; extra: string[] } | null {
-  let best: { e: Expr; step: number; size: number; extra: string[] } | null =
-    null;
-  steps.forEach((s, step) => {
-    const visit = (e: Expr): { keys: Set<string>; size: number } => {
-      const keys = new Set<string>();
-      let size = 1;
-      const add = (x: Expr) => {
-        const r = visit(x);
-        for (const k of r.keys) keys.add(k);
-        size += r.size;
-      };
-      if (e.t === "call") {
-        const n = rec.nodes[e.id];
-        if (n) keys.add(callRef(n));
-      } else if (e.t === "read") keys.add(e.p);
-      else if (e.t === "def") add(e.e);
-      else if (e.t === "op") {
-        add(e.l);
-        add(e.r);
-      } else if (e.t === "fn") e.args.forEach(add);
-      else if (e.t === "not") add(e.a);
-      const whole = e.t !== "call" && e.t !== "read" && typeof e.v === "number";
-      if (
-        whole &&
-        refs.every((k) => keys.has(k)) &&
-        (!best || size < best.size)
-      )
-        best = {
-          e,
-          step,
-          size,
-          extra: [...keys].filter((k) => !refs.includes(k)),
-        };
-      return { keys, size };
-    };
-    visit(s.e);
+): AnswerKey | RootFormError {
+  const taken = new Set<AnswerTerm>();
+  const found = refs.map((ref) => {
+    for (const [p, pool] of key.pools.entries()) {
+      const t = pool.terms.find((x) => x.ref === ref && !taken.has(x));
+      if (t) {
+        taken.add(t);
+        return { p, t };
+      }
+    }
+    return null;
   });
-  return best;
+  const missing = refs.filter((_, i) => !found[i]);
+  if (missing.length > 0)
+    return outOfRule(
+      `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
+    );
+  const pools = new Set(found.map((f) => f?.p));
+  const pool = key.pools[found[0]?.p ?? -1];
+  if (pools.size !== 1 || !pool)
+    return outOfRule("os termos da parte estão em pools diferentes");
+  const terms = found.flatMap((f) => (f ? [f.t] : []));
+  const value =
+    pool.kind === "multi"
+      ? terms.reduce((s, t) => s * t.value, 1)
+      : terms.reduce((s, t) => s + t.value * t.weight, 0);
+  return {
+    ...key,
+    final: value,
+    top: [],
+    pools: [
+      {
+        kind: pool.kind,
+        value,
+        after: value,
+        steps: pool.steps,
+        error: 0,
+        terms,
+      },
+    ],
+  };
 }
 
 /**
