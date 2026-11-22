@@ -1,7 +1,7 @@
 {
   "id": "vault-max-lv",
   "root": {
-    "name": "Vault upgrade Max LV",
+    "name": "Vault Max LV per Glimbo trade",
     "ref": {
       "call": "Summoning",
       "args": ["VaultUpgMaxLV", 0, 0]

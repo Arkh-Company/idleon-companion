@@ -11846,7 +11846,7 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 1,
-    "motivo": "O redutor total do custo do Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY e BETTER_NIGHT) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11)",
+    "motivo": "O redutor total do custo do Day Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY I e II) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11; separado do Night na sonda das raízes, 21/11)",
     "tela": "Farming Market (w55), dentro do custo",
     "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 0, Day): Emperor bônus 2; Exotic BETTER_DAY I e II (34, 35)"
   },
@@ -11861,7 +11861,7 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 1,
-    "motivo": "O redutor total do custo do Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY e BETTER_NIGHT) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11)",
+    "motivo": "O redutor total do custo do Night Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_NIGHT I e II) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11; separado do Day na sonda das raízes, 21/11)",
     "tela": "Farming Market (w55), dentro do custo",
     "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 1, Night): Emperor bônus 2; Exotic BETTER_NIGHT I e II (36, 37)"
   },
@@ -11949,7 +11949,7 @@
   },
   {
     "id": "farm-exotic-lv-qty",
-    "nome": "Exotic level quantity (levels per purchase)",
+    "nome": "Exotic Level Qty multi",
     "mundo": "W6",
     "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
     "caixa": "Bônus",
@@ -19826,7 +19826,7 @@
   },
   {
     "id": "vault-max-lv",
-    "nome": "Vault upgrade Max LV",
+    "nome": "Vault Max LV per Glimbo trade",
     "mundo": "Conta",
     "sistema": "Upgrade Vault",
     "caixa": "Limite e tempo",
