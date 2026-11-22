@@ -6,6 +6,9 @@
 export type RefArg = string | number | readonly number[];
 export type Ref = { call: string; args: readonly RefArg[] } | { read: string };
 
+/** The longest text argument a ref may have: recorder.js keeps a call's text argument cut to it (arg-text.test.ts). */
+export const ARG_TEXT_MAX = 60;
+
 const CHARACTER = "{character}";
 const ANY = "[*]";
 
