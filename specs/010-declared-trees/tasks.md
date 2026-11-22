@@ -250,10 +250,40 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - a linha do resumo leva só o id, o resultado e o tempo; nunca um nome de personagem (o retrato do teste tem um, e ele não aparece);
     - toda saída cai dentro de `TREES_OUT`; um id com `..` ou `/` é recusado.
   - O modo `roots` sobe o gravador uma vez, grava só a raiz de cada esboço, em série, e escreve `TREES_OUT/roots.json` (a forma de cada raiz, o motivo das que ficaram fora, e os números que pedem o mapa vivo) e `summary.txt`. Um arquivo, um processo, nenhuma rede.
-- [ ] T026 [sessão] Sonda das raízes: `just trees roots` no PC do Vinicius (research R1; FR-002c) — **Parada:** as raízes fora da regra vão ao Vinicius numa tabela (id, nome, forma, motivo), antes da pergunta
+- [X] T026 [sessão] Sonda das raízes: `just trees roots` no PC do Vinicius (research R1; FR-002c) — **Parada:** as raízes fora da regra vão ao Vinicius numa tabela (id, nome, forma, motivo), antes da pergunta
   - Files: `TREES_OUT/roots.json` (fora do repo); `spec.md` só se a resposta esclarecer a regra (linha `resolved`, "durante a implementação"); a resposta que muda o escopo vira feature nova.
   - Signatures: nenhuma (rodada)
   - Expected: as 289 raízes classificadas; o tempo e a memória da rodada anotados em `registro.md`.
+
+
+### Fase 2b: as raízes fora da regra (decisão do Vinicius na T026, 21/11; spec, Open Questions de 21/11)
+
+- [ ] T143 [P] Testes do gabarito com a camada de topo em `src/calculator/declared/answer-key.test.ts` (FR-002c; spec, Open Questions 21/11)
+  - Cases, no jogo inventado (blocos novos em `fake-game.js`, como na T017):
+    - `round(min(C, a × b))` → camada `[round, cap C]` e um Multi pool; o mesmo com `floor`, `ceil` e `max(c, x)` (floor);
+    - `cond ? 0 : a + b` (portão) → camada `[cond]` e um Additive pool; o caminho que não rodou fica sem valor;
+    - `K ÷ (1 + Σ ÷ 100)` → constante K e um divisor ➗ com as fontes;
+    - a ordem das camadas é a do código, de fora para dentro;
+    - uma raiz que só lê um valor ou devolve uma constante → `form: "leaf"`, sem pool.
+- [ ] T144 O gabarito com a camada de topo em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T143)
+  - Signatures: `AnswerKey` ganha `top: TopLayer[]` com `TopLayer = { kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div"; value?: number; before: number; after: number }`; `form` ganha `"leaf"`.
+  - Regra: a camada é tirada antes da regra dos pools; o resto segue a FR-002c sem mudança. Nada de palpite: uma forma que não for camada conhecida continua `outOfRule` com o motivo.
+- [ ] T145 Testes e código de duas formas de raiz novas em `src/calculator/declared/blueprint.ts`, `answer-key.ts` e `real-trees-run.ts` (spec, Open Questions 21/11; ADR 0010: a receita nunca guarda conta)
+  - **Soma de chamadas** (Tome Score): `root` aceita `{ combine: "sum"; calls: { call: string; args: (number | string)[] }[] }`; o gabarito grava cada chamada e soma.
+  - **Parte de uma chamada** (Glimbo, Vault, Exotic, Market Day e Night, Bubble cost Bits e Item): `root` aceita `{ call, args, part: <referência ao passo gravado> }`; o gabarito grava a chamada original e o valor da raiz é o do passo indicado (o redutor dentro do custo, por exemplo), tirado da gravação; nenhuma conta fica na receita.
+  - **Marcador na cópia de gravação** (Brew Speed): `root` aceita `scratch: { [atributo]: valor }`, posto só na cópia do jogo usada para gravar, antes da chamada (o `gimmeBrewSPDnonLiquid`); nunca no save, nunca no app em execução.
+  - Cases: duas chamadas inventadas somadas; uma parte de chamada inventada (o fator de um produto) com o valor do passo; um marcador que muda o caminho de um bloco inventado; uma chamada que falha vira `error` da raiz, não da rodada; o `parseBlueprint` recusa `calls` vazio e `part` que não é referência.
+- [ ] T146 [P] `src/calculator/blueprints/systems.json` ganha os 17 sistemas, depois de `weekly-boss` (FR-006; spec, Open Questions 21/11)
+  - 🎟️ Event Shop · 🧂 Salt Lick · 🏯 Dungeons (com Flurbo Shop) · 📋 Tasks (com Merit Shop) · 🏝️ Islands · 💠 Jade Emporium · 🏗️ Construction · 🎣 Fishing · 🛐 Worship · 🍳 Cooking · 🏪 Zenith Market · 🍖 Food · 🔨 Smithing · 🦋 Catching · 📓 Death Note · 🏟️ Breeding · 🎪 Minigames (Darts e Hoops).
+  - Cases: os testes da T007 passam (id slug, emoji único, nome em inglês, prova por referência); `tree/systems.test.ts` passa sem mudança de caso (os novos entram depois dos extras).
+- [ ] T147 Commit de dados: os esboços com a raiz certa e o catálogo (depende de T145; spec, Open Questions 21/11)
+  - Files: `src/calculator/blueprints/<lote>/*.blueprint.json`; `docs/catalogo/numeros.json` e `src/shared/number-catalog.json` só nos ids que mudam.
+  - Catálogo: saem `alch-brew-per-hour` e `alch-liquid-rate` (destino painel de farm); `alch-bubble-cost-reduction` vira `-bits` e `-item`; `farm-market-cost-reduction` vira `-day` e `-night`; continua com 289.
+  - Raízes: a tabela de raízes corrigidas da sonda (pasta de trabalho da 010, `raizes-corrigidas.md`), com a forma "parte de uma chamada" nos casos sem chamada própria; as raízes que são só leitura do save ficam para a T149.
+  - Cases: o teste "uma receita por número" (T023) passa com os ids novos.
+- [ ] T148 [P] A sonda vê o zero do acumulador posto no começo de um laço `for` (`arcade-ball-bonus`, `research-insight-rate`) em `answer-key.ts` (research R1)
+  - Cases: um bloco inventado com o zero no init do `for` dá `chain`, não `outOfRule`.
+- [ ] T149 [sessão] Sonda das raízes de novo: `just trees roots` no PC do Vinicius (depende de T143–T148) — **Parada:** se sobrar raiz fora da regra, a tabela vai ao Vinicius.
 
 **Checkpoint**: `just check` passa; a decisão das raízes fora da regra está registrada.
 
