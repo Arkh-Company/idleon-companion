@@ -2,7 +2,7 @@
 // `just draft` over the real game, only on Vinicius's PC, one process. The run is real-trees.integration.test.ts; here
 // is what CI can test over the invented game: the variables, the target, the plan, the probe of the roots and the
 // summary. Every output goes to TREES_OUT, outside the repository, and carries no character's name.
-import { isAbsolute, relative, resolve } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import type { Op } from "../instrument.ts";
 import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
@@ -59,7 +59,12 @@ export function outPath(out: string, ...parts: string[]): string {
   const base = resolve(out);
   const p = resolve(base, ...parts);
   const rel = relative(base, p);
-  if (rel === "" || rel.startsWith("..") || isAbsolute(rel))
+  if (
+    rel === "" ||
+    rel === ".." ||
+    rel.startsWith(`..${sep}`) ||
+    isAbsolute(rel)
+  )
     throw new Error("saída fora de TREES_OUT");
   return p;
 }

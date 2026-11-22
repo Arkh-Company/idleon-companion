@@ -28,10 +28,11 @@ const isObj = (x: unknown): x is Record<string, unknown> =>
 const only = (o: Record<string, unknown>, keys: readonly string[]) =>
   Object.keys(o).every((k) => keys.includes(k)) && keys.every((k) => k in o);
 const isVerdict = (v: unknown): v is Verdict => v === "approved" || v === "fix";
-/** A note only with fix, up to NOTE_MAX characters. */
+/** A note only with fix, up to NOTE_MAX characters; fix needs one. */
 const noteFits = (verdict: unknown, note: unknown) =>
-  note === null ||
-  (verdict === "fix" && typeof note === "string" && note.length <= NOTE_MAX);
+  note === null
+    ? verdict !== "fix"
+    : verdict === "fix" && typeof note === "string" && note.length <= NOTE_MAX;
 
 function isEntry(x: unknown): x is ReviewEntry {
   return (
@@ -138,11 +139,7 @@ export function withVerdict(
   sha: string,
   at: string,
 ): Review {
-  if (
-    !isVerdict(verdict) ||
-    (verdict === "fix" && note === null) ||
-    !noteFits(verdict, note)
-  )
+  if (!isVerdict(verdict) || !noteFits(verdict, note))
     throw new RangeError(
       "a note only with fix, up to 2,000 characters; fix needs one",
     );
