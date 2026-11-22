@@ -72,6 +72,7 @@
     if (parent) parent.c.push(n.id);
     return n;
   };
+  // a text argument is cut to the blueprint's ARG_TEXT_MAX (declared/refs.ts; arg-text.test.ts pins both)
   function simple(x) {
     if (x === null || typeof x === "number" || typeof x === "boolean") return x;
     if (typeof x !== "string") return "(" + typeof x + ")";

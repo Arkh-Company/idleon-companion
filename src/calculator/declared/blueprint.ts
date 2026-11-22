@@ -3,7 +3,7 @@
 // a blueprint outside these rules answers `unknownNumber` for its number. A draft (research R7) says in `pending` where
 // a name, a system, a leaf or a descent is still missing; only there may it be null or absent.
 import { CALC_CONDITION_KINDS, CALC_LEAF_KINDS } from "../tree-contract.ts";
-import { hasRawCharacterIndex, isPathRead } from "./refs.ts";
+import { ARG_TEXT_MAX, hasRawCharacterIndex, isPathRead } from "./refs.ts";
 import type {
   Blueprint,
   BlueprintPending,
@@ -92,7 +92,7 @@ function checkRef(x: unknown, where: string, list = false): void {
       !r.args.every(
         (a) =>
           (typeof a === "number" && Number.isFinite(a)) ||
-          (typeof a === "string" && a.length <= 60) ||
+          (typeof a === "string" && a.length <= ARG_TEXT_MAX) ||
           (list &&
             Array.isArray(a) &&
             a.length > 0 &&
