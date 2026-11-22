@@ -100,3 +100,60 @@ export function partOf(
   });
   return best;
 }
+
+/**
+ * A routine's root (T152): the routine ran once on the recorder's copy, under its own node; the root is the sum of
+ * the state paths it wrote that match `pattern` (`[*]` any index), the last value of each, in the order first written.
+ */
+export function routineKey(
+  rec: Recording,
+  pattern: string,
+): AnswerKey | RootFormError {
+  const routine = rec.nodes.find((n) => n.b === "(routine)");
+  if (!routine) return outOfRule("a rotina não rodou");
+  const inside = (id: number | null): boolean => {
+    for (let n = id; n !== null; n = rec.nodes[n]?.p ?? null)
+      if (n === routine.id) return true;
+    return false;
+  };
+  const re = new RegExp(
+    `^${pattern
+      .split("[*]")
+      .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\[\\d+\\]")}$`,
+  );
+  const last = new Map<string, number>();
+  for (const w of rec.writes)
+    if (inside(w.node) && re.test(w.path) && typeof w.v === "number")
+      last.set(w.path, w.v);
+  if (last.size === 0)
+    return outOfRule(`a rotina não escreveu nada em ${pattern}`);
+  const terms: AnswerTerm[] = [...last].map(([path, value]) => ({
+    kind: "source",
+    ref: path,
+    refs: [path],
+    nodes: [null],
+    value,
+    weight: 1,
+    via: [],
+  }));
+  const final = terms.reduce((s, t) => s + t.value, 0);
+  return {
+    root: `routine ${pattern}`,
+    final,
+    form: "sum",
+    accumulator: null,
+    top: [],
+    pools: [
+      {
+        kind: "additive",
+        value: final,
+        after: final,
+        steps: [],
+        error: 0,
+        terms,
+      },
+    ],
+    pollution: {},
+  };
+}

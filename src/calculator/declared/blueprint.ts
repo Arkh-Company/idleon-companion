@@ -56,7 +56,19 @@ export interface BlueprintRoot {
   calls?: readonly CallRef[];
   part?: readonly Ref[];
   scratch?: Readonly<Record<string, string | number>>;
+  /** A routine of the game run on the recorder's copy only (a block, or a helper actor's event; T152)… */
+  routine?: RoutineStep;
+  /** …and the state path, `[*]` for any index, whose written values it sums. */
+  sum?: string;
 }
+export type RoutineStep =
+  | CallRef
+  | {
+      slot: number;
+      behavior: string;
+      event: string;
+      args?: readonly (string | number)[];
+    };
 export interface Blueprint {
   id: string;
   root: BlueprintRoot;
@@ -267,11 +279,26 @@ const isCall = (x: unknown): boolean => isObj(x) && "call" in x;
 function checkRoot(raw: unknown): void {
   const root = obj(
     raw,
-    ["name", "nameProof", "ref", "combine", "calls", "part", "scratch"],
+    [
+      "name",
+      "nameProof",
+      "ref",
+      "combine",
+      "calls",
+      "part",
+      "scratch",
+      "routine",
+      "sum",
+    ],
     "root",
   );
   checkName(root.name, "root");
   if (root.nameProof !== undefined) checkProof(root.nameProof, "root");
+  if (root.routine !== undefined) {
+    checkRoutine(root);
+    return;
+  }
+  if (root.sum !== undefined) no("root", "sum só com routine");
   if (root.combine !== undefined) {
     if (root.combine !== "sum") no("root", "combine só é sum");
     if (
@@ -316,6 +343,40 @@ function checkRoot(raw: unknown): void {
     )
       no("root", "scratch é { atributo: texto curto ou número }");
   }
+}
+
+function checkRoutine(root: Record<string, unknown>): void {
+  if (
+    Object.keys(root).some(
+      (k) => !["name", "nameProof", "routine", "sum"].includes(k),
+    )
+  )
+    no("root", "a raiz routine só tem name, nameProof, routine e sum");
+  const r = root.routine;
+  if (isCall(r)) checkRef(r, "root/routine");
+  else {
+    const e = obj(r, ["slot", "behavior", "event", "args"], "root/routine");
+    const okArgs =
+      e.args === undefined ||
+      (Array.isArray(e.args) &&
+        e.args.every(
+          (a) =>
+            (typeof a === "number" && Number.isFinite(a)) ||
+            (typeof a === "string" && a.length <= 60),
+        ));
+    if (
+      !Number.isInteger(e.slot) ||
+      (e.slot as number) < 0 ||
+      typeof e.behavior !== "string" ||
+      !IDENT.test(e.behavior) ||
+      typeof e.event !== "string" ||
+      !IDENT.test(e.event) ||
+      !okArgs
+    )
+      no("root", "routine é uma chamada ou { slot, behavior, event, args }");
+  }
+  if (typeof root.sum !== "string" || !isPathRead(root.sum))
+    no("root", "sum é um caminho do estado");
 }
 
 export function parseBlueprint(

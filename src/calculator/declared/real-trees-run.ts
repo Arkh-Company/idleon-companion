@@ -4,7 +4,7 @@
 // summary. Every output goes to TREES_OUT, outside the repository, and carries no character's name.
 import { isAbsolute, relative, resolve } from "node:path";
 import type { Op } from "../instrument.ts";
-import type { Recording } from "../recording.ts";
+import type { RecipeStep, Recording } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { AnswerKey, PoolKind } from "./answer-key.ts";
@@ -80,11 +80,30 @@ export function rootCallOf(bp: Blueprint, character = 0): RootCall {
   return [ref.call, callArgs(ref, character)];
 }
 
-/** Every call the root records: its one call, or each call of a sum, in order. */
+/** Every call the root records: its one call, each call of a sum in order, or none for a routine's root. */
 export const rootCallsOf = (bp: Blueprint, character = 0): RootCall[] =>
-  bp.root.calls
-    ? bp.root.calls.map((c) => [c.call, callArgs(c, character)] as const)
-    : [rootCallOf(bp, character)];
+  bp.root.routine
+    ? []
+    : bp.root.calls
+      ? bp.root.calls.map((c) => [c.call, callArgs(c, character)] as const)
+      : [rootCallOf(bp, character)];
+
+/** The root's routine as the recorder runs it (a block call, or a helper actor's event). */
+export function routineStepOf(
+  bp: Blueprint,
+  character = 0,
+): RecipeStep | undefined {
+  const r = bp.root.routine;
+  if (!r) return undefined;
+  return "call" in r
+    ? { block: r.call, args: callArgs(r, character) }
+    : {
+        slot: r.slot,
+        behavior: r.behavior,
+        event: r.event,
+        args: [...(r.args ?? [])],
+      };
+}
 
 /** The recorder's copy of the state with the root's marker set on it (never the save, never the running app). */
 export function mosaicWith(
@@ -119,18 +138,21 @@ export function probeRoot(
   record: (
     roots: readonly RootCall[],
     scratch?: Readonly<Record<string, string | number>>,
+    routine?: RecipeStep,
   ) => Recording,
   ops: readonly Op[],
   bp: Blueprint,
   character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const { ref, calls, part, scratch } = bp.root;
+  const { ref, calls, part, scratch, routine, sum } = bp.root;
   const base = {
     id: bp.id,
     call: ref
       ? refKey(ref, character)
-      : `sum of ${String(calls?.length ?? 0)} calls`,
+      : routine
+        ? `routine ${"call" in routine ? refKey(routine, character) : routine.event}`
+        : `sum of ${String(calls?.length ?? 0)} calls`,
   };
   const done = (
     form: RootForm,
@@ -147,7 +169,7 @@ export function probeRoot(
   let stage = "a gravação";
   try {
     const roots = rootCallsOf(bp, character);
-    const rec: Recording = record(roots, scratch);
+    const rec: Recording = record(roots, scratch, routineStepOf(bp, character));
     const tops = (rec.nodes[rec.root ?? -1]?.c ?? [])
       .slice(0, roots.length)
       .map((id) => rec.nodes[id]);
@@ -158,11 +180,13 @@ export function probeRoot(
     )
       return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";
-    const shape = calls
-      ? { sum: calls.length }
-      : part
-        ? { part: part.map((r) => refKey(r, character)) }
-        : null;
+    const shape = routine
+      ? { routine: refKey({ read: sum ?? "" }, character) }
+      : calls
+        ? { sum: calls.length }
+        : part
+          ? { part: part.map((r) => refKey(r, character)) }
+          : null;
     const key = answerKey(rec, ops, shape);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(

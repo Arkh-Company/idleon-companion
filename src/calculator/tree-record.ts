@@ -8,7 +8,7 @@ import type { Op } from "./instrument.ts";
 import namesReaderSource from "./names-reader.js?raw";
 import recorderPassSource from "./recorder-pass.js?raw";
 import recorderSource from "./recorder.js?raw";
-import type { Recipe, Recording } from "./recording.ts";
+import type { Recipe, RecipeStep, Recording } from "./recording.ts";
 
 /** Measured again on the compiled calculator.js over the real game (T026); the host's own limit is above these. */
 export const TREE_LIMITS = { startMs: 20_000, numberMs: 10_000 };
@@ -46,6 +46,8 @@ export function bootRecorder(
     recipe: Recipe,
     scene?: boolean,
     follow?: readonly FollowCall[],
+    /** A routine of the game run after the roots, on this copy only (spec 010, T152). */
+    routine?: RecipeStep,
   ): Recording;
 } {
   const { source, ops } = instrument(anchored(code));
@@ -64,7 +66,7 @@ export function bootRecorder(
   return {
     context,
     ops,
-    record(mosaicJson, roots, recipe, scene = false, follow = []) {
+    record(mosaicJson, roots, recipe, scene = false, follow = [], routine) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);
       try {
@@ -78,6 +80,11 @@ export function bootRecorder(
           `__rec.roots(${JSON.stringify(roots)}, ${JSON.stringify(follow)})`,
           numberMs,
         );
+        if (routine)
+          run(
+            `__rec.routine(${JSON.stringify(JSON.stringify(routine))})`,
+            numberMs,
+          );
         run("__rec.startBuilders()", startMs);
         recipe.builders.forEach((_, i) => {
           try {

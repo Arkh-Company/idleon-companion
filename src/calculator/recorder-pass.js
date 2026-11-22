@@ -99,6 +99,19 @@
     }
   };
 
+  // Spec 010 (T152): a routine of the game (a block, or an event of a helper actor) run once on this copy, after the
+  // roots, under its own node: the state paths it writes are the number (the Cog Board, summed by its screen).
+  G.__rec.routine = (json) => {
+    var node = S.newNode("(routine)", [], null);
+    S.on = true;
+    S.cur = node;
+    try {
+      runStep(JSON.parse(json));
+    } finally {
+      S.stopped();
+    }
+  };
+
   // A builder cut by its time limit: the state goes back as it was before it, and none of its writes explains a read.
   G.__rec.abandonBuilder = () => {
     var p = S.pending;

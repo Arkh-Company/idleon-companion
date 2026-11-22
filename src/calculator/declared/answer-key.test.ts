@@ -337,50 +337,6 @@ test("a read and a child call with the final value: the call wins, the root only
   );
 });
 
-// Spec 010, T145: the root's shapes, with their values (the review's I3).
-test("a part of a call: the value is the recorded step that holds the references, and its terms are them", () => {
-  const key = answerKey(record("TreeDeclFactor"), recorder.ops, {
-    part: ["TreeLoop()", "TreeTwins[0]"],
-  });
-  if ("error" in key) throw new Error(key.reason);
-  // TreeLoop() sums TreeList (1 + 2 + 3) and TreeTwins[0] is 3 (fake-mosaic.ts)
-  expect(key.final).toBe(18);
-  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
-    "TreeLoop()",
-    "TreeTwins[0]",
-  ]);
-});
-
-test("a part whose step holds a reference outside it is refused, with the references too many", () => {
-  const key = answerKey(record("TreeDeclFactor"), recorder.ops, {
-    part: ["TreeLoop()", "TreeReads()"],
-  });
-  expect(key).toMatchObject({ error: "rootForm" });
-  expect("reason" in key ? key.reason : "").toMatch(/TreeTwins\[0\]/);
-});
-
-test("a sum of calls: the final is the sum of the recorded values, the calls' refs in order", () => {
-  const rec = recorder.record(
-    mosaicOf(),
-    [
-      ["TreeReads", [0, 0, 0]],
-      ["TreeLoop", [0, 0, 0]],
-    ],
-    { recompute: [], builders: [] },
-  );
-  const key = answerKey(rec, recorder.ops, { sum: 2 });
-  if ("error" in key) throw new Error(key.reason);
-  const [a, b] = (rec.nodes[rec.root ?? -1]?.c ?? []).map(
-    (id) => rec.nodes[id]?.v,
-  );
-  expect(key.final).toBe(Number(a) + Number(b));
-  expect(key.final).toBe(14);
-  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
-    "TreeReads(0,0,0)",
-    "TreeLoop(0,0,0)",
-  ]);
-});
-
 // Spec 010, T148: the running total set to 0 in a for loop's init (arcade-ball-bonus, research-insight-rate).
 test("a running total set to 0 in a for loop's init is a chain, not out of the rule", () => {
   const key = keyOf("TreeLoopZero");

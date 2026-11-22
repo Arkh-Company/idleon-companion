@@ -292,6 +292,48 @@ test("the root's shapes (spec, Open Questions 21/11): a sum of calls, a part of 
   }
 });
 
+test("a routine's root (T152): a block or a helper's event run on the recorder's copy, and the state path it sums", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const event = {
+    slot: 0,
+    behavior: "ActorEvents_29",
+    event: "_customEvent_Board",
+  };
+  for (const routine of [event, { call: "Invented", args: ["Board", 0] }])
+    expect(
+      sketch({ name: "Invented", routine, sum: "InventedBoard[*]" }),
+      JSON.stringify(routine),
+    ).toMatchObject({ ok: true, stage: "sketch" });
+  for (const [root, reason] of [
+    [{ name: "Invented", routine: event }, /sum/],
+    [{ name: "Invented", routine: event, sum: "A[1] + B[2]" }, /sum/],
+    [
+      {
+        name: "Invented",
+        routine: { slot: -1, behavior: "B", event: "e" },
+        sum: "A[*]",
+      },
+      /routine/,
+    ],
+    [{ name: "Invented", routine: { read: "A[1]" }, sum: "A[*]" }, /routine/],
+    [
+      {
+        name: "Invented",
+        routine: event,
+        sum: "A[*]",
+        ref: { call: "X", args: [] },
+      },
+      /routine/,
+    ],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
+      reason,
+    );
+  }
+});
+
 test("only id and root is a sketch", () => {
   const { id, root } = complete();
   expect(parseBlueprint({ id, root }, ctx)).toMatchObject({

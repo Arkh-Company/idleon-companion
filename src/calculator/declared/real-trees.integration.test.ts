@@ -130,13 +130,14 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             continue;
           }
           const probe = probeRoot(
-            (roots, scratch) =>
+            (roots, scratch, routine) =>
               recorder.record(
                 mosaicWith(state, scratch),
                 [...roots, ...EXTRA_ROOTS],
                 TREE_RECIPE,
                 false,
                 FOLLOW_CALLS,
+                routine,
               ),
             recorder.ops,
             b.bp,

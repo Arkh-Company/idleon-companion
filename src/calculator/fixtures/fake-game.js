@@ -205,6 +205,13 @@ lime.$scripts.N = function (_exports, $global) {
   HelperActor.prototype._customEvent_Prepare = function () {
     this._ready = this._mode === "d" ? 2 : 0;
   };
+  // Spec 010 (T152): a routine of a screen that writes a board into the state, as the game sums its Cog Board.
+  HelperActor.prototype._customEvent_TreeBoard = function () {
+    var s = state();
+    s.TreeBoard = [];
+    for (var i = 0; i < s.TreeList.length; i++)
+      s.TreeBoard[i] = s.TreeList[i] * (1 + s.TreeStats.h.a / 100);
+  };
   A["scripts.ActorEvents_29"] = HelperActor;
 
   var EveryScene = function () {

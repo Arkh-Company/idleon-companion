@@ -20,7 +20,7 @@ import {
   termReader,
 } from "./answer-key-terms.ts";
 import type { AnswerTerm, RawTerm, RootFormError } from "./answer-key-terms.ts";
-import { partOf, sumKey } from "./answer-key-shapes.ts";
+import { partOf, routineKey, sumKey } from "./answer-key-shapes.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
@@ -56,7 +56,8 @@ export interface AnswerKey {
 }
 
 /** The blueprint's root shape, its references already turned into keys: a sum of calls, or a part of the call. */
-export type RootShape = { sum: number } | { part: readonly string[] } | null;
+export type RootShape =
+  { sum: number } | { part: readonly string[] } | { routine: string } | null;
 
 const KIND: Record<string, PoolKind> = {
   "+": "additive",
@@ -91,9 +92,10 @@ export function answerKey(
   shape: RootShape = null,
 ): AnswerKey | RootFormError {
   if (shape && "sum" in shape) return sumKey(rec, shape.sum);
+  if (shape && "routine" in shape) return routineKey(rec, shape.routine);
   const top = topOf(rec);
   if (!top) return outOfRule("a gravação não tem raiz");
-  const part = shape?.part ?? null;
+  const part = shape && "part" in shape ? shape.part : null;
   const gate =
     part || typeof top.v !== "number" ? null : gateOf(top, ops, top.v);
   const blockSteps = makeSteps(rec, ops).of(top.id);

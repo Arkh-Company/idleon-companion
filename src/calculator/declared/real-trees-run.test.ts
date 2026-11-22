@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
-import type { Recording } from "../recording.ts";
+import type { RecipeStep, Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { RootCall } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
@@ -114,11 +114,16 @@ const sketch = (id: string, call: string): Blueprint => ({
 const record = (
   roots: readonly RootCall[],
   scratch?: Readonly<Record<string, string | number>>,
+  routine?: RecipeStep,
 ) =>
-  recorder.record(mosaicWith(mosaicOf(), scratch), roots, {
-    recompute: [],
-    builders: [],
-  });
+  recorder.record(
+    mosaicWith(mosaicOf(), scratch),
+    roots,
+    { recompute: [], builders: [] },
+    false,
+    [],
+    routine,
+  );
 
 test("the probe records each sketch's root and classifies its form", () => {
   const probes = [
@@ -274,4 +279,22 @@ test("a call that fails stops its root only, never the run: no value, as the liv
       rooted("next", { ref: { call: "TreeLayerRead", args: [0, 0, 0] } }),
     ).form,
   ).toBe("leaf");
+});
+
+test("a routine's root (T152): the routine runs on the recorder's copy, and the root is the sum of what it writes", () => {
+  const board = rooted("board", {
+    routine: {
+      slot: 0,
+      behavior: "ActorEvents_29",
+      event: "_customEvent_TreeBoard",
+    },
+    sum: "TreeBoard[*]",
+  });
+  expect(rootCallsOf(board, 0)).toEqual([]);
+  expect(probeRoot(record, recorder.ops, board)).toMatchObject({
+    call: "routine _customEvent_TreeBoard",
+    form: "sum",
+    pools: ["additive"],
+    reason: null,
+  });
 });
