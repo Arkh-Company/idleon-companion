@@ -1847,6 +1847,16 @@ lime.$scripts.N = function (_exports, $global) {
     s.TreeLevel > 20 && (d.TreeCutOther.h.v = 20);
     return d.TreeCutOther.h.v;
   };
+  // A floor whose test is on another value than the total, the total already above it: no floor of the total.
+  Blocks._customBlock_TreeFloorOther = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorOther = new StringMap();
+    d.TreeFloorOther.h.v = s.TreeBase + 2;
+    d.TreeFloorOther.h.v = d.TreeFloorOther.h.v * 2;
+    s.TreeBase < 10 && (d.TreeFloorOther.h.v = 10);
+    return d.TreeFloorOther.h.v;
+  };
   Blocks._customBlock_TreeFloorIf = function () {
     var d = dnsm();
     d.TreeFloorIf = new StringMap();

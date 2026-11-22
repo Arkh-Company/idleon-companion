@@ -350,3 +350,10 @@ test("a cut written under a test whose total is already on the other side of K i
     /a escrita 20 do acumulador é um corte que não vem do total/,
   );
 });
+
+test("a floor written under a test whose total is already above K is refused", () => {
+  // (TreeBase + 2) × 2 = 12, then TreeBase < 10 && (total = 10): the test is not on the total
+  expect(refusal("TreeFloorOther")).toMatch(
+    /a escrita 10 do acumulador é um corte que não vem do total/,
+  );
+});
