@@ -51,11 +51,6 @@ export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
   };
 }
 
-/**
- * A part of a call (T153): the terms of one recorded pool that the blueprint names by reference, each once; the root's
- * value is their product (a Multi pool) or their weighted sum (an Additive pool). A reference that is no term of a
- * pool, or terms in two pools, are refused with the reason.
- */
 /** Why a part was refused: a reference that is no term (`missing`), or more than one candidate (`ambiguous`). */
 export type PartRefusal = RootFormError & { part: "missing" | "ambiguous" };
 const refused = (part: PartRefusal["part"], why: string): PartRefusal => ({
@@ -63,6 +58,11 @@ const refused = (part: PartRefusal["part"], why: string): PartRefusal => ({
   part,
 });
 
+/**
+ * A part of a call (T153): the terms of one recorded pool that the blueprint names by reference, each once; the root's
+ * value is their product (a Multi pool) or their weighted sum (an Additive pool). A reference that is no term of a
+ * pool, or terms in two pools, are refused with the reason.
+ */
 export function partKey(
   key: AnswerKey,
   refs: readonly string[],
@@ -102,8 +102,9 @@ export function partKey(
 
 /**
  * The part in the running total a call builds in a scratch path that the root only reads (a bubble's cost, T155):
- * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there. The one that holds
- * the part, or null when none does; more than one is ambiguous and refused.
+ * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there. A call that holds the
+ * part, or where the part is ambiguous, is a candidate: one gives its part or its refusal, none gives null, and more
+ * than one is ambiguous and refused.
  */
 export function partInWriters(
   rec: Recording,
@@ -124,7 +125,8 @@ export function partInWriters(
   const parts = [...writers.values()].flatMap(({ node, value }) => {
     const inner = keyOf(node, value);
     const part = "error" in inner ? inner : partKey(inner, refs);
-    return "error" in part ? [] : [part];
+    const ambiguous = "part" in part && part.part === "ambiguous";
+    return "error" in part && !ambiguous ? [] : [part];
   });
   if (parts.length > 1) return outOfRule("a parte vem de mais de uma chamada");
   return parts[0] ?? null;

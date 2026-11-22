@@ -156,15 +156,15 @@ export function answerKeyOfSteps(
   const layered = !!peeled && peeled.layers.length > 0;
   // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
   const v = peeled?.rest.v;
-  const under =
-    layered &&
-    typeof v === "number" &&
-    (peeled.rest.t === "read" || peeled.rest.t === "val")
-      ? chainFor(v)
-      : null;
+  const onTotal =
+    layered && (peeled.rest.t === "read" || peeled.rest.t === "val");
+  const under = onTotal && typeof v === "number" ? chainFor(v) : null;
   let acc = chainFor(final);
+  // a layer over an expression, with a chain whose last write is the same value: either could be the root
+  if (layered && !onTotal && acc)
+    return out("a corrente e o último passo dão o mesmo valor");
   // the peeled step only with a chain under its layer, or with no chain for the final value: a running total whose
-  // last write has a layer and nothing under it goes to the chain, which refuses that write with the reason
+  // last write has a layer over the total and nothing under it goes to the chain, which refuses that write
   const at = last && (under || !acc) ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
   if (at && peeled) {

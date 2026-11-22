@@ -203,3 +203,13 @@ test("a running total whose last write has a layer with no chain under it is ref
     "multi",
   ]);
 });
+
+test("a layer over an expression of the total that keeps the last write's value is ambiguous with the chain, and refused", () => {
+  // 12, 24, then floor(24 × (1 + TreeOwned 0 / 100)) = 24: the chain and the last step give the same value
+  expect(refusal("TreeLayerOnExpr")).toMatch(
+    /a corrente e o último passo dão o mesmo valor/,
+  );
+  // a layer over the total itself stays the chain's (the cap that bites) or its layer (the Multi-Ore)
+  expect(refusal("TreeCapWrite")).toMatch(/não soma nem multiplica/);
+  expect(keyOf("TreeCapAcc").form).toBe("chain");
+});

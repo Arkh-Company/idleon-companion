@@ -1580,6 +1580,31 @@ lime.$scripts.N = function (_exports, $global) {
       (2 + s.TreeTwins[0] / 50)
     );
   };
+  // The third review of T154 to T156: a layer over an expression of the total, with a bonus of 0 that keeps the value
+  // of the last write; a cost whose build has the part in two terms, that the root only reads.
+  Blocks._customBlock_TreeLayerOnExpr = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeLayerExpr = new StringMap();
+    d.TreeLayerExpr.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeLayerExpr.h.v = d.TreeLayerExpr.h.v * 2;
+    return Math.floor(d.TreeLayerExpr.h.v * (1 + s.TreeOwned / 100));
+  };
+  Blocks._customBlock_TreeCostAmbBuild = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostAmb = new StringMap();
+    d.TreeCostAmb.h.v = s.TreeCapped * 100;
+    d.TreeCostAmb.h.v =
+      d.TreeCostAmb.h.v * Math.max(0.1, 1 - s.TreeStats.h.a / 100);
+    d.TreeCostAmb.h.v =
+      d.TreeCostAmb.h.v * Math.max(0.5, 1 - s.TreeStats.h.a / 50);
+    return 0;
+  };
+  Blocks._customBlock_TreeCostAmbRead = function () {
+    Blocks._customBlock_TreeCostAmbBuild();
+    return Math.round(dnsm().TreeCostAmb.h.v);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

@@ -219,3 +219,14 @@ test("a part ambiguous in the root is refused there, never looked for in the cal
     /a parte está em mais de um termo/,
   );
 });
+
+test("a part ambiguous inside the one call that builds what the root reads is refused with that reason", () => {
+  // TreeCostAmbRead rounds the cost TreeCostAmbBuild builds, with TreeStats.a in two of its reducers
+  const key = answerKey(record("TreeCostAmbRead"), recorder.ops, {
+    part: ["TreeStats.a"],
+  });
+  expect(key).toMatchObject({ error: "rootForm" });
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a parte está em mais de um termo/,
+  );
+});
