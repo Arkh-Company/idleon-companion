@@ -334,6 +334,39 @@ test("a routine's root (T152): a block or a helper's event run on the recorder's
   }
 });
 
+test("a routine in steps (T156): each event may set its trigger text first, and the sum may go through a helper", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const pass = (text: unknown) => ({
+    slot: 8,
+    behavior: "ActorEvents_481",
+    event: "_customEvent_Board",
+    set: ["_TRIGGEREDtext", text],
+  });
+  const sum =
+    "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[8][*].a";
+  expect(
+    sketch({ name: "Invented", routine: [pass("m"), pass("z")], sum }),
+  ).toMatchObject({ ok: true, stage: "sketch" });
+  for (const [root, reason] of [
+    [{ name: "Invented", routine: [], sum }, /routine/],
+    [{ name: "Invented", routine: [pass({ a: 1 })], sum }, /routine/],
+    [
+      {
+        name: "Invented",
+        routine: [pass("m")],
+        sum: "PixelHelperActor[8].getBehavior(A B).x",
+      },
+      /sum/,
+    ],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
+      reason,
+    );
+  }
+});
+
 test("only id and root is a sketch", () => {
   const { id, root } = complete();
   expect(parseBlueprint({ id, root }, ctx)).toMatchObject({

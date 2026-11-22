@@ -4,79 +4,25 @@
 // a name, a system, a leaf or a descent is still missing; only there may it be null or absent.
 import { CALC_CONDITION_KINDS, CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { hasRawCharacterIndex, isPathRead } from "./refs.ts";
-import type { Ref } from "./refs.ts";
-
-export type LeafKind = Exclude<(typeof CALC_LEAF_KINDS)[number], "unknown">;
-export type ConditionKind = (typeof CALC_CONDITION_KINDS)[number];
-export type NameProof =
-  { table: string; row: number | string } | { names: string };
-
-export interface BlueprintNode {
-  key: string;
-  /** In a draft, null where `pending` says `name`. */
-  name: string;
-  nameProof?: NameProof;
-  ref?: Ref;
-  /** A loose constant of a pool (the `+ 2`, the `× 1.2`): no `ref`, leaf `fixedValue`. */
-  constant?: number;
-  weight?: number;
-  classes?: readonly number[];
-  condition?: BlueprintNode;
-  termPart?: { system: string };
-  children?: readonly BlueprintNode[];
-  leaf?: LeafKind;
-  conditionKind?: ConditionKind;
-}
-export interface BlueprintGroup {
-  /** In a draft, null where `pending` says `system`. */
-  system: string;
-  sources: readonly BlueprintNode[];
-}
-export interface BlueprintPool {
-  kind: "additive" | "multi";
-  weight?: 1 | 0.01;
-  groups: readonly BlueprintGroup[];
-}
-export interface BlueprintPending {
-  /** The place in the file: `pools/0/groups/1/sources/2/children/0`. */
-  where: string;
-  kind: "name" | "system" | "leaf" | "descend";
-}
-export type CallRef = Extract<Ref, { call: string }>;
-/**
- * The root (spec, Open Questions 21/11; ADR 0010: never a calculation): one call, or the sum of several calls (Tome
- * Score); a call may name its `part`, the recorded step that holds those references (a reducer inside a cost), and a
- * `scratch` marker, set only on the copy of the game the recorder runs on, before the call.
- */
-export interface BlueprintRoot {
-  name: string;
-  nameProof?: NameProof;
-  ref?: CallRef;
-  combine?: "sum";
-  calls?: readonly CallRef[];
-  part?: readonly Ref[];
-  scratch?: Readonly<Record<string, string | number>>;
-  /** A routine of the game run on the recorder's copy only (a block, or a helper actor's event; T152)… */
-  routine?: RoutineStep;
-  /** …and the state path, `[*]` for any index, whose written values it sums. */
-  sum?: string;
-}
-export type RoutineStep =
-  | CallRef
-  | {
-      slot: number;
-      behavior: string;
-      event: string;
-      args?: readonly (string | number)[];
-    };
-export interface Blueprint {
-  id: string;
-  root: BlueprintRoot;
-  /** Empty in a sketch. */
-  pools: readonly BlueprintPool[];
-  pending?: readonly BlueprintPending[];
-}
-export type BlueprintStage = "sketch" | "draft" | "complete";
+import type {
+  Blueprint,
+  BlueprintPending,
+  BlueprintStage,
+} from "./blueprint-types.ts";
+export type {
+  LeafKind,
+  ConditionKind,
+  NameProof,
+  BlueprintNode,
+  BlueprintGroup,
+  BlueprintPool,
+  BlueprintPending,
+  CallRef,
+  BlueprintRoot,
+  RoutineStep,
+  Blueprint,
+  BlueprintStage,
+} from "./blueprint-types.ts";
 
 const LEAF_KINDS: readonly string[] = CALC_LEAF_KINDS.filter(
   (k) => k !== "unknown",
@@ -352,18 +298,40 @@ function checkRoutine(root: Record<string, unknown>): void {
     )
   )
     no("root", "a raiz routine só tem name, nameProof, routine e sum");
-  const r = root.routine;
+  const steps = Array.isArray(root.routine)
+    ? list(root.routine, "root", "routine")
+    : [root.routine];
+  steps.forEach(checkRoutineStep);
+  // a path through a helper names its behavior: `….behaviors.getBehavior(ActorEvents_1)._GenINFO[8][*].a`
+  const sum =
+    typeof root.sum === "string"
+      ? root.sum.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior")
+      : null;
+  if (sum === null || !isPathRead(sum))
+    no("root", "sum é um caminho do estado");
+}
+
+const isShort = (a: unknown) =>
+  (typeof a === "number" && Number.isFinite(a)) ||
+  (typeof a === "string" && a.length <= 60);
+
+function checkRoutineStep(r: unknown): void {
   if (isCall(r)) checkRef(r, "root/routine");
   else {
-    const e = obj(r, ["slot", "behavior", "event", "args"], "root/routine");
+    const e = obj(
+      r,
+      ["slot", "behavior", "event", "args", "set"],
+      "root/routine",
+    );
     const okArgs =
-      e.args === undefined ||
-      (Array.isArray(e.args) &&
-        e.args.every(
-          (a) =>
-            (typeof a === "number" && Number.isFinite(a)) ||
-            (typeof a === "string" && a.length <= 60),
-        ));
+      e.args === undefined || (Array.isArray(e.args) && e.args.every(isShort));
+    const okSet =
+      e.set === undefined ||
+      (Array.isArray(e.set) &&
+        e.set.length === 2 &&
+        typeof e.set[0] === "string" &&
+        IDENT.test(e.set[0]) &&
+        isShort(e.set[1]));
     if (
       !Number.isInteger(e.slot) ||
       (e.slot as number) < 0 ||
@@ -371,12 +339,14 @@ function checkRoutine(root: Record<string, unknown>): void {
       !IDENT.test(e.behavior) ||
       typeof e.event !== "string" ||
       !IDENT.test(e.event) ||
-      !okArgs
+      !okArgs ||
+      !okSet
     )
-      no("root", "routine é uma chamada ou { slot, behavior, event, args }");
+      no(
+        "root",
+        "routine é uma chamada ou { slot, behavior, event, args, set }, ou uma lista deles",
+      );
   }
-  if (typeof root.sum !== "string" || !isPathRead(root.sum))
-    no("root", "sum é um caminho do estado");
 }
 
 export function parseBlueprint(

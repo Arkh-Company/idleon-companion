@@ -4,11 +4,11 @@
 // summary. Every output goes to TREES_OUT, outside the repository, and carries no character's name.
 import { isAbsolute, relative, resolve } from "node:path";
 import type { Op } from "../instrument.ts";
-import type { RecipeStep, Recording } from "../recording.ts";
+import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { AnswerKey, PoolKind } from "./answer-key.ts";
-import type { Blueprint, BlueprintStage } from "./blueprint.ts";
+import type { Blueprint, BlueprintStage, RoutineStep } from "./blueprint.ts";
 import { callArgs, refKey } from "./refs.ts";
 
 export type TreesMode = "check" | "draft" | "roots";
@@ -88,21 +88,29 @@ export const rootCallsOf = (bp: Blueprint, character = 0): RootCall[] =>
       ? bp.root.calls.map((c) => [c.call, callArgs(c, character)] as const)
       : [rootCallOf(bp, character)];
 
-/** The root's routine as the recorder runs it (a block call, or a helper actor's event). */
+/** A routine's steps in order: one step, or a list of them. */
+const stepsOf = (
+  r: RoutineStep | readonly RoutineStep[],
+): readonly RoutineStep[] => ("length" in r ? r : [r]);
+
+/** The root's routine as the recorder runs it, step by step (block calls, or a helper actor's events). */
 export function routineStepOf(
   bp: Blueprint,
   character = 0,
-): RecipeStep | undefined {
+): RoutineRun[] | undefined {
   const r = bp.root.routine;
   if (!r) return undefined;
-  return "call" in r
-    ? { block: r.call, args: callArgs(r, character) }
-    : {
-        slot: r.slot,
-        behavior: r.behavior,
-        event: r.event,
-        args: [...(r.args ?? [])],
-      };
+  return stepsOf(r).map((s): RoutineRun =>
+    "call" in s
+      ? { block: s.call, args: callArgs(s, character) }
+      : {
+          slot: s.slot,
+          behavior: s.behavior,
+          event: s.event,
+          args: [...(s.args ?? [])],
+          ...(s.set ? { set: s.set } : {}),
+        },
+  );
 }
 
 /** The recorder's copy of the state with the root's marker set on it (never the save, never the running app). */
@@ -138,7 +146,7 @@ export function probeRoot(
   record: (
     roots: readonly RootCall[],
     scratch?: Readonly<Record<string, string | number>>,
-    routine?: RecipeStep,
+    routine?: readonly RoutineRun[],
   ) => Recording,
   ops: readonly Op[],
   bp: Blueprint,
@@ -146,12 +154,13 @@ export function probeRoot(
 ): RootProbe {
   const t0 = performance.now();
   const { ref, calls, part, scratch, routine, sum } = bp.root;
+  const first = routine ? stepsOf(routine)[0] : undefined;
   const base = {
     id: bp.id,
     call: ref
       ? refKey(ref, character)
-      : routine
-        ? `routine ${"call" in routine ? refKey(routine, character) : routine.event}`
+      : first
+        ? `routine ${"call" in first ? refKey(first, character) : first.event}`
         : `sum of ${String(calls?.length ?? 0)} calls`,
   };
   const done = (

@@ -94,12 +94,14 @@ test("a routine's root: the sum of the state paths the routine writes, each path
     { recompute: [], builders: [] },
     false,
     [],
-    {
-      slot: 0,
-      behavior: "ActorEvents_29",
-      event: "_customEvent_TreeBoard",
-      args: [],
-    },
+    [
+      {
+        slot: 0,
+        behavior: "ActorEvents_29",
+        event: "_customEvent_TreeBoard",
+        args: [],
+      },
+    ],
   );
   const key = answerKey(rec, recorder.ops, { routine: "TreeBoard[*]" });
   if ("error" in key) throw new Error(key.reason);
@@ -144,4 +146,31 @@ test("a part is looked for in the running total a call builds in a scratch path 
   expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
     ["multi", ["TreeStats.a", "TreeTwins[0]"]],
   ]);
+});
+
+// Spec 010, T156: a routine in steps, each event with the trigger text it sets first (the Cog Board: m, then z).
+test("a routine in two passes by its trigger text: the sum of what the last pass wrote in the helper's copy", () => {
+  const pass = (text: string) => ({
+    slot: 0,
+    behavior: "ActorEvents_29",
+    event: "_customEvent_TreeHouses",
+    args: [],
+    set: ["_TRIGGEREDtext", text] as const,
+  });
+  const rec = recorder.record(
+    mosaicOf(),
+    [],
+    { recompute: [], builders: [] },
+    false,
+    [],
+    [pass("m"), pass("z")],
+  );
+  const key = answerKey(rec, recorder.ops, {
+    routine:
+      "PixelHelperActor[0].behaviors.getBehavior(ActorEvents_29)._TreeHouses[*].a",
+  });
+  if ("error" in key) throw new Error(key.reason);
+  // TreeList 1, 2 and 3, × 2 each, × (1 + 3 / 100)
+  expect(key.final).toBeCloseTo(12 * 1.03, 12);
+  expect(key.pools[0]?.terms).toHaveLength(3);
 });

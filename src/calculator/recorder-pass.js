@@ -99,14 +99,21 @@
     }
   };
 
-  // Spec 010 (T152): a routine of the game (a block, or an event of a helper actor) run once on this copy, after the
-  // roots, under its own node: the state paths it writes are the number (the Cog Board, summed by its screen).
+  // Spec 010 (T152, T156): a routine of the game (blocks, or events of a helper actor, in order) run once on this copy,
+  // after the roots, under its own node: the state paths it writes are the number (the Cog Board, summed by its
+  // screen). An event step may set a field of its helper first, as the game sets the text that triggers it.
   G.__rec.routine = (json) => {
     var node = S.newNode("(routine)", [], null);
     S.on = true;
     S.cur = node;
     try {
-      runStep(JSON.parse(json));
+      JSON.parse(json).forEach((step) => {
+        if (step.event && step.set) {
+          var actor = S.top.PixelHelperActor[step.slot];
+          actor.behaviors.getBehavior(step.behavior)[step.set[0]] = step.set[1];
+        }
+        runStep(step);
+      });
     } finally {
       S.stopped();
     }

@@ -60,6 +60,11 @@ export type RecipeStep =
       args: (string | number)[];
     };
 
+/** A step of a root's routine on the recorder's copy (spec 010, T152, T156): for an event, the field it sets first. */
+export type RoutineRun = RecipeStep & {
+  set?: readonly [field: string, value: string | number];
+};
+
 export interface Recipe {
   /** Caches dropped from the copy before the helpers, so the game's own code builds them again. */
   recompute: string[];

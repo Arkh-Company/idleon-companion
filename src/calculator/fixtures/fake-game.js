@@ -212,6 +212,20 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < s.TreeList.length; i++)
       s.TreeBoard[i] = s.TreeList[i] * (1 + s.TreeStats.h.a / 100);
   };
+  // Spec 010 (T156): a routine in two passes by its trigger text, as the Cog Board: m builds each house, z applies
+  // the board percent to each house of the copy.
+  HelperActor.prototype._customEvent_TreeHouses = function () {
+    var s = state();
+    if (this._TRIGGEREDtext === "m") {
+      this._TreeHouses = [];
+      for (var i = 0; i < s.TreeList.length; i++)
+        this._TreeHouses[i] = { a: s.TreeList[i] * 2 };
+    }
+    if (this._TRIGGEREDtext === "z")
+      for (var j = 0; j < this._TreeHouses.length; j++)
+        this._TreeHouses[j].a =
+          this._TreeHouses[j].a * (1 + s.TreeStats.h.a / 100);
+  };
   A["scripts.ActorEvents_29"] = HelperActor;
 
   var EveryScene = function () {

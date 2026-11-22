@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
-import type { RecipeStep, Recording } from "../recording.ts";
+import type { Recording, RoutineRun } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { RootCall } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
@@ -114,7 +114,7 @@ const sketch = (id: string, call: string): Blueprint => ({
 const record = (
   roots: readonly RootCall[],
   scratch?: Readonly<Record<string, string | number>>,
-  routine?: RecipeStep,
+  routine?: readonly RoutineRun[],
 ) =>
   recorder.record(
     mosaicWith(mosaicOf(), scratch),
