@@ -5,6 +5,16 @@
     "ref": {
       "call": "FarmingStuffs",
       "args": ["ExoticLVQTY", 0, 0]
-    }
+    },
+    "part": [
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 38, 0]
+      },
+      {
+        "call": "Thingies",
+        "args": ["LegendPTS_bonus", 8, 0]
+      }
+    ]
   }
 }

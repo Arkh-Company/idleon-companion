@@ -5,6 +5,16 @@
     "ref": {
       "call": "Minehead",
       "args": ["Glimbo_Cost", 0, 0]
-    }
+    },
+    "part": [
+      {
+        "call": "Summoning",
+        "args": ["EventShopOwned", 38, 0]
+      },
+      {
+        "call": "Companions",
+        "args": [57]
+      }
+    ]
   }
 }

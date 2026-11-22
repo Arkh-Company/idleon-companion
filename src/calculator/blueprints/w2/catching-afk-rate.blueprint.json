@@ -4,7 +4,7 @@
     "name": "AFK GAINS RATE (Catching)",
     "ref": {
       "call": "AFKgainrates",
-      "args": ["Fighting", 0, 0]
+      "args": ["Catching"]
     }
   }
 }

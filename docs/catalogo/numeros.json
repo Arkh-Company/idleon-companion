@@ -2552,8 +2552,8 @@
     "prova": "`CauldronStats` modo `CauldronCosts`; tabela `AlchemyDescription`"
   },
   {
-    "id": "alch-bubble-cost-reduction",
-    "nome": "Bubble Upgr. Costs reduced (Cost upgrade and other reducers)",
+    "id": "alch-bubble-cost-reduction-bits",
+    "nome": "Bubble Upgr. Costs reduced (Bits bubbles)",
     "mundo": "W2",
     "sistema": "Alchemy (Bubbles, Vials, Cauldrons, Liquids, Pay2Win, Sigils, Kruk)",
     "caixa": "Bônus",
@@ -2562,9 +2562,24 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 1,
-    "motivo": "Redutor do custo das bolhas; junta o upgrade do caldeirão, bolhas, um vial, uma conquista e um item da conta.",
+    "motivo": "Redutor do custo das bolhas pagas em Bits: a opção 62 da conta e a conquista 108 (sonda das raízes, 21/11).",
     "tela": "Alchemy › Brewing (upgrade \"Cost\": \"Bubble Upgr. Costs reduced by %\")",
-    "prova": "`CauldronStats` modos `CauldronCosts`, `CauldronLvsBrewBonus`; estados `AlchBubbles` (BubbleCost*), `AlchVials` (AlchBubbleCost); `AchieveStatus` 108"
+    "prova": "`CauldronStats` modo `CauldronCosts` (caminho Bits); estado `OptionsListAccount` 62; `AchieveStatus` 108"
+  },
+  {
+    "id": "alch-bubble-cost-reduction-item",
+    "nome": "Bubble Upgr. Costs reduced (item bubbles)",
+    "mundo": "W2",
+    "sistema": "Alchemy (Bubbles, Vials, Cauldrons, Liquids, Pay2Win, Sigils, Kruk)",
+    "caixa": "Bônus",
+    "tipo": "Redutor de custo",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 1,
+    "motivo": "Redutor do custo das bolhas pagas em item: o upgrade do caldeirão, as bolhas de custo de cada cor, um vial, a opção 62 e a conquista 108 (sonda das raízes, 21/11).",
+    "tela": "Alchemy › Brewing (upgrade \"Cost\": \"Bubble Upgr. Costs reduced by %\")",
+    "prova": "`CauldronStats` modos `CauldronCosts` (caminho de item), `CauldronLvsBrewBonus`; estados `AlchBubbles` (BubbleCost*), `AlchVials` (AlchBubbleCost), `OptionsListAccount` 62; `AchieveStatus` 108"
   },
   {
     "id": "alch-atom-bubble-cost",
@@ -2699,12 +2714,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "painel-de-farm",
     "marca": "sim",
     "regra": 9,
     "motivo": "Quanto cada caldeirão enche por hora com os personagens nele; é o \"quanto ganho\" das bolhas.",
     "tela": "não aparece na tela (a tela mostra a barra do caldeirão)",
-    "prova": "`CauldronStats` modos `ResearchSpeed`, `SpecificSpdBonuses`"
+    "prova": "`CauldronStats` modos `ResearchSpeed`, `SpecificSpdBonuses`",
+    "motivo_destino": "Sonda das raízes (21/11): sai das árvores e vai ao painel de farm (spec 010, Open Questions de 21/11)."
   },
   {
     "id": "alch-specific-speed",
@@ -2791,12 +2807,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "painel-de-farm",
     "marca": "sim",
     "regra": 9,
     "motivo": "Quanto de cada líquido entra por hora.",
     "tela": "Alchemy › Liquid",
-    "prova": "`CauldronStats` modo `LiquidHRrate`; `StampBonusOfTypeX` `LiquidSpd`; `SaltLick` 5; `Labb` `SigilBonus`; `Summoning` `VaultUpgBonus`, `VotingBonusz`; `MainframeBonus` 6"
+    "prova": "`CauldronStats` modo `LiquidHRrate`; `StampBonusOfTypeX` `LiquidSpd`; `SaltLick` 5; `Labb` `SigilBonus`; `Summoning` `VaultUpgBonus`, `VotingBonusz`; `MainframeBonus` 6",
+    "motivo_destino": "Sonda das raízes (21/11): sai das árvores e vai ao painel de farm (spec 010, Open Questions de 21/11)."
   },
   {
     "id": "alch-liquid-cap",
@@ -11819,8 +11836,8 @@
     "prova": "`FarmingStuffs` modos `MarketCostQTY` e `MarketCostType`; tabela `MarketInfo`"
   },
   {
-    "id": "farm-market-cost-reduction",
-    "nome": "Day/Night Market cost reduction (total)",
+    "id": "farm-market-cost-reduction-day",
+    "nome": "Day Market cost reduction (total)",
     "mundo": "W6",
     "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
     "caixa": "Bônus",
@@ -11831,7 +11848,22 @@
     "regra": 1,
     "motivo": "O redutor total do custo do Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY e BETTER_NIGHT) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11)",
     "tela": "Farming Market (w55), dentro do custo",
-    "prova": "`FarmingStuffs` modo `MarketCostQTY` (Emperor bônus 2; Exotic BETTER_DAY I/II e BETTER_NIGHT I/II)"
+    "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 0, Day): Emperor bônus 2; Exotic BETTER_DAY I e II (34, 35)"
+  },
+  {
+    "id": "farm-market-cost-reduction-night",
+    "nome": "Night Market cost reduction (total)",
+    "mundo": "W6",
+    "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
+    "caixa": "Bônus",
+    "tipo": "Redutor de custo",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 1,
+    "motivo": "O redutor total do custo do Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY e BETTER_NIGHT) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11)",
+    "tela": "Farming Market (w55), dentro do custo",
+    "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 1, Night): Emperor bônus 2; Exotic BETTER_NIGHT I e II (36, 37)"
   },
   {
     "id": "farm-market-max-lv",

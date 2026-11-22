@@ -4,7 +4,17 @@
     "name": "Tome bonus multiplier",
     "ref": {
       "call": "Summoning",
-      "args": ["TomeBonus", 33, 0]
-    }
+      "args": ["TomeBonus", 0, 0]
+    },
+    "part": [
+      {
+        "call": "Summoning",
+        "args": ["GrimoireUpgBonus", 17, 0]
+      },
+      {
+        "call": "GetSetBonus",
+        "args": ["TROLL_SET", "Bonus", 0, 0]
+      }
+    ]
   }
 }

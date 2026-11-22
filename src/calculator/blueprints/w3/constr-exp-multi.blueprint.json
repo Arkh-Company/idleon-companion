@@ -3,8 +3,8 @@
   "root": {
     "name": "EXP Multiplier (Construction)",
     "ref": {
-      "call": "SkillDescriptions",
-      "args": [0, 0, 0]
+      "call": "WorkbenchStuff",
+      "args": ["PlayerConExp", "{character}", 0]
     }
   }
 }

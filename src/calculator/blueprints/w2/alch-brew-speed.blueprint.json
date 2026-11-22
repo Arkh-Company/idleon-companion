@@ -4,7 +4,10 @@
     "name": "Total Brew Speed (/HR)",
     "ref": {
       "call": "CauldronStats",
-      "args": ["ResearchSpeed", 0, 0, 0]
+      "args": ["ResearchSpeed", "{character}", 0, 0]
+    },
+    "scratch": {
+      "DummyText3": "gimmeBrewSPDnonLiquid"
     }
   }
 }

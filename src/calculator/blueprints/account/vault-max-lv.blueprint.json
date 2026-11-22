@@ -4,7 +4,17 @@
     "name": "Vault upgrade Max LV",
     "ref": {
       "call": "Summoning",
-      "args": ["VaultUpgMaxLV", 33, 0]
-    }
+      "args": ["VaultUpgMaxLV", 0, 0]
+    },
+    "part": [
+      {
+        "call": "ResearchStuff",
+        "args": ["Grid_Bonus", 169, 1]
+      },
+      {
+        "call": "Summoning",
+        "args": ["EventShopOwned", 40, 0]
+      }
+    ]
   }
 }

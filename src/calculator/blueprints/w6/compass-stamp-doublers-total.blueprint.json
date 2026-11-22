@@ -4,7 +4,7 @@
     "name": "Stamp doublers total (Exalted Stamps you can have)",
     "ref": {
       "call": "Windwalker",
-      "args": ["StampDoublersLeft", 0, 0]
+      "args": ["StampDoublersLeft", 999, 0]
     }
   }
 }

@@ -4,7 +4,7 @@
     "name": "Boat Speed (/hr, each boat)",
     "ref": {
       "call": "Sailing",
-      "args": ["BoatSpeed", 0, 0]
+      "args": ["BoatSpeed", 0, 4]
     }
   }
 }

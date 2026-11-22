@@ -1,0 +1,23 @@
+{
+  "id": "alch-bubble-cost-reduction-item",
+  "root": {
+    "name": "Bubble Upgr. Costs reduced (item bubbles)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["CauldronCosts", 0, 0, 0]
+    },
+    "part": [
+      {
+        "call": "CauldronStats",
+        "args": ["CauldronLvsBrewBonus", 0, 2, 0]
+      },
+      {
+        "read": "OptionsListAccount[62]"
+      },
+      {
+        "call": "AchieveStatus",
+        "args": [108]
+      }
+    ]
+  }
+}

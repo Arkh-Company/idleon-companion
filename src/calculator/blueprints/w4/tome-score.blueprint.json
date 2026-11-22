@@ -2,9 +2,504 @@
   "id": "tome-score",
   "root": {
     "name": "Tome Score (total points)",
-    "ref": {
-      "call": "Summoning",
-      "args": ["TomePTS", 33, 0]
-    }
+    "combine": "sum",
+    "calls": [
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 0, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 1, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 2, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 3, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 4, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 5, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 6, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 7, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 8, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 9, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 10, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 11, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 12, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 13, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 14, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 15, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 16, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 17, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 18, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 19, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 20, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 21, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 22, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 23, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 24, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 25, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 26, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 27, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 28, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 29, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 30, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 31, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 32, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 33, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 34, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 35, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 36, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 37, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 38, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 39, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 40, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 41, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 42, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 43, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 44, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 45, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 46, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 47, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 48, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 49, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 50, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 51, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 52, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 53, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 54, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 55, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 56, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 57, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 58, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 59, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 60, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 61, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 62, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 63, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 64, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 65, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 66, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 67, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 68, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 69, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 70, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 71, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 72, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 73, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 74, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 75, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 76, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 77, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 78, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 79, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 80, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 81, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 82, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 83, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 84, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 85, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 86, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 87, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 88, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 89, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 90, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 91, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 92, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 93, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 94, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 95, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 96, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 97, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 98, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 99, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 100, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 101, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 102, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 103, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 104, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 105, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 106, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 107, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 108, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 109, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 110, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 111, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 112, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 113, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 114, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 115, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 116, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 117, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 118, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 119, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 120, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 121, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 122, 0]
+      },
+      {
+        "call": "Summoning",
+        "args": ["TomePTS", 123, 0]
+      }
+    ]
   }
 }

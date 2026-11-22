@@ -1,0 +1,24 @@
+{
+  "id": "farm-market-cost-reduction-day",
+  "root": {
+    "name": "Day Market cost reduction (total)",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["MarketCostQTY", 0, 0]
+    },
+    "part": [
+      {
+        "call": "Thingies",
+        "args": ["EmperorBon", 2, 0]
+      },
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 34, 0]
+      },
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 35, 0]
+      }
+    ]
+  }
+}

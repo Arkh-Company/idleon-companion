@@ -4,7 +4,7 @@
     "name": "Masterclass cost reduction",
     "ref": {
       "call": "Summoning",
-      "args": ["AllMasterclassCostReduxPrefix", 33, 0]
+      "args": ["AllMasterclassCostRedux", 0, 0]
     }
   }
 }

@@ -4,7 +4,7 @@
     "name": "Crop Evolution Multi",
     "ref": {
       "call": "FarmingStuffs",
-      "args": ["NextCropChance", 0, 0]
+      "args": ["NextCropChance", 99, 99]
     }
   }
 }
