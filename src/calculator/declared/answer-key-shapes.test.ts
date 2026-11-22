@@ -478,12 +478,12 @@ test("a cost that overflows to Infinity and is cut by `K < x && (x = K)`: a chai
 });
 
 // The fifth probe's time (sonda 6): labeling an infinite number is a pass over the whole recording, seconds on the real
-// game; only a recording that has one pays it.
+// game; only a recording that has one names a place for it.
 test("only a recording with an infinite number marks it for its label", () => {
   record("TreeDeclChain");
-  expect(recorder.context.run("__rec.state.inf", 1_000)).toBe(false);
+  expect(recorder.context.run("__rec.infAt()", 1_000)).toBe("[]");
   record("TreeCostInf");
-  expect(recorder.context.run("__rec.state.inf", 1_000)).toBe(true);
+  expect(recorder.context.run("__rec.infAt()", 1_000)).not.toBe("[]");
 });
 
 /** What the old label pass over the whole recording (a replacer in take(), a reviver after it) gave of its state. */
