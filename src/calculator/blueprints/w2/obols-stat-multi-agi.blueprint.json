@@ -1,0 +1,20 @@
+{
+  "id": "obols-stat-multi-agi",
+  "root": {
+    "name": "Obol stat multiplier (AGI)",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["AGI"]
+    },
+    "part": [
+      {
+        "call": "GetTalentNumber",
+        "args": [1, 291]
+      },
+      {
+        "call": "GamingStatType",
+        "args": ["SuperBitType", 2, 0]
+      }
+    ]
+  }
+}

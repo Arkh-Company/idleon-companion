@@ -1,0 +1,11 @@
+{
+  "id": "talents-points-per-tab-2",
+  "root": {
+    "name": "Talent points per tab (tab 2)",
+    "ref": {
+      "call": "TotalTalentPoints",
+      "args": [[0, 0, 0, 0, 0, 0]]
+    },
+    "item": 1
+  }
+}

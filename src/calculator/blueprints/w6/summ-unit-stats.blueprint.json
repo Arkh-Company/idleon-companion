@@ -4,7 +4,7 @@
     "name": "Unit stats (HP, Damage, Speed, Dodge)",
     "ref": {
       "call": "Summoning",
-      "args": ["UnitHP", 33, 0]
+      "args": ["UnitDMG", -1, 0]
     }
   }
 }
