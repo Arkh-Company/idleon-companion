@@ -276,7 +276,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
 - [X] T146 [P] `src/calculator/blueprints/systems.json` ganha os 17 sistemas, depois de `weekly-boss` (FR-006; spec, Open Questions 21/11)
   - 🎟️ Event Shop · 🧂 Salt Lick · 🏯 Dungeons (com Flurbo Shop) · 📋 Tasks (com Merit Shop) · 🏝️ Islands · 💠 Jade Emporium · 🏗️ Construction · 🎣 Fishing · 🛐 Worship · 🍳 Cooking · 🏪 Zenith Market · 🍖 Food · 🔨 Smithing · 🦋 Catching · 📓 Death Note · 🏟️ Breeding · 🎪 Minigames (Darts e Hoops).
   - Cases: os testes da T007 passam (id slug, emoji único, nome em inglês, prova por referência); `tree/systems.test.ts` passa sem mudança de caso (os novos entram depois dos extras).
-- [ ] T147 Commit de dados: os esboços com a raiz certa e o catálogo (depende de T145; spec, Open Questions 21/11)
+- [X] T147 Commit de dados: os esboços com a raiz certa e o catálogo (depende de T145; spec, Open Questions 21/11)
   - Files: `src/calculator/blueprints/<lote>/*.blueprint.json`; `docs/catalogo/numeros.json` e `src/shared/number-catalog.json` só nos ids que mudam.
   - Catálogo: saem `alch-brew-per-hour` e `alch-liquid-rate` (destino painel de farm); `alch-bubble-cost-reduction` vira `-bits` e `-item`; `farm-market-cost-reduction` vira `-day` e `-night`; continua com 289.
   - Raízes: a tabela de raízes corrigidas da sonda (pasta de trabalho da 010, `raizes-corrigidas.md`), com a forma "parte de uma chamada" nos casos sem chamada própria; as raízes que são só leitura do save ficam para a T149.
