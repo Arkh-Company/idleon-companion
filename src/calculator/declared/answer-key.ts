@@ -11,13 +11,11 @@ import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
-  atCap,
   callRef,
   near,
   OP,
   OutOfRule,
   outOfRule,
-  readBack,
   relDiff,
   SCRATCH,
   joinPools,
@@ -244,7 +242,9 @@ export function answerKeyOfSteps(
       .filter(([p]) => !finals.some(([q]) => q === p) && !p.startsWith(SCRATCH))
       .map(([p]) => [
         p,
-        readBack(top, writes, p).map((w) => ({ ...w, v: Number(w.v) })),
+        writes.flatMap(({ path, v, xi, seq }) =>
+          path === p && typeof v === "number" ? [{ v, xi, seq }] : [],
+        ),
       ]),
   );
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
@@ -252,9 +252,9 @@ export function answerKeyOfSteps(
   const r = termReader({
     nodes: rec.nodes,
     steps,
+    top,
     kids,
     passage,
-    capped: atCap(top),
     // with no places, every step is at the same one: the place decides nothing, and two candidates refuse
     stepAt: stepAt ?? [],
     accumulator: acc?.[0] ?? null,

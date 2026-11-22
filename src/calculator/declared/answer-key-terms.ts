@@ -1,18 +1,19 @@
 // The terms of the answer key (spec 010, research R9; the prototype's gabarito.ts): a step of the root opened by its
 // pool's operator, crossing the passage values the root wrote and read back and a whole sum divided by 100. It only
 // reads the recording, and counts each kind of noise of the trace it had to skip or cross.
-import type { RecNode } from "../recording.ts";
-import type { Expr, Step } from "../recorded/steps.ts";
-import { relDiff } from "./answer-key-pool.ts";
+import type { Expr } from "../recorded/steps.ts";
+import { callRef, near, OutOfRule } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
-import { callKey } from "./refs.ts";
+import { passageReader } from "./answer-key-passage.ts";
+import type { PassageContext } from "./answer-key-passage.ts";
 
 export {
-  atCap,
+  callRef,
   joinPools,
   KIND,
+  near,
   OP,
-  readBack,
+  OutOfRule,
   relDiff,
   strip,
 } from "./answer-key-pool.ts";
@@ -24,12 +25,6 @@ export type {
   RawTerm,
 } from "./answer-key-pool.ts";
 
-export const near = (a: unknown, b: unknown): boolean =>
-  typeof a === "number" && typeof b === "number" && relDiff(a, b) < 1e-9;
-export const callRef = (n: Pick<RecNode, "b" | "a">): string =>
-  callKey(n.b, n.a);
-/** A root whose shape is outside the pools' rule (research R1): the answer key refuses it with this reason. */
-export class OutOfRule extends Error {}
 export interface RootFormError {
   error: "rootForm";
   reason: string;
@@ -41,24 +36,7 @@ export const outOfRule = (why: string): RootFormError => ({
 /** The game's loop counters of a block's preamble: noise, never a passage value. */
 export const SCRATCH = "DummyNumbersStatManager.";
 
-/** A write of a passage: its value, its place in the root's step log, its number and the call that made it. */
-export interface PassageWrite {
-  v: number;
-  xi: number;
-  seq: number;
-  node: number | null;
-}
-export interface TermContext {
-  nodes: readonly RecNode[];
-  steps: readonly Step[];
-  /** The root's child calls. */
-  kids: readonly RecNode[];
-  /** Paths the root wrote and may read back, with each write's value and place in the root's step log. */
-  passage: ReadonlyMap<string, readonly PassageWrite[]>;
-  /** The root's step log reached the recorder's cap (a refusal says so). */
-  capped?: boolean;
-  /** Where each step was last recorded in the root's step log (BlockSteps.stepAt), to tell which step gave a write. */
-  stepAt: readonly number[];
+export interface TermContext extends PassageContext {
   accumulator: string | null;
   /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
   branches?: readonly { value: number; e: Expr }[];
@@ -79,87 +57,7 @@ export function termReader(ctx: TermContext) {
   /** The branches crossed, by index: each one is a ❓ layer of the root. */
   const crossed = new Set<number>();
   const branches = ctx.branches ?? [];
-
-  interface Giver {
-    e: Expr;
-    step: number | null;
-  }
-  const callOf = (k: RecNode, v: number): Giver => ({
-    e: { t: "call", id: k.id, v },
-    step: null,
-  });
-  /** The child calls a step holds in its expression: their value went into that step, never straight to a write. */
-  const callsIn = (e: Expr): number[] =>
-    e.t === "call"
-      ? [e.id]
-      : e.t === "op"
-        ? [...callsIn(e.l), ...callsIn(e.r)]
-        : e.t === "fn"
-          ? e.args.flatMap(callsIn)
-          : e.t === "def"
-            ? callsIn(e.e)
-            : e.t === "not"
-              ? callsIn(e.a)
-              : [];
-  const inSteps = new Set(ctx.steps.flatMap((s) => callsIn(s.e)));
-  /**
-   * What gave a write, by its place (like matchChain): the step with its value recorded last before it, and the child
-   * call with its value outside any step (a call the root wrote with `=` makes no step) that started last after that
-   * step and before the write. More than one of them: the place does not decide.
-   */
-  function giversOf(w: { v: number; xi: number }): Giver[] {
-    const steps = ctx.steps.flatMap((s, j) => {
-      const at = ctx.stepAt[j] ?? -1;
-      return at < w.xi && near(s.v, w.v) ? [{ at, j, e: s.e }] : [];
-    });
-    const lastStep = Math.max(...steps.map((s) => s.at));
-    const fits = (n: RecNode) =>
-      n.pxi > lastStep && n.pxi <= w.xi && near(n.v, w.v);
-    const kids = ctx.kids.filter((n) => !inSteps.has(n.id) && fits(n));
-    // a call written with `=` and then used in a later step: it gave the write too
-    if (steps.length + kids.length === 0 && ctx.kids.some(fits))
-      throw new OutOfRule(
-        `a passagem ${String(w.v)} vem de uma chamada filha que também entra num passo, e a posição não decide entre elas`,
-      );
-    const lastKid = Math.max(...kids.map((n) => n.pxi));
-    return [
-      ...steps
-        .filter((s) => s.at === lastStep)
-        .map((s) => ({ e: s.e, step: s.j })),
-      ...kids.filter((n) => n.pxi === lastKid).map((n) => callOf(n, w.v)),
-    ];
-  }
-  /**
-   * The expression that gave a passage's value, with the path it crossed: what gave the passage's writes with that
-   * value (the same one for all of them, or the place does not decide), null when it is a step already opened on this
-   * way down.
-   */
-  function passageExpr(
-    paths: readonly string[],
-    v: number,
-    seen: ReadonlySet<number>,
-  ): (Giver & { path: string }) | null {
-    const found = new Map<string, Giver & { path: string }>();
-    const from: string[] = [];
-    for (const path of paths)
-      for (const w of ctx.passage.get(path) ?? [])
-        if (near(w.v, v)) {
-          const gs = giversOf(w);
-          for (const g of gs)
-            found.set(JSON.stringify([g.step, g.e]), { ...g, path });
-          const n = ctx.nodes[w.node ?? -1];
-          if (gs.length > 0)
-            from.push(
-              `${path} de ${n ? callRef(n) : "?"}, seq ${String(w.seq)}`,
-            );
-        }
-    if (found.size > 1)
-      throw new OutOfRule(
-        `a passagem ${String(v)} sai de mais de uma escrita (${from.join("; ")}), e a posição não decide entre elas${ctx.capped ? " (o log da chamada chegou ao limite)" : ""}`,
-      );
-    const [g] = found.values();
-    return g && (g.step === null || !seen.has(g.step)) ? g : null;
-  }
+  const passageExpr = passageReader(ctx);
   /** The passages that hold a value with no name: never 0 or 1, which any step may give. */
   const passagePathsOf = (v: unknown): string[] =>
     typeof v !== "number" || v === 0 || v === 1
@@ -203,7 +101,7 @@ export function termReader(ctx: TermContext) {
             : passagePathsOf(e.v);
         const x =
           ps.length > 0 && typeof e.v === "number"
-            ? passageExpr(ps, e.v, seen)
+            ? passageExpr(ps, e.v, seen, e.t === "read")
             : null;
         const step = x?.step ?? null;
         const p = x?.path ?? ps[0];
