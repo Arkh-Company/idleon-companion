@@ -12886,7 +12886,7 @@
   },
   {
     "id": "summ-unit-stats",
-    "nome": "Unit stats (HP, Damage, Speed, Dodge)",
+    "nome": "Summoning Unit Damage",
     "mundo": "W6",
     "sistema": "Summoning (Summoning Stones, Summoner's Table)",
     "caixa": "Outro",

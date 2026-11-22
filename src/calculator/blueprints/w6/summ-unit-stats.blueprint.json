@@ -1,7 +1,7 @@
 {
   "id": "summ-unit-stats",
   "root": {
-    "name": "Unit stats (HP, Damage, Speed, Dodge)",
+    "name": "Summoning Unit Damage",
     "ref": {
       "call": "Summoning",
       "args": ["UnitDMG", -1, 0]
