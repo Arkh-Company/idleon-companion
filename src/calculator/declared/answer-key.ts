@@ -19,6 +19,7 @@ import {
   outOfRule,
   relDiff,
   SCRATCH,
+  joinPools,
   strip,
   termReader,
 } from "./answer-key-terms.ts";
@@ -78,6 +79,8 @@ export interface AnswerKey {
 export type RootShape =
   { sum: number } | { part: readonly string[] } | { routine: string } | null;
 
+/** The functions a top layer is made of: one of them holds a value of the root when one of its arguments does. */
+const LAYERED = new Set(["min", "max", "round", "floor", "ceil"]);
 const topOf = (rec: Recording) =>
   rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
 
@@ -132,27 +135,37 @@ export function answerKeyOfSteps(
       .filter(([, vs]) => vs.length > 1 && near(vs.at(-1), v))
       .sort((a, b) => b[1].length - a[1].length)[0] ?? null;
 
-  // 1. What the pools are below: a running total, or the root's last step under its layers.
+  // 1. What the pools are below: the root's last step under its layers, or a running total (under them, or alone).
   const layers: TopLayer[] = opts.gate ? [opts.gate] : [];
   let target = final;
-  let acc = chainFor(final);
-  const i = acc ? -1 : steps.findLastIndex((s) => near(s.v, final));
+  const written = [...byPath.values()].flat();
+  /** A value that comes from what the root wrote: a path it wrote, or a value with no name equal to one it wrote. */
+  const fromRoot = (e: Expr): boolean => {
+    const b = e.t === "def" ? e.e : e;
+    if (b.t === "read") return byPath.has(b.p);
+    if (b.t === "val")
+      return typeof b.v === "number" && written.some((w) => near(w, b.v));
+    return b.t === "fn" && LAYERED.has(b.name ?? "") && b.args.some(fromRoot);
+  };
+  const i = steps.findLastIndex((s) => near(s.v, final));
   const last = steps[i];
-  const at = last ? { e: last.e, step: i } : null;
+  const peeled = last ? peelTop(last.e, fromRoot) : null;
+  if (peeled?.refused) return out(peeled.refused);
+  const layered = !!peeled && peeled.layers.length > 0;
+  let acc = chainFor(final);
+  const at = last && (layered || !acc) ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
-  const peeled = at ? peelTop(at.e) : null;
   if (at && peeled) {
     layers.push(...peeled.layers);
     rest = peeled.rest;
-    // a running total under the layer (Anvil Capacity: the chain, then a floor)
+    // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
     const v = rest.v;
-    if (
-      peeled.layers.length > 0 &&
-      typeof v === "number" &&
-      (rest.t === "read" || rest.t === "val")
-    ) {
-      acc = chainFor(v);
-      if (acc) target = v;
+    if (layered) {
+      acc =
+        typeof v === "number" && (rest.t === "read" || rest.t === "val")
+          ? chainFor(v)
+          : null;
+      if (acc) target = v as number;
     }
   }
 
@@ -358,20 +371,22 @@ export function answerKeyOfSteps(
   function divisorsAndLimits(): AnswerPool[] {
     if (!at || !peeled) return [];
     const seen = new Set([at.step]);
+    // a factor of a divisor, or a limit: a line with its sources and constants, as a pool of its own kind
+    const lineOf = (f: Part): AnswerPool => {
+      const kind = kindOf(f.e, f.seen) === "additive" ? "additive" : "multi";
+      const terms = kept(termsOf([f], kind), null);
+      const value = Number(f.e.v);
+      const parts =
+        kind === "additive"
+          ? terms.reduce((s, t) => s + t.value * t.weight, 0)
+          : terms.reduce((s, t) => s * t.value, 1);
+      const error = relDiff(parts, value);
+      return { kind, value, after: value, steps: [at.step], error, terms };
+    };
     for (const [layer, e] of peeled.limits)
-      layer.limit = termsOf([{ e, w: 1, seen }], "additive").map(strip);
+      layer.limit = lineOf({ e, w: 1, seen });
     return peeled.divisors.flatMap((b) =>
-      operands(b, "multi", 1, seen).map((f): AnswerPool => {
-        const kind = kindOf(f.e, f.seen) === "additive" ? "additive" : "multi";
-        const terms = kept(termsOf([f], kind), null);
-        const value = Number(f.e.v);
-        const parts =
-          kind === "additive"
-            ? terms.reduce((s, t) => s + t.value * t.weight, 0)
-            : terms.reduce((s, t) => s * t.value, 1);
-        const error = relDiff(parts, value);
-        return { kind, value, after: value, steps: [at.step], error, terms };
-      }),
+      operands(b, "multi", 1, seen).map(lineOf),
     );
   }
 
@@ -385,35 +400,7 @@ export function answerKeyOfSteps(
     throw e;
   }
 
-  // 4. Same-kind pools in a row are one pool; each pool's value from the running total around it.
-  const pools: AnswerPool[] = [];
-  for (const p of raw) {
-    const last = pools.at(-1);
-    if (last?.kind === p.kind) {
-      last.terms.push(...p.terms);
-      if (!last.steps.includes(p.step)) last.steps.push(p.step);
-      last.after = p.after;
-    } else
-      pools.push({
-        kind: p.kind,
-        value: 0,
-        after: p.after,
-        terms: [...p.terms],
-        steps: [p.step],
-        error: 0,
-      });
-  }
-  let before: number | null = null;
-  for (const p of pools) {
-    p.value =
-      p.kind === "additive" ? p.after - (before ?? 0) : p.after / (before ?? 1);
-    const parts =
-      p.kind === "additive"
-        ? p.terms.reduce((s, t) => s + t.value * t.weight, 0)
-        : p.terms.reduce((s, t) => s * t.value, 1);
-    p.error = relDiff(parts, p.value);
-    before = p.after;
-  }
+  const pools = joinPools(raw);
 
   r.bump("stepOutsideChain", steps.length - r.usedSteps.size);
   const touches = [acc?.[0], ...passage.keys()].filter((p) => p !== undefined);

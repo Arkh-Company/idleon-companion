@@ -1525,6 +1525,41 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeCostBuild();
     return Math.round(dnsm().TreeCost.h.v);
   };
+  // The review of T154 to T156: a cap between the running total and a sum with a call, as the Multi-Ore, flat and
+  // under a floor; a part whose reads are in two factors; a cost built twice by the same call.
+  Blocks._customBlock_TreeCapAcc = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapAcc = new StringMap();
+    d.TreeCapAcc.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapAcc.h.v = d.TreeCapAcc.h.v * 2;
+    return Math.min(300 + Blocks._customBlock_TreeLoop(), d.TreeCapAcc.h.v);
+  };
+  Blocks._customBlock_TreeCapAccNested = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapAcc = new StringMap();
+    d.TreeCapAcc.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapAcc.h.v = d.TreeCapAcc.h.v * 2;
+    return Math.max(
+      Math.min(300 + Blocks._customBlock_TreeLoop(), d.TreeCapAcc.h.v),
+      s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreePartTwice = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100) *
+      (2 + (s.TreeStats.h.a + s.TreeStats.h.b) / 50)
+    );
+  };
+  Blocks._customBlock_TreeCostTwice = function () {
+    Blocks._customBlock_TreeCostBuild();
+    var first = dnsm().TreeCost.h.v;
+    Blocks._customBlock_TreeCostBuild();
+    return Math.round(first + dnsm().TreeCost.h.v);
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;

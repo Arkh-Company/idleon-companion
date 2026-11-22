@@ -60,50 +60,45 @@ export function partKey(
   key: AnswerKey,
   refs: readonly string[],
 ): AnswerKey | RootFormError {
-  const taken = new Set<AnswerTerm>();
-  const found = refs.map((ref) => {
-    for (const [p, pool] of key.pools.entries()) {
-      const t = pool.terms.find((x) => x.ref === ref && !taken.has(x));
-      if (t) {
-        taken.add(t);
-        return { p, t };
-      }
-    }
-    return null;
-  });
-  const missing = refs.filter((_, i) => !found[i]);
-  if (missing.length > 0) {
-    // or one term that holds all the references (a factor (1 + (A + B) / 100))
-    for (const pool of key.pools) {
-      const t = pool.terms.find((x) => refs.every((r) => x.refs.includes(r)));
-      if (t) return partOfPool(key, pool, [t]);
-    }
-    return outOfRule(
-      `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
+  const all = key.pools.flatMap((pool, p) => pool.terms.map((t) => ({ p, t })));
+  // each reference the main reference of one term; a reference in two terms is ambiguous, never taken by order
+  const each = refs.map((ref) => all.filter((x) => x.t.ref === ref));
+  if (each.some((c) => c.length > 1))
+    return outOfRule("a parte está em mais de um termo");
+  const found = each.flat();
+  if (found.length === refs.length) {
+    const pool = key.pools[found[0]?.p ?? -1];
+    if (new Set(found.map((f) => f.p)).size !== 1 || !pool)
+      return outOfRule("os termos da parte estão em pools diferentes");
+    return partOfPool(
+      key,
+      pool,
+      found.map((f) => f.t),
     );
   }
-  const pools = new Set(found.map((f) => f?.p));
-  const pool = key.pools[found[0]?.p ?? -1];
-  if (pools.size !== 1 || !pool)
-    return outOfRule("os termos da parte estão em pools diferentes");
-  return partOfPool(
-    key,
-    pool,
-    found.flatMap((f) => (f ? [f.t] : [])),
+  // or the one term that holds all the references (a factor (1 + (A + B) / 100))
+  const holders = all.filter((x) => refs.every((r) => x.t.refs.includes(r)));
+  if (holders.length > 1) return outOfRule("a parte está em mais de um termo");
+  const [one] = holders;
+  const pool = one && key.pools[one.p];
+  if (one && pool) return partOfPool(key, pool, [one.t]);
+  const missing = refs.filter((_, i) => each[i]?.length === 0);
+  return outOfRule(
+    `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
   );
 }
 
 /**
  * The part in the running total a call builds in a scratch path that the root only reads (a bubble's cost, T155):
- * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there; the first one whose
- * pools hold the part, or null.
+ * each call that wrote a path the root reads, keyed by `keyOf` at the last value it wrote there. The one that holds
+ * the part, or null when none does; more than one is ambiguous and refused.
  */
 export function partInWriters(
   rec: Recording,
   top: RecNode,
   refs: readonly string[],
   keyOf: (node: number, value: number) => AnswerKey | RootFormError,
-): AnswerKey | null {
+): AnswerKey | RootFormError | null {
   const read = new Set((top.r ?? []).map(([p]) => p));
   const writers = new Map<string, { node: number; value: number }>();
   for (const w of rec.writes)
@@ -114,12 +109,13 @@ export function partInWriters(
       typeof w.v === "number"
     )
       writers.set(`${String(w.node)} ${w.path}`, { node: w.node, value: w.v });
-  for (const { node, value } of writers.values()) {
+  const parts = [...writers.values()].flatMap(({ node, value }) => {
     const inner = keyOf(node, value);
     const part = "error" in inner ? inner : partKey(inner, refs);
-    if (!("error" in part)) return part;
-  }
-  return null;
+    return "error" in part ? [] : [part];
+  });
+  if (parts.length > 1) return outOfRule("a parte vem de mais de uma chamada");
+  return parts[0] ?? null;
 }
 
 /** The part's key: the terms chosen of one pool, its value their product (Multi) or their weighted sum (Additive). */

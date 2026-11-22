@@ -7,7 +7,7 @@
 import type { Op } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
-import type { AnswerTerm } from "./answer-key-terms.ts";
+import type { AnswerPool } from "./answer-key.ts";
 
 export interface TopLayer {
   kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div";
@@ -15,8 +15,8 @@ export interface TopLayer {
   value?: number;
   before: number;
   after: number;
-  /** A Cap's or a Floor's limit that is no constant: its sources. */
-  limit?: AnswerTerm[];
+  /** A Cap's or a Floor's limit that is no constant: a line with its sources and constants. */
+  limit?: AnswerPool;
 }
 
 const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
@@ -26,17 +26,22 @@ const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
 };
 
 const bare = (e: Expr): Expr => (e.t === "def" ? bare(e.e) : e);
-const isLeaf = (e: Expr) => ["read", "call", "val", "num"].includes(bare(e).t);
 
 /**
  * The known layers of the root's last step, from outside in, and the rest below them: with each layer whose limit is
- * no constant, that limit's expression; with each division, its divisor's expression, in the same order.
+ * no constant, that limit's expression; with each division, its divisor's expression, in the same order. In a min or
+ * a max with no constant, the value is the side that comes from what the root wrote (`own`) and the other is the
+ * limit; when both sides or neither do, the root is refused (`refused`): ambiguity is never resolved by order.
  */
-export function peelTop(e: Expr): {
+export function peelTop(
+  e: Expr,
+  own: (e: Expr) => boolean = () => false,
+): {
   layers: TopLayer[];
   limits: Map<TopLayer, Expr>;
   divisors: Expr[];
   rest: Expr;
+  refused?: string;
 } {
   const layers: TopLayer[] = [];
   const limits = new Map<TopLayer, Expr>();
@@ -61,8 +66,15 @@ export function peelTop(e: Expr): {
       ) {
         const kind = e.name === "min" ? "cap" : "floor-min";
         const k = a.t === "num" ? a : b.t === "num" ? b : null;
-        // with no constant: the main path is the first one, unless it is a bare value and the other is not
-        const main = k ? (k === a ? b : a) : isLeaf(a) && !isLeaf(b) ? b : a;
+        if (!k && own(a) === own(b))
+          return {
+            layers,
+            limits,
+            divisors,
+            rest: e,
+            refused: "o limite do min/max não se distingue do valor",
+          };
+        const main = k ? (k === a ? b : a) : own(a) ? a : b;
         const limit = main === a ? b : a;
         if (typeof main.v === "number" && typeof limit.v === "number") {
           const layer: TopLayer = {

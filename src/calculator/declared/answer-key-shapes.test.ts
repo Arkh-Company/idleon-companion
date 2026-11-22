@@ -173,4 +173,38 @@ test("a routine in two passes by its trigger text: the sum of what the last pass
   // TreeList 1, 2 and 3, × 2 each, × (1 + 3 / 100)
   expect(key.final).toBeCloseTo(12 * 1.03, 12);
   expect(key.pools[0]?.terms).toHaveLength(3);
+  // the copy is made again for each recording: z alone finds no houses that m built before
+  expect(() =>
+    recorder.record(
+      mosaicOf(),
+      [],
+      { recompute: [], builders: [] },
+      false,
+      [],
+      [pass("z")],
+    ),
+  ).toThrow();
+});
+
+// The review of T155: ambiguity is refused, never resolved by order.
+test("a part whose references are in more than one term is refused", () => {
+  // TreePartTwice: TreeLoop() × (1 + (TreeStats.a + TreeStats.b) / 100) × (2 + (TreeStats.a + TreeStats.b) / 50)
+  for (const part of [["TreeStats.a", "TreeStats.b"], ["TreeStats.a"]]) {
+    const key = answerKey(record("TreePartTwice"), recorder.ops, { part });
+    expect(key, part.join()).toMatchObject({ error: "rootForm" });
+    expect("reason" in key ? key.reason : "", part.join()).toMatch(
+      /a parte está em mais de um termo/,
+    );
+  }
+});
+
+test("a part that more than one call gives, in the paths the root reads, is refused", () => {
+  // TreeCostTwice calls TreeCostBuild twice and reads what each built
+  const key = answerKey(record("TreeCostTwice"), recorder.ops, {
+    part: ["TreeStats.a", "TreeTwins[0]"],
+  });
+  expect(key).toMatchObject({ error: "rootForm" });
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a parte vem de mais de uma chamada/,
+  );
 });

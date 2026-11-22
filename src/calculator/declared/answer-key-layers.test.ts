@@ -46,10 +46,33 @@ test("T151, the path yes too: x = cond ? a : b opens the path that ran, and the 
   }
 });
 
-test("T151: a step of a running total written as a condition stays a chain", () => {
-  const key = keyOf("TreeGateChain");
-  expect(key.form).toBe("chain");
-  expect(key.pools.map((p) => p.kind)).toEqual(["additive", "multi"]);
+test("T151: a step of a running total written as a condition stays a chain, with the terms of the path that ran", () => {
+  const no = keyOf("TreeGateChain");
+  expect(no.form).toBe("chain");
+  // TreeReads() + TreeBase, then × TreeTwins[0]
+  expect(pools(no.pools)).toEqual([
+    [
+      "additive",
+      [
+        ["TreeReads()", 1],
+        ["TreeBase", 1],
+      ],
+    ],
+    ["multi", [["TreeTwins[0]", 1]]],
+  ]);
+  const yes = keyOf("TreeGateChain", { TreeOwned: 1 });
+  expect(yes.form).toBe("chain");
+  // TreeReads() + TreeBase, then × 2
+  expect(pools(yes.pools)).toEqual([
+    [
+      "additive",
+      [
+        ["TreeReads()", 1],
+        ["TreeBase", 1],
+      ],
+    ],
+    ["multi", [["2", 1]]],
+  ]);
 });
 
 test("A ÷ B with any numerator: the numerator's pools, and each factor of B a ➗ line with its sources", () => {
@@ -82,12 +105,44 @@ test("A ÷ B with any numerator: the numerator's pools, and each factor of B a �
   ]);
 });
 
-test("a Cap whose limit is no constant: the limit is a line that opens into its sources", () => {
-  const key = keyOf("TreeCapAny");
-  // min(TreeReads() + TreeBase = 12, TreeCapped / 10 = 8)
-  expect(key.final).toBe(8);
-  expect(layers(key)).toEqual([["cap", 8, 12, 8]]);
-  expect(key.top[0]?.limit?.map((t) => t.ref)).toEqual(["TreeCapped"]);
+const refusal = (block: string) => {
+  const rec = recorder.record(mosaicOf(), [[block, [0, 0, 0]]], {
+    recompute: [],
+    builders: [],
+  });
+  const key = answerKey(rec, recorder.ops);
+  return "error" in key ? key.reason : "no refusal";
+};
+const limitOf = (layer: AnswerKey["top"][number] | undefined) =>
+  layer?.limit && [
+    layer.limit.kind,
+    layer.limit.terms.map((t) => [t.ref, t.weight]),
+  ];
+
+test("a min or a max with no constant whose value and limit cannot be told apart is refused, never chosen by order", () => {
+  // neither side comes from what the root wrote: min(TreeReads() + TreeBase, TreeCapped / 10)
+  expect(refusal("TreeCapAny")).toMatch(
+    /o limite do min\/max não se distingue do valor/,
+  );
+  expect(refusal("TreeCapNested")).toMatch(
+    /o limite do min\/max não se distingue do valor/,
+  );
+});
+
+test("a Cap whose value is the running total and whose limit is a sum with a call (the Multi-Ore): the limit is a line", () => {
+  const key = keyOf("TreeCapAcc");
+  // min(300 + TreeLoop() = 306, the running total (TreeReads() + TreeBase) × 2 = 24)
+  expect(key.final).toBe(24);
+  expect(layers(key)).toEqual([["cap", 306, 24, 24]]);
+  expect(limitOf(key.top[0])).toEqual([
+    "additive",
+    [
+      ["300", 1],
+      ["TreeLoop()", 1],
+    ],
+  ]);
+  expect(key.top[0]?.limit?.error).toBeLessThanOrEqual(1e-6);
+  expect(key.form).toBe("chain");
   expect(pools(key.pools)).toEqual([
     [
       "additive",
@@ -96,30 +151,29 @@ test("a Cap whose limit is no constant: the limit is a line that opens into its 
         ["TreeBase", 1],
       ],
     ],
+    ["multi", [["2", 1]]],
   ]);
 });
 
-test("a Floor over a Cap, both with a limit that is no constant: a layer each, from outside in", () => {
-  const key = keyOf("TreeCapNested");
-  // max(min(TreeReads() × 2 = 16, TreeCapped 80) = 16, TreeLevel 25) = 25
+test("a Floor over that Cap: a layer each, from outside in, each with its limit as a line", () => {
+  const key = keyOf("TreeCapAccNested");
+  // max(min(306, 24) = 24, TreeLevel 25) = 25
   expect(key.final).toBe(25);
   expect(layers(key)).toEqual([
-    ["floor-min", 25, 16, 25],
-    ["cap", 80, 16, 16],
+    ["floor-min", 25, 24, 25],
+    ["cap", 306, 24, 24],
   ]);
-  expect(key.top.map((l) => l.limit?.map((t) => t.ref))).toEqual([
-    ["TreeLevel"],
-    ["TreeCapped"],
-  ]);
-  expect(pools(key.pools)).toEqual([
+  expect(key.top.map(limitOf)).toEqual([
+    ["multi", [["TreeLevel", 1]]],
     [
-      "multi",
+      "additive",
       [
-        ["TreeReads()", 1],
-        ["2", 1],
+        ["300", 1],
+        ["TreeLoop()", 1],
       ],
     ],
   ]);
+  expect(key.form).toBe("chain");
 });
 
 test("pow with a constant is a curve: a term of its pool (its ⓘ), never a pool of its own", () => {

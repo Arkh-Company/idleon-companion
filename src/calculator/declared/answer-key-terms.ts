@@ -3,6 +3,7 @@
 // reads the recording, and counts each kind of noise of the trace it had to skip or cross.
 import type { RecNode } from "../recording.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
+import type { AnswerPool } from "./answer-key.ts";
 
 export const relDiff = (a: number, b: number): number =>
   a === b ? 0 : Math.abs(a - b) / Math.max(Math.abs(a), Math.abs(b), 1e-300);
@@ -319,3 +320,36 @@ export const strip = (t: RawTerm): AnswerTerm => ({
   weight: t.weight,
   via: t.via,
 });
+
+/** Same-kind stretches in a row are one pool; each pool's value from the running total around it. */
+export function joinPools(raw: readonly RawPool[]): AnswerPool[] {
+  const pools: AnswerPool[] = [];
+  for (const p of raw) {
+    const last = pools.at(-1);
+    if (last?.kind === p.kind) {
+      last.terms.push(...p.terms);
+      if (!last.steps.includes(p.step)) last.steps.push(p.step);
+      last.after = p.after;
+    } else
+      pools.push({
+        kind: p.kind,
+        value: 0,
+        after: p.after,
+        terms: [...p.terms],
+        steps: [p.step],
+        error: 0,
+      });
+  }
+  let before: number | null = null;
+  for (const p of pools) {
+    p.value =
+      p.kind === "additive" ? p.after - (before ?? 0) : p.after / (before ?? 1);
+    const parts =
+      p.kind === "additive"
+        ? p.terms.reduce((s, t) => s + t.value * t.weight, 0)
+        : p.terms.reduce((s, t) => s * t.value, 1);
+    p.error = relDiff(parts, p.value);
+    before = p.after;
+  }
+  return pools;
+}
