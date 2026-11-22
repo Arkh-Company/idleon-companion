@@ -152,11 +152,10 @@ export function answerKeyOfSteps(
     ops?: readonly Op[];
   } = {},
 ): AnswerKey | RootFormError {
-  const out = outOfRule;
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
-  if (!top) return out("a gravação não tem raiz");
+  if (!top) return outOfRule("a gravação não tem raiz");
   const final = opts.value ?? top.v;
-  if (typeof final !== "number") return out("a raiz não deu número");
+  if (typeof final !== "number") return outOfRule("a raiz não deu número");
   const writes = rec.writes.filter((w) => w.node === top.id);
   const byPath = new Map<string, number[]>();
   const metaOf = new Map<string, WriteMeta[]>();
@@ -209,7 +208,7 @@ export function answerKeyOfSteps(
   const peeled = last
     ? peelTop(last.e, { own: fromRoot, touches: holdsRoot })
     : null;
-  if (peeled?.refused) return out(peeled.refused);
+  if (peeled?.refused) return outOfRule(peeled.refused);
   const layered = !!peeled && peeled.layers.length > 0;
   // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
   const v = peeled?.rest.v;
@@ -222,7 +221,7 @@ export function answerKeyOfSteps(
   if (layered && !onTotal && acc) {
     const m = match(acc[0], acc[1]);
     if (!m || !("writes" in m) || m.writes.at(-1)?.step !== i)
-      return out("a corrente e o último passo dão o mesmo valor");
+      return outOfRule("a corrente e o último passo dão o mesmo valor");
   }
   // the peeled step only with a chain under its layer, or with no chain for the final value: a running total whose
   // last write has a layer over the total and nothing under it goes to the chain, whose step carries the layer
@@ -446,7 +445,7 @@ export function answerKeyOfSteps(
       : expressionPools();
     divisors = divisorsAndLimits();
   } catch (e) {
-    if (e instanceof OutOfRule) return out(e.message);
+    if (e instanceof OutOfRule) return outOfRule(e.message);
     throw e;
   }
 

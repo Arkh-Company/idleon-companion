@@ -21,11 +21,7 @@ export interface TopLayer {
   step?: number;
 }
 
-const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
-  round: "round",
-  floor: "floor",
-  ceil: "ceil",
-};
+const ROUNDS: ReadonlySet<string> = new Set(["round", "floor", "ceil"]);
 
 const bare = (e: Expr): Expr => (e.t === "def" ? bare(e.e) : e);
 const leftmost = (e: Expr): Expr => {
@@ -74,7 +70,9 @@ export function peelTop(
     const after = e.v;
     if (typeof after !== "number") break;
     if (e.t === "fn" && e.name !== null) {
-      const round = ROUNDS[e.name];
+      const round = ROUNDS.has(e.name)
+        ? (e.name as TopLayer["kind"])
+        : undefined;
       const [a, b] = e.args;
       if (round && a && e.args.length === 1 && typeof a.v === "number") {
         layers.push({ kind: round, before: a.v, after });

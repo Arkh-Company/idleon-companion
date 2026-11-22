@@ -79,7 +79,7 @@ export function checkPlan(
 }
 
 /** The root's call (a root of one call), with `{character}` in its arguments resolved. */
-export function rootCallOf(bp: Blueprint, character = 0): RootCall {
+function rootCallOf(bp: Blueprint, character = 0): RootCall {
   const { ref } = bp.root;
   if (!ref) throw new Error(`a raiz de ${bp.id} é uma soma de chamadas`);
   return [ref.call, callArgs(ref, character)];

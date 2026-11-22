@@ -4,13 +4,14 @@
 import type { RecNode } from "../recording.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
 import type { AnswerPool } from "./answer-key.ts";
+import { callKey } from "./refs.ts";
 
 export const relDiff = (a: number, b: number): number =>
   a === b ? 0 : Math.abs(a - b) / Math.max(Math.abs(a), Math.abs(b), 1e-300);
 export const near = (a: unknown, b: unknown): boolean =>
   typeof a === "number" && typeof b === "number" && relDiff(a, b) < 1e-9;
 export const callRef = (n: Pick<RecNode, "b" | "a">): string =>
-  `${n.b}(${n.a.map((x) => JSON.stringify(x)).join(",")})`;
+  callKey(n.b, n.a);
 /** A root whose shape is outside the pools' rule (research R1): the answer key refuses it with this reason. */
 export class OutOfRule extends Error {}
 export interface RootFormError {

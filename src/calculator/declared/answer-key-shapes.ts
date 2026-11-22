@@ -7,6 +7,7 @@ import type { RecNode, Recording } from "../recording.ts";
 import type { AnswerKey } from "./answer-key.ts";
 import { callRef, near, outOfRule } from "./answer-key-terms.ts";
 import type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
+import { starPattern } from "./refs.ts";
 
 /** A sum of calls: each call recorded under the root, in order, is a source of one Additive pool. */
 export function sumKey(rec: Recording, n: number): AnswerKey | RootFormError {
@@ -276,12 +277,7 @@ export function routineKey(
       if (n === routine.id) return true;
     return false;
   };
-  const re = new RegExp(
-    `^${pattern
-      .split("[*]")
-      .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-      .join("\\[\\d+\\]")}$`,
-  );
+  const re = new RegExp(`^${starPattern(pattern)}$`);
   const last = new Map<string, number>();
   for (const w of rec.writes)
     if (inside(w.node) && re.test(w.path) && typeof w.v === "number")

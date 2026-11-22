@@ -21,13 +21,22 @@ export const callArgs = (
   character: number,
 ): RefArg[] => ref.args.map((a) => (a === CHARACTER ? character : a));
 
+/** A call's key, `Block(args in JSON)`: a blueprint's ref and a recorded node (answer-key-terms.ts, callRef) give it. */
+export const callKey = (call: string, args: readonly unknown[]): string =>
+  `${call}(${args.map((a) => JSON.stringify(a)).join(",")})`;
+
 /** The key that ties a blueprint node to an answer-key term and a recorded node: `Block(args in JSON)`, or the path. */
 export const refKey = (ref: Ref, character: number): string =>
   "call" in ref
-    ? `${ref.call}(${callArgs(ref, character)
-        .map((a) => JSON.stringify(a))
-        .join(",")})`
+    ? callKey(ref.call, callArgs(ref, character))
     : resolve(ref.read, character);
+
+/** A path with `[*]` (any index) as the body of a regular expression: the rest literal, each `[*]` an index caught. */
+export const starPattern = (path: string): string =>
+  path
+    .split(ANY)
+    .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("\\[(\\d+)\\]");
 
 /** The recorded read a path stands for: with `*`, the first one of any character and how many matched. */
 export function matchRead(
@@ -37,14 +46,7 @@ export function matchRead(
 ): { path: string; matches: number } | null {
   const path = resolve(pattern, character);
   const hits = path.includes(ANY)
-    ? recorded.filter((p) =>
-        new RegExp(
-          `^${path
-            .split(ANY)
-            .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-            .join("\\[\\d+\\]")}$`,
-        ).test(p),
-      )
+    ? recorded.filter((p) => new RegExp(`^${starPattern(path)}$`).test(p))
     : recorded.filter((p) => p === path);
   const [first] = hits;
   return first === undefined ? null : { path: first, matches: hits.length };

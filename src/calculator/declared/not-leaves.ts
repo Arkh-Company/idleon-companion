@@ -1,7 +1,8 @@
 // The parts that enter a sum without being a row (spec 010, FR-016, research R6): the prototype found 19 undeclared
 // parts in the Drop Rate, all of these five kinds. The lock lets them through its coverage; their arguments are the
 // parent's declared children, and the screen shows them only in the ⓘ. A new entry comes with its reason and passes
-// the checks over the 289 trees, as a shape rule does.
+// the checks over every tree of the catalog, as a shape rule does.
+import { starPattern } from "./refs.ts";
 
 export interface NotLeaf {
   /** A block (with its mode, its first argument) or a path; `[*]` stands for any index. */
@@ -58,12 +59,7 @@ const firstArg = (args: string): unknown => {
   }
 };
 const readPattern = (read: string) =>
-  new RegExp(
-    `^${read
-      .split("[*]")
-      .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-      .join("\\[(\\d+)\\]")}(?:$|[.[])`,
-  );
+  new RegExp(`^${starPattern(read)}(?:$|[.[])`);
 
 /**
  * The entry a reference key (`Block(args)` or a path) falls under, or null for an ordinary part. A read of the tree's
