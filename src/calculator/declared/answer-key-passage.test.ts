@@ -141,14 +141,120 @@ test("the read after both writes opens the second one, by the seq of the write i
   ]);
 });
 
-test("two reads that saw the two writes (seq 1 and 2): the place does not decide, refused", () => {
+test("two reads that saw the two writes (seq 1 and 2): the read at the step's place opens the write it saw", () => {
   const rx: RecNode["rx"] = [
     ["DNSM.p", 6, 1, 1],
     ["DNSM.p", 6, 3, 2],
   ];
-  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toMatch(
-    /a posição não decide entre elas/,
+  expect(refsVia(twice([["DNSM.p", 6, 1]], rx))).toEqual([
+    ["5", []],
+    ["InventedA(1)", ["DNSM.p"]],
+  ]);
+});
+
+test("the path's only logged read comes after the step: the read is not found by its place, refused", () => {
+  expect(reasonOf(twice([], [["DNSM.p", 6, 3, 2]]))).toMatch(
+    /a leitura de DNSM\.p que alimenta o passo 1 não está no log até o lugar dele/,
   );
+});
+
+const call = (id: number, v: number): Expr => ({ t: "call", id, v });
+const poolsOf = (key: ReturnType<typeof answerKeyOfSteps>) => {
+  if ("error" in key) throw new Error(key.reason);
+  return key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)]);
+};
+
+test("an accumulator summed in sequence with a source in 0: each read opens the write it saw at its step's place", () => {
+  // `i = 10 + A(1); DNSM.e = i; i = DNSM.e + Z(2); DNSM.e = i; i = DNSM.e + C(3); DNSM.e = i; return DNSM.e * 2`:
+  // Z(2) is 0, so its write is the one before it + 0
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "InventedRoot",
+        a: [0, 0, 0],
+        v: 44,
+        c: [2, 3, 4],
+        rx: [
+          ["DNSM.e", 15, 1, 1],
+          ["DNSM.e", 15, 2, 2],
+          ["DNSM.e", 22, 3, 3],
+        ],
+      },
+      { b: "InventedA", a: [1], v: 5, pxi: 0 },
+      { b: "InventedZ", a: [2], v: 0, pxi: 1 },
+      { b: "InventedC", a: [3], v: 7, pxi: 2 },
+    ],
+    [
+      { path: "DNSM.e", node: 1, v: 15, xi: 1, seq: 1 },
+      { path: "DNSM.e", node: 1, v: 15, xi: 2, seq: 2 },
+      { path: "DNSM.e", node: 1, v: 22, xi: 3, seq: 3 },
+    ],
+    { root: 0 },
+  );
+  const e = (v: number): Expr => ({ t: "read", p: "DNSM.e", v });
+  const key = answerKeyOfSteps(rec, {
+    steps: [
+      { v: 15, e: op("+", { t: "num", v: 10 }, call(2, 5), 15) },
+      { v: 15, e: op("+", e(15), call(3, 0), 15) },
+      { v: 22, e: op("+", e(15), call(4, 7), 22) },
+      { v: 44, e: op("*", e(22), { t: "num", v: 2 }, 44) },
+    ],
+    checks: [],
+    stepAt: [0, 1, 2, 3],
+  });
+  expect(poolsOf(key)).toEqual([
+    ["additive", ["10", "InventedA(1)", "InventedZ(2)", "InventedC(3)"]],
+    ["multi", ["2"]],
+  ]);
+});
+
+test("a sum in a loop, one more term in 0 and the result pushed to a list: the value with no name opens the write each read saw", () => {
+  // `for k of [0, 1]: DNSM.t = DNSM.t + P(k)`; `DNSM.t = DNSM.t + Q(9)`, Q(9) in 0; `DNSM.L.push(DNSM.t)`; then a
+  // step over the value 8 with no name, as both DNSM.t and DNSM.L[0] hold it
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "InventedRoot",
+        a: [0, 0, 0],
+        v: 16,
+        c: [2, 3, 4],
+        rx: [
+          ["DNSM.t", 0, 0, 0],
+          ["DNSM.t", 5, 1, 1],
+          ["DNSM.t", 8, 2, 2],
+          ["DNSM.t", 8, 3, 3],
+          ["DNSM.L[0]", 8, 3, 4],
+        ],
+      },
+      { b: "InventedP", a: [0], v: 5, pxi: 0 },
+      { b: "InventedP", a: [1], v: 3, pxi: 1 },
+      { b: "InventedQ", a: [9], v: 0, pxi: 2 },
+    ],
+    [
+      { path: "DNSM.t", node: 1, v: 5, xi: 1, seq: 1 },
+      { path: "DNSM.t", node: 1, v: 8, xi: 2, seq: 2 },
+      { path: "DNSM.t", node: 1, v: 8, xi: 3, seq: 3 },
+      { path: "DNSM.L[0]", node: 1, v: 8, xi: 3, seq: 4 },
+    ],
+    { root: 0 },
+  );
+  const t = (v: number): Expr => ({ t: "read", p: "DNSM.t", v });
+  const key = answerKeyOfSteps(rec, {
+    steps: [
+      // the loop's step, recorded twice: its expression is its last turn's
+      { v: 8, e: op("+", t(5), call(3, 3), 8) },
+      { v: 8, e: op("+", t(8), call(4, 0), 8) },
+      { v: 16, e: op("*", { t: "val", v: 8 }, { t: "num", v: 2 }, 16) },
+    ],
+    checks: [],
+    stepAt: [1, 2, 3],
+  });
+  expect(poolsOf(key)).toEqual([
+    ["additive", ["InventedP(0)", "InventedP(1)", "InventedQ(9)"]],
+    ["multi", ["2"]],
+  ]);
 });
 
 test("a step log at the cap: a later write of the path, by another call, may be what an unlogged read saw, refused", () => {
@@ -160,18 +266,16 @@ test("a step log at the cap: a later write of the path, by another call, may be 
 });
 
 test("the reason of more than one write names the path, the call and the seq of each write, and a log at the cap", () => {
-  const rx: NonNullable<RecNode["rx"]> = [
-    ["DNSM.p", 6, 1, 1],
-    ["DNSM.p", 6, 3, 2],
-  ];
+  // no read of the path in the log: both writes may be the one read back
+  const rx: NonNullable<RecNode["rx"]> = [];
   const writes =
     "(DNSM.p de InventedRoot(0,0,0), seq 1; DNSM.p de InventedRoot(0,0,0), seq 2)";
-  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toContain(
+  expect(reasonOf(twice([], rx))).toContain(
     `a passagem 6 sai de mais de uma escrita ${writes}, e a posição não decide entre elas`,
   );
-  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).not.toMatch(/limite/);
+  expect(reasonOf(twice([], rx))).not.toMatch(/limite/);
   while (rx.length < LOG_CAP) rx.push(["InventedPad", 0, 0]);
-  expect(reasonOf(twice([["DNSM.p", 6, 1]], rx))).toMatch(
+  expect(reasonOf(twice([], rx))).toMatch(
     /não decide entre elas \(o log da chamada chegou ao limite\)/,
   );
 });
