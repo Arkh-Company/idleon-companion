@@ -145,5 +145,5 @@ Bad: `branch` and `sum` checked by `isPathRead` alone, so `PlayerDATABASE[0]…`
 ### The answer key ties by the recorded place, never by value alone
 
 Every lookup of the answer key that ties a write, a step, a call or a path to another uses the recorded place (`xi`, `stepAt`, the node); when the place does not decide and a second candidate has the same value, the root is refused with the reason, never settled by value or by order.
-Good: the passage opens the step its write came right after (`xi`), and two passages worth 0 with no place to tell them apart refuse "a passagem V sai de mais de uma escrita, e a posição não decide entre elas".
+Good: the passage opens the step its write came right after (`xi`), and two passages worth 0 with no place to tell them apart refuse "a passagem V sai de mais de uma escrita (…), e a posição não decide entre elas".
 Bad: `ctx.steps.findIndex((s, j) => !seen.has(j) && near(s.v, v))`, which takes the first of two steps worth 0 and swaps Cards and Stamps.
