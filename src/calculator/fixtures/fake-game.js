@@ -1816,7 +1816,7 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeFloorIf = function () {
     var d = dnsm();
     d.TreeFloorIf = new StringMap();
-    d.TreeFloorIf.h.v = Blocks._customBlock_TreeReads() - 10;
+    d.TreeFloorIf.h.v = state().TreeStats.h.a * 0.1;
     d.TreeFloorIf.h.v = d.TreeFloorIf.h.v * 2;
     1 > d.TreeFloorIf.h.v && (d.TreeFloorIf.h.v = 1);
     return d.TreeFloorIf.h.v;

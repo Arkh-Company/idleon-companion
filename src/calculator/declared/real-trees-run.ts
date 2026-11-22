@@ -183,11 +183,14 @@ export function probeRoot(
       .slice(0, roots.length)
       .map((id) => rec.nodes[id]);
     // a call that failed (the recorder marks it) or gave no number: the live map, or a wrong call
-    // a root that returns a list (an item of it is the number) gives no number of its own
+    // a root that returns a list (an item of it is the number), or a part of what it wrote (the Seraph, T161), gives
+    // no number of its own
     if (
       tops.length < roots.length ||
       tops.some((n) => n?.err) ||
-      (item === undefined && tops.some((n) => typeof n?.v !== "number"))
+      (item === undefined &&
+        part === undefined &&
+        tops.some((n) => typeof n?.v !== "number"))
     )
       return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";

@@ -358,18 +358,23 @@
     stop: () => S.stopped(),
     isOn: () => S.on,
 
-    // The recording, as text made here: nothing of the context crosses as an object.
+    // The recording, as text made here: nothing of the context crosses as an object. An infinite number crosses as a
+    // label JSON keeps (spec 010, T162: a cost that overflows), and tree-record.ts reads it back as the number.
     take: () =>
-      JSON.stringify({
-        nodes: S.nodes || [],
-        writes: S.writes || [],
-        spliced: S.spliced || [],
-        bpStart: S.bpStart === Infinity ? null : S.bpStart,
-        setup: S.setup ? S.setup.id : null,
-        root: S.root ? S.root.id : null,
-        builders: S.builders ? S.builders.id : null,
-        fromGame: S.fromGame || [],
-      }),
+      JSON.stringify(
+        {
+          nodes: S.nodes || [],
+          writes: S.writes || [],
+          spliced: S.spliced || [],
+          bpStart: S.bpStart === Infinity ? null : S.bpStart,
+          setup: S.setup ? S.setup.id : null,
+          root: S.root ? S.root.id : null,
+          builders: S.builders ? S.builders.id : null,
+          fromGame: S.fromGame || [],
+        },
+        (k, v) =>
+          v === Infinity ? "(Infinity)" : v === -Infinity ? "(-Infinity)" : v,
+      ),
   };
   G.__rec.state = S;
 })();

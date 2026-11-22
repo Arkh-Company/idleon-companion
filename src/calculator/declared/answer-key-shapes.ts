@@ -4,7 +4,7 @@
 // recorder's copy, the sum of the state it writes (the Cog Board). All read from the recording only.
 import type { RecNode, Recording } from "../recording.ts";
 import type { AnswerKey } from "./answer-key.ts";
-import { callRef, outOfRule } from "./answer-key-terms.ts";
+import { callRef, near, outOfRule } from "./answer-key-terms.ts";
 import type { AnswerTerm, RootFormError } from "./answer-key-terms.ts";
 
 /** A sum of calls: each call recorded under the root, in order, is a source of one Additive pool. */
@@ -91,13 +91,15 @@ const refused = (part: PartRefusal["part"], why: string): PartRefusal => ({
 /**
  * A part of a call (T153): the terms of one recorded pool that the blueprint names by reference, each once; the root's
  * value is their product (a Multi pool) or their weighted sum (an Additive pool). A reference that is no term of a
- * pool, or terms in two pools, are refused with the reason.
+ * pool, or terms in two pools, are refused with the reason. The ➗ lines count too (T161, the Mob respawn): there the
+ * part is a sum the game divides by 100 as a whole, and its value is in %.
  */
 export function partKey(
   key: AnswerKey,
   refs: readonly string[],
 ): AnswerKey | PartRefusal {
-  const all = key.pools.flatMap((pool, p) => pool.terms.map((t) => ({ p, t })));
+  const lines = [...key.pools, ...key.divisors];
+  const all = lines.flatMap((pool, p) => pool.terms.map((t) => ({ p, t })));
   // each reference in one term, as its main reference or inside it (a factor (1 + (A + 40 × B) / 100), T155 and
   // T162); a reference in two terms is ambiguous, never taken by order; terms that hold more than one are one term
   const each = refs.map((ref) => all.filter((x) => x.t.refs.includes(ref)));
@@ -110,13 +112,21 @@ export function partKey(
       `a parte não é termo de um pool gravado: ${missing.join(", ")}`,
     );
   const found = [...new Set(each.flat())];
-  const pool = key.pools[found[0]?.p ?? -1];
+  const at = found[0]?.p ?? -1;
+  const pool = lines[at];
   if (new Set(found.map((f) => f.p)).size !== 1 || !pool)
     return refused("ambiguous", "os termos da parte estão em pools diferentes");
+  const terms = found.map((f) => f.t);
+  if (at < key.pools.length) return partOfPool(key, pool, terms);
+  if (
+    pool.kind !== "additive" ||
+    terms.some((t) => !near(Math.abs(t.weight), 0.01))
+  )
+    return refused("ambiguous", "a parte da linha ➗ não está em %");
   return partOfPool(
     key,
     pool,
-    found.map((f) => f.t),
+    terms.map((t) => ({ ...t, weight: t.weight * 100 })),
   );
 }
 
@@ -124,14 +134,20 @@ export function partKey(
  * The part in a running total that the root reads and that the root itself or a call under it builds (a bubble's cost
  * in a scratch path, T155; the Obol stat multi's second total, T162): each path written there, keyed by `keyOf` at the
  * last value written to it; calls outside the root (the helpers, another root) never count. A path that holds the part,
- * or where the part is ambiguous, is a candidate: one gives its part or its refusal, none gives null, and more than one
- * is ambiguous and refused.
+ * or where the part is ambiguous, is a candidate: one gives its part or its refusal, none gives null, and candidates
+ * of more than one call are refused. A write in a turn of a loop is keyed with the steps of its turn (the Seraph, the
+ * Mob respawn: the step that gave it was recorded again after it); the same part in each turn, with the same terms
+ * and the same value, is one part, and a part that changes from turn to turn is refused (spec, Open Questions 22/11).
  */
 export function partInWriters(
   rec: Recording,
   top: RecNode,
   refs: readonly string[],
-  keyOf: (node: number, value: number) => AnswerKey | RootFormError,
+  keyOf: (
+    node: number,
+    value: number,
+    turn?: { from: number; to: number },
+  ) => AnswerKey | RootFormError,
 ): AnswerKey | RootFormError | null {
   // the log too: the first reads stop at the recorder's cap
   const read = new Set([
@@ -143,23 +159,50 @@ export function partInWriters(
       if (n === top.id) return true;
     return false;
   };
-  const writers = new Map<string, { node: number; value: number }>();
-  for (const w of rec.writes)
-    if (
-      w.node !== null &&
-      under(w.node) &&
-      read.has(w.path) &&
-      typeof w.v === "number"
-    )
-      writers.set(`${String(w.node)} ${w.path}`, { node: w.node, value: w.v });
-  const parts = [...writers.values()].flatMap(({ node, value }) => {
-    const inner = keyOf(node, value);
-    const part = "error" in inner ? inner : partKey(inner, refs);
-    const ambiguous = "part" in part && part.part === "ambiguous";
-    return "error" in part && !ambiguous ? [] : [part];
+  const writers = new Map<
+    string,
+    { node: number; value: number; turn: { from: number; to: number } }
+  >();
+  // a turn: the steps its call recorded since the call's write before it
+  const lastXi = new Map<number, number>();
+  for (const w of rec.writes) {
+    if (w.node === null || !under(w.node)) continue;
+    const from = lastXi.get(w.node) ?? 0;
+    lastXi.set(w.node, w.xi);
+    if (read.has(w.path) && typeof w.v === "number")
+      writers.set(`${String(w.node)} ${w.path}`, {
+        node: w.node,
+        value: w.v,
+        turn: { from, to: w.xi - 1 },
+      });
+  }
+  const partOf = (inner: AnswerKey | RootFormError) =>
+    "error" in inner ? inner : partKey(inner, refs);
+  const kept = (part: AnswerKey | RootFormError) =>
+    !("error" in part) || ("part" in part && part.part === "ambiguous");
+  const parts = [...writers.values()].flatMap(({ node, value, turn }) => {
+    let part = partOf(keyOf(node, value));
+    if (!kept(part)) part = partOf(keyOf(node, value, turn));
+    return kept(part) ? [{ node, part }] : [];
   });
-  if (parts.length > 1) return outOfRule("a parte vem de mais de uma chamada");
-  return parts[0] ?? null;
+  const [first, ...rest] = parts;
+  if (!first) return null;
+  if (new Set(parts.map((p) => p.node)).size > 1)
+    return outOfRule("a parte vem de mais de uma chamada");
+  if ("error" in first.part) return first.part;
+  const sig = (k: AnswerKey) =>
+    JSON.stringify(k.pools.map((p) => p.terms.map((t) => [t.refs, t.weight])));
+  const one = first.part;
+  if (
+    rest.some(
+      ({ part }) =>
+        "error" in part ||
+        sig(part) !== sig(one) ||
+        !near(part.final, one.final),
+    )
+  )
+    return outOfRule("a parte muda entre as voltas do laço");
+  return one;
 }
 
 /** The part's key: the terms chosen of one pool, its value their product (Multi) or their weighted sum (Additive). */

@@ -33,6 +33,8 @@ export interface BlockSteps {
   checks: Check[];
   /** Any recorded step of the block (by its op id) as an expression, as the steps build it (spec 010, T151). */
   exprOf?: (op: number) => Expr | null;
+  /** Where each step was last recorded in the call's step log (spec 010, T162: a write comes after its step). */
+  stepAt?: number[];
 }
 
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
@@ -321,6 +323,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (checks.length >= 8) break;
     }
     const steps: Step[] = [];
+    const stepAt: number[] = [];
     for (const i of order) {
       const op = ops[i];
       const v = vals.get(i);
@@ -328,18 +331,22 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const ex = e(op.node);
       if (JSON.stringify(ex).includes('"v":""')) continue;
       steps.push({ v, e: ex });
+      stepAt.push(lastPos.get(i) ?? -1);
     }
     const exprOf = (op: number): Expr | null => {
       const o = ops[op];
       return o && vals.has(op) ? e(o.node) : null;
     };
-    return { steps, checks, exprOf };
+    return { steps, checks, exprOf, stepAt };
   }
 
   return {
     /** The steps of one loop turn of `n` (step 8d2): `xs` the turn's slice of its step log, at `range`. */
     turn: (n: RecNode, xs: RecNode["x"], range: LoopTurn): Step[] =>
       stepsOf(n, xs, range).steps,
+    /** The steps of one loop turn of `n`, with where each was recorded (spec 010, T161: a part in each turn). */
+    turnOf: (n: RecNode, range: LoopTurn): BlockSteps =>
+      stepsOf(n, n.x?.slice(range.from, range.to + 1), range),
     /** The steps and checks of call `id` (none for a call with no steps). */
     of(id: number): BlockSteps {
       let out = memo.get(id);

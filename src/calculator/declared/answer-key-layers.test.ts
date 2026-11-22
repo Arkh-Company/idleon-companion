@@ -291,19 +291,22 @@ test("a side that is a min of two sides starting with constants is the cap", () 
 // Spec 010, T162 (spec, Open Questions 22/11): `K > x && (x = K)` raises the total to K, a Floor K.
 test("a total raised by `K > x && (x = K)` is a chain with a Floor K", () => {
   const key = keyOf("TreeFloorIf");
-  // (TreeReads() − 10) × 2 = −4, raised to 1
+  // TreeStats.a × 0.1 × 2 = 0.6, raised to 1
   expect(key.final).toBe(1);
   expect(key.form).toBe("chain");
-  expect(layers(key)).toEqual([["floor-min", 1, -4, 1]]);
+  expect(key.top.map((l) => [l.kind, l.value ?? null, l.after])).toEqual([
+    ["floor-min", 1, 1],
+  ]);
+  expect(key.top[0]?.before).toBeCloseTo(0.6, 12);
   expect(pools(key.pools)).toEqual([
     [
-      "additive",
+      "multi",
       [
-        ["TreeReads()", 1],
-        ["10", -1],
+        ["TreeStats.a", 1],
+        ["0.1", 1],
+        ["2", 1],
       ],
     ],
-    ["multi", [["2", 1]]],
   ]);
 });
 

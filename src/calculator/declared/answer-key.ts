@@ -7,7 +7,7 @@
 // the blueprint come here too (spec, Open Questions 21 and 22/11): a sum of calls, a routine run on the recorder's copy,
 // and a part of a call (terms of its recorded pool, by reference; answer-key-shapes.ts).
 import type { Op } from "../instrument.ts";
-import type { Recording } from "../recording.ts";
+import type { Recording, RecNode, RecWrite } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
@@ -39,6 +39,7 @@ import {
   sumKey,
 } from "./answer-key-shapes.ts";
 import { chainPools, matchChain } from "./answer-key-chain.ts";
+import type { Bound, WriteMeta } from "./answer-key-chain.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
 
@@ -110,23 +111,30 @@ export function answerKey(
     // the item's step by its value: more than one step with it is ambiguous
     if (blockSteps.steps.filter((s) => near(s.v, value)).length > 1)
       return outOfRule(`o item ${String(shape.item)} está em mais de um passo`);
-    return answerKeyOfSteps(rec, blockSteps, { branches, value });
+    return answerKeyOfSteps(rec, blockSteps, { branches, value, ops });
   }
-  const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
+  const key = answerKeyOfSteps(rec, blockSteps, { gate, branches, ops });
   if (!shape || !("part" in shape)) return key;
   const own = "error" in key ? key : partKey(key, shape.part);
   // found, or refused as ambiguous in the root: never looked for again elsewhere
   if (!("error" in own) || ("part" in own && own.part === "ambiguous"))
     return own;
-  const inner = (node: number, value: number) =>
-    answerKeyOfSteps(rec, made.of(node), { node, value });
+  const inner = (
+    node: number,
+    value: number,
+    turn?: { from: number; to: number },
+  ) => {
+    const n = rec.nodes[node];
+    const steps = turn && n ? made.turnOf(n, turn) : made.of(node);
+    return answerKeyOfSteps(rec, steps, { node, value, ops });
+  };
   return partInWriters(rec, top, shape.part, inner) ?? own;
 }
 
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
 export function answerKeyOfSteps(
   rec: Recording,
-  { steps, checks }: BlockSteps,
+  { steps, checks, stepAt }: BlockSteps,
   opts: {
     gate?: TopLayer | null;
     branches?: readonly Branch[];
@@ -134,6 +142,8 @@ export function answerKeyOfSteps(
     node?: number;
     /** …and the value it built there, in place of what it returned. */
     value?: number;
+    /** The game's code, to read a write that cuts the total under a test (T162). */
+    ops?: readonly Op[];
   } = {},
 ): AnswerKey | RootFormError {
   const out = outOfRule;
@@ -143,15 +153,26 @@ export function answerKeyOfSteps(
   if (typeof final !== "number") return out("a raiz não deu número");
   const writes = rec.writes.filter((w) => w.node === top.id);
   const byPath = new Map<string, number[]>();
+  const metaOf = new Map<string, WriteMeta[]>();
   for (const w of writes)
-    if (typeof w.v === "number")
+    if (typeof w.v === "number") {
       byPath.set(w.path, [...(byPath.get(w.path) ?? []), w.v]);
+      metaOf.set(w.path, [
+        ...(metaOf.get(w.path) ?? []),
+        { xi: w.xi, bound: boundOf(top, w, opts.ops) },
+      ]);
+    }
+  const match = (p: string, vs: readonly number[]) =>
+    matchChain(steps, vs, {
+      ...(stepAt ? { stepAt } : {}),
+      writes: metaOf.get(p) ?? [],
+    });
   /** The running total that ends in `v`: the path written most, more than once, whose last write is `v`. */
   const chainFor = (v: number) =>
     [...byPath]
       .filter(
-        ([, vs]) =>
-          vs.length > 1 && near(vs.at(-1), v) && matchChain(steps, vs) !== null,
+        ([p, vs]) =>
+          vs.length > 1 && near(vs.at(-1), v) && match(p, vs) !== null,
       )
       .sort((a, b) => b[1].length - a[1].length)[0] ?? null;
 
@@ -193,7 +214,7 @@ export function answerKeyOfSteps(
   // a layer over an expression, with a chain whose last write is the same value: either could be the root, unless the
   // chain's last write is that very step (Legend talent max LV: the chain, its last write floored)
   if (layered && !onTotal && acc) {
-    const m = matchChain(steps, acc[1]);
+    const m = match(acc[0], acc[1]);
     if (!m || !("writes" in m) || m.writes.at(-1)?.step !== i)
       return out("a corrente e o último passo dão o mesmo valor");
   }
@@ -253,7 +274,10 @@ export function answerKeyOfSteps(
 
   // 2. A chain (answer-key-chain.ts): the layers its steps carry, and their limits, go to the root's layers.
   const stepLimits: { limits: Map<TopLayer, Expr>; step: number }[] = [];
+  const chainDivisors: { e: Expr; step: number }[] = [];
   const chain = {
+    ...(stepAt ? { stepAt } : {}),
+    divisors: chainDivisors,
     steps,
     reader: r,
     termsOf,
@@ -379,19 +403,30 @@ export function answerKeyOfSteps(
     for (const { limits, step } of stepLimits)
       for (const [layer, e] of limits)
         layer.limit = lineOf({ e, w: 1, seen: new Set([step]) }, step);
-    if (!at || !peeled) return [];
+    // the divisor of a chain's first write (answer-key-chain.ts)
+    const fromChain = chainDivisors.flatMap((d) =>
+      operands(d.e, "multi", 1, new Set([d.step])).map((f) =>
+        lineOf(f, d.step),
+      ),
+    );
+    if (!at || !peeled) return fromChain;
     const seen = new Set([at.step]);
     for (const [layer, e] of peeled.limits)
       layer.limit = lineOf({ e, w: 1, seen }, at.step);
-    return peeled.divisors.flatMap((b) =>
-      operands(b, "multi", 1, seen).map((f) => lineOf(f, at.step)),
-    );
+    return [
+      ...fromChain,
+      ...peeled.divisors.flatMap((b) =>
+        operands(b, "multi", 1, seen).map((f) => lineOf(f, at.step)),
+      ),
+    ];
   }
 
   let raw: RawPool[];
   let divisors: AnswerPool[];
   try {
-    raw = acc ? chainPools(chain, acc[1]) : expressionPools();
+    raw = acc
+      ? chainPools(chain, acc[1], metaOf.get(acc[0]))
+      : expressionPools();
     divisors = divisorsAndLimits();
   } catch (e) {
     if (e instanceof OutOfRule) return out(e.message);
@@ -434,4 +469,38 @@ export function answerKeyOfSteps(
     divisors,
     pollution: r.pollution,
   };
+}
+
+/**
+ * A write that cuts the total to a constant under a test (T162; spec, Open Questions 22/11): the last step the call
+ * recorded before it is a comparison that held, between a number of the code equal to the written value and the
+ * total. `K < x` or `x > K` cuts it down (a Cap); `K > x` or `x < K` raises it (a Floor). Read in memory only.
+ */
+function boundOf(
+  top: RecNode,
+  w: RecWrite,
+  ops: readonly Op[] | undefined,
+): Bound | null {
+  const last = top.x?.[w.xi - 1];
+  const op = last && ops?.[last[0]];
+  if (!op || op.kind !== "cmp" || last[1] !== true) return null;
+  const num = (side: unknown): number | null => {
+    const n = side as { type?: unknown; value?: unknown } | undefined;
+    return n?.type === "Literal" && typeof n.value === "number"
+      ? n.value
+      : null;
+  };
+  const l = num(op.node.left);
+  const r = num(op.node.right);
+  const k = l ?? r;
+  if (k === null || (l !== null && r !== null) || !near(k, w.v)) return null;
+  const o = op.node.operator;
+  const above =
+    o === "<" || o === "<="
+      ? l !== null
+      : o === ">" || o === ">="
+        ? r !== null
+        : null;
+  if (above === null) return null;
+  return { kind: above ? "cap" : "floor-min", value: k };
 }

@@ -97,7 +97,10 @@ export function bootRecorder(
         });
         const json = run("__rec.take()", startMs);
         if (typeof json !== "string") throw new Error("no recording");
-        return JSON.parse(json) as Recording;
+        // an infinite number crossed as a label (recorder.js, take)
+        return JSON.parse(json, (_, v: unknown) =>
+          v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
+        ) as Recording;
       } finally {
         run("__rec.stop()", startMs);
       }
