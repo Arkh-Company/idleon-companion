@@ -70,6 +70,10 @@ test("a routine's root (T152): a block or a helper's event run on the recorder's
     [{ name: "Invented", routine: event }, /sum/],
     [{ name: "Invented", routine: event, sum: "A[1] + B[2]" }, /sum/],
     [
+      { name: "Invented", routine: event, sum: "PlayerDATABASE[0].Board[*]" },
+      /sum/,
+    ],
+    [
       {
         name: "Invented",
         routine: { slot: -1, behavior: "B", event: "e" },
@@ -162,6 +166,11 @@ test("a part may name the branch of its loop's turns by the list it searches (T1
     [{ name: "Invented", ref, branch: "InventedLists[3]" }, /branch/],
     [{ name: "Invented", ref, part, branch: "A[1] + B[2]" }, /branch/],
     [{ name: "Invented", ref, part, branch: 3 }, /branch/],
+    // a character's index written out, as the ref.read refuses it (FR-007)
+    [
+      { name: "Invented", ref, part, branch: "PlayerDATABASE[0].Lists[3]" },
+      /branch/,
+    ],
   ] as const) {
     const out = sketch(root);
     expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(

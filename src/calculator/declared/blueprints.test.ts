@@ -40,6 +40,20 @@ test("each tree number of the catalog has exactly one blueprint, in its lot's fo
   expect(files.toSorted()).toEqual(expected.toSorted());
 });
 
+test("every tree a number of the catalog says it goes into is a number of the catalog", () => {
+  const all = JSON.parse(
+    readFileSync(join(ROOT, "docs", "catalogo", "numeros.json"), "utf8"),
+  ) as { id: string; arvore_mae?: string[] }[];
+  const ids = new Set(all.map((n) => n.id));
+  expect(
+    all.flatMap((n) =>
+      (n.arvore_mae ?? [])
+        .filter((m) => !ids.has(m))
+        .map((m) => `${n.id} -> ${m}`),
+    ),
+  ).toEqual([]);
+});
+
 test("every blueprint loads in a stage, and its file's name is its id", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.refused).toEqual([]);

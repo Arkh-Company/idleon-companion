@@ -1,8 +1,11 @@
 // The root's shapes of the blueprint in the answer key (spec 010, T145, T152, T153; spec, Open Questions 21 and 22/11;
 // ADR 0010): a part of a call, a sum of calls and a routine run on the recorder's copy, with their values, over the
 // invented game (fake-game.js).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
+import { LOG_CAP } from "../recording.ts";
 import type { Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
@@ -429,6 +432,27 @@ test("a branch whose turns differ, a branch's turn without the part, or a branch
   );
   expect(reason(part, "TreeNoWorld")).toMatch(
     /nenhuma volta achou o item na lista TreeNoWorld/,
+  );
+});
+
+// The review of T163: a step log cut at the recorder's cap could leave turns of the branch out without a word.
+test("the cap of a call's step log is the recorder's, and a branch over a log at the cap is refused", () => {
+  const src = readFileSync(
+    join(import.meta.dirname, "..", "recorder.js"),
+    "utf8",
+  );
+  expect(LOG_CAP).toBe(20_000);
+  expect(/var LOG_CAP = (\d+);/.exec(src)?.[1]).toBe(String(LOG_CAP));
+  const rec = record("TreeRespawnWorlds");
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top?.rx) throw new Error("no step log");
+  while (top.rx.length < LOG_CAP) top.rx.push(["TreePad", 0, 0]);
+  const key = answerKey(rec, recorder.ops, {
+    part: ["TreeReads()", "TreeBase", "TreeStats.a"],
+    branch: "TreeWorlds[0]",
+  });
+  expect("reason" in key ? key.reason : "no refusal").toMatch(
+    /o log da chamada chegou ao limite antes das voltas do ramo/,
   );
 });
 
