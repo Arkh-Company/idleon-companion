@@ -1828,6 +1828,14 @@ lime.$scripts.N = function (_exports, $global) {
     var low = -state().TreeCapped * Math.pow(10, 400);
     return Blocks._customBlock_TreeDeclCurve("decay", low, 1, 1);
   };
+  // A builder's pass (review of the seventh probe): a write of the whole cache, which the pass drops from the writes,
+  // then a scratch box outside the cache that overflows, which the pass moves to the spliced writes.
+  Blocks._customBlock_TreeInfBuild = function () {
+    var d = dnsm();
+    d.TreeWhoCache = d.TreeWhoCache;
+    d.TreeInfScratch = state().TreeCapped * Math.pow(10, 400);
+    return 0;
+  };
   // A cut whose test is on another value than the total, the total already below it: no cut of the total.
   Blocks._customBlock_TreeCutOther = function () {
     var s = state();

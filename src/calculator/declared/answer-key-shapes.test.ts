@@ -486,6 +486,20 @@ test("only a recording with an infinite number marks it for its label", () => {
   expect(recorder.context.run("__rec.state.inf", 1_000)).toBe(true);
 });
 
+/** What the old label pass over the whole recording (a replacer in take(), a reviver after it) gave of its state. */
+const labeled = (): unknown =>
+  JSON.parse(
+    String(
+      recorder.context.run(
+        `JSON.stringify({ nodes: __rec.state.nodes, writes: __rec.state.writes, spliced: __rec.state.spliced },
+          (k, v) => (v === Infinity ? "(Infinity)" : v === -Infinity ? "(-Infinity)" : v))`,
+        1_000,
+      ),
+    ),
+    (_, v: unknown) =>
+      v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
+  );
+
 // The seventh probe's time (4× the fifth's): a label pass over the whole recording (a replacer in take(), a reviver
 // after it) cost seconds in every root. The recording names the place of each infinite number instead, and each comes
 // back there: the same recording the labels gave.
@@ -513,21 +527,31 @@ test("each infinite number comes back at its place, as the label over the whole 
       ["writes", "v"],
     ]),
   );
-  const labeled: unknown = JSON.parse(
-    String(
-      recorder.context.run(
-        `JSON.stringify({ nodes: __rec.state.nodes, writes: __rec.state.writes, spliced: __rec.state.spliced },
-          (k, v) => (v === Infinity ? "(Infinity)" : v === -Infinity ? "(-Infinity)" : v))`,
-        1_000,
-      ),
-    ),
-    (_, v: unknown) =>
-      v === "(Infinity)" ? Infinity : v === "(-Infinity)" ? -Infinity : v,
-  );
   expect({
     nodes: rec.nodes,
     writes: rec.writes,
     spliced: rec.spliced,
-  }).toEqual(labeled);
+  }).toEqual(labeled());
   expect(rec.nodes.some((n) => n.v === -Infinity)).toBe(true);
+});
+
+// Review of the seventh probe: a write the builders' pass moves to the spliced ones, after another it drops from the
+// writes, comes back at its place there.
+test("an infinite number the builders' pass moves to the spliced writes comes back at its place there", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeCostInf", [0, 0, 0]]], {
+    recompute: [],
+    builders: [
+      {
+        cache: "TreeWhoCache",
+        run: { block: "TreeInfBuild", args: [] },
+        keepLive: true,
+      },
+    ],
+  });
+  expect(rec.spliced.some((w) => w.v === Infinity)).toBe(true);
+  expect({
+    nodes: rec.nodes,
+    writes: rec.writes,
+    spliced: rec.spliced,
+  }).toEqual(labeled());
 });
