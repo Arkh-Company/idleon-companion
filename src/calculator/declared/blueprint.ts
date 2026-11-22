@@ -262,6 +262,8 @@ function checkRoot(raw: unknown): void {
     no("root", "item é o índice de um item da lista que a chamada ref devolve");
   if (root.item !== undefined && root.part !== undefined)
     no("root", "item não vai junto com part");
+  if (typeof root.branch === "string" && hasRawCharacterIndex(root.branch))
+    no("root", "índice de personagem por extenso no branch");
   if (
     root.branch !== undefined &&
     (root.part === undefined || !isStatePath(root.branch))
@@ -299,6 +301,8 @@ function checkRoot(raw: unknown): void {
     });
   }
   if (root.scratch !== undefined) {
+    if (!isObj(root.scratch))
+      no("root", "scratch é { atributo: texto curto ou número }");
     const m = obj(
       root.scratch,
       Object.keys(root.scratch as object),
@@ -334,6 +338,8 @@ function checkRoutine(root: Record<string, unknown>): void {
     typeof root.sum === "string"
       ? root.sum.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior")
       : null;
+  if (sum !== null && hasRawCharacterIndex(sum))
+    no("root", "índice de personagem por extenso no sum");
   if (sum === null || !isStatePath(sum))
     no("root", "sum é um caminho do estado");
 }
