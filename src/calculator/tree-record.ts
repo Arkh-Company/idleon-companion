@@ -29,17 +29,25 @@ export type RootCall = readonly [
   args: readonly (string | number | readonly number[])[],
 ];
 
+const FORBIDDEN = new Set(["__proto__", "constructor", "prototype"]);
+
 /** Puts an infinite number back at its place: the path from the recording's top, then its sign (recorder.js, infAt). */
 export function putInfinity(
   rec: Recording,
   path: readonly (string | number)[],
 ) {
-  let o = rec as unknown as Record<string | number, unknown>;
-  for (const k of path.slice(0, -2))
-    o = o[k] as Record<string | number, unknown>;
+  // the place comes from the sandbox: a key that reaches a prototype is refused, and a place that does not exist skipped
+  if (path.some((k) => FORBIDDEN.has(String(k)))) return;
+  let o: unknown = rec;
+  for (const k of path.slice(0, -2)) {
+    if (typeof o !== "object" || o === null || !Object.hasOwn(o, k)) return;
+    o = (o as Record<string | number, unknown>)[k];
+  }
   const key = path.at(-2);
-  if (key !== undefined)
-    o[key] = Number(path.at(-1)) < 0 ? -Infinity : Infinity;
+  if (key === undefined || typeof o !== "object" || o === null) return;
+  if (!Object.hasOwn(o, key)) return;
+  (o as Record<string | number, unknown>)[key] =
+    Number(path.at(-1)) < 0 ? -Infinity : Infinity;
 }
 
 export function bootRecorder(
@@ -75,7 +83,8 @@ export function bootRecorder(
   const { sandbox } = context;
   const run = (text: string, ms: number) => context.run(text, ms);
   const { startMs, numberMs } = limits;
-  run("__rec.wrap()", startMs);
+  // the path of a list a call returns: the answer key's only, like the infinite numbers
+  run(`__rec.wrap(${String(infinite)})`, startMs);
   // On the original code: the instrumented copy could hide a key from the scan.
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 
@@ -135,6 +144,10 @@ export function bootRecorder(
         lap("parse");
         rec.ms = ms;
         return rec;
+      } catch (e) {
+        // the stages measured before the failure go with it (the root probe's record of where the time went)
+        if (typeof e === "object" && e !== null) Object.assign(e, { ms });
+        throw e;
       } finally {
         run("__rec.stop()", startMs);
       }

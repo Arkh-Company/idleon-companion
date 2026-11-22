@@ -101,7 +101,8 @@
               : "(" + typeof v + ")";
         if (isInf(v)) mark(["nodes", node.id, "v"], v);
         // a list or a map of the state returned: its path (spec 010, T162: the list whose item is the number)
-        var vp = v !== null && typeof v === "object" ? S.PATH.get(v) : null;
+        var vp =
+          S.paths && v !== null && typeof v === "object" ? S.PATH.get(v) : null;
         if (vp) node.vp = vp;
         return v;
       } catch (e) {
@@ -266,8 +267,10 @@
   }
 
   G.__rec = {
-    // After __calc.start: every block of the game and its searches go through the record.
-    wrap: () => {
+    // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
+    // key's recording only), a call that returns a list or a map of the state keeps its path (vp).
+    wrap: (paths) => {
+      S.paths = !!paths;
       var hx = G.__hx;
       var owner = {};
       Object.keys(hx).forEach((cls) => {

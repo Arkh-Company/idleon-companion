@@ -224,6 +224,11 @@ export function probeRoot(
       null,
     );
   } catch (e) {
+    // the recording's stages measured before it failed (tree-record.ts puts them on the error)
+    const ms = (e as { ms?: unknown } | null)?.ms;
+    if (typeof ms === "object" && ms !== null)
+      for (const [k, v] of Object.entries(ms))
+        if (typeof v === "number") stages[k] = Math.round(v);
     // only the error's kind: its message could carry a text of the save
     return done(
       "error",
