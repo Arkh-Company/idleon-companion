@@ -1832,7 +1832,8 @@ lime.$scripts.N = function (_exports, $global) {
   // then a scratch box outside the cache that overflows, which the pass moves to the spliced writes.
   Blocks._customBlock_TreeInfBuild = function () {
     var d = dnsm();
-    d.TreeWhoCache = d.TreeWhoCache;
+    var cache = d.TreeWhoCache;
+    d.TreeWhoCache = cache;
     d.TreeInfScratch = state().TreeCapped * Math.pow(10, 400);
     return 0;
   };
