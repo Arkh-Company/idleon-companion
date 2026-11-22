@@ -41,13 +41,22 @@ export const outOfRule = (why: string): RootFormError => ({
 /** The game's loop counters of a block's preamble: noise, never a passage value. */
 export const SCRATCH = "DummyNumbersStatManager.";
 
+/** A write of a passage: its value, its place in the root's step log, its number and the call that made it. */
+export interface PassageWrite {
+  v: number;
+  xi: number;
+  seq: number;
+  node: number | null;
+}
 export interface TermContext {
   nodes: readonly RecNode[];
   steps: readonly Step[];
   /** The root's child calls. */
   kids: readonly RecNode[];
   /** Paths the root wrote and may read back, with each write's value and place in the root's step log. */
-  passage: ReadonlyMap<string, readonly { v: number; xi: number }[]>;
+  passage: ReadonlyMap<string, readonly PassageWrite[]>;
+  /** The root's step log reached the recorder's cap (a refusal says so). */
+  capped?: boolean;
   /** Where each step was last recorded in the root's step log (BlockSteps.stepAt), to tell which step gave a write. */
   stepAt: readonly number[];
   accumulator: string | null;
@@ -131,14 +140,22 @@ export function termReader(ctx: TermContext) {
     seen: ReadonlySet<number>,
   ): (Giver & { path: string }) | null {
     const found = new Map<string, Giver & { path: string }>();
+    const from: string[] = [];
     for (const path of paths)
       for (const w of ctx.passage.get(path) ?? [])
-        if (near(w.v, v))
-          for (const g of giversOf(w))
+        if (near(w.v, v)) {
+          const gs = giversOf(w);
+          for (const g of gs)
             found.set(JSON.stringify([g.step, g.e]), { ...g, path });
+          const n = ctx.nodes[w.node ?? -1];
+          if (gs.length > 0)
+            from.push(
+              `${path} de ${n ? callRef(n) : "?"}, seq ${String(w.seq)}`,
+            );
+        }
     if (found.size > 1)
       throw new OutOfRule(
-        `a passagem ${String(v)} sai de mais de uma escrita, e a posição não decide entre elas`,
+        `a passagem ${String(v)} sai de mais de uma escrita (${from.join("; ")}), e a posição não decide entre elas${ctx.capped ? " (o log da chamada chegou ao limite)" : ""}`,
       );
     const [g] = found.values();
     return g && (g.step === null || !seen.has(g.step)) ? g : null;

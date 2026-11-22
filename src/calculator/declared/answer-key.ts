@@ -11,6 +11,7 @@ import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import {
+  atCap,
   callRef,
   near,
   OP,
@@ -243,7 +244,7 @@ export function answerKeyOfSteps(
       .filter(([p]) => !finals.some(([q]) => q === p) && !p.startsWith(SCRATCH))
       .map(([p]) => [
         p,
-        readBack(top, writes, p).map((w) => ({ v: Number(w.v), xi: w.xi })),
+        readBack(top, writes, p).map((w) => ({ ...w, v: Number(w.v) })),
       ]),
   );
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
@@ -253,6 +254,7 @@ export function answerKeyOfSteps(
     steps,
     kids,
     passage,
+    capped: atCap(top),
     // with no places, every step is at the same one: the place decides nothing, and two candidates refuse
     stepAt: stepAt ?? [],
     accumulator: acc?.[0] ?? null,
