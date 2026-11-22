@@ -41,7 +41,7 @@ export function treesEnv(env: NodeJS.ProcessEnv): {
   return { gameDir, snapshot, out, target, mode: mode as TreesMode };
 }
 
-/** The target's ids, in the catalog's order: a lot, all (or roots: the 289) or one id of the catalog. */
+/** The target's ids, in the catalog's order: a lot, all (or roots: every tree number) or one id of the catalog. */
 export function targetIds(
   target: string,
   catalog: readonly { id: string; lot: string }[],
