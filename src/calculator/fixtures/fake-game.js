@@ -1427,6 +1427,11 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeLayerPass = function () {
     return Blocks._customBlock_TreeReads();
   };
+  // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
+  Blocks._customBlock_TreeLayerReadPass = function () {
+    var seven = state().TreeSeven;
+    return Blocks._customBlock_TreeLegend("Max", seven - 1, 0);
+  };
   // Spec 010 (T145): a factor of a product, the part a blueprint can point at; a marker that changes the path, put
   // only in the copy the recorder runs on; a call that fails.
   Blocks._customBlock_TreeDeclFactor = function () {

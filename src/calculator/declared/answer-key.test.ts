@@ -324,15 +324,27 @@ test("a root with no step is no leaf without proof: a text turned into a number,
   );
 });
 
+test("a read and a child call with the final value: the call wins, the root only passes it on (T150)", () => {
+  const rec = recorder.record(
+    mosaicOf({ TreeSeven: 7 }),
+    [["TreeLayerReadPass", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  const key = answerKey(rec, recorder.ops);
+  expect(key).toMatchObject({ error: "rootForm" });
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a raiz só repassa uma chamada/,
+  );
+});
+
 // Spec 010, T145: the root's shapes, with their values (the review's I3).
 test("a part of a call: the value is the recorded step that holds the references, and its terms are them", () => {
-  const rec = record("TreeDeclFactor");
-  const key = answerKey(rec, recorder.ops, {
+  const key = answerKey(record("TreeDeclFactor"), recorder.ops, {
     part: ["TreeLoop()", "TreeTwins[0]"],
   });
   if ("error" in key) throw new Error(key.reason);
-  const loop = rec.nodes.find((n) => n.b === "TreeLoop")?.v;
-  expect(key.final).toBe(Number(loop) * 3);
+  // TreeLoop() sums TreeList (1 + 2 + 3) and TreeTwins[0] is 3 (fake-mosaic.ts)
+  expect(key.final).toBe(18);
   expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
     "TreeLoop()",
     "TreeTwins[0]",

@@ -323,10 +323,11 @@ export function answerKeyOfSteps(
    */
   function expressionPools(): RawPool[] {
     if (!at || !rest) {
-      if (reads.some(([, v]) => near(v, target))) return [];
-      if (reads.length === 0 && kids.length === 0) return [];
+      // a child call with the final value wins over a read with it: the root passes the call on
       if (kids.some((k) => near(k.v, target)))
         throw new OutOfRule("a raiz só repassa uma chamada");
+      if (reads.some(([, v]) => near(v, target))) return [];
+      if (reads.length === 0 && kids.length === 0) return [];
       throw new OutOfRule("nenhum passo dá o valor final");
     }
     r.usedSteps.add(at.step);
