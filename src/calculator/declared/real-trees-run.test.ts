@@ -70,11 +70,11 @@ test("without one of the three variables there is no run, and the integration te
   ).toThrow();
 });
 
-test("a lot gives its ids in the catalog's order; all and roots give the 295; an id outside the catalog is refused", () => {
+test("a lot gives its ids in the catalog's order; all and roots give the 301; an id outside the catalog is refused", () => {
   const w1 = CATALOG.filter((n) => n.lot === "w1").map((n) => n.id);
   expect(w1).toHaveLength(22);
   expect(targetIds("w1", CATALOG)).toEqual(w1);
-  expect(targetIds("all", CATALOG)).toHaveLength(295);
+  expect(targetIds("all", CATALOG)).toHaveLength(301);
   expect(targetIds("roots", CATALOG)).toEqual(CATALOG.map((n) => n.id));
   expect(targetIds("stats-drop-rate", CATALOG)).toEqual(["stats-drop-rate"]);
   expect(() => targetIds("no-such-number", CATALOG)).toThrow();
