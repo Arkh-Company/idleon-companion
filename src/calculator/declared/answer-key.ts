@@ -16,6 +16,7 @@ import {
   OP,
   OutOfRule,
   outOfRule,
+  readBack,
   relDiff,
   SCRATCH,
   joinPools,
@@ -242,9 +243,7 @@ export function answerKeyOfSteps(
       .filter(([p]) => !finals.some(([q]) => q === p) && !p.startsWith(SCRATCH))
       .map(([p]) => [
         p,
-        writes.flatMap((w) =>
-          w.path === p && typeof w.v === "number" ? [{ v: w.v, xi: w.xi }] : [],
-        ),
+        readBack(top, writes, p).map((w) => ({ v: Number(w.v), xi: w.xi })),
       ]),
   );
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
@@ -254,7 +253,8 @@ export function answerKeyOfSteps(
     steps,
     kids,
     passage,
-    ...(stepAt ? { stepAt } : {}),
+    // with no places, every step is at the same one: the place decides nothing, and two candidates refuse
+    stepAt: stepAt ?? [],
     accumulator: acc?.[0] ?? null,
     branches: opts.branches ?? [],
   });

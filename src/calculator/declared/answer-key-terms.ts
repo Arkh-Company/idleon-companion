@@ -1,7 +1,7 @@
 // The terms of the answer key (spec 010, research R9; the prototype's gabarito.ts): a step of the root opened by its
 // pool's operator, crossing the passage values the root wrote and read back and a whole sum divided by 100. It only
 // reads the recording, and counts each kind of noise of the trace it had to skip or cross.
-import type { RecNode } from "../recording.ts";
+import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
 import { relDiff } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
@@ -33,6 +33,28 @@ export const outOfRule = (why: string): RootFormError => ({
 /** The game's loop counters of a block's preamble: noise, never a passage value. */
 export const SCRATCH = "DummyNumbersStatManager.";
 
+/**
+ * A path's writes the root read back: for each of its reads (RecNode.r and rx), the last write of the path before it,
+ * by the number of the last write the read saw (`seq`); a path the root never read back, all its writes.
+ */
+export function readBack(
+  top: RecNode,
+  writes: readonly RecWrite[],
+  p: string,
+): RecWrite[] {
+  const own = writes.filter((w) => w.path === p && typeof w.v === "number");
+  const seqs = [
+    ...(top.r ?? []).map(([q, , n]) => (q === p ? n : undefined)),
+    ...(top.rx ?? []).map(([q, , , n]) => (q === p ? n : undefined)),
+  ];
+  const saw = new Set(
+    seqs.flatMap((n) =>
+      n === undefined ? [] : (own.findLast((w) => w.seq <= n) ?? []),
+    ),
+  );
+  return saw.size > 0 ? own.filter((w) => saw.has(w)) : own;
+}
+
 export interface TermContext {
   nodes: readonly RecNode[];
   steps: readonly Step[];
@@ -41,7 +63,7 @@ export interface TermContext {
   /** Paths the root wrote and may read back, with each write's value and place in the root's step log. */
   passage: ReadonlyMap<string, readonly { v: number; xi: number }[]>;
   /** Where each step was last recorded in the root's step log (BlockSteps.stepAt), to tell which step gave a write. */
-  stepAt?: readonly number[];
+  stepAt: readonly number[];
   accumulator: string | null;
   /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
   branches?: readonly { value: number; e: Expr }[];
@@ -71,71 +93,68 @@ export function termReader(ctx: TermContext) {
     e: { t: "call", id: k.id, v },
     step: null,
   });
+  /** The child calls a step holds in its expression: their value went into that step, never straight to a write. */
+  const callsIn = (e: Expr): number[] =>
+    e.t === "call"
+      ? [e.id]
+      : e.t === "op"
+        ? [...callsIn(e.l), ...callsIn(e.r)]
+        : e.t === "fn"
+          ? e.args.flatMap(callsIn)
+          : e.t === "def"
+            ? callsIn(e.e)
+            : e.t === "not"
+              ? callsIn(e.a)
+              : [];
+  const inSteps = new Set(ctx.steps.flatMap((s) => callsIn(s.e)));
   /**
-   * What gave a write, by its place (like matchChain): the step with its value recorded last before it; with no such
-   * step, the child call with its value that started last before it (a call the root wrote with `=` makes no step).
-   * Two of them at that same place: the place does not decide.
+   * What gave a write, by its place (like matchChain): the step with its value recorded last before it, and the child
+   * call with its value outside any step (a call the root wrote with `=` makes no step) that started last after that
+   * step and before the write. More than one of them: the place does not decide.
    */
-  function giversOf(
-    w: { v: number; xi: number },
-    stepAt: readonly number[],
-  ): Giver[] {
+  function giversOf(w: { v: number; xi: number }): Giver[] {
     const steps = ctx.steps.flatMap((s, j) => {
-      const at = stepAt[j] ?? -1;
+      const at = ctx.stepAt[j] ?? -1;
       return at < w.xi && near(s.v, w.v) ? [{ at, j, e: s.e }] : [];
     });
     const lastStep = Math.max(...steps.map((s) => s.at));
-    if (steps.length > 0)
-      return steps
-        .filter((s) => s.at === lastStep)
-        .map((s) => ({ e: s.e, step: s.j }));
-    const kids = ctx.kids.filter((n) => n.pxi <= w.xi && near(n.v, w.v));
+    const kids = ctx.kids.filter(
+      (n) =>
+        !inSteps.has(n.id) &&
+        n.pxi > lastStep &&
+        n.pxi <= w.xi &&
+        near(n.v, w.v),
+    );
     const lastKid = Math.max(...kids.map((n) => n.pxi));
-    return kids.filter((n) => n.pxi === lastKid).map((n) => callOf(n, w.v));
+    return [
+      ...steps
+        .filter((s) => s.at === lastStep)
+        .map((s) => ({ e: s.e, step: s.j })),
+      ...kids.filter((n) => n.pxi === lastKid).map((n) => callOf(n, w.v)),
+    ];
   }
   /**
-   * The expression that gave a passage's value, with the path it crossed: with the steps' places, what gave the
-   * passage's writes with that value (the same one for all of them, or the place does not decide), null when it is a
-   * step already opened on this way down. With no places: a step of the root not opened yet on this way down (with its
-   * index), or else a child call with that value; when another passage holds the value too, more than one of them is
-   * ambiguous.
+   * The expression that gave a passage's value, with the path it crossed: what gave the passage's writes with that
+   * value (the same one for all of them, or the place does not decide), null when it is a step already opened on this
+   * way down.
    */
   function passageExpr(
     paths: readonly string[],
     v: number,
     seen: ReadonlySet<number>,
   ): (Giver & { path: string }) | null {
-    const [first] = paths;
-    if (first === undefined) return null;
-    if (ctx.stepAt) {
-      const found = new Map<string, Giver & { path: string }>();
-      for (const path of paths)
-        for (const w of ctx.passage.get(path) ?? [])
-          if (near(w.v, v))
-            for (const g of giversOf(w, ctx.stepAt))
-              found.set(JSON.stringify([g.step, g.e]), { ...g, path });
-      if (found.size > 1)
-        throw new OutOfRule(
-          `a passagem ${String(v)} sai de mais de uma escrita, e a posição não decide entre elas`,
-        );
-      const [g] = found.values();
-      return g && (g.step === null || !seen.has(g.step)) ? g : null;
-    }
-    const steps = ctx.steps.flatMap((s, j) =>
-      !seen.has(j) && near(s.v, v) ? [{ e: s.e, step: j }] : [],
-    );
-    const kids = ctx.kids.filter((n) => near(n.v, v));
-    const holders = [...ctx.passage].filter(([, ws]) =>
-      ws.some((w) => near(w.v, v)),
-    );
-    if (holders.length > 1 && steps.length + kids.length > 1)
+    const found = new Map<string, Giver & { path: string }>();
+    for (const path of paths)
+      for (const w of ctx.passage.get(path) ?? [])
+        if (near(w.v, v))
+          for (const g of giversOf(w))
+            found.set(JSON.stringify([g.step, g.e]), { ...g, path });
+    if (found.size > 1)
       throw new OutOfRule(
-        `mais de uma passagem tem o valor ${String(v)}, e sem a posição dos passos não se sabe qual passo deu cada uma`,
+        `a passagem ${String(v)} sai de mais de uma escrita, e a posição não decide entre elas`,
       );
-    const [s] = steps;
-    if (s) return { ...s, path: first };
-    const [k] = kids;
-    return k ? { ...callOf(k, v), path: first } : null;
+    const [g] = found.values();
+    return g && (g.step === null || !seen.has(g.step)) ? g : null;
   }
   /** The passages that hold a value with no name: never 0 or 1, which any step may give. */
   const passagePathsOf = (v: unknown): string[] =>
