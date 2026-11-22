@@ -1,13 +1,21 @@
 // The terms of the answer key (spec 010, research R9; the prototype's gabarito.ts): a step of the root opened by its
 // pool's operator, crossing the passage values the root wrote and read back and a whole sum divided by 100. It only
 // reads the recording, and counts each kind of noise of the trace it had to skip or cross.
-import type { RecNode, RecWrite } from "../recording.ts";
+import type { RecNode } from "../recording.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
 import { relDiff } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
 import { callKey } from "./refs.ts";
 
-export { joinPools, KIND, OP, relDiff, strip } from "./answer-key-pool.ts";
+export {
+  atCap,
+  joinPools,
+  KIND,
+  OP,
+  readBack,
+  relDiff,
+  strip,
+} from "./answer-key-pool.ts";
 export type {
   AnswerTerm,
   Part,
@@ -32,28 +40,6 @@ export const outOfRule = (why: string): RootFormError => ({
 });
 /** The game's loop counters of a block's preamble: noise, never a passage value. */
 export const SCRATCH = "DummyNumbersStatManager.";
-
-/**
- * A path's writes the root read back: for each of its reads (RecNode.r and rx), the last write of the path before it,
- * by the number of the last write the read saw (`seq`); a path the root never read back, all its writes.
- */
-export function readBack(
-  top: RecNode,
-  writes: readonly RecWrite[],
-  p: string,
-): RecWrite[] {
-  const own = writes.filter((w) => w.path === p && typeof w.v === "number");
-  const seqs = [
-    ...(top.r ?? []).map(([q, , n]) => (q === p ? n : undefined)),
-    ...(top.rx ?? []).map(([q, , , n]) => (q === p ? n : undefined)),
-  ];
-  const saw = new Set(
-    seqs.flatMap((n) =>
-      n === undefined ? [] : (own.findLast((w) => w.seq <= n) ?? []),
-    ),
-  );
-  return saw.size > 0 ? own.filter((w) => saw.has(w)) : own;
-}
 
 export interface TermContext {
   nodes: readonly RecNode[];

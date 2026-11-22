@@ -1,11 +1,44 @@
 // The pools of the answer key and their terms (spec 010, research R1 and R9): the shapes a term and a stretch of the
 // root take, the pool each operator makes, and the joining of same-kind stretches in a row into one pool, each pool's
-// value from the running total around it. answer-key-terms.ts opens the terms and passes these on.
+// value from the running total around it; and the writes of a passage the root read back. answer-key-terms.ts opens the
+// terms and passes these on.
+import { LOG_CAP } from "../recording.ts";
+import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import type { AnswerPool } from "./answer-key.ts";
 
 export const relDiff = (a: number, b: number): number =>
   a === b ? 0 : Math.abs(a - b) / Math.max(Math.abs(a), Math.abs(b), 1e-300);
+
+/** A call's step log cut at the recorder's cap: its later reads are not in it. */
+export const atCap = (n: RecNode): boolean => (n.rx?.length ?? 0) >= LOG_CAP;
+
+/**
+ * A path's writes the root read back: for each of its reads (RecNode.r and rx), the last write of the path before it,
+ * by the number of the last write the read saw (`seq`); a path the root never read back, all its writes. A log at the
+ * cap: a read after the cut may have seen the last write up to the cut's `seq` or any later one.
+ */
+export function readBack(
+  top: RecNode,
+  writes: readonly RecWrite[],
+  p: string,
+): RecWrite[] {
+  const own = writes.filter((w) => w.path === p && typeof w.v === "number");
+  const seqs = [
+    ...(top.r ?? []).map(([q, , n]) => (q === p ? n : undefined)),
+    ...(top.rx ?? []).map(([q, , , n]) => (q === p ? n : undefined)),
+  ];
+  if (atCap(top)) {
+    const cut = Math.max(0, ...(top.rx ?? []).map(([, , , n]) => n ?? 0));
+    seqs.push(cut, ...own.filter((w) => w.seq > cut).map((w) => w.seq));
+  }
+  const saw = new Set(
+    seqs.flatMap((n) =>
+      n === undefined ? [] : (own.findLast((w) => w.seq <= n) ?? []),
+    ),
+  );
+  return saw.size > 0 ? own.filter((w) => saw.has(w)) : own;
+}
 
 export interface AnswerTerm {
   kind: "source" | "constant";
