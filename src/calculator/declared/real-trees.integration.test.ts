@@ -29,7 +29,7 @@ import type { RootProbe } from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
 
 const ENV = treesEnv(process.env);
-/** About 3 s a recording (prototype), 287 roots, and the boot. */
+/** About 3 s a recording (prototype), 295 roots, and the boot. */
 const RUN_MS = 90 * 60_000;
 const ROOT = join(import.meta.dirname, "..", "..", "..");
 const LOT: Record<string, string> = {

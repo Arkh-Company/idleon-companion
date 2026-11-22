@@ -33,7 +33,7 @@ const files = readdirSync(DIR, { recursive: true, encoding: "utf8" })
   .filter((f) => f.endsWith(".blueprint.json"));
 
 test("each tree number of the catalog has exactly one blueprint, in its lot's folder, and no file is extra", () => {
-  expect(catalog).toHaveLength(287);
+  expect(catalog).toHaveLength(295);
   const expected = catalog.map(
     (n) => `${LOT[n.mundo] ?? `?${n.mundo}`}/${n.id}.blueprint.json`,
   );
