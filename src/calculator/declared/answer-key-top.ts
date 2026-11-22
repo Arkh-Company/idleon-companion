@@ -17,6 +17,8 @@ export interface TopLayer {
   after: number;
   /** A Cap's or a Floor's limit that is no constant: a line with its sources and constants. */
   limit?: AnswerPool;
+  /** The root's step the layer is on: its last step, or a step of its running total. */
+  step?: number;
 }
 
 const ROUNDS: Readonly<Record<string, TopLayer["kind"]>> = {
@@ -34,15 +36,24 @@ const leftmost = (e: Expr): Expr => {
 const startsConst = (e: Expr) => bare(e).t === "op" && leftmost(e).t === "num";
 
 /**
- * The known layers of the root's last step, from outside in, and the rest below them: with each layer whose limit is
- * no constant, that limit's expression; with each division, its divisor's expression, in the same order. In a min or
- * a max with no constant, the value is the side that comes from what the root wrote (`own`) and the other is the
- * limit; when both sides or neither do, the root is refused (`refused`): ambiguity is never resolved by order.
+ * The known layers of a step, from outside in, and the rest below them: with each layer whose limit is no constant,
+ * that limit's expression; with each division, its divisor's expression, in the same order (`noDivision`: a step of a
+ * running total, where a division is no layer). In a min or a max with no constant, the value is the side that comes
+ * from what the root wrote (`own`) and the other is the limit; with neither, the cap is the side that starts with a
+ * constant of the code, unless a side holds what the root wrote (`touches`); anything else is refused (`refused`):
+ * ambiguity is never resolved by order.
  */
 export function peelTop(
   e: Expr,
-  own: (e: Expr) => boolean = () => false,
-  noDivision = false,
+  {
+    own = () => false,
+    touches = () => false,
+    noDivision = false,
+  }: {
+    own?: (e: Expr) => boolean;
+    touches?: (e: Expr) => boolean;
+    noDivision?: boolean;
+  } = {},
 ): {
   layers: TopLayer[];
   limits: Map<TopLayer, Expr>;
@@ -83,7 +94,10 @@ export function peelTop(
             ? own(a)
               ? a
               : b
-            : !own(a) && startsConst(a) !== startsConst(b)
+            : !own(a) &&
+                !touches(a) &&
+                !touches(b) &&
+                startsConst(a) !== startsConst(b)
               ? startsConst(a)
                 ? b
                 : a

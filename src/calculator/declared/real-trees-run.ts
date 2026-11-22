@@ -186,6 +186,7 @@ export function probeRoot(
     // a root that returns a list (an item of it is the number) gives no number of its own
     if (
       tops.length < roots.length ||
+      tops.some((n) => n?.err) ||
       (item === undefined && tops.some((n) => typeof n?.v !== "number"))
     )
       return done("liveMap", [], NO_VALUE);

@@ -82,7 +82,7 @@ function checkProof(x: unknown, where: string): void {
   if (!ok) no(where, "nameProof é { table, row } ou { names }");
 }
 
-function checkRef(x: unknown, where: string): void {
+function checkRef(x: unknown, where: string, list = false): void {
   if (isObj(x) && "call" in x) {
     const r = obj(x, ["call", "args"], `${where}/ref`);
     if (typeof r.call !== "string" || !IDENT.test(r.call))
@@ -93,7 +93,8 @@ function checkRef(x: unknown, where: string): void {
         (a) =>
           (typeof a === "number" && Number.isFinite(a)) ||
           (typeof a === "string" && a.length <= 60) ||
-          (Array.isArray(a) &&
+          (list &&
+            Array.isArray(a) &&
             a.length > 0 &&
             a.length <= 8 &&
             a.every((x) => typeof x === "number" && Number.isFinite(x))),
@@ -101,7 +102,7 @@ function checkRef(x: unknown, where: string): void {
     )
       no(
         where,
-        "ref.args só leva números, textos curtos e listas de até 8 números",
+        "ref.args só leva números e textos curtos; uma lista de até 8 números só no ref da raiz",
       );
     return;
   }
@@ -255,6 +256,8 @@ function checkRoot(raw: unknown): void {
       root.ref === undefined)
   )
     no("root", "item é o índice de um item da lista que a chamada ref devolve");
+  if (root.item !== undefined && root.part !== undefined)
+    no("root", "item não vai junto com part");
   if (root.routine !== undefined) {
     checkRoutine(root);
     return;
@@ -276,7 +279,7 @@ function checkRoot(raw: unknown): void {
   }
   if (root.calls !== undefined) no("root", "calls só com combine: sum");
   if (!isCall(root.ref)) no("root", "a raiz é uma chamada (ref.call)");
-  checkRef(root.ref, "root");
+  checkRef(root.ref, "root", true);
   if (root.part !== undefined) {
     if (!Array.isArray(root.part) || root.part.length === 0)
       no("root", "part é uma lista de referências");

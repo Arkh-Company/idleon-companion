@@ -62,6 +62,8 @@ export interface RawPool {
   terms: AnswerTerm[];
   step: number;
   after: number;
+  /** The total after a layer on the step or after it (a max that bites): the next stretch starts from it. */
+  next?: number;
 }
 /** A term still with its expression and its own noise, before it is known whether it is the accumulator. */
 export type RawTerm = AnswerTerm & { e: Expr; noise: Record<string, number> };
@@ -330,13 +332,17 @@ export const strip = (t: RawTerm): AnswerTerm => ({
 /** Same-kind stretches in a row are one pool; each pool's value from the running total around it. */
 export function joinPools(raw: readonly RawPool[]): AnswerPool[] {
   const pools: AnswerPool[] = [];
+  // the total each pool leaves to the next one: after its layer, when a layer ends it
+  const out: number[] = [];
+  let cut = false;
   for (const p of raw) {
     const last = pools.at(-1);
-    if (last?.kind === p.kind) {
+    if (last?.kind === p.kind && !cut) {
       last.terms.push(...p.terms);
       if (!last.steps.includes(p.step)) last.steps.push(p.step);
       last.after = p.after;
-    } else
+      out[out.length - 1] = p.next ?? p.after;
+    } else {
       pools.push({
         kind: p.kind,
         value: 0,
@@ -345,9 +351,13 @@ export function joinPools(raw: readonly RawPool[]): AnswerPool[] {
         steps: [p.step],
         error: 0,
       });
+      out.push(p.next ?? p.after);
+    }
+    // pools never join across a layer
+    cut = p.next !== undefined;
   }
   let before: number | null = null;
-  for (const p of pools) {
+  for (const [k, p] of pools.entries()) {
     p.value =
       p.kind === "additive" ? p.after - (before ?? 0) : p.after / (before ?? 1);
     const parts =
@@ -355,7 +365,7 @@ export function joinPools(raw: readonly RawPool[]): AnswerPool[] {
         ? p.terms.reduce((s, t) => s + t.value * t.weight, 0)
         : p.terms.reduce((s, t) => s * t.value, 1);
     p.error = relDiff(parts, p.value);
-    before = p.after;
+    before = out[k] ?? p.after;
   }
   return pools;
 }

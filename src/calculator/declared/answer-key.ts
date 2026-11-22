@@ -107,6 +107,9 @@ export function answerKey(
   if (shape && "item" in shape) {
     const value = itemOf(rec, top, shape.item);
     if (typeof value !== "number") return value;
+    // the item's step by its value: more than one step with it is ambiguous
+    if (blockSteps.steps.filter((s) => near(s.v, value)).length > 1)
+      return outOfRule(`o item ${String(shape.item)} está em mais de um passo`);
     return answerKeyOfSteps(rec, blockSteps, { branches, value });
   }
   const key = answerKeyOfSteps(rec, blockSteps, { gate, branches });
@@ -166,7 +169,19 @@ export function answerKeyOfSteps(
   };
   const i = steps.findLastIndex((s) => near(s.v, final));
   const last = steps[i];
-  const peeled = last ? peelTop(last.e, fromRoot) : null;
+  /** An expression that holds a value from what the root wrote, at any depth. */
+  const holdsRoot = (e: Expr): boolean =>
+    fromRoot(e) ||
+    (e.t === "op"
+      ? holdsRoot(e.l) || holdsRoot(e.r)
+      : e.t === "fn"
+        ? e.args.some(holdsRoot)
+        : e.t === "def"
+          ? holdsRoot(e.e)
+          : e.t === "not" && holdsRoot(e.a));
+  const peeled = last
+    ? peelTop(last.e, { own: fromRoot, touches: holdsRoot })
+    : null;
   if (peeled?.refused) return out(peeled.refused);
   const layered = !!peeled && peeled.layers.length > 0;
   // a running total under the layer (Anvil Capacity: the chain, then a floor; the Multi-Ore: the chain, then a cap)
@@ -183,10 +198,12 @@ export function answerKeyOfSteps(
       return out("a corrente e o último passo dão o mesmo valor");
   }
   // the peeled step only with a chain under its layer, or with no chain for the final value: a running total whose
-  // last write has a layer over the total and nothing under it goes to the chain, which refuses that write
+  // last write has a layer over the total and nothing under it goes to the chain, whose step carries the layer
+  // (answer-key-chain.ts)
   const at = last && (under || !acc) ? { e: last.e, step: i } : null;
   let rest: Expr | null = null;
   if (at && peeled) {
+    for (const layer of peeled.layers) layer.step = at.step;
     layers.push(...peeled.layers);
     rest = peeled.rest;
     if (layered) acc = under;
@@ -242,6 +259,7 @@ export function answerKeyOfSteps(
     termsOf,
     kept,
     fromRoot,
+    touches: holdsRoot,
     layers,
     stepLimits,
   };

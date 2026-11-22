@@ -35,21 +35,26 @@ export function matchChain(
   for (const [n, w] of values.entries()) {
     const i = steps.findIndex((s, j) => j >= from && near(s.v, w));
     const pv = before;
-    const times =
-      i < 0 && pv !== null
-        ? steps.findIndex((s, j) => j >= from && near(pv * s.v, w))
-        : -1;
-    const plus =
-      i < 0 && pv !== null
-        ? steps.findIndex((s, j) => j >= from && near(pv + s.v, w))
-        : -1;
-    if (times >= 0 && plus >= 0)
+    // in place only when the write changed a total that is not 0 (0 × anything is 0)
+    const inPlace = pv !== null && pv !== 0 && !near(w, pv);
+    const times = inPlace
+      ? steps.findIndex((s, j) => j >= from && near(pv * s.v, w))
+      : -1;
+    const plus = inPlace
+      ? steps.findIndex((s, j) => j >= from && near(pv + s.v, w))
+      : -1;
+    if (i >= 0 && ((times >= 0 && times < i) || (plus >= 0 && plus < i)))
+      return {
+        refused: `a escrita ${String(w)} do acumulador casa com um passo e com outro no lugar antes dele`,
+      };
+    if (i < 0 && times >= 0 && plus >= 0)
       return {
         refused: `a escrita ${String(w)} do acumulador soma e multiplica ao mesmo tempo`,
       };
     const at = i >= 0 ? i : times >= 0 ? times : plus;
     if (at < 0 && n === values.length - 1) return null;
-    const compound = times >= 0 ? "multi" : plus >= 0 ? "additive" : null;
+    const compound =
+      i >= 0 ? null : times >= 0 ? "multi" : plus >= 0 ? "additive" : null;
     writes.push({ value: w, step: at < 0 ? null : at, compound });
     if (at >= 0) from = at + 1;
     before = w;
@@ -62,8 +67,10 @@ export interface ChainContext {
   reader: ReturnType<typeof termReader>;
   termsOf: (parts: readonly Part[], kind: PoolKind) => RawTerm[];
   kept: (terms: RawTerm[], prev: number | null) => AnswerTerm[];
-  /** A value that comes from what the root wrote (answer-key.ts). */
+  /** A value that comes from what the root wrote (answer-key.ts)… */
   fromRoot: (e: Expr) => boolean;
+  /** …and an expression that holds one, at any depth. */
+  touches: (e: Expr) => boolean;
   /** Where the steps' layers go, in the chain's order, and their limits to build. */
   layers: TopLayer[];
   stepLimits: { limits: Map<TopLayer, Expr>; step: number }[];
@@ -104,19 +111,26 @@ export function chainPools(
       before = w.value;
       continue;
     }
-    const peeled = peelTop(s.e, c.fromRoot, true);
+    const peeled = peelTop(s.e, {
+      own: c.fromRoot,
+      touches: c.touches,
+      noDivision: true,
+    });
     if (peeled.refused) throw new OutOfRule(peeled.refused);
+    for (const layer of peeled.layers) layer.step = w.step;
     c.layers.push(...peeled.layers);
     c.stepLimits.push({ limits: peeled.limits, step: w.step });
     const body = peeled.rest;
     const u = r.unwrap(body, [], true, new Set(opened));
-    // a step that only caps or rounds the running total: its layer, and no pool
+    // a step that only caps or rounds the running total: its layer, and no pool; the stretch before it ends there
     if (
       peeled.layers.length > 0 &&
       before !== null &&
       (u.t === "val" || u.t === "read") &&
       near(u.v, before)
     ) {
+      const last = raw.at(-1);
+      if (last) last.next = w.value;
       before = w.value;
       continue;
     }
@@ -148,6 +162,8 @@ export function chainPools(
         peeled.layers.length > 0 && typeof body.v === "number"
           ? body.v
           : w.value,
+      // the total after the step's layer, where the next stretch starts
+      ...(peeled.layers.length > 0 ? { next: w.value } : {}),
     });
     before = w.value;
   }
