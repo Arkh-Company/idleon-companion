@@ -266,3 +266,8 @@ test("a side that holds a read of what the root wrote is never the cap by its co
     /o limite do min\/max não se distingue do valor/,
   );
 });
+
+test("a layer on the root's last step knows its step", () => {
+  // the product is step 0; round(min(20, it)) is step 1
+  expect(keyOf("TreeLayerRound").top.map((l) => l.step)).toEqual([1, 1]);
+});

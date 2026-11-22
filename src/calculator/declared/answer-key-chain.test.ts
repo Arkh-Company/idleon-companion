@@ -4,7 +4,9 @@
 import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { bootRecorder } from "../tree-record.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { answerKey } from "./answer-key.ts";
+import { matchChain } from "./answer-key-chain.ts";
 import type { AnswerKey, RootShape } from "./answer-key.ts";
 
 let recorder: ReturnType<typeof bootRecorder>;
@@ -82,7 +84,7 @@ const refusal = (block: string) => {
   return "error" in key ? key.reason : "no refusal";
 };
 
-test("a total set to 0 before its loop too: a write equal to the total before it is never `path *= x`", () => {
+test("a total set to 0 twice before its loop: a write over a total of 0 is never `path *= x`", () => {
   // 0, 0 (the loop's init), the turns, then × TreeBase
   const key = keyOf("TreeLoopZeroTwice");
   expect(key.form).toBe("chain");
@@ -128,4 +130,59 @@ test("`path += x` in place: the operand is an Additive stretch of the chain", ()
 test("a division in a write of the chain is no layer: the step is refused", () => {
   // 12, 24, then the total ÷ 4
   expect(refusal("TreeDivWrite")).toMatch(/o passo 2 não soma nem multiplica/);
+});
+
+// The second review of T157 to T160.
+test("`path *= 1` in place, the factor of a locked bonus, is a term of value 1", () => {
+  // TreeTwins[0] 0: max(0.1, 0.75 ^ 0) = 1; TreeCapped 80.5 keeps the round of the last write off its value
+  const key = answerKey(
+    recordWith("TreeCostCurve", { TreeTwins: [0, 3], TreeCapped: 80.5 }),
+    recorder.ops,
+  );
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.form).toBe("chain");
+  expect(
+    key.pools.map((p) => [p.kind, p.terms.map((t) => [t.ref, t.value])]),
+  ).toEqual([
+    [
+      "multi",
+      [
+        ["TreeCapped", 80.5],
+        ["100", 100],
+        ["TreeTwins[0]", 1],
+        ["TreeStats.a", 0.97],
+      ],
+    ],
+  ]);
+});
+
+const step = (v: number) => ({ v, e: { t: "num", v } as Expr });
+test("a write that one step gives and another gives in place is refused, the in-place one before or after", () => {
+  // 2, then 6: the step 6 gives it, and 2 × the step 3 gives it too
+  const before = matchChain([step(2), step(3), step(6)], [2, 6]);
+  const after = matchChain([step(2), step(6), step(3)], [2, 6]);
+  for (const m of [before, after])
+    expect(m && "refused" in m ? m.refused : "no refusal").toMatch(
+      /casa com um passo e com outro no lugar/,
+    );
+});
+
+test("a cap that bites in the middle of the chain: the pool after it starts from the capped total", () => {
+  // TreeReads() + TreeBase = 12, min(12, 10) = 10, then × TreeLoop() = 60
+  const key = keyOf("TreeCapMid");
+  expect(key.pools.map((p) => [p.kind, p.value])).toEqual([
+    ["additive", 12],
+    ["multi", 6],
+  ]);
+  for (const p of key.pools) expect(p.error).toBeLessThanOrEqual(1e-6);
+});
+
+test("two Multi stretches on the two sides of a floor are two pools, never one", () => {
+  // TreeBase × TreeTwins[0] = 12, floor(12 × 1.5) = 18, then × 2
+  const key = keyOf("TreeFloorMid");
+  expect(pools(key)).toEqual([
+    ["multi", ["TreeBase", "TreeTwins[0]", "1.5"]],
+    ["multi", ["2"]],
+  ]);
+  expect(key.top.map((l) => [l.kind, l.step])).toEqual([["floor", 1]]);
 });

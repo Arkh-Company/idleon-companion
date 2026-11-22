@@ -1730,6 +1730,26 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeDivWrite.h.v = d.TreeDivWrite.h.v / 4;
     return d.TreeDivWrite.h.v;
   };
+  // The second review of T157 to T160: a cap that bites in the middle of the chain, with a pool after it; two Multi
+  // stretches on the two sides of a floor.
+  Blocks._customBlock_TreeCapMid = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapMid = new StringMap();
+    d.TreeCapMid.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapMid.h.v = Math.min(d.TreeCapMid.h.v, 10);
+    d.TreeCapMid.h.v = d.TreeCapMid.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeCapMid.h.v;
+  };
+  Blocks._customBlock_TreeFloorMid = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorMid = new StringMap();
+    d.TreeFloorMid.h.v = s.TreeBase * s.TreeTwins[0];
+    d.TreeFloorMid.h.v = Math.floor(d.TreeFloorMid.h.v * 1.5);
+    d.TreeFloorMid.h.v = d.TreeFloorMid.h.v * 2;
+    return d.TreeFloorMid.h.v;
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;
