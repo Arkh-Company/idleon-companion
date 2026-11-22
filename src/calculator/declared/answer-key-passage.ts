@@ -120,8 +120,8 @@ export function passageReader(ctx: PassageContext) {
         .map((s) => ({ e: s.e, step: s.j })),
       ...kids
         .filter((n) => n.pxi === lastKid)
-        .map((n) => ({
-          e: { t: "call", id: n.id, v: w.v } as Expr,
+        .map((n): Giver => ({
+          e: { t: "call", id: n.id, v: w.v },
           step: null,
         })),
     ];
@@ -150,11 +150,10 @@ export function passageReader(ctx: PassageContext) {
       placed = true;
       for (const w of ws)
         if (near(w.v, v)) {
-          const gs = giversOf(path, w);
-          for (const g of gs)
+          for (const g of giversOf(path, w)) {
             found.set(JSON.stringify([g.step, g.e]), { ...g, path });
-          if (gs.length > 0)
-            from.push(`${path} de ${callRef(ctx.top)}, seq ${String(w.seq)}`);
+            from.push(`${path} seq ${String(w.seq)} ← ${nameOf(g)}`);
+          }
         }
     }
     if (read && !placed)
