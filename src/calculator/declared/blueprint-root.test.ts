@@ -149,3 +149,29 @@ test("a root with a short list of numbers as an argument and an item of its resu
     );
   }
 });
+
+test("an item never goes with a part, and a list of numbers is an argument of the root's call only", () => {
+  const sketch = (root: object) =>
+    parseBlueprint({ id: "invented-number", root }, ctx);
+  const list = { call: "TotalTalentPoints", args: [[0, 0, 0, 0, 0, 0]] };
+  for (const [root, reason] of [
+    [
+      { name: "Invented", ref: list, item: 1, part: [{ read: "A[1]" }] },
+      /item/,
+    ],
+    [
+      {
+        name: "Invented",
+        ref: { call: "Invented", args: [0] },
+        part: [list],
+      },
+      /lista/,
+    ],
+    [{ name: "Invented", combine: "sum", calls: [list] }, /lista/],
+  ] as const) {
+    const out = sketch(root);
+    expect(out.ok ? "loaded" : out.reason, JSON.stringify(root)).toMatch(
+      reason,
+    );
+  }
+});

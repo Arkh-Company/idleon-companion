@@ -247,3 +247,22 @@ test("an item of the list a root returns: the root's last write to that item, an
   const none = answerKey(rec, recorder.ops, { item: 7 });
   expect(none).toMatchObject({ error: "rootForm" });
 });
+
+// The review of T159: an item is refused when it is ambiguous.
+test("an item whose value more than one step gives, or that is in more than one list, is refused", () => {
+  const tabs = recorder.record(mosaicOf(), [["TreeTabs", [[0, 10, 0]]]], {
+    recompute: [],
+    builders: [],
+  });
+  // the first two tabs are both 10
+  const same = answerKey(tabs, recorder.ops, { item: 0 });
+  expect("reason" in same ? same.reason : "no refusal").toMatch(
+    /o item 0 está em mais de um passo/,
+  );
+  const third = answerKey(tabs, recorder.ops, { item: 2 });
+  expect("error" in third ? third.reason : third.final).toBe(29);
+  const two = answerKey(record("TreeTwoLists"), recorder.ops, { item: 0 });
+  expect("reason" in two ? two.reason : "no refusal").toMatch(
+    /o item 0 está em mais de uma lista/,
+  );
+});

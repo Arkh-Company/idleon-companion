@@ -298,3 +298,11 @@ test("a routine's root (T152): the routine runs on the recorder's copy, and the 
     reason: null,
   });
 });
+
+test("a root with an item whose call fails gives no value, as the live map", () => {
+  const failing = rooted("tabs-failing", {
+    ref: { call: "TreeDeclFails", args: [0, 0, 0] },
+    item: 0,
+  });
+  expect(probeRoot(record, recorder.ops, failing).form).toBe("liveMap");
+});

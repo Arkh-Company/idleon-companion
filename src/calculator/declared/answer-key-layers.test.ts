@@ -259,3 +259,10 @@ test("both sides starting with a constant, or neither, is refused", () => {
     /o limite do min\/max não se distingue do valor/,
   );
 });
+
+test("a side that holds a read of what the root wrote is never the cap by its constant: refused", () => {
+  // min(100 × the running total, TreeLevel + TreeBase): 100 is a constant, but the side holds the total
+  expect(refusal("TreeCapTouch")).toMatch(
+    /o limite do min\/max não se distingue do valor/,
+  );
+});

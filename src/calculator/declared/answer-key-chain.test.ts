@@ -70,3 +70,62 @@ test("a cost multiplied in place by a curve (Bubble cost: 0.75 ^ n): each operan
   });
   expect(part.final).toBeCloseTo(0.421875 * 0.97, 12);
 });
+
+// The review of T157 to T160: what each branch of the chain has to do, one case each.
+const recordWith = (block: string, attrs: object = {}) =>
+  recorder.record(mosaicOf(attrs), [[block, [0, 0, 0]]], {
+    recompute: [],
+    builders: [],
+  });
+const refusal = (block: string) => {
+  const key = answerKey(recordWith(block), recorder.ops);
+  return "error" in key ? key.reason : "no refusal";
+};
+
+test("a total set to 0 before its loop too: a write equal to the total before it is never `path *= x`", () => {
+  // 0, 0 (the loop's init), the turns, then × TreeBase
+  const key = keyOf("TreeLoopZeroTwice");
+  expect(key.form).toBe("chain");
+  expect(key.pools.map((p) => p.kind)).toEqual(["additive", "multi"]);
+});
+
+test("a layer in the middle of the chain that bites: the next pool starts from the value after the layer", () => {
+  // max(1, TreeReads() + TreeBase = 0 + 0.5) = 1, then × TreeLoop() = 6
+  const key = answerKey(
+    recordWith("TreeChainMaxFirst", {
+      TreeStats: { $m: { a: 0, b: 0 } },
+      TreeBase: 0.5,
+    }),
+    recorder.ops,
+  );
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBe(6);
+  expect(layers(key)).toEqual([["floor-min", 1, 0.5, 1]]);
+  expect(key.top[0]?.step).toBe(0);
+  expect(key.pools.map((p) => [p.kind, p.value])).toEqual([
+    ["additive", 0.5],
+    ["multi", 6],
+  ]);
+  for (const p of key.pools) expect(p.error).toBeLessThanOrEqual(1e-6);
+});
+
+test("a write that the next step both multiplies and adds to the total to give is refused", () => {
+  // 3, then *= 1.5: 3 × 1.5 = 3 + 1.5 = 4.5
+  expect(refusal("TreeBothWays")).toMatch(/soma e multiplica ao mesmo tempo/);
+});
+
+test("`path += x` in place: the operand is an Additive stretch of the chain", () => {
+  // TreeReads() × 2 = 16, then += TreeLevel × 3
+  const key = keyOf("TreePlusInPlace");
+  expect(key.form).toBe("chain");
+  expect(pools(key)).toEqual([
+    ["multi", ["TreeReads()", "2"]],
+    ["additive", ["TreeLevel"]],
+  ]);
+  expect(key.final).toBe(91);
+});
+
+test("a division in a write of the chain is no layer: the step is refused", () => {
+  // 12, 24, then the total ÷ 4
+  expect(refusal("TreeDivWrite")).toMatch(/o passo 2 não soma nem multiplica/);
+});

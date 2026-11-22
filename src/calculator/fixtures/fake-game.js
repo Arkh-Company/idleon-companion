@@ -1674,6 +1674,62 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeTabs.push(s.TreeLevel + s.TreeBase - spent[2]);
     return d.TreeTabs;
   };
+  // The review of T157 to T160. A running total set to 0 before its loop too; a cap of 100 × the total, which is no
+  // constant of the code; a total multiplied in place by a value that also adds to the same write; a total added to
+  // in place; two lists with the same index; a total divided in its last write.
+  Blocks._customBlock_TreeLoopZeroTwice = function () {
+    var list = state().TreeList;
+    var d = dnsm();
+    var i;
+    d.TreeLoopZero2 = new StringMap();
+    d.TreeLoopZero2.h.v = 0;
+    for (d.TreeLoopZero2.h.v = 0, i = 0; i < list.length; i++)
+      d.TreeLoopZero2.h.v = d.TreeLoopZero2.h.v + list[i] * 2;
+    d.TreeLoopZero2.h.v = d.TreeLoopZero2.h.v * state().TreeBase;
+    return d.TreeLoopZero2.h.v;
+  };
+  Blocks._customBlock_TreeCapTouch = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeTouch = new StringMap();
+    d.TreeTouch.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeTouch.h.v = d.TreeTouch.h.v * 2;
+    return Math.min(100 * d.TreeTouch.h.v, s.TreeLevel + s.TreeBase);
+  };
+  Blocks._customBlock_TreeBothWays = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeBoth = new StringMap();
+    d.TreeBoth.h.v = s.TreeTwins[0];
+    d.TreeBoth.h.v *= s.TreeList[2] / 2;
+    return d.TreeBoth.h.v;
+  };
+  Blocks._customBlock_TreePlusInPlace = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePlus = new StringMap();
+    d.TreePlus.h.v = Blocks._customBlock_TreeReads() * 2;
+    d.TreePlus.h.v += s.TreeLevel * 3;
+    return d.TreePlus.h.v;
+  };
+  Blocks._customBlock_TreeTwoLists = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeListA = [];
+    d.TreeListB = [];
+    d.TreeListA.push(s.TreeLevel + 1);
+    d.TreeListB.push(s.TreeBase + 1);
+    return d.TreeListA;
+  };
+  Blocks._customBlock_TreeDivWrite = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDivWrite = new StringMap();
+    d.TreeDivWrite.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeDivWrite.h.v = d.TreeDivWrite.h.v * 2;
+    d.TreeDivWrite.h.v = d.TreeDivWrite.h.v / 4;
+    return d.TreeDivWrite.h.v;
+  };
   // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
   Blocks._customBlock_TreeLayerReadPass = function () {
     var seven = state().TreeSeven;
