@@ -11441,8 +11441,7 @@
     "arvore_mae": [
       "stats-drop-rate",
       "stats-afk-gains-rate",
-      "death-multikill-total",
-      "stats-mob-respawn"
+      "death-multikill-total"
     ]
   },
   {
@@ -15611,7 +15610,7 @@
       "stats-kill-per-kill",
       "stats-class-exp",
       "stats-afk-gains-rate",
-      "stats-mob-respawn",
+      "stats-mob-respawn-w7",
       "spel-stamina-max"
     ]
   },
@@ -18344,8 +18343,8 @@
     "motivo_tipo": "Accuracy que o monstro pede (requisito do alvo)."
   },
   {
-    "id": "stats-mob-respawn",
-    "nome": "Faster Monster Respawning",
+    "id": "stats-mob-respawn-w1",
+    "nome": "Faster Monster Respawning (W1)",
     "mundo": "Personagem",
     "sistema": "Stats (atributos e números de combate e progresso do personagem)",
     "caixa": "Bônus",
@@ -18354,9 +18353,99 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 10,
-    "motivo": "NOVO. Multiplicador de várias fontes que puxa o KILLS/HR (o `HourlyKillRate` lê o respawn já dividido) e não aparece na tela. Com o KILLS/HR fora (regra 9), o fim da regra 9 e a regra 10 pedem o multi como número próprio. Ressalva: a Merit Shop e as Achievements entram pelo mundo do mapa, e as cavernas da The Hole usam outra conta; a árvore teria de mostrar o galho do mundo, como no Kill per Kill e no Cash from Mobs.",
+    "motivo": "O respawn mais rápido dos monstros do W1: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
     "tela": "",
-    "prova": "`performETCaction` modo `MonsterRespawnTimeReset` divide o `RespawnTime` de cada monstro por (1 + soma/100); o `HourlyKillRate` lê esse `RespawnTime`"
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[0]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; `AchieveStatus` 44; Merit Shop `TaskShopDesc[0]` × `Tasks[2][0]`"
+  },
+  {
+    "id": "stats-mob-respawn-w2",
+    "nome": "Faster Monster Respawning (W2)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W2: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[1]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; `AchieveStatus` 109; Merit Shop `TaskShopDesc[1]` × `Tasks[2][1]`"
+  },
+  {
+    "id": "stats-mob-respawn-w3",
+    "nome": "Faster Monster Respawning (W3)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W3: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[15]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; Merit Shop `TaskShopDesc[2]` × `Tasks[2][2]`"
+  },
+  {
+    "id": "stats-mob-respawn-w4",
+    "nome": "Faster Monster Respawning (W4)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W4: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[3]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; Merit Shop `TaskShopDesc[3]` × `Tasks[2][3]`"
+  },
+  {
+    "id": "stats-mob-respawn-w5",
+    "nome": "Faster Monster Respawning (W5)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W5: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[4]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308; Merit Shop `TaskShopDesc[4]` × `Tasks[2][4]`"
+  },
+  {
+    "id": "stats-mob-respawn-w6",
+    "nome": "Faster Monster Respawning (W6)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W6: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[5]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308; Merit Shop `TaskShopDesc[5]` × `Tasks[2][5]`"
+  },
+  {
+    "id": "stats-mob-respawn-w7",
+    "nome": "Faster Monster Respawning (W7)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W7: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[6]`: 0,65 × (`Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308); `Spelunk` `BigFishBonuses`; Merit Shop `TaskShopDesc[6]` × `Tasks[2][6]`"
   },
   {
     "id": "stats-auto-respawn",
@@ -19333,7 +19422,15 @@
     "tela": "Tasks (w23), abas W1–W7 (Merit Shop)",
     "prova": "tabela `TaskShopDesc` (7 mundos × 8)",
     "motivo_tipo": "Bônus de cada item de uma família (regra 4); o tipo é o do número que cada item aumenta, e varia.",
-    "arvore_mae": ["stats-mob-respawn"]
+    "arvore_mae": [
+      "stats-mob-respawn-w1",
+      "stats-mob-respawn-w2",
+      "stats-mob-respawn-w3",
+      "stats-mob-respawn-w4",
+      "stats-mob-respawn-w5",
+      "stats-mob-respawn-w6",
+      "stats-mob-respawn-w7"
+    ]
   },
   {
     "id": "tasks-merit-cost",

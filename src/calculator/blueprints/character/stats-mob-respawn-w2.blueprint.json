@@ -1,0 +1,42 @@
+{
+  "id": "stats-mob-respawn-w2",
+  "root": {
+    "name": "Faster Monster Respawning (W2)",
+    "ref": {
+      "call": "performETCaction",
+      "args": ["MonsterRespawnTimeReset", 0, 0]
+    },
+    "part": [
+      {
+        "call": "Holes",
+        "args": ["B_UPG", 44, 10]
+      },
+      {
+        "call": "Shrine",
+        "args": [7]
+      },
+      {
+        "call": "chipBonuses",
+        "args": ["resp"]
+      },
+      {
+        "call": "EtcBonuses",
+        "args": ["47"]
+      },
+      {
+        "call": "AchieveStatus",
+        "args": [109]
+      },
+      {
+        "read": "DNSM.StarSigns.MobRespawn"
+      },
+      {
+        "read": "CustomLists.TaskShopDesc[1][1][11]"
+      },
+      {
+        "read": "Tasks[2][1][1]"
+      }
+    ],
+    "branch": "CustomLists.RANDOlist[1]"
+  }
+}
