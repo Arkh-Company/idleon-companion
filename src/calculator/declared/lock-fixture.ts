@@ -4,10 +4,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { Recording } from "../recording.ts";
+import { makeSteps } from "../recorded/steps.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { AnswerKey } from "./answer-key.ts";
 import type { Blueprint, BlueprintGroup, BlueprintNode } from "./blueprint.ts";
+import type { LevelContext } from "./lock-levels.ts";
 import type { LockInput } from "./lock.ts";
 
 export type Writable<T> = T extends readonly (infer U)[]
@@ -51,6 +53,16 @@ export function chainInput(
     character: 0,
     characterClass: 3,
   };
+}
+
+/** The descent's context over a recording, for the first character, at node `where`. */
+export function levelContext(
+  rec: Recording,
+  ops: LockInput["ops"],
+  where: string,
+): LevelContext {
+  const made = makeSteps(rec, ops);
+  return { rec, stepsOf: (id) => made.of(id), character: 0, where };
 }
 
 export function groupOf(
