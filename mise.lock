@@ -78,9 +78,9 @@ backend = "pipx:semgrep"
 specifiers = ["1.182.1"]
 
 [[tools."pipx:specify-cli"]]
-version = "1.4.3"
+version = "1.4.4"
 backend = "pipx:specify-cli"
-specifiers = ["1.4.3"]
+specifiers = ["1.4.4"]
 
 [[tools.pnpm]]
 version = "11.28.8"

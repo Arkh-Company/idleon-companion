@@ -1,9 +1,9 @@
 {
   "repo": "https://github.com/tt-a1i/archify",
-  "ref": "v3.2.0",
-  "commit": "208acba8d412335185b2056fedf54b3405df43fb",
+  "ref": "v3.3.0",
+  "commit": "af3aaf3c36762f2afb62a4a09533f6c7273b07e5",
   "path": "archify",
-  "tree": "39069dd190f574064fe410aa3af1b6dfd98a522c",
+  "tree": "d3e9c89dd9510a64c1114d685b68ebf1887f135e",
   "excluded": [
     "test"
   ]
