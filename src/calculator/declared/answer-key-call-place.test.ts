@@ -125,6 +125,16 @@ test.each(["TreeTernaryDirect", "TreeViaFloor"])(
   },
 );
 
+test("what a variable was before `t += …`, set through another variable by a block's call, is the call, not a read", () => {
+  // TreeAddToChain: TreeGear[1] (3) read, then `y = TreeThree(0); t = y; t += TreeLevel; return Math.floor(t)`
+  const { key } = recorded("TreeAddToChain", { TreeGear: [5, 3] });
+  expect(key.final).toBe(28);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+    "TreeThree(0)",
+    "TreeLevel",
+  ]);
+});
+
 test("a block's call through asNumber right in the step takes the call, not an earlier read with its value", () => {
   // TreeWrappedDirect: TreeGear[1] (3) read, then `TreeLevel + asNumber(TreeThree(0))`
   const { key } = recorded("TreeWrappedDirect", { TreeGear: [5, 3] });

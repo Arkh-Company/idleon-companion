@@ -1843,6 +1843,15 @@ lime.$scripts.N = function (_exports, $global) {
     var x = Math.floor(Blocks._customBlock_TreeThree(0));
     return a.engine.getGameAttribute("TreeLevel") + x;
   };
+  // the call in what set a variable before `t += …`, through another variable: what t was is the call, never the read
+  Blocks._customBlock_TreeAddToChain = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var y = Blocks._customBlock_TreeThree(0);
+    var t = y;
+    t += a.engine.getGameAttribute("TreeLevel");
+    return Math.floor(t);
+  };
   // Spec 010 (T177 r3): a root whose answer key stands, over a call whose own step reads a variable set by one of two
   // calls of TreeThree with the same value: only the lock, descending into that call, meets them. 25 + 3 * 2 = 31.
   Blocks._customBlock_TreeTwinKid = function () {
