@@ -54,8 +54,9 @@ test("with no recorded place and two calls of one block with the step's value, t
   );
 });
 
-// `x = c ? P(1) : Q(2)`, and Q(2) called again with no use: both calls gave 6, and only the ? :'s test says which is x's
-function ternaryOfTwo(test: boolean | null) {
+// `x = c ? P(1) : Q(2)`, and Q(2) called again with no use: both calls gave 6, and only the ? :'s test says which is x's;
+// with `test` undefined, the test has no record at all (the ? : never ran there)
+function ternaryOfTwo(test: boolean | null | undefined) {
   const { ops } = instrument(
     "Blocks._customBlock_T = function (c) { var x = c ? Blocks._customBlock_P(1) : Blocks._customBlock_Q(2); Blocks._customBlock_Q(2); return x * 2; };",
   );
@@ -69,7 +70,7 @@ function ternaryOfTwo(test: boolean | null) {
         v: 12,
         c: [2, 3],
         x: [
-          [kind("test"), test],
+          ...(test === undefined ? [] : [[kind("test"), test] as const]),
           [kind("leaf"), 6],
           [kind("op"), 12],
         ],
@@ -98,6 +99,12 @@ test("a variable set by a ? : whose test has no recorded side is ambiguous, with
   expect(ambiguousCall(made.ambiguous)).toBe(
     "a chamada P de valor 6 está num ? : cujo lado o lugar não decide",
   );
+});
+
+test("a variable set by a ? : whose test was never recorded up to the step takes no side: a loose value, not ambiguous", () => {
+  const made = ternaryOfTwo(undefined);
+  expect(made.of(1).steps[0]?.e).toMatchObject({ l: { t: "val", v: 6 } });
+  expect(ambiguousCall(made.ambiguous)).toBeNull();
 });
 
 test("in a loop's turn, two calls of one block with the step's value and no place refuse the root, never tie to a read", () => {
