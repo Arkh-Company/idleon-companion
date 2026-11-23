@@ -116,7 +116,11 @@ test("a builder can be an event of a helper actor", () => {
   };
   const rec = record(["TreeCacheRead"], mosaicOf(), recipe);
   const read = first(rec, "TreeCacheRead");
-  expect(linkReads(rec).links.get(read.id)?.[0]?.slice(1)).toEqual([
+  const [, writer, kind] = linkReads(rec).links.get(read.id)?.[0] ?? [];
+  // the event is a call of its own in the builders' pass (spec 010, T168; spec, Open Questions 23/11)
+  const event = rec.nodes[writer ?? -1];
+  expect([event?.b, event?.p, kind]).toEqual([
+    "_customEvent_Refill",
     rec.builders,
     "offline",
   ]);
