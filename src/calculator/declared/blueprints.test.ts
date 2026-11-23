@@ -3,7 +3,9 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
+import type { BlueprintNode } from "./blueprint.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import { hasRawCharacterIndex } from "./refs.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..");
@@ -31,6 +33,35 @@ test("every tree a number of the catalog says it goes into is a number of the ca
         .map((m) => `${n.id} -> ${m}`),
     ),
   ).toEqual([]);
+});
+
+test("the Drop Rate's blueprint is complete: Additive, Multi, Additive, Multi, no character written out, every source proven (T031)", () => {
+  const out = loadBlueprints(BLUEPRINTS);
+  expect(out.stages.get("stats-drop-rate")).toBe("complete");
+  const bp = out.complete.get("stats-drop-rate");
+  expect(bp?.pools.map((p) => p.kind)).toEqual([
+    "additive",
+    "multi",
+    "additive",
+    "multi",
+  ]);
+  const nodes: BlueprintNode[] = [];
+  const walk = (n: BlueprintNode) => {
+    nodes.push(n);
+    if (n.condition) walk(n.condition);
+    n.children?.forEach(walk);
+  };
+  bp?.pools.forEach((p) => {
+    p.groups.forEach((g) => {
+      g.sources.forEach(walk);
+    });
+  });
+  expect(
+    nodes.filter(
+      (n) => n.ref && "read" in n.ref && hasRawCharacterIndex(n.ref.read),
+    ),
+  ).toEqual([]);
+  expect(nodes.filter((n) => n.nameProof === undefined)).toEqual([]);
 });
 
 test("every blueprint loads in a stage, and its file's name is its id", () => {
