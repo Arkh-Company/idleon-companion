@@ -68,7 +68,7 @@ test("in a loop's turn, two calls of one block with the step's value and no plac
 });
 
 test("a variable set by a call ties by its data flow, never to an earlier read with its value", () => {
-  // TreeRunTwinRead: each turn `g = TreeGear[r]; x = TreeThree(2r); TreeThree(2r + 1); t += x`: the gear and both calls 3
+  // TreeRunTwinRead: each turn `TreeGear[r] read; x = TreeThree(2r); TreeThree(2r + 1); t += x`: the gear and both calls 3
   const recorder = inventedRecorder();
   const rec = recorder.record(
     mosaicOf({ TreeGear: [3, 3] }),
