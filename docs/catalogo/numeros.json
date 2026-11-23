@@ -567,7 +567,7 @@
     "motivo": "Pontos de talento estrela ganhos ao completar constelações.",
     "tela": "Talents (aba Star); recompensa listada na constelação",
     "prova": "tabela `StarQuests` (coluna da recompensa)",
-    "arvore_mae": ["talents-points-per-tab"],
+    "arvore_mae": ["talents-points-per-tab-6"],
     "motivo_destino": "Regra 4: os pontos de cada constelação concluída aparecem dentro da árvore dos Talent points per tab (aba Star)."
   },
   {
@@ -1698,8 +1698,8 @@
     ]
   },
   {
-    "id": "obols-stat-multi",
-    "nome": "Obol stat multiplier (talents, Super Bit, Menagerie)",
+    "id": "obols-stat-multi-str",
+    "nome": "Obol stat multiplier (STR)",
     "mundo": "W2",
     "sistema": "Obols",
     "caixa": "Bônus",
@@ -1708,9 +1708,54 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 13,
-    "motivo": "Multiplica o que os obols dão; vem de talentos, do Gaming e do Menagerie.",
+    "motivo": "O multiplicador das obols no STR: o talento 111 e o Super Bit (spec 010, Open Questions de 22/11).",
     "tela": "não aparece como número próprio (entra nos stats dos obols)",
-    "prova": "`TotalStats`; `GetTalentNumber` 36, 111, 291, 486; `GamingStatType` `SuperBitType`; `MenagerieStuff` `ObolMISCmulti`"
+    "prova": "`TotalStats` ramo `\"STR\"`; `GetTalentNumber` 111; `GamingStatType` `SuperBitType`"
+  },
+  {
+    "id": "obols-stat-multi-agi",
+    "nome": "Obol stat multiplier (AGI)",
+    "mundo": "W2",
+    "sistema": "Obols",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 13,
+    "motivo": "O multiplicador das obols no AGI: o talento 291 e o Super Bit (spec 010, Open Questions de 22/11).",
+    "tela": "não aparece como número próprio (entra nos stats dos obols)",
+    "prova": "`TotalStats` ramo `\"AGI\"`; `GetTalentNumber` 291; `GamingStatType` `SuperBitType`"
+  },
+  {
+    "id": "obols-stat-multi-wis",
+    "nome": "Obol stat multiplier (WIS)",
+    "mundo": "W2",
+    "sistema": "Obols",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 13,
+    "motivo": "O multiplicador das obols no WIS: o talento 486 e o Super Bit (spec 010, Open Questions de 22/11).",
+    "tela": "não aparece como número próprio (entra nos stats dos obols)",
+    "prova": "`TotalStats` ramo `\"WIS\"`; `GetTalentNumber` 486; `GamingStatType` `SuperBitType`"
+  },
+  {
+    "id": "obols-stat-multi-luk",
+    "nome": "Obol stat multiplier (LUK)",
+    "mundo": "W2",
+    "sistema": "Obols",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 13,
+    "motivo": "O multiplicador das obols no LUK: o talento 36 e o Super Bit (spec 010, Open Questions de 22/11).",
+    "tela": "não aparece como número próprio (entra nos stats dos obols)",
+    "prova": "`TotalStats` ramo `\"LUK\"`; `GetTalentNumber` 36; `GamingStatType` `SuperBitType`"
   },
   {
     "id": "obols-misc-multi-menagerie",
@@ -2552,8 +2597,8 @@
     "prova": "`CauldronStats` modo `CauldronCosts`; tabela `AlchemyDescription`"
   },
   {
-    "id": "alch-bubble-cost-reduction",
-    "nome": "Bubble Upgr. Costs reduced (Cost upgrade and other reducers)",
+    "id": "alch-bubble-cost-reduction-bits",
+    "nome": "Bubble Upgr. Costs reduced (Bits bubbles)",
     "mundo": "W2",
     "sistema": "Alchemy (Bubbles, Vials, Cauldrons, Liquids, Pay2Win, Sigils, Kruk)",
     "caixa": "Bônus",
@@ -2562,9 +2607,24 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 1,
-    "motivo": "Redutor do custo das bolhas; junta o upgrade do caldeirão, bolhas, um vial, uma conquista e um item da conta.",
+    "motivo": "Redutor do custo das bolhas pagas em Bits: a opção 62 da conta e a conquista 108 (sonda das raízes, 21/11).",
     "tela": "Alchemy › Brewing (upgrade \"Cost\": \"Bubble Upgr. Costs reduced by %\")",
-    "prova": "`CauldronStats` modos `CauldronCosts`, `CauldronLvsBrewBonus`; estados `AlchBubbles` (BubbleCost*), `AlchVials` (AlchBubbleCost); `AchieveStatus` 108"
+    "prova": "`CauldronStats` modo `CauldronCosts` (caminho Bits); estado `OptionsListAccount` 62; `AchieveStatus` 108"
+  },
+  {
+    "id": "alch-bubble-cost-reduction-item",
+    "nome": "Bubble Upgr. Costs reduced (item bubbles)",
+    "mundo": "W2",
+    "sistema": "Alchemy (Bubbles, Vials, Cauldrons, Liquids, Pay2Win, Sigils, Kruk)",
+    "caixa": "Bônus",
+    "tipo": "Redutor de custo",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 1,
+    "motivo": "Redutor do custo das bolhas pagas em item: o upgrade do caldeirão, as bolhas de custo de cada cor, um vial, a opção 62 e a conquista 108 (sonda das raízes, 21/11).",
+    "tela": "Alchemy › Brewing (upgrade \"Cost\": \"Bubble Upgr. Costs reduced by %\")",
+    "prova": "`CauldronStats` modos `CauldronCosts` (caminho de item), `CauldronLvsBrewBonus`; estados `AlchBubbles` (BubbleCost*), `AlchVials` (AlchBubbleCost), `OptionsListAccount` 62; `AchieveStatus` 108"
   },
   {
     "id": "alch-atom-bubble-cost",
@@ -2628,7 +2688,7 @@
     "arvore_mae": [
       "alch-brew-per-hour",
       "alch-new-bubble-chance",
-      "alch-bubble-cost-reduction"
+      "alch-bubble-cost-reduction-item"
     ]
   },
   {
@@ -2699,12 +2759,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "painel-de-farm",
     "marca": "sim",
     "regra": 9,
     "motivo": "Quanto cada caldeirão enche por hora com os personagens nele; é o \"quanto ganho\" das bolhas.",
     "tela": "não aparece na tela (a tela mostra a barra do caldeirão)",
-    "prova": "`CauldronStats` modos `ResearchSpeed`, `SpecificSpdBonuses`"
+    "prova": "`CauldronStats` modos `ResearchSpeed`, `SpecificSpdBonuses`",
+    "motivo_destino": "Sonda das raízes (21/11): sai das árvores e vai ao painel de farm (spec 010, Open Questions de 21/11)."
   },
   {
     "id": "alch-specific-speed",
@@ -2791,12 +2852,13 @@
     "caixa": "Ganho por tempo",
     "tipo": "Velocidade",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "painel-de-farm",
     "marca": "sim",
     "regra": 9,
     "motivo": "Quanto de cada líquido entra por hora.",
     "tela": "Alchemy › Liquid",
-    "prova": "`CauldronStats` modo `LiquidHRrate`; `StampBonusOfTypeX` `LiquidSpd`; `SaltLick` 5; `Labb` `SigilBonus`; `Summoning` `VaultUpgBonus`, `VotingBonusz`; `MainframeBonus` 6"
+    "prova": "`CauldronStats` modo `LiquidHRrate`; `StampBonusOfTypeX` `LiquidSpd`; `SaltLick` 5; `Labb` `SigilBonus`; `Summoning` `VaultUpgBonus`, `VotingBonusz`; `MainframeBonus` 6",
+    "motivo_destino": "Sonda das raízes (21/11): sai das árvores e vai ao painel de farm (spec 010, Open Questions de 21/11)."
   },
   {
     "id": "alch-liquid-cap",
@@ -4104,7 +4166,7 @@
     "arvore_mae": [
       "dung-credit-multi",
       "dung-flurbo-multi",
-      "talents-points-per-tab",
+      "talents-points-per-tab-6",
       "sail-arti-multi"
     ]
   },
@@ -4301,7 +4363,7 @@
     "prova": "`DamageDealed`; `TotalTalentPoints`; `PlayerSpeedBonus`",
     "arvore_mae": [
       "stats-damage-max",
-      "talents-points-per-tab",
+      "talents-points-per-tab-1",
       "stats-move-speed"
     ]
   },
@@ -11379,8 +11441,7 @@
     "arvore_mae": [
       "stats-drop-rate",
       "stats-afk-gains-rate",
-      "death-multikill-total",
-      "stats-mob-respawn"
+      "death-multikill-total"
     ]
   },
   {
@@ -11819,8 +11880,8 @@
     "prova": "`FarmingStuffs` modos `MarketCostQTY` e `MarketCostType`; tabela `MarketInfo`"
   },
   {
-    "id": "farm-market-cost-reduction",
-    "nome": "Day/Night Market cost reduction (total)",
+    "id": "farm-market-cost-reduction-day",
+    "nome": "Day Market cost reduction (total)",
     "mundo": "W6",
     "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
     "caixa": "Bônus",
@@ -11829,9 +11890,24 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 1,
-    "motivo": "O redutor total do custo do Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY e BETTER_NIGHT) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11)",
+    "motivo": "O redutor total do custo do Day Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_DAY I e II) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11; separado do Night na sonda das raízes, 21/11)",
     "tela": "Farming Market (w55), dentro do custo",
-    "prova": "`FarmingStuffs` modo `MarketCostQTY` (Emperor bônus 2; Exotic BETTER_DAY I/II e BETTER_NIGHT I/II)"
+    "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 0, Day): Emperor bônus 2; Exotic BETTER_DAY I e II (34, 35)"
+  },
+  {
+    "id": "farm-market-cost-reduction-night",
+    "nome": "Night Market cost reduction (total)",
+    "mundo": "W6",
+    "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
+    "caixa": "Bônus",
+    "tipo": "Redutor de custo",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 1,
+    "motivo": "O redutor total do custo do Night Market; além do Exotic do próprio Farming, vem de um sistema de fora só (Emperor). Fontes contando as partes: Exotic (BETTER_NIGHT I e II) e Emperor (2); redutor total com várias fontes (regra 1). Marca do Vinicius no W6. (revisto 20/11; separado do Day na sonda das raízes, 21/11)",
+    "tela": "Farming Market (w55), dentro do custo",
+    "prova": "`FarmingStuffs` modo `MarketCostQTY` (t = 1, Night): Emperor bônus 2; Exotic BETTER_NIGHT I e II (36, 37)"
   },
   {
     "id": "farm-market-max-lv",
@@ -11917,7 +11993,7 @@
   },
   {
     "id": "farm-exotic-lv-qty",
-    "nome": "Exotic level quantity (levels per purchase)",
+    "nome": "Exotic Level Qty multi",
     "mundo": "W6",
     "sistema": "Farming (Farming Market: Day, Night, Crop Depot, Exotic, Sticker Depot; Land Rank)",
     "caixa": "Bônus",
@@ -12809,7 +12885,7 @@
   },
   {
     "id": "summ-unit-stats",
-    "nome": "Unit stats (HP, Damage, Speed, Dodge)",
+    "nome": "Summoning Unit Damage",
     "mundo": "W6",
     "sistema": "Summoning (Summoning Stones, Summoner's Table)",
     "caixa": "Outro",
@@ -15534,7 +15610,7 @@
       "stats-kill-per-kill",
       "stats-class-exp",
       "stats-afk-gains-rate",
-      "stats-mob-respawn",
+      "stats-mob-respawn-w7",
       "spel-stamina-max"
     ]
   },
@@ -17371,7 +17447,7 @@
     "tela": "Obols, Arcade",
     "prova": "`MenagerieStuff` modos `ObolMISCmulti`, `ObolAutoTrashRate`, `RedJellyReadingMulti`, `OmegaArcBallChance`",
     "motivo_tipo": "Bônus de cada item de uma família (regra 4); o tipo é o do número que cada item aumenta, e varia.",
-    "arvore_mae": ["obols-stat-multi", "arcade-omega-chance"]
+    "arvore_mae": ["arcade-omega-chance"]
   },
   {
     "id": "mena-unlocks",
@@ -18267,8 +18343,8 @@
     "motivo_tipo": "Accuracy que o monstro pede (requisito do alvo)."
   },
   {
-    "id": "stats-mob-respawn",
-    "nome": "Faster Monster Respawning",
+    "id": "stats-mob-respawn-w1",
+    "nome": "Faster Monster Respawning (W1)",
     "mundo": "Personagem",
     "sistema": "Stats (atributos e números de combate e progresso do personagem)",
     "caixa": "Bônus",
@@ -18277,9 +18353,99 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 10,
-    "motivo": "NOVO. Multiplicador de várias fontes que puxa o KILLS/HR (o `HourlyKillRate` lê o respawn já dividido) e não aparece na tela. Com o KILLS/HR fora (regra 9), o fim da regra 9 e a regra 10 pedem o multi como número próprio. Ressalva: a Merit Shop e as Achievements entram pelo mundo do mapa, e as cavernas da The Hole usam outra conta; a árvore teria de mostrar o galho do mundo, como no Kill per Kill e no Cash from Mobs.",
+    "motivo": "O respawn mais rápido dos monstros do W1: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
     "tela": "",
-    "prova": "`performETCaction` modo `MonsterRespawnTimeReset` divide o `RespawnTime` de cada monstro por (1 + soma/100); o `HourlyKillRate` lê esse `RespawnTime`"
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[0]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; `AchieveStatus` 44; Merit Shop `TaskShopDesc[0]` × `Tasks[2][0]`"
+  },
+  {
+    "id": "stats-mob-respawn-w2",
+    "nome": "Faster Monster Respawning (W2)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W2: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[1]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; `AchieveStatus` 109; Merit Shop `TaskShopDesc[1]` × `Tasks[2][1]`"
+  },
+  {
+    "id": "stats-mob-respawn-w3",
+    "nome": "Faster Monster Respawning (W3)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W3: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `RANDOlist[15]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; Merit Shop `TaskShopDesc[2]` × `Tasks[2][2]`"
+  },
+  {
+    "id": "stats-mob-respawn-w4",
+    "nome": "Faster Monster Respawning (W4)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W4: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[3]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; Merit Shop `TaskShopDesc[3]` × `Tasks[2][3]`"
+  },
+  {
+    "id": "stats-mob-respawn-w5",
+    "nome": "Faster Monster Respawning (W5)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W5: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[4]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308; Merit Shop `TaskShopDesc[4]` × `Tasks[2][4]`"
+  },
+  {
+    "id": "stats-mob-respawn-w6",
+    "nome": "Faster Monster Respawning (W6)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W6: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[5]`: `Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308; Merit Shop `TaskShopDesc[5]` × `Tasks[2][5]`"
+  },
+  {
+    "id": "stats-mob-respawn-w7",
+    "nome": "Faster Monster Respawning (W7)",
+    "mundo": "Personagem",
+    "sistema": "Stats (atributos e números de combate e progresso do personagem)",
+    "caixa": "Bônus",
+    "tipo": "Multi",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 10,
+    "motivo": "O respawn mais rápido dos monstros do W7: a soma que divide o `RespawnTime` nas voltas desse mundo (spec 010, Open Questions de 22/11).",
+    "tela": "",
+    "prova": "`performETCaction` modo `MonsterRespawnTimeReset`, ramo da lista `DeathNoteMobs[6]`: 0,65 × (`Holes` `B_UPG` 44; `Shrine` 7; `chipBonuses` `resp`; `EtcBonuses` 47; `StarSigns` `MobRespawn`; 2 × `AchieveStatus` 308); `Spelunk` `BigFishBonuses`; Merit Shop `TaskShopDesc[6]` × `Tasks[2][6]`"
   },
   {
     "id": "stats-auto-respawn",
@@ -18531,12 +18697,13 @@
     "caixa": "Progresso",
     "tipo": "Contagem",
     "tipo_folha": "Quantidade",
-    "destino": "arvore",
+    "destino": "dentro-de-arvore",
     "marca": "sim",
     "regra": 2,
     "motivo": "Quantas comidas há em cada pilha.",
     "tela": "Items › Equipment › Foods",
-    "prova": "estado `EquipmentQuantity` (posição 2)"
+    "prova": "estado `EquipmentQuantity` (posição 2)",
+    "motivo_destino": "Sonda das raízes (22/11): sai das árvores (spec 010, Open Questions de 22/11). É um contador e já aparece nas árvores da Golden Food."
   },
   {
     "id": "talents-bonus-each",
@@ -18630,7 +18797,7 @@
     "regra": 3,
     "motivo": "O nível máximo dos talentos, que vários sistemas aumentam; é o exemplo da exceção da regra 3.",
     "tela": "Talents: \"Lv x/y\" (o y)",
-    "prova": "estado `SkillLevelsMAX`; montado em `TotalTalentPoints` (outros talentos, `getbonus2`, níveis dos caldeirões da Alchemy, Meals, Upgrade Vault)"
+    "prova": "soma de `WorkbenchStuff` modo `maxBookLv` (Max Book LV) e `RunCodeOfTypeXforThingY` modo `AllTalentLV` (All Talent LV); estado `SkillLevelsMAX`, montado em `TotalTalentPoints`"
   },
   {
     "id": "talents-all-talent-lv",
@@ -18663,8 +18830,8 @@
     "prova": "`RunCodeOfTypeXforThingY` modo `TalentBannedforAllLV`"
   },
   {
-    "id": "talents-points-per-tab",
-    "nome": "Talent points per tab",
+    "id": "talents-points-per-tab-1",
+    "nome": "Talent points per tab (tab 1)",
     "mundo": "Personagem",
     "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
     "caixa": "Progresso",
@@ -18673,7 +18840,82 @@
     "destino": "arvore",
     "marca": "sim",
     "regra": 2,
-    "motivo": "Quantos pontos cada aba tem; uma contagem que mais de dez sistemas aumentam (exceção da regra 2).",
+    "motivo": "Os pontos de talento que a aba 1 ganha (spec 010, Open Questions de 22/11).",
+    "tela": "Talents: pontos de cada aba",
+    "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
+  },
+  {
+    "id": "talents-points-per-tab-2",
+    "nome": "Talent points per tab (tab 2)",
+    "mundo": "Personagem",
+    "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
+    "caixa": "Progresso",
+    "tipo": "Contagem",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 2,
+    "motivo": "Os pontos de talento que a aba 2 ganha (spec 010, Open Questions de 22/11).",
+    "tela": "Talents: pontos de cada aba",
+    "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
+  },
+  {
+    "id": "talents-points-per-tab-3",
+    "nome": "Talent points per tab (tab 3)",
+    "mundo": "Personagem",
+    "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
+    "caixa": "Progresso",
+    "tipo": "Contagem",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 2,
+    "motivo": "Os pontos de talento que a aba 3 ganha (spec 010, Open Questions de 22/11).",
+    "tela": "Talents: pontos de cada aba",
+    "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
+  },
+  {
+    "id": "talents-points-per-tab-4",
+    "nome": "Talent points per tab (tab 4)",
+    "mundo": "Personagem",
+    "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
+    "caixa": "Progresso",
+    "tipo": "Contagem",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 2,
+    "motivo": "Os pontos de talento que a aba 4 ganha (spec 010, Open Questions de 22/11).",
+    "tela": "Talents: pontos de cada aba",
+    "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
+  },
+  {
+    "id": "talents-points-per-tab-5",
+    "nome": "Talent points per tab (tab 5)",
+    "mundo": "Personagem",
+    "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
+    "caixa": "Progresso",
+    "tipo": "Contagem",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 2,
+    "motivo": "Os pontos de talento que a aba 5 ganha (spec 010, Open Questions de 22/11).",
+    "tela": "Talents: pontos de cada aba",
+    "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
+  },
+  {
+    "id": "talents-points-per-tab-6",
+    "nome": "Talent points per tab (tab 6)",
+    "mundo": "Personagem",
+    "sistema": "Talents (talentos da classe, Star Talents, Super Talents, Talent Enhancement e Apocalypses)",
+    "caixa": "Progresso",
+    "tipo": "Contagem",
+    "tipo_folha": null,
+    "destino": "arvore",
+    "marca": "sim",
+    "regra": 2,
+    "motivo": "Os pontos de talento que a aba 6 ganha (spec 010, Open Questions de 22/11).",
     "tela": "Talents: pontos de cada aba",
     "prova": "`TotalTalentPoints` (lista `TalentDL2`: Vials, Star Signs, Stamps, Achievements, Flurbo shop, Arcade, Breeding, Upgrade Vault, Companions, talentos; na aba Star também Guild, cartas, Lab, Bribes, Random Events e Family; na aba da Masterclass, Grimoire, Compass, Tesseract, Royal Guardian, Jelly Operator, Spelunking e Orblet Market)"
   },
@@ -19180,7 +19422,15 @@
     "tela": "Tasks (w23), abas W1–W7 (Merit Shop)",
     "prova": "tabela `TaskShopDesc` (7 mundos × 8)",
     "motivo_tipo": "Bônus de cada item de uma família (regra 4); o tipo é o do número que cada item aumenta, e varia.",
-    "arvore_mae": ["stats-mob-respawn"]
+    "arvore_mae": [
+      "stats-mob-respawn-w1",
+      "stats-mob-respawn-w2",
+      "stats-mob-respawn-w3",
+      "stats-mob-respawn-w4",
+      "stats-mob-respawn-w5",
+      "stats-mob-respawn-w6",
+      "stats-mob-respawn-w7"
+    ]
   },
   {
     "id": "tasks-merit-cost",
@@ -19794,7 +20044,7 @@
   },
   {
     "id": "vault-max-lv",
-    "nome": "Vault upgrade Max LV",
+    "nome": "Vault Max LV per Glimbo trade",
     "mundo": "Conta",
     "sistema": "Upgrade Vault",
     "caixa": "Limite e tempo",
@@ -20387,12 +20637,13 @@
     "caixa": "Limite e tempo",
     "tipo": "Limite",
     "tipo_folha": null,
-    "destino": "arvore",
+    "destino": "descartado",
     "marca": "sim",
     "regra": 3,
     "motivo": "É o número que a tela Storage mostra. Quatro sistemas de fora o aumentam: Construction (Chest Space), Gem Shop (item 109 e 5 pacotes), Event Shop (Storage Chest, Storage Vault) e Upgrade Vault (33), além dos baús do próprio Storage. Limite que vários sistemas de fora aumentam: exceção da regra 3. Substitui o `storage-slots`, que é uma parte dele (regra 5).",
     "tela": "",
-    "prova": "`ChestSlotsOwned`, montado em `Design_23_23_EveryScene.init` e em `ActorEvents_38._event_InvItem4custom`: 54 + baús usados (`InvStorageUsed`) + 2 × `TowerInfo`[4] (Chest Space) + pacotes `bun_i` (8), `bun_c` (16), `bon_a` (20) + 9 × `GemItemsPurchased`[109] + `Thingies(\"ExtraStorage\")`; mostrado em `ActorEvents_312._event_StorgInfoTALENT` como \"Storage_Slots_Owned:\""
+    "prova": "`ChestSlotsOwned`, montado em `Design_23_23_EveryScene.init` e em `ActorEvents_38._event_InvItem4custom`: 54 + baús usados (`InvStorageUsed`) + 2 × `TowerInfo`[4] (Chest Space) + pacotes `bun_i` (8), `bun_c` (16), `bon_a` (20) + 9 × `GemItemsPurchased`[109] + `Thingies(\"ExtraStorage\")`; mostrado em `ActorEvents_312._event_StorgInfoTALENT` como \"Storage_Slots_Owned:\"",
+    "motivo_destino": "Sonda das raízes (22/11): sai das árvores (spec 010, Open Questions de 22/11). Nenhum bloco do jogo faz a conta: é montado em eventos de cena e do inventário."
   },
   {
     "id": "acclv-account-lv",

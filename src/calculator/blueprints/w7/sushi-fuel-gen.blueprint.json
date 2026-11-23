@@ -1,0 +1,10 @@
+{
+  "id": "sushi-fuel-gen",
+  "root": {
+    "name": "Fuel generation",
+    "ref": {
+      "call": "SushiStuff",
+      "args": ["FuelGen", 20, 0]
+    }
+  }
+}

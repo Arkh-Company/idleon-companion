@@ -1,0 +1,10 @@
+{
+  "id": "mining-exp-multi",
+  "root": {
+    "name": "EXP Multiplier",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["MiningEXPmulti", 0, 0]
+    }
+  }
+}

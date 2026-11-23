@@ -1,0 +1,10 @@
+{
+  "id": "gaming-growth-time",
+  "root": {
+    "name": "Sprout growth time",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["SproutGrowthTime", 1, 0]
+    }
+  }
+}

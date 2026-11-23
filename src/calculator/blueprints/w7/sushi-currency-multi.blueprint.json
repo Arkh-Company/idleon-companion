@@ -1,0 +1,10 @@
+{
+  "id": "sushi-currency-multi",
+  "root": {
+    "name": "Bucks multiplier",
+    "ref": {
+      "call": "SushiStuff",
+      "args": ["CurrencyMulti", 20, 0]
+    }
+  }
+}

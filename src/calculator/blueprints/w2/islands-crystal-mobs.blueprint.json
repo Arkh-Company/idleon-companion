@@ -1,0 +1,10 @@
+{
+  "id": "islands-crystal-mobs",
+  "root": {
+    "name": "Giant crystal mobs per day (Crystal Island)",
+    "ref": {
+      "call": "Thingies",
+      "args": ["GuaranteedCrystalMobs", 0, 0]
+    }
+  }
+}

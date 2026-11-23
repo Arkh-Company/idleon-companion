@@ -1,0 +1,10 @@
+{
+  "id": "farm-og-multi",
+  "root": {
+    "name": "Overgrowth multiplier",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["OGmulti", 0, 0]
+    }
+  }
+}

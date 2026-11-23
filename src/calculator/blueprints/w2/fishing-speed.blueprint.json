@@ -1,0 +1,10 @@
+{
+  "id": "fishing-speed",
+  "root": {
+    "name": "Average Catch Time (Fishing Speed)",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["FishingSpeed", 0, 0]
+    }
+  }
+}

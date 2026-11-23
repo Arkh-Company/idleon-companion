@@ -1,0 +1,10 @@
+{
+  "id": "catching-speed",
+  "root": {
+    "name": "Catching Speed",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["CatchingSpeed", 0, 0]
+    }
+  }
+}

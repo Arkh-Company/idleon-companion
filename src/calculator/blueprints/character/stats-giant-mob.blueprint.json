@@ -1,0 +1,10 @@
+{
+  "id": "stats-giant-mob",
+  "root": {
+    "name": "Giant Mob chance",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["GiantMob"]
+    }
+  }
+}

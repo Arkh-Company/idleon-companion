@@ -1,0 +1,10 @@
+{
+  "id": "stamps-doubler",
+  "root": {
+    "name": "Stamp Doubler multiplier (\"x\")",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["StampDoubler", 0, 0]
+    }
+  }
+}

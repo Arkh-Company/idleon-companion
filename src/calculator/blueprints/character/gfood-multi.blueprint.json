@@ -1,0 +1,10 @@
+{
+  "id": "gfood-multi",
+  "root": {
+    "name": "Golden Food bonus multiplier",
+    "ref": {
+      "call": "GoldFoodBonuses",
+      "args": [0, 0, 0]
+    }
+  }
+}

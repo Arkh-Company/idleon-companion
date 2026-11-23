@@ -1,0 +1,10 @@
+{
+  "id": "stats-attack-speed",
+  "root": {
+    "name": "Basic Attack Speed (AFK)",
+    "ref": {
+      "call": "ActionWaitTime",
+      "args": ["AFK", 0, 0]
+    }
+  }
+}

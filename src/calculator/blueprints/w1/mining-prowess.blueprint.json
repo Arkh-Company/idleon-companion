@@ -1,0 +1,10 @@
+{
+  "id": "mining-prowess",
+  "root": {
+    "name": "Mining Prowess",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["MiningProwess"]
+    }
+  }
+}

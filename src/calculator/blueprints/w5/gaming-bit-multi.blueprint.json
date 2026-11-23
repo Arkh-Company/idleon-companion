@@ -1,0 +1,10 @@
+{
+  "id": "gaming-bit-multi",
+  "root": {
+    "name": "Total Bit Multi (SproutValueNonPlantMulti)",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["SproutValueNonPlantMulti", 1, 0]
+    }
+  }
+}

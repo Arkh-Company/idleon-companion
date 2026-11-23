@@ -1,0 +1,10 @@
+{
+  "id": "stats-crystal-chance",
+  "root": {
+    "name": "Crystal Mob Chance",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["CrystalSpawn"]
+    }
+  }
+}

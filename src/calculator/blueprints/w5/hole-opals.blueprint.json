@@ -1,0 +1,10 @@
+{
+  "id": "hole-opals",
+  "root": {
+    "name": "Opals owned and invested",
+    "ref": {
+      "call": "Holes",
+      "args": ["OpalsOwnedToInvest", 0, 0]
+    }
+  }
+}

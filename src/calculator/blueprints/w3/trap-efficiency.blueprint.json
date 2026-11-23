@@ -1,0 +1,10 @@
+{
+  "id": "trap-efficiency",
+  "root": {
+    "name": "Trapping Efficiency",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["TrappingEfficiency"]
+    }
+  }
+}

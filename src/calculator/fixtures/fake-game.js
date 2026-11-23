@@ -205,6 +205,27 @@ lime.$scripts.N = function (_exports, $global) {
   HelperActor.prototype._customEvent_Prepare = function () {
     this._ready = this._mode === "d" ? 2 : 0;
   };
+  // Spec 010 (T152): a routine of a screen that writes a board into the state, as the game sums its Cog Board.
+  HelperActor.prototype._customEvent_TreeBoard = function () {
+    var s = state();
+    s.TreeBoard = [];
+    for (var i = 0; i < s.TreeList.length; i++)
+      s.TreeBoard[i] = s.TreeList[i] * (1 + s.TreeStats.h.a / 100);
+  };
+  // Spec 010 (T156): a routine in two passes by its trigger text, as the Cog Board: m builds each house, z applies
+  // the board percent to each house of the copy.
+  HelperActor.prototype._customEvent_TreeHouses = function () {
+    var s = state();
+    if (this._TRIGGEREDtext === "m") {
+      this._TreeHouses = [];
+      for (var i = 0; i < s.TreeList.length; i++)
+        this._TreeHouses[i] = { a: s.TreeList[i] * 2 };
+    }
+    if (this._TRIGGEREDtext === "z")
+      for (var j = 0; j < this._TreeHouses.length; j++)
+        this._TreeHouses[j].a =
+          this._TreeHouses[j].a * (1 + s.TreeStats.h.a / 100);
+  };
   A["scripts.ActorEvents_29"] = HelperActor;
 
   var EveryScene = function () {
@@ -1320,6 +1341,699 @@ lime.$scripts.N = function (_exports, $global) {
     d.AlchBubbles.h.W2 =
       Blocks._customBlock_TreeBubbleInner() + dnsm().CalcTalentDN2;
     return d.AlchBubbles.h.W2 * 2;
+  };
+  // Spec 010 (T017): the roots of the answer key. A curve by its mode; a talent of the tree character on a curve whose
+  // arguments differ, a luck on a curve with three equal arguments, and the best of all characters.
+  Blocks._customBlock_TreeDeclCurve = function (mode, top, mid, level) {
+    return mode === "decay" ? (top * level) / (level + mid) : 0;
+  };
+  Blocks._customBlock_TreeDeclTalent = function (i) {
+    var s = state();
+    var level = s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[i];
+    return Blocks._customBlock_TreeDeclCurve("decay", 40, 100, level);
+  };
+  Blocks._customBlock_TreeDeclLuck = function () {
+    var level = state().TreeLevel - 5;
+    return Blocks._customBlock_TreeDeclCurve("decay", 20, 20, level);
+  };
+  Blocks._customBlock_TreeDeclBest = function () {
+    var s = state();
+    var best = 0;
+    var names = s.GetPlayersUsernames;
+    for (var i = 0; i < names.length; i++)
+      best = Math.max(best, s.PlayerDATABASE.h[names[i]].h.SkillLevels[1]);
+    return best;
+  };
+  // The Drop Rate shape: scratch counters, a working value read back, a sum in percent divided by 100 with a
+  // two-source term and two curves, constants behind a condition, a source only one character has, a source the
+  // recording never runs; the running total is summed, multiplied, summed and multiplied.
+  Blocks._customBlock_TreeDeclChain = function () {
+    var s = state();
+    var d = dnsm();
+    s.DummyNumbersStatManager = new StringMap();
+    for (var i = 0; i < 3; i++) s.DummyNumbersStatManager.h.n = i;
+    d.TreeDecl = new StringMap();
+    d.TreeDeclPart = new StringMap();
+    d.TreeDeclPart.h.v = Blocks._customBlock_TreeDeclBest() + s.TreeCapped;
+    d.TreeDecl.h.v =
+      Blocks._customBlock_TreeDeclLuck() +
+      (Blocks._customBlock_TreeDeclTalent(0) * s.TreeTwins[0] +
+        Blocks._customBlock_ArcadeBonus(0) +
+        d.TreeDeclPart.h.v) /
+        100;
+    s.TreeFlagOn == 1 && (d.TreeDecl.h.v = d.TreeDecl.h.v + 2);
+    s.TreeOwned > 0 && (d.TreeDecl.h.v = d.TreeDecl.h.v + s.TreeOwned);
+    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDecl.h.v = d.TreeDecl.h.v + 0.5;
+    d.TreeDecl.h.v = d.TreeDecl.h.v * (1 + s.TreeStats.h.b / 100);
+    s.CurrentMap == 7 &&
+      (d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeDeclTalent(1));
+    d.TreeDecl.h.v = d.TreeDecl.h.v * 1.2;
+    return d.TreeDecl.h.v;
+  };
+  // A root with no running total: a sum, then a product.
+  Blocks._customBlock_TreeDeclExpr = function () {
+    var s = state();
+    return (
+      (Blocks._customBlock_TreeReads() + s.TreeCapped + 2) *
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.b / 100)
+    );
+  };
+  // A root whose last write swaps the running total instead of adding to it or multiplying it.
+  Blocks._customBlock_TreeDeclSwap = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclSwap = new StringMap();
+    d.TreeDeclSwap.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeDeclSwap.h.v = d.TreeDeclSwap.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDeclSwap.h.v = s.TreeCapped + s.TreeLevel;
+    return d.TreeDeclSwap.h.v;
+  };
+  // Spec 010 (r5 of group 2): a common part that calls a block worth 0 and uses it in a step, then a branch that writes
+  // a fixed 0 to a path and sums onto it; in TreeDeclLitCall the branch writes the call instead, which a step also uses.
+  Blocks._customBlock_TreeLitZero = function () {
+    return 0;
+  };
+  Blocks._customBlock_TreeDeclLit = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclLit = new StringMap();
+    d.TreeDeclLit.h.part =
+      s.TreeCapped + Math.min(s.TreeBase, Blocks._customBlock_TreeLitZero());
+    if (s.TreeFlagOn == 1)
+      return (
+        (d.TreeDeclLit.h.n = 0),
+        (d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeStats.h.b),
+        (d.TreeDeclLit.h.n + s.TreeStats.h.a) * 2
+      );
+    return 0;
+  };
+  Blocks._customBlock_TreeDeclLitCall = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclLit = new StringMap();
+    if (s.TreeFlagOn == 1) {
+      var z = Blocks._customBlock_TreeLitZero();
+      d.TreeDeclLit.h.n = z;
+      d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeStats.h.b + z * 3;
+      return (d.TreeDeclLit.h.n + s.TreeStats.h.a) * 2;
+    }
+    return 0;
+  };
+  // Spec 010 (T143): a top layer above the pools, from outside in, as the code writes it; a gate; a divisor; a leaf.
+  Blocks._customBlock_TreeLayerRound = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.round(Math.min(20, p));
+  };
+  Blocks._customBlock_TreeLayerFloor = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.floor(Math.min(50, p));
+  };
+  Blocks._customBlock_TreeLayerCeil = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.ceil(Math.min(50, p));
+  };
+  Blocks._customBlock_TreeLayerMax = function () {
+    var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
+    return Math.floor(Math.max(30, p));
+  };
+  Blocks._customBlock_TreeLayerGate = function () {
+    var s = state();
+    return s.TreeOwned > 0 ? 0 : Blocks._customBlock_TreeReads() + s.TreeCapped;
+  };
+  Blocks._customBlock_TreeLayerDiv = function () {
+    var s = state();
+    return 100 / (1 + (Blocks._customBlock_TreeReads() + s.TreeCapped) / 100);
+  };
+  Blocks._customBlock_TreeLayerRead = function () {
+    return state().TreeCapped;
+  };
+  Blocks._customBlock_TreeLayerConstant = function () {
+    return 7;
+  };
+  // No leaf: a text the game turns into a number, and a call passed on as it is.
+  Blocks._customBlock_TreeLayerNumber = function () {
+    return Number(state().TreeLabelNum);
+  };
+  Blocks._customBlock_TreeLayerPass = function () {
+    return Blocks._customBlock_TreeReads();
+  };
+  // Spec 010 (T151): a condition and its two paths outside the return: in a variable, inside the last step, and in
+  // a step of a running total.
+  Blocks._customBlock_TreeGateVar = function () {
+    var s = state();
+    var x = s.TreeOwned > 0 ? s.TreeBase + 1 : s.TreeCapped + s.TreeLevel;
+    return x * s.TreeTwins[0];
+  };
+  Blocks._customBlock_TreeGateInline = function () {
+    var s = state();
+    return (
+      (s.TreeOwned > 0 ? s.TreeBase + 1 : s.TreeCapped + s.TreeLevel) *
+      s.TreeTwins[0]
+    );
+  };
+  Blocks._customBlock_TreeGateChain = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeGateChain = new StringMap();
+    d.TreeGateChain.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeGateChain.h.v =
+      s.TreeOwned > 0
+        ? d.TreeGateChain.h.v * 2
+        : d.TreeGateChain.h.v * s.TreeTwins[0];
+    return d.TreeGateChain.h.v;
+  };
+  // Spec 010 (T154): the general top layer: a division with any numerator and a divisor of two factors; a cap whose
+  // limit is no constant; a floor and a cap nested; a curve, alone and as a term of a product.
+  Blocks._customBlock_TreeDivAny = function () {
+    var s = state();
+    return (
+      (s.TreeCapped - Blocks._customBlock_TreeReads()) /
+      ((1 + s.TreeStats.h.b / 100) * Blocks._customBlock_TreeLoop())
+    );
+  };
+  Blocks._customBlock_TreeCapAny = function () {
+    var s = state();
+    return Math.min(
+      Blocks._customBlock_TreeReads() + s.TreeBase,
+      s.TreeCapped / 10,
+    );
+  };
+  Blocks._customBlock_TreeCapNested = function () {
+    var s = state();
+    return Math.max(
+      Math.min(Blocks._customBlock_TreeReads() * 2, s.TreeCapped),
+      s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreePowTop = function () {
+    return Math.pow(2, state().TreeTwins[0]);
+  };
+  Blocks._customBlock_TreePowTerm = function () {
+    var s = state();
+    return 10 * Math.pow(s.TreeLevel, 0.5) * (1 + s.TreeStats.h.b / 100);
+  };
+  // Spec 010 (T155): a factor that holds two sources (one term), and a cost a call builds in a scratch path with
+  // its reducers, that the root only reads and rounds.
+  Blocks._customBlock_TreePartTerm = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100)
+    );
+  };
+  Blocks._customBlock_TreeCostBuild = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCost = new StringMap();
+    d.TreeCost.h.v = s.TreeCapped * 100;
+    d.TreeCost.h.v = d.TreeCost.h.v * Math.max(0.1, 1 - s.TreeStats.h.a / 100);
+    d.TreeCost.h.v = d.TreeCost.h.v * Math.max(0.9, 1 - s.TreeTwins[0] / 100);
+    return 0;
+  };
+  Blocks._customBlock_TreeCostRead = function () {
+    Blocks._customBlock_TreeCostBuild();
+    return Math.round(dnsm().TreeCost.h.v);
+  };
+  // The review of T154 to T156: a cap between the running total and a sum with a call, as the Multi-Ore, flat and
+  // under a floor; a part whose reads are in two factors; a cost built twice by the same call.
+  Blocks._customBlock_TreeCapAcc = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapAcc = new StringMap();
+    d.TreeCapAcc.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapAcc.h.v = d.TreeCapAcc.h.v * 2;
+    return Math.min(300 + Blocks._customBlock_TreeLoop(), d.TreeCapAcc.h.v);
+  };
+  Blocks._customBlock_TreeCapAccNested = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapAcc = new StringMap();
+    d.TreeCapAcc.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapAcc.h.v = d.TreeCapAcc.h.v * 2;
+    return Math.max(
+      Math.min(300 + Blocks._customBlock_TreeLoop(), d.TreeCapAcc.h.v),
+      s.TreeLevel,
+    );
+  };
+  Blocks._customBlock_TreePartTwice = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100) *
+      (2 + (s.TreeStats.h.a + s.TreeStats.h.b) / 50)
+    );
+  };
+  Blocks._customBlock_TreeCostTwice = function () {
+    Blocks._customBlock_TreeCostBuild();
+    var first = dnsm().TreeCost.h.v;
+    Blocks._customBlock_TreeCostBuild();
+    return Math.round(first + dnsm().TreeCost.h.v);
+  };
+  // The second review of T154 to T156: a running total whose last write is a cap that bites; a part in two factors
+  // of the root and once in the cost a call builds.
+  Blocks._customBlock_TreeCapWrite = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapWrite = new StringMap();
+    d.TreeCapWrite.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapWrite.h.v = d.TreeCapWrite.h.v * 2;
+    d.TreeCapWrite.h.v = Math.min(d.TreeCapWrite.h.v, 5);
+    return d.TreeCapWrite.h.v;
+  };
+  Blocks._customBlock_TreePartBoth = function () {
+    var s = state();
+    Blocks._customBlock_TreeCostBuild();
+    return (
+      Math.round(dnsm().TreeCost.h.v) *
+      (1 + s.TreeTwins[0] / 100) *
+      (2 + s.TreeTwins[0] / 50)
+    );
+  };
+  // The third review of T154 to T156: a layer over an expression of the total, with a bonus of 0 that keeps the value
+  // of the last write; a cost whose build has the part in two terms, that the root only reads.
+  Blocks._customBlock_TreeLayerOnExpr = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeLayerExpr = new StringMap();
+    d.TreeLayerExpr.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeLayerExpr.h.v = d.TreeLayerExpr.h.v * 2;
+    return Math.floor(d.TreeLayerExpr.h.v * (1 + s.TreeOwned / 100));
+  };
+  Blocks._customBlock_TreeCostAmbBuild = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostAmb = new StringMap();
+    d.TreeCostAmb.h.v = s.TreeCapped * 100;
+    d.TreeCostAmb.h.v =
+      d.TreeCostAmb.h.v * Math.max(0.1, 1 - s.TreeStats.h.a / 100);
+    d.TreeCostAmb.h.v =
+      d.TreeCostAmb.h.v * Math.max(0.5, 1 - s.TreeStats.h.a / 50);
+    return 0;
+  };
+  Blocks._customBlock_TreeCostAmbRead = function () {
+    Blocks._customBlock_TreeCostAmbBuild();
+    return Math.round(dnsm().TreeCostAmb.h.v);
+  };
+  // Spec 010 (T157): with no side from what the root wrote, the cap is the side that starts with a constant of the
+  // code (Food not consume: 90 + …; Crop value: 10000 × …); both sides starting with one is ambiguous.
+  Blocks._customBlock_TreeCapConstPlus = function () {
+    var s = state();
+    return Math.min(Blocks._customBlock_TreeReads() * 2, 90 + s.TreeLevel);
+  };
+  Blocks._customBlock_TreeCapConstTimes = function () {
+    var s = state();
+    return Math.min(
+      10000 * s.TreeTwins[0],
+      Blocks._customBlock_TreeLoop() + s.TreeCapped,
+    );
+  };
+  Blocks._customBlock_TreeCapConstBoth = function () {
+    var s = state();
+    return Math.min(5 + Blocks._customBlock_TreeReads(), 90 + s.TreeLevel);
+  };
+  // Spec 010 (T158): the chains the fourth probe still refused. A first step that is a max (Trap collect all, New
+  // bubble chance, Arcade ball); a last write that is the floor of a sum (Legend talent max LV); a counter set to 0
+  // twice and returned in a product (Research insight); a cost multiplied in place by a curve (Bubble cost).
+  Blocks._customBlock_TreeChainMaxFirst = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeMaxFirst = new StringMap();
+    d.TreeMaxFirst.h.v = Math.max(
+      1,
+      Blocks._customBlock_TreeReads() + s.TreeBase,
+    );
+    d.TreeMaxFirst.h.v = d.TreeMaxFirst.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeMaxFirst.h.v;
+  };
+  Blocks._customBlock_TreeChainFloorLast = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorLast = new StringMap();
+    d.TreeFloorLast.h.v = 0;
+    d.TreeFloorLast.h.v = Math.floor(3 + s.TreeLevel / 10);
+    return d.TreeFloorLast.h.v;
+  };
+  Blocks._customBlock_TreeCountNone = function () {
+    var s = state();
+    var d = dnsm();
+    var i;
+    d.TreeCount = new StringMap();
+    d.TreeCount.h.v = 0;
+    for (d.TreeCount.h.v = 0, i = 0; i < s.TreeOwned; i++)
+      d.TreeCount.h.v = d.TreeCount.h.v + 1;
+    return 3 * d.TreeCount.h.v * Blocks._customBlock_TreeLoop();
+  };
+  Blocks._customBlock_TreeCostCurve = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostCurve = new StringMap();
+    d.TreeCostCurve.h.v = s.TreeCapped * 100;
+    d.TreeCostCurve.h.v *= Math.max(0.1, Math.pow(0.75, s.TreeTwins[0]));
+    d.TreeCostCurve.h.v *= Math.max(0.9, 1 - s.TreeStats.h.a / 100);
+    return Math.round(d.TreeCostCurve.h.v);
+  };
+  // Spec 010 (T159): a block that takes a list (points spent per tab) and returns the list it builds, one push per tab,
+  // as the game builds the talent points of each tab.
+  Blocks._customBlock_TreeTabs = function (spent) {
+    var s = state();
+    var d = dnsm();
+    d.TreeTabs = [];
+    d.TreeTabs.push(s.TreeList[0] * 10 - spent[0]);
+    d.TreeTabs.push(s.TreeList[1] * 10 - spent[1]);
+    d.TreeTabs.push(s.TreeLevel + s.TreeBase - spent[2]);
+    return d.TreeTabs;
+  };
+  // The review of T157 to T160. A running total set to 0 before its loop too; a cap of 100 × the total, which is no
+  // constant of the code; a total multiplied in place by a value that also adds to the same write; a total added to
+  // in place; two lists with the same index; a total divided in its last write.
+  Blocks._customBlock_TreeLoopZeroTwice = function () {
+    var list = state().TreeList;
+    var d = dnsm();
+    var i;
+    d.TreeLoopZero2 = new StringMap();
+    d.TreeLoopZero2.h.v = 0;
+    for (d.TreeLoopZero2.h.v = 0, i = 0; i < list.length; i++)
+      d.TreeLoopZero2.h.v = d.TreeLoopZero2.h.v + list[i] * 2;
+    d.TreeLoopZero2.h.v = d.TreeLoopZero2.h.v * state().TreeBase;
+    return d.TreeLoopZero2.h.v;
+  };
+  Blocks._customBlock_TreeCapTouch = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeTouch = new StringMap();
+    d.TreeTouch.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeTouch.h.v = d.TreeTouch.h.v * 2;
+    return Math.min(100 * d.TreeTouch.h.v, s.TreeLevel + s.TreeBase);
+  };
+  Blocks._customBlock_TreeBothWays = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeBoth = new StringMap();
+    d.TreeBoth.h.v = s.TreeTwins[0];
+    d.TreeBoth.h.v *= s.TreeList[2] / 2;
+    return d.TreeBoth.h.v;
+  };
+  Blocks._customBlock_TreePlusInPlace = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePlus = new StringMap();
+    d.TreePlus.h.v = Blocks._customBlock_TreeReads() * 2;
+    d.TreePlus.h.v += s.TreeLevel * 3;
+    return d.TreePlus.h.v;
+  };
+  Blocks._customBlock_TreeTwoLists = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeListA = [];
+    d.TreeListB = [];
+    d.TreeListA.push(s.TreeLevel + 1);
+    d.TreeListB.push(s.TreeBase + 1);
+    return d.TreeListA;
+  };
+  Blocks._customBlock_TreeDivWrite = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDivWrite = new StringMap();
+    d.TreeDivWrite.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeDivWrite.h.v = d.TreeDivWrite.h.v * 2;
+    d.TreeDivWrite.h.v = d.TreeDivWrite.h.v / 4;
+    return d.TreeDivWrite.h.v;
+  };
+  // The second review of T157 to T160: a cap that bites in the middle of the chain, with a pool after it; two Multi
+  // stretches on the two sides of a floor.
+  Blocks._customBlock_TreeCapMid = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCapMid = new StringMap();
+    d.TreeCapMid.h.v = Blocks._customBlock_TreeReads() + s.TreeBase;
+    d.TreeCapMid.h.v = Math.min(d.TreeCapMid.h.v, 10);
+    d.TreeCapMid.h.v = d.TreeCapMid.h.v * Blocks._customBlock_TreeLoop();
+    return d.TreeCapMid.h.v;
+  };
+  Blocks._customBlock_TreeFloorMid = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorMid = new StringMap();
+    d.TreeFloorMid.h.v = s.TreeBase * s.TreeTwins[0];
+    d.TreeFloorMid.h.v = Math.floor(d.TreeFloorMid.h.v * 1.5);
+    d.TreeFloorMid.h.v = d.TreeFloorMid.h.v * 2;
+    return d.TreeFloorMid.h.v;
+  };
+  // Spec 010 (T162): a part whose second reference is inside another term (the Super Bit beside the talent); a cap that
+  // is a min of two sides starting with constants (Food not consume).
+  Blocks._customBlock_TreePartSplit = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.a / 100) *
+      (1 + (s.TreeCapped + 40 * s.TreeStats.h.b) / 100)
+    );
+  };
+  Blocks._customBlock_TreeCapConstFn = function () {
+    var s = state();
+    return Math.min(
+      Math.min(90 + s.TreeLevel, 98 + s.TreeBase),
+      Blocks._customBlock_TreeReads() * 20,
+    );
+  };
+  // Spec 010 (T162): a stat multiplier on a second running total the root builds itself and adds to its scratch total
+  // (the Obol stat multi inside TotalStats); a list returned as a copy beside a second list (the list the root returns
+  // has no path).
+  Blocks._customBlock_TreeStatMulti = function () {
+    var s = state();
+    var d = dnsm();
+    s.DummyNumbersStatManager = new StringMap();
+    s.DummyNumbersStatManager.h.tot = s.TreeBase;
+    d.TreeStatTwo = new StringMap();
+    d.TreeStatTwo.h.v = s.TreeLevel + s.TreeBase;
+    d.TreeStatTwo.h.v =
+      d.TreeStatTwo.h.v *
+      (1 + (Blocks._customBlock_TreeReads() + 40 * s.TreeStats.h.b) / 100);
+    s.DummyNumbersStatManager.h.tot =
+      s.DummyNumbersStatManager.h.tot + d.TreeStatTwo.h.v;
+    return Math.floor(
+      s.DummyNumbersStatManager.h.tot * (1 + s.TreeStats.h.a / 100),
+    );
+  };
+  Blocks._customBlock_TreeTwoListsCopy = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeListC = [];
+    d.TreeListD = [];
+    d.TreeListC.push(s.TreeLevel + 1);
+    d.TreeListD.push(s.TreeBase + 1);
+    return d.TreeListC.slice();
+  };
+  // Spec 010 (T161, T162; spec, Open Questions 22/11): a cost that overflows to Infinity and is cut by a constant
+  // written under a test (the Bubble cost's 1e9); a total raised to 1 the same way (a floor); a first write divided
+  // (New bubble chance), then only multiplied, or then added to; a factor multiplied into each sign in a loop, the root
+  // returning nothing (the Seraph), and one that changes each turn; each monster's time divided by 1 + a sum / 100 in a
+  // loop (the Mob respawn).
+  Blocks._customBlock_TreeCostInf = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCostInf = new StringMap();
+    d.TreeCostInf.h.v = s.TreeCapped * Math.pow(10, 400);
+    d.TreeCostInf.h.v =
+      d.TreeCostInf.h.v *
+      Math.max(0.1, Math.pow(0.75, s.TreeTwins[0])) *
+      Math.max(0.9, 1 - s.TreeStats.h.a / 100);
+    1000 < d.TreeCostInf.h.v && (d.TreeCostInf.h.v = 1000);
+    1 > d.TreeCostInf.h.v && (d.TreeCostInf.h.v = 1);
+    return Math.round(d.TreeCostInf.h.v);
+  };
+  // The review of T162: a number that overflows, as the live tree shows it.
+  Blocks._customBlock_TreeInfKid = function () {
+    return state().TreeCapped * Math.pow(10, 400);
+  };
+  Blocks._customBlock_TreeInfRoot = function () {
+    return (
+      Math.min(Blocks._customBlock_TreeInfKid(), 50) +
+      Blocks._customBlock_TreeReads()
+    );
+  };
+  // The seventh probe: an infinite argument and a number below every other, each back at its place in the recording.
+  Blocks._customBlock_TreeInfNeg = function () {
+    var low = -state().TreeCapped * Math.pow(10, 400);
+    return Blocks._customBlock_TreeDeclCurve("decay", low, 1, 1);
+  };
+  // A builder's pass (review of the seventh probe): a write of the whole cache, which the pass drops from the writes,
+  // then a scratch box outside the cache that overflows, which the pass moves to the spliced writes.
+  Blocks._customBlock_TreeInfBuild = function () {
+    var d = dnsm();
+    var cache = d.TreeWhoCache;
+    d.TreeWhoCache = cache;
+    d.TreeInfScratch = state().TreeCapped * Math.pow(10, 400);
+    return 0;
+  };
+  // A cut whose test is on another value than the total, the total already below it: no cut of the total.
+  Blocks._customBlock_TreeCutOther = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeCutOther = new StringMap();
+    d.TreeCutOther.h.v = s.TreeBase + 2;
+    d.TreeCutOther.h.v = d.TreeCutOther.h.v * 2;
+    s.TreeLevel > 20 && (d.TreeCutOther.h.v = 20);
+    return d.TreeCutOther.h.v;
+  };
+  // A floor whose test is on another value than the total, the total already above it: no floor of the total.
+  Blocks._customBlock_TreeFloorOther = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeFloorOther = new StringMap();
+    d.TreeFloorOther.h.v = s.TreeBase + 2;
+    d.TreeFloorOther.h.v = d.TreeFloorOther.h.v * 2;
+    s.TreeBase < 10 && (d.TreeFloorOther.h.v = 10);
+    return d.TreeFloorOther.h.v;
+  };
+  Blocks._customBlock_TreeFloorIf = function () {
+    var d = dnsm();
+    d.TreeFloorIf = new StringMap();
+    d.TreeFloorIf.h.v = state().TreeStats.h.a * 0.1;
+    d.TreeFloorIf.h.v = d.TreeFloorIf.h.v * 2;
+    1 > d.TreeFloorIf.h.v && (d.TreeFloorIf.h.v = 1);
+    return d.TreeFloorIf.h.v;
+  };
+  Blocks._customBlock_TreeChainDiv = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeChainDiv = new StringMap();
+    d.TreeChainDiv.h.v =
+      (139 * Math.pow(0.73, s.TreeTwins[0] + 1)) /
+      Math.max(0.1 * s.TreeTwins[0] + 1, 1);
+    d.TreeChainDiv.h.v =
+      d.TreeChainDiv.h.v *
+      Blocks._customBlock_TreeLoop() *
+      (1 + s.TreeStats.h.b / 100);
+    return d.TreeChainDiv.h.v;
+  };
+  Blocks._customBlock_TreeChainDivAdd = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeChainDivAdd = new StringMap();
+    d.TreeChainDivAdd.h.v =
+      (139 * Math.pow(0.73, s.TreeTwins[0] + 1)) /
+      Math.max(0.1 * s.TreeTwins[0] + 1, 1);
+    d.TreeChainDivAdd.h.v = d.TreeChainDivAdd.h.v + s.TreeCapped;
+    return d.TreeChainDivAdd.h.v;
+  };
+  Blocks._customBlock_TreeSignLoop = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeSigns = new StringMap();
+    d.TreeSigns.h.x = s.TreeBase;
+    d.TreeSigns.h.y = s.TreeCapped;
+    var keys = Object.keys(d.TreeSigns.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      d.TreeSigns.h[p] =
+        d.TreeSigns.h[p] *
+        (1 + s.TreeStats.h.b / 100) *
+        Math.min(
+          5,
+          Math.pow(
+            1.1 + s.TreeStats.h.a / 100,
+            Math.ceil((s.TreeLevel + 1) / 20),
+          ),
+        );
+    }
+  };
+  Blocks._customBlock_TreeSignTurns = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeSignTurns = new StringMap();
+    d.TreeSignTurns.h.x = s.TreeBase;
+    d.TreeSignTurns.h.y = s.TreeCapped;
+    var keys = Object.keys(d.TreeSignTurns.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      d.TreeSignTurns.h[p] =
+        d.TreeSignTurns.h[p] *
+        (1 + s.TreeStats.h.b / 100) *
+        Math.min(5, Math.pow(1.1 + s.TreeStats.h.a / 100, i + 1));
+    }
+  };
+  Blocks._customBlock_TreeRespawnLoop = function () {
+    var s = state();
+    var keys = Object.keys(s.TreeBig.h);
+    for (var i = 0; i < keys.length; i++) {
+      var p = keys[i];
+      s.TreeBig.h[p] =
+        s.TreeBig.h[p] /
+        (1 +
+          (Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeList[i]) / 100);
+    }
+  };
+  // Spec 010 (T163): the Mob respawn by world. Each turn's branch is the list whose search found the turn's key; each
+  // world divides by its own sum (the second scales its common part by 0.65, the third changes from turn to turn), and
+  // the key in no list (a cave) has a line of its own. The keys come with the worlds mixed.
+  Blocks._customBlock_TreeRespawnWorlds = function () {
+    var s = state();
+    var U = A["com.stencyl.utils.Utils"];
+    var keys = Object.keys(s.TreeMobs.h);
+    for (var i = 0; i < keys.length; i++) {
+      var g = keys[i];
+      var m = s.TreeMobs.h[g];
+      U.contains(s.TreeWorlds[0], g)
+        ? (m.h.Time =
+            m.h.Time /
+            (1 +
+              (Blocks._customBlock_TreeReads() + s.TreeBase + s.TreeStats.h.a) /
+                100))
+        : U.contains(s.TreeWorlds[1], g)
+          ? (m.h.Time =
+              m.h.Time /
+              (1 +
+                (0.65 * (Blocks._customBlock_TreeReads() + s.TreeBase) +
+                  s.TreeStats.h.b) /
+                  100))
+          : U.contains(s.TreeWorlds[2], g)
+            ? (m.h.Time =
+                m.h.Time /
+                (1 +
+                  (Blocks._customBlock_TreeReads() +
+                    s.TreeBase +
+                    s.TreeStats.h.a * (i + 1)) /
+                    100))
+            : (m.h.Time = m.h.Time / (1 + (s.TreeBase + s.TreeLevel) / 100));
+    }
+  };
+  // A read of 7, and a call that gives 7 passed on: the call is the root (T150).
+  Blocks._customBlock_TreeLayerReadPass = function () {
+    var seven = state().TreeSeven;
+    return Blocks._customBlock_TreeLegend("Max", seven - 1, 0);
+  };
+  // Spec 010 (T145): a factor of a product, the part a blueprint can point at; a marker that changes the path, put
+  // only in the copy the recorder runs on; a call that fails.
+  Blocks._customBlock_TreeDeclFactor = function () {
+    var s = state();
+    return (
+      Blocks._customBlock_TreeReads() *
+      (Blocks._customBlock_TreeLoop() * s.TreeTwins[0]) *
+      s.TreeBase
+    );
+  };
+  Blocks._customBlock_TreeDeclMarked = function () {
+    var s = state();
+    if (s.TreeMark === "gimme")
+      return Blocks._customBlock_TreeReads() * s.TreeBase;
+    return Blocks._customBlock_TreeReads() + s.TreeBase;
+  };
+  Blocks._customBlock_TreeDeclFails = function () {
+    return state().TreeMissing.h.v + 1;
+  };
+  // Spec 010 (T148): the running total set to 0 in the init of a for loop, summed in the loop, then multiplied.
+  Blocks._customBlock_TreeLoopZero = function () {
+    var list = state().TreeList;
+    var d = dnsm();
+    var i;
+    d.TreeLoopZero = new StringMap();
+    for (d.TreeLoopZero.h.v = 0, i = 0; i < list.length; i++)
+      d.TreeLoopZero.h.v = d.TreeLoopZero.h.v + list[i] * 2;
+    d.TreeLoopZero.h.v = d.TreeLoopZero.h.v * state().TreeBase;
+    return d.TreeLoopZero.h.v;
   };
   var everySceneInit = EveryScene.prototype.init;
   EveryScene.prototype.init = function () {

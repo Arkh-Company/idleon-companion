@@ -1,0 +1,10 @@
+{
+  "id": "cook-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Cooking)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["CookingEXPmulti"]
+    }
+  }
+}

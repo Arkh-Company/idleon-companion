@@ -1,0 +1,10 @@
+{
+  "id": "research-insight-rate",
+  "root": {
+    "name": "Observation insight rate",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["ObservationInsightExpRate", 0, 0]
+    }
+  }
+}

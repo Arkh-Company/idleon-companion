@@ -1,0 +1,10 @@
+{
+  "id": "hole-jar-production",
+  "root": {
+    "name": "Jar Production per HR",
+    "ref": {
+      "call": "Holes",
+      "args": ["JarProductionPerHR", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "mining-multi",
+  "root": {
+    "name": "Multi-Ore Drop Chance",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["MiningMultiOre", 0, 0]
+    }
+  }
+}

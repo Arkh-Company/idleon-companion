@@ -1,0 +1,10 @@
+{
+  "id": "sushi-fuel-cap",
+  "root": {
+    "name": "Fuel capacity",
+    "ref": {
+      "call": "SushiStuff",
+      "args": ["FuelCap", 20, 0]
+    }
+  }
+}

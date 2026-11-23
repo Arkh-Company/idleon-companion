@@ -94,6 +94,29 @@ test("the V1's systems come first, in its order and with its emojis", () => {
   expect(SYSTEMS.slice(0, V1.length).map((s) => [s.name, s.emoji])).toEqual(V1);
 });
 
+test("the 17 systems the root probe found come after Weekly Boss, in this order (spec, Open Questions 21/11)", () => {
+  const at = SYSTEMS.findIndex((s) => s.id === "weekly-boss");
+  expect(SYSTEMS.slice(at + 1).map((s) => [s.id, s.name, s.emoji])).toEqual([
+    ["event-shop", "Event Shop", "🎟️"],
+    ["salt-lick", "Salt Lick", "🧂"],
+    ["dungeons", "Dungeons", "🏯"],
+    ["tasks", "Tasks", "📋"],
+    ["islands", "Islands", "🏝️"],
+    ["jade-emporium", "Jade Emporium", "💠"],
+    ["construction", "Construction", "🏗️"],
+    ["fishing", "Fishing", "🎣"],
+    ["worship", "Worship", "🛐"],
+    ["cooking", "Cooking", "🍳"],
+    ["zenith-market", "Zenith Market", "🏪"],
+    ["food", "Food", "🍖"],
+    ["smithing", "Smithing", "🔨"],
+    ["catching", "Catching", "🦋"],
+    ["death-note", "Death Note", "📓"],
+    ["breeding", "Breeding", "🏟️"],
+    ["minigames", "Minigames", "🎪"],
+  ]);
+});
+
 test("a system by its id: its name and its emoji; an unknown id is none", () => {
   const talents = systemById("talents");
   expect(

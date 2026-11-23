@@ -1,0 +1,10 @@
+{
+  "id": "dung-flurbo-multi",
+  "root": {
+    "name": "Flurbo Bonus (DungeonCredit_Bonus2)",
+    "ref": {
+      "call": "DungeonCalc",
+      "args": ["DungeonCredit_Bonus2", 0]
+    }
+  }
+}

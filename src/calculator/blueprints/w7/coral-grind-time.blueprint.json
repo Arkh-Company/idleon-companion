@@ -1,0 +1,10 @@
+{
+  "id": "coral-grind-time",
+  "root": {
+    "name": "Grind time per day",
+    "ref": {
+      "call": "Thingies",
+      "args": ["GrindTimeDaily", 0, 0]
+    }
+  }
+}

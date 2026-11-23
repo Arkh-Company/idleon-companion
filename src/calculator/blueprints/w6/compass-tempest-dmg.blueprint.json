@@ -1,0 +1,10 @@
+{
+  "id": "compass-tempest-dmg",
+  "root": {
+    "name": "Tempest damage",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["Compass_DMG", 0, 0]
+    }
+  }
+}

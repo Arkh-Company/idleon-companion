@@ -1,0 +1,10 @@
+{
+  "id": "equinox-upg-max",
+  "root": {
+    "name": "Upg Max LV",
+    "ref": {
+      "call": "Dreamstuff",
+      "args": ["UpgMaxLV", 3]
+    }
+  }
+}

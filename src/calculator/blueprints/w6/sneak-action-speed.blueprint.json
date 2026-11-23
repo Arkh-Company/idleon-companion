@@ -1,0 +1,10 @@
+{
+  "id": "sneak-action-speed",
+  "root": {
+    "name": "Action speed",
+    "ref": {
+      "call": "Ninja",
+      "args": ["ActionSpd", 0, 0]
+    }
+  }
+}

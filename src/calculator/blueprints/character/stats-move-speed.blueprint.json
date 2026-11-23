@@ -1,0 +1,10 @@
+{
+  "id": "stats-move-speed",
+  "root": {
+    "name": "Movement Speed",
+    "ref": {
+      "call": "PlayerSpeedBonus",
+      "args": [0, 0, 0]
+    }
+  }
+}

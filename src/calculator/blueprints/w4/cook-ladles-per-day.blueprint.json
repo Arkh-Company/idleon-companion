@@ -1,0 +1,10 @@
+{
+  "id": "cook-ladles-per-day",
+  "root": {
+    "name": "Bonus Ladles from Efficiency (per day)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["CookingBaseLadlePerDay"]
+    }
+  }
+}

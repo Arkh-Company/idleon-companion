@@ -1,0 +1,10 @@
+{
+  "id": "sail-loot-multi",
+  "root": {
+    "name": "Loot Value Multi (LootMulti)",
+    "ref": {
+      "call": "Sailing",
+      "args": ["LootMulti", 0, 0]
+    }
+  }
+}

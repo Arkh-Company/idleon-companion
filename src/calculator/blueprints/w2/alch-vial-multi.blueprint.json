@@ -1,0 +1,10 @@
+{
+  "id": "alch-vial-multi",
+  "root": {
+    "name": "Vial bonus multiplier (Vial Mastery, Lab, Vault, Meritocracy)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["VialBonus", 0, 0, 0]
+    }
+  }
+}

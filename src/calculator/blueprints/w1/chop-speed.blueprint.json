@@ -1,0 +1,10 @@
+{
+  "id": "chop-speed",
+  "root": {
+    "name": "Choppin Speed",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["ChoppinSpeed", 0, 0]
+    }
+  }
+}

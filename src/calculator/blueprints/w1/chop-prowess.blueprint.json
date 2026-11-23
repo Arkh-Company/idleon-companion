@@ -1,0 +1,10 @@
+{
+  "id": "chop-prowess",
+  "root": {
+    "name": "Choppin Prowess",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["ChopProwess"]
+    }
+  }
+}

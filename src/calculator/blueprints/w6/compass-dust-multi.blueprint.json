@@ -1,0 +1,10 @@
+{
+  "id": "compass-dust-multi",
+  "root": {
+    "name": "Dust multiplier",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["ExtraDust", 0, 0]
+    }
+  }
+}

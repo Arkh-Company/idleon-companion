@@ -1,0 +1,10 @@
+{
+  "id": "alch-kruk-daily",
+  "root": {
+    "name": "Kruk Bubbles Daily",
+    "ref": {
+      "call": "Thingies",
+      "args": ["KrukBubblesDaily", 0, 0]
+    }
+  }
+}

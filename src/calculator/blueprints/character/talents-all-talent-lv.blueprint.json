@@ -1,0 +1,10 @@
+{
+  "id": "talents-all-talent-lv",
+  "root": {
+    "name": "All-talent bonus levels",
+    "ref": {
+      "call": "RunCodeOfTypeXforThingY",
+      "args": ["AllTalentLV", "0"]
+    }
+  }
+}

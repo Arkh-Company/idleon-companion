@@ -1,0 +1,10 @@
+{
+  "id": "summ-unit-stats",
+  "root": {
+    "name": "Summoning Unit Damage",
+    "ref": {
+      "call": "Summoning",
+      "args": ["UnitDMG", -1, 0]
+    }
+  }
+}

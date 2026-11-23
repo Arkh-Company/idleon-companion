@@ -1,0 +1,10 @@
+{
+  "id": "ballot-multi",
+  "root": {
+    "name": "Ballot Bonus Multi",
+    "ref": {
+      "call": "Summoning2",
+      "args": ["VotingBonuszMulti", 0, 0]
+    }
+  }
+}

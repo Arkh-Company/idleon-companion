@@ -1,0 +1,10 @@
+{
+  "id": "spel-pow",
+  "root": {
+    "name": "Total POW",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["POW", 0, 0]
+    }
+  }
+}

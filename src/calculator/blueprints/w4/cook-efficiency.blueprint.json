@@ -1,0 +1,10 @@
+{
+  "id": "cook-efficiency",
+  "root": {
+    "name": "Cooking Efficiency",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["CookingEfficiency"]
+    }
+  }
+}

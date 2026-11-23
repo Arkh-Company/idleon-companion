@@ -1,0 +1,10 @@
+{
+  "id": "constr-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Construction)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["PlayerConExp", "{character}", 0]
+    }
+  }
+}

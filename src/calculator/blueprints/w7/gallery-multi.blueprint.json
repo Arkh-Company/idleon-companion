@@ -1,0 +1,10 @@
+{
+  "id": "gallery-multi",
+  "root": {
+    "name": "Gallery Bonus Multi",
+    "ref": {
+      "call": "Gallery",
+      "args": ["GalleryBonusMulti", 0, 0]
+    }
+  }
+}

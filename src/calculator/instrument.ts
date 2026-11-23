@@ -15,6 +15,8 @@ export interface Op {
   def: AnyNode | null;
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
+  /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
+  owner?: AnyNode;
   /** The block's function text; the node ranges count from 1 inside it (it was parsed as `(text)`). */
   fnText: string;
 }
@@ -25,6 +27,7 @@ interface Mark {
   node: AnyNode;
   kind: Op["kind"];
   incr?: boolean;
+  owner?: AnyNode;
   s: number;
   e: number;
 }
@@ -108,7 +111,7 @@ function marks(fn: AnyNode): Omit<Mark, "s" | "e">[] {
     if (n.type === "ExpressionStatement" && isIncr(at(n, "expression")))
       out.push({ node: at(n, "expression"), kind: "assign", incr: true });
     if (n.type === "ConditionalExpression" || n.type === "IfStatement")
-      out.push({ node: at(n, "test"), kind: "test" });
+      out.push({ node: at(n, "test"), kind: "test", owner: n });
     children(n).forEach(walk);
   })(fn);
   return out;
@@ -202,6 +205,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         def: m.kind === "leaf" ? defOf(m.node, defs) : null,
         prevDef: defOf(target, defs),
         fnText: text,
+        ...(m.owner ? { owner: m.owner } : {}),
       });
       const name = m.incr ? (at(m.node, "argument").name as string) : "";
       out += m.incr

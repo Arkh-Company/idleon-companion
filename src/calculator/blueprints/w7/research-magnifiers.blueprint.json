@@ -1,0 +1,10 @@
+{
+  "id": "research-magnifiers",
+  "root": {
+    "name": "Magnifiers owned",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["MagnifiersOwned", 0, 0]
+    }
+  }
+}

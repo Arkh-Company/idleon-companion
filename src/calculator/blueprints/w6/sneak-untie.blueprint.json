@@ -1,0 +1,10 @@
+{
+  "id": "sneak-untie",
+  "root": {
+    "name": "Untie speed",
+    "ref": {
+      "call": "Ninja",
+      "args": ["untie", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "farm-market-cost-reduction-night",
+  "root": {
+    "name": "Night Market cost reduction (total)",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["MarketCostQTY", 1, 0]
+    },
+    "part": [
+      {
+        "call": "Thingies",
+        "args": ["EmperorBon", 2, 0]
+      },
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 36, 0]
+      },
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 37, 0]
+      }
+    ]
+  }
+}

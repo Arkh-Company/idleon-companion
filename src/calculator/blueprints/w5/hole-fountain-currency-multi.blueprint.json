@@ -1,0 +1,10 @@
+{
+  "id": "hole-fountain-currency-multi",
+  "root": {
+    "name": "Fountain currency ALL multi",
+    "ref": {
+      "call": "Holes2",
+      "args": ["Fount_CurrencyALLmulti", 0, 0]
+    }
+  }
+}

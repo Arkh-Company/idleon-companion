@@ -406,5 +406,107 @@
     "name": "Weekly Boss",
     "emoji": "📅",
     "proof": "N.js DamageDealed (reads WeeklyBoss)"
+  },
+  {
+    "id": "event-shop",
+    "name": "Event Shop",
+    "emoji": "🎟️",
+    "proof": "N.js Summoning EventShopOwned; game screen Event Shop"
+  },
+  {
+    "id": "salt-lick",
+    "name": "Salt Lick",
+    "emoji": "🧂",
+    "proof": "game screen Salt Lick (W3)"
+  },
+  {
+    "id": "dungeons",
+    "name": "Dungeons",
+    "emoji": "🏯",
+    "proof": "game screen Dungeons, with the Flurbo Shop"
+  },
+  {
+    "id": "tasks",
+    "name": "Tasks",
+    "emoji": "📋",
+    "proof": "game screen Tasks, with the Merit Shop"
+  },
+  {
+    "id": "islands",
+    "name": "Islands",
+    "emoji": "🏝️",
+    "proof": "game screen Islands (W2 Fishing)"
+  },
+  {
+    "id": "jade-emporium",
+    "name": "Jade Emporium",
+    "emoji": "💠",
+    "proof": "game screen Jade Emporium (W6 Sneaking)"
+  },
+  {
+    "id": "construction",
+    "name": "Construction",
+    "emoji": "🏗️",
+    "proof": "N.js WorkbenchStuff; game screen Construction"
+  },
+  {
+    "id": "fishing",
+    "name": "Fishing",
+    "emoji": "🎣",
+    "proof": "N.js SkillStats; game screen Skills, Fishing"
+  },
+  {
+    "id": "worship",
+    "name": "Worship",
+    "emoji": "🛐",
+    "proof": "N.js WorshipStuff; game screen Worship"
+  },
+  {
+    "id": "cooking",
+    "name": "Cooking",
+    "emoji": "🍳",
+    "proof": "game screen Cooking (W4 Kitchens)"
+  },
+  {
+    "id": "zenith-market",
+    "name": "Zenith Market",
+    "emoji": "🏪",
+    "proof": "game screen Zenith Market"
+  },
+  {
+    "id": "food",
+    "name": "Food",
+    "emoji": "🍖",
+    "proof": "game screen Inventory, food slots"
+  },
+  {
+    "id": "smithing",
+    "name": "Smithing",
+    "emoji": "🔨",
+    "proof": "N.js SkillStats; game screen Skills, Smithing"
+  },
+  {
+    "id": "catching",
+    "name": "Catching",
+    "emoji": "🦋",
+    "proof": "N.js SkillStats; game screen Skills, Catching"
+  },
+  {
+    "id": "death-note",
+    "name": "Death Note",
+    "emoji": "📓",
+    "proof": "game screen Death Note (W3)"
+  },
+  {
+    "id": "breeding",
+    "name": "Breeding",
+    "emoji": "🏟️",
+    "proof": "game screen Breeding (W4)"
+  },
+  {
+    "id": "minigames",
+    "name": "Minigames",
+    "emoji": "🎪",
+    "proof": "game screens Darts and Hoops"
   }
 ]

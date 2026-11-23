@@ -1,0 +1,10 @@
+{
+  "id": "alch-liquid-cap",
+  "root": {
+    "name": "Liquid capacity (each liquid)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["LiquidCap", 0, 0, 0]
+    }
+  }
+}

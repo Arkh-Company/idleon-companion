@@ -1,0 +1,10 @@
+{
+  "id": "breed-pet-dmg-multi",
+  "root": {
+    "name": "Mob Damage multi (PetBonusDMG)",
+    "ref": {
+      "call": "PetStuff",
+      "args": ["PetBonusDMG", "0", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "refinery-cycle-time",
+  "root": {
+    "name": "Refinery cycle time (Refinery Speed)",
+    "ref": {
+      "call": "Refinery",
+      "args": ["CycleInitialTime", 0]
+    }
+  }
+}

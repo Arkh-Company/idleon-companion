@@ -1,0 +1,10 @@
+{
+  "id": "compass-upg-cost-reduction",
+  "root": {
+    "name": "Compass upgrade cost reduction (total)",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["CompassUpgCost", 0, 0]
+    }
+  }
+}

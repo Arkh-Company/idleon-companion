@@ -1,0 +1,10 @@
+{
+  "id": "summ-upg-cost-reduction",
+  "root": {
+    "name": "Summoning upgrade cost reduction (total)",
+    "ref": {
+      "call": "Summoning",
+      "args": ["UpgCost", 33, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "hole-jar-collectible-chance",
+  "root": {
+    "name": "Jar New Collectible Chance",
+    "ref": {
+      "call": "Holes",
+      "args": ["JarNewCollectibleChance", 0, 0]
+    }
+  }
+}

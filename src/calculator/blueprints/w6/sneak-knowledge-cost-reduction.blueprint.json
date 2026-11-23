@@ -1,0 +1,10 @@
+{
+  "id": "sneak-knowledge-cost-reduction",
+  "root": {
+    "name": "Ninja Knowledge cost reduction (total)",
+    "ref": {
+      "call": "Ninja",
+      "args": ["JadeUpgCost", 0, 0]
+    }
+  }
+}

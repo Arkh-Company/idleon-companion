@@ -1,0 +1,10 @@
+{
+  "id": "rarmory-marble-drop",
+  "root": {
+    "name": "Marble drop chance (\"1 in N\")",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["MarbleDrop", 0, 0]
+    }
+  }
+}

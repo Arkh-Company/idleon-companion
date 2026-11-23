@@ -1,0 +1,10 @@
+{
+  "id": "tess-upg-cost-reduction",
+  "root": {
+    "name": "Arcane upgrade cost reduction (total)",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["ArcaneUpgCost", 0, 0]
+    }
+  }
+}

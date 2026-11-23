@@ -1,0 +1,10 @@
+{
+  "id": "grim-wraith-crit",
+  "root": {
+    "name": "Wraith crit chance and crit damage",
+    "ref": {
+      "call": "Summoning",
+      "args": ["Grimoire_CRITPCT", 0, 0]
+    }
+  }
+}

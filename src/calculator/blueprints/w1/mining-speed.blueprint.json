@@ -1,0 +1,10 @@
+{
+  "id": "mining-speed",
+  "root": {
+    "name": "Mining Speed",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["MiningSpeed", 0, 0]
+    }
+  }
+}

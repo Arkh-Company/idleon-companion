@@ -1,0 +1,10 @@
+{
+  "id": "lab-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Laboratory)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["LaboratoryEXPmulti"]
+    }
+  }
+}

@@ -1,4 +1,5 @@
-// The recorder's second half (spec 008, T021), run inside the context right after recorder.js, over its state `S`.
+// The recorder's second half (spec 008, T021), run inside the context right after recorder.js, over its state `S`; and
+// the places of the infinite numbers for the answer key (spec 010, T162).
 // Ported from the bench's build-tree.cjs at BASELINE-4: step 6b (the builders' pass, after the total). Each builder is
 // one call from the worker, under its own time limit; a time limit ends the run without its `finally`, so the worker
 // calls `abandonBuilder` to put the state back.
@@ -97,6 +98,44 @@
       S.pending = null;
       S.stopped();
     }
+  };
+
+  // Spec 010 (T152, T156): a routine of the game (blocks, or events of a helper actor, in order) run once on this copy,
+  // after the roots, under its own node: the state paths it writes are the number (the Cog Board, summed by its
+  // screen). An event step may set a field of its helper first, as the game sets the text that triggers it.
+  G.__rec.routine = (json) => {
+    var node = S.newNode("(routine)", [], null);
+    S.on = true;
+    S.cur = node;
+    try {
+      JSON.parse(json).forEach((step) => {
+        if (step.event && step.set) {
+          var actor = S.top.PixelHelperActor[step.slot];
+          actor.behaviors.getBehavior(step.behavior)[step.set[0]] = step.set[1];
+        }
+        runStep(step);
+      });
+    } finally {
+      S.stopped();
+    }
+  };
+
+  // For the answer key only (spec 010, T162: a cost that overflows): the place of each infinite number in the text
+  // take() made, as [...path, sign]; tree-record.ts puts it back there. JSON makes them null, and recorder.js marks
+  // where they were, never a pass over the whole recording (seconds on the real game). A node's place is its path from
+  // the recording's top, the sign last; a write's is the write (the builders' pass moves them).
+  G.__rec.infAt = () => {
+    var out = (S.infs || []).slice();
+    if (S.infWrites && S.infWrites.length) {
+      var where = new Map();
+      S.writes.forEach((w, i) => where.set(w, ["writes", i, "v"]));
+      S.spliced.forEach((w, i) => where.set(w, ["spliced", i, "v"]));
+      S.infWrites.forEach((w) => {
+        var p = where.get(w);
+        if (p) out.push(p.concat(w.v > 0 ? 1 : -1));
+      });
+    }
+    return JSON.stringify(out);
   };
 
   // A builder cut by its time limit: the state goes back as it was before it, and none of its writes explains a read.

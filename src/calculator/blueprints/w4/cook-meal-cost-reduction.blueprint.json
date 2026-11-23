@@ -1,0 +1,10 @@
+{
+  "id": "cook-meal-cost-reduction",
+  "root": {
+    "name": "Meal level-up cost reduction (total)",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingMenuMealCosts", 0, 0]
+    }
+  }
+}

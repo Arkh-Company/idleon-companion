@@ -1,0 +1,10 @@
+{
+  "id": "tess-double-drops",
+  "root": {
+    "name": "Double statue and Golden Food drop chance",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["DoubleItemDropz", 0, 0]
+    }
+  }
+}

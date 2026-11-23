@@ -1,0 +1,10 @@
+{
+  "id": "hole-gambit-multi",
+  "root": {
+    "name": "Gambit PTS multi",
+    "ref": {
+      "call": "Holes2",
+      "args": ["GambitPTSmulti", 0, 0]
+    }
+  }
+}

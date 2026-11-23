@@ -1,0 +1,10 @@
+{
+  "id": "rarmory-cost-redux",
+  "root": {
+    "name": "Royal Armory cost reduction (total)",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["ArmoryUpgCost", 0, 0]
+    }
+  }
+}

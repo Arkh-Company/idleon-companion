@@ -8,7 +8,7 @@ import type { Op } from "./instrument.ts";
 import namesReaderSource from "./names-reader.js?raw";
 import recorderPassSource from "./recorder-pass.js?raw";
 import recorderSource from "./recorder.js?raw";
-import type { Recipe, Recording } from "./recording.ts";
+import type { Recipe, Recording, RoutineRun } from "./recording.ts";
 
 /** Measured again on the compiled calculator.js over the real game (T026); the host's own limit is above these. */
 export const TREE_LIMITS = { startMs: 20_000, numberMs: 10_000 };
@@ -25,13 +25,40 @@ export type FollowCall = readonly [
 ];
 export type RootCall = readonly [
   block: string,
-  args: readonly (string | number)[],
+  /** A number, a text, or a short list of numbers (spec 010, T159). */
+  args: readonly (string | number | readonly number[])[],
 ];
+
+const FORBIDDEN = new Set(["__proto__", "constructor", "prototype"]);
+
+/** Puts an infinite number back at its place: the path from the recording's top, then its sign (recorder.js, infAt). */
+export function putInfinity(
+  rec: Recording,
+  path: readonly (string | number)[],
+) {
+  // the place comes from the sandbox: a key that reaches a prototype is refused, and a place that does not exist skipped
+  if (path.some((k) => FORBIDDEN.has(String(k)))) return;
+  let o: unknown = rec;
+  for (const k of path.slice(0, -2)) {
+    if (typeof o !== "object" || o === null || !Object.hasOwn(o, k)) return;
+    o = (o as Record<string | number, unknown>)[k];
+  }
+  const key = path.at(-2);
+  if (key === undefined || typeof o !== "object" || o === null) return;
+  if (!Object.hasOwn(o, key)) return;
+  (o as Record<string | number, unknown>)[key] =
+    Number(path.at(-1)) < 0 ? -Infinity : Infinity;
+}
 
 export function bootRecorder(
   code: string,
   pak: Uint8Array,
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
+  /**
+   * Keep an infinite number as a number, and the `vp` of a call (the state path of the list or the map it returned)
+   * (spec 010, T162: the answer key only); the live tree gets null, as always, and no `vp`.
+   */
+  { infinite = false }: { infinite?: boolean } = {},
 ): {
   context: Context;
   /** The instrumentation's steps, by the id the recording's `x` gives them (they never leave the worker). */
@@ -46,6 +73,8 @@ export function bootRecorder(
     recipe: Recipe,
     scene?: boolean,
     follow?: readonly FollowCall[],
+    /** A routine of the game run after the roots, on this copy only, step by step (spec 010, T152, T156). */
+    routine?: readonly RoutineRun[],
   ): Recording;
 } {
   const { source, ops } = instrument(anchored(code));
@@ -57,27 +86,43 @@ export function bootRecorder(
   const { sandbox } = context;
   const run = (text: string, ms: number) => context.run(text, ms);
   const { startMs, numberMs } = limits;
-  run("__rec.wrap()", startMs);
+  // the path of a list a call returns: the answer key's only, like the infinite numbers
+  run(`__rec.wrap(${String(infinite)})`, startMs);
   // On the original code: the instrumented copy could hide a key from the scan.
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 
   return {
     context,
     ops,
-    record(mosaicJson, roots, recipe, scene = false, follow = []) {
+    record(mosaicJson, roots, recipe, scene = false, follow = [], routine) {
       sandbox.__mosaic = mosaicJson;
       sandbox.__recipe = JSON.stringify(recipe);
+      const ms: Record<string, number> = {};
+      let t = performance.now();
+      const lap = (stage: string) => {
+        const now = performance.now();
+        ms[stage] = now - t;
+        t = now;
+      };
       try {
         run("__calc.loadMosaic()", startMs);
+        lap("mosaic");
         run("__rec.begin(__recipe)", startMs);
         run(`__calc.helperPlan(${lazyDnsm})`, startMs);
         run("__calc.helperSteps()", startMs);
         run("__rec.afterHelpers()", startMs);
         if (scene) rebuildScene((text) => run(text, startMs));
+        lap("helpers");
         run(
           `__rec.roots(${JSON.stringify(roots)}, ${JSON.stringify(follow)})`,
           numberMs,
         );
+        if (routine)
+          run(
+            `__rec.routine(${JSON.stringify(JSON.stringify(routine))})`,
+            numberMs,
+          );
+        lap("roots");
         run("__rec.startBuilders()", startMs);
         recipe.builders.forEach((_, i) => {
           try {
@@ -87,9 +132,25 @@ export function bootRecorder(
             run("__rec.abandonBuilder()", startMs);
           }
         });
+        lap("builders");
         const json = run("__rec.take()", startMs);
         if (typeof json !== "string") throw new Error("no recording");
-        return JSON.parse(json) as Recording;
+        lap("take");
+        const rec = JSON.parse(json) as Recording;
+        // an infinite number crossed as null, and its place apart (recorder.js, infAt): no label pass over the whole
+        // recording, seconds on the real game (the seventh probe)
+        if (infinite) {
+          const at = run("__rec.infAt()", startMs);
+          for (const p of JSON.parse(String(at)) as (string | number)[][])
+            putInfinity(rec, p);
+        }
+        lap("parse");
+        rec.ms = ms;
+        return rec;
+      } catch (e) {
+        // the stages measured before the failure go with it (the root probe's record of where the time went)
+        if (typeof e === "object" && e !== null) Object.assign(e, { ms });
+        throw e;
       } finally {
         run("__rec.stop()", startMs);
       }

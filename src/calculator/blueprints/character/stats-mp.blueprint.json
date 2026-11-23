@@ -1,0 +1,10 @@
+{
+  "id": "stats-mp",
+  "root": {
+    "name": "Max MP",
+    "ref": {
+      "call": "PlayerMPmax",
+      "args": [0, 0, 0]
+    }
+  }
+}

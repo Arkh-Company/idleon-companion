@@ -1,0 +1,10 @@
+{
+  "id": "sneak-jade-multi",
+  "root": {
+    "name": "Jade Coin Multi (all ninjas)",
+    "ref": {
+      "call": "Ninja",
+      "args": ["coin", 0, 0]
+    }
+  }
+}

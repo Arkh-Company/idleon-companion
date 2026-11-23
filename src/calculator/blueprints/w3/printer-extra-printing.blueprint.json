@@ -1,0 +1,10 @@
+{
+  "id": "printer-extra-printing",
+  "root": {
+    "name": "Extra Printing (per character, with Lab and Divinity)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["ExtraPrinting", 0, 0]
+    }
+  }
+}

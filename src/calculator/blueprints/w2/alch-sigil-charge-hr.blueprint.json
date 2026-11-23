@@ -1,0 +1,10 @@
+{
+  "id": "alch-sigil-charge-hr",
+  "root": {
+    "name": "Sigil charge rate (per character, per hour)",
+    "ref": {
+      "call": "Labb",
+      "args": ["SigilBonusSpeed", "Blank", 0, 0]
+    }
+  }
+}

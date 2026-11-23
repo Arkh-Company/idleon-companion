@@ -1,0 +1,10 @@
+{
+  "id": "merit-multi",
+  "root": {
+    "name": "Meritocracy bonus multiplier",
+    "ref": {
+      "call": "Summoning2",
+      "args": ["MeritocBonuszMulti", 0, 0]
+    }
+  }
+}

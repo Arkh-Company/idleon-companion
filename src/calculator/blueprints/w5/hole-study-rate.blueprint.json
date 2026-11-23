@@ -1,0 +1,10 @@
+{
+  "id": "hole-study-rate",
+  "root": {
+    "name": "Bolaia Study Rate (per hour)",
+    "ref": {
+      "call": "Holes",
+      "args": ["BolaiaStudyRate", 0, 0]
+    }
+  }
+}

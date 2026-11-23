@@ -24,12 +24,18 @@
   var seed = 12345;
   Math.random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
+  // The places of the infinite numbers the recording keeps (spec 010, T162), for infAt() in recorder-pass.js.
+  var isInf = (v) => v === Infinity || v === -Infinity;
+  var mark = (path, v) => S.infs.push(path.concat(v > 0 ? 1 : -1));
+
   // 4b. Each step of a block's arithmetic lands on the row of the block that runs it (only numbers and yes/no).
   G.__X = (i, v) => {
     if (S.on && S.cur) {
       var x = S.cur.x || (S.cur.x = []);
-      if (x.length < STEP_CAP)
+      if (x.length < STEP_CAP) {
         x.push([i, typeof v === "number" || typeof v === "boolean" ? v : null]);
+        if (isInf(v)) mark(["nodes", S.cur.id, "x", x.length - 1, 1], v);
+      }
     }
     return v;
   };
@@ -64,6 +70,7 @@
     if (parent) parent.c.push(n.id);
     return n;
   };
+  // a text argument is cut to the blueprint's ARG_TEXT_MAX (declared/refs.ts; arg-text.test.ts pins both)
   function simple(x) {
     if (x === null || typeof x === "number" || typeof x === "boolean") return x;
     if (typeof x !== "string") return "(" + typeof x + ")";
@@ -78,6 +85,8 @@
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
       var node = S.newNode(name, args, S.cur);
+      for (var i = 0; i < args.length; i++)
+        if (isInf(args[i])) mark(["nodes", node.id, "a", i], args[i]);
       var parent = S.cur;
       S.cur = node;
       try {
@@ -88,6 +97,11 @@
             : v === undefined
               ? "(undefined)"
               : "(" + typeof v + ")";
+        if (isInf(v)) mark(["nodes", node.id, "v"], v);
+        // a list or a map of the state returned: its path (spec 010, T162: the list whose item is the number)
+        var vp =
+          S.paths && v !== null && typeof v === "object" ? S.PATH.get(v) : null;
+        if (vp) node.vp = vp;
         return v;
       } catch (e) {
         node.err = true;
@@ -106,13 +120,15 @@
   }
   S.addWrite = (path, v) => {
     var node = S.cur ? S.cur.id : null;
-    S.writes.push({
+    var w = {
       path: path,
       node: node,
       v: valueOut(v),
       xi: stepAt(),
       seq: ++S.seq,
-    });
+    };
+    S.writes.push(w);
+    if (isInf(w.v)) S.infWrites.push(w);
   };
   function checkNote(path, exists) {
     if (!S.on || !S.cur || S.searching) return;
@@ -122,7 +138,11 @@
   }
   function log(entry) {
     var rx = S.cur.rx || (S.cur.rx = []);
-    if (rx.length < LOG_CAP) rx.push(entry);
+    if (rx.length < LOG_CAP) {
+      rx.push(entry);
+      if (isInf(entry[1]))
+        mark(["nodes", S.cur.id, "rx", rx.length - 1, 1], entry[1]);
+    }
   }
   function note(path, v) {
     if (S.searching || !S.on || !S.cur) return; // inside one of the game's searches: the search is one read (3b)
@@ -139,7 +159,10 @@
     if (typeof v === "number" || numeric)
       log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
-    if (fresh) r.push([path, valueOut(v), S.seq]);
+    if (fresh) {
+      r.push([path, valueOut(v), S.seq]);
+      if (isInf(v)) mark(["nodes", S.cur.id, "r", r.length - 1, 1], v);
+    }
   }
   function join(base, k) {
     if (S.names.has(k)) return base + "[" + S.names.get(k) + "]";
@@ -242,8 +265,10 @@
   }
 
   G.__rec = {
-    // After __calc.start: every block of the game and its searches go through the record.
-    wrap: () => {
+    // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
+    // key's recording only), a call that returns a list or a map of the state keeps its path (vp).
+    wrap: (paths) => {
+      S.paths = !!paths;
       var hx = G.__hx;
       var owner = {};
       Object.keys(hx).forEach((cls) => {
@@ -269,6 +294,7 @@
     begin: (recipeJson) => {
       S.recipe = JSON.parse(recipeJson);
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
+      Object.assign(S, { infs: [], infWrites: [] });
       S.searching = 0; // a search cut by a time limit never ran its `finally`
       Object.assign(S, {
         seq: 0,
@@ -355,7 +381,8 @@
     stop: () => S.stopped(),
     isOn: () => S.on,
 
-    // The recording, as text made here: nothing of the context crosses as an object.
+    // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as
+    // the live tree always had it.
     take: () =>
       JSON.stringify({
         nodes: S.nodes || [],

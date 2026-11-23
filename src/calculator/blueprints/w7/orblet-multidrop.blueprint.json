@@ -1,0 +1,10 @@
+{
+  "id": "orblet-multidrop",
+  "root": {
+    "name": "Orblet multi-drop",
+    "ref": {
+      "call": "RoyalG",
+      "args": ["OrbletMultiDrop", 0, 0]
+    }
+  }
+}

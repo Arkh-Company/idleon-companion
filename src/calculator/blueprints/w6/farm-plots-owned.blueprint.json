@@ -1,0 +1,10 @@
+{
+  "id": "farm-plots-owned",
+  "root": {
+    "name": "Plots owned",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["PlotOwned", 0, 0]
+    }
+  }
+}

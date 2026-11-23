@@ -1,0 +1,10 @@
+{
+  "id": "gaming-rat-currency",
+  "root": {
+    "name": "Rat currency gain",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["RatCurrencyGain", 1, 0]
+    }
+  }
+}

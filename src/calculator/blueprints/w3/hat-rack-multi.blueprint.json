@@ -1,0 +1,10 @@
+{
+  "id": "hat-rack-multi",
+  "root": {
+    "name": "Hatrack Bonus Multi",
+    "ref": {
+      "call": "Gallery",
+      "args": ["HatrackBonusMulti", 0, 0]
+    }
+  }
+}

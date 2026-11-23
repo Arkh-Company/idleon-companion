@@ -1,0 +1,10 @@
+{
+  "id": "farm-exotic-purchases",
+  "root": {
+    "name": "Exotic purchases per day",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["ExoticPurchasesAllowed", 0, 0]
+    }
+  }
+}

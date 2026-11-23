@@ -1,0 +1,10 @@
+{
+  "id": "spel-exp-multi",
+  "root": {
+    "name": "Spelunking EXP Multiplier",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["SpelunkingExpMulti", 0, 0]
+    }
+  }
+}

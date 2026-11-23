@@ -1,0 +1,10 @@
+{
+  "id": "coral-daily",
+  "root": {
+    "name": "Daily Coral gain",
+    "ref": {
+      "call": "Thingies",
+      "args": ["ReefDayGains", 0, 0]
+    }
+  }
+}

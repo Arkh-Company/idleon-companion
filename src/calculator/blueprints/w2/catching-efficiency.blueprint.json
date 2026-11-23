@@ -1,0 +1,10 @@
+{
+  "id": "catching-efficiency",
+  "root": {
+    "name": "Catching Efficiency",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["CatchingEfficiency", 0, 0]
+    }
+  }
+}

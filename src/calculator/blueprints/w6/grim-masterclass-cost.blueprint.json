@@ -1,0 +1,10 @@
+{
+  "id": "grim-masterclass-cost",
+  "root": {
+    "name": "Masterclass cost reduction",
+    "ref": {
+      "call": "Summoning",
+      "args": ["AllMasterclassCostRedux", 0, 0]
+    }
+  }
+}

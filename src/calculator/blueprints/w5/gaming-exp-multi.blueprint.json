@@ -1,0 +1,10 @@
+{
+  "id": "gaming-exp-multi",
+  "root": {
+    "name": "EXP Multi (Gaming, GamingExpPCT)",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["GamingExpPCT", 1, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "div-blessing-max",
+  "root": {
+    "name": "Blessing Max LV",
+    "ref": {
+      "call": "Divinity",
+      "args": ["BlessingMaxLV", 0, 0]
+    }
+  }
+}

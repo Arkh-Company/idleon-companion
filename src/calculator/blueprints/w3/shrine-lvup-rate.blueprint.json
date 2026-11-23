@@ -1,0 +1,10 @@
+{
+  "id": "shrine-lvup-rate",
+  "root": {
+    "name": "Shrine Lv Up Rate (ShrineExpBonus)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["ShrineExpBonus", 0, 0]
+    }
+  }
+}

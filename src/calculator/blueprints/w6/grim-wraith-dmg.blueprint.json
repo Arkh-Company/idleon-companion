@@ -1,0 +1,10 @@
+{
+  "id": "grim-wraith-dmg",
+  "root": {
+    "name": "Wraith damage",
+    "ref": {
+      "call": "Summoning",
+      "args": ["Grimoire_DMG", 0, 0]
+    }
+  }
+}

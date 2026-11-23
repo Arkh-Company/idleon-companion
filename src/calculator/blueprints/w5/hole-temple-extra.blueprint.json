@@ -1,0 +1,10 @@
+{
+  "id": "hole-temple-extra",
+  "root": {
+    "name": "Temple extra torches",
+    "ref": {
+      "call": "Holes2",
+      "args": ["TempleExtraTorches", 0, 0]
+    }
+  }
+}

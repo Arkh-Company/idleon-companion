@@ -1,0 +1,10 @@
+{
+  "id": "grim-bones-multi",
+  "root": {
+    "name": "Bones multiplier",
+    "ref": {
+      "call": "Summoning",
+      "args": ["GrimoireBonesDropDEC", 33, 0]
+    }
+  }
+}

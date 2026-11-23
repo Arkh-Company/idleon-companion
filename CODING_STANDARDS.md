@@ -135,3 +135,15 @@ Bad: `expect(below(b, base, 3).map((k) => k.code)).toEqual(expect.arrayContainin
 The test of a level with an ⓘ checks that each name in the ⓘ is the name of one of the level's rows, as it shows after its placement.
 Good: `expect(linesOf(group.formula)[0]).toBe(kidsOpen(b, group).map((k) => k.name).join(" + "))` for the group inside "Base Damage".
 Bad: checking only `names.not.toContain("Game value")` in the cap's ⓘ, while the ⓘ of the group just below says "Game value + Game value + Game value" and its rows say "Big Meaty Claws bubble".
+
+### Every path field of a blueprint passes the ref checks
+
+Every field of a blueprint that holds a state path runs the same checks as `ref.read` (`isPathRead` and `hasRawCharacterIndex`), with one refused case per check in its test.
+Good: `isStatePath(root.branch)`, which runs both checks of `ref.read`, and a `branch: "PlayerDATABASE[0].Lists[3]"` case in the refusals of `blueprint-root.test.ts`.
+Bad: `branch` and `sum` checked by `isPathRead` alone, so `PlayerDATABASE[0]…` loads while the same path in `ref.read` is refused.
+
+### The answer key ties by the recorded place, never by value alone
+
+Every lookup of the answer key that ties a write, a step, a call or a path to another uses the recorded place (`xi`, `stepAt`, the node); when the place does not decide and a second candidate has the same value, the root is refused with the reason, never settled by value or by order.
+Good: the passage opens the step its write came right after (`xi`), and two passages worth 0 with no place to tell them apart refuse "a passagem V sai de mais de uma escrita (…), e a posição não decide entre elas".
+Bad: `ctx.steps.findIndex((s, j) => !seen.has(j) && near(s.v, v))`, which takes the first of two steps worth 0 and swaps Cards and Stamps.

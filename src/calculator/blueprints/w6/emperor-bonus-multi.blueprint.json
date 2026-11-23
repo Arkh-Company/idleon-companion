@@ -1,0 +1,10 @@
+{
+  "id": "emperor-bonus-multi",
+  "root": {
+    "name": "Emperor bonus multiplier",
+    "ref": {
+      "call": "Thingies",
+      "args": ["EmperorBon", 0, 0]
+    }
+  }
+}

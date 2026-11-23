@@ -1,0 +1,20 @@
+{
+  "id": "obols-stat-multi-wis",
+  "root": {
+    "name": "Obol stat multiplier (WIS)",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["WIS"]
+    },
+    "part": [
+      {
+        "call": "GetTalentNumber",
+        "args": [1, 486]
+      },
+      {
+        "call": "GamingStatType",
+        "args": ["SuperBitType", 2, 0]
+      }
+    ]
+  }
+}

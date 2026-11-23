@@ -1,0 +1,10 @@
+{
+  "id": "death-multikill-total",
+  "root": {
+    "name": "Multikill (MultiKillTOTAL)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["MultiKillTOTAL", 0, 0]
+    }
+  }
+}

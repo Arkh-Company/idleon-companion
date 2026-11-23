@@ -1,0 +1,10 @@
+{
+  "id": "chop-efficiency",
+  "root": {
+    "name": "Choppin Efficiency",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["ChoppinEfficiency", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fishing-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Fishing)",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["FishingEXPmulti", 0, 0]
+    }
+  }
+}

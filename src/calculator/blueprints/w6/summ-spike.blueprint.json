@@ -1,0 +1,10 @@
+{
+  "id": "summ-spike",
+  "root": {
+    "name": "Spike placement damage",
+    "ref": {
+      "call": "Summoning",
+      "args": ["SpikePlacementDMG", 0, 0]
+    }
+  }
+}

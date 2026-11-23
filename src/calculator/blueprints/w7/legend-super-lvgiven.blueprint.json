@@ -1,0 +1,10 @@
+{
+  "id": "legend-super-lvgiven",
+  "root": {
+    "name": "Super Talent LVs given",
+    "ref": {
+      "call": "Thingies",
+      "args": ["SuperTalentPTS_LVgiven", 0, 0]
+    }
+  }
+}

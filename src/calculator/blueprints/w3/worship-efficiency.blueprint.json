@@ -1,0 +1,10 @@
+{
+  "id": "worship-efficiency",
+  "root": {
+    "name": "Worship Efficiency",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["WorshipEfficiency"]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fishing-prowess",
+  "root": {
+    "name": "Fishing Prowess",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["FishProwess"]
+    }
+  }
+}

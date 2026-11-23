@@ -1,0 +1,10 @@
+{
+  "id": "catching-prowess",
+  "root": {
+    "name": "Catching Prowess",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["CatchProwess"]
+    }
+  }
+}

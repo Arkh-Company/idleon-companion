@@ -1,0 +1,10 @@
+{
+  "id": "sail-arti-multi",
+  "root": {
+    "name": "Artifact Find Chance (BoatArtiMulti)",
+    "ref": {
+      "call": "Sailing",
+      "args": ["BoatArtiMulti", 0, 0]
+    }
+  }
+}

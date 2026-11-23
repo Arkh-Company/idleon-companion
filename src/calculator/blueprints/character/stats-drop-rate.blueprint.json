@@ -1,0 +1,10 @@
+{
+  "id": "stats-drop-rate",
+  "root": {
+    "name": "Drop Rate",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["Drop_Rarity", 0, 0]
+    }
+  }
+}

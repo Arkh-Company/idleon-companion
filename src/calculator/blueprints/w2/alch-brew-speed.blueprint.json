@@ -1,0 +1,13 @@
+{
+  "id": "alch-brew-speed",
+  "root": {
+    "name": "Total Brew Speed (/HR)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["ResearchSpeed", "{character}", 0, 0]
+    },
+    "scratch": {
+      "DummyText3": "gimmeBrewSPDnonLiquid"
+    }
+  }
+}

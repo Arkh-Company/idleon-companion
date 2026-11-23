@@ -1,0 +1,20 @@
+{
+  "id": "obols-stat-multi-str",
+  "root": {
+    "name": "Obol stat multiplier (STR)",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["STR"]
+    },
+    "part": [
+      {
+        "call": "GetTalentNumber",
+        "args": [1, 111]
+      },
+      {
+        "call": "GamingStatType",
+        "args": ["SuperBitType", 2, 0]
+      }
+    ]
+  }
+}

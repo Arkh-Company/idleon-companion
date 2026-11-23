@@ -1,0 +1,10 @@
+{
+  "id": "gaming-palette-luck",
+  "root": {
+    "name": "Palette Luck",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["PaletteLuck", 0, 0]
+    }
+  }
+}

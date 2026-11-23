@@ -1,0 +1,10 @@
+{
+  "id": "cook-kitchen-cost-reduction",
+  "root": {
+    "name": "Kitchen upgrade cost reduction (total)",
+    "ref": {
+      "call": "CookingR",
+      "args": ["CookingUpgSpiceCostQty", 0, 0]
+    }
+  }
+}

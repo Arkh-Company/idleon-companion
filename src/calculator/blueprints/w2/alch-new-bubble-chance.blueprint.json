@@ -1,0 +1,10 @@
+{
+  "id": "alch-new-bubble-chance",
+  "root": {
+    "name": "New Bubble chance (per cauldron)",
+    "ref": {
+      "call": "CauldronStats",
+      "args": ["PctChanceNewBubble", 0, 0, 0]
+    }
+  }
+}

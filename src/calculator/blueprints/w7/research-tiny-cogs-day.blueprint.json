@@ -1,0 +1,10 @@
+{
+  "id": "research-tiny-cogs-day",
+  "root": {
+    "name": "Tiny cogs per day",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["TinyCogsPerDay", 0, 0]
+    }
+  }
+}

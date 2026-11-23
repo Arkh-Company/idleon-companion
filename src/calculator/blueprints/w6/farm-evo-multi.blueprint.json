@@ -1,0 +1,10 @@
+{
+  "id": "farm-evo-multi",
+  "root": {
+    "name": "Crop Evolution Multi",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["NextCropChance", 99, 99]
+    }
+  }
+}

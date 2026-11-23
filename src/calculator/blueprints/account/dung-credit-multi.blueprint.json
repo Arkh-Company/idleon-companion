@@ -1,0 +1,10 @@
+{
+  "id": "dung-credit-multi",
+  "root": {
+    "name": "Dungeon Credit Bonus (credits multiplier)",
+    "ref": {
+      "call": "DungeonCalc",
+      "args": ["DungeonCredit_Bonus", 0]
+    }
+  }
+}

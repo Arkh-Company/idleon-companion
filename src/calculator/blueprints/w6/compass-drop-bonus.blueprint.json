@@ -1,0 +1,10 @@
+{
+  "id": "compass-drop-bonus",
+  "root": {
+    "name": "Tempest drop bonus",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["TempestAllDropBonus", 0, 0]
+    }
+  }
+}

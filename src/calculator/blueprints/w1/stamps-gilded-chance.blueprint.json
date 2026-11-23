@@ -1,0 +1,10 @@
+{
+  "id": "stamps-gilded-chance",
+  "root": {
+    "name": "Gilded Stamp Chance",
+    "ref": {
+      "call": "RiftStuff",
+      "args": ["gildedStampChance", 0]
+    }
+  }
+}

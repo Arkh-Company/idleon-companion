@@ -1,0 +1,10 @@
+{
+  "id": "catching-multi",
+  "root": {
+    "name": "Multi-Bug Chance",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["CatchingMultiOre", 0, 0]
+    }
+  }
+}

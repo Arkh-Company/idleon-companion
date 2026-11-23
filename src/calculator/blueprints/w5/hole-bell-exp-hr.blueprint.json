@@ -1,0 +1,10 @@
+{
+  "id": "hole-bell-exp-hr",
+  "root": {
+    "name": "Bell EXP per hour (ring, ping, clean…)",
+    "ref": {
+      "call": "Holes",
+      "args": ["BellExpPerHR", 0, 0]
+    }
+  }
+}

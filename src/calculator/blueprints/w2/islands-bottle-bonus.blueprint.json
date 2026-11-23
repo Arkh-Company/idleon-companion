@@ -1,0 +1,10 @@
+{
+  "id": "islands-bottle-bonus",
+  "root": {
+    "name": "Bottle Island bonus (% more garbage and bottles)",
+    "ref": {
+      "call": "RandomEvent",
+      "args": ["BottleIslandBonus", 0, 0]
+    }
+  }
+}

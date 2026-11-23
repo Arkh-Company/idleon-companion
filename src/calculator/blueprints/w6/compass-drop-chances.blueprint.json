@@ -1,0 +1,10 @@
+{
+  "id": "compass-drop-chances",
+  "root": {
+    "name": "Tempest weapon, ring, stone and medallion drop chance",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["TempestWepDropChance", 0, 0]
+    }
+  }
+}

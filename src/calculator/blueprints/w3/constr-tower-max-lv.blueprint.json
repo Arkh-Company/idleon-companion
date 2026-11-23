@@ -1,0 +1,10 @@
+{
+  "id": "constr-tower-max-lv",
+  "root": {
+    "name": "Extra Max Lv (Wizard Towers, Talent Library, Shrines, Trapper Drone)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["ExtraMaxLvAtom", 50, 0]
+    }
+  }
+}

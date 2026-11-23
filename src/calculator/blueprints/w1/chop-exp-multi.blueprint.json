@@ -1,0 +1,10 @@
+{
+  "id": "chop-exp-multi",
+  "root": {
+    "name": "EXP Multiplier",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["ChoppinEXPmulti", 0, 0]
+    }
+  }
+}

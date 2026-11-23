@@ -1,0 +1,10 @@
+{
+  "id": "tess-arcanist-minor",
+  "root": {
+    "name": "Arcanist defence, crit, attack speed, mastery",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["Arcane_DEF", 0, 0]
+    }
+  }
+}

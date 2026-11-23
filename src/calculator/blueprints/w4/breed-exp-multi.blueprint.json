@@ -1,0 +1,10 @@
+{
+  "id": "breed-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Breeding)",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["BreedingEXPmulti"]
+    }
+  }
+}

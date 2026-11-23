@@ -1,0 +1,10 @@
+{
+  "id": "lab-efficiency",
+  "root": {
+    "name": "Lab Efficiency",
+    "ref": {
+      "call": "skillstats2",
+      "args": ["LaboratoryEfficiency"]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "minehead-cost-reduction",
+  "root": {
+    "name": "Minehead upgrade cost reduction (total)",
+    "ref": {
+      "call": "Minehead",
+      "args": ["UpgCost", 0, 0]
+    }
+  }
+}

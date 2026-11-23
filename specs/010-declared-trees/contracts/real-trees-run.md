@@ -39,7 +39,7 @@ Tudo em `TREES_OUT`, nunca no repositório, menos o que a última linha da tabel
 | `changes.json` | O relatório de mudanças contra a rodada anterior, por tipo: `name`, `added`, `removed`, `value` (FR-022) |
 | `roots.json` | Só no modo `roots`: a forma de cada raiz e o motivo das que ficaram fora da regra |
 | `draft/<id>.steps.txt` | Só no modo `draft`: os passos gravados de cada fonte, o guia de quem escreve a receita |
-| `summary.txt` | Uma linha por número: passou ou reprovou, com o primeiro motivo; o tempo de cada etapa e o pico de memória |
+| `summary.txt` | Uma linha por número: passou ou reprovou, só com o id, o resultado e o tempo (os motivos ficam em `roots.json` e `lock/`); o tempo de cada etapa e o pico de memória |
 | **no repositório:** `<id>.review.json` | Só `blueprintSha` e `lock` (`ok`, `gameSha`, `at`); no modo `draft`, o `<id>.blueprint.json` do rascunho |
 
 ## Privacidade

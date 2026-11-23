@@ -1,0 +1,10 @@
+{
+  "id": "spel-stamina-max",
+  "root": {
+    "name": "Max Stamina",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["StaminaMax", 0, 0]
+    }
+  }
+}

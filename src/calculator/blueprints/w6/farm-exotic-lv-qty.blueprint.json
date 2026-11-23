@@ -1,0 +1,20 @@
+{
+  "id": "farm-exotic-lv-qty",
+  "root": {
+    "name": "Exotic Level Qty multi",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["ExoticLVQTY", 1000, 0]
+    },
+    "part": [
+      {
+        "call": "FarmingStuffs",
+        "args": ["ExoticBonusQTY", 38, 0]
+      },
+      {
+        "call": "Thingies",
+        "args": ["LegendPTS_bonus", 8, 0]
+      }
+    ]
+  }
+}

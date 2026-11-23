@@ -1,0 +1,20 @@
+{
+  "id": "obols-stat-multi-luk",
+  "root": {
+    "name": "Obol stat multiplier (LUK)",
+    "ref": {
+      "call": "TotalStats",
+      "args": ["LUK"]
+    },
+    "part": [
+      {
+        "call": "GetTalentNumber",
+        "args": [1, 36]
+      },
+      {
+        "call": "GamingStatType",
+        "args": ["SuperBitType", 2, 0]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "farm-beans-per-trade",
+  "root": {
+    "name": "Magic Beans per trade",
+    "ref": {
+      "call": "FarmingStuffs",
+      "args": ["BeanTradeQTY", 0, 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "stats-carry-capacity",
+  "root": {
+    "name": "All Carry Capacity multi (all materials)",
+    "ref": {
+      "call": "MaxCapacity",
+      "args": ["AllCapBonuses", 0, 0]
+    }
+  }
+}

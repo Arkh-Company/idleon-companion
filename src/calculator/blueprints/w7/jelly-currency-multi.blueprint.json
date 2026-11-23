@@ -1,0 +1,10 @@
+{
+  "id": "jelly-currency-multi",
+  "root": {
+    "name": "Bloodcell multiplier",
+    "ref": {
+      "call": "JellyOperation",
+      "args": ["CurrencyMulti", 0, 0]
+    }
+  }
+}

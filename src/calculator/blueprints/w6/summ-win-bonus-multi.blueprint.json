@@ -1,0 +1,10 @@
+{
+  "id": "summ-win-bonus-multi",
+  "root": {
+    "name": "Winner Bonus multiplier",
+    "ref": {
+      "call": "Summoning",
+      "args": ["WinBonus", 33, 0]
+    }
+  }
+}

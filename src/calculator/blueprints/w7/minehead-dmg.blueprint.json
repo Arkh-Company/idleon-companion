@@ -1,0 +1,10 @@
+{
+  "id": "minehead-dmg",
+  "root": {
+    "name": "Damage (base, per tile, outgoing, weapon power)",
+    "ref": {
+      "call": "Minehead",
+      "args": ["BaseDMG", 0, 0]
+    }
+  }
+}

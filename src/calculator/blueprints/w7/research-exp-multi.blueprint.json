@@ -1,0 +1,10 @@
+{
+  "id": "research-exp-multi",
+  "root": {
+    "name": "Research EXP multiplier",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["ResearchEXPmulti", 0, 0]
+    }
+  }
+}

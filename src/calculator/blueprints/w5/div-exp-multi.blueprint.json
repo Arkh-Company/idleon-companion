@@ -1,0 +1,10 @@
+{
+  "id": "div-exp-multi",
+  "root": {
+    "name": "EXP Multi (Divinity)",
+    "ref": {
+      "call": "Divinity",
+      "args": ["DivPerHr_EXP", "{character}", 0]
+    }
+  }
+}

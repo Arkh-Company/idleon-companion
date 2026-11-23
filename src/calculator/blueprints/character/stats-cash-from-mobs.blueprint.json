@@ -1,0 +1,10 @@
+{
+  "id": "stats-cash-from-mobs",
+  "root": {
+    "name": "Cash from Mobs (coin drop rate)",
+    "ref": {
+      "call": "ArbitraryCode",
+      "args": ["MonsterCash"]
+    }
+  }
+}

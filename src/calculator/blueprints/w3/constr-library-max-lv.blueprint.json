@@ -1,0 +1,10 @@
+{
+  "id": "constr-library-max-lv",
+  "root": {
+    "name": "Max Book Lv (Talent Library)",
+    "ref": {
+      "call": "WorkbenchStuff",
+      "args": ["maxBookLv", 0, 0]
+    }
+  }
+}

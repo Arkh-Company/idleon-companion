@@ -1,0 +1,10 @@
+{
+  "id": "spel-shop-cost-redux",
+  "root": {
+    "name": "Spelunk Shop cost reduction (total)",
+    "ref": {
+      "call": "Spelunk",
+      "args": ["ShopUpgCost", 0, 0]
+    }
+  }
+}

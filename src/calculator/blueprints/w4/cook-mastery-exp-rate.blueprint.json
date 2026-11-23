@@ -1,0 +1,10 @@
+{
+  "id": "cook-mastery-exp-rate",
+  "root": {
+    "name": "Cooking Mastery EXP rate (/hr)",
+    "ref": {
+      "call": "Summoning2",
+      "args": ["ExpRateCook", 0, 0]
+    }
+  }
+}

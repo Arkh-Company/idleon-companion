@@ -4,6 +4,9 @@
 /** A value as recorded: numbers and yes/no as they are; any other thing as a label like "(text)" or a game id. */
 export type RecValue = number | boolean | string | null;
 
+/** How many entries recorder.js keeps in a call's step log (`rx`); the rest is dropped. */
+export const LOG_CAP = 20_000;
+
 export interface RecNode {
   id: number;
   /** The block's name, or a structural label: "(setup: game helpers)", "(root)"… */
@@ -15,6 +18,8 @@ export interface RecNode {
   /** How many steps the parent had run when this call started. */
   pxi: number;
   v?: RecValue;
+  /** The state path of the list or the map the call returned, when it returned one of the state's. */
+  vp?: string;
   err?: true;
   /** State reads: [path, value, the last write's number before the first read]; table texts have no number. */
   r?: ([string, RecValue] | [string, RecValue, number])[];
@@ -49,16 +54,23 @@ export interface Recording {
   builders: number | null;
   /** The DNSM caches that came in the mosaic, from the running game. */
   fromGame: string[];
+  /** The time of each stage of this recording, in ms (spec 010: the probe's time, root by root); never recorded. */
+  ms?: Record<string, number>;
 }
 
 export type RecipeStep =
-  | { block: string; args: (string | number)[] }
+  | { block: string; args: (string | number | readonly number[])[] }
   | {
       slot: number;
       behavior: string;
       event: string;
       args: (string | number)[];
     };
+
+/** A step of a root's routine on the recorder's copy (spec 010, T152, T156): for an event, the field it sets first. */
+export type RoutineRun = RecipeStep & {
+  set?: readonly [field: string, value: string | number];
+};
 
 export interface Recipe {
   /** Caches dropped from the copy before the helpers, so the game's own code builds them again. */

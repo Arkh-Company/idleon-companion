@@ -1,0 +1,10 @@
+{
+  "id": "tess-tachyon-multi",
+  "root": {
+    "name": "Tachyon multiplier",
+    "ref": {
+      "call": "ArcaneType",
+      "args": ["ExtraTachyon", 0, 0]
+    }
+  }
+}

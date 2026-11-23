@@ -1,0 +1,10 @@
+{
+  "id": "compass-tempest-hp",
+  "root": {
+    "name": "Tempest HP",
+    "ref": {
+      "call": "Windwalker",
+      "args": ["Compass_HP", 0, 0]
+    }
+  }
+}

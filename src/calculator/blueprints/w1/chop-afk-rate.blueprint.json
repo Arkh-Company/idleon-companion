@@ -1,0 +1,10 @@
+{
+  "id": "chop-afk-rate",
+  "root": {
+    "name": "AFK GAINS RATE (skill)",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Choppin", 0, 0]
+    }
+  }
+}

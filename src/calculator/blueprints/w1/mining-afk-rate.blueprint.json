@@ -1,0 +1,10 @@
+{
+  "id": "mining-afk-rate",
+  "root": {
+    "name": "AFK GAINS RATE (skill)",
+    "ref": {
+      "call": "AFKgainrates",
+      "args": ["Mining", 0, 0]
+    }
+  }
+}

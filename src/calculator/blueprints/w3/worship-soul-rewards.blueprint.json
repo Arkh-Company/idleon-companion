@@ -1,0 +1,10 @@
+{
+  "id": "worship-soul-rewards",
+  "root": {
+    "name": "Soul Rewards",
+    "ref": {
+      "call": "WorshipStuff",
+      "args": ["SoulRewards", 0]
+    }
+  }
+}

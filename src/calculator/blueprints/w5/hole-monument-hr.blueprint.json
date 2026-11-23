@@ -1,0 +1,10 @@
+{
+  "id": "hole-monument-hr",
+  "root": {
+    "name": "Monument hours per AFK hour (MonumentHRbonusPCT, MULTI)",
+    "ref": {
+      "call": "Holes",
+      "args": ["MonumentHRbonusPCT", 0, 0]
+    }
+  }
+}

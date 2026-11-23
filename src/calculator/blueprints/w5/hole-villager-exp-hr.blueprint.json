@@ -1,0 +1,10 @@
+{
+  "id": "hole-villager-exp-hr",
+  "root": {
+    "name": "Villager EXP per hour (each villager)",
+    "ref": {
+      "call": "Holes",
+      "args": ["VillagerExpPerHour", 0, 0]
+    }
+  }
+}

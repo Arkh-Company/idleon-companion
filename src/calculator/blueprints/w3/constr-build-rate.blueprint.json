@@ -1,0 +1,21 @@
+{
+  "id": "constr-build-rate",
+  "root": {
+    "name": "Build Rate (/HR, total of the Cog Board)",
+    "routine": [
+      {
+        "slot": 8,
+        "behavior": "ActorEvents_481",
+        "event": "_customEvent_WorkbenchStuff2",
+        "set": ["_TRIGGEREDtext", "m"]
+      },
+      {
+        "slot": 8,
+        "behavior": "ActorEvents_481",
+        "event": "_customEvent_WorkbenchStuff2",
+        "set": ["_TRIGGEREDtext", "z"]
+      }
+    ],
+    "sum": "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[8][*].a"
+  }
+}

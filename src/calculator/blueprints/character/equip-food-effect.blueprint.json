@@ -1,0 +1,10 @@
+{
+  "id": "equip-food-effect",
+  "root": {
+    "name": "Food effect multipliers (Health foods and Boost foods)",
+    "ref": {
+      "call": "FoodBonuses",
+      "args": ["HealthEffectBonus", 0, 0]
+    }
+  }
+}

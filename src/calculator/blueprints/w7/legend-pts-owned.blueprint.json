@@ -1,0 +1,10 @@
+{
+  "id": "legend-pts-owned",
+  "root": {
+    "name": "Legend points owned",
+    "ref": {
+      "call": "Thingies",
+      "args": ["LegendPTS_owned", 0, 0]
+    }
+  }
+}

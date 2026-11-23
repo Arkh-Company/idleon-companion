@@ -1,0 +1,10 @@
+{
+  "id": "alch-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Alchemy)",
+    "ref": {
+      "call": "ExpMulti",
+      "args": [5, 0, 0]
+    }
+  }
+}

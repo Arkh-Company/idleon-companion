@@ -1,0 +1,10 @@
+{
+  "id": "research-afk",
+  "root": {
+    "name": "AFKgains Rate PCT (Research)",
+    "ref": {
+      "call": "ResearchStuff",
+      "args": ["AFKgainsRatePCT", 0, 0]
+    }
+  }
+}

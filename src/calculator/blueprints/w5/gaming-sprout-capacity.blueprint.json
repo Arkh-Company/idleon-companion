@@ -1,0 +1,10 @@
+{
+  "id": "gaming-sprout-capacity",
+  "root": {
+    "name": "Sprout Capacity",
+    "ref": {
+      "call": "GamingStatType",
+      "args": ["SproutCapacity", 0, 0]
+    }
+  }
+}

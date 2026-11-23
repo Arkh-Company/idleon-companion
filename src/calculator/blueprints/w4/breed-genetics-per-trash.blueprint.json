@@ -1,0 +1,10 @@
+{
+  "id": "breed-genetics-per-trash",
+  "root": {
+    "name": "Genetics Per Trash Pet",
+    "ref": {
+      "call": "Breeding",
+      "args": ["GeneticsPerTrashPet", "0", 0, 0]
+    }
+  }
+}

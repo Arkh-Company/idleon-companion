@@ -1,0 +1,10 @@
+{
+  "id": "stats-crit-damage",
+  "root": {
+    "name": "Crit Damage",
+    "ref": {
+      "call": "CritDamage",
+      "args": [0, 0, 0]
+    }
+  }
+}

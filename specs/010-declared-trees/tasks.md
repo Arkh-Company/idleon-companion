@@ -138,29 +138,29 @@ fora da regra.
 troca o acumulador sai certo ou recusado com o motivo; as 289 receitas-esboço carregam, uma por número `arvore`; no PC do
 Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada raiz.
 
-- [ ] T011 [P] Testes das referências em `src/calculator/declared/refs.test.ts` (FR-003; research R5, R12)
+- [X] T011 [P] Testes das referências em `src/calculator/declared/refs.test.ts` (FR-003; research R5, R12)
   - Files: `src/calculator/declared/refs.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
-    - `refKey({ call: "GetTalentNumber", args: [1, 655] }, 0)` → `GetTalentNumber([1,655])` na forma do protótipo; `"0"` texto e `0` número dão chaves diferentes;
+    - `refKey({ call: "GetTalentNumber", args: [1, 655] }, 0)` → `GetTalentNumber(1,655)` na forma do protótipo; `"0"` texto e `0` número dão chaves diferentes;
     - `{ read: "PlayerDATABASE[{character}].SkillLevels[328]" }` com o personagem 3 → o caminho com `[3]`;
     - `*` casa a primeira leitura gravada de qualquer personagem e conta quantas casaram; nenhuma leitura → `null`, nunca 0;
     - `pieceKeyOf` de uma chamada = `JSON.stringify([personagem, bloco, ...args])`, igual à 008; de uma leitura = `JSON.stringify([personagem, caminho])`;
     - `nodeId("stats-drop-rate", 0, "talents", ["boss-battle-spillover", "talent-points"])` → `stats-drop-rate/0/talents/boss-battle-spillover/talent-points`;
     - `hasRawCharacterIndex("PlayerDATABASE[1].SkillLevels[3]")` é verdadeiro; com `{character}` ou `*` é falso;
     - `isPathRead` recusa operador, parêntese, aspas e espaço.
-- [ ] T012 As referências em `src/calculator/declared/refs.ts` (depende de T011)
+- [X] T012 As referências em `src/calculator/declared/refs.ts` (depende de T011)
   - Files: `src/calculator/declared/refs.ts`
   - Signatures: `type Ref = { call: string; args: readonly (string | number)[] } | { read: string }`; `refKey(ref: Ref, character: number): string`; `matchRead(pattern: string, recorded: readonly string[], character: number): { path: string; matches: number } | null`; `pieceKeyOf(ref: Ref, character: number): string`; `nodeId(numberId: string, pool: number, system: string, keys: readonly string[]): string`; `hasRawCharacterIndex(read: string): boolean`; `isPathRead(read: string): boolean`.
   - Cases: os da T011, que esta tarefa faz passar.
-- [ ] T013 [P] Testes da receita e da conferência na carga em `src/calculator/declared/blueprint.test.ts` (FR-002, FR-002a–c, FR-003–FR-007, FR-018; contracts/blueprint.md)
+- [X] T013 [P] Testes da receita e da conferência na carga em `src/calculator/declared/blueprint.test.ts` (FR-002, FR-002a–c, FR-003–FR-007, FR-018; contracts/blueprint.md)
   - Files: `src/calculator/declared/blueprint.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases, cada regra da conferência com um caso que passa e um que é recusado com o motivo:
     - `id` diferente do nome do arquivo; `pools` vazio; dois pools seguidos do mesmo `kind`;
     - `system` fora de `systems.json`; "Other" recusado;
     - `key` fora do slug ou repetida entre irmãos;
-    - `name` vazio, "no name yet" ou "Game value"; `nameProof` ausente;
+    - `name` vazio, "no name yet" ou "Game value" (o `nameProof` é opcional: spec, Open Questions, 21/11);
     - `ref` e `constant` juntos, ou nenhum dos dois;
     - `leaf` com `children`, ou sem os dois; `leaf` fora dos 9 tipos (o `unknown` da 008 é recusado);
     - `conditionKind` sem `leaf: "condition"`; `classes` ou `weight` fora de fonte de pool; `termPart` fora de filho;
@@ -168,21 +168,21 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - chave fora das listadas;
     - os estágios: só `id` e `root` → `sketch`; com `pending` (lista `{ where, kind: "name" | "system" | "leaf" | "descend" }`) e `name: null` só onde a pendência diz → `draft`; a forma inteira sem `pending` → `complete`;
     - um grupo com pesos misturados é recusado.
-- [ ] T014 A receita em `src/calculator/declared/blueprint.ts` (depende de T012, T013)
+- [X] T014 A receita em `src/calculator/declared/blueprint.ts` (depende de T012, T013)
   - Files: `src/calculator/declared/blueprint.ts`
   - Signatures: `Blueprint`, `BlueprintPool`, `BlueprintGroup`, `BlueprintNode`, `LeafKind` (os 9), `ConditionKind` (os da 008); `parseBlueprint(raw: unknown, ctx: { fileId: string; systemIds: ReadonlySet<string> }): { ok: true; stage: "sketch" | "draft" | "complete"; blueprint: Blueprint } | { ok: false; reason: string }`.
   - A calculadora não importa `src/shared/` (`calculator-alone`): a conferência de que o id está no catálogo fica no teste de CI (T023, T124), não na carga.
   - O campo `pending` dos rascunhos completa o contrato (contracts/blueprint.md lista as chaves da receita completa; o rascunho do research R7 precisa de onde guardar as pendências).
   - Cases: os da T013, que esta tarefa faz passar.
-- [ ] T015 [P] Testes do avaliador em `src/calculator/declared/expr-eval.test.ts` (FR-010; research R2)
+- [X] T015 [P] Testes do avaliador em `src/calculator/declared/expr-eval.test.ts` (FR-010; research R2)
   - Files: `src/calculator/declared/expr-eval.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: soma, produto, divisão, potência e menos unário sobre um `Expr` gravado; as funções de `Math` que o `makeSteps` grava (`min`, `max`, `floor`, `ceil`, `pow`, `log`); uma referência trocada pelo valor do filho; uma referência sem valor → `null`; um operador desconhecido → `null`, nunca uma exceção; divisão por zero → `null`; nenhum `eval` nem `Function` (o teste lê o arquivo e procura os dois).
-- [ ] T016 O avaliador em `src/calculator/declared/expr-eval.ts` (depende de T015)
+- [X] T016 O avaliador em `src/calculator/declared/expr-eval.ts` (depende de T015)
   - Files: `src/calculator/declared/expr-eval.ts`
   - Signature: `evalExpr(e: Expr, valueOf: (e: Expr) => number | undefined): number | null` (`Expr` de `recorded/steps.ts`).
   - Cases: os da T015, que esta tarefa faz passar.
-- [ ] T017 [P] Blocos novos no jogo inventado e receitas inventadas para eles (lição 4 da 009; depende de T013)
+- [X] T017 [P] Blocos novos no jogo inventado e receitas inventadas para eles (lição 4 da 009; depende de T013)
   - Files: `src/calculator/fixtures/fake-game.js`, `src/calculator/fixtures/blueprints/*.blueprint.json`, `src/calculator/fixtures/recording-fixture.ts` (gravação feita à mão; não importa `tree/tree-fixture.ts`, que sai na Fase 11)
   - Signatures: `recordingOf(nodes, writes): Recording` em `recording-fixture.ts`; os blocos `Blocks._customBlock_<Nome>` do jogo inventado
   - Blocos, cada um conferido com a conta real no N.js (njs-index) antes de virar fixture, com linhas curtas (o scan da T009):
@@ -195,7 +195,7 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - uma fonte que só uma classe tem;
     - uma fonte declarada que a gravação não usa.
   - Cases: cada bloco roda no gravador do jogo inventado sem erro; cada receita inventada carrega no `parseBlueprint` no estágio `complete`; o scan da T009 passa sobre o `fake-game.js`.
-- [ ] T018 Testes do gabarito em `src/calculator/declared/answer-key.test.ts` (FR-002c, FR-008, FR-009; research R1, R9; depende de T017)
+- [X] T018 Testes do gabarito em `src/calculator/declared/answer-key.test.ts` (FR-002c, FR-008, FR-009; research R1, R9; depende de T017)
   - Files: `src/calculator/declared/answer-key.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -208,16 +208,16 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - uma constante solta vira termo `constant`; o termo de duas fontes tem `refs` na ordem do código;
     - `pollution` conta cada tipo;
     - a extração só lê: a gravação passada é a mesma depois (`structuredClone` antes e `toEqual` depois), e nada do contexto do jogo é chamado.
-- [ ] T019 O gabarito em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T016, T018)
+- [X] T019 O gabarito em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T016, T018)
   - Files: `src/calculator/declared/answer-key.ts` (a corrente, as formas de raiz e os pools), `src/calculator/declared/answer-key-terms.ts` (os termos, as passagens e o `/ 100`)
   - Signatures: `interface AnswerKey { root: string; final: number; form: "chain" | "expression"; accumulator: string | null; pools: AnswerPool[]; pollution: Record<string, number> }`; `AnswerPool`, `AnswerTerm` (data-model.md); `answerKey(rec: Recording, ops: readonly Op[]): AnswerKey | { error: "rootForm"; reason: string }`.
   - Porta o `gabarito.ts` do protótipo; cada arquivo abaixo de 400 linhas.
   - Cases: os da T018, que esta tarefa faz passar; cada arquivo abaixo de 400 linhas.
-- [ ] T020 [P] Testes primeiro, depois a lista das partes que não são folha em `src/calculator/declared/not-leaves.ts` (research R6; FR-016)
+- [X] T020 [P] Testes primeiro, depois a lista das partes que não são folha em `src/calculator/declared/not-leaves.ts` (research R6; FR-016)
   - Files: `src/calculator/declared/not-leaves.test.ts`, `src/calculator/declared/not-leaves.ts`
-  - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string): NotLeaf | null`.
+  - Signatures: `interface NotLeaf { match: { call: string; mode?: string } | { read: string }; role: "curve" | "log" | "context" | "loopCounter" | "otherCharacter"; reason: string }`; `NOT_LEAVES: readonly NotLeaf[]`; `notLeafOf(key: string, character: number): NotLeaf | null` (a entrada `otherCharacter` só casa um índice diferente de `character`).
   - Cases: a curva `decay`, o `getLOG`, a masmorra e o mapa atual, o `GurtBonuzz` e a leitura de outro personagem casam; uma chamada comum não casa; toda entrada tem `reason`; nenhuma entrada é um texto do jogo.
-- [ ] T021 [P] Testes primeiro, depois a revisão em `src/calculator/declared/review.ts` (contracts/review.md; FR-024c, FR-025)
+- [X] T021 [P] Testes primeiro, depois a revisão em `src/calculator/declared/review.ts` (contracts/review.md; FR-024c, FR-025)
   - Files: `src/calculator/declared/review.test.ts`, `src/calculator/declared/review.ts`
   - Signatures: `interface Review { version: 1; blueprintSha: string; lock: { ok: boolean; gameSha: string; at: string } | null; verdict: "approved" | "fix" | null; note: string | null; history: ReviewEntry[] }`; `parseReview(raw: unknown): Review | null`; `blueprintSha(raw: unknown): string` (sha256 da forma canônica: chaves em ordem, sem espaço); `withLock(prev: Review | null, sha: string, lock: Review["lock"]): Review`; `withVerdict(prev: Review, verdict, note, sha, at): Review`; `reviewJson(r: Review): string`; `saoPauloTime(d: Date): string`.
   - Cases:
@@ -227,20 +227,20 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - nota só com `fix`, até 2.000 caracteres;
     - o horário sai no fuso `America/Sao_Paulo`;
     - o `reviewJson` já sai como o prettier o deixaria (o teste formata com o `prettier` instalado e compara), para o `just fmt-check` não acusar o que a ferramenta grava.
-- [ ] T022 Carga das receitas em `src/calculator/declared/blueprints.ts` e a API em `src/calculator/declared/index.ts` (research R8; depende de T014)
+- [X] T022 Carga das receitas em `src/calculator/declared/blueprints.ts` e a API em `src/calculator/declared/index.ts` (research R8; depende de T014)
   - Files: `src/calculator/declared/blueprints.ts`, `src/calculator/declared/blueprints-load.test.ts`, `src/calculator/declared/index.ts`
   - Signatures: `loadBlueprints(files: Readonly<Record<string, unknown>>): { complete: ReadonlyMap<string, Blueprint>; refused: { file: string; reason: string }[]; stages: ReadonlyMap<string, "sketch" | "draft" | "complete"> }`; `BLUEPRINTS` (o `import.meta.glob` eager de `../blueprints/**/*.blueprint.json`); `blueprintOf(id: string): Blueprint | null` (só `complete`).
   - Cases: um esboço e um rascunho não são servidos (`blueprintOf` → `null`, o que vira `unknownNumber`); uma receita recusada não derruba as outras; os `*.review.json` nunca são importados.
-- [ ] T023 Teste "uma receita por número" em `src/calculator/declared/blueprints.test.ts` (FR-001, FR-024a; depende de T022)
+- [X] T023 Teste "uma receita por número" em `src/calculator/declared/blueprints.test.ts` (FR-001, FR-024a; depende de T022)
   - Files: `src/calculator/declared/blueprints.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: cada número `arvore` de `docs/catalogo/numeros.json` tem exatamente um `<id>.blueprint.json`, na pasta do lote do `mundo` dele (`W1` → `w1` …, `Personagem` → `character`, `Conta` → `account`); nenhum arquivo a mais; todo arquivo carrega num estágio; o nome do arquivo é o id.
-- [ ] T024 Commit de dados com os 289 esboços (só `id` e `root`) em `src/calculator/blueprints/<lote>/` (plan Fase 2; depende de T023)
+- [X] T024 Commit de dados com os 289 esboços (só `id` e `root`) em `src/calculator/blueprints/<lote>/` (plan Fase 2; depende de T023)
   - Files: `src/calculator/blueprints/{w1…w7,character,account}/<id>.blueprint.json` (289)
   - Signatures: nenhuma (dados).
   - A raiz casada com o `root-calls.json` de hoje pela chamada; o que não casar, escrito a partir da `prova` do catálogo. O script que gera os esboços fica fora do repositório. Commit só de dados, separado da lógica (lição 3 da 008).
   - Cases: `just test-one src/calculator/declared/blueprints.test.ts` passa; o scan da T009 passa sobre os 289.
-- [ ] T025 A conferência real no modo `roots` em `src/calculator/declared/real-trees.integration.test.ts`, com os ajudantes em `real-trees-run.ts` (contracts/real-trees-run.md; FR-026, NFR-003; depende de T019, T022)
+- [X] T025 A conferência real no modo `roots` em `src/calculator/declared/real-trees.integration.test.ts`, com os ajudantes em `real-trees-run.ts` (contracts/real-trees-run.md; FR-026, NFR-003; depende de T019, T022)
   - Files: `src/calculator/declared/real-trees-run.test.ts` (primeiro), `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `treesEnv(env: NodeJS.ProcessEnv): { gameDir: string; snapshot: string; out: string; target: string; mode: "check" | "draft" | "roots" } | null`; `targetIds(target: string, catalog: readonly { id: string; lot: string }[]): string[]` (na ordem do catálogo); `rootCallOf(bp: Blueprint): RootCall`; `summaryLine(id: string, outcome): string`.
   - Cases (no `real-trees-run.test.ts`, em CI):
@@ -250,10 +250,54 @@ Vinicius, `just trees roots` escreve `TREES_OUT/roots.json` com a forma de cada 
     - a linha do resumo leva só o id, o resultado e o tempo; nunca um nome de personagem (o retrato do teste tem um, e ele não aparece);
     - toda saída cai dentro de `TREES_OUT`; um id com `..` ou `/` é recusado.
   - O modo `roots` sobe o gravador uma vez, grava só a raiz de cada esboço, em série, e escreve `TREES_OUT/roots.json` (a forma de cada raiz, o motivo das que ficaram fora, e os números que pedem o mapa vivo) e `summary.txt`. Um arquivo, um processo, nenhuma rede.
-- [ ] T026 [sessão] Sonda das raízes: `just trees roots` no PC do Vinicius (research R1; FR-002c) — **Parada:** as raízes fora da regra vão ao Vinicius numa tabela (id, nome, forma, motivo), antes da pergunta
+- [X] T026 [sessão] Sonda das raízes: `just trees roots` no PC do Vinicius (research R1; FR-002c) — **Parada:** as raízes fora da regra vão ao Vinicius numa tabela (id, nome, forma, motivo), antes da pergunta
   - Files: `TREES_OUT/roots.json` (fora do repo); `spec.md` só se a resposta esclarecer a regra (linha `resolved`, "durante a implementação"); a resposta que muda o escopo vira feature nova.
   - Signatures: nenhuma (rodada)
   - Expected: as 289 raízes classificadas; o tempo e a memória da rodada anotados em `registro.md`.
+
+
+### Fase 2b: as raízes fora da regra (decisão do Vinicius na T026, 21/11; spec, Open Questions de 21/11)
+
+- [X] T143 [P] Testes do gabarito com a camada de topo em `src/calculator/declared/answer-key.test.ts` (FR-002c; spec, Open Questions 21/11)
+  - Cases, no jogo inventado (blocos novos em `fake-game.js`, como na T017):
+    - `round(min(C, a × b))` → camada `[round, cap C]` e um Multi pool; o mesmo com `floor`, `ceil` e `max(c, x)` (floor);
+    - `cond ? 0 : a + b` (portão) → camada `[cond]` e um Additive pool; o caminho que não rodou fica sem valor;
+    - `K ÷ (1 + Σ ÷ 100)` → constante K e um divisor ➗ com as fontes;
+    - a ordem das camadas é a do código, de fora para dentro;
+    - uma raiz que só lê um valor ou devolve uma constante → `form: "leaf"`, sem pool.
+- [X] T144 O gabarito com a camada de topo em `src/calculator/declared/answer-key.ts` e `answer-key-terms.ts` (depende de T143)
+  - Signatures: `AnswerKey` ganha `top: TopLayer[]` com `TopLayer = { kind: "round" | "floor" | "ceil" | "cap" | "floor-min" | "cond" | "div"; value?: number; before: number; after: number }`; `form` ganha `"leaf"`.
+  - Regra: a camada é tirada antes da regra dos pools; o resto segue a FR-002c sem mudança. Nada de palpite: uma forma que não for camada conhecida continua `outOfRule` com o motivo.
+- [X] T145 Testes e código de duas formas de raiz novas em `src/calculator/declared/blueprint.ts`, `answer-key.ts` e `real-trees-run.ts` (spec, Open Questions 21/11; ADR 0010: a receita nunca guarda conta)
+  - **Soma de chamadas** (Tome Score): `root` aceita `{ combine: "sum"; calls: { call: string; args: (number | string)[] }[] }`; o gabarito grava cada chamada e soma.
+  - **Parte de uma chamada** (Glimbo, Vault, Exotic, Market Day e Night, Bubble cost Bits e Item): `root` aceita `{ call, args, part: <referência ao passo gravado> }`; o gabarito grava a chamada original e o valor da raiz é o do passo indicado (o redutor dentro do custo, por exemplo), tirado da gravação; nenhuma conta fica na receita.
+  - **Marcador na cópia de gravação** (Brew Speed): `root` aceita `scratch: { [atributo]: valor }`, posto só na cópia do jogo usada para gravar, antes da chamada (o `gimmeBrewSPDnonLiquid`); nunca no save, nunca no app em execução.
+  - Cases: duas chamadas inventadas somadas; uma parte de chamada inventada (o fator de um produto) com o valor do passo; um marcador que muda o caminho de um bloco inventado; uma chamada que falha vira `error` da raiz, não da rodada; o `parseBlueprint` recusa `calls` vazio e `part` que não é referência.
+- [X] T146 [P] `src/calculator/blueprints/systems.json` ganha os 17 sistemas, depois de `weekly-boss` (FR-006; spec, Open Questions 21/11)
+  - 🎟️ Event Shop · 🧂 Salt Lick · 🏯 Dungeons (com Flurbo Shop) · 📋 Tasks (com Merit Shop) · 🏝️ Islands · 💠 Jade Emporium · 🏗️ Construction · 🎣 Fishing · 🛐 Worship · 🍳 Cooking · 🏪 Zenith Market · 🍖 Food · 🔨 Smithing · 🦋 Catching · 📓 Death Note · 🏟️ Breeding · 🎪 Minigames (Darts e Hoops).
+  - Cases: os testes da T007 passam (id slug, emoji único, nome em inglês, prova por referência); `tree/systems.test.ts` passa sem mudança de caso (os novos entram depois dos extras).
+- [X] T147 Commit de dados: os esboços com a raiz certa e o catálogo (depende de T145; spec, Open Questions 21/11)
+  - Files: `src/calculator/blueprints/<lote>/*.blueprint.json`; `docs/catalogo/numeros.json` e `src/shared/number-catalog.json` só nos ids que mudam.
+  - Catálogo: saem `alch-brew-per-hour` e `alch-liquid-rate` (destino painel de farm); `alch-bubble-cost-reduction` vira `-bits` e `-item`; `farm-market-cost-reduction` vira `-day` e `-night`; continua com 289.
+  - Raízes: a tabela de raízes corrigidas da sonda (pasta de trabalho da 010, `raizes-corrigidas.md`), com a forma "parte de uma chamada" nos casos sem chamada própria; as raízes que são só leitura do save ficam para a T149.
+  - Cases: o teste "uma receita por número" (T023) passa com os ids novos.
+- [X] T148 [P] A sonda vê o zero do acumulador posto no começo de um laço `for` (`arcade-ball-bonus`, `research-insight-rate`) em `answer-key.ts` (research R1)
+  - Cases: um bloco inventado com o zero no init do `for` dá `chain`, não `outOfRule`.
+- [X] T150 [P] Folha só com prova também quando uma leitura e uma chamada filha têm o valor final (`answer-key.ts:326`): a chamada filha com o valor final vence ("a raiz só repassa uma chamada"); teste com um bloco inventado que lê um atributo 7 e devolve uma chamada que dá 7 (revisão da continuação, 22/11)
+- [X] T151 Portão e dois caminhos fora do `return` (as 21 raízes da segunda sonda: Mining e Chop Speed, Multi-Ore, Gilded Stamp Chance…): o gabarito acha a condição gravada dentro do último passo e a trata como a camada ❓ (spec, Open Questions 21/11: alvo = só o caminho padrão, estado = ❓ com os caminhos); teste com um bloco inventado `x = cond ? a : b; return x * k`
+- [X] T152 Raiz "rotina na cópia" (`constr-build-rate`): `root` aceita `{ routine: <evento do jogo>, sum: <caminho do estado> }`; o gravador roda o evento só na cópia de gravação e a raiz é a soma do estado que ele escreve; o Total Build Rate é a soma das casas do Cog Board × (1 + % das engrenagens) (spec, Open Questions 22/11); teste com um evento inventado
+- [X] T153 Commit de dados: `talents-max-level` vira a soma de `WorkbenchStuff(maxBookLv)` e `RunCodeOfTypeXforThingY(AllTalentLV)`; saem `gfood-quantity` e `storage-slots-total` do catálogo (287); o `part` passa a escolher **termos do pool gravado** (por referência) e o valor da raiz é o produto deles (pool Multi) ou a soma (pool Additive): o jogo multiplica o redutor solto junto do custo (Market Day e Night, Glimbo, Exotic, Bubble cost Bits e Item), então não há subexpressão só com ele; os argumentos: Vault com um upgrade da lista do Glimbo (`VaultUpgMaxLV`, 2) e Exotic com um preço diferente de 0 (`ExoticLVQTY`, 1000); as chaves gravadas estão em `lab/trees-out/part-keys.json` no PC do Vinicius
+- [X] T154 A camada de topo geral (segunda sonda, 22/11; formas já decididas em 21/11): (1) `A ÷ B` com qualquer numerador: o numerador segue a regra dos pools e cada fator de `B` vira uma linha ➗ no primeiro nível (numeradas quando há mais de uma), com os grupos de sistema e as constantes dentro; (2) `min`/`max` cujo limite não é constante: Cap ou Floor com o limite como linha que abre nas fontes dele; `min`/`max` aninhados viram uma camada cada; (3) `pow` com uma constante: a curva vai para o ⓘ do termo (FR-016), sem pool próprio. Testes com blocos inventados no jogo falso, um por forma; o teste da T151 ganha o caminho "sim" (`TreeOwned: 1`) e o `TreeGateChain` (achado da revisão)
+- [X] T155 O `part` também escolhe um termo que contém todas as referências (o fator `(1 + (Grid + VIP)/100)` do Vault, o `(1 + (Grimoire + Troll)/100)` do Tome bonus) e procura nos pools de uma corrente (o custo de bolha que o jogo acumula num caminho de rascunho e depois só lê); teste com um bloco inventado de cada
+- [X] T156 A receita da rotina do Cog Board (`constr-build-rate`): o evento `WorkbenchStuff2` do ator ajudante 8 (`ActorEvents_481`), com o texto de disparo que monta as casas dos personagens e o que aplica os % das engrenagens; a raiz é a soma do `a` de cada casa da cópia do tabuleiro, que tem que fechar com o Total Build Rate da aba BUILD
+- [X] T157 A regra do teto pela constante (spec, Open Questions 22/11): num `min`/`max` sem constante e sem lado vindo da raiz, o teto é o lado que começa com uma constante do jogo (`90 + …`, `10000 × …`); fora disso, recusa. Testes com blocos inventados das duas formas e um caso ambíguo recusado
+- [X] T158 Os passos que o gabarito ainda recusa na quarta sonda: o primeiro passo de corrente que é um `max`/`min` (Trap collect all, New bubble chance, Arcade ball: a camada vale também num passo da corrente), a corrente igual ao último passo do Legend talent max LV, o zero do laço do Research insight, e o redutor do Bubble cost Bits e Item, que é uma curva (`0,75^n`) dentro da conta acumulada (a curva vira termo, FR-016); um bloco inventado de cada, sem palpite
+- [X] T159 A raiz aceita uma lista curta de números como argumento (`TotalTalentPoints([0,0,0,0,0,0])`, até 8 números) e o índice de um item do resultado; teste no `parseBlueprint` e no gravador inventado
+- [X] T160 Commit de dados (spec, Open Questions 22/11): `summ-unit-stats` = `Summoning("UnitDMG",-1,0)`; `obols-stat-multi` vira `-str`, `-agi`, `-wis`, `-luk` (o multiplicador de cada um dentro de `TotalStats`, com o `part` nos termos do talento e do Super Bit); `talents-points-per-tab` vira `-1` … `-6`; o catálogo com 295 (a tabela da pasta de trabalho, `raizes-sem-numero.md`)
+- [X] T161 `signs-seraph-multi` e `stats-mob-respawn` (spec, Open Questions 22/11): a conta fica dentro de um bloco que não devolve o número (o Seraph numa variável do `StarSigns`; a soma comum do respawn dentro do `performETCaction`, que só grava o `RespawnTime` de cada monstro); a raiz precisa de uma forma "rotina + parte" ou do caminho onde a soma fica; sem chute
+- [X] T162 O que a quinta sonda ainda recusa: (1) o `part` e o `item` só olham as chamadas e as listas da própria raiz, nunca as que outros blocos chamaram na mesma gravação (Obol stat multi: o `TotalStats` roda mais de uma vez; Talent points per tab: a lista de pontos sai mais de uma vez); (2) o `part` acha uma referência dentro de um termo composto (o Super Bit dentro do termo do talento) e dentro da curva da conta acumulada (Bubble cost); (3) um lado `min`/`max` cujos argumentos começam com constante conta como "começa com constante" (Food not consume: `min(90 + …, 98 + …)`); (4) o primeiro passo da corrente do New bubble chance; um bloco inventado de cada, sem palpite
+- [X] T163 `stats-mob-respawn` vira 7 árvores, uma por mundo (spec, Open Questions 22/11, sexta sonda): `stats-mob-respawn-w1` … `-w7`, cada uma com a linha ➗ inteira das voltas do `performETCaction("MonsterRespawnTimeReset")` daquele mundo (a parte comum mais a conquista e as tarefas do mundo; no W7, 0,65 × a parte comum mais o Spelunk); a receita declara qual volta é de qual mundo por referência, nunca pela ordem; as voltas do mesmo mundo têm de dar os mesmos termos e o mesmo valor, senão recusa; cavernas e rift ficam fora; o catálogo com 301 (commit de dados próprio); um bloco inventado no `fake-game.js`
+- [X] T149 [sessão] Sonda das raízes de novo: `just trees roots` no PC do Vinicius (depende de T143–T148) — **Parada:** se sobrar raiz fora da regra, a tabela vai ao Vinicius.
 
 **Checkpoint**: `just check` passa; a decisão das raízes fora da regra está registrada.
 
@@ -1009,7 +1053,7 @@ Verify: `just test-one src/main/old-trees.test.ts` - passa; `just test-one src/r
 Drop Rate em até 5 s, com 0 "no name yet", "Game value" e "Other" nas 289.
 
 - [ ] T135 A saída da forma antiga, num commit próprio (FR-027; research R17; depende de T123)
-  - Files: apagados com os testes deles: `src/calculator/tree-build.ts`, o resto de `src/calculator/tree/`, `src/calculator/tree-roots.ts`, `src/calculator/root-calls.json`, `src/calculator/parity*.ts`; o tipo `TreeRoot` de que o `tree-recipe.ts` precisa muda para `tree-record.ts`; `.env.example` perde os `PARITY_*`.
+  - Files: apagados com os testes deles: `src/calculator/tree-build.ts`, o resto de `src/calculator/tree/`, `src/calculator/tree-roots.ts`, `src/calculator/root-calls.json`, `src/calculator/parity*.ts`, e também `src/calculator/names/`, `game-names.ts` e `names-reader.js`, se o gerador de rascunho não os usar (nesse caso ficam só para ele, fora do worker do app: spec, Open Questions, 21/11); o tipo `TreeRoot` de que o `tree-recipe.ts` precisa muda para `tree-record.ts`; `.env.example` perde os `PARITY_*`.
   - Signatures: nenhuma nova; `TreeRoot` passa a ser exportado de `tree-record.ts`
   - Cases: `just check` passa; nenhum import para um arquivo apagado; `just arch` passa; a lista de testes apagados vai na descrição do PR, cada um com o código que ele testava.
 - [ ] T136 [P] `ARCHITECTURE.md`: o motor declarado, as receitas como dado, a revisão, a ferramenta da galeria, as regras do dependency-cruiser e o que saiu (constituição, Architecture; depende de T135)

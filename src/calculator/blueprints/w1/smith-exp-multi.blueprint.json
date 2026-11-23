@@ -1,0 +1,10 @@
+{
+  "id": "smith-exp-multi",
+  "root": {
+    "name": "EXP Multiplier (Smithing)",
+    "ref": {
+      "call": "SkillStats",
+      "args": ["SmithingEXPmulti", 0, 0]
+    }
+  }
+}
