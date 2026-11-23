@@ -1372,6 +1372,29 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDeclMap = function () {
     return state().CurrentMap + 1;
   };
+  // Spec 010 (T166): a cache built before the root by a block of the recipe, and roots that only read it, in a pool or
+  // in a call of the pool. Another block builds the same cache to the same number: with both, two possible authors.
+  Blocks._customBlock_TreeAuthorBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeBase * 3 + state().TreeStats.h.a;
+  };
+  Blocks._customBlock_TreeAuthorAgain = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a * 5;
+  };
+  Blocks._customBlock_TreeAuthorRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v + state().TreeCapped
+    );
+  };
+  Blocks._customBlock_TreeAuthorCall = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v * 2;
+  };
+  Blocks._customBlock_TreeAuthorDeep = function () {
+    return Blocks._customBlock_TreeAuthorCall() + state().TreeCapped;
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
