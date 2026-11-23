@@ -76,6 +76,12 @@ export function stepsGuide(
       ].join("  |  "),
     );
     if (w.call) {
+      w.call.a.forEach((a, i) => {
+        if (a === dc.character)
+          lines.push(
+            `${pad}  argumento ${String(i + 1)} = ${fmt(a)}: o índice do personagem? se for, a receita escreve "{character}"`,
+          );
+      });
       for (const s of ctx.stepsOf(w.call.id).steps)
         lines.push(`${pad}  passo: ${text(s.e)} = ${fmt(s.v)}`);
       for (const [p, v] of w.call.r ?? []) {

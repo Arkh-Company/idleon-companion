@@ -260,6 +260,10 @@ export function draftBlueprint(
         : {}),
     };
     if (!Array.isArray(w.below)) wait(where, w.below);
+    // an argument equal to the character's index may be the character or a number that happens to be it: the agent
+    // writes `{character}` or keeps it (research R5); the draft does not decide by the value
+    else if ("call" in ref && ref.args.includes(dc.character))
+      wait(where, "descend");
     return out;
   };
 

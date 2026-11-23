@@ -202,6 +202,8 @@ test("filled where it is pending, the draft passes the lock: its order and its p
         (o, k) => o[k] as Record<string, unknown>,
         d,
       );
+    // an argument equal to the character's index that is not the character: kept as it is
+    if (p.kind === "descend") continue;
     if (p.kind === "name") at.name = "Filled Name";
     else if (p.kind === "leaf") at.leaf = "rawBonus";
     else if ("sources" in at) at.system = p.where;
