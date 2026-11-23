@@ -29,7 +29,7 @@ import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
-import { refusedAuthor, writeExpr } from "./cache-author.ts";
+import { refusedAuthor, writeExpr, writeTurn } from "./cache-author.ts";
 
 export interface AnswerPool {
   kind: PoolKind;
@@ -103,7 +103,16 @@ export function answerKeyOfSteps(
           xi: w.xi,
           bound: boundOf(top, w, opts.ops),
           ...(turnOf && {
-            turn: () => writeExpr(rec, { node: top, write: w }, turnOf),
+            turn: () => {
+              const a = { node: top, write: w };
+              const t = writeTurn(rec, a, turnOf);
+              const e = writeExpr(rec, a, turnOf, t);
+              // the turn's step is the root's step of the same op of the code: where the step log put each
+              const op = (at?: number) => top.x?.[at ?? -1]?.[0];
+              const mine = op(t.stepAt?.at(-1));
+              const step = (stepAt ?? []).findIndex((p) => op(p) === mine);
+              return e && { e, step };
+            },
           }),
         },
       ]);

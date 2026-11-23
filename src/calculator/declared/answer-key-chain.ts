@@ -28,8 +28,11 @@ export interface Bound {
 export interface WriteMeta {
   xi?: number;
   bound?: Bound | null;
-  /** A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), or null. */
-  turn?: () => Expr | null;
+  /**
+   * A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), with the index of
+   * the root's step of the same op of the code (-1 with none), or null.
+   */
+  turn?: () => { e: Expr; step: number } | null;
 }
 
 export interface ChainWrite {
@@ -162,14 +165,18 @@ export function chainPools(
     // a loop's turn after the total's start (T175): the step at the write's own place, in the place of the loop's step
     const turn = !s && before !== null ? writes?.[n]?.turn : undefined;
     // a 0 with no step before any pool sets the total again (the loop's init): where it starts, no turn
-    const e = turn?.() ?? null;
-    if (turn && (e || raw.length > 0 || w.value !== 0)) {
-      if (!e)
+    const t = turn?.() ?? null;
+    if (turn && (t || raw.length > 0 || w.value !== 0)) {
+      if (!t)
         throw new OutOfRule(
           `a escrita ${String(w.value)} do acumulador ${path} não tem passo no lugar da sua volta`,
         );
-      s = { v: w.value, e };
-      at = m.writes.slice(n + 1).find((x) => x.step !== null)?.step ?? null;
+      if (t.step < 0)
+        throw new OutOfRule(
+          `a volta da escrita ${String(w.value)} do acumulador ${path} não tem o seu passo entre os da chamada`,
+        );
+      s = { v: w.value, e: t.e };
+      at = t.step;
     }
     if (!s || at === null) {
       onlyTimes = false;
