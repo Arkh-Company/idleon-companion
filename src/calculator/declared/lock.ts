@@ -30,6 +30,7 @@ export type LockErrorKind =
   | "childNoValue"
   | "conditionMismatch"
   | "leafType"
+  | "leafHasChildren"
   | "pending"
   | "classMismatch"
   | "rootForm";
@@ -42,7 +43,10 @@ export interface LockError {
   pool?: PoolKind;
   /** The game's side: the recorded value, the order, the missing reference, a class list, the condition's state. */
   expected?: number | string;
-  /** The blueprint's side: what the parts give, its order, its reference, the character's class, the condition's value. */
+  /**
+   * The blueprint's side: what the parts give, its order, its reference, the character's class, the condition's value,
+   * a leaf's first child.
+   */
   got?: number | string;
 }
 
@@ -106,6 +110,8 @@ export function lockMessage(e: LockError): string {
       return `condição não confere: ${level}: o jogo ${e.expected === "on" ? "usou" : "não usou"} o termo, e a condição ${e.got === undefined ? "não está na gravação" : `vale ${fmt(e.got)}`}`;
     case "leafType":
       return `folha sem tipo: ${level}`;
+    case "leafHasChildren":
+      return `folha com filhos na gravação: ${level}: o primeiro é ${fmt(e.got)}`;
     case "pending":
       return `receita com pendência: ${level} (${fmt(e.got)})`;
     case "classMismatch":

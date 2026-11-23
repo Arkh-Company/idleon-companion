@@ -12,6 +12,7 @@ import { callRef, near, relDiff } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
+import { keyOfLeaf, leavesOf, saveChild, termExpr } from "./lock-parts.ts";
 import type { LockError, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import { matchRead, refKey } from "./refs.ts";
@@ -60,15 +61,6 @@ export const num = (v: unknown): number | null =>
         ? Number(v)
         : null;
 
-function leavesOf(e: Expr, out: Expr[] = []): Expr[] {
-  if (e.t === "def") leavesOf(e.e, out);
-  else if (e.t === "op") leavesOf(e.r, leavesOf(e.l, out));
-  else if (e.t === "fn") for (const a of e.args) leavesOf(a, out);
-  else if (e.t === "not") leavesOf(e.a, out);
-  else out.push(e);
-  return out;
-}
-
 /** The expression a call returned: its last step with its value, or else the last call it made (`return Call(…)`). */
 function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const last = ctx.stepsOf(n.id).steps.at(-1);
@@ -76,12 +68,6 @@ function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const kid = ctx.rec.nodes[n.c.at(-1) ?? -1];
   return kid ? { t: "call", id: kid.id, v: num(kid.v) } : null;
 }
-
-const keyOfLeaf = (e: Expr, rec: Recording): string | null => {
-  if (e.t === "read") return e.p;
-  const n = e.t === "call" ? rec.nodes[e.id] : undefined;
-  return n ? callRef(n) : null;
-};
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
 /** The recorded call a call reference stands for in a level: one of its expression's, or one the level made. */
@@ -307,6 +293,20 @@ function descend(
   const children = node.children ?? [];
   if (children.length === 0) {
     leafCheck(node, ctx.where, out);
+    // a leaf is the end of the descent: below its own call, the recording reads nothing of the save
+    const { ref } = node;
+    const child =
+      ref &&
+      "call" in ref &&
+      callRef(level.scope) === refKey(ref, ctx.character)
+        ? saveChild(level.scope, ctx)
+        : null;
+    if (child !== null)
+      out.errors.push({
+        kind: "leafHasChildren",
+        where: ctx.where,
+        got: child,
+      });
     return;
   }
   out.counts.branches++;
@@ -327,44 +327,6 @@ export function lockLevels(
     out,
   );
   return out;
-}
-
-/** The place of a two-source term in the root's steps: the smallest part around its first call that holds every ref. */
-function termExpr(
-  term: AnswerTerm,
-  top: RecNode,
-  ctx: LevelContext,
-): Expr | null {
-  const first = term.nodes[0];
-  const isFirst = (e: Expr) =>
-    first === null || first === undefined
-      ? e.t === "read" && e.p === term.ref
-      : e.t === "call" && e.id === first;
-  const found: Expr[] = [];
-  const visit = (e: Expr, up: readonly Expr[]): void => {
-    if (isFirst(e)) {
-      const around = [...up, e].reverse().find((x) => {
-        const ks = new Set(leavesOf(x).map((l) => keyOfLeaf(l, ctx.rec)));
-        return term.refs.every((r) => ks.has(r));
-      });
-      if (around) found.push(around);
-      return;
-    }
-    const kids =
-      e.t === "def"
-        ? [e.e]
-        : e.t === "op"
-          ? [e.l, e.r]
-          : e.t === "fn"
-            ? e.args
-            : e.t === "not"
-              ? [e.a]
-              : [];
-    for (const k of kids) visit(k, [...up, e]);
-  };
-  for (const s of ctx.stepsOf(top.id).steps) visit(s.e, []);
-  // a read in more than one place: the place does not decide, and the term is not guessed
-  return found.length === 1 ? (found[0] ?? null) : null;
 }
 
 /** The descent below a pool's source, from the answer key's term: the term's own expression, or its call's. */
