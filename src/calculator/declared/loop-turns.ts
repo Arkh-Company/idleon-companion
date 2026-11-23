@@ -5,7 +5,8 @@
 // of its own place, or two turns with the same item, are refused with the reason: the turns do not part by their place.
 // A cache its author summed over its own value (T168, `d.X.v = d.X.v + item`) opens the same way: each write of the
 // author on the path a turn, its item the right side of the step that gave that write; a first write of 0 with no step
-// is where the sum starts, no line.
+// is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
+// write that does not overwrote the cache, and its own count opens it; an overwrite among the turns is refused.
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
@@ -59,7 +60,10 @@ export function loopOpening(
   return turnsOf(callRef(scope), items, ctx);
 }
 
-/** The turns of a cache its author wrote more than once on the path up to `write`; null with one write only. */
+/**
+ * The turns of a cache its author summed over its own value on the path up to `write`; null with one write only or a
+ * last write that overwrote it.
+ */
 export function writeTurns(
   author: RecNode,
   write: RecWrite,
@@ -72,10 +76,17 @@ export function writeTurns(
   const exprs = ws.map((w) =>
     writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf),
   );
+  const itemOf = (e: Expr | null | undefined) =>
+    e?.t === "op" && e.o === "+" && e.l.t === "read" && e.l.p === write.path
+      ? e.r
+      : undefined;
+  if (itemOf(exprs.at(-1)) === undefined) return null;
   // the sum starts at a write of 0 with no step of its own: no line
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
-  const items = exprs
-    .slice(start)
-    .map((e) => (e?.t === "op" && e.o === "+" ? e.r : null));
-  return turnsOf(callRef(author), items, ctx);
+  const turns = exprs.slice(start);
+  const name = callRef(author);
+  const over = turns.findIndex((e) => e !== null && itemOf(e) === undefined);
+  if (over >= 0)
+    return `a volta ${String(over + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
+  return turnsOf(name, turns.map(itemOf), ctx);
 }
