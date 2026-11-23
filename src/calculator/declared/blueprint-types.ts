@@ -26,6 +26,22 @@ export interface BlueprintNode {
   children?: readonly BlueprintNode[];
   leaf?: LeafKind;
   conditionKind?: ConditionKind;
+  /** A recipe piece in place of the children (T169): on load, its body, the args filled in, comes in its place. */
+  piece?: { name: string; args: PieceArgs };
+  /** Only in a piece: the level closes by the sum or the product of its children (T171). */
+  combine?: "sum" | "product";
+  /** Only in a piece: the one model child stands for one child per item of the recorded list (T170). */
+  each?: { list: string; as: string };
+}
+/** A piece's args: a value for each of its params, in place of `{param}` in its references. */
+export type PieceArgs = Readonly<Record<string, string | number>>;
+/** A recipe piece (T169): `blueprints/pieces/<id>.piece.json`, the count and the children a node that calls it takes. */
+export interface BlueprintPiece {
+  id: string;
+  params: readonly string[];
+  combine: "sum" | "product";
+  each?: { list: string; as: string };
+  children: readonly BlueprintNode[];
 }
 export interface BlueprintGroup {
   /** In a draft, null where `pending` says `system`. */

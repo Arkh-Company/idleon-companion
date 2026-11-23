@@ -8,6 +8,7 @@ import {
   checkProof,
   checkRef,
   checkRoot,
+  IDENT,
   isObj,
   list,
   no,
@@ -17,8 +18,12 @@ import {
 import type {
   Blueprint,
   BlueprintPending,
+  BlueprintPiece,
   BlueprintStage,
+  PieceArgs,
 } from "./blueprint-types.ts";
+import { fill, inlinePieces, pieceBody } from "./pieces.ts";
+import { ARG_TEXT_MAX } from "./refs.ts";
 export type {
   LeafKind,
   ConditionKind,
@@ -51,14 +56,91 @@ const NODE_KEYS = [
   "children",
   "leaf",
   "conditionKind",
+  "piece",
+  "combine",
+  "each",
 ];
 const SLUG = /^[a-z0-9-]{1,60}$/;
 
-type Level = "source" | "child" | "condition";
+/** `piece`: a child of a node with `combine`, inside a recipe piece. */
+type Level = "source" | "child" | "condition" | "piece";
 interface Walk {
   systems: ReadonlySet<string>;
   pending: (kind: BlueprintPending["kind"], where: string) => boolean;
   places: Set<string>;
+  pieces: ReadonlyMap<string, unknown>;
+  /** The pieces whose body is being checked, the outermost first: a call of one of them again is a cycle. */
+  stack: readonly string[];
+}
+
+const isArg = (v: unknown): boolean =>
+  (typeof v === "number" && Number.isFinite(v)) ||
+  (typeof v === "string" && v.length <= ARG_TEXT_MAX && !v.includes("{"));
+
+/** A piece's call checked (T169): the piece exists, is no cycle, and has an arg for each param, none more. */
+function pieceOf(
+  n: Record<string, unknown>,
+  where: string,
+  w: Walk,
+): { name: string; body: object } {
+  if (["children", "leaf", "combine", "each"].some((k) => n[k] !== undefined))
+    no(where, "piece vai no lugar de children, leaf, combine e each");
+  const c = obj(n.piece, ["name", "args"], `${where}/piece`);
+  const name = typeof c.name === "string" && SLUG.test(c.name) ? c.name : null;
+  if (name === null) return no(where, "piece.name fora do slug");
+  if (w.stack.includes(name)) no(where, `pedaço que chama a si mesmo: ${name}`);
+  if (!w.pieces.has(name)) no(where, `pedaço que não existe: ${name}`);
+  const at = `pedaço ${name}`;
+  const p = obj(
+    w.pieces.get(name),
+    ["id", "params", "combine", "each", "children"],
+    at,
+  );
+  if (p.id !== name) no(at, "id diferente do nome do arquivo");
+  const params = Array.isArray(p.params) ? (p.params as unknown[]) : null;
+  if (
+    params === null ||
+    new Set(params).size !== params.length ||
+    !params.every((k) => typeof k === "string" && IDENT.test(k)) ||
+    params.includes("character")
+  )
+    no(at, "params é uma lista de nomes, sem repetir e sem character");
+  const args = isObj(c.args) ? c.args : no(where, "piece.args não é um objeto");
+  for (const k of Object.keys(args))
+    if (!params?.includes(k)) no(where, `parâmetro que sobra: ${k}`);
+  for (const k of params ?? [])
+    if (args[k as string] === undefined)
+      no(where, `parâmetro que falta: ${String(k)}`);
+  if (!Object.values(args).every(isArg))
+    no(where, "piece.args leva números e textos curtos, sem {");
+  return {
+    name,
+    body: pieceBody(p as unknown as BlueprintPiece, args as PieceArgs),
+  };
+}
+
+/** A piece's count and list (T170, T171): `combine` and `each` only inside a piece, the list a path with one `[*]`. */
+function checkPieceLevel(
+  n: Record<string, unknown>,
+  where: string,
+  w: Walk,
+): void {
+  if (n.combine !== undefined || n.each !== undefined) {
+    if (w.stack.length === 0) no(where, "combine e each só em pedaço");
+    if (n.combine !== "sum" && n.combine !== "product")
+      no(where, "combine é sum ou product");
+  }
+  if (w.stack.length > 0 && n.children !== undefined && n.combine === undefined)
+    no(where, "nó com children num pedaço pede combine");
+  if (n.each === undefined) return;
+  const e = obj(n.each, ["list", "as"], `${where}/each`);
+  if (typeof e.as !== "string" || !IDENT.test(e.as) || e.as === "character")
+    no(where, "each.as é um nome, nunca character");
+  if (typeof e.list !== "string" || e.list.split("[*]").length !== 2)
+    no(where, "each.list é um caminho com um [*]");
+  checkRef({ read: e.list }, `${where}/each`);
+  if (!Array.isArray(n.children) || n.children.length !== 1)
+    no(where, "each tem um filho-modelo só");
 }
 
 function uniqueKeys(nodes: unknown[], where: string): void {
@@ -70,6 +152,19 @@ function uniqueKeys(nodes: unknown[], where: string): void {
 function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   w.places.add(where);
   const n = obj(x, NODE_KEYS, where);
+  if (n.piece !== undefined) {
+    // the node with the piece's body in place of the call, as the load puts it (pieces.ts, inlinePieces)
+    const { name, body } = pieceOf(n, where, w);
+    const stack = [...w.stack, name];
+    checkNode({ ...n, piece: undefined, ...body }, where, level, {
+      ...w,
+      stack,
+    });
+    return;
+  }
+  checkPieceLevel(n, where, w);
+  if (level === "piece" && n.condition !== undefined)
+    no(where, "condition não vai dentro de pedaço");
   if (typeof n.key !== "string" || !SLUG.test(n.key))
     no(where, "key fora do slug");
   if (n.name !== null || !w.pending("name", where)) checkName(n.name, where);
@@ -102,8 +197,15 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   const siblings: unknown[] = [];
   if (n.children !== undefined) {
     if (n.leaf !== undefined) no(where, "leaf com children");
+    // an each's model is checked with its item's name as an index (`[{as}]` as `[0]`)
+    const as = isObj(n.each) ? (n.each.as as string) : null;
     list(n.children, where, "children").forEach((c, i) => {
-      checkNode(c, `${where}/children/${String(i)}`, "child", w);
+      checkNode(
+        as === null ? c : fill(c, { [as]: 0 }),
+        `${where}/children/${String(i)}`,
+        n.combine === undefined ? "child" : "piece",
+        w,
+      );
       siblings.push(c);
     });
   } else if (
@@ -171,7 +273,12 @@ function checkPools(raw: unknown, w: Walk): void {
 
 export function parseBlueprint(
   raw: unknown,
-  ctx: { fileId: string; systemIds: ReadonlySet<string> },
+  ctx: {
+    fileId: string;
+    systemIds: ReadonlySet<string>;
+    /** The recipe pieces by their id (T169): a node may call one. */
+    pieces?: ReadonlyMap<string, unknown>;
+  },
 ):
   | { ok: true; stage: BlueprintStage; blueprint: Blueprint }
   | { ok: false; reason: string } {
@@ -205,6 +312,8 @@ export function parseBlueprint(
       pending: (kind, where) =>
         pending.some((p) => p.kind === kind && p.where === where),
       places: new Set(),
+      pieces: ctx.pieces ?? new Map(),
+      stack: [],
     };
     checkPools(bp.pools, w);
     for (const p of pending)
@@ -212,7 +321,7 @@ export function parseBlueprint(
     return {
       ok: true,
       stage: pending.length > 0 ? "draft" : "complete",
-      blueprint: bp as unknown as Blueprint,
+      blueprint: inlinePieces(bp as unknown as Blueprint, w.pieces),
     };
   } catch (e) {
     if (e instanceof Refused) return { ok: false, reason: e.message };

@@ -4,7 +4,7 @@
 // which parseBlueprint turns into the blueprint's reason.
 import { ARG_TEXT_MAX, hasRawCharacterIndex, isPathRead } from "./refs.ts";
 
-const IDENT = /^[A-Za-z_$][\w$]*$/;
+export const IDENT = /^[A-Za-z_$][\w$]*$/;
 const NO_NAME = /^(?:no name yet|game value)$/i;
 
 export class Refused extends Error {}
