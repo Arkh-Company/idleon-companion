@@ -18,7 +18,11 @@ import {
 } from "./draft.ts";
 import type { DraftContext, Walked } from "./draft.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { fmt } from "./lock.ts";
+import { fmt as fmtValue } from "./lock.ts";
+
+/** A recorded value in the guide: a number as the lock writes it, anything else as its own text (`undefined` too). */
+const fmt = (v: unknown): string =>
+  typeof v === "number" ? fmtValue(v) : String(v);
 import { notLeafOf } from "./not-leaves.ts";
 
 export function stepsGuide(
