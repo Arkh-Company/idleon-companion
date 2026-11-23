@@ -2,9 +2,4439 @@
   "id": "stats-luk",
   "root": {
     "name": "LUK",
+    "nameProof": {
+      "names": "TotalStats(\"LUK\")"
+    },
     "ref": {
       "call": "TotalStats",
       "args": ["LUK", 0, 0]
     }
-  }
+  },
+  "pools": [
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "equipment",
+          "sources": [
+            {
+              "key": "items",
+              "name": null,
+              "each": {
+                "list": "EquipmentOrder[*][*]",
+                "as": ["r", "s"]
+              },
+              "children": [
+                {
+                  "key": "item",
+                  "name": null,
+                  "leaf": "choice"
+                }
+              ]
+            },
+            {
+              "key": "upgrades",
+              "name": null,
+              "each": {
+                "list": "EquipmentMap[*][*].LUK",
+                "as": ["r", "s"]
+              },
+              "children": [
+                {
+                  "key": "upgrade",
+                  "name": null,
+                  "ref": {
+                    "read": "EquipmentMap[{r}][{s}].LUK"
+                  },
+                  "leaf": "rawBonus"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "gallery",
+          "sources": [
+            {
+              "key": "galle-luk",
+              "name": "Gallery Trophies: LUK",
+              "nameProof": {
+                "names": "DNSM.GalleryTrophyBonTOT.LUK"
+              },
+              "ref": {
+                "read": "DNSM.GalleryTrophyBonTOT.LUK"
+              },
+              "children": [
+                {
+                  "key": "gal-ini-0",
+                  "name": "Gallery: trophy bonuses (all)",
+                  "nameProof": {
+                    "names": "Gallery(\"InitializeTrophyBonuses\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Gallery",
+                    "args": ["InitializeTrophyBonuses", 0, 0]
+                  }
+                }
+              ]
+            },
+            {
+              "key": "galle-l-2",
+              "name": "Gallery Nametags: LUK",
+              "nameProof": {
+                "names": "DNSM.GalleryNametagBonTOT.LUK"
+              },
+              "ref": {
+                "read": "DNSM.GalleryNametagBonTOT.LUK"
+              },
+              "children": [
+                {
+                  "key": "gal-ini-0",
+                  "name": "Gallery: nametag bonuses (all)",
+                  "nameProof": {
+                    "names": "Gallery(\"InitializeNametagBonuses\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Gallery",
+                    "args": ["InitializeNametagBonuses", 0, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "hatrack",
+          "sources": [
+            {
+              "key": "premh-luk",
+              "name": "Hat Rack: LUK",
+              "nameProof": {
+                "names": "DNSM.PremHatBonTOT.LUK"
+              },
+              "ref": {
+                "read": "DNSM.PremHatBonTOT.LUK"
+              },
+              "children": [
+                {
+                  "key": "gal-ini-0",
+                  "name": "Hat Rack: hat bonuses (all)",
+                  "nameProof": {
+                    "names": "Gallery(\"InitializePremHatBonuses\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Gallery",
+                    "args": ["InitializePremHatBonuses", 0, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "cape-vine",
+          "sources": [
+            {
+              "key": "capev-luk",
+              "name": "Cape Vine: LUK",
+              "nameProof": {
+                "names": "DNSM.CapeVineBonTOT.LUK"
+              },
+              "ref": {
+                "read": "DNSM.CapeVineBonTOT.LUK"
+              },
+              "children": [
+                {
+                  "key": "gal-ini-0",
+                  "name": "Cape Vine: cape bonuses (all)",
+                  "nameProof": {
+                    "names": "Gallery(\"InitializeCapeBonuses\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Gallery",
+                    "args": ["InitializeCapeBonuses", 0, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "talents",
+          "sources": [
+            {
+              "key": "tal-21",
+              "name": null,
+              "ref": {
+                "call": "GetTalentNumber",
+                "args": [1, 21]
+              },
+              "children": [
+                {
+                  "key": "tal-21",
+                  "name": null,
+                  "ref": {
+                    "call": "GetTalentNumber",
+                    "args": [1, 21]
+                  }
+                },
+                {
+                  "key": "stamp-pct",
+                  "name": "Stamps: LUK",
+                  "nameProof": {
+                    "names": "StampBonusOfTypeX(\"PctLUK\")"
+                  },
+                  "ref": {
+                    "call": "StampBonusOfTypeX",
+                    "args": ["PctLUK"]
+                  },
+                  "termPart": {
+                    "system": "stamps"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "obols",
+          "sources": [
+            {
+              "key": "scrol-43",
+              "name": null,
+              "ref": {
+                "read": "PixelHelperActor[0].behaviors.getBehavior(ActorEvents_29)._ScrollCircleINFO[43][7][3]"
+              },
+              "children": [
+                {
+                  "key": "scrol-43",
+                  "name": null,
+                  "ref": {
+                    "read": "PixelHelperActor[0].behaviors.getBehavior(ActorEvents_29)._ScrollCircleINFO[43][7][3]"
+                  }
+                },
+                {
+                  "key": "tal-36",
+                  "name": null,
+                  "ref": {
+                    "call": "GetTalentNumber",
+                    "args": [1, 36]
+                  },
+                  "termPart": {
+                    "system": "talents"
+                  }
+                },
+                {
+                  "key": "gaming-su",
+                  "name": "All obols give +40% more STR/AGI/WIS/LUK than what they say they do!",
+                  "nameProof": {
+                    "names": "GamingStatType(\"SuperBitType\", 2, 0)"
+                  },
+                  "ref": {
+                    "call": "GamingStatType",
+                    "args": ["SuperBitType", 2, 0]
+                  },
+                  "termPart": {
+                    "system": "gaming"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "talents",
+          "sources": [
+            {
+              "key": "tal-13",
+              "name": "Lucky Clover",
+              "nameProof": {
+                "names": "GetTalentNumber(1, 13)"
+              },
+              "ref": {
+                "call": "GetTalentNumber",
+                "args": [1, 13]
+              },
+              "children": [
+                {
+                  "key": "run-all-1",
+                  "name": "All-talent levels",
+                  "nameProof": {
+                    "names": "RunCodeOfTypeXforThingY(\"AllTalentLV\", \"13\")"
+                  },
+                  "ref": {
+                    "call": "RunCodeOfTypeXforThingY",
+                    "args": ["AllTalentLV", "13"]
+                  },
+                  "children": [
+                    {
+                      "key": "dnsm-all",
+                      "name": null,
+                      "ref": {
+                        "read": "DNSM.AllTalMaxCapFR"
+                      }
+                    },
+                    {
+                      "key": "tal-149",
+                      "name": "Symbols Of Beyond (Warrior)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 149)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 149]
+                      },
+                      "children": [
+                        {
+                          "key": "arb-int-1",
+                          "name": null,
+                          "ref": {
+                            "call": "ArbitraryCode5Inputs",
+                            "args": ["intervalAdd", 1, 20, 434, 0, 0]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "tal-374",
+                      "name": "Symbols Of Beyond (Archer)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 374)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 374]
+                      }
+                    },
+                    {
+                      "key": "tal-539",
+                      "name": "Symbols Of Beyond (Mage)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 539)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 539]
+                      }
+                    },
+                    {
+                      "key": "ach-291",
+                      "name": "Maroon Warship",
+                      "nameProof": {
+                        "names": "AchieveStatus(291)"
+                      },
+                      "ref": {
+                        "call": "AchieveStatus",
+                        "args": [291]
+                      }
+                    },
+                    {
+                      "key": "fambo-68",
+                      "name": "LV For All Talents Above LV 1 (family bonus)",
+                      "nameProof": {
+                        "names": "DNSM.FamBonusQTYs[68]"
+                      },
+                      "ref": {
+                        "read": "DNSM.FamBonusQTYs[68]"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-3",
+                          "name": "Family bonuses (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-3)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-3]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "comp-1",
+                      "name": "Rift Slug",
+                      "nameProof": {
+                        "names": "Companions(1)"
+                      },
+                      "ref": {
+                        "call": "Companions",
+                        "args": [1]
+                      }
+                    },
+                    {
+                      "key": "div-bon-8",
+                      "name": "Nobisect",
+                      "nameProof": {
+                        "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                      },
+                      "ref": {
+                        "call": "Divinity",
+                        "args": ["Bonus_Minor", 8, 2]
+                      },
+                      "children": [
+                        {
+                          "key": "div-div-8",
+                          "name": "Arctis",
+                          "nameProof": {
+                            "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                          },
+                          "ref": {
+                            "call": "Divinity",
+                            "args": ["DivMinorBonus", 8, 1]
+                          },
+                          "children": [
+                            {
+                              "key": "alchb-yac",
+                              "name": "Big P bubble",
+                              "nameProof": {
+                                "names": "DNSM.AlchBubbles.Y2ACTIVE"
+                              },
+                              "ref": {
+                                "read": "DNSM.AlchBubbles.Y2ACTIVE"
+                              },
+                              "children": [
+                                {
+                                  "key": "calc-2",
+                                  "name": "Vials and bubbles (all)",
+                                  "nameProof": {
+                                    "names": "TalentCalc(-2)"
+                                  },
+                                  "ref": {
+                                    "call": "TalentCalc",
+                                    "args": [-2]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "thing-cor",
+                              "name": "Coral Kid: Divinity Skill Lv boosts Minor Link Bonuses a bit more",
+                              "nameProof": {
+                                "names": "Thingies(\"CoralKidUpgBonus\", 3, 0)"
+                              },
+                              "ref": {
+                                "call": "Thingies",
+                                "args": ["CoralKidUpgBonus", 3, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "optio-430",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "OptionsListAccount[430]"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "lv-14",
+                              "name": "Divinity level",
+                              "nameProof": {
+                                "names": "Lv0[14]"
+                              },
+                              "ref": {
+                                "read": "Lv0[14]"
+                              },
+                              "leaf": "level"
+                            },
+                            {
+                              "key": "godsi-2-3",
+                              "name": "Nobisect minor link bonus top",
+                              "nameProof": {
+                                "names": "CustomLists.GodsInfo[2][3]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.GodsInfo[2][3]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dream-12",
+                      "name": "Equinox Symbols LV",
+                      "nameProof": {
+                        "names": "Dream[12]"
+                      },
+                      "ref": {
+                        "read": "Dream[12]"
+                      },
+                      "leaf": "level"
+                    },
+                    {
+                      "key": "optio-232",
+                      "name": "Sneaking Masteries completed",
+                      "nameProof": {
+                        "names": "OptionsListAccount[232]"
+                      },
+                      "ref": {
+                        "read": "OptionsListAccount[232]"
+                      },
+                      "leaf": "quantity"
+                    },
+                    {
+                      "key": "summ-gri",
+                      "name": "Skull of Major Talent",
+                      "nameProof": {
+                        "names": "Summoning(\"GrimoireUpgBonus\", 39, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning",
+                        "args": ["GrimoireUpgBonus", 39, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "grimo-39",
+                          "name": "Skull of Major Talent level",
+                          "nameProof": {
+                            "names": "Grimoire[39]"
+                          },
+                          "ref": {
+                            "read": "Grimoire[39]"
+                          },
+                          "leaf": "level"
+                        },
+                        {
+                          "key": "grimo-3-2",
+                          "name": "Bonus per level (Grimoire)",
+                          "nameProof": {
+                            "names": "CustomLists.GrimoireUpg[39][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.GrimoireUpg[39][5]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "set-kat-b",
+                      "name": "Kattlekruk Set",
+                      "nameProof": {
+                        "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "GetSetBonus",
+                        "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                      }
+                    },
+                    {
+                      "key": "arcane-ar",
+                      "name": "Universe Talent",
+                      "nameProof": {
+                        "names": "ArcaneType(\"ArcaneUpgBonus\", 57, 0)"
+                      },
+                      "ref": {
+                        "call": "ArcaneType",
+                        "args": ["ArcaneUpgBonus", 57, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "arcan-57",
+                          "name": "Universe Talent level",
+                          "nameProof": {
+                            "names": "Arcane[57]"
+                          },
+                          "ref": {
+                            "read": "Arcane[57]"
+                          },
+                          "leaf": "level"
+                        },
+                        {
+                          "key": "arcan-5-2",
+                          "name": "Bonus per level (Arcane)",
+                          "nameProof": {
+                            "names": "CustomLists.ArcaneUpg[57][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.ArcaneUpg[57][5]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "lv-0",
+                      "name": "Class level",
+                      "nameProof": {
+                        "names": "Lv0[0]"
+                      },
+                      "ref": {
+                        "read": "Lv0[0]"
+                      },
+                      "leaf": "level"
+                    },
+                    {
+                      "key": "gaming-su",
+                      "name": "+1 LV for all Talents per 100 Class LV over 500. Total Bonus: LV",
+                      "nameProof": {
+                        "names": "GamingStatType(\"SuperBitType\", 47, 0)"
+                      },
+                      "ref": {
+                        "call": "GamingStatType",
+                        "args": ["SuperBitType", 47, 0]
+                      }
+                    },
+                    {
+                      "key": "dnsm-al-2",
+                      "name": null,
+                      "ref": {
+                        "read": "DNSM.AllTalMaxSUPERdn"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "key": "skill-13",
+                  "name": "Lucky clover level",
+                  "nameProof": {
+                    "names": "SkillLevels[13]"
+                  },
+                  "ref": {
+                    "read": "SkillLevels[13]"
+                  },
+                  "leaf": "investedPoints"
+                }
+              ]
+            },
+            {
+              "key": "tal-54",
+              "name": "Eternal Luk",
+              "nameProof": {
+                "names": "getbonus2(1, 54, -1)"
+              },
+              "ref": {
+                "call": "getbonus2",
+                "args": [1, 54, -1]
+              },
+              "children": [
+                {
+                  "key": "arb-add-2",
+                  "name": null,
+                  "ref": {
+                    "call": "ArbitraryCode5Inputs",
+                    "args": ["add", 2, 0, 0, 0, 0]
+                  }
+                }
+              ]
+            },
+            {
+              "key": "calc-620",
+              "name": "Will Of The Eldest",
+              "nameProof": {
+                "names": "TalentCalc(620)"
+              },
+              "ref": {
+                "call": "TalentCalc",
+                "args": [620]
+              },
+              "children": [
+                {
+                  "key": "tal-620",
+                  "name": "Will Of The Eldest",
+                  "nameProof": {
+                    "names": "GetTalentNumber(1, 620)"
+                  },
+                  "ref": {
+                    "call": "GetTalentNumber",
+                    "args": [1, 620]
+                  },
+                  "children": [
+                    {
+                      "key": "run-all-6",
+                      "name": "All-talent levels",
+                      "nameProof": {
+                        "names": "RunCodeOfTypeXforThingY(\"AllTalentLV\", \"620\")"
+                      },
+                      "ref": {
+                        "call": "RunCodeOfTypeXforThingY",
+                        "args": ["AllTalentLV", "620"]
+                      },
+                      "children": [
+                        {
+                          "key": "run-tal-6",
+                          "name": "Will Of The Eldest",
+                          "nameProof": {
+                            "names": "RunCodeOfTypeXforThingY(\"TalentBannedforAllLV\", \"620\")"
+                          },
+                          "ref": {
+                            "call": "RunCodeOfTypeXforThingY",
+                            "args": ["TalentBannedforAllLV", "620"]
+                          },
+                          "leaf": "rawBonus"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "skill-620",
+                      "name": "Will of the eldest level",
+                      "nameProof": {
+                        "names": "SkillLevels[620]"
+                      },
+                      "ref": {
+                        "read": "SkillLevels[620]"
+                      },
+                      "leaf": "investedPoints"
+                    }
+                  ]
+                },
+                {
+                  "key": "calct-620",
+                  "name": "Will Of The Eldest (talent calc)",
+                  "nameProof": {
+                    "names": "DNSM.CalcTalentMAP[620]"
+                  },
+                  "ref": {
+                    "read": "DNSM.CalcTalentMAP[620]"
+                  },
+                  "children": [
+                    {
+                      "key": "calc-4",
+                      "name": "Talent bonuses (all)",
+                      "nameProof": {
+                        "names": "TalentCalc(-4)"
+                      },
+                      "ref": {
+                        "call": "TalentCalc",
+                        "args": [-4]
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "tal-23",
+              "name": "Lucky Horseshoe",
+              "nameProof": {
+                "names": "GetTalentNumber(1, 23)"
+              },
+              "ref": {
+                "call": "GetTalentNumber",
+                "args": [1, 23]
+              }
+            }
+          ]
+        },
+        {
+          "system": "stamps",
+          "sources": [
+            {
+              "key": "stamp-bas",
+              "name": "Stamps: LUK",
+              "nameProof": {
+                "names": "StampBonusOfTypeX(\"BaseLUK\")"
+              },
+              "ref": {
+                "call": "StampBonusOfTypeX",
+                "args": ["BaseLUK"]
+              },
+              "children": [
+                {
+                  "key": "ninja-pri",
+                  "name": "Liqorice Rolle",
+                  "nameProof": {
+                    "names": "Ninja(\"PristineBon\", 17, 0)"
+                  },
+                  "ref": {
+                    "call": "Ninja",
+                    "args": ["PristineBon", 17, 0]
+                  }
+                }
+              ]
+            },
+            {
+              "key": "stamp-b-2",
+              "name": "Stamps: All Stats",
+              "nameProof": {
+                "names": "StampBonusOfTypeX(\"BaseAllStat\")"
+              },
+              "ref": {
+                "call": "StampBonusOfTypeX",
+                "args": ["BaseAllStat"]
+              }
+            }
+          ]
+        },
+        {
+          "system": "post-office",
+          "sources": [
+            {
+              "key": "boxre-c",
+              "name": "Science Spare Parts (Post Office box, bonus c)",
+              "nameProof": {
+                "names": "DNSM.BoxRewards.15c"
+              },
+              "ref": {
+                "read": "DNSM.BoxRewards.15c"
+              },
+              "children": [
+                {
+                  "key": "calc-4",
+                  "name": "Talent bonuses (all)",
+                  "nameProof": {
+                    "names": "TalentCalc(-4)"
+                  },
+                  "ref": {
+                    "call": "TalentCalc",
+                    "args": [-4]
+                  },
+                  "children": [
+                    {
+                      "key": "post-bon",
+                      "name": "Science Spare Parts",
+                      "nameProof": {
+                        "names": "PostOfficeINFO(\"BonusAmount\", 15, \"2\")"
+                      },
+                      "ref": {
+                        "call": "PostOfficeINFO",
+                        "args": ["BonusAmount", 15, "2"]
+                      },
+                      "children": [
+                        {
+                          "key": "posto-15",
+                          "name": "Science Spare Parts: second curve number of bonus 4",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[15][14]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.PostOffUpgradeInfo[15][14]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "posto-3-1",
+                          "name": "Science Spare Parts (Post Office box)",
+                          "nameProof": {
+                            "names": "PostOfficeInfo[3][15][0]"
+                          },
+                          "ref": {
+                            "read": "PostOfficeInfo[3][15][0]"
+                          },
+                          "leaf": "investedPoints"
+                        },
+                        {
+                          "key": "dnsm-pos",
+                          "name": null,
+                          "ref": {
+                            "read": "DNSM.PostOffInfoDN1"
+                          },
+                          "children": [
+                            {
+                              "key": "post-bon",
+                              "name": "Science Spare Parts",
+                              "nameProof": {
+                                "names": "PostOfficeINFO(\"BonusAmount\", 15, \"2\")"
+                              },
+                              "ref": {
+                                "call": "PostOfficeINFO",
+                                "args": ["BonusAmount", 15, "2"]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "posto-1-2",
+                          "name": "Science Spare Parts: first curve number of bonus 3",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[15][9]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.PostOffUpgradeInfo[15][9]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "posto-1-3",
+                          "name": "Science Spare Parts: second curve number of bonus 3",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[15][10]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.PostOffUpgradeInfo[15][10]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "boxre-luk",
+              "name": null,
+              "ref": {
+                "read": "DNSM.BoxRewards.LUK"
+              },
+              "children": [
+                {
+                  "key": "calc-4",
+                  "name": "Talent bonuses (all)",
+                  "nameProof": {
+                    "names": "TalentCalc(-4)"
+                  },
+                  "ref": {
+                    "call": "TalentCalc",
+                    "args": [-4]
+                  },
+                  "children": [
+                    {
+                      "key": "post-bon",
+                      "name": "Non Predatory Loot Box",
+                      "nameProof": {
+                        "names": "PostOfficeINFO(\"BonusAmount\", 11, \"1\")"
+                      },
+                      "ref": {
+                        "call": "PostOfficeINFO",
+                        "args": ["BonusAmount", 11, "1"]
+                      },
+                      "children": [
+                        {
+                          "key": "arb-add-0",
+                          "name": null,
+                          "ref": {
+                            "call": "ArbitraryCode5Inputs",
+                            "args": ["add", 0.25, 0, 375, 0, 0]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "equipment",
+          "sources": [
+            {
+              "key": "etc-54",
+              "name": "Luk",
+              "nameProof": {
+                "names": "EtcBonuses(\"54\")"
+              },
+              "ref": {
+                "call": "EtcBonuses",
+                "args": ["54"]
+              }
+            }
+          ]
+        },
+        {
+          "system": null,
+          "sources": [
+            {
+              "key": "optio-177",
+              "name": null,
+              "ref": {
+                "read": "OptionsListAccount[177]"
+              },
+              "children": [
+                {
+                  "key": "optio-177",
+                  "name": null,
+                  "ref": {
+                    "read": "OptionsListAccount[177]"
+                  }
+                },
+                {
+                  "key": "dream-all",
+                  "name": "Shimmer bonuses",
+                  "nameProof": {
+                    "names": "Dreamstuff(\"AllShimmerBonuses\", 0)"
+                  },
+                  "ref": {
+                    "call": "Dreamstuff",
+                    "args": ["AllShimmerBonuses", 0]
+                  },
+                  "termPart": {
+                    "system": "dreams"
+                  },
+                  "children": [
+                    {
+                      "key": "art-art-3",
+                      "name": "The Shim Lantern",
+                      "nameProof": {
+                        "names": "Sailing(\"ArtifactBonus\", 31, 0)"
+                      },
+                      "ref": {
+                        "call": "Sailing",
+                        "args": ["ArtifactBonus", 31, 0]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "family-bonuses",
+          "sources": [
+            {
+              "key": "fambo-4",
+              "name": "Total LUK (family bonus)",
+              "nameProof": {
+                "names": "DNSM.FamBonusQTYs[4]"
+              },
+              "ref": {
+                "read": "DNSM.FamBonusQTYs[4]"
+              },
+              "children": [
+                {
+                  "key": "calc-3",
+                  "name": "Family bonuses (all)",
+                  "nameProof": {
+                    "names": "TalentCalc(-3)"
+                  },
+                  "ref": {
+                    "call": "TalentCalc",
+                    "args": [-3]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "star-signs",
+          "sources": [
+            {
+              "key": "stars-luk",
+              "name": "Star Signs total: LUK",
+              "nameProof": {
+                "names": "DNSM.StarSigns.LUK"
+              },
+              "ref": {
+                "read": "DNSM.StarSigns.LUK"
+              },
+              "piece": {
+                "name": "star-signs",
+                "args": {}
+              }
+            }
+          ]
+        },
+        {
+          "system": "tasks",
+          "sources": [
+            {
+              "key": "arb-tot",
+              "name": "Unique Quests Completed",
+              "nameProof": {
+                "names": "ArbitraryCode(\"TotalQuestsComplete\")"
+              },
+              "ref": {
+                "call": "ArbitraryCode",
+                "args": ["TotalQuestsComplete"]
+              },
+              "children": [
+                {
+                  "key": "arb-tot",
+                  "name": "Unique Quests Completed",
+                  "nameProof": {
+                    "names": "ArbitraryCode(\"TotalQuestsComplete\")"
+                  },
+                  "ref": {
+                    "call": "ArbitraryCode",
+                    "args": ["TotalQuestsComplete"]
+                  }
+                },
+                {
+                  "key": "tal-618",
+                  "name": "Quest Chungus",
+                  "nameProof": {
+                    "names": "GetTalentNumber(1, 618)"
+                  },
+                  "ref": {
+                    "call": "GetTalentNumber",
+                    "args": [1, 618]
+                  },
+                  "termPart": {
+                    "system": "talents"
+                  },
+                  "children": [
+                    {
+                      "key": "arb-add-4",
+                      "name": null,
+                      "ref": {
+                        "call": "ArbitraryCode5Inputs",
+                        "args": ["add", 4, 0, 100, 0, 0]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "cards",
+          "sources": [
+            {
+              "key": "card-2",
+              "name": "Base LUK",
+              "nameProof": {
+                "names": "CardBonusREAL(2)"
+              },
+              "ref": {
+                "call": "CardBonusREAL",
+                "args": [2]
+              }
+            }
+          ]
+        },
+        {
+          "system": null,
+          "sources": [
+            {
+              "key": "arb-all",
+              "name": "All Stats",
+              "nameProof": {
+                "names": "ArbitraryCode(\"AllStat\")"
+              },
+              "ref": {
+                "call": "ArbitraryCode",
+                "args": ["AllStat"]
+              },
+              "children": [
+                {
+                  "key": "boxre-a",
+                  "name": "Myriad Crate (Post Office box, bonus a)",
+                  "nameProof": {
+                    "names": "DNSM.BoxRewards.20a"
+                  },
+                  "ref": {
+                    "read": "DNSM.BoxRewards.20a"
+                  },
+                  "children": [
+                    {
+                      "key": "calc-4",
+                      "name": "Talent bonuses (all)",
+                      "nameProof": {
+                        "names": "TalentCalc(-4)"
+                      },
+                      "ref": {
+                        "call": "TalentCalc",
+                        "args": [-4]
+                      },
+                      "children": [
+                        {
+                          "key": "post-bon",
+                          "name": "Myriad Crate",
+                          "nameProof": {
+                            "names": "PostOfficeINFO(\"BonusAmount\", 20, \"0\")"
+                          },
+                          "ref": {
+                            "call": "PostOfficeINFO",
+                            "args": ["BonusAmount", 20, "0"]
+                          },
+                          "children": [
+                            {
+                              "key": "dnsm-pos",
+                              "name": null,
+                              "ref": {
+                                "read": "DNSM.PostOffInfoDN1"
+                              },
+                              "children": [
+                                {
+                                  "key": "post-bon",
+                                  "name": "Myriad Crate",
+                                  "nameProof": {
+                                    "names": "PostOfficeINFO(\"BonusAmount\", 20, \"0\")"
+                                  },
+                                  "ref": {
+                                    "call": "PostOfficeINFO",
+                                    "args": ["BonusAmount", 20, "0"]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "posto-3-2",
+                              "name": "Myriad Crate (Post Office box)",
+                              "nameProof": {
+                                "names": "PostOfficeInfo[3][20][0]"
+                              },
+                              "ref": {
+                                "read": "PostOfficeInfo[3][20][0]"
+                              },
+                              "leaf": "investedPoints"
+                            },
+                            {
+                              "key": "posto-20",
+                              "name": "Myriad Crate: first curve number of bonus 1",
+                              "nameProof": {
+                                "names": "CustomLists.PostOffUpgradeInfo[20][1]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.PostOffUpgradeInfo[20][1]"
+                              },
+                              "leaf": "fixedValue"
+                            },
+                            {
+                              "key": "posto-2-2",
+                              "name": "Myriad Crate: second curve number of bonus 1",
+                              "nameProof": {
+                                "names": "CustomLists.PostOffUpgradeInfo[20][2]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.PostOffUpgradeInfo[20][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "meal-sta",
+                  "name": "Meals: Stat",
+                  "nameProof": {
+                    "names": "MealBonus(\"Stat\")"
+                  },
+                  "ref": {
+                    "call": "MealBonus",
+                    "args": ["Stat"]
+                  }
+                },
+                {
+                  "key": "guild-1",
+                  "name": "Stat Runes",
+                  "nameProof": {
+                    "names": "GuildBonuses(1)"
+                  },
+                  "ref": {
+                    "call": "GuildBonuses",
+                    "args": [1]
+                  },
+                  "children": [
+                    {
+                      "key": "guild-1-4",
+                      "name": null,
+                      "ref": {
+                        "read": "CustomLists.GuildBonuses[1][4]"
+                      },
+                      "leaf": "fixedValue"
+                    },
+                    {
+                      "key": "guild-1-5",
+                      "name": null,
+                      "ref": {
+                        "read": "CustomLists.GuildBonuses[1][5]"
+                      },
+                      "leaf": "fixedValue"
+                    },
+                    {
+                      "key": "guild-0-1",
+                      "name": "Stat Runes level",
+                      "nameProof": {
+                        "names": "GuildTasks[0][1]"
+                      },
+                      "ref": {
+                        "read": "GuildTasks[0][1]"
+                      },
+                      "leaf": "level"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "sigils",
+          "sources": [
+            {
+              "key": "sigil-sig",
+              "name": "Good Fortune",
+              "nameProof": {
+                "names": "Labb(\"SigilBonus\", \"Blank\", 3, 0)"
+              },
+              "ref": {
+                "call": "Labb",
+                "args": ["SigilBonus", "Blank", 3, 0]
+              },
+              "children": [
+                {
+                  "key": "sigil-3-1",
+                  "name": "Sigil bonus at its current tier",
+                  "nameProof": {
+                    "names": "CustomLists.SigilDesc[3][12]"
+                  },
+                  "ref": {
+                    "read": "CustomLists.SigilDesc[3][12]"
+                  },
+                  "leaf": "fixedValue"
+                },
+                {
+                  "key": "art-art-1",
+                  "name": "Chilled Yarn",
+                  "nameProof": {
+                    "names": "Sailing(\"ArtifactBonus\", 16, 0)"
+                  },
+                  "ref": {
+                    "call": "Sailing",
+                    "args": ["ArtifactBonus", 16, 0]
+                  }
+                },
+                {
+                  "key": "summ-mer",
+                  "name": "All of your Sigils give higher bonuses than normal",
+                  "nameProof": {
+                    "names": "Summoning2(\"MeritocBonusz\", 21, 0)"
+                  },
+                  "ref": {
+                    "call": "Summoning2",
+                    "args": ["MeritocBonusz", 21, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "alchemy",
+          "sources": [
+            {
+              "key": "alchb-a",
+              "name": "Slabo Agility bubble",
+              "nameProof": {
+                "names": "DNSM.AlchBubbles.A4"
+              },
+              "ref": {
+                "read": "DNSM.AlchBubbles.A4"
+              },
+              "children": [
+                {
+                  "key": "calc-2",
+                  "name": "Vials and bubbles (all)",
+                  "nameProof": {
+                    "names": "TalentCalc(-2)"
+                  },
+                  "ref": {
+                    "call": "TalentCalc",
+                    "args": [-2]
+                  },
+                  "children": [
+                    {
+                      "key": "alchb-a",
+                      "name": "Slabo Agility bubble",
+                      "nameProof": {
+                        "names": "DNSM.AlchBubbles.A4"
+                      },
+                      "ref": {
+                        "read": "DNSM.AlchBubbles.A4"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-2",
+                          "name": "Vials and bubbles (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-2)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-2]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dnsm-cal",
+                      "name": null,
+                      "ref": {
+                        "read": "DNSM.CalcTalentDN2"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-4",
+                          "name": "Talent bonuses (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-4)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-4]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "shiny-pets",
+          "sources": [
+            {
+              "key": "shiny-shi",
+              "name": "Base LUK",
+              "nameProof": {
+                "names": "Breeding(\"ShinyBonusS\", \"Nah\", 9, -1)"
+              },
+              "ref": {
+                "call": "Breeding",
+                "args": ["ShinyBonusS", "Nah", 9, -1]
+              }
+            }
+          ]
+        },
+        {
+          "system": "arcade",
+          "sources": [
+            {
+              "key": "arcade-22",
+              "name": "Arcade: Base LUK",
+              "nameProof": {
+                "names": "ArcadeBonus(22)"
+              },
+              "ref": {
+                "call": "ArcadeBonus",
+                "args": [22]
+              },
+              "children": [
+                {
+                  "key": "arb-add-1",
+                  "name": null,
+                  "ref": {
+                    "call": "ArbitraryCode5Inputs",
+                    "args": ["add", 1, 0, 101, 0, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "owl",
+          "sources": [
+            {
+              "key": "summ-owl",
+              "name": "Shiny Feathers",
+              "nameProof": {
+                "names": "Summoning(\"OwlBonuses\", 5, 0)"
+              },
+              "ref": {
+                "call": "Summoning",
+                "args": ["OwlBonuses", 5, 0]
+              },
+              "children": [
+                {
+                  "key": "summ-owl",
+                  "name": "Shiny Feathers",
+                  "nameProof": {
+                    "names": "Summoning2(\"OwlBonuses\", 5, 0)"
+                  },
+                  "ref": {
+                    "call": "Summoning2",
+                    "args": ["OwlBonuses", 5, 0]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "equipment",
+          "sources": [
+            {
+              "key": "etc-17",
+              "name": "Luk",
+              "nameProof": {
+                "names": "EtcBonuses(\"17\")"
+              },
+              "ref": {
+                "call": "EtcBonuses",
+                "args": ["17"]
+              },
+              "children": [
+                {
+                  "key": "etc-17",
+                  "name": "Luk",
+                  "nameProof": {
+                    "names": "EtcBonuses(\"17\")"
+                  },
+                  "ref": {
+                    "call": "EtcBonuses",
+                    "args": ["17"]
+                  }
+                },
+                {
+                  "key": "etc-46",
+                  "name": "All Stats",
+                  "nameProof": {
+                    "names": "EtcBonuses(\"46\")"
+                  },
+                  "ref": {
+                    "call": "EtcBonuses",
+                    "args": ["46"]
+                  },
+                  "termPart": {
+                    "system": "equipment"
+                  }
+                },
+                {
+                  "key": "arb-all",
+                  "name": "All Stats",
+                  "nameProof": {
+                    "names": "ArbitraryCode(\"AllStatPCT\")"
+                  },
+                  "ref": {
+                    "call": "ArbitraryCode",
+                    "args": ["AllStatPCT"]
+                  },
+                  "termPart": {
+                    "system": "luk-stats"
+                  },
+                  "children": [
+                    {
+                      "key": "alchv-all",
+                      "name": "Pearl Seltzer vial",
+                      "nameProof": {
+                        "names": "DNSM.AlchVials.AllStatPCT"
+                      },
+                      "ref": {
+                        "read": "DNSM.AlchVials.AllStatPCT"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-2",
+                          "name": "Vials and bubbles (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-2)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-2]
+                          },
+                          "children": [
+                            {
+                              "key": "vial-via",
+                              "name": "Pearl Seltzer",
+                              "nameProof": {
+                                "names": "CauldronStats(\"VialBonus\", 4, 49, 0)"
+                              },
+                              "ref": {
+                                "call": "CauldronStats",
+                                "args": ["VialBonus", 4, 49, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "summ-mer",
+                                  "name": "All of your Vials give higher bonuses than normal",
+                                  "nameProof": {
+                                    "names": "Summoning2(\"MeritocBonusz\", 20, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning2",
+                                    "args": ["MeritocBonusz", 20, 0]
+                                  }
+                                },
+                                {
+                                  "key": "arb-add-0",
+                                  "name": null,
+                                  "ref": {
+                                    "call": "ArbitraryCode5Inputs",
+                                    "args": ["add", 0.5, 0, 13, 0, 0]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "comp-0",
+                      "name": "King Doot",
+                      "nameProof": {
+                        "names": "Companions(0)"
+                      },
+                      "ref": {
+                        "call": "Companions",
+                        "args": [0]
+                      }
+                    },
+                    {
+                      "key": "holes-cos",
+                      "name": "Pocket Divinity",
+                      "nameProof": {
+                        "names": "Holes(\"CosmoBonusQTY\", 2, 0)"
+                      },
+                      "ref": {
+                        "call": "Holes",
+                        "args": ["CosmoBonusQTY", 2, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "cosmo-2-0",
+                          "name": null,
+                          "ref": {
+                            "read": "CustomLists.CosmoUpgrades[2][0][0]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "holes-6-0",
+                          "name": "Pocket Divinity level",
+                          "nameProof": {
+                            "names": "Holes[6][0]"
+                          },
+                          "ref": {
+                            "read": "Holes[6][0]"
+                          },
+                          "leaf": "level"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "lab-104",
+                      "name": "Sapphire Navette",
+                      "nameProof": {
+                        "names": "MainframeBonus(104)"
+                      },
+                      "ref": {
+                        "call": "MainframeBonus",
+                        "args": [104]
+                      }
+                    },
+                    {
+                      "key": "stamp-all",
+                      "name": "Stamps: All Stats",
+                      "nameProof": {
+                        "names": "StampBonusOfTypeX(\"AllStatPct\")"
+                      },
+                      "ref": {
+                        "call": "StampBonusOfTypeX",
+                        "args": ["AllStatPct"]
+                      }
+                    },
+                    {
+                      "key": "card-82",
+                      "name": "All Stat",
+                      "nameProof": {
+                        "names": "CardBonusREAL(82)"
+                      },
+                      "ref": {
+                        "call": "CardBonusREAL",
+                        "args": [82]
+                      }
+                    },
+                    {
+                      "key": "summ-win",
+                      "name": "All Stat",
+                      "nameProof": {
+                        "names": "Summoning(\"WinBonus\", 18, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning",
+                        "args": ["WinBonus", 18, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "summw-18",
+                          "name": "All Stat",
+                          "nameProof": {
+                            "names": "DNSM.SummWinBonus[18]"
+                          },
+                          "ref": {
+                            "read": "DNSM.SummWinBonus[18]"
+                          },
+                          "children": [
+                            {
+                              "key": "summ-win",
+                              "name": "All Stat",
+                              "nameProof": {
+                                "names": "Summoning(\"WinBonus\", 18, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning",
+                                "args": ["WinBonus", 18, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "summo-7-7",
+                                  "name": "Summoning win bonus of battle 72",
+                                  "nameProof": {
+                                    "names": "CustomLists.SummonEnemies[7][72]"
+                                  },
+                                  "ref": {
+                                    "read": "CustomLists.SummonEnemies[7][72]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "ninja-pri",
+                          "name": "Crystal Comb",
+                          "nameProof": {
+                            "names": "Ninja(\"PristineBon\", 8, 0)"
+                          },
+                          "ref": {
+                            "call": "Ninja",
+                            "args": ["PristineBon", 8, 0]
+                          }
+                        },
+                        {
+                          "key": "gemit-11",
+                          "name": "Gem shop purchase 11",
+                          "nameProof": {
+                            "names": "GemItemsPurchased[11]"
+                          },
+                          "ref": {
+                            "read": "GemItemsPurchased[11]"
+                          },
+                          "leaf": "quantity"
+                        },
+                        {
+                          "key": "art-art-3",
+                          "name": "The Winz Lantern",
+                          "nameProof": {
+                            "names": "Sailing(\"ArtifactBonus\", 32, 0)"
+                          },
+                          "ref": {
+                            "call": "Sailing",
+                            "args": ["ArtifactBonus", 32, 0]
+                          }
+                        },
+                        {
+                          "key": "tasks-2-5",
+                          "name": "Merit shop: Winner's Bonuses from Summoning",
+                          "nameProof": {
+                            "names": "Tasks[2][5][4]"
+                          },
+                          "ref": {
+                            "read": "Tasks[2][5][4]"
+                          },
+                          "leaf": "quantity"
+                        },
+                        {
+                          "key": "ach-379",
+                          "name": "Spectre Stars",
+                          "nameProof": {
+                            "names": "AchieveStatus(379)"
+                          },
+                          "ref": {
+                            "call": "AchieveStatus",
+                            "args": [379]
+                          }
+                        },
+                        {
+                          "key": "ach-373",
+                          "name": "Regalis My Beloved",
+                          "nameProof": {
+                            "names": "AchieveStatus(373)"
+                          },
+                          "ref": {
+                            "call": "AchieveStatus",
+                            "args": [373]
+                          }
+                        },
+                        {
+                          "key": "summ-win",
+                          "name": "Winner Bonuses",
+                          "nameProof": {
+                            "names": "Summoning(\"WinBonus\", 31, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["WinBonus", 31, 0]
+                          }
+                        },
+                        {
+                          "key": "thing-emp",
+                          "name": "Summoning Winner Bonuses",
+                          "nameProof": {
+                            "names": "Thingies(\"EmperorBon\", 8, 0)"
+                          },
+                          "ref": {
+                            "call": "Thingies",
+                            "args": ["EmperorBon", 8, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "emper-8",
+                              "name": "Summoning Winner Bonuses",
+                              "nameProof": {
+                                "names": "DNSM.EmperorBon[8]"
+                              },
+                              "ref": {
+                                "read": "DNSM.EmperorBon[8]"
+                              },
+                              "children": [
+                                {
+                                  "key": "thing-emp",
+                                  "name": "Summoning Winner Bonuses",
+                                  "nameProof": {
+                                    "names": "Thingies(\"EmperorBon\", 8, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Thingies",
+                                    "args": ["EmperorBon", 8, 0]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "arcane-ar",
+                              "name": "Vicar of the Emperor",
+                              "nameProof": {
+                                "names": "ArcaneType(\"ArcaneUpgBonus\", 48, 0)"
+                              },
+                              "ref": {
+                                "call": "ArcaneType",
+                                "args": ["ArcaneUpgBonus", 48, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "arcan-48",
+                                  "name": "Vicar of the Emperor level",
+                                  "nameProof": {
+                                    "names": "Arcane[48]"
+                                  },
+                                  "ref": {
+                                    "read": "Arcane[48]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "arcan-4-2",
+                                  "name": "Bonus per level (Arcane)",
+                                  "nameProof": {
+                                    "names": "CustomLists.ArcaneUpg[48][5]"
+                                  },
+                                  "ref": {
+                                    "read": "CustomLists.ArcaneUpg[48][5]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
+                            },
+                            {
+                              "key": "arcade-51",
+                              "name": "Arcade: Emperor Bonuses",
+                              "nameProof": {
+                                "names": "ArcadeBonus(51)"
+                              },
+                              "ref": {
+                                "call": "ArcadeBonus",
+                                "args": [51]
+                              },
+                              "children": [
+                                {
+                                  "key": "arb-add-0",
+                                  "name": null,
+                                  "ref": {
+                                    "call": "ArbitraryCode5Inputs",
+                                    "args": ["add", 0.2, 0, 101, 0, 0]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "jelly-rog",
+                              "name": "Strabbury",
+                              "nameProof": {
+                                "names": "JellyOperation(\"RoG_BonusQTY\", 28, 0)"
+                              },
+                              "ref": {
+                                "call": "JellyOperation",
+                                "args": ["RoG_BonusQTY", 28, 0]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "set-god-b",
+                          "name": "Godshard Set",
+                          "nameProof": {
+                            "names": "GetSetBonus(\"GODSHARD_SET\", \"Bonus\", 0, 0)"
+                          },
+                          "ref": {
+                            "call": "GetSetBonus",
+                            "args": ["GODSHARD_SET", "Bonus", 0, 0]
+                          }
+                        },
+                        {
+                          "key": "thing-hav",
+                          "name": null,
+                          "ref": {
+                            "call": "Thingies",
+                            "args": ["Have_ban_i", 0, 0]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "fambo-72",
+                      "name": "All Stat. STR, AGI, WIS, LUK. (family bonus)",
+                      "nameProof": {
+                        "names": "DNSM.FamBonusQTYs[72]"
+                      },
+                      "ref": {
+                        "read": "DNSM.FamBonusQTYs[72]"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-3",
+                          "name": "Family bonuses (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-3)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-3]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "art-art-2",
+                      "name": "Socrates",
+                      "nameProof": {
+                        "names": "Sailing(\"ArtifactBonus\", 28, 0)"
+                      },
+                      "ref": {
+                        "call": "Sailing",
+                        "args": ["ArtifactBonus", 28, 0]
+                      }
+                    },
+                    {
+                      "key": "gfood-all",
+                      "name": "Golden Food bonus (All Stats)",
+                      "nameProof": {
+                        "names": "GoldFoodBonuses(\"AllStatz\")"
+                      },
+                      "ref": {
+                        "call": "GoldFoodBonuses",
+                        "args": ["AllStatz"]
+                      },
+                      "children": [
+                        {
+                          "key": "dnsm-gfo",
+                          "name": "Golden food bonus (cached)",
+                          "nameProof": {
+                            "names": "DNSM.GfoodBonus"
+                          },
+                          "ref": {
+                            "read": "DNSM.GfoodBonus"
+                          }
+                        },
+                        {
+                          "key": "gfood-amo",
+                          "name": null,
+                          "ref": {
+                            "read": "DNSM.GfoodMap.Amount"
+                          }
+                        },
+                        {
+                          "key": "dnsm-gf-2",
+                          "name": "Golden food bonus multiplier",
+                          "nameProof": {
+                            "names": "DNSM.GfoodBonusMULTI"
+                          },
+                          "ref": {
+                            "read": "DNSM.GfoodBonusMULTI"
+                          }
+                        },
+                        {
+                          "key": "set-sec-b",
+                          "name": "Secret Set",
+                          "nameProof": {
+                            "names": "GetSetBonus(\"SECRET_SET\", \"Bonus\", 0, 0)"
+                          },
+                          "ref": {
+                            "call": "GetSetBonus",
+                            "args": ["SECRET_SET", "Bonus", 0, 0]
+                          }
+                        },
+                        {
+                          "key": "comp-174",
+                          "name": "Verminous",
+                          "nameProof": {
+                            "names": "Companions(174)"
+                          },
+                          "ref": {
+                            "call": "Companions",
+                            "args": [174]
+                          }
+                        },
+                        {
+                          "key": "fambo-66",
+                          "name": "Higher Bonuses From Golden Foods (family bonus)",
+                          "nameProof": {
+                            "names": "DNSM.FamBonusQTYs[66]"
+                          },
+                          "ref": {
+                            "read": "DNSM.FamBonusQTYs[66]"
+                          },
+                          "children": [
+                            {
+                              "key": "calc-3",
+                              "name": "Family bonuses (all)",
+                              "nameProof": {
+                                "names": "TalentCalc(-3)"
+                              },
+                              "ref": {
+                                "call": "TalentCalc",
+                                "args": [-3]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "etc-8",
+                          "name": "Gold Food Effect",
+                          "nameProof": {
+                            "names": "EtcBonuses(\"8\")"
+                          },
+                          "ref": {
+                            "call": "EtcBonuses",
+                            "args": ["8"]
+                          }
+                        },
+                        {
+                          "key": "tal-99",
+                          "name": "Haungry For Gold",
+                          "nameProof": {
+                            "names": "GetTalentNumber(1, 99)"
+                          },
+                          "ref": {
+                            "call": "GetTalentNumber",
+                            "args": [1, 99]
+                          },
+                          "children": [
+                            {
+                              "key": "run-all-9",
+                              "name": "All-talent levels",
+                              "nameProof": {
+                                "names": "RunCodeOfTypeXforThingY(\"AllTalentLV\", \"99\")"
+                              },
+                              "ref": {
+                                "call": "RunCodeOfTypeXforThingY",
+                                "args": ["AllTalentLV", "99"]
+                              },
+                              "children": [
+                                {
+                                  "key": "dnsm-all",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "DNSM.AllTalMaxCapFR"
+                                  }
+                                },
+                                {
+                                  "key": "tal-149",
+                                  "name": "Symbols Of Beyond (Warrior)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 149)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 149]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arb-int-1",
+                                      "name": null,
+                                      "ref": {
+                                        "call": "ArbitraryCode5Inputs",
+                                        "args": [
+                                          "intervalAdd",
+                                          1,
+                                          20,
+                                          434,
+                                          0,
+                                          0
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "tal-374",
+                                  "name": "Symbols Of Beyond (Archer)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 374)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 374]
+                                  }
+                                },
+                                {
+                                  "key": "tal-539",
+                                  "name": "Symbols Of Beyond (Mage)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 539)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 539]
+                                  }
+                                },
+                                {
+                                  "key": "ach-291",
+                                  "name": "Maroon Warship",
+                                  "nameProof": {
+                                    "names": "AchieveStatus(291)"
+                                  },
+                                  "ref": {
+                                    "call": "AchieveStatus",
+                                    "args": [291]
+                                  }
+                                },
+                                {
+                                  "key": "fambo-68",
+                                  "name": "LV For All Talents Above LV 1 (family bonus)",
+                                  "nameProof": {
+                                    "names": "DNSM.FamBonusQTYs[68]"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.FamBonusQTYs[68]"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "calc-3",
+                                      "name": "Family bonuses (all)",
+                                      "nameProof": {
+                                        "names": "TalentCalc(-3)"
+                                      },
+                                      "ref": {
+                                        "call": "TalentCalc",
+                                        "args": [-3]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "comp-1",
+                                  "name": "Rift Slug",
+                                  "nameProof": {
+                                    "names": "Companions(1)"
+                                  },
+                                  "ref": {
+                                    "call": "Companions",
+                                    "args": [1]
+                                  }
+                                },
+                                {
+                                  "key": "div-bon-8",
+                                  "name": "Nobisect",
+                                  "nameProof": {
+                                    "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                                  },
+                                  "ref": {
+                                    "call": "Divinity",
+                                    "args": ["Bonus_Minor", 8, 2]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "div-div-8",
+                                      "name": "Arctis",
+                                      "nameProof": {
+                                        "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                      },
+                                      "ref": {
+                                        "call": "Divinity",
+                                        "args": ["DivMinorBonus", 8, 1]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "alchb-yac",
+                                          "name": "Big P bubble",
+                                          "nameProof": {
+                                            "names": "DNSM.AlchBubbles.Y2ACTIVE"
+                                          },
+                                          "ref": {
+                                            "read": "DNSM.AlchBubbles.Y2ACTIVE"
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "calc-2",
+                                              "name": "Vials and bubbles (all)",
+                                              "nameProof": {
+                                                "names": "TalentCalc(-2)"
+                                              },
+                                              "ref": {
+                                                "call": "TalentCalc",
+                                                "args": [-2]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thing-cor",
+                                          "name": "Coral Kid: Divinity Skill Lv boosts Minor Link Bonuses a bit more",
+                                          "nameProof": {
+                                            "names": "Thingies(\"CoralKidUpgBonus\", 3, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["CoralKidUpgBonus", 3, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "optio-430",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "OptionsListAccount[430]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "lv-14",
+                                          "name": "Divinity level",
+                                          "nameProof": {
+                                            "names": "Lv0[14]"
+                                          },
+                                          "ref": {
+                                            "read": "Lv0[14]"
+                                          },
+                                          "leaf": "level"
+                                        },
+                                        {
+                                          "key": "godsi-2-3",
+                                          "name": "Nobisect minor link bonus top",
+                                          "nameProof": {
+                                            "names": "CustomLists.GodsInfo[2][3]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.GodsInfo[2][3]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "dream-12",
+                                  "name": "Equinox Symbols LV",
+                                  "nameProof": {
+                                    "names": "Dream[12]"
+                                  },
+                                  "ref": {
+                                    "read": "Dream[12]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "optio-232",
+                                  "name": "Sneaking Masteries completed",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[232]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[232]"
+                                  },
+                                  "leaf": "quantity"
+                                },
+                                {
+                                  "key": "summ-gri",
+                                  "name": "Skull of Major Talent",
+                                  "nameProof": {
+                                    "names": "Summoning(\"GrimoireUpgBonus\", 39, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning",
+                                    "args": ["GrimoireUpgBonus", 39, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "grimo-39",
+                                      "name": "Skull of Major Talent level",
+                                      "nameProof": {
+                                        "names": "Grimoire[39]"
+                                      },
+                                      "ref": {
+                                        "read": "Grimoire[39]"
+                                      },
+                                      "leaf": "level"
+                                    },
+                                    {
+                                      "key": "grimo-3-2",
+                                      "name": "Bonus per level (Grimoire)",
+                                      "nameProof": {
+                                        "names": "CustomLists.GrimoireUpg[39][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.GrimoireUpg[39][5]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "set-kat-b",
+                                  "name": "Kattlekruk Set",
+                                  "nameProof": {
+                                    "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GetSetBonus",
+                                    "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                                  }
+                                },
+                                {
+                                  "key": "arcane-ar",
+                                  "name": "Universe Talent",
+                                  "nameProof": {
+                                    "names": "ArcaneType(\"ArcaneUpgBonus\", 57, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcaneType",
+                                    "args": ["ArcaneUpgBonus", 57, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcan-57",
+                                      "name": "Universe Talent level",
+                                      "nameProof": {
+                                        "names": "Arcane[57]"
+                                      },
+                                      "ref": {
+                                        "read": "Arcane[57]"
+                                      },
+                                      "leaf": "level"
+                                    },
+                                    {
+                                      "key": "arcan-5-2",
+                                      "name": "Bonus per level (Arcane)",
+                                      "nameProof": {
+                                        "names": "CustomLists.ArcaneUpg[57][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.ArcaneUpg[57][5]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "lv-0",
+                                  "name": "Class level",
+                                  "nameProof": {
+                                    "names": "Lv0[0]"
+                                  },
+                                  "ref": {
+                                    "read": "Lv0[0]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "gaming-su",
+                                  "name": "+1 LV for all Talents per 100 Class LV over 500. Total Bonus: LV",
+                                  "nameProof": {
+                                    "names": "GamingStatType(\"SuperBitType\", 47, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GamingStatType",
+                                    "args": ["SuperBitType", 47, 0]
+                                  }
+                                },
+                                {
+                                  "key": "dnsm-al-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "DNSM.AllTalMaxSUPERdn"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "skill-99",
+                              "name": "Haungry for gold level",
+                              "nameProof": {
+                                "names": "SkillLevels[99]"
+                              },
+                              "ref": {
+                                "read": "SkillLevels[99]"
+                              },
+                              "leaf": "investedPoints"
+                            },
+                            {
+                              "key": "talen-99",
+                              "name": "Haungry For Gold curve constant",
+                              "nameProof": {
+                                "names": "CustomLists.TalentDescriptions[99][1][0]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.TalentDescriptions[99][1][0]"
+                              },
+                              "leaf": "fixedValue"
+                            },
+                            {
+                              "key": "talen-9-2",
+                              "name": "Haungry For Gold curve constant",
+                              "nameProof": {
+                                "names": "CustomLists.TalentDescriptions[99][1][1]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.TalentDescriptions[99][1][1]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "stamp-gfo",
+                          "name": "Stamps: Gold Food Effect",
+                          "nameProof": {
+                            "names": "StampBonusOfTypeX(\"GFood\")"
+                          },
+                          "ref": {
+                            "call": "StampBonusOfTypeX",
+                            "args": ["GFood"]
+                          }
+                        },
+                        {
+                          "key": "ach-37",
+                          "name": "Nutty Crafter",
+                          "nameProof": {
+                            "names": "AchieveStatus(37)"
+                          },
+                          "ref": {
+                            "call": "AchieveStatus",
+                            "args": [37]
+                          }
+                        },
+                        {
+                          "key": "alchb-gfo",
+                          "name": "Shimmeron bubble",
+                          "nameProof": {
+                            "names": "DNSM.AlchBubbles.GFoodz"
+                          },
+                          "ref": {
+                            "read": "DNSM.AlchBubbles.GFoodz"
+                          },
+                          "children": [
+                            {
+                              "key": "calc-2",
+                              "name": "Vials and bubbles (all)",
+                              "nameProof": {
+                                "names": "TalentCalc(-2)"
+                              },
+                              "ref": {
+                                "call": "TalentCalc",
+                                "args": [-2]
+                              },
+                              "children": [
+                                {
+                                  "key": "alchb-gfo",
+                                  "name": "Shimmeron bubble",
+                                  "nameProof": {
+                                    "names": "DNSM.AlchBubbles.GFoodz"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.AlchBubbles.GFoodz"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "calc-2",
+                                      "name": "Vials and bubbles (all)",
+                                      "nameProof": {
+                                        "names": "TalentCalc(-2)"
+                                      },
+                                      "ref": {
+                                        "call": "TalentCalc",
+                                        "args": [-2]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "alchb-opa",
+                                  "name": "Warriors Rule bubble",
+                                  "nameProof": {
+                                    "names": "DNSM.AlchBubbles.Opassz"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.AlchBubbles.Opassz"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "sigil-sig",
+                          "name": "Emoji Veggie",
+                          "nameProof": {
+                            "names": "Labb(\"SigilBonus\", \"Blank\", 14, 0)"
+                          },
+                          "ref": {
+                            "call": "Labb",
+                            "args": ["SigilBonus", "Blank", 14, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "sigil-14",
+                              "name": "Sigil bonus at its current tier",
+                              "nameProof": {
+                                "names": "CustomLists.SigilDesc[14][12]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.SigilDesc[14][12]"
+                              },
+                              "leaf": "fixedValue"
+                            },
+                            {
+                              "key": "art-art-1",
+                              "name": "Chilled Yarn",
+                              "nameProof": {
+                                "names": "Sailing(\"ArtifactBonus\", 16, 0)"
+                              },
+                              "ref": {
+                                "call": "Sailing",
+                                "args": ["ArtifactBonus", 16, 0]
+                              }
+                            },
+                            {
+                              "key": "summ-mer",
+                              "name": "All of your Sigils give higher bonuses than normal",
+                              "nameProof": {
+                                "names": "Summoning2(\"MeritocBonusz\", 21, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["MeritocBonusz", 21, 0]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "meal-zgo",
+                          "name": "Gold Food bonus",
+                          "nameProof": {
+                            "names": "MealBonus(\"zGoldFood\")"
+                          },
+                          "ref": {
+                            "call": "MealBonus",
+                            "args": ["zGoldFood"]
+                          }
+                        },
+                        {
+                          "key": "stars-69",
+                          "name": "Golden Food bonuses (Beanbie Major)",
+                          "nameProof": {
+                            "names": "DNSM.StarSigns[69]"
+                          },
+                          "ref": {
+                            "read": "DNSM.StarSigns[69]"
+                          },
+                          "children": [
+                            {
+                              "key": "sign-0",
+                              "name": "The Buff Guy",
+                              "nameProof": {
+                                "names": "StarSigns(0)"
+                              },
+                              "ref": {
+                                "call": "StarSigns",
+                                "args": [0]
+                              },
+                              "children": [
+                                {
+                                  "key": "stars-69",
+                                  "name": "Golden Food bonuses (Beanbie Major)",
+                                  "nameProof": {
+                                    "names": "DNSM.StarSigns[69]"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.StarSigns[69]"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "sign-0",
+                                      "name": "The Buff Guy",
+                                      "nameProof": {
+                                        "names": "StarSigns(0)"
+                                      },
+                                      "ref": {
+                                        "call": "StarSigns",
+                                        "args": [0]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "chip-sta",
+                                  "name": "Silkrode Nanochip",
+                                  "nameProof": {
+                                    "names": "chipBonuses(\"star\")"
+                                  },
+                                  "ref": {
+                                    "call": "chipBonuses",
+                                    "args": ["star"]
+                                  }
+                                },
+                                {
+                                  "key": "rift-ena",
+                                  "name": "Rift: star signs enabled",
+                                  "nameProof": {
+                                    "names": "RiftStuff(\"enabledStarSigns\", 0)"
+                                  },
+                                  "ref": {
+                                    "call": "RiftStuff",
+                                    "args": ["enabledStarSigns", 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "shiny-shi",
+                                      "name": "Infinite Star Signs",
+                                      "nameProof": {
+                                        "names": "Breeding(\"ShinyBonusS\", \"Nah\", 3, -1)"
+                                      },
+                                      "ref": {
+                                        "call": "Breeding",
+                                        "args": ["ShinyBonusS", "Nah", 3, -1]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "summ-mer",
+                                  "name": "All of your Starsigns give higher bonuses than normal",
+                                  "nameProof": {
+                                    "names": "Summoning2(\"MeritocBonusz\", 22, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning2",
+                                    "args": ["MeritocBonusz", 22, 0]
+                                  }
+                                },
+                                {
+                                  "key": "arcan-40",
+                                  "name": "Astrology Cultism level",
+                                  "nameProof": {
+                                    "names": "Arcane[40]"
+                                  },
+                                  "ref": {
+                                    "read": "Arcane[40]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "lv-18",
+                                  "name": "Summoning level",
+                                  "nameProof": {
+                                    "names": "Lv0[18]"
+                                  },
+                                  "ref": {
+                                    "read": "Lv0[18]"
+                                  },
+                                  "leaf": "level"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "bribe-36",
+                          "name": "Gold from Lead",
+                          "nameProof": {
+                            "names": "GetBribeBonus(\"36\")"
+                          },
+                          "ref": {
+                            "call": "GetBribeBonus",
+                            "args": ["36"]
+                          }
+                        },
+                        {
+                          "key": "ninja-pri",
+                          "name": "Gumm Stick",
+                          "nameProof": {
+                            "names": "Ninja(\"PristineBon\", 14, 0)"
+                          },
+                          "ref": {
+                            "call": "Ninja",
+                            "args": ["PristineBon", 14, 0]
+                          }
+                        },
+                        {
+                          "key": "ach-380",
+                          "name": "Beanstacker Trainee",
+                          "nameProof": {
+                            "names": "AchieveStatus(380)"
+                          },
+                          "ref": {
+                            "call": "AchieveStatus",
+                            "args": [380]
+                          }
+                        },
+                        {
+                          "key": "ach-383",
+                          "name": "Beanstacker Prodigy",
+                          "nameProof": {
+                            "names": "AchieveStatus(383)"
+                          },
+                          "ref": {
+                            "call": "AchieveStatus",
+                            "args": [383]
+                          }
+                        },
+                        {
+                          "key": "summ-vot",
+                          "name": "Boosts bonuses from all Golden Food",
+                          "nameProof": {
+                            "names": "Summoning(\"VotingBonusz\", 26, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["VotingBonusz", 26, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summ-vot",
+                              "name": "Ballot bonus 26 (weekly vote)",
+                              "nameProof": {
+                                "names": "Summoning2(\"VotingBonusz\", 26, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["VotingBonusz", 26, 0]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "tal-209",
+                          "name": "Apocalypse Wow",
+                          "nameProof": {
+                            "names": "getbonus2(1, 209, -1)"
+                          },
+                          "ref": {
+                            "call": "getbonus2",
+                            "args": [1, 209, -1]
+                          },
+                          "children": [
+                            {
+                              "key": "run-all",
+                              "name": "All-talent levels",
+                              "nameProof": {
+                                "names": "RunCodeOfTypeXforThingY(\"AllTalentLVz\", \"209|0\")"
+                              },
+                              "ref": {
+                                "call": "RunCodeOfTypeXforThingY",
+                                "args": ["AllTalentLVz", "209|0"]
+                              },
+                              "children": [
+                                {
+                                  "key": "dnsm-all",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "DNSM.AllTalMaxCapFR"
+                                  }
+                                },
+                                {
+                                  "key": "tal-149",
+                                  "name": "Symbols Of Beyond (Warrior)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 149)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 149]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arb-int-1",
+                                      "name": null,
+                                      "ref": {
+                                        "call": "ArbitraryCode5Inputs",
+                                        "args": [
+                                          "intervalAdd",
+                                          1,
+                                          20,
+                                          434,
+                                          0,
+                                          0
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "tal-374",
+                                  "name": "Symbols Of Beyond (Archer)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 374)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 374]
+                                  }
+                                },
+                                {
+                                  "key": "tal-539",
+                                  "name": "Symbols Of Beyond (Mage)",
+                                  "nameProof": {
+                                    "names": "GetTalentNumber(1, 539)"
+                                  },
+                                  "ref": {
+                                    "call": "GetTalentNumber",
+                                    "args": [1, 539]
+                                  }
+                                },
+                                {
+                                  "key": "ach-291",
+                                  "name": "Maroon Warship",
+                                  "nameProof": {
+                                    "names": "AchieveStatus(291)"
+                                  },
+                                  "ref": {
+                                    "call": "AchieveStatus",
+                                    "args": [291]
+                                  }
+                                },
+                                {
+                                  "key": "fambo-68",
+                                  "name": "LV For All Talents Above LV 1 (family bonus)",
+                                  "nameProof": {
+                                    "names": "DNSM.FamBonusQTYs[68]"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.FamBonusQTYs[68]"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "calc-3",
+                                      "name": "Family bonuses (all)",
+                                      "nameProof": {
+                                        "names": "TalentCalc(-3)"
+                                      },
+                                      "ref": {
+                                        "call": "TalentCalc",
+                                        "args": [-3]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "comp-1",
+                                  "name": "Rift Slug",
+                                  "nameProof": {
+                                    "names": "Companions(1)"
+                                  },
+                                  "ref": {
+                                    "call": "Companions",
+                                    "args": [1]
+                                  }
+                                },
+                                {
+                                  "key": "div-bon-8",
+                                  "name": "Nobisect",
+                                  "nameProof": {
+                                    "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                                  },
+                                  "ref": {
+                                    "call": "Divinity",
+                                    "args": ["Bonus_Minor", 8, 2]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "div-div-8",
+                                      "name": "Arctis",
+                                      "nameProof": {
+                                        "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                      },
+                                      "ref": {
+                                        "call": "Divinity",
+                                        "args": ["DivMinorBonus", 8, 1]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "alchb-yac",
+                                          "name": "Big P bubble",
+                                          "nameProof": {
+                                            "names": "DNSM.AlchBubbles.Y2ACTIVE"
+                                          },
+                                          "ref": {
+                                            "read": "DNSM.AlchBubbles.Y2ACTIVE"
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "calc-2",
+                                              "name": "Vials and bubbles (all)",
+                                              "nameProof": {
+                                                "names": "TalentCalc(-2)"
+                                              },
+                                              "ref": {
+                                                "call": "TalentCalc",
+                                                "args": [-2]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thing-cor",
+                                          "name": "Coral Kid: Divinity Skill Lv boosts Minor Link Bonuses a bit more",
+                                          "nameProof": {
+                                            "names": "Thingies(\"CoralKidUpgBonus\", 3, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["CoralKidUpgBonus", 3, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "optio-430",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "OptionsListAccount[430]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "lv-14",
+                                          "name": "Divinity level",
+                                          "nameProof": {
+                                            "names": "Lv0[14]"
+                                          },
+                                          "ref": {
+                                            "read": "Lv0[14]"
+                                          },
+                                          "leaf": "level"
+                                        },
+                                        {
+                                          "key": "godsi-2-3",
+                                          "name": "Nobisect minor link bonus top",
+                                          "nameProof": {
+                                            "names": "CustomLists.GodsInfo[2][3]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.GodsInfo[2][3]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "dream-12",
+                                  "name": "Equinox Symbols LV",
+                                  "nameProof": {
+                                    "names": "Dream[12]"
+                                  },
+                                  "ref": {
+                                    "read": "Dream[12]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "optio-232",
+                                  "name": "Sneaking Masteries completed",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[232]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[232]"
+                                  },
+                                  "leaf": "quantity"
+                                },
+                                {
+                                  "key": "summ-gri",
+                                  "name": "Skull of Major Talent",
+                                  "nameProof": {
+                                    "names": "Summoning(\"GrimoireUpgBonus\", 39, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning",
+                                    "args": ["GrimoireUpgBonus", 39, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "grimo-39",
+                                      "name": "Skull of Major Talent level",
+                                      "nameProof": {
+                                        "names": "Grimoire[39]"
+                                      },
+                                      "ref": {
+                                        "read": "Grimoire[39]"
+                                      },
+                                      "leaf": "level"
+                                    },
+                                    {
+                                      "key": "grimo-3-2",
+                                      "name": "Bonus per level (Grimoire)",
+                                      "nameProof": {
+                                        "names": "CustomLists.GrimoireUpg[39][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.GrimoireUpg[39][5]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "set-kat-b",
+                                  "name": "Kattlekruk Set",
+                                  "nameProof": {
+                                    "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GetSetBonus",
+                                    "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                                  }
+                                },
+                                {
+                                  "key": "arcane-ar",
+                                  "name": "Universe Talent",
+                                  "nameProof": {
+                                    "names": "ArcaneType(\"ArcaneUpgBonus\", 57, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcaneType",
+                                    "args": ["ArcaneUpgBonus", 57, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcan-57",
+                                      "name": "Universe Talent level",
+                                      "nameProof": {
+                                        "names": "Arcane[57]"
+                                      },
+                                      "ref": {
+                                        "read": "Arcane[57]"
+                                      },
+                                      "leaf": "level"
+                                    },
+                                    {
+                                      "key": "arcan-5-2",
+                                      "name": "Bonus per level (Arcane)",
+                                      "nameProof": {
+                                        "names": "CustomLists.ArcaneUpg[57][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.ArcaneUpg[57][5]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "lv-0",
+                                  "name": "Class level",
+                                  "nameProof": {
+                                    "names": "Lv0[0]"
+                                  },
+                                  "ref": {
+                                    "read": "Lv0[0]"
+                                  },
+                                  "leaf": "level"
+                                },
+                                {
+                                  "key": "gaming-su",
+                                  "name": "+1 LV for all Talents per 100 Class LV over 500. Total Bonus: LV",
+                                  "nameProof": {
+                                    "names": "GamingStatType(\"SuperBitType\", 47, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GamingStatType",
+                                    "args": ["SuperBitType", 47, 0]
+                                  }
+                                },
+                                {
+                                  "key": "dnsm-al-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "DNSM.AllTalMaxSUPERdn"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "talen-209",
+                              "name": "Apocalypse Wow curve constant",
+                              "nameProof": {
+                                "names": "CustomLists.TalentDescriptions[209][1][0]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.TalentDescriptions[209][1][0]"
+                              },
+                              "leaf": "fixedValue"
+                            },
+                            {
+                              "key": "talen-2-2",
+                              "name": "Apocalypse Wow curve constant",
+                              "nameProof": {
+                                "names": "CustomLists.TalentDescriptions[209][1][1]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.TalentDescriptions[209][1][1]"
+                              },
+                              "leaf": "fixedValue"
+                            },
+                            {
+                              "key": "dnsm-gur",
+                              "name": "Bonus of the character in turn",
+                              "nameProof": {
+                                "names": "DNSM.GurtBonuzzDN2"
+                              },
+                              "ref": {
+                                "read": "DNSM.GurtBonuzzDN2"
+                              }
+                            },
+                            {
+                              "key": "dnsm-gu-2",
+                              "name": "Best bonus of this talent among your characters",
+                              "nameProof": {
+                                "names": "DNSM.GurtBonuzzDN"
+                              },
+                              "ref": {
+                                "read": "DNSM.GurtBonuzzDN"
+                              },
+                              "leaf": "record"
+                            },
+                            {
+                              "key": "skill-209",
+                              "name": null,
+                              "ref": {
+                                "read": "PlayerDATABASE[{character}].SkillLevels[209]"
+                              },
+                              "leaf": "level"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "calct-209",
+                          "name": "Apocalypse Wow (talent calc)",
+                          "nameProof": {
+                            "names": "DNSM.CalcTalentMAP[209]"
+                          },
+                          "ref": {
+                            "read": "DNSM.CalcTalentMAP[209]"
+                          },
+                          "children": [
+                            {
+                              "key": "calc-4",
+                              "name": "Talent bonuses (all)",
+                              "nameProof": {
+                                "names": "TalentCalc(-4)"
+                              },
+                              "ref": {
+                                "call": "TalentCalc",
+                                "args": [-4]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "comp-48",
+                          "name": "Purp Mushroom",
+                          "nameProof": {
+                            "names": "Companions(48)"
+                          },
+                          "ref": {
+                            "call": "Companions",
+                            "args": [48]
+                          }
+                        },
+                        {
+                          "key": "thing-leg",
+                          "name": "Midusian Appetite",
+                          "nameProof": {
+                            "names": "Thingies(\"LegendPTS_bonus\", 25, 0)"
+                          },
+                          "ref": {
+                            "call": "Thingies",
+                            "args": ["LegendPTS_bonus", 25, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "spelu-18",
+                              "name": "Midusian Appetite level",
+                              "nameProof": {
+                                "names": "Spelunk[18][25]"
+                              },
+                              "ref": {
+                                "read": "Spelunk[18][25]"
+                              },
+                              "leaf": "level"
+                            },
+                            {
+                              "key": "legen-25",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomLists.LegendTalents[25][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "run-car-c",
+                          "name": "Bort The Cornhusk",
+                          "nameProof": {
+                            "names": "RunCodeOfTypeXforThingY(\"CardLv\", \"cropfallEvent1\")"
+                          },
+                          "ref": {
+                            "call": "RunCodeOfTypeXforThingY",
+                            "args": ["CardLv", "cropfallEvent1"]
+                          }
+                        },
+                        {
+                          "key": "run-car-a",
+                          "name": "IdleOn 5th Anniversary",
+                          "nameProof": {
+                            "names": "RunCodeOfTypeXforThingY(\"CardLv\", \"anni5Event1\")"
+                          },
+                          "ref": {
+                            "call": "RunCodeOfTypeXforThingY",
+                            "args": ["CardLv", "anni5Event1"]
+                          }
+                        },
+                        {
+                          "key": "comp-155",
+                          "name": "Vanillie",
+                          "nameProof": {
+                            "names": "Companions(155)"
+                          },
+                          "ref": {
+                            "call": "Companions",
+                            "args": [155]
+                          }
+                        },
+                        {
+                          "key": "summ-vau",
+                          "name": "24 Karat Foods",
+                          "nameProof": {
+                            "names": "Summoning(\"VaultUpgBonus\", 86, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["VaultUpgBonus", 86, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "upgva-86",
+                              "name": "24 Karat Foods (vault) level",
+                              "nameProof": {
+                                "names": "UpgVault[86]"
+                              },
+                              "ref": {
+                                "read": "UpgVault[86]"
+                              },
+                              "leaf": "level"
+                            },
+                            {
+                              "key": "upgra-86",
+                              "name": "Bonus per level (Upgrade Vault)",
+                              "nameProof": {
+                                "names": "CustomLists.UpgradeVault[86][5]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.UpgradeVault[86][5]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "jelly-rog",
+                          "name": "Spinine",
+                          "nameProof": {
+                            "names": "JellyOperation(\"RoG_BonusQTY\", 10, 0)"
+                          },
+                          "ref": {
+                            "call": "JellyOperation",
+                            "args": ["RoG_BonusQTY", 10, 0]
+                          }
+                        },
+                        {
+                          "key": "jelly-r-2",
+                          "name": "Smooth Stone",
+                          "nameProof": {
+                            "names": "JellyOperation(\"RoG_BonusQTY\", 51, 0)"
+                          },
+                          "ref": {
+                            "call": "JellyOperation",
+                            "args": ["RoG_BonusQTY", 51, 0]
+                          }
+                        },
+                        {
+                          "key": "foods",
+                          "name": "Food slots owned",
+                          "nameProof": {
+                            "names": "FoodSlotsOwned"
+                          },
+                          "ref": {
+                            "read": "FoodSlotsOwned"
+                          },
+                          "leaf": "quantity"
+                        },
+                        {
+                          "key": "equip-2-1",
+                          "name": "Food slot 1 quantity",
+                          "nameProof": {
+                            "names": "EquipmentQuantity[2][1]"
+                          },
+                          "ref": {
+                            "read": "EquipmentQuantity[2][1]"
+                          },
+                          "leaf": "quantity"
+                        },
+                        {
+                          "key": "ninja-29",
+                          "name": null,
+                          "ref": {
+                            "read": "CustomLists.NinjaInfo[29].length"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "ninja-104",
+                          "name": "Golden Grilled Cheese Nomwich (Gold Food Beanstalk)",
+                          "nameProof": {
+                            "names": "Ninja[104][10]"
+                          },
+                          "ref": {
+                            "read": "Ninja[104][10]"
+                          }
+                        },
+                        {
+                          "key": "ninja-emp",
+                          "name": "Jade Emporium item owned 1, 0",
+                          "nameProof": {
+                            "names": "Ninja(\"EmporiumBonus\", 1, 0)"
+                          },
+                          "ref": {
+                            "call": "Ninja",
+                            "args": ["EmporiumBonus", 1, 0]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "ach-309",
+                      "name": "Seaworthy Captain",
+                      "nameProof": {
+                        "names": "AchieveStatus(309)"
+                      },
+                      "ref": {
+                        "call": "AchieveStatus",
+                        "args": [309]
+                      }
+                    },
+                    {
+                      "key": "tal-653",
+                      "name": "Dummy Thicc Stats",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 653)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 653]
+                      },
+                      "children": [
+                        {
+                          "key": "run-all-6",
+                          "name": "All-talent levels",
+                          "nameProof": {
+                            "names": "RunCodeOfTypeXforThingY(\"AllTalentLV\", \"653\")"
+                          },
+                          "ref": {
+                            "call": "RunCodeOfTypeXforThingY",
+                            "args": ["AllTalentLV", "653"]
+                          },
+                          "children": [
+                            {
+                              "key": "run-tal-6",
+                              "name": "Dummy Thicc Stats",
+                              "nameProof": {
+                                "names": "RunCodeOfTypeXforThingY(\"TalentBannedforAllLV\", \"653\")"
+                              },
+                              "ref": {
+                                "call": "RunCodeOfTypeXforThingY",
+                                "args": ["TalentBannedforAllLV", "653"]
+                              },
+                              "leaf": "rawBonus"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "skill-653",
+                          "name": "Dummy thicc stats level",
+                          "nameProof": {
+                            "names": "SkillLevels[653]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[653]"
+                          },
+                          "leaf": "investedPoints"
+                        },
+                        {
+                          "key": "talen-653",
+                          "name": "Dummy Thicc Stats curve constant",
+                          "nameProof": {
+                            "names": "CustomLists.TalentDescriptions[653][1][0]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.TalentDescriptions[653][1][0]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "talen-6-2",
+                          "name": "Dummy Thicc Stats curve constant",
+                          "nameProof": {
+                            "names": "CustomLists.TalentDescriptions[653][1][1]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.TalentDescriptions[653][1][1]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "ach-362",
+                      "name": "Science Post Doc",
+                      "nameProof": {
+                        "names": "AchieveStatus(362)"
+                      },
+                      "ref": {
+                        "call": "AchieveStatus",
+                        "args": [362]
+                      }
+                    },
+                    {
+                      "key": "optio-232",
+                      "name": "Sneaking Masteries completed",
+                      "nameProof": {
+                        "names": "OptionsListAccount[232]"
+                      },
+                      "ref": {
+                        "read": "OptionsListAccount[232]"
+                      },
+                      "leaf": "quantity"
+                    },
+                    {
+                      "key": "farm-lan",
+                      "name": "Seed of Stats",
+                      "nameProof": {
+                        "names": "FarmingStuffs(\"LankRankUpgBonus\", 19, 0)"
+                      },
+                      "ref": {
+                        "call": "FarmingStuffs",
+                        "args": ["LankRankUpgBonus", 19, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "tal-207",
+                          "name": "Dank Ranks",
+                          "nameProof": {
+                            "names": "getbonus2(1, 207, -1)"
+                          },
+                          "ref": {
+                            "call": "getbonus2",
+                            "args": [1, 207, -1]
+                          },
+                          "children": [
+                            {
+                              "key": "arb-dec-2",
+                              "name": null,
+                              "ref": {
+                                "call": "ArbitraryCode5Inputs",
+                                "args": ["decayMulti", 2, 200, 0, 0, 0]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "farm-exo",
+                          "name": "Plump Database",
+                          "nameProof": {
+                            "names": "FarmingStuffs(\"ExoticBonusQTY\", 14, 0)"
+                          },
+                          "ref": {
+                            "call": "FarmingStuffs",
+                            "args": ["ExoticBonusQTY", 14, 0]
+                          }
+                        },
+                        {
+                          "key": "ninja-36",
+                          "name": "Bonus per rank level (Farming)",
+                          "nameProof": {
+                            "names": "CustomLists.NinjaInfo[36][19]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.NinjaInfo[36][19]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "farmr-2-1",
+                          "name": "Seed of Stats rank level",
+                          "nameProof": {
+                            "names": "FarmRank[2][19]"
+                          },
+                          "ref": {
+                            "read": "FarmRank[2][19]"
+                          },
+                          "leaf": "level"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "summ-vot",
+                      "name": "Increases STR AGI WIS and LUK for all characters",
+                      "nameProof": {
+                        "names": "Summoning(\"VotingBonusz\", 2, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning",
+                        "args": ["VotingBonusz", 2, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "summ-vot",
+                          "name": "Ballot bonus 2 (weekly vote)",
+                          "nameProof": {
+                            "names": "Summoning2(\"VotingBonusz\", 2, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning2",
+                            "args": ["VotingBonusz", 2, 0]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "set-mar-b",
+                      "name": "Marbiglass Set",
+                      "nameProof": {
+                        "names": "GetSetBonus(\"MARBIGLASS_SET\", \"Bonus\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "GetSetBonus",
+                        "args": ["MARBIGLASS_SET", "Bonus", 0, 0]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "key": "ninja-pri",
+                  "name": "Gumm Eye",
+                  "nameProof": {
+                    "names": "Ninja(\"PristineBon\", 5, 0)"
+                  },
+                  "ref": {
+                    "call": "Ninja",
+                    "args": ["PristineBon", 5, 0]
+                  },
+                  "termPart": {
+                    "system": "pristine-charms"
+                  }
+                },
+                {
+                  "key": "stars-pct",
+                  "name": "Star Signs total: pct LUK",
+                  "nameProof": {
+                    "names": "DNSM.StarSigns.pctLUK"
+                  },
+                  "ref": {
+                    "read": "DNSM.StarSigns.pctLUK"
+                  },
+                  "termPart": {
+                    "system": "star-signs"
+                  },
+                  "piece": {
+                    "name": "star-signs",
+                    "args": {}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "alchemy",
+          "sources": [
+            {
+              "key": "alchb-tot",
+              "name": "Lotto Skills bubble",
+              "nameProof": {
+                "names": "DNSM.AlchBubbles.TotalLUK"
+              },
+              "ref": {
+                "read": "DNSM.AlchBubbles.TotalLUK"
+              },
+              "children": [
+                {
+                  "key": "calc-2",
+                  "name": "Vials and bubbles (all)",
+                  "nameProof": {
+                    "names": "TalentCalc(-2)"
+                  },
+                  "ref": {
+                    "call": "TalentCalc",
+                    "args": [-2]
+                  },
+                  "children": [
+                    {
+                      "key": "alchb-tot",
+                      "name": "Lotto Skills bubble",
+                      "nameProof": {
+                        "names": "DNSM.AlchBubbles.TotalLUK"
+                      },
+                      "ref": {
+                        "read": "DNSM.AlchBubbles.TotalLUK"
+                      },
+                      "children": [
+                        {
+                          "key": "calc-2",
+                          "name": "Vials and bubbles (all)",
+                          "nameProof": {
+                            "names": "TalentCalc(-2)"
+                          },
+                          "ref": {
+                            "call": "TalentCalc",
+                            "args": [-2]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "talents",
+          "sources": [
+            {
+              "key": "tal-652",
+              "name": "Stat Overload",
+              "nameProof": {
+                "names": "GetTalentNumber(1, 652)"
+              },
+              "ref": {
+                "call": "GetTalentNumber",
+                "args": [1, 652]
+              },
+              "children": [
+                {
+                  "key": "run-all-6",
+                  "name": "All-talent levels",
+                  "nameProof": {
+                    "names": "RunCodeOfTypeXforThingY(\"AllTalentLV\", \"652\")"
+                  },
+                  "ref": {
+                    "call": "RunCodeOfTypeXforThingY",
+                    "args": ["AllTalentLV", "652"]
+                  },
+                  "children": [
+                    {
+                      "key": "run-tal-6",
+                      "name": "Stat Overload",
+                      "nameProof": {
+                        "names": "RunCodeOfTypeXforThingY(\"TalentBannedforAllLV\", \"652\")"
+                      },
+                      "ref": {
+                        "call": "RunCodeOfTypeXforThingY",
+                        "args": ["TalentBannedforAllLV", "652"]
+                      },
+                      "leaf": "rawBonus"
+                    }
+                  ]
+                },
+                {
+                  "key": "skill-652",
+                  "name": "Stat overload level",
+                  "nameProof": {
+                    "names": "SkillLevels[652]"
+                  },
+                  "ref": {
+                    "read": "SkillLevels[652]"
+                  },
+                  "leaf": "investedPoints"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "companions",
+          "sources": [
+            {
+              "key": "comp-8",
+              "name": "Sandy Pot",
+              "nameProof": {
+                "names": "Companions(8)"
+              },
+              "ref": {
+                "call": "Companions",
+                "args": [8]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "where": "pools/0/groups/1/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/2/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/3/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/1/groups/0/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/1/groups/0/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/1/groups/0/sources/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/1/groups/0/sources/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/0/sources/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/5/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/6",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/11",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/14",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/15",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/15",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/2/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/3/sources/0/children/0/children/0/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/3/sources/0/children/0/children/0/children/2/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/4/sources/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/3/sources/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/3/sources/1/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/3/sources/1/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/6/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/8/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/8/sources/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/8/sources/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/2/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/9/sources/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/2/sources/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/10/sources/0/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/10/sources/0/children/0/children/0/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/10/sources/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/10/sources/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/10/sources/0/children/2/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/11/sources/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/11/sources/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/12/sources/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/12/sources/0/children/0/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/13/sources/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/14/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/14/sources/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/5",
+      "kind": "system"
+    },
+    {
+      "where": "pools/2/groups/10",
+      "kind": "system"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/5",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/5",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/6",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/7",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/9",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/10",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/10",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/7/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/8",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/5/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/6",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/5/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/11",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/14",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/15",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/15",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/8",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/9",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/10/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/10/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/2/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/14",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/15",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/16",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/17",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/18/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/5/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/6",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/11",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/14",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/15",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/15",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/5",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/20/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/22/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/23",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/24",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/27",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/28",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/31",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/32",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/33",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/10",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/12",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/15/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/16",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/4/groups/0/sources/0/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/4/groups/2/sources/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/0/sources/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/0/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/0/sources/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/0/sources/1/children/0",
+      "kind": "name"
+    }
+  ]
 }
