@@ -320,6 +320,22 @@ test("each has one model child and a combine; a node with children in a piece ha
   expect(reason(line(drop), { "invented-signs": withCondition })).toMatch(
     /condition/,
   );
+  // below a call's level with no combine (the Seraph), still inside the piece: no condition either
+  const seraphCondition = signsWith((p) => {
+    const m = model(p);
+    delete m.combine;
+    const [bonus] = m.children as Raw[];
+    if (bonus)
+      bonus.condition = {
+        key: "on",
+        name: "On",
+        ref: { read: "TreeFlagOn" },
+        leaf: "condition",
+      };
+  });
+  expect(reason(line(drop), { "invented-signs": seraphCondition })).toMatch(
+    /condition/,
+  );
   // outside a piece, combine and each are refused
   expect(
     reason({
