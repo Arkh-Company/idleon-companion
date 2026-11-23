@@ -14,16 +14,24 @@ export interface Op {
   /** For a leaf that is a variable: the expression that last set it before this read (data flow). */
   def: AnyNode | null;
   /**
-   * For a leaf that is a variable set by a block's call (spec 010, T177 r4): the calls its value comes from by data flow,
-   * bare, through `asNumber(…)`, another variable or either side of a `? :`; absent with none.
+   * For a leaf, or an assignment's prevDef (spec 010, T177 r4, r5): the block's calls its value comes from by data flow,
+   * bare, through `asNumber(…)`, another variable or a side of a `? :`, each with the sides on its way; absent with none.
    */
-  defCalls?: AnyNode[];
+  defCalls?: DefCall[];
+  /** The leaf, or the assignment's prevDef, has a block's call anywhere in its value (T177 r5): never a read by value. */
+  callIn?: true;
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
   /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
   owner?: AnyNode;
   /** The block's function text; the node ranges count from 1 inside it (it was parsed as `(text)`). */
   fnText: string;
+}
+
+/** A block's call a value comes from, and each `? :` on its way with the side it sits on (true: the consequent). */
+export interface DefCall {
+  call: AnyNode;
+  sides: [AnyNode, boolean][];
 }
 
 /** acorn's nodes, read by field name: the walk visits every child, whatever its type. */
@@ -170,28 +178,63 @@ const methodName = (n: AnyNode): unknown =>
     ? at(at(n, "callee"), "property").name
     : undefined;
 
-/** The block calls an expression that set a variable comes from: see Op.defCalls. */
-function callsOf(rhs: AnyNode | null, defs: Defs, depth = 0): AnyNode[] {
+const isBlockCall = (n: AnyNode) => {
+  const name = methodName(n);
+  return typeof name === "string" && name.startsWith("_customBlock_");
+};
+
+/** The block calls an expression's value comes from: see Op.defCalls. */
+function callsOf(
+  rhs: AnyNode | null,
+  defs: Defs,
+  depth = 0,
+  sides: DefCall["sides"] = [],
+): DefCall[] {
   if (!rhs || depth > 6) return [];
-  const name = methodName(rhs);
-  if (typeof name === "string" && name.startsWith("_customBlock_"))
-    return [rhs];
+  if (isBlockCall(rhs)) return [{ call: rhs, sides }];
   const args = (rhs.arguments as AnyNode[] | undefined) ?? [];
-  if (name === "asNumber" && args.length === 1)
-    return callsOf(args[0] ?? null, defs, depth + 1);
+  if (methodName(rhs) === "asNumber" && args.length === 1)
+    return callsOf(args[0] ?? null, defs, depth + 1, sides);
   if (rhs.type === "Identifier")
-    return callsOf(defOf(rhs, defs), defs, depth + 1);
+    return callsOf(defOf(rhs, defs), defs, depth + 1, sides);
   if (rhs.type === "ConditionalExpression")
     return [
-      ...callsOf(at(rhs, "consequent"), defs, depth + 1),
-      ...callsOf(at(rhs, "alternate"), defs, depth + 1),
+      ...callsOf(at(rhs, "consequent"), defs, depth + 1, [
+        ...sides,
+        [rhs, true],
+      ]),
+      ...callsOf(at(rhs, "alternate"), defs, depth + 1, [
+        ...sides,
+        [rhs, false],
+      ]),
     ];
   return [];
+}
+
+/** A block's call anywhere in an expression's value, through the variables it reads (Op.callIn). A member is a read of
+ * the game's memory, whatever names its place: its object and its key are no part of its value. */
+function hasCall(
+  n: AnyNode | null,
+  defs: Defs,
+  memo: Map<AnyNode, boolean>,
+  depth = 0,
+): boolean {
+  if (!n || depth > 6 || n.type === "MemberExpression") return false;
+  const hit = memo.get(n);
+  if (hit !== undefined) return hit;
+  const out =
+    isBlockCall(n) ||
+    (n.type === "Identifier"
+      ? hasCall(defOf(n, defs), defs, memo, depth + 1)
+      : children(n).some((c) => hasCall(c, defs, memo, depth)));
+  memo.set(n, out);
+  return out;
 }
 
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
+  const callMemo = new Map<AnyNode, boolean>(); // the variables' defs are walked once per function, not once per leaf
   const byRange = new Map<string, Mark>();
   for (const m of marks(fn)) {
     const s = m.node.range[0] - 1;
@@ -229,7 +272,10 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
       const def = m.kind === "leaf" ? defOf(m.node, defs) : null;
-      const calls = callsOf(def, defs);
+      const prevDef = defOf(target, defs);
+      // a leaf's value is the leaf (a variable opens into its def); an assignment's, what set it before
+      const value = m.kind === "leaf" ? m.node : prevDef;
+      const calls = callsOf(value, defs);
       ops.push({
         block,
         kind: m.kind,
@@ -237,7 +283,8 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         parent,
         def,
         ...(calls.length > 0 && { defCalls: calls }),
-        prevDef: defOf(target, defs),
+        ...(hasCall(value, defs, callMemo) && { callIn: true as const }),
+        prevDef,
         fnText: text,
         ...(m.owner ? { owner: m.owner } : {}),
       });

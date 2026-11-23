@@ -42,6 +42,6 @@ export function ambiguousCall(
 ): string | null {
   const [c] = calls ?? [];
   return c
-    ? `a chamada ${c.block} de valor ${String(c.v)} sai de mais de uma chamada, e o lugar não decide`
+    ? `a chamada ${c.block} de valor ${String(c.v)} ${c.why ?? "sai de mais de uma chamada, e o lugar não decide"}`
     : null;
 }

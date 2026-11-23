@@ -4,7 +4,7 @@
 // value with no source; each node carries the value it took. Steps live only in the worker: a step names a method only
 // when it is one of the closed MATH list, and a text literal of the code is kept only as empty or not (FR-010).
 // Step 8c (`formulaOf`, the text of the validation page) has no reader in pieces.cjs and is not ported.
-import type { Op } from "../instrument.ts";
+import type { DefCall, Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
 import {
   astPattern,
@@ -44,6 +44,10 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
   const ambiguous = new Set<AmbiguousCall>();
+  // each if's and ? :'s test op, by the node it decides (Op.owner)
+  const testOf = new Map(
+    ops.flatMap((o, i) => (o.kind === "test" && o.owner ? [[o.owner, i]] : [])),
+  );
 
   /**
    * stepsOf(n, xs, range) and its checks; for a loop turn of a cache writer (step 8d2), `xs` is the slice of the step
@@ -109,12 +113,12 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     function leaf0(node: AstNode, v: StepValue): Expr {
       // a block's call, bare or through asNumber right in the step (T177 r4)
       const callee = methodOf(unwrap(node));
+      const id = opIndex.get(node);
       if (callee?.startsWith(CUSTOM)) {
         const fits = (x: RecNode) =>
           !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v;
         // the call that returned at the step's place (its value recorded where it began, spec 010 T177 r1); with no
         // place, the only call of that value; two or more are ambiguous, a loose value that never ties to a read either
-        const id = opIndex.get(node);
         const at = id === undefined ? undefined : lastPos.get(id);
         const all = kids.filter(fits);
         const k =
@@ -134,14 +138,11 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         // a block's call with no call of its own here is a loose value: never a read with its value (T177 r4)
         return { t: "val", v };
       }
-      // a variable set by a block's call, bare, through asNumber, another variable or a ? : (Op.defCalls): the data
-      // flow decides, never a read with its value (T177 r3, r4)
-      const calls = ops[opIndex.get(node) ?? -1]?.defCalls;
-      if (calls) {
-        // shortcut: each side of a ? : is tried and one tie is kept; two would use both calls up, rare in the game
-        const tied = calls.map((c) => leaf(c, v)).filter((r) => r.t !== "val");
-        return tied.length === 1 && tied[0] ? tied[0] : { t: "val", v };
-      }
+      // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
+      // (Op.callIn): the data flow decides, never a read with its value (T177 r3 to r5)
+      const op = ops[id ?? -1];
+      if (op?.defCalls) return byCalls(op.defCalls, v, lastPos.get(id ?? -1));
+      if (op?.callIn) return defOrVal(node, v);
       if (typeof v !== "number") return defOrVal(node, v);
       const pool = poolFor(node);
       // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
@@ -186,6 +187,37 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         return read(txt[0][0], v);
       }
       return defOrVal(node, v);
+    }
+    // the side a ? : took for the value recorded at `pos`: its test's last record up to there, in the call's whole step
+    // log (the ? : may have run before the turn); undefined with no record, or with a test of no number or yes/no
+    const sideAt = (owner: AstNode, pos = base + xs.length - 1) => {
+      const t = testOf.get(owner);
+      const tv = n.x?.slice(0, pos + 1).findLast(([i]) => i === t)?.[1];
+      return tv === null || tv === undefined ? undefined : !!tv;
+    };
+    // the call a value comes from (Op.defCalls), on the side each ? : on its way took (T177 r5): a ? : whose side the
+    // step log does not give is ambiguous; no call or two on the sides taken, a loose value; never a read
+    function byCalls(calls: DefCall[], v: StepValue, pos?: number): Expr {
+      const state = ({ sides }: DefCall) => {
+        for (const [o, s] of sides) {
+          const took = sideAt(o, pos);
+          if (took !== s) return took === undefined ? "open" : "off";
+        }
+        return "on";
+      };
+      const st = calls.map(state);
+      const open = calls[st.indexOf("open")];
+      if (open) {
+        const block = (methodOf(open.call) ?? "").slice(CUSTOM.length);
+        ambiguous.add({
+          block,
+          v,
+          why: "está num ? : cujo lado o lugar não decide",
+        });
+        return { t: "val", v };
+      }
+      const on = calls.filter((_, i) => st[i] === "on");
+      return on.length === 1 && on[0] ? leaf(on[0].call, v) : { t: "val", v };
     }
     // the expression that set the variable, when it gave this same value in this turn
     function defOrVal(node: AstNode, v: StepValue): Expr {
@@ -235,7 +267,14 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         if (pid !== undefined && typeof pv === "number" && near(pv, lv))
           l = { t: "def", e: e(pd), v: pv };
         else if (pid === undefined) {
-          const r0 = leaf(pd, lv);
+          // what set it has a block's call in it (Op.callIn): only its calls tie it, never a read by value (T177 r5)
+          const r0 = op.callIn
+            ? byCalls(
+                op.defCalls ?? [],
+                lv,
+                lastPos.get(opIndex.get(node) ?? -1),
+              )
+            : leaf(pd, lv);
           if (r0.t !== "val") l = r0;
         }
       }

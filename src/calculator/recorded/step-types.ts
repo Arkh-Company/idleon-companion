@@ -34,6 +34,8 @@ export interface BlockSteps {
 export interface AmbiguousCall {
   block: string;
   v: StepValue;
+  /** Why the place does not decide, when not for two calls (spec 010, T177 r5: a ? : of no recorded side). */
+  why?: string;
 }
 
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
