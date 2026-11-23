@@ -56,8 +56,9 @@ interface Level {
   termParts?: ReadonlySet<string>;
   /** A level that opens by the recording (level-openings.ts): its parts, in place of its expression's. */
   open?: Opening[];
-  /** The cache's write the level's call made (level-openings.ts): its turns open it. */
+  /** The cache's write the level's call made (level-openings.ts): its turns open it; `steps`, its turn's. */
   write?: RecWrite;
+  steps?: BlockSteps | undefined;
 }
 
 const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
@@ -145,7 +146,8 @@ function levelOfChild(
   const value = ref ? valueIn(ref, parent.scope, leaves, ctx) : null;
   // the read at its place in the parent's expression (one only), for a cache's author (cache-author.ts)
   const at = onlyRead(parent.expr, p);
-  return { expr: at ?? { t: "read", p, v: value }, scope: parent.scope, value };
+  const expr: Expr = at ?? { t: "read", p, v: value };
+  return { expr, scope: parent.scope, value, steps: parent.steps };
 }
 
 /**

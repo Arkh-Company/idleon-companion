@@ -117,13 +117,14 @@ export function cacheAuthor(
   return { node, write };
 }
 
-/** The expression that gave the author's write: its last step in its turn (since its write before it), with the value. */
-export function writeExpr(
+type TurnOf = (n: RecNode, range: LoopTurn) => BlockSteps;
+
+/** The steps of the author's turn that gave its write: since its write before it. */
+export function writeTurn(
   rec: Recording,
   { node, write }: { node: RecNode; write: RecWrite },
-  turnOf: (n: RecNode, range: LoopTurn) => BlockSteps,
-): Expr | null {
-  // shortcut: a write of a call's value with no step of its own gives none; take the call when a cache needs it
+  turnOf: TurnOf,
+): BlockSteps {
   const before = [...rec.writes, ...rec.spliced].filter(
     (w) => w.node === node.id && w.seq < write.seq,
   );
@@ -131,10 +132,19 @@ export function writeExpr(
     (a, w) => (a && a.seq > w.seq ? a : w),
     null,
   );
-  const last = turnOf(node, { from: from?.xi ?? 0, to: write.xi - 1 }).steps.at(
-    -1,
-  );
-  return last && near(last.v, write.v) ? last.e : null;
+  return turnOf(node, { from: from?.xi ?? 0, to: write.xi - 1 });
+}
+
+/** The expression that gave the author's write: the last step of its turn (`turn`), with the value. */
+export function writeExpr(
+  rec: Recording,
+  a: { node: RecNode; write: RecWrite },
+  turnOf: TurnOf,
+  turn = writeTurn(rec, a, turnOf),
+): Expr | null {
+  // shortcut: a write of a call's value with no step of its own gives none; take the call when a cache needs it
+  const last = turn.steps.at(-1);
+  return last && near(last.v, a.write.v) ? last.e : null;
 }
 
 /** The read of `path` among the leaves of `e` when there is one only: the place of a read opened, never by order. */

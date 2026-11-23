@@ -11,7 +11,7 @@ import { STATIC_NAMES } from "../names/names-table.ts";
 import { nameOf, recipeName } from "../names/names.ts";
 import { renameOf } from "../names/renames.ts";
 import { STATE_NAMES } from "../names/state-names.ts";
-import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import type { RecNode, Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
@@ -25,6 +25,7 @@ import type {
 import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
 import { openingOf } from "./level-openings.ts";
+import type { Opening } from "./level-openings.ts";
 import { callParts } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { returnOf, saveChild, termExpr } from "./lock-parts.ts";
@@ -89,8 +90,8 @@ const MAX_DEPTH = 12;
 /**
  * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
  * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value, or the
- * read itself at its place (one only) in what its reader's level is; `write` the cache's write the call made, whose
- * turns open it (level-openings.ts).
+ * read itself at its place (one only) in what its reader's level is; `from` the opening the call's level came from: the
+ * cache's write it made, whose turns open it, and the steps of that turn, where its reads have their place.
  */
 function walkPart(
   key: string,
@@ -99,13 +100,14 @@ function walkPart(
   depth: number,
   reader: RecNode | null = null,
   expr?: Expr | null,
-  write?: RecWrite,
+  from?: Opening,
 ): Walked {
   if (!call) {
     const level = {
       expr:
         expr?.t === "read" ? expr : ({ t: "read", p: key, v: null } as const),
       value: null,
+      steps: from?.steps,
     };
     const open = reader ? openingOf({ ...level, scope: reader }, ctx) : null;
     if (open === null)
@@ -116,11 +118,13 @@ function walkPart(
       key,
       call,
       below: open.map((o) =>
-        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o.write),
+        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o),
       ),
     };
   }
-  const parts = depth < MAX_DEPTH ? callParts(call, ctx, expr, write) : null;
+  const own = from?.call === call ? from : undefined;
+  const parts =
+    depth < MAX_DEPTH ? callParts(call, ctx, expr, own?.write) : null;
   if (parts === null) return { key, call, below: "descend" };
   // no part the recording ties: a leaf, unless the call reads the save below it (then the agent descends)
   if (parts.length === 0)
@@ -138,7 +142,7 @@ function walkPart(
     key,
     call,
     below: parts.map((p) =>
-      walkPart(p, kid(p), ctx, depth + 1, call, onlyRead(level, p)),
+      walkPart(p, kid(p), ctx, depth + 1, call, onlyRead(level, p), own),
     ),
   };
 }

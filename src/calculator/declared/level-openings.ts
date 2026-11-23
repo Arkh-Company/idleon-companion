@@ -4,9 +4,14 @@
 // (T168). The lock and the draft read the same opening: each child is one of its parts, and the level closes by their
 // sum.
 import type { RecNode, RecWrite } from "../recording.ts";
-import type { Expr } from "../recorded/steps.ts";
+import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
-import { cacheAuthor, isCacheRead, writeExpr } from "./cache-author.ts";
+import {
+  cacheAuthor,
+  isCacheRead,
+  writeExpr,
+  writeTurn,
+} from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { loopOpening, writeTurns } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
@@ -19,11 +24,18 @@ export interface Opening {
   expr?: Expr | null;
   /** The cache's write the call made, whose turns open it when it wrote the path more than once. */
   write?: RecWrite;
+  /** The steps of the call's turn `expr` came from (a cache's write): the places of the reads in it. */
+  steps?: BlockSteps;
   value: number | null;
 }
 /** The opening of a level, its refusal's reason, or null when the level opens by its own expression. */
 export function openingOf(
-  level: { expr: Expr | null; scope: RecNode; write?: RecWrite },
+  level: {
+    expr: Expr | null;
+    scope: RecNode;
+    write?: RecWrite;
+    steps?: BlockSteps | undefined;
+  },
   ctx: LevelContext,
 ): Opening[] | string | null {
   const { expr, scope } = level;
@@ -31,17 +43,21 @@ export function openingOf(
   if (turns !== null) return turns;
   if (expr?.t !== "read" || !isCacheRead(expr.p))
     return loopOpening(expr, scope, ctx);
-  // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart)
-  const a = cacheAuthor(ctx.rec, expr.p, scope, ctx.stepsOf(scope.id), expr);
+  // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart),
+  // in the steps of the turn its expression came from when it did (an author's write: new objects at each turnOf)
+  const steps = level.steps ?? ctx.stepsOf(scope.id);
+  const a = cacheAuthor(ctx.rec, expr.p, scope, steps, expr);
   if (a === null) return null;
   if ("refused" in a) return a.refused;
   const v = a.write.v;
+  const turn = writeTurn(ctx.rec, a, ctx.turnOf);
   return [
     {
       part: callRef(a.node),
       call: a.node,
-      expr: writeExpr(ctx.rec, a, ctx.turnOf),
+      expr: writeExpr(ctx.rec, a, ctx.turnOf, turn),
       write: a.write,
+      steps: turn,
       value: typeof v === "number" ? v : null,
     },
   ];
@@ -57,6 +73,7 @@ export const levelOfOpening = (
   scope: RecNode;
   value: number | null;
   write?: RecWrite;
+  steps?: BlockSteps;
 } =>
   o.call
     ? {
@@ -64,5 +81,6 @@ export const levelOfOpening = (
         scope: o.call,
         value: o.value,
         ...(o.write ? { write: o.write } : {}),
+        ...(o.steps ? { steps: o.steps } : {}),
       }
     : { expr: { t: "read", p: o.part, v: o.value }, scope, value: o.value };

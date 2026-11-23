@@ -209,12 +209,16 @@ test("an author's read of its own earlier turn goes down a turn at a time, each 
   // TreeAuthorPair: each turn's count reads the turn before it: TreeTurnItem(2), then (1), then (0)
   const items: string[] = [];
   const [source] = drafted(record("TreeAuthorPair", 18)) ?? [];
-  for (let s = source; s; ) {
+  for (let s = source; s;) {
     const [, [author]] = s;
     const kids = author?.[1] ?? [];
     const own = kids.find(([k]) => k.startsWith("TreeTurnItem"));
     if (own) items.push(own[0]);
     s = kids.find(([k]) => k === "DNSM.TreeAuthor.v");
   }
-  expect(items).toEqual(["TreeTurnItem(2)", "TreeTurnItem(1)", "TreeTurnItem(0)"]);
+  expect(items).toEqual([
+    "TreeTurnItem(2)",
+    "TreeTurnItem(1)",
+    "TreeTurnItem(0)",
+  ]);
 });
