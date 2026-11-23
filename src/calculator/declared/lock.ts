@@ -81,9 +81,11 @@ const NAME: Record<PoolKind, string> = { additive: "Additive", multi: "Multi" };
 export const fmt = (v: unknown): string =>
   typeof v === "number"
     ? String(+v.toPrecision(10))
-    : v === undefined
-      ? ""
-      : String(v);
+    : typeof v === "string"
+      ? v
+      : v === undefined
+        ? ""
+        : JSON.stringify(v);
 
 /** The refusal's text, from its fields (data-model.md, "Resultado da trava"). */
 export function lockMessage(e: LockError): string {
