@@ -7,15 +7,25 @@ import type { Op } from "../instrument.ts";
 import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
-import type { AnswerKey, PoolKind } from "./answer-key.ts";
+import type { AnswerKey, PoolKind, RootShape } from "./answer-key.ts";
 import type { Blueprint, BlueprintStage, RoutineStep } from "./blueprint.ts";
 import { callArgs, refKey } from "./refs.ts";
 
 export type TreesMode = "check" | "draft" | "roots";
 const MODES: readonly string[] = ["check", "draft", "roots"];
-/** The justfile's own rule for a target. */
-const TARGET = /^[a-z0-9-]{1,80}$/;
-const LOTS = ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "character", "account"];
+/** The justfile's own rule for a target (an id, a lot, all or roots). */
+export const TARGET = /^[a-z0-9-]{1,80}$/;
+export const LOTS = [
+  "w1",
+  "w2",
+  "w3",
+  "w4",
+  "w5",
+  "w6",
+  "w7",
+  "character",
+  "account",
+];
 
 /**
  * The run's variables, or null when one of the three paths or the target is missing: the integration test skips
@@ -128,6 +138,21 @@ export function mosaicWith(
   return JSON.stringify({ ...m, attrs: { ...m.attrs, ...scratch } });
 }
 
+/** The root's shape for the answer key, its references turned into keys for the character. */
+export function rootShapeOf(bp: Blueprint, character = 0): RootShape {
+  const { calls, part, branch, routine, sum, item } = bp.root;
+  if (routine) return { routine: refKey({ read: sum ?? "" }, character) };
+  if (item !== undefined) return { item };
+  if (calls) return { sum: calls.length };
+  if (!part) return null;
+  return {
+    part: part.map((r) => refKey(r, character)),
+    ...(branch === undefined
+      ? {}
+      : { branch: refKey({ read: branch }, character) }),
+  };
+}
+
 export type RootForm = AnswerKey["form"] | "outOfRule" | "liveMap" | "error";
 export interface RootProbe {
   id: string;
@@ -160,7 +185,7 @@ export function probeRoot(
   character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const { ref, calls, part, branch, scratch, routine, sum, item } = bp.root;
+  const { ref, calls, part, scratch, routine, item } = bp.root;
   const first = routine ? stepsOf(routine)[0] : undefined;
   const base = {
     id: bp.id,
@@ -205,22 +230,8 @@ export function probeRoot(
     )
       return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";
-    const shape = routine
-      ? { routine: refKey({ read: sum ?? "" }, character) }
-      : item !== undefined
-        ? { item }
-        : calls
-          ? { sum: calls.length }
-          : part
-            ? {
-                part: part.map((r) => refKey(r, character)),
-                ...(branch === undefined
-                  ? {}
-                  : { branch: refKey({ read: branch }, character) }),
-              }
-            : null;
     const t1 = performance.now();
-    const key = answerKey(rec, ops, shape);
+    const key = answerKey(rec, ops, rootShapeOf(bp, character));
     stages.answerKey = Math.round(performance.now() - t1);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(
@@ -265,11 +276,21 @@ export function rootsReport(probes: readonly RootProbe[]) {
   };
 }
 
-/** One line of `summary.txt`: the id, the result and the time; never a text of the save. */
-export const summaryLine = (
+/** One line of `summary.txt`: the id, the result, the time and each stage's; never a text of the save. */
+export function summaryLine(
   id: string,
   outcome: {
     result: RootForm | "passed" | "failed" | "notWritten";
     ms: number;
+    stages?: Record<string, number>;
   },
-): string => `${id}\t${outcome.result}\t${String(Math.round(outcome.ms))} ms`;
+): string {
+  const ms = (n: number) => `${String(Math.round(n))} ms`;
+  const stages = Object.entries(outcome.stages ?? {}).map(
+    ([k, n]) => `${k} ${ms(n)}`,
+  );
+  const line = [id, outcome.result, ms(outcome.ms)];
+  return [...line, ...(stages.length > 0 ? [stages.join(", ")] : [])].join(
+    "\t",
+  );
+}

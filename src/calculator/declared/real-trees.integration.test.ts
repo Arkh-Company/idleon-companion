@@ -6,13 +6,24 @@
 //   `vars-*.json` beside it;
 // - TREES_OUT: the output folder, outside the repository.
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
-// writes `roots.json` and `summary.txt`. The check mode locks from T033 on, and the draft mode comes with draft.ts.
+// writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint (once per class of the snapshot
+// when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock beside the blueprint and
+// `summary.txt` with each stage's time; the draft mode comes with draft.ts.
+import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { bootRecorder } from "../tree-record.ts";
 import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import {
+  classCharacters,
+  lockNumber,
+  lockRuns,
+  writeLock,
+} from "./real-trees-check.ts";
+import type { RecordFn } from "./real-trees-check.ts";
+import { blueprintSha, saoPauloTime } from "./review.ts";
 import {
   checkPlan,
   mosaicWith,
@@ -27,6 +38,8 @@ import type { RootProbe } from "./real-trees-run.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ENV = treesEnv(process.env);
+/** The blueprints' folder: each review is written beside its blueprint. */
+const BLUEPRINTS_DIR = join(import.meta.dirname, "..", "blueprints");
 /** About 3 s a recording (prototype), 301 roots, and the boot. */
 const RUN_MS = 90 * 60_000;
 
@@ -73,22 +86,76 @@ describe.skipIf(!ENV)("the real-trees run", () => {
       const t0 = performance.now();
       let peak = process.memoryUsage().rss;
 
-      if (mode === "check") {
-        const plan = checkPlan(ids, loaded.stages);
-        for (const id of plan.notWritten)
-          lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
-        if (plan.lock.length > 0)
-          throw new Error("o modo check trava receitas a partir da T033");
-      } else if (mode === "draft") {
-        throw new Error("o modo draft chega com o draft.ts (Fase 3)");
-      } else {
+      const boot = () => {
+        const code = readFileSync(join(gameDir, "N.js"), "utf8");
         const recorder = bootRecorder(
-          readFileSync(join(gameDir, "N.js"), "utf8"),
+          code,
           new Uint8Array(readFileSync(join(gameDir, "lib", "default.pak"))),
           undefined,
           { infinite: true },
         );
         lines.push(`boot\t${String(Math.round(performance.now() - t0))} ms`);
+        return {
+          recorder,
+          gameSha: createHash("sha256").update(code).digest("hex"),
+        };
+      };
+
+      if (mode === "check") {
+        const plan = checkPlan(ids, loaded.stages);
+        for (const id of plan.notWritten)
+          lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
+        if (plan.lock.length > 0) {
+          const { recorder, gameSha } = boot();
+          const state = mosaic(snapshot);
+          const classes = classCharacters(readJson(snapshot));
+          const active = activeCharacter(snapshot);
+          const lots = new Map(treeCatalog().map((n) => [n.id, n.lot]));
+          mkdirSync(outPath(out, "lock"), { recursive: true });
+          const record: RecordFn = (text, scene, roots, routine) =>
+            recorder.record(
+              text,
+              [...roots, ...EXTRA_ROOTS],
+              TREE_RECIPE,
+              scene,
+              FOLLOW_CALLS,
+              routine,
+            );
+          for (const id of plan.lock) {
+            const bp = loaded.complete.get(id);
+            const lot = lots.get(id);
+            if (!bp || !lot) continue;
+            const t1 = performance.now();
+            const { lock, stages } = lockNumber(
+              record,
+              recorder.ops,
+              bp,
+              state,
+              lockRuns(bp, classes, active),
+            );
+            writeFileSync(
+              outPath(out, "lock", `${id}.json`),
+              `${JSON.stringify(lock, null, 1)}\n`,
+            );
+            writeLock(BLUEPRINTS_DIR, id, lot, blueprintSha(bp), {
+              ok: lock.ok,
+              gameSha,
+              at: saoPauloTime(new Date()),
+            });
+            lines.push(
+              summaryLine(id, {
+                result: lock.ok ? "passed" : "failed",
+                ms: performance.now() - t1,
+                stages,
+              }),
+            );
+            peak = Math.max(peak, process.memoryUsage().rss);
+          }
+        }
+      } else if (mode === "draft") {
+        throw new Error("o modo draft chega com o draft.ts (Fase 3)");
+      } else {
+        const { recorder } = boot();
         const state = mosaic(snapshot);
         const character = activeCharacter(snapshot);
         const probes: RootProbe[] = [];

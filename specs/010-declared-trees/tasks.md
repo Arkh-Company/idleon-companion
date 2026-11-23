@@ -365,7 +365,7 @@ reprovações da US2 aparecem no jogo real.
   - Signatures: nenhuma (dados).
   - Traduzida de `prototipo/receita-dropRate.json` para a forma nova: `{character}` e `*` no lugar de `PlayerDATABASE[1]`; a condição de cada constante declarada (`bun_v`, `bun_p`, `OptionsListAccount[232]`); o termo de duas fontes com `termPart`; os nomes com prova das tabelas de texto (o "nome a provar" do recorde de boss resolvido, ou a receita fica em `draft`); as fontes "a descer" descidas até a folha; nenhuma fórmula.
   - Cases: os da T031; `just test-one src/calculator/declared/blueprints.test.ts` passa; o scan da T009 passa.
-- [ ] T033 [US2] O modo `check` da conferência real: grava, gabarito, trava, `lock/<id>.json`, `summary.txt` e o `lock` da revisão (contracts/real-trees-run.md; FR-002a, FR-010, FR-026; depende de T021, T025, T030)
+- [X] T033 [US2] O modo `check` da conferência real: grava, gabarito, trava, `lock/<id>.json`, `summary.txt` e o `lock` da revisão (contracts/real-trees-run.md; FR-002a, FR-010, FR-026; depende de T021, T025, T030)
   - Files: `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees-run.test.ts` (primeiro), `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `reviewPath(blueprintsDir: string, id: string, lot: string): string`; `writeLock(dir: string, id: string, lot: string, sha: string, lock: Review["lock"]): void`; `classCharacters(snapshot): Map<number, number>` (um personagem de cada classe do retrato).
   - Cases:
