@@ -1462,6 +1462,16 @@ lime.$scripts.N = function (_exports, $global) {
       t = t + Blocks._customBlock_TreeTurnItem(i);
     return t + state().TreeBase;
   };
+  // A sum in a loop whose item is a part of an expression, not a call nor a read.
+  Blocks._customBlock_TreeTurnsMixed = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i) * 2;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsMixedRoot = function () {
+    return Blocks._customBlock_TreeTurnsMixed() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsProductRoot = function () {
     return Blocks._customBlock_TreeTurnsProduct() + state().TreeCapped;
   };

@@ -104,12 +104,12 @@ test("the lock closes the loop's level by summing its turns, each by its recorde
 });
 
 test("turns that do not part by their place are refused with the reason, in the lock and in the draft", () => {
-  expect(
-    lock(
-      "TreeTurnsBeforeRoot",
-      call("turns", "TreeTurnsBefore", [], [item(0), item(1)]),
-    ).errors.map(lockMessage),
-  ).toEqual([
+  const refused = lock(
+    "TreeTurnsBeforeRoot",
+    call("turns", "TreeTurnsBefore", [], [item(0), item(1)]),
+  ).errors;
+  expect(refused.map((e) => e.kind)).toEqual(["openingRefused"]);
+  expect(refused.map(lockMessage)).toEqual([
     "invented-turns/0/cards/turns: a volta 1 do laço de TreeTurnsBefore() não tem o item no seu lugar",
   ]);
   expect(
@@ -128,4 +128,34 @@ test("turns that do not part by their place are refused with the reason, in the 
     where: "pools/0/groups/0/sources/0",
     kind: "descend",
   });
+});
+
+test("a turn whose item is a part of an expression is refused as no call nor read", () => {
+  expect(
+    lock(
+      "TreeTurnsMixedRoot",
+      call("turns", "TreeTurnsMixed", [], [item(0)]),
+    ).errors.map(lockMessage),
+  ).toEqual([
+    "invented-turns/0/cards/turns: o item da volta 1 do laço de TreeTurnsMixed() não é uma chamada nem uma leitura",
+  ]);
+});
+
+test("a product in a loop, and a sum the call returns with a term after it, open by their own expression, not by turns", () => {
+  const sources = (root: string) =>
+    draftOf(root).pools[0]?.groups[0]?.sources.map(shape);
+  // the product's last step is the last turn's: its call is the level's one part
+  expect(sources("TreeTurnsProductRoot")).toEqual([
+    ["TreeTurnsProduct()", [["TreeTurnItem(2)", [["TreeList[2]", []]]]]],
+  ]);
+  // the call returned `t + TreeBase`, a step of its own after the loop
+  expect(sources("TreeTurnsThenRoot")).toEqual([
+    [
+      "TreeTurnsThen()",
+      [
+        ["TreeTurnItem(2)", [["TreeList[2]", []]]],
+        ["TreeBase", []],
+      ],
+    ],
+  ]);
 });

@@ -81,6 +81,15 @@ const lock = (rec: Recording, bp: Blueprint) => {
   });
 };
 
+const draftOf = (rec: Recording, root: string) => {
+  const key = keyOf(rec);
+  if ("error" in key) throw new Error(key.reason);
+  const ref = { call: root, args: [0, 0, 0] };
+  return draftBlueprint("invented", { name: "I", ref }, key, rec, [
+    ...inventedRecorder().ops,
+  ]);
+};
+
 test("the answer key keeps the cache read as a source when one block wrote it, and refuses two possible authors", () => {
   const key = keyOf(record("TreeAuthorRead", "TreeAuthorBuild"));
   if ("error" in key) throw new Error(key.reason);
@@ -159,27 +168,68 @@ test("the lock refuses a cache read below a source with two possible authors, wi
     children: [cache([author()])],
   };
   const rec = record("TreeAuthorDeep", "TreeAuthorBuild", "TreeAuthorAgain");
-  expect(
-    lock(rec, blueprint("TreeAuthorDeep", source)).errors.map(lockMessage),
-  ).toEqual([
+  const { errors } = lock(rec, blueprint("TreeAuthorDeep", source));
+  expect(errors.map((e) => e.kind)).toEqual(["openingRefused"]);
+  expect(errors.map(lockMessage)).toEqual([
     expect.stringMatching(
       /^invented-author\/0\/cards\/call\/cache: a leitura de DNSM\.TreeAuthor\.v tem mais de um autor possível \(TreeAuthorBuild\(\) seq \d+; TreeAuthorAgain\(\) seq \d+\)$/,
     ),
   ]);
 });
 
-test("a cache a helper's event wrote outside any block has no author to go down: refused", () => {
-  const key = keyOf(
-    record("TreeAuthorRead", {
-      slot: 0,
-      behavior: "ActorEvents_29",
-      event: "_customEvent_TreeAuthorFill",
-      args: [],
-    }),
+/** The lock's refusals of the opening, as their messages; the draft's pending entries. */
+const refusals = (rec: Recording, root: string, source: BlueprintNode) =>
+  lock(rec, blueprint(root, source)).errors.map((e) =>
+    e.kind === "openingRefused" ? lockMessage(e) : e.kind,
   );
-  expect("reason" in key ? key.reason : "no refusal").toMatch(
-    /: o cache DNSM.TreeAuthor.v foi escrito fora de um bloco$/,
+const descents = (rec: Recording, root: string) =>
+  draftOf(rec, root).pending.filter((p) => p.kind === "descend");
+
+test("a cache a helper's event wrote outside any block: the answer key keeps it, the lock refuses it and the draft waits", () => {
+  const rec = record("TreeAuthorRead", {
+    slot: 0,
+    behavior: "ActorEvents_29",
+    event: "_customEvent_TreeAuthorFill",
+    args: [],
+  });
+  expect("error" in keyOf(rec)).toBe(false);
+  expect(refusals(rec, "TreeAuthorRead", cache([author()]))).toEqual([
+    "invented-author/0/cards/cache: o cache DNSM.TreeAuthor.v foi escrito fora de um bloco",
+  ]);
+  expect(descents(rec, "TreeAuthorRead")).toEqual([
+    { where: "pools/0/groups/0/sources/0", kind: "descend" },
+  ]);
+});
+
+test("a cache read with no recorded write is never a leaf: the lock refuses it and the draft waits", () => {
+  const rec = record("TreeAuthorRead");
+  expect("error" in keyOf(rec)).toBe(false);
+  expect(
+    refusals(rec, "TreeAuthorRead", leaf("cache", "DNSM.TreeAuthor.v")),
+  ).toEqual([
+    "invented-author/0/cards/cache: o cache DNSM.TreeAuthor.v não tem escrita gravada: falta o builder na receita ou o builder deu outro valor",
+  ]);
+  expect(descents(rec, "TreeAuthorRead")).toEqual([
+    { where: "pools/0/groups/0/sources/0", kind: "descend" },
+  ]);
+});
+
+test("a cache its author sums in a loop over its own value is refused below the author, not a leaf of its last turn", () => {
+  const rec = record("TreeAuthorRead", "TreeAuthorLoop");
+  expect("error" in keyOf(rec)).toBe(false);
+  const loop: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorLoop", args: [] },
+    children: [leaf("self", "DNSM.TreeAuthor.v")],
+  };
+  expect(refusals(rec, "TreeAuthorRead", cache([loop]))).toContainEqual(
+    "invented-author/0/cards/cache/author/self: o cache DNSM.TreeAuthor.v é somado em voltas pelo autor",
   );
+  expect(descents(rec, "TreeAuthorRead")).toContainEqual({
+    where: "pools/0/groups/0/sources/0/children/0/children/0",
+    kind: "descend",
+  });
 });
 
 test("the cache never becomes a leaf: a cache read declared as a leaf is leafHasChildren, with its author", () => {
@@ -205,14 +255,6 @@ test("the place decides the author: the read ties to the helpers' last write bef
 });
 
 test("the draft waits for the descent of a cache read with two possible authors, and keeps the root's own passage a leaf", () => {
-  const draftOf = (rec: Recording, root: string) => {
-    const key = keyOf(rec);
-    if ("error" in key) throw new Error(key.reason);
-    const ref = { call: root, args: [0, 0, 0] };
-    return draftBlueprint("invented", { name: "I", ref }, key, rec, [
-      ...inventedRecorder().ops,
-    ]);
-  };
   const deep = draftOf(
     record("TreeAuthorDeep", "TreeAuthorBuild", "TreeAuthorAgain"),
     "TreeAuthorDeep",
