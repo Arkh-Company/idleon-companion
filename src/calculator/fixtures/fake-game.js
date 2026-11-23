@@ -1768,6 +1768,17 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeThree = function (k) {
     return [3, 3, 4, 5][k];
   };
+  // Spec 010 (T177 r3): a root whose answer key stands, over a call whose own step reads a variable set by one of two
+  // calls of TreeThree with the same value: only the lock, descending into that call, meets them. 25 + 3 * 2 = 31.
+  Blocks._customBlock_TreeTwinKid = function () {
+    var x = Blocks._customBlock_TreeThree(0);
+    Blocks._customBlock_TreeThree(1);
+    return x * 2;
+  };
+  Blocks._customBlock_TreeTwinRoot = function () {
+    var s = state();
+    return s.TreeLevel + Blocks._customBlock_TreeTwinKid();
+  };
   // Spec 010 (T177 r3): the same turns with the read of 3 before the calls and only the first call used, through a
   // variable: the variable's call comes from the data flow, never from the read with its value. 3 + 4 = 7; + 25 = 32.
   Blocks._customBlock_TreeRunTwinRead = function () {
