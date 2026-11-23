@@ -4,7 +4,9 @@
 // recorded steps goes only to TREES_OUT.
 import { format } from "prettier";
 import { afterEach, expect, test } from "vitest";
+import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { useGameNames } from "../names/names.ts";
+import { answerKey } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { stepsGuide } from "./draft-steps.ts";
@@ -128,6 +130,22 @@ test("a name only with its proof, else null and a pending name; the system, the 
     where: "pools/1/groups/0/sources/0",
     kind: "descend",
   });
+});
+
+test("the guide says why a descent waits: the opening's refusal, as the lock writes it", () => {
+  const r = inventedRecorder();
+  const attrs = {
+    DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 15 } } } },
+  };
+  const rec = r.record(mosaicOf(attrs), [["TreeAuthorRead", [0, 0, 0]]], {
+    recompute: [],
+    builders: [],
+  });
+  const key = answerKey(rec, r.ops);
+  if ("error" in key) throw new Error(key.reason);
+  expect(stepsGuide(key, rec, [...r.ops])).toContain(
+    "descer: pendente (o cache DNSM.TreeAuthor.v não tem escrita gravada: falta o builder na receita ou o builder deu outro valor)",
+  );
 });
 
 test("the guide says why a descent waits: no part the recording ties, and the save read below, by its path", () => {
