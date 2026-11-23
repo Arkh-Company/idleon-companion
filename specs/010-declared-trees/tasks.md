@@ -373,7 +373,7 @@ reprovações da US2 aparecem no jogo real.
     - a revisão guarda só `blueprintSha` e `lock` (`ok`, `gameSha` = sha256 do `N.js`, `at`), nunca motivo nem valor;
     - um número com fonte de classe roda uma vez por classe do retrato (`inactiveMosaic`), e o resultado junta as rodadas;
     - o `summary.txt` traz o tempo de cada etapa e o pico de memória.
-- [ ] T164 [US2] A trava reprova a folha que tem filhos (spec, Open Questions 22/11): `leafHasChildren` quando, embaixo de uma fonte declarada como folha, a gravação mostra leitura do save ou chamada de bloco que lê o save (tabela do jogo não conta); teste primeiro em `lock-levels.test.ts` (uma folha com filho que lê o save reprova; uma folha que só lê tabela do jogo passa); antes da T032
+- [X] T164 [US2] A trava reprova a folha que tem filhos (spec, Open Questions 22/11): `leafHasChildren` quando, embaixo de uma fonte declarada como folha, a gravação mostra leitura do save ou chamada de bloco que lê o save (tabela do jogo não conta); teste primeiro em `lock-levels.test.ts` (uma folha com filho que lê o save reprova; uma folha que só lê tabela do jogo passa); antes da T032
   - Ordem (Vinicius, 22/11): a T059 e a T060 (o gerador de rascunho) vêm antes da T031 e da T032; a receita do Drop Rate sai do `just draft stats-drop-rate`.
 - [ ] T034 [sessão] [US2] Conferência real do Drop Rate: `just trees stats-drop-rate` (FR-010, SC-001; depende de T032, T033)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.review.json` (o `lock`); fora: `TREES_OUT/lock/`, `summary.txt`
@@ -588,7 +588,7 @@ lote só fecha quando a trava passa, o Vinicius aprova na galeria e o lote entra
 **Independent Test**: no jogo inventado, o rascunho de um bloco tem os pools, as fontes, as constantes e os filhos na
 ordem do gabarito, os nomes com prova e as pendências onde a máquina não prova; ele nunca passa na trava.
 
-- [ ] T059 [P] [US1] Testes do rascunho em `src/calculator/declared/draft.test.ts` (research R7; FR-004, FR-009; depende de T019)
+- [X] T059 [P] [US1] Testes do rascunho em `src/calculator/declared/draft.test.ts` (research R7; FR-004, FR-009; depende de T019)
   - Files: `src/calculator/declared/draft.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -601,7 +601,7 @@ ordem do gabarito, os nomes com prova e as pendências onde a máquina não prov
     - um número com receita escrita não ganha rascunho (nunca sobrescreve);
     - o guia de passos (`stepsGuide`) só vai para `TREES_OUT`, e o rascunho não tem valor, conta nem texto de expressão;
     - o JSON do rascunho já sai como o prettier o deixaria.
-- [ ] T060 [US1] O gerador em `src/calculator/declared/draft.ts` e o modo `draft` da conferência real (contracts/real-trees-run.md; depende de T059)
+- [X] T060 [US1] O gerador em `src/calculator/declared/draft.ts` e o modo `draft` da conferência real (contracts/real-trees-run.md; depende de T059)
   - Files: `src/calculator/declared/draft.ts`, `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `draftBlueprint(id: string, root: Blueprint["root"], key: AnswerKey, rec: Recording, ops: readonly Op[]): DraftBlueprint`; `stepsGuide(key: AnswerKey, rec: Recording, ops: readonly Op[]): string`.
   - Cases: os da T059; `just draft` sobre um id com receita escrita não toca o arquivo.
