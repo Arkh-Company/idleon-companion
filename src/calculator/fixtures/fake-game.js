@@ -1401,6 +1401,41 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeAuthorDeep = function () {
     return Blocks._customBlock_TreeAuthorCall() + state().TreeCapped;
   };
+  // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
+  // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
+  // under a root that adds TreeCapped.
+  Blocks._customBlock_TreeTurnItem = function (i) {
+    return state().TreeList[i] * 2;
+  };
+  Blocks._customBlock_TreeTurns = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsBefore = function () {
+    var items = [
+      Blocks._customBlock_TreeTurnItem(0),
+      Blocks._customBlock_TreeTurnItem(1),
+    ];
+    var t = 0;
+    for (var i = 0; i < items.length; i++) t = t + items[i];
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsSame = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + state().TreeBase;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsRoot = function () {
+    return Blocks._customBlock_TreeTurns() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsBeforeRoot = function () {
+    return Blocks._customBlock_TreeTurnsBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsSameRoot = function () {
+    return Blocks._customBlock_TreeTurnsSame() + state().TreeCapped;
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
