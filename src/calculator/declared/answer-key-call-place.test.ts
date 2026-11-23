@@ -8,6 +8,7 @@ import { instrument } from "../instrument.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import { answerKeyOfSteps } from "./answer-key.ts";
 import { answerKey } from "./answer-key.ts";
+import { ambiguousCall } from "./answer-key-turn.ts";
 import { inventedRecorder } from "./lock-fixture.ts";
 import { mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { recorded } from "./lock-fixture.ts";
@@ -50,6 +51,52 @@ test("with no recorded place and two calls of one block with the step's value, t
   expect(key).toMatchObject({ error: "rootForm" });
   expect("reason" in key ? key.reason : "").toMatch(
     /a chamada P de valor 6 sai de mais de uma chamada, e o lugar não decide/,
+  );
+});
+
+// `x = c ? P(1) : Q(2)`, and Q(2) called again with no use: both calls gave 6, and only the ? :'s test says which is x's
+function ternaryOfTwo(test: boolean | null) {
+  const { ops } = instrument(
+    "Blocks._customBlock_T = function (c) { var x = c ? Blocks._customBlock_P(1) : Blocks._customBlock_Q(2); Blocks._customBlock_Q(2); return x * 2; };",
+  );
+  const kind = (k: string) => ops.findIndex((o) => o.kind === k);
+  const rec = recordingOf(
+    [
+      { b: "(root)", c: [1] },
+      {
+        b: "T",
+        a: [1],
+        v: 12,
+        c: [2, 3],
+        x: [
+          [kind("test"), test],
+          [kind("leaf"), 6],
+          [kind("op"), 12],
+        ],
+      },
+      { b: "P", a: [1], v: 6 },
+      { b: "Q", a: [2], v: 6 },
+    ],
+    [],
+    { root: 0 },
+  );
+  return makeSteps(rec, ops);
+}
+
+test("a variable set by a ? : of two calls takes the call on the side its recorded test took", () => {
+  const made = ternaryOfTwo(true);
+  expect(made.of(1).steps[0]?.e).toMatchObject({
+    t: "op",
+    l: { t: "call", id: 2 },
+  });
+  expect(ambiguousCall(made.ambiguous)).toBeNull();
+});
+
+test("a variable set by a ? : whose test has no recorded side is ambiguous, with the reason", () => {
+  const made = ternaryOfTwo(null);
+  expect(made.of(1).steps[0]?.e).toMatchObject({ l: { t: "val", v: 6 } });
+  expect(ambiguousCall(made.ambiguous)).toBe(
+    "a chamada P de valor 6 está num ? : cujo lado o lugar não decide",
   );
 });
 
