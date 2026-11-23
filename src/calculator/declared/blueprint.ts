@@ -127,13 +127,17 @@ function pieceOf(
   };
 }
 
-/** A piece's count and list (T170, T171): `combine` and `each` only inside a piece, the list a path with one `[*]`. */
+/**
+ * A piece's count and list (T170, T171): `combine` and `each` only inside a piece, the list a path with one `[*]`; a
+ * pool's source with `each` and no `combine` (`poolEach`, T174) takes its items from the answer key, in any recipe.
+ */
 function checkPieceLevel(
   n: Record<string, unknown>,
   where: string,
   w: Walk,
+  poolEach: boolean,
 ): void {
-  if (n.combine !== undefined || n.each !== undefined) {
+  if (!poolEach && (n.combine !== undefined || n.each !== undefined)) {
     if (w.stack.length === 0) no(where, "combine e each só em pedaço");
     if (n.combine !== "sum" && n.combine !== "product")
       no(where, "combine é sum ou product");
@@ -141,6 +145,7 @@ function checkPieceLevel(
   // a call's level closes by its own recorded count (the Seraph); a read's has none of its own
   const call = isObj(n.ref) && "call" in n.ref;
   if (
+    !poolEach &&
     w.stack.length > 0 &&
     n.children !== undefined &&
     n.combine === undefined &&
@@ -191,11 +196,13 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     });
     return;
   }
-  checkPieceLevel(n, where, w);
+  const poolEach =
+    level === "source" && n.each !== undefined && n.combine === undefined;
+  checkPieceLevel(n, where, w, poolEach);
   // after the args and the items are in, a `{name}` left is one nothing declares
   const left = Object.entries(n)
     .flatMap(([k, v]) =>
-      k === "children" || k === "condition" ? [] : texts(v),
+      ["children", "condition", "pools"].includes(k) ? [] : texts(v),
     )
     .find((s) => s.replaceAll("{character}", "").includes("{"));
   if (left !== undefined) no(where, `{nome} não declarado: ${left}`);
@@ -205,7 +212,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     no(where, "key fora do slug");
   if (n.name !== null || !w.pending("name", where)) checkName(n.name, where);
   if (n.nameProof !== undefined) checkProof(n.nameProof, where);
-  if ((n.ref === undefined) === (n.constant === undefined))
+  if (poolEach) {
+    if (n.ref !== undefined || n.constant !== undefined)
+      no(where, "a fonte com each vai sem ref nem constant");
+  } else if ((n.ref === undefined) === (n.constant === undefined))
     no(where, "ref ou constant: um dos dois, nunca os dois");
   if (n.ref !== undefined) checkRef(n.ref, where);
   if (n.constant !== undefined) {

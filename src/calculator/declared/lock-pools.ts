@@ -6,11 +6,16 @@
 import type { RecNode } from "../recording.ts";
 import { relDiff } from "./answer-key-pool.ts";
 import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
-import type { BlueprintNode, BlueprintPool } from "./blueprint.ts";
+import type {
+  BlueprintGroup,
+  BlueprintNode,
+  BlueprintPool,
+} from "./blueprint.ts";
 import { checkCondition, lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { TOLERANCE } from "./lock-parts.ts";
-import { matchRead, nodeId, refKey } from "./refs.ts";
+import { fill } from "./pieces.ts";
+import { matchRead, nodeId, refKey, starPattern } from "./refs.ts";
 
 export const POOL_NAME: Record<PoolKind, string> = {
   additive: "Additive",
@@ -41,6 +46,51 @@ function sourceKey(
   );
   // none, or more than one recorded path: it ties to nothing, never by order
   return hits.size === 1 ? [...hits].join("") : refKey(s.ref, character);
+}
+
+/**
+ * A group's sources with their places: a source with `each` and no `combine` (T174) is its model once per term of the
+ * pool its `[*]` matches, in the terms' order, the item the term's place in the list; an item in two terms is refused,
+ * as the tie would be by order.
+ */
+function sourcesOf(
+  g: BlueprintGroup,
+  pool: number,
+  terms: readonly AnswerTerm[],
+  ctx: LevelContext,
+  out: LevelOut,
+): { s: BlueprintNode; at: string }[] {
+  return g.sources.flatMap((s) => {
+    const at = nodeId(ctx.where, pool, g.system, [s.key]);
+    const [model] = s.children ?? [];
+    if (!s.each || s.combine || !model) return [{ s, at }];
+    out.counts.branches++;
+    const { list, as } = s.each;
+    const path = new RegExp(
+      `^${starPattern(list.replaceAll("{character}", String(ctx.character)))}$`,
+    );
+    const items = terms.flatMap((t) => {
+      const item = t.kind === "source" ? path.exec(t.ref)?.[1] : undefined;
+      return item === undefined ? [] : [item];
+    });
+    const twice = items.find((x, k) => items.indexOf(x) !== k);
+    if (twice !== undefined) {
+      out.errors.push({
+        kind: "rootForm",
+        where: at,
+        got: `o item ${twice} de ${list} está em mais de uma parcela do pool: a ligação seria pela ordem`,
+      });
+      return [];
+    }
+    return items.map((item) => ({
+      s: {
+        ...fill(model, { [as]: Number(item) }),
+        key: `${model.key}-${item}`,
+        ...(s.weight !== undefined && { weight: s.weight }),
+      },
+      at: `${at}/${model.key}-${item}`,
+    }));
+  });
 }
 
 function closes(
@@ -102,13 +152,13 @@ export function lockPools(
     for (const g of pool.groups) {
       let last = -1;
       let first = Infinity;
-      for (const s of g.sources) {
+      for (const { s, at: sourceAt } of sourcesOf(g, i, kp.terms, ctx, out)) {
         const k = sourceKey(s, kp.terms, character);
         const n = (seenB.get(k) ?? 0) + 1;
         seenB.set(k, n);
         const j = place.get(`${k}#${String(n)}`);
         const t = kp.terms[j ?? -1];
-        const sctx = { ...ctx, where: nodeId(ctx.where, i, g.system, [s.key]) };
+        const sctx = { ...ctx, where: sourceAt };
         const otherClass =
           s.classes !== undefined &&
           characterClass !== null &&
