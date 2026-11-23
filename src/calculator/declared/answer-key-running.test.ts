@@ -47,10 +47,7 @@ test("a running total that also multiplies opens as the first pools when it lead
   expect(
     key.pools.map((p) => [p.kind, p.terms.map((t) => t.refs.join("+"))]),
   ).toEqual([
-    [
-      "additive",
-      ["TreeGear[0]", "TreeGear[1]", "TreeGear[2]", "TreeGallery"],
-    ],
+    ["additive", ["TreeGear[0]", "TreeGear[1]", "TreeGear[2]", "TreeGallery"]],
     ["multi", ["TreeStats.a+TreeStats.b"]],
     ["additive", ["TreeHat", "TreeCapped"]],
     ["multi", ["TreeBase"]],

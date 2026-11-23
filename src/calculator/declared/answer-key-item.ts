@@ -89,7 +89,10 @@ export function tableItem(
   const before = writes.filter((w) => w.xi <= pos).at(-1)?.seq ?? 0;
   const hits = (top.r ?? []).filter(
     ([p, v, seq]) =>
-      v === name && typeof seq === "number" && seq <= before && !TABLE_ROW.test(p),
+      v === name &&
+      typeof seq === "number" &&
+      seq <= before &&
+      !TABLE_ROW.test(p),
   );
   const last = Math.max(...hits.map((h) => Number(h[2])));
   const [only, ...more] = hits.filter((h) => h[2] === last);
