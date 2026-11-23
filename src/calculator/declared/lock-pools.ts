@@ -81,6 +81,19 @@ function sourcesOf(
           : null;
       return m ? [{ idx: m.slice(1), item: m.slice(1).join("-"), j }] : [];
     });
+    // a table's value (a choice) is a source term, a fixed base a constant one: any other pair ties nothing
+    const want = model.leaf === "choice" ? "source" : "constant";
+    const off = fixed
+      ? found.map((f) => terms[f.j]?.kind).find((k) => k !== want)
+      : undefined;
+    if (off !== undefined) {
+      out.errors.push({
+        kind: "rootForm",
+        where: at,
+        got: `o filho-modelo ${String(model.leaf)} não casa com o termo ${off}`,
+      });
+      return [];
+    }
     const items = found.map((f) => f.item);
     const twice = items.find((x, k) => items.indexOf(x) !== k);
     if (twice !== undefined) {
