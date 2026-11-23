@@ -137,7 +137,9 @@ com um filho-modelo, repetido por parcela do gabarito que casa com o `[*]` (o it
 parcelas é `rootForm` na fonte). O pedaço com `pools` fecha pelo gabarito da chamada da linha ou do autor do cache e
 reprova como a raiz: `poolOrder` na linha; `missingSource`, `extraSource`, `groupOrder` e `notClosing` em
 `<linha>/pool:<n>`; `rootForm` na linha sem gabarito. No gabarito, uma corrente somada num laço tem uma parcela por volta,
-cada uma lida no seu lugar gravado; uma volta sem passo no seu lugar recusa com o motivo.
+cada uma lida no seu lugar gravado; uma volta sem passo no seu lugar recusa com o motivo. Numa fonte de pool, `each.as` pode
+ser uma lista de nomes, um por `[*]` (dois índices, como `EquipmentMap[*][*]`); o filho-modelo sem `ref` é folha `fixedValue`
+(a base fixa escolhida por teste, T176) ou `choice` (o item cuja chave leu a tabela do jogo, T179).
 
 ## Tabela de sistemas (`SystemEntry`)
 
