@@ -85,8 +85,9 @@ export function writeTurns(
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
   const turns = exprs.slice(start);
   const name = callRef(author);
-  const over = turns.findIndex((e) => e !== null && itemOf(e) === undefined);
-  if (over >= 0)
-    return `a volta ${String(over + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
+  // the first turn that does not add: with no step of its own it has no item (turnsOf), else it overwrote the cache
+  const k = turns.findIndex((e) => itemOf(e) === undefined);
+  if (k >= 0 && turns[k] !== null)
+    return `a volta ${String(k + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
   return turnsOf(name, turns.map(itemOf), ctx);
 }
