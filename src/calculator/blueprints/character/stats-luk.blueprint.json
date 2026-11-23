@@ -31,7 +31,12 @@
                   "leaf": "choice"
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "system": "equipment",
+          "sources": [
             {
               "key": "upgrades",
               "name": null,
@@ -3713,19 +3718,19 @@
   ],
   "pending": [
     {
-      "where": "pools/0/groups/1/sources/0/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/0/groups/1/sources/1/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/0/groups/2/sources/0/children/0",
       "kind": "descend"
     },
     {
+      "where": "pools/0/groups/2/sources/1/children/0",
+      "kind": "descend"
+    },
+    {
       "where": "pools/0/groups/3/sources/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/4/sources/0/children/0",
       "kind": "descend"
     },
     {
@@ -4429,11 +4434,11 @@
       "kind": "name"
     },
     {
-      "where": "pools/0/groups/0/sources/1",
+      "where": "pools/0/groups/1/sources/0",
       "kind": "name"
     },
     {
-      "where": "pools/0/groups/0/sources/1/children/0",
+      "where": "pools/0/groups/1/sources/0/children/0",
       "kind": "name"
     }
   ]
