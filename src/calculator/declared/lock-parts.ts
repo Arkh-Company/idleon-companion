@@ -91,7 +91,8 @@ export function termExpr(
         const ks = new Set(leavesOf(x).map((l) => keyOfLeaf(l, ctx.rec)));
         return term.refs.every((r) => ks.has(r));
       });
-      if (at >= 0) found.push(pctOf(chain, at) ?? (chain[at] as Expr));
+      const around = at < 0 ? undefined : (pctOf(chain, at) ?? chain[at]);
+      if (around) found.push(around);
       return;
     }
     const kids =
