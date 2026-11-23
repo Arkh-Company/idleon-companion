@@ -5,7 +5,7 @@
 // of its own place, or two turns with the same item, are refused with the reason: the turns do not part by their place.
 import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
-import { callRef } from "./answer-key-pool.ts";
+import { callRef, near } from "./answer-key-pool.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, num } from "./lock-parts.ts";
@@ -20,8 +20,9 @@ export function loopOpening(
   const { steps, stepAt } = ctx.stepsOf(scope.id);
   const last = steps.at(-1);
   const at = stepAt?.at(-1);
-  // only what the call returned: its last step (returnOf gives it only with the call's value)
-  if (last?.e !== expr || at === undefined) return null;
+  // only what the call returned: its last step, with its value (a two-source term's place can be the root's last step)
+  if (last?.e !== expr || !near(last.v, scope.v) || at === undefined)
+    return null;
   const op = scope.x?.[at]?.[0];
   const places = (scope.x ?? []).flatMap(([o], j) => (o === op ? [j] : []));
   if (op === undefined || places.length < 2) return null;
