@@ -70,16 +70,17 @@ const ctx: LevelContext = {
 
 test("a cache read in its author's count ties to the write its place in the author's turn saw", () => {
   const root = present(rec.nodes[1], "reader");
-  const [author] = openingOf(
+  const opened = openingOf(
     { expr: { t: "read", p: X, v: 10 }, scope: root },
     ctx,
-  ) as [{ expr: Expr; steps?: BlockSteps }];
-  const leaf = author.expr.t === "op" ? author.expr.l : author.expr;
+  );
+  const author = Array.isArray(opened) ? opened[0] : undefined;
+  const e = author?.expr;
   const other = openingOf(
     {
-      expr: leaf,
+      expr: e?.t === "op" ? e.l : null,
       scope: present(rec.nodes[5], "author"),
-      ...(author.steps ? { steps: author.steps } : {}),
+      steps: author?.steps,
     },
     ctx,
   );
