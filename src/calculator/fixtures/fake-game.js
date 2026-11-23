@@ -1801,6 +1801,15 @@ lime.$scripts.N = function (_exports, $global) {
     var x = U.asNumber(Blocks._customBlock_TreeThree(0));
     return a.engine.getGameAttribute("TreeLevel") + x;
   };
+  // the call through asNumber right in the step, with no variable
+  Blocks._customBlock_TreeWrappedDirect = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      U.asNumber(Blocks._customBlock_TreeThree(0))
+    );
+  };
   Blocks._customBlock_TreeViaChain = function () {
     var U = A["com.stencyl.utils.Utils"];
     U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
