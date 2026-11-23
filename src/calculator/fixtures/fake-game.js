@@ -1605,6 +1605,52 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeActiveMixed.h.v = d.TreeActiveMixed.h.v * s.TreeSignMulti;
     return d.TreeActiveMixed.h.v;
   };
+  // Spec 010 (T176): the game's star signs. Each item's base is a number of the code, added to its field only where the
+  // game's test finds the item in TreeBaseOn, the field read before its first write as nothing (0); TreeBasePasses 2
+  // runs the items twice (the chip's second pass). Then each field over 0 is multiplied, in a loop over the fields:
+  // with items 0, 2, 3 and 4 on, a is 5, b is 5 + 12 = 17 and c is 3; × 2 × (1 + 50 ÷ 100), b gives 51.
+  var asNumber = function (x) {
+    return x === undefined || x === null ? 0 : Number(x);
+  };
+  A["com.stencyl.utils.Utils"].asNumber = asNumber;
+  Blocks._customBlock_TreeBaseSum = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = dnsm();
+    var n, k, x, y;
+    d.TreeBases = new StringMap();
+    for (n = 0; n < state().TreeBasePasses; n++) {
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "0")) {
+        x = 5 + U.asNumber(dnsm().TreeBases.h.a);
+        dnsm().TreeBases.h.a = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "1")) {
+        x = 7 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "2")) {
+        x = 5 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "3")) {
+        x = 12 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "4")) {
+        x = 3 + U.asNumber(dnsm().TreeBases.h.c);
+        dnsm().TreeBases.h.c = x;
+      }
+    }
+    var keys = Object.keys(dnsm().TreeBases.h);
+    for (k = 0; k < keys.length; k++)
+      if (0 < U.asNumber(dnsm().TreeBases.h[keys[k]])) {
+        y =
+          U.asNumber(dnsm().TreeBases.h[keys[k]]) *
+          a.engine.getGameAttribute("TreeBaseMulti") *
+          (1 + a.engine.getGameAttribute("TreeBaseMeritoc") / 100);
+        dnsm().TreeBases.h[keys[k]] = y;
+      }
+    return dnsm().TreeBases.h.b;
+  };
   Blocks._customBlock_TreeRecipeCached = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeRecipe.h.v + state().TreeCapped
