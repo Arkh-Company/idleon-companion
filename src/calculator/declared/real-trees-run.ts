@@ -88,6 +88,19 @@ export function checkPlan(
   return { lock, notWritten: ids.filter((id) => !lock.includes(id)) };
 }
 
+/** The draft mode drafts only a sketch: a draft or a complete blueprint is never written over. */
+export const draftPlan = (
+  ids: readonly string[],
+  stages: ReadonlyMap<string, BlueprintStage>,
+): string[] => ids.filter((id) => stages.get(id) === "sketch");
+
+/** A number's guide of steps (draft-steps.ts): in TREES_OUT only, its name from the catalog's id. */
+export function stepsPath(out: string, id: string): string {
+  if (!TARGET.test(id))
+    throw new Error("guia fora da regra: um id do catálogo");
+  return outPath(out, "draft", `${id}.steps.txt`);
+}
+
 /** The root's call (a root of one call), with `{character}` in its arguments resolved. */
 function rootCallOf(bp: Blueprint, character = 0): RootCall {
   const { ref } = bp.root;
@@ -280,7 +293,7 @@ export function rootsReport(probes: readonly RootProbe[]) {
 export function summaryLine(
   id: string,
   outcome: {
-    result: RootForm | "passed" | "failed" | "notWritten";
+    result: RootForm | "passed" | "failed" | "notWritten" | "drafted";
     ms: number;
     stages?: Record<string, number>;
   },

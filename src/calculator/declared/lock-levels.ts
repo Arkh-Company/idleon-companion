@@ -198,6 +198,13 @@ function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
   );
 }
 
+/** The parts the lock asks a declared call to have as children: its level's references, without the not-leaves. */
+export function callParts(n: RecNode, ctx: LevelContext): string[] {
+  const expr = returnOf(n, ctx);
+  const level = { expr, scope: n, value: num(n.v) };
+  return partsOf(level, expr ? leavesOf(expr) : [], ctx);
+}
+
 function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
   const { ref } = child;
   if (!ref) return false;
