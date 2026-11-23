@@ -72,6 +72,8 @@ interface Walk {
   pieces: ReadonlyMap<string, unknown>;
   /** The pieces whose body is being checked, the outermost first: a call of one of them again is a cycle. */
   stack: readonly string[];
+  /** The node is a part of a count (a child of a combine), the piece it calls included. */
+  combined?: boolean;
 }
 
 const isArg = (v: unknown): boolean =>
@@ -243,6 +245,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   if (n.pools !== undefined) {
     // a piece with the form of a recipe (T173): its pools in place of its count and its children
     if (w.stack.length === 0) no(where, "pools só em pedaço");
+    if (w.combined) no(where, "pools não vai dentro de combine");
     if (["children", "leaf", "combine", "each"].some((k) => n[k] !== undefined))
       no(where, "pools vai no lugar de children, leaf, combine e each");
     checkPools(n.pools, w, `${where}/pools`);
@@ -257,7 +260,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
         as === null ? c : fill(c, { [as]: 0 }),
         `${where}/children/${String(i)}`,
         n.combine === undefined && w.stack.length === 0 ? "child" : "piece",
-        w,
+        { ...w, combined: n.combine !== undefined },
       );
       siblings.push(c);
     });
