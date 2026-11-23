@@ -75,8 +75,9 @@ const TABLE_ROW = /^(?:ItemDefinitionsGET|MonsterDefinitionsGET)\.([^.[\]]+)\./;
 /**
  * The save's path that gave the key of a game table's read (T179, the LUK's equipment: `ItemDefinitionsGET[<
  * EquipmentOrder[r][o]>].LUK`): of the call's reads whose text is the row's name, the latest one made before the step
- * recorded at `pos` (by the last write each read saw: the loop's index is written at every turn); else undefined. The
- * slot of the step's own turn, never the first slot with that item; two reads in one stretch tie by nothing.
+ * recorded at `pos`, by the last of `writes` at or before it (a read keeps the last write before its first read); else undefined.
+ * Turns are told apart only by some write between them (any one, the loop's index or another), so it is the slot of the
+ * step's own turn, never the first slot with that item; two reads in one stretch between writes tie by nothing.
  */
 export function tableItem(
   top: RecNode,
