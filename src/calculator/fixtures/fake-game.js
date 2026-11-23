@@ -2346,6 +2346,33 @@ lime.$scripts.N = function (_exports, $global) {
       s.DummyNumbersStatManager.h.tot * (1 + s.TreeStats.h.a / 100),
     );
   };
+  // Spec 010 (T177 r1): the same as the game writes it, the scratch total read first in a sum (the STR's base, which
+  // opens): the second total is a term of it, the multiplier inside that term with the second total's other read.
+  Blocks._customBlock_TreeStatMultiSum = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot = 0;
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+      U.asNumber(a.engine.getGameAttribute("TreeBase"));
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo = 0;
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo =
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo) +
+      U.asNumber(a.engine.getGameAttribute("TreeLevel"));
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo =
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo) *
+      (1 +
+        (Blocks._customBlock_TreeReads() +
+          40 * a.engine.getGameAttribute("TreeStats").h.b) /
+          100);
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo);
+    return Math.floor(
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+        a.engine.getGameAttribute("TreeCapped"),
+    );
+  };
   Blocks._customBlock_TreeTwoListsCopy = function () {
     var s = state();
     var d = dnsm();
