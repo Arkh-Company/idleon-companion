@@ -233,7 +233,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
       checkNode(
         as === null ? c : fill(c, { [as]: 0 }),
         `${where}/children/${String(i)}`,
-        n.combine === undefined ? "child" : "piece",
+        n.combine === undefined && w.stack.length === 0 ? "child" : "piece",
         w,
       );
       siblings.push(c);
