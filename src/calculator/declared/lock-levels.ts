@@ -5,7 +5,7 @@
 // refused with their place. A part of NOT_LEAVES (a curve, a log, a context read) is no child: a curve whose numeric
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
 // counted apart. A level the recording opens (level-openings.ts: a cache's author, a loop's turns) has those parts as
-// its children and closes by their sum; a refused opening is a rootForm with its reason.
+// its children and closes by their sum; a refused opening is an openingRefused with its reason.
 import type { RecNode, Recording } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
@@ -14,7 +14,7 @@ import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
-import type { Opened } from "./level-openings.ts";
+import type { Opening } from "./level-openings.ts";
 import {
   keyOfLeaf,
   leavesOf,
@@ -54,7 +54,7 @@ interface Level {
   /** In a two-source term, the references only a `termPart` child may give. */
   termParts?: ReadonlySet<string>;
   /** A level that opens by the recording (level-openings.ts): its parts, in place of its expression's. */
-  open?: Opened;
+  open?: Opening[];
 }
 
 const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
@@ -187,7 +187,7 @@ export function callParts(
   const open = openingOf(level, ctx);
   if (typeof open === "string") return null;
   return open
-    ? open.below.map((o) => o.part)
+    ? open.map((o) => o.part)
     : partsOf(level, expr ? leavesOf(expr) : [], ctx);
 }
 
@@ -208,15 +208,13 @@ function lockLevel(
 ): void {
   const leaves = level.expr ? leavesOf(level.expr) : [];
   const { open } = level;
-  const parts = open
-    ? open.below.map((o) => o.part)
-    : partsOf(level, leaves, ctx);
+  const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
   const covered = new Set<string>();
   let whole = true;
   for (const child of children) {
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
-    const hit = open?.below.find((o) => covers(child, o.part, ctx));
+    const hit = open?.find((o) => covers(child, o.part, ctx));
     if (open && !hit) {
       out.errors.push({ kind: "childOutside", where });
       continue;
@@ -266,7 +264,7 @@ function closeLevel(
   const by = { recorded: false };
   const { open } = level;
   const got = open
-    ? open.below.reduce<number | null>(
+    ? open.reduce<number | null>(
         (s, o) => (s === null || o.value === null ? null : s + o.value),
         0,
       )
@@ -311,18 +309,14 @@ function descend(
       ? openingOf(level, ctx)
       : null;
   if (typeof open === "string") {
-    out.errors.push({
-      kind: "rootForm",
-      where: ctx.where,
-      got: `${ctx.where}: ${open}`,
-    });
+    out.errors.push({ kind: "openingRefused", where: ctx.where, got: open });
     return;
   }
   if (children.length === 0) {
     leafCheck(node, ctx.where, out);
     // a leaf is the end of the descent: below its own call, the recording reads nothing of the save
     const child = open
-      ? (open.below[0]?.part ?? null)
+      ? (open[0]?.part ?? null)
       : ref &&
           "call" in ref &&
           callRef(level.scope) === refKey(ref, ctx.character)

@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn, Step } from "../recorded/steps.ts";
 import { cacheAuthor, writeExpr } from "./cache-author.ts";
+import { present } from "./lock-fixture.ts";
 
 const X = "DNSM.TreeAuthor.v";
 const node = (id: number, b: string, p: number | null, c: number[] = []) =>
@@ -43,7 +44,7 @@ const rec: Recording = {
   builders: null,
   fromGame: [],
 };
-const reader = rec.nodes[1] as RecNode;
+const reader = present(rec.nodes[1], "reader");
 const read: Expr = { t: "read", p: X, v: 15 };
 const step = (v: number): Step => ({
   v,
@@ -76,7 +77,7 @@ const exprOf = (w: RecWrite, v: number, spliced: RecWrite[] = []) => {
   const ranges: LoopTurn[] = [];
   const e = writeExpr(
     { ...rec, writes: [write(4, 5, 3), w], spliced },
-    { node: rec.nodes[4] as RecNode, write: w },
+    { node: present(rec.nodes[4], "author"), write: w },
     (_n, range) => {
       ranges.push(range);
       return { steps: [step(v)], checks: [] };

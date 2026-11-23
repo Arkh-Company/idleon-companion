@@ -7,6 +7,7 @@ import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import { relDiff } from "./answer-key-pool.ts";
+import { topOf } from "./answer-key.ts";
 import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import {
@@ -33,7 +34,8 @@ export type LockErrorKind =
   | "leafHasChildren"
   | "pending"
   | "classMismatch"
-  | "rootForm";
+  | "rootForm"
+  | "openingRefused";
 
 export interface LockError {
   kind: LockErrorKind;
@@ -125,6 +127,8 @@ export function lockMessage(e: LockError): string {
       return `fonte de outra classe na gravação: ${level} (classes ${fmt(e.expected)}; o personagem é da classe ${fmt(e.got)})`;
     case "rootForm":
       return fmt(e.got);
+    case "openingRefused":
+      return `${level}: ${fmt(e.got)}`;
   }
 }
 
@@ -189,7 +193,7 @@ export function lockBlueprint(input: LockInput): LockResult {
     out.errors.push({ kind: "poolOrder", where: "root", expected, got });
     return done();
   }
-  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  const top = topOf(rec);
   if (!top) {
     out.errors.push({
       kind: "rootForm",

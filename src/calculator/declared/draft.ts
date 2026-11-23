@@ -15,6 +15,7 @@ import type { RecNode, Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
+import { topOf } from "./answer-key.ts";
 import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
 import type {
   Blueprint,
@@ -109,7 +110,7 @@ function walkPart(
     return {
       key,
       call,
-      below: open.below.map((o) =>
+      below: open.map((o) =>
         walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr),
       ),
     };
@@ -137,7 +138,7 @@ function walkPart(
 /** A source's parts: its call or read down to the leaves; a two-source term opens into each of its references. */
 export function walkTerm(t: AnswerTerm, ctx: LevelContext): Walked {
   const { nodes } = ctx.rec;
-  const top = nodes[nodes[ctx.rec.root ?? -1]?.c[0] ?? -1] ?? null;
+  const top = topOf(ctx.rec) ?? null;
   const parts = t.refs.map((r, i) =>
     walkPart(r, nodes[t.nodes[i] ?? -1] ?? null, ctx, 0, top),
   );

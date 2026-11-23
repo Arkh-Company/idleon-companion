@@ -5,8 +5,8 @@
 // of its own place, or two turns with the same item, are refused with the reason: the turns do not part by their place.
 import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
-import { callRef, near } from "./answer-key-pool.ts";
-import type { Opened, Opening } from "./level-openings.ts";
+import { callRef } from "./answer-key-pool.ts";
+import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, num } from "./lock-parts.ts";
 
@@ -15,14 +15,13 @@ export function loopOpening(
   expr: Expr | null,
   scope: RecNode,
   ctx: LevelContext,
-): Opened | string | null {
+): Opening[] | string | null {
   if (expr?.t !== "op" || expr.o !== "+") return null;
   const { steps, stepAt } = ctx.stepsOf(scope.id);
   const last = steps.at(-1);
   const at = stepAt?.at(-1);
-  // only what the call returned: its last step, with its value
-  if (last?.e !== expr || !near(last.v, scope.v) || at === undefined)
-    return null;
+  // only what the call returned: its last step (returnOf gives it only with the call's value)
+  if (last?.e !== expr || at === undefined) return null;
   const op = scope.x?.[at]?.[0];
   const places = (scope.x ?? []).flatMap(([o], j) => (o === op ? [j] : []));
   if (op === undefined || places.length < 2) return null;
@@ -33,12 +32,14 @@ export function loopOpening(
     const e = ctx.turnOf(scope, { from, to }).exprOf?.(op);
     const item = e?.t === "op" ? e.r : null;
     const part = item ? keyOfLeaf(item, ctx.rec) : null;
-    if (!item || part === null)
+    if (!item || item.t === "val")
       return `a volta ${String(k + 1)} do laço de ${name} não tem o item no seu lugar`;
+    if (part === null)
+      return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
     if (below.some((b) => b.part === part))
       return `duas voltas do laço de ${name} têm o mesmo item (${part})`;
     const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
     below.push({ part, call, value: num(item.v) });
   }
-  return { below };
+  return below;
 }

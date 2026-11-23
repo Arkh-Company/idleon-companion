@@ -90,7 +90,7 @@ export type RootShape =
 
 /** The functions a top layer is made of: one of them holds a value of the root when one of its arguments does. */
 const LAYERED = new Set(["min", "max", "round", "floor", "ceil"]);
-const topOf = (rec: Recording) =>
+export const topOf = (rec: Recording) =>
   rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
 
 export function answerKey(
@@ -359,7 +359,7 @@ export function answerKeyOfSteps(
   }
 
   const pools = joinPools(raw);
-  const authors = refusedAuthor(rec, top, [...pools, ...divisors]);
+  const authors = refusedAuthor(rec, top, { steps, stepAt }, pools, divisors);
   if (authors !== null) return outOfRule(authors);
 
   r.bump("stepOutsideChain", steps.length - r.usedSteps.size);

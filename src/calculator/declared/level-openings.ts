@@ -18,32 +18,26 @@ export interface Opening {
   expr?: Expr | null;
   value: number | null;
 }
-export interface Opened {
-  below: Opening[];
-}
-
 /** The opening of a level, its refusal's reason, or null when the level opens by its own expression. */
 export function openingOf(
-  level: { expr: Expr | null; scope: RecNode; value: number | null },
+  level: { expr: Expr | null; scope: RecNode },
   ctx: LevelContext,
-): Opened | string | null {
-  const { expr, scope, value } = level;
+): Opening[] | string | null {
+  const { expr, scope } = level;
   if (expr?.t !== "read" || !isCacheRead(expr.p))
     return loopOpening(expr, scope, ctx);
-  const a = cacheAuthor(ctx.rec, expr.p, scope, value ?? undefined);
+  const a = cacheAuthor(ctx.rec, expr.p, scope, ctx.stepsOf(scope.id));
   if (a === null) return null;
   if ("refused" in a) return a.refused;
   const v = a.write.v;
-  return {
-    below: [
-      {
-        part: callRef(a.node),
-        call: a.node,
-        expr: writeExpr(ctx.rec, a, ctx.turnOf),
-        value: typeof v === "number" ? v : null,
-      },
-    ],
-  };
+  return [
+    {
+      part: callRef(a.node),
+      call: a.node,
+      expr: writeExpr(ctx.rec, a, ctx.turnOf),
+      value: typeof v === "number" ? v : null,
+    },
+  ];
 }
 
 /** The level a part of an opened level opens into: its expression, or what its call returned, or the read itself. */

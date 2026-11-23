@@ -6,6 +6,7 @@ import { callRef, near, OutOfRule } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
 import { passageReader } from "./answer-key-passage.ts";
 import type { PassageContext } from "./answer-key-passage.ts";
+import { isCacheRead } from "./cache-author.ts";
 
 export {
   callRef,
@@ -160,7 +161,7 @@ export function termReader(ctx: TermContext) {
         return;
       }
       case "read":
-        if (u.p.startsWith("DNSM.") && u.p !== ctx.accumulator)
+        if (isCacheRead(u.p) && u.p !== ctx.accumulator)
           bump("dnsmCacheSource");
         out.push(u.p);
         nodes.push(null);
