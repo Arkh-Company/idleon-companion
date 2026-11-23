@@ -18,10 +18,8 @@ import {
 } from "./draft.ts";
 import type { DraftContext, Walked } from "./draft.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import { fmt } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
-
-const fmt = (v: unknown): string =>
-  typeof v === "number" ? String(+v.toPrecision(10)) : String(v);
 
 export function stepsGuide(
   key: AnswerKey,

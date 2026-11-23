@@ -50,7 +50,8 @@ export const NOT_LEAVES: readonly NotLeaf[] = [
   },
 ];
 
-const CALL = /^([A-Za-z_$][\w$]*)\((.*)\)$/;
+/** A call as its key writes it, `Block(args)`: its block and its arguments' text. */
+export const CALL = /^([A-Za-z_$][\w$]*)\((.*)\)$/;
 const firstArg = (args: string): unknown => {
   try {
     return (JSON.parse(`[${args}]`) as unknown[])[0];

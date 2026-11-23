@@ -5,6 +5,7 @@
 // talent's class only from the game's talent order; anything else is pending (`name`, `system`, `leaf`, `descend`),
 // never guessed. The draft carries no value, count or expression, and its JSON is already as prettier leaves it.
 import type { Context } from "../boot.ts";
+import { askNames } from "../game-names.ts";
 import type { Op } from "../instrument.ts";
 import { STATIC_NAMES } from "../names/names-table.ts";
 import { nameOf, recipeName } from "../names/names.ts";
@@ -19,9 +20,11 @@ import type {
   BlueprintNode,
   BlueprintPending,
 } from "./blueprint.ts";
+import { isObj } from "./blueprint-root.ts";
 import { callParts } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { saveChild } from "./lock-parts.ts";
+import { CALL } from "./not-leaves.ts";
 import { hasRawCharacterIndex } from "./refs.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
@@ -40,21 +43,14 @@ export function gameList(
   id: string,
   ms: number,
 ): unknown[] {
-  context.sandbox.__namesAsk = JSON.stringify({ cells: [], tables: [id] });
+  const read = askNames(context, { cells: [], tables: [id] }, ms);
+  const form: unknown =
+    isObj(read) && Array.isArray(read.forms) ? read.forms[0] : null;
   try {
-    const json = context.run("__names.read(__namesAsk)", ms);
-    // only a text: JSON.parse would call another value's own toString
-    const read: unknown = typeof json === "string" ? JSON.parse(json) : null;
-    const form: unknown =
-      read !== null && typeof read === "object" && "forms" in read
-        ? (read.forms as unknown[])[0]
-        : null;
     const list: unknown = typeof form === "string" ? JSON.parse(form) : null;
     return Array.isArray(list) ? list : [];
   } catch {
     return [];
-  } finally {
-    delete context.sandbox.__namesAsk;
   }
 }
 
@@ -85,7 +81,6 @@ export interface Walked {
 
 // shortcut: the descent stops 12 levels down, pending `descend`; raise it when a number of the game goes deeper
 const MAX_DEPTH = 12;
-const CALL = /^([A-Za-z_$][\w$]*)\((.*)\)$/;
 
 function walkPart(
   key: string,

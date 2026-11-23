@@ -10,6 +10,7 @@ import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
+import { isObj } from "./blueprint-root.ts";
 import { emptyOut } from "./lock-levels.ts";
 import { lockBlueprint } from "./lock.ts";
 import type { LockResult } from "./lock.ts";
@@ -75,8 +76,6 @@ export function writeLock(
   writeFileSync(file, reviewJson(withLock(prev, sha, lock)));
 }
 
-const isObj = (x: unknown): x is Record<string, unknown> =>
-  typeof x === "object" && x !== null && !Array.isArray(x);
 const entries = (x: unknown) => (isObj(x) && isObj(x.$m) ? x.$m : {});
 
 /** One character of each class of the snapshot (class id → place in the game's list), the active one for its own. */

@@ -77,8 +77,13 @@ export interface LockInput {
 }
 
 const NAME: Record<PoolKind, string> = { additive: "Additive", multi: "Multi" };
-const fmt = (v: number | string | undefined): string =>
-  typeof v === "number" ? String(+v.toPrecision(10)) : (v ?? "");
+/** A value in a text: a number to 10 significant digits, nothing for none. */
+export const fmt = (v: unknown): string =>
+  typeof v === "number"
+    ? String(+v.toPrecision(10))
+    : v === undefined
+      ? ""
+      : String(v);
 
 /** The refusal's text, from its fields (data-model.md, "Resultado da trava"). */
 export function lockMessage(e: LockError): string {

@@ -18,6 +18,25 @@ export interface GameNames {
 }
 const nothing = (): GameNames => ({ names: new Map(), tables: new Map() });
 
+/** One request to names-reader.js in the context (cells and tables): its answer, or null when the reading fails, runs
+ * out of time or does not come back as text. */
+export function askNames(
+  context: Pick<Context, "run" | "sandbox">,
+  ask: { cells: unknown[]; tables: string[] },
+  ms: number,
+): unknown {
+  context.sandbox.__namesAsk = JSON.stringify(ask);
+  try {
+    const json = context.run("__names.read(__namesAsk)", ms);
+    // only a text: JSON.parse would call another value's own toString
+    return typeof json === "string" ? (JSON.parse(json) as unknown) : null;
+  } catch {
+    return null;
+  } finally {
+    delete context.sandbox.__namesAsk;
+  }
+}
+
 /** The recipes' names over the game in the context, and its checked tables; nothing when the reading fails or does not
  * come back as text. */
 export function readGameNames(
@@ -33,20 +52,12 @@ export function readGameNames(
     ).values(),
   ];
   const tables = [...hashes.keys()];
-  context.sandbox.__namesAsk = JSON.stringify({
-    cells: cells.map((p) => [p.table, p.index, p.field]),
-    tables,
-  });
-  let read: unknown;
-  try {
-    const json = context.run("__names.read(__namesAsk)", ms);
-    // only a text: JSON.parse would call another value's own toString
-    read = typeof json === "string" ? JSON.parse(json) : null;
-  } catch {
-    return nothing(); // out of time: every recipe's row keeps the generic name
-  } finally {
-    delete context.sandbox.__namesAsk;
-  }
+  // out of time, or no text: every recipe's row keeps the generic name
+  const read = askNames(
+    context,
+    { cells: cells.map((p) => [p.table, p.index, p.field]), tables },
+    ms,
+  );
   const { texts, forms } = (read ?? {}) as { texts?: unknown; forms?: unknown };
   if (
     !Array.isArray(texts) ||
