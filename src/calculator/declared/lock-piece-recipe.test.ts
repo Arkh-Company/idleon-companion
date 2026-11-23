@@ -164,6 +164,46 @@ test("a cache read's line with a recipe piece closes over the answer key of the 
   expect(out.counts.closed).toBe(4);
 });
 
+/** The line reads `field` of a builder that writes four fields to 32 (fake-game.js TreeRecipeTwin), under `root`. */
+function twin(field: string, root: string) {
+  const r = inventedRecorder();
+  const fields = ["A", "B", "C", "D"].map((k) => [
+    `TreeTwin${k}`,
+    { $m: { v: 32 } },
+  ]);
+  const DNSM = { ...activeAs(0).DNSM.$m, ...Object.fromEntries(fields) };
+  const rec = r.record(
+    mosaicOf({ DNSM: { $m: DNSM }, TreeTwinX: 10, TreeTwinY: 6, TreeTwinZ: 2 }),
+    [[root, [0, 0, 0]]],
+    {
+      recompute: [],
+      builders: [{ cache: field, run: { block: "TreeRecipeTwin", args: [] } }],
+    },
+  );
+  const key = answerKey(rec, r.ops);
+  if ("error" in key) throw new Error(key.reason);
+  return lockBlueprint({
+    blueprint: blueprint({ ref: { read: `DNSM.${field}.v` } }, piece(), root),
+    key,
+    rec,
+    ops: r.ops,
+    character: 0,
+    characterClass: 3,
+  });
+}
+
+test("a builder that writes two fields to the same value: the line closes over the write it read, never by value", () => {
+  // TreeTwinB, a running total after TreeTwinA's with the same last write; TreeTwinC, one write before TreeTwinD's
+  for (const [field, root] of [
+    ["TreeTwinB", "TreeRecipeTwinB"],
+    ["TreeTwinC", "TreeRecipeTwinC"],
+  ] as const) {
+    const out = twin(field, root);
+    expect(out.errors).toEqual([]);
+    expect(out.counts.closed).toBe(4);
+  }
+});
+
 test("a read that is no cache gives a recipe piece no answer key: refused with the reason at the line", () => {
   const out = lockBlueprint({
     blueprint: blueprint({ ref: { read: "TreeCapped" } }),

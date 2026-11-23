@@ -1610,6 +1610,31 @@ lime.$scripts.N = function (_exports, $global) {
       a.engine.getGameAttribute("DNSM").h.TreeRecipe.h.v + state().TreeCapped
     );
   };
+  // Spec 010 (T173 r1): a builder that writes four fields to 32, as the game's star signs write one a stat: TreeTwinA
+  // and TreeTwinB in two writes each, TreeTwinC and TreeTwinD in one. B and C count as TreeRecipeLine (31, then floor
+  // of × 1.05); A and D are (TreeTwinX + TreeTwinY) × TreeTwinZ, the tests give 10, 6 and 2. A root reads B, one C.
+  Blocks._customBlock_TreeRecipeTwin = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeTwinA = new StringMap();
+    d.TreeTwinA.h.v = s.TreeTwinX + s.TreeTwinY;
+    d.TreeTwinA.h.v = d.TreeTwinA.h.v * s.TreeTwinZ;
+    d.TreeTwinB = new StringMap();
+    d.TreeTwinB.h.v = s.TreeBase + s.TreeLevel + 2;
+    d.TreeTwinB.h.v = Math.floor(d.TreeTwinB.h.v * (1 + s.TreeStats.h.b / 100));
+    d.TreeTwinC = new StringMap();
+    d.TreeTwinC.h.v = Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+    d.TreeTwinD = new StringMap();
+    d.TreeTwinD.h.v = (s.TreeTwinX + s.TreeTwinY) * s.TreeTwinZ;
+  };
+  Blocks._customBlock_TreeRecipeTwinB = function () {
+    return dnsm().TreeTwinB.h.v + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeRecipeTwinC = function () {
+    return dnsm().TreeTwinC.h.v + state().TreeCapped;
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.
