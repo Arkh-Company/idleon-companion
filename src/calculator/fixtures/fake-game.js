@@ -1859,6 +1859,15 @@ lime.$scripts.N = function (_exports, $global) {
     if (a.engine.getGameAttribute("TreeLevel") < 0) return b7 * 2;
     return a.engine.getGameAttribute("TreeLevel") + b2;
   };
+  // a ? : right in the step whose side that ran is a read, with the call on the side that did not: the read stands
+  Blocks._customBlock_TreeTernaryRead = function () {
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      (a.engine.getGameAttribute("TreeLevel") < 0
+        ? Blocks._customBlock_TreeThree(0)
+        : a.engine.getGameAttribute("TreeGear")[1])
+    );
+  };
   // the call in what set a variable before `t += …`, through another variable: what t was is the call, never the read
   Blocks._customBlock_TreeAddToChain = function () {
     var U = A["com.stencyl.utils.Utils"];

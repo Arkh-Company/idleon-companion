@@ -191,6 +191,16 @@ test("a variable a few hops from a block's call, met first past the hops the dat
   ]);
 });
 
+test("a ? : right in the step whose side that ran is a read, the call on the other side, keeps the read", () => {
+  // TreeTernaryRead: `TreeLevel + (TreeLevel < 0 ? TreeThree(0) : TreeGear[1])`, the gear 3
+  const { key } = recorded("TreeTernaryRead", { TreeGear: [5, 3] });
+  expect(key.final).toBe(28);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+    "TreeLevel",
+    "TreeGear[1]",
+  ]);
+});
+
 test("what a variable was before `t += …`, set through another variable by a block's call, is the call, not a read", () => {
   // TreeAddToChain: TreeGear[1] (3) read, then `y = TreeThree(0); t = y; t += TreeLevel; return Math.floor(t)`
   const { key } = recorded("TreeAddToChain", { TreeGear: [5, 3] });
