@@ -2,7 +2,10 @@
 // a path the root wrote and read back is tied to the write that the read feeding the step being explained saw, by that
 // read's place in the root's step log, and that write to what gave it, by the write's place. When the place does not
 // decide, the root is refused with the reason, never settled by value or by order.
+import type { Op } from "../instrument.ts";
 import type { RecNode } from "../recording.ts";
+import { astPattern, at, matchPattern } from "../recorded/ast.ts";
+import type { AstNode } from "../recorded/ast.ts";
 import type { Expr, Step } from "../recorded/steps.ts";
 import { atCap, callRef, near, OutOfRule } from "./answer-key-pool.ts";
 
@@ -66,10 +69,54 @@ export interface PassageContext {
   passage: ReadonlyMap<string, readonly PassageWrite[]>;
   /** Where each step was last recorded in the root's step log (BlockSteps.stepAt), to tell which step gave a write. */
   stepAt: readonly number[];
+  /** The game's code, to read a write of a fixed number (fixedOf). */
+  ops?: readonly Op[] | undefined;
 }
 export interface Giver {
   e: Expr;
   step: number | null;
+}
+
+/** Where a statement or an expression runs first: a block's first statement, a sequence's first part. */
+const FIRST: Readonly<Record<string, string>> = {
+  BlockStatement: "body",
+  ExpressionStatement: "expression",
+  ReturnStatement: "argument",
+  SequenceExpression: "expressions",
+};
+const firstRun = (
+  n: AstNode | null | undefined,
+): AstNode | null | undefined => {
+  const k = n ? FIRST[n.type] : undefined;
+  if (!n || !k) return n;
+  const c = n[k];
+  return firstRun((Array.isArray(c) ? c[0] : c) as AstNode | undefined);
+};
+
+/**
+ * A write of a fixed number of the code, by its place (like boundOf): the step the root recorded last before the write
+ * is a test, and the branch the test took runs first `<the write's path> = <number>`. That number, or null. In memory.
+ */
+export function fixedOf(
+  top: RecNode,
+  path: string,
+  w: PassageWrite,
+  ops: readonly Op[] | undefined,
+): number | null {
+  const last = top.x?.[w.xi - 1];
+  const op = last ? ops?.[last[0]] : undefined;
+  if (op?.kind !== "test" || !op.owner || last?.[1] == null) return null;
+  const set = firstRun(at(op.owner, last[1] ? "consequent" : "alternate"));
+  if (set?.type !== "AssignmentExpression" || set.operator !== "=") return null;
+  const pat = astPattern(at(set, "left"));
+  const k = at(set, "right");
+  return pat &&
+    matchPattern(path, pat) &&
+    k.type === "Literal" &&
+    typeof k.value === "number" &&
+    near(k.value, w.v)
+    ? k.value
+    : null;
 }
 
 /** The child calls a step holds in its expression: their value went into that step, never straight to a write. */
@@ -91,6 +138,7 @@ export function passageReader(ctx: PassageContext) {
   const inSteps = new Set(ctx.steps.flatMap((s) => callsIn(s.e)));
   const nameOf = (g: Giver): string => {
     if (g.step !== null) return `passo ${String(g.step)}`;
+    if (g.e.t === "num") return `número fixo ${String(g.e.v)}`;
     const n = g.e.t === "call" ? ctx.nodes[g.e.id] : undefined;
     return n ? callRef(n) : "?";
   };
@@ -100,6 +148,9 @@ export function passageReader(ctx: PassageContext) {
    * step and before the write. More than one of them: the place does not decide.
    */
   function giversOf(path: string, w: PassageWrite): Giver[] {
+    // a fixed number of the code gave it: no step and no child call
+    const k = fixedOf(ctx.top, path, w, ctx.ops);
+    if (k !== null) return [{ e: { t: "num", v: k }, step: null }];
     const steps = ctx.steps.flatMap((s, j) => {
       const at = ctx.stepAt[j] ?? -1;
       return at < w.xi && near(s.v, w.v) ? [{ at, j, e: s.e }] : [];

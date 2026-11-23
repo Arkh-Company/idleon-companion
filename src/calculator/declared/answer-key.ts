@@ -257,6 +257,7 @@ export function answerKeyOfSteps(
     passage,
     // with no places, every step is at the same one: the place decides nothing, and two candidates refuse
     stepAt: stepAt ?? [],
+    ops: opts.ops,
     accumulator: acc?.[0] ?? null,
     branches: opts.branches ?? [],
   });
