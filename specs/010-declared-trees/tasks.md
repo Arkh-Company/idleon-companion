@@ -317,7 +317,7 @@ reprovações da US2 aparecem no jogo real.
 
 ### Tests for User Story 2 (write first)
 
-- [ ] T027 [P] [US2] Testes da trava no pool em `src/calculator/declared/lock.test.ts` (FR-010, FR-013a, FR-002a; depende de T017, T019)
+- [X] T027 [P] [US2] Testes da trava no pool em `src/calculator/declared/lock.test.ts` (FR-010, FR-013a, FR-002a; depende de T017, T019)
   - Files: `src/calculator/declared/lock.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases (cada reprovação com o texto do data-model):
@@ -331,7 +331,7 @@ reprovações da US2 aparecem no jogo real.
     - a tolerância: diferença relativa de 1e-6 fecha, de 2e-6 não (SC-001);
     - uma receita com `pending` → `pending`, sempre reprovada;
     - uma fonte de outra classe ausente da gravação não é `missingSource`; a mesma fonte presente na gravação de um personagem de outra classe é `classMismatch`.
-- [ ] T028 [P] [US2] Testes da descida em `src/calculator/declared/lock-levels.test.ts`, começando por cadeias de dois níveis (lição 5 da 008; FR-010, FR-002b, FR-005, FR-016; research R2–R6; depende de T017, T019)
+- [X] T028 [P] [US2] Testes da descida em `src/calculator/declared/lock-levels.test.ts`, começando por cadeias de dois níveis (lição 5 da 008; FR-010, FR-002b, FR-005, FR-016; research R2–R6; depende de T017, T019)
   - Files: `src/calculator/declared/lock-levels.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -346,12 +346,12 @@ reprovações da US2 aparecem no jogo real.
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] A trava no pool em `src/calculator/declared/lock.ts` (depende de T027)
+- [X] T029 [US2] A trava no pool em `src/calculator/declared/lock.ts` (depende de T027)
   - Files: `src/calculator/declared/lock.ts`
   - Signatures: `interface LockInput { blueprint: Blueprint; key: AnswerKey; rec: Recording; ops: readonly Op[]; character: number; characterClass: number | null }`; `lockBlueprint(input: LockInput, mode: "check"): LockResult`; `LockResult`, `LockError` (data-model.md); `lockMessage(e: LockError): string`.
   - Porta o `trava.ts` do protótipo (429 linhas) em dois arquivos, cada um abaixo de 400 linhas.
   - Cases: os da T027, que esta tarefa faz passar.
-- [ ] T030 [US2] A descida em `src/calculator/declared/lock-levels.ts` (depende de T016, T020, T028, T029)
+- [X] T030 [US2] A descida em `src/calculator/declared/lock-levels.ts` (depende de T016, T020, T028, T029)
   - Files: `src/calculator/declared/lock-levels.ts`
   - Signature: `lockLevels(node: BlueprintNode, recorded: RecNode, ctx: LevelContext): { errors: LockError[]; counts: LockResult["counts"] }`.
   - A conta remontada só existe em memória durante a chamada (FR-010).
