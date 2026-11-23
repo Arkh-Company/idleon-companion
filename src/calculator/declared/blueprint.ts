@@ -151,7 +151,7 @@ function checkPieceLevel(
   if (typeof e.list !== "string" || e.list.split("[*]").length !== 2)
     no(where, "each.list é um caminho com um [*]");
   checkRef({ read: e.list }, `${where}/each`);
-  if (hasRawCharacterIndex(e.list.replace("[*]", "[0]")))
+  if (hasRawCharacterIndex((e.list as string).replace("[*]", "[0]")))
     no(where, "each.list nunca percorre os personagens");
   if (!Array.isArray(n.children) || n.children.length !== 1)
     no(where, "each tem um filho-modelo só");

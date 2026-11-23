@@ -1,96 +1,216 @@
 // A line that calls a recipe piece, in the lock (spec 010, T170, T171; spec, Open Questions 23/11): the line takes the
 // value of its reference (the call or the cache the game read, as any node) and closes by the count of its piece's
-// children: each level by its declared combine, a leaf by its recorded value, read anywhere in the recording. An `each`
-// node has one child per item of the recorded list, its size from the recording. Here the engine does not open a cache
-// into its author nor a sum into its loop's turns: the piece says the count. A level that does not close is a
-// notClosing with the two values; a leaf the recording lacks, a childNoValue.
+// children: each level by its declared combine, a leaf by its recorded value, tied by its place: below the call of its
+// level (a call's line, the line's call), or anywhere in the recording for a cache's read; a key or a path the place
+// recorded with two values is refused with both. An `each` node has one child per item of the recorded list, its size
+// from the recording. A call's level with no combine (the Seraph) closes by its own recorded count, as a level of
+// lock-levels.ts, with no opening. Here the engine does not open a cache into its author nor a sum into its loop's
+// turns: the piece says the count. A level that does not close, or whose call gives no number, is a notClosing with the
+// two values; a part the place lacks, a childNoValue; a leaf whose call reads the save, a leafHasChildren.
+import type { RecNode } from "../recording.ts";
 import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
-import type { LevelContext, LevelOut } from "./lock-levels.ts";
-import { leafCheck, num, TOLERANCE } from "./lock-parts.ts";
+import { lockLevel } from "./lock-levels.ts";
+import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
+import {
+  leafCheck,
+  num,
+  returnOf,
+  saveChild,
+  TOLERANCE,
+} from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
 import { matchRead, refKey, starPattern } from "./refs.ts";
 
 type Ctx = Pick<LevelContext, "rec" | "character">;
 type Ref = NonNullable<BlueprintNode["ref"]>;
+/** Two values one key or one path has in a place: the place does not decide between them. */
+export interface TwoValues {
+  two: [number | string, number | string];
+}
+/** What a place recorded for a reference: nothing, two values, or its one value (with its call, for a call). */
+type Found = "none" | TwoValues | { v: unknown; call?: RecNode | undefined };
 
-/** A reference's recorded value anywhere in the recording: the first call made with its key, or the first read. */
-function recordedValue(ref: Ref, ctx: Ctx): number | null {
+const shown = (v: unknown): number | string =>
+  typeof v === "number" || typeof v === "string" ? v : JSON.stringify(v);
+const same = (a: unknown, b: unknown): boolean => {
+  const [x, y] = [num(a), num(b)];
+  return a === b || (x !== null && y !== null && relDiff(x, y) <= TOLERANCE);
+};
+/** The one value of a place's occurrences (one at least), or the first two that differ. */
+function oneOf(vs: readonly unknown[]): TwoValues | { v: unknown } {
+  const [first] = vs;
+  const other = vs.findIndex((v) => !same(v, first));
+  return other < 0 ? { v: first } : { two: [shown(first), shown(vs[other])] };
+}
+
+/** Every read a call made, each time: its first reads and its step log (a later read with another value is there). */
+const readsOf = (n: RecNode): [string, unknown][] => [
+  ...(n.r ?? []).map(([p, v]): [string, unknown] => [p, v]),
+  ...(n.rx ?? []).map(([p, v]): [string, unknown] => [p, v]),
+];
+
+/** A call and every call below it, in the recording's order: the place of the call's parts. */
+function below(n: RecNode, ctx: Ctx): RecNode[] {
+  const out: RecNode[] = [];
+  const todo = [n];
+  for (let x = todo.pop(); x; x = todo.pop()) {
+    out.push(x);
+    for (const id of x.c.toReversed()) {
+      const k = ctx.rec.nodes[id];
+      if (k) todo.push(k);
+    }
+  }
+  return out;
+}
+
+/** A reference's value in a place: its calls, or its reads (`*` takes the first path that matches). */
+function recordedIn(ref: Ref, nodes: readonly RecNode[], ctx: Ctx): Found {
   if ("call" in ref) {
     const key = refKey(ref, ctx.character);
-    return num(ctx.rec.nodes.find((n) => callRef(n) === key)?.v);
+    const calls = nodes.filter((n) => callRef(n) === key);
+    if (calls.length === 0) return "none";
+    const f = oneOf(calls.map((n) => n.v));
+    return "v" in f ? { ...f, call: calls[0] } : f;
   }
-  for (const n of ctx.rec.nodes) {
-    const reads = n.r ?? [];
-    const m = matchRead(
-      ref.read,
-      reads.map(([p]) => p),
-      ctx.character,
-    );
-    if (m) return num(reads.find(([p]) => p === m.path)?.[1]);
-  }
-  return null;
+  const reads = nodes.flatMap(readsOf);
+  const m = matchRead(
+    ref.read,
+    reads.map(([p]) => p),
+    ctx.character,
+  );
+  const vs = m ? reads.filter(([p]) => p === m.path).map(([, v]) => v) : [];
+  return vs.length === 0 ? "none" : oneOf(vs);
 }
 
 /**
- * A piece's node's children in the recording: an each's model once per item of the recorded list, in the list's order,
- * the item in place of its name and the place in the list in its key.
+ * A piece's node's children in a place (the whole recording by default): an each's model once per item of the recorded
+ * list, in the list's order, the item in place of its name and the place in the list in its key; an item the place
+ * recorded with two values gives them.
  */
-export function pieceChildren(node: BlueprintNode, ctx: Ctx): BlueprintNode[] {
+export function pieceChildren(
+  node: BlueprintNode,
+  ctx: Ctx,
+  nodes: readonly RecNode[] = ctx.rec.nodes,
+): BlueprintNode[] | TwoValues {
   const [model] = node.children ?? [];
   if (!node.each || !model) return [...(node.children ?? [])];
   const { list, as } = node.each;
   const path = new RegExp(
     `^${starPattern(list.replaceAll("{character}", String(ctx.character)))}$`,
   );
-  const items = new Map<number, unknown>();
-  for (const n of ctx.rec.nodes)
-    for (const [p, v] of n.r ?? []) {
+  const items = new Map<number, unknown[]>();
+  for (const n of nodes)
+    for (const [p, v] of readsOf(n)) {
       const at = path.exec(p)?.[1];
-      if (at !== undefined && !items.has(Number(at))) items.set(Number(at), v);
+      if (at !== undefined)
+        items.set(Number(at), [...(items.get(Number(at)) ?? []), v]);
     }
-  return [...items]
+  const kids: BlueprintNode[] = [];
+  for (const [i, [, vs]] of [...items]
     .toSorted(([a], [b]) => a - b)
-    .map(([, item], i) => ({
+    .entries()) {
+    const f = oneOf(vs);
+    if ("two" in f) return f;
+    const item = f.v;
+    kids.push({
       ...fill(model, { [as]: typeof item === "number" ? item : String(item) }),
       key: `${model.key}-${String(i)}`,
-    }));
+    });
+  }
+  return kids;
 }
 
-/**
- * A piece's level: its children down to the leaves, then its combine over their values against `value` (null: a level
- * with no recorded value of its own, not checked). Gives the remounted value, null when a part has none.
- */
-export function lockPiece(
+/** A part of a piece's level in its place: a level's remounted value, or a leaf's recorded one; null with none. */
+function lockPart(
+  child: BlueprintNode,
+  nodes: readonly RecNode[],
+  ctx: LevelContext,
+  out: LevelOut,
+): number | null {
+  const { where } = ctx;
+  const f: Found = child.ref ? recordedIn(child.ref, nodes, ctx) : "none";
+  if (f === "none" || "two" in f) {
+    if (!child.children) leafCheck(child, where, out);
+    out.errors.push(
+      f === "none"
+        ? { kind: "childNoValue", where }
+        : { kind: "childNoValue", where, expected: f.two[0], got: f.two[1] },
+    );
+    return null;
+  }
+  const own = num(f.v);
+  if (child.combine)
+    return pieceLevel(
+      child,
+      own,
+      f.call ? below(f.call, ctx) : nodes,
+      ctx,
+      out,
+    );
+  if (child.children && f.call) {
+    // a call's level with no combine (the Seraph): its own recorded count, its parts by their place in it, no opening
+    out.counts.branches++;
+    const level = { expr: returnOf(f.call, ctx), scope: f.call, value: own };
+    lockLevel(child.children, level, { ...ctx, noOpen: true }, out);
+    return own;
+  }
+  leafCheck(child, where, out);
+  // a leaf is the end of the descent: below its own call, the recording reads nothing of the save
+  const first = f.call ? saveChild(f.call, ctx) : null;
+  if (first !== null)
+    out.errors.push({ kind: "leafHasChildren", where, got: first });
+  if (own === null) out.errors.push({ kind: "childNoValue", where });
+  return own;
+}
+
+function pieceLevel(
   node: BlueprintNode,
   value: number | null,
+  nodes: readonly RecNode[],
   ctx: LevelContext,
   out: LevelOut,
 ): number | null {
   out.counts.branches++;
-  const parts = pieceChildren(node, ctx).map((child) => {
-    const inner = { ...ctx, where: `${ctx.where}/${child.key}` };
-    const own = child.ref ? recordedValue(child.ref, ctx) : null;
-    if (child.combine) return lockPiece(child, own, inner, out);
-    leafCheck(child, inner.where, out);
-    if (own === null)
-      out.errors.push({ kind: "childNoValue", where: inner.where });
-    return own;
-  });
+  const kids = pieceChildren(node, ctx, nodes);
+  if (!Array.isArray(kids)) {
+    const [expected, got] = kids.two;
+    out.errors.push({ kind: "childNoValue", where: ctx.where, expected, got });
+    return null;
+  }
+  const parts = kids.map((child) =>
+    lockPart(child, nodes, { ...ctx, where: `${ctx.where}/${child.key}` }, out),
+  );
   const values = parts.filter((p) => p !== null);
   if (values.length < parts.length) return null;
   const got =
     node.combine === "product"
       ? values.reduce((a, p) => a * p, 1)
       : values.reduce((a, p) => a + p, 0);
-  if (value === null) return got;
-  if (relDiff(got, value) <= TOLERANCE) out.counts.closed++;
+  if (value !== null && relDiff(got, value) <= TOLERANCE) out.counts.closed++;
   else
     out.errors.push({
       kind: "notClosing",
       where: ctx.where,
-      expected: value,
+      expected: value ?? Number.NaN,
       got,
     });
   return got;
+}
+
+/**
+ * A piece's line: its children down to the leaves, then its combine over their values against the line's value. A
+ * call's line reads its parts below its own call; a cache's read, anywhere in the recording.
+ */
+export function lockPiece(
+  node: BlueprintNode,
+  level: Pick<Level, "value" | "scope">,
+  ctx: LevelContext,
+  out: LevelOut,
+): void {
+  const { ref } = node;
+  const own =
+    ref && "call" in ref && callRef(level.scope) === refKey(ref, ctx.character);
+  const nodes = own ? below(level.scope, ctx) : ctx.rec.nodes;
+  pieceLevel(node, level.value, nodes, ctx, out);
 }

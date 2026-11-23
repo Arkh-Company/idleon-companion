@@ -103,7 +103,9 @@ test("an each node has one child per item of the recorded list, the item in plac
   if (!line) throw new Error("no line");
   const kids = (list: number[]) => {
     const { rec, ops } = recorded("TreeSignsRoot", state(list));
-    return pieceChildren(line, levelContext(rec, ops, LINE)).map((c) => [
+    const children = pieceChildren(line, levelContext(rec, ops, LINE));
+    if (!Array.isArray(children)) throw new Error("two values");
+    return children.map((c) => [
       c.key,
       keyOf(c),
       c.nameProof,
@@ -243,7 +245,7 @@ const lockOver = (root: string, line: Raw, piece: unknown, attrs: object) =>
     characterClass: 3,
   });
 /** A recorded node that only read `r`. */
-const reader = (r: RecNode["r"]): RecNode => ({
+const reader = (r: NonNullable<RecNode["r"]>): RecNode => ({
   id: 0,
   b: "Reader",
   a: [],

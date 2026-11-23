@@ -42,13 +42,15 @@ export interface LevelContext {
   character: number;
   /** The node's id (refs.ts, nodeId). */
   where: string;
+  /** Below a piece's call level (lock-pieces.ts): a level closes by its own count, never by an opening. */
+  noOpen?: true;
 }
 export interface LevelOut {
   errors: LockError[];
   counts: LockResult["counts"];
 }
 /** A level: the expression that gave the value, the call whose reads and calls it lives in, and the value. */
-interface Level {
+export interface Level {
   expr: Expr | null;
   scope: RecNode;
   value: number | null;
@@ -198,7 +200,7 @@ function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
 }
 
 /** One level: its children's coverage and values, the descent into each, and the closing of the remounted count. */
-function lockLevel(
+export function lockLevel(
   children: readonly BlueprintNode[],
   level: Level,
   ctx: LevelContext,
@@ -301,14 +303,14 @@ function descend(
 ): void {
   // a piece's line closes by the piece's count (lock-pieces.ts), never by an opening of the recording
   if (node.combine) {
-    lockPiece(node, level.value, ctx, out);
+    lockPiece(node, level, ctx, out);
     return;
   }
   const children = node.children ?? [];
   const { ref } = node;
   // a level the recording opens (level-openings.ts); a cache's read opens as a leaf too: the cache is never a leaf
   const open =
-    children.length > 0 || (ref && "read" in ref)
+    !ctx.noOpen && (children.length > 0 || (ref && "read" in ref))
       ? openingOf(level, ctx)
       : null;
   if (typeof open === "string") {

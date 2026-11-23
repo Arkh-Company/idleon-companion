@@ -39,7 +39,10 @@ export interface LockError {
   where: string;
   /** In a pool's error, the pool's kind (the text says "pool 1 Additive"). */
   pool?: PoolKind;
-  /** The game's side: the recorded value, the order, the missing reference, a class list, the condition's state. */
+  /**
+   * The game's side: the recorded value, the order, the missing reference, a class list, the condition's state; in a
+   * childNoValue of a piece, the first of two values the place recorded (`got`, the other).
+   */
   expected?: number | string;
   /**
    * The blueprint's side: what the parts give, its order, its reference, the character's class, the condition's value,
@@ -110,7 +113,7 @@ export function lockMessage(e: LockError): string {
     case "childOutside":
       return `filho fora da conta: ${level}`;
     case "childNoValue":
-      return `filho sem valor na gravação: ${level}`;
+      return `filho sem valor na gravação: ${level}${e.expected === undefined ? "" : `: a gravação tem ${fmt(e.expected)} e ${fmt(e.got)}`}`;
     case "conditionMismatch":
       return `condição não confere: ${level}: o jogo ${e.expected === "on" ? "usou" : "não usou"} o termo, e a condição ${e.got === undefined ? "não está na gravação" : `vale ${fmt(e.got)}`}`;
     case "leafType":
