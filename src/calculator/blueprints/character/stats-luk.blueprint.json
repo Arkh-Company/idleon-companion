@@ -941,7 +941,7 @@
           ]
         },
         {
-          "system": null,
+          "system": "islands",
           "sources": [
             {
               "key": "optio-177",
@@ -1105,7 +1105,7 @@
           ]
         },
         {
-          "system": null,
+          "system": "luk-stats",
           "sources": [
             {
               "key": "arb-all",
@@ -3984,14 +3984,6 @@
     {
       "where": "pools/2/groups/15/sources/0/children/0",
       "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/5",
-      "kind": "system"
-    },
-    {
-      "where": "pools/2/groups/10",
-      "kind": "system"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/0",
