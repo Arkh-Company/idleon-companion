@@ -234,6 +234,37 @@ test("another class's source the game calls with its neutral value (0 in an Addi
   });
 });
 
+test("another class's source in a Multi pool passes at its neutral value 1, and is classMismatch at any other", () => {
+  // on map 7 the game multiplies by TreeDeclTalent(1), class 7's; at 100/39 points its curve gives exactly 1
+  const [wren, wrenna] = CHARACTERS;
+  const at = (points: number) => ({
+    CurrentMap: 7,
+    PlayerDATABASE: {
+      $m: {
+        [wren]: { $m: { ...SAVED[0].$m, SkillLevels: [3, points] } },
+        [wrenna]: SAVED[1],
+      },
+    },
+  });
+  const neutral = chainInput(undefined, at(100 / 39));
+  // the ×1 term is in the answer key: the lock sees it and lets it pass
+  expect(neutral.key.pools[3]?.terms).toContainEqual(
+    expect.objectContaining({ ref: "TreeDeclTalent(1)", value: 1 }),
+  );
+  expect(lock(neutral)).toMatchObject({
+    ok: true,
+    errors: [],
+  });
+  expect(lock(chainInput(undefined, at(4))).errors).toEqual([
+    {
+      kind: "classMismatch",
+      where: "decl-chain/3/talents/talent",
+      expected: "7",
+      got: 3,
+    },
+  ]);
+});
+
 test("a class source missing from the recording of its own class is extraSource", () => {
   // TreeDeclTalent(1) is class 7's, and the recording of TreeDeclChain on map 3 never runs it
   expect(lock({ ...chainInput(), characterClass: 7 }).errors).toEqual([
