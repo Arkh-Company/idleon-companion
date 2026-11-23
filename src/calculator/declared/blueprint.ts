@@ -97,18 +97,20 @@ function pieceOf(
     at,
   );
   if (p.id !== name) no(at, "id diferente do nome do arquivo");
-  const params = Array.isArray(p.params) ? (p.params as unknown[]) : null;
+  const badParams = "params é uma lista de nomes, sem repetir e sem character";
+  const params = Array.isArray(p.params)
+    ? (p.params as unknown[])
+    : no(at, badParams);
   if (
-    params === null ||
     new Set(params).size !== params.length ||
     !params.every((k) => typeof k === "string" && IDENT.test(k)) ||
     params.includes("character")
   )
-    no(at, "params é uma lista de nomes, sem repetir e sem character");
+    no(at, badParams);
   const args = isObj(c.args) ? c.args : no(where, "piece.args não é um objeto");
   for (const k of Object.keys(args))
-    if (!params?.includes(k)) no(where, `parâmetro que sobra: ${k}`);
-  for (const k of params ?? [])
+    if (!params.includes(k)) no(where, `parâmetro que sobra: ${k}`);
+  for (const k of params)
     if (args[k as string] === undefined)
       no(where, `parâmetro que falta: ${String(k)}`);
   if (!Object.values(args).every(isArg))

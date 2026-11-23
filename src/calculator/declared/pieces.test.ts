@@ -64,6 +64,12 @@ const reason = (source: Raw, pieces: Record<string, unknown> = {}) => {
   const out = parse(source, pieces);
   return out.ok ? "loaded" : out.reason;
 };
+/** A piece's model child, the first. */
+function model(p: { children: Raw[] }): Raw {
+  const [m] = p.children;
+  if (!m) throw new Error("no model child");
+  return m;
+}
 /** The invented piece with `change` made to a deep copy of it. */
 const signsWith = (change: (p: Raw & { children: Raw[] }) => void) => {
   const p = structuredClone(SIGNS);
@@ -182,7 +188,7 @@ test("a piece that calls itself, directly or through another piece, is refused",
 test("every path of a piece passes the ref checks, after its args are filled in, the each list's too", () => {
   // a character's index written out, in a ref and in the list
   const raw = signsWith((p) => {
-    (p.children[0] as Raw).ref = { read: "PlayerDATABASE[0].Signs[{sign}]" };
+    model(p).ref = { read: "PlayerDATABASE[0].Signs[{sign}]" };
   });
   expect(reason(line(drop), { "invented-signs": raw })).toMatch(
     /índice de personagem por extenso/,
@@ -219,11 +225,11 @@ test("every path of a piece passes the ref checks, after its args are filled in,
 
 test("each has one model child and a combine; every node with children in a piece has a combine, and only there", () => {
   const two = signsWith((p) => {
-    p.children = [p.children[0] as Raw, { ...p.children[0], key: "other" }];
+    p.children = [model(p), { ...model(p), key: "other" }];
   });
   expect(reason(line(drop), { "invented-signs": two })).toMatch(/filho-modelo/);
   const noCombine = signsWith((p) => {
-    delete (p.children[0] as Raw).combine;
+    delete model(p).combine;
   });
   expect(reason(line(drop), { "invented-signs": noCombine })).toMatch(
     /combine/,
@@ -236,7 +242,7 @@ test("each has one model child and a combine; every node with children in a piec
   );
   // a condition inside a piece is refused: the piece's count has no place for it
   const withCondition = signsWith((p) => {
-    (p.children[0] as Raw).condition = {
+    model(p).condition = {
       key: "on",
       name: "On",
       ref: { read: "TreeFlagOn" },
