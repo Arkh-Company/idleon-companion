@@ -1414,6 +1414,17 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < state().TreeList.length; i++)
       d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (T168): a block that reads the cache the helpers built, writes it itself (the same number) and returns it
+  // read back: the read it returns saw its own write, a passage, not the helpers' cache its first step read.
+  Blocks._customBlock_TreeAuthorPlaces = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var first = d.TreeAuthor.h.v * 2;
+    d.TreeAuthor.h.v = first / 2;
+    return d.TreeAuthor.h.v * 3;
+  };
+  Blocks._customBlock_TreeAuthorPlacesRoot = function () {
+    return Blocks._customBlock_TreeAuthorPlaces() + state().TreeCapped;
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.

@@ -97,25 +97,46 @@ test("the author's turn starts after its write before it by number, whether that
   expect(ranges).toEqual([{ from: 3, to: 6 }]);
 });
 
+// the reader read the cache at place 0 (TreeAuthorAgain's write, seq 1), wrote it itself (seq 2) and read it again
+const own: Recording = {
+  ...rec,
+  nodes: rec.nodes.map((n) =>
+    n.id === 1
+      ? {
+          ...n,
+          rx: [
+            [X, 15, 0, 1],
+            [X, 30, 3, 2],
+          ],
+        }
+      : n,
+  ),
+  writes: [write(3, 1), { ...write(1, 2), v: 30 }],
+};
+const nameOf = (a: ReturnType<typeof cacheAuthor>) =>
+  a && "node" in a ? a.node.b : a;
+
 test("a place whose read saw the reader's own write is a passage: the other place decides, no second author", () => {
-  // the reader read the cache at place 0 (TreeAuthorAgain's write, seq 1), wrote it itself (seq 2) and read it again
-  const own: Recording = {
-    ...rec,
-    nodes: rec.nodes.map((n) =>
-      n.id === 1
-        ? {
-            ...n,
-            rx: [
-              [X, 15, 0, 1],
-              [X, 30, 3, 2],
-            ],
-          }
-        : n,
-    ),
-    writes: [write(3, 1), { ...write(1, 2), v: 30 }],
-  };
   const a = cacheAuthor(own, X, present(own.nodes[1], "r"), stepsAt(0, 3));
-  expect(a && "node" in a ? a.node.b : a).toBe("TreeAuthorAgain");
+  expect(nameOf(a)).toBe("TreeAuthorAgain");
+});
+
+test("the exact place of the read decides: the term opened at the place after the reader's own write is a passage", () => {
+  // each step its own read of the cache, at the places 0 and 3: the read opened is one of them, by the object itself
+  const reads = [0, 3].map((): Expr => ({ t: "read", p: X, v: 15 }));
+  const steps: BlockSteps = {
+    steps: reads.map((l) => ({
+      v: 30,
+      e: { t: "op", o: "*", l, r: { t: "num", v: 2 }, v: 30 },
+    })),
+    checks: [],
+    stepAt: [0, 3],
+  };
+  const r = present(own.nodes[1], "r");
+  expect(cacheAuthor(own, X, r, steps, reads[1])).toBeNull();
+  expect(nameOf(cacheAuthor(own, X, r, steps, reads[0]))).toBe(
+    "TreeAuthorAgain",
+  );
 });
 
 test("an author that reads the cache after its one write is refused as reading its own write, not as a sum in turns", () => {

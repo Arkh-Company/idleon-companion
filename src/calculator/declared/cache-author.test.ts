@@ -254,6 +254,31 @@ test("the place decides the author: the read ties to the helpers' last write bef
   expect(ok.counts.leaves).toBe(3);
 });
 
+test("the read a call returns after its own write is a passage, not the helpers' cache its first step read", () => {
+  // the helpers built the cache (TreeAuthorBuild last); TreeAuthorPlaces read it, wrote it again and returns it read back
+  const rec = inventedRecorder().record(
+    mosaicOf({ ...attrs, Scenario: "authorBuilt" }),
+    [["TreeAuthorPlacesRoot", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  const source: BlueprintNode = {
+    key: "call",
+    name: "Call",
+    ref: { call: "TreeAuthorPlaces", args: [] },
+    children: [leaf("cache", "DNSM.TreeAuthor.v")],
+  };
+  expect(
+    lock(rec, blueprint("TreeAuthorPlacesRoot", source)).errors.map(
+      lockMessage,
+    ),
+  ).toEqual([]);
+  expect(
+    draftOf(rec, "TreeAuthorPlacesRoot").pools[0]?.groups[0]?.sources.map(
+      shape,
+    ),
+  ).toEqual([["TreeAuthorPlaces()", [["DNSM.TreeAuthor.v", []]]]]);
+});
+
 test("the draft waits for the descent of a cache read with two possible authors, and keeps the root's own passage a leaf", () => {
   const deep = draftOf(
     record("TreeAuthorDeep", "TreeAuthorBuild", "TreeAuthorAgain"),
