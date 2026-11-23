@@ -70,7 +70,9 @@ function ternaryOfTwo(test: boolean | null | undefined) {
         v: 12,
         c: [2, 3],
         x: [
-          ...(test === undefined ? [] : [[kind("test"), test] as const]),
+          ...(test === undefined
+            ? []
+            : [[kind("test"), test] as [number, boolean | null]]),
           [kind("leaf"), 6],
           [kind("op"), 12],
         ],

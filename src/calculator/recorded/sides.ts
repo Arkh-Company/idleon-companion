@@ -7,33 +7,37 @@ import type { AmbiguousCall, Expr, StepValue } from "./step-types.ts";
 
 /**
  * The side a ? : took for the value recorded at `pos`: its test's (op `test`) last record up to there, in the call's
- * whole step log `log` (the ? : may have run before the turn); undefined with no record, or with a test of no number
- * or yes/no.
+ * whole step log `log` (the ? : may have run before the turn); null (open) with a record of no number or yes/no;
+ * undefined with no record (the ? : did not run there: no side is taken, T177 r6).
  */
 export function sideAt(
   test: number | undefined,
   log: RecNode["x"],
   pos: number,
-): boolean | undefined {
-  const tv = log?.slice(0, pos + 1).findLast(([i]) => i === test)?.[1];
-  return tv === null || tv === undefined ? undefined : !!tv;
+): boolean | null | undefined {
+  const xs = log ?? [];
+  for (let j = Math.min(pos, xs.length - 1); j >= 0; j--) {
+    const [i, tv] = xs[j] ?? [];
+    if (i === test) return tv === null || tv === undefined ? null : !!tv;
+  }
+  return undefined;
 }
 
 /**
- * The call a value comes from (Op.defCalls), on the side each ? : on its way took (`took`): a ? : whose side the step
- * log does not give is ambiguous; no call or two on the sides taken, a loose value; never a read.
+ * The call a value comes from (Op.defCalls), on the side each ? : on its way took (`took`): a ? : whose test recorded
+ * no side (null) is ambiguous, one never recorded there is off; no call or two on the sides taken, a loose value; never a read.
  */
 export function byCalls(
   calls: DefCall[],
   v: StepValue,
-  took: (owner: AstNode) => boolean | undefined,
+  took: (owner: AstNode) => boolean | null | undefined,
   leaf: (node: AstNode, v: StepValue) => Expr,
   ambiguous: Set<AmbiguousCall>,
 ): Expr {
   const state = ({ sides }: DefCall) => {
     for (const [o, s] of sides) {
       const side = took(o);
-      if (side !== s) return side === undefined ? "open" : "off";
+      if (side !== s) return side === null ? "open" : "off";
     }
     return "on";
   };
