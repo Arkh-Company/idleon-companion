@@ -1,0 +1,128 @@
+{
+  "id": "star-signs",
+  "params": [],
+  "pools": [
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "star-signs",
+          "sources": [
+            {
+              "key": "signs",
+              "name": "Star Signs",
+              "each": { "list": "DNSM.StarSignsDL[*]", "as": "sign" },
+              "children": [
+                {
+                  "key": "sign",
+                  "name": "Star Sign",
+                  "nameProof": {
+                    "table": "CustomLists.StarSigns",
+                    "row": "{sign}"
+                  },
+                  "leaf": "fixedValue"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "chips",
+          "sources": [
+            {
+              "key": "chip",
+              "name": "Silkrode Nanochip",
+              "nameProof": { "names": "chipBonuses(\"star\")" },
+              "ref": { "call": "chipBonuses", "args": ["star"] },
+              "children": [
+                {
+                  "key": "chip",
+                  "name": "Silkrode Nanochip",
+                  "nameProof": { "names": "chipBonuses(\"star\")" },
+                  "ref": { "call": "chipBonuses", "args": ["star"] },
+                  "leaf": "choice"
+                },
+                {
+                  "key": "rift",
+                  "name": "Rift: star signs enabled",
+                  "nameProof": {
+                    "names": "RiftStuff(\"enabledStarSigns\", 0)"
+                  },
+                  "ref": {
+                    "call": "RiftStuff",
+                    "args": ["enabledStarSigns", 0]
+                  },
+                  "termPart": { "system": "rift" },
+                  "children": [
+                    {
+                      "key": "shiny",
+                      "name": "Infinite Star Signs",
+                      "nameProof": {
+                        "names": "Breeding(\"ShinyBonusS\", \"Nah\", 3, -1)"
+                      },
+                      "ref": {
+                        "call": "Breeding",
+                        "args": ["ShinyBonusS", "Nah", 3, -1]
+                      },
+                      "leaf": "rawBonus"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "meritocracy",
+          "sources": [
+            {
+              "key": "meritoc",
+              "name": "All of your Starsigns give higher bonuses than normal",
+              "nameProof": {
+                "names": "Summoning2(\"MeritocBonusz\", 22, 0)"
+              },
+              "ref": {
+                "call": "Summoning2",
+                "args": ["MeritocBonusz", 22, 0]
+              },
+              "leaf": "rawBonus"
+            }
+          ]
+        },
+        {
+          "system": "star-signs",
+          "sources": [
+            {
+              "key": "seraph",
+              "name": "Seraph Cosmos",
+              "nameProof": { "table": "CustomLists.StarSigns", "row": 79 },
+              "ref": { "read": "Arcane[40]" },
+              "children": [
+                {
+                  "key": "cultism",
+                  "name": "Astrology Cultism level",
+                  "nameProof": { "names": "Arcane[40]" },
+                  "ref": { "read": "Arcane[40]" },
+                  "leaf": "level"
+                },
+                {
+                  "key": "summon",
+                  "name": "Summoning level",
+                  "nameProof": { "names": "Lv0[18]" },
+                  "ref": { "read": "Lv0[18]" },
+                  "termPart": { "system": "summoning" },
+                  "leaf": "level"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
