@@ -79,12 +79,12 @@ export function expressionReader({
       const u = r.unwrap(p.e, [], true, new Set(p.seen));
       if (p.w !== 1 || u.t !== "op" || u.o !== "*") return [];
       const fs = operands(p.e, "multi", 1, p.seen);
-      const pct = fs.filter(isPct);
-      const base = fs.filter(
+      const [pct, ...pcts] = fs.filter(isPct);
+      const [base, ...bases] = fs.filter(
         (f) => !isPct(f) && kindOf(f.e, f.seen) === "additive",
       );
-      return fs.length === 2 && pct.length === 1 && base.length === 1
-        ? [{ part: p, pct: pct[0] as Part, base: base[0] as Part, v: u.v }]
+      return fs.length === 2 && pct && base && pcts.length + bases.length === 0
+        ? [{ part: p, pct, base, v: u.v }]
         : [];
     });
     const [hit, ...more] = hits;
