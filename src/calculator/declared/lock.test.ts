@@ -1,6 +1,7 @@
 // The lock at the pools (spec 010, FR-010, FR-013a, FR-002a, research R10): the invented Drop Rate (TreeDeclChain and
 // its blueprint decl-chain) checked against its answer key. Each refusal says why, with the data model's text.
 import { expect, test } from "vitest";
+import { CHARACTERS, SAVED } from "../fixtures/fake-mosaic.ts";
 import {
   chainInput,
   groupOf,
@@ -210,6 +211,42 @@ test("another class's source absent from the recording is no error; present in t
       where: "decl-chain/0/talents/talent",
       expected: "3",
       got: 5,
+    },
+  ]);
+});
+
+test("another class's source the game calls with its neutral value (0 in an Additive pool) passes", () => {
+  // the class-3 talent at 0 points gives 0: the game calls it for every character (spec, Open Questions 23/11)
+  const [wren, wrenna] = CHARACTERS;
+  const attrs = {
+    PlayerDATABASE: {
+      $m: {
+        [wren]: { $m: { ...SAVED[0].$m, SkillLevels: [0, 4] } },
+        [wrenna]: SAVED[1],
+      },
+    },
+  };
+  expect(
+    lock({ ...chainInput(undefined, attrs), characterClass: 5 }),
+  ).toMatchObject({
+    ok: true,
+    errors: [],
+  });
+});
+
+test("a class source missing from the recording of its own class is extraSource", () => {
+  // TreeDeclTalent(1) is class 7's, and the recording of TreeDeclChain on map 3 never runs it
+  expect(lock({ ...chainInput(), characterClass: 7 }).errors).toEqual([
+    {
+      kind: "classMismatch",
+      where: "decl-chain/0/talents/talent",
+      expected: "3",
+      got: 7,
+    },
+    {
+      kind: "extraSource",
+      where: "decl-chain/3/talents/talent",
+      got: "TreeDeclTalent(1)",
     },
   ]);
 });
