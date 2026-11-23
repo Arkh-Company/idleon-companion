@@ -6,8 +6,15 @@
 // Step 8c (`formulaOf`, the text of the validation page) has no reader in pieces.cjs and is not ported.
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
-import { astPattern, at, CUSTOM, MATH, matchPattern, methodOf } from "./ast.ts";
-import { unwrap } from "./ast.ts";
+import {
+  astPattern,
+  at,
+  CUSTOM,
+  MATH,
+  matchPattern,
+  methodOf,
+  unwrap,
+} from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { near } from "./math.ts";
 import { GAME_TABLE } from "./step-types.ts";
@@ -186,11 +193,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const def = id === undefined ? null : (ops[id]?.def ?? null);
       if (def && !defStack.has(def) && defStack.size < 6) {
         const did = opIndex.get(def);
-        const callee = methodOf(def);
-        if (callee?.startsWith(CUSTOM)) {
-          const r = leaf(def, v);
-          if (r.t !== "val") return r;
-        } else if (did !== undefined && vals.get(did) === v) {
+        if (did !== undefined && vals.get(did) === v) {
           defStack.add(def);
           try {
             return { t: "def", e: e(def), v };
