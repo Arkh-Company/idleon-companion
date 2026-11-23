@@ -112,6 +112,12 @@ One call of the game with its arguments, or one read of the state, with the char
 part in any tree and any recording. Its key is what marks, **Where this goes** and the **Patch radar** compare.
 _Avoid_: node, block, term
 
+**Recipe piece**:
+A part several blueprints of the **Calculator** share (a stat's star signs, the LUK), written once with its params and
+called by a node in place of its children; on load its body, the params filled in, comes in that node's place. Not a
+**Tree piece**: a recipe piece is part of a blueprint, never a call or a read of a recording.
+_Avoid_: piece (alone), template, macro
+
 **Leaf**:
 A row of a **Formula tree** with nothing below it but its own detail: a value the player raises or picks, or one the game
 sets.

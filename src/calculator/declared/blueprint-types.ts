@@ -35,7 +35,10 @@ export interface BlueprintNode {
 }
 /** A piece's args: a value for each of its params, in place of `{param}` in its references. */
 export type PieceArgs = Readonly<Record<string, string | number>>;
-/** A recipe piece (T169): `blueprints/pieces/<id>.piece.json`, the count and the children a node that calls it takes. */
+/**
+ * A recipe piece (T169; GLOSSARY "Recipe piece", never a "Tree piece"): `blueprints/pieces/<id>.piece.json`, the count
+ * and the children a node that calls it takes.
+ */
 export interface BlueprintPiece {
   id: string;
   params: readonly string[];
