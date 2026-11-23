@@ -32,12 +32,20 @@ allowlists = [{ description = "o que o .gitignore ignora e o gitleaks dir não s
     '(^|/)\.claude/settings\.local\.json$',
     '(^|/)CLAUDE\.local\.md$',
     '(^|/)mise\.local\.toml$',
+] },
+# A regra padrão generic-api-key lê o campo "key" das receitas (spec 010) como chave: só esse campo, com um slug de
+# letras minúsculas, números e hífen, só nas receitas.
+{ description = "a chave de um nó de receita (spec 010)", targetRules = ["generic-api-key"], condition = "AND", paths = [
+    '(^|/)src/calculator/blueprints/.+\.blueprint\.json$',
+], regexTarget = "match", regexes = [
+    '^"?key"\s*:\s*"[a-z0-9-]+"$',
 ] }]
 
 # A regra do nome: um nome com key, secret, token, password, senha, chave ou segredo, em qualquer caixa, seguido de =, :,
 # :=, => ou ??= e de um texto entre aspas de 8 caracteres ou mais, sem espaço, aspas nem $.
 # A primeira allowlist da regra deixa passar URL e nome de variável em maiúsculas; a segunda, exemplos e testes (as
-# regras padrão continuam olhando o valor do segredo neles).
+# regras padrão continuam olhando o valor do segredo neles). A terceira, só nas receitas (spec 010), o campo "key" cujo
+# valor é um slug de letras minúsculas, números e hífen (a chave de um nó entre os irmãos, nunca um segredo).
 rules = [{ id = "segredo-pelo-nome", description = "valor fixo atribuído a um nome que parece segredo", secretGroup = 1, keywords = ["key", "secret", "token", "password", "senha", "chave", "segredo"], regex = '''(?i)[\w.-]*(?:key|secret|token|password|senha|chave|segredo)[\w.-]*["']?\s*(?::=|=>|\?\?=|=|:)\s*["']([^"'\s$]{8,})["']''', allowlists = [
     { regexTarget = "secret", regexes = [
         '^[a-z][a-z0-9+.-]*://',
@@ -54,6 +62,9 @@ rules = [{ id = "segredo-pelo-nome", description = "valor fixo atribuído a um n
         '(^|/)\.claude/skills/',
         '(^|/)\.specify/',
         '\.md$',
+    ] },
+    { condition = "AND", paths = ['(^|/)src/calculator/blueprints/.+\.blueprint\.json$'], regexTarget = "match", regexes = [
+        '^key"\s*:\s*"[a-z0-9-]+"$',
     ] },
 ] }]
 
