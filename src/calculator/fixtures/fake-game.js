@@ -1410,6 +1410,37 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeDeclSwap.h.v = s.TreeCapped + s.TreeLevel;
     return d.TreeDeclSwap.h.v;
   };
+  // Spec 010 (r5 of group 2): a common part that calls a block worth 0 and uses it in a step, then a branch that writes
+  // a fixed 0 to a path and sums onto it; in TreeDeclLitCall the branch writes the call instead, which a step also uses.
+  Blocks._customBlock_TreeLitZero = function () {
+    return 0;
+  };
+  Blocks._customBlock_TreeDeclLit = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclLit = new StringMap();
+    d.TreeDeclLit.h.part =
+      s.TreeLevel + Math.min(s.TreeBase, Blocks._customBlock_TreeLitZero());
+    if (s.TreeFlagOn == 1)
+      return (
+        (d.TreeDeclLit.h.n = 0),
+        (d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeBase),
+        (d.TreeDeclLit.h.n + s.TreeLevel) * 2
+      );
+    return 0;
+  };
+  Blocks._customBlock_TreeDeclLitCall = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeDeclLit = new StringMap();
+    if (s.TreeFlagOn == 1) {
+      var z = Blocks._customBlock_TreeLitZero();
+      d.TreeDeclLit.h.n = z;
+      d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeBase + z * 3;
+      return (d.TreeDeclLit.h.n + s.TreeLevel) * 2;
+    }
+    return 0;
+  };
   // Spec 010 (T143): a top layer above the pools, from outside in, as the code writes it; a gate; a divisor; a leaf.
   Blocks._customBlock_TreeLayerRound = function () {
     var p = Blocks._customBlock_TreeReads() * state().TreeTwins[0] * 1.1;
