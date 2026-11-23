@@ -3,7 +3,7 @@
 // before it; a constant of the code under an `if` whose test finds an item in a list (`contains(<list>, "76")`) takes
 // that item, the literal the code compares.
 import type { Op } from "../instrument.ts";
-import type { RecNode } from "../recording.ts";
+import type { RecNode, RecWrite } from "../recording.ts";
 import { astPattern, at } from "../recorded/ast.ts";
 
 /**
@@ -67,4 +67,31 @@ export function itemOfStep(
     return v ? itemPath(t.node) : undefined;
   }
   return undefined;
+}
+
+/** A read of the game's own table by an item's name: `ItemDefinitionsGET.<name>.<field>` (T179). */
+const TABLE_ROW = /^(?:ItemDefinitionsGET|MonsterDefinitionsGET)\.([^.[\]]+)\./;
+
+/**
+ * The save's path that gave the key of a game table's read (T179, the LUK's equipment: `ItemDefinitionsGET[<
+ * EquipmentOrder[r][o]>].LUK`): of the call's reads whose text is the row's name, the latest one made before the step
+ * recorded at `pos` (by the last write each read saw: the loop's index is written at every turn); else undefined. The
+ * slot of the step's own turn, never the first slot with that item; two reads in one stretch tie by nothing.
+ */
+export function tableItem(
+  top: RecNode,
+  writes: readonly RecWrite[],
+  ref: string,
+  pos: number | undefined,
+): string | undefined {
+  const name = TABLE_ROW.exec(ref)?.[1];
+  if (name === undefined || pos === undefined) return undefined;
+  const before = writes.filter((w) => w.xi <= pos).at(-1)?.seq ?? 0;
+  const hits = (top.r ?? []).filter(
+    ([p, v, seq]) =>
+      v === name && typeof seq === "number" && seq <= before && !TABLE_ROW.test(p),
+  );
+  const last = Math.max(...hits.map((h) => Number(h[2])));
+  const [only, ...more] = hits.filter((h) => h[2] === last);
+  return only && more.length === 0 ? only[0] : undefined;
 }

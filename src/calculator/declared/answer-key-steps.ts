@@ -25,7 +25,7 @@ import type {
   RootFormError,
 } from "./answer-key-terms.ts";
 import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
-import { itemOfStep, placeOfWrite } from "./answer-key-item.ts";
+import { itemOfStep, placeOfWrite, tableItem } from "./answer-key-item.ts";
 import { accumulates, runningPools } from "./answer-key-running.ts";
 import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
@@ -303,6 +303,8 @@ export function answerKeyOfSteps(
     layers,
     stepLimits,
     itemAt: (pos: number | undefined) => itemOfStep(top, opts.ops, pos),
+    tableItem: (ref: string, pos: number | undefined) =>
+      tableItem(top, writes, ref, pos),
   };
 
   const { operands, kindOf, expressionPools } = expressionReader({

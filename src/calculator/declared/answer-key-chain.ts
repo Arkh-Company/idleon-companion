@@ -153,6 +153,8 @@ export interface ChainContext {
   divisors: { e: Expr; step: number }[];
   /** The item of the test that guards the step recorded at a place of the call's step log (T176). */
   itemAt?: (pos: number | undefined) => string | undefined;
+  /** The save's path that gave the key of a game table's read, at a place of the call's step log (T179). */
+  tableItem?: (ref: string, pos: number | undefined) => string | undefined;
 }
 
 /** The pools of a chain: each write's step adds to or multiplies the running total it had just before. */
@@ -175,12 +177,18 @@ export function chainPools(
   // a first write divided (New bubble chance): its divisor, and whether every later write only multiplies
   let div: { e: Expr; step: number; value: number } | null = null;
   let onlyTimes = true;
-  // a constant of the code under a test that finds an item takes the item (T176), from its step's own place
+  // a constant of the code under a test that finds an item takes the item (T176), and a game table's value the slot
+  // that gave its key (T179), from its step's own place
   const tag = (terms: RawTerm[], pos: number | undefined) => {
     const item = c.itemAt?.(pos);
-    if (item !== undefined)
-      for (const t of terms)
-        if (t.kind === "constant" && t.e.t === "num") t.item = item;
+    for (const t of terms)
+      if (t.kind === "constant" && t.e.t === "num") {
+        if (item !== undefined) t.item = item;
+      } else if (t.kind === "source") {
+        // a game table's value by a key from the save takes the slot that gave the key (T179)
+        const slot = c.tableItem?.(t.ref, pos);
+        if (slot !== undefined) t.item = slot;
+      }
     return terms;
   };
   for (const [n, w] of m.writes.entries()) {
