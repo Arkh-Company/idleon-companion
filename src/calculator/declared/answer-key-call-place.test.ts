@@ -90,11 +90,14 @@ test("a variable set by a call no turn holds never ties to a read of the turn wi
     { recompute: [], builders: [] },
   );
   const key = answerKey(rec, recorder.ops);
-  const refs =
-    "error" in key
-      ? []
-      : key.pools.flatMap((p) => p.terms.flatMap((t) => t.refs));
-  expect(refs).not.toContain("TreeGear[1]");
+  if ("error" in key) throw new Error(key.reason);
+  // m, its call in no turn, stays a loose 3 in each turn
+  expect(key.final).toBe(32);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+    "TreeLevel",
+    "3",
+    "3",
+  ]);
 });
 
 test.each(["TreeViaWrapped", "TreeViaChain", "TreeViaTernary"])(
