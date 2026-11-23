@@ -104,6 +104,40 @@ test("the Star Signs piece loads below a line that reads a star sign's field: th
   });
 });
 
+test("the LUK's blueprint loads with the game's 5 pools, the equipment's items and upgrades as an each over two indices (T172)", () => {
+  const out = loadBlueprints(BLUEPRINTS);
+  const bp = out.all.get("stats-luk");
+  expect(bp?.pools.map((p) => p.kind)).toEqual([
+    "additive",
+    "multi",
+    "additive",
+    "multi",
+    "additive",
+  ]);
+  const [items, upgrades] =
+    bp?.pools[0]?.groups.flatMap((g) => g.sources) ?? [];
+  expect([items?.each, upgrades?.each]).toEqual([
+    { list: "EquipmentOrder[*][*]", as: ["r", "s"] },
+    { list: "EquipmentMap[*][*].LUK", as: ["r", "s"] },
+  ]);
+  const reads: string[] = [];
+  const walk = (n: BlueprintNode) => {
+    if (n.ref && "read" in n.ref) reads.push(n.ref.read);
+    n.children?.forEach(walk);
+    n.pools?.forEach((p) => {
+      p.groups.forEach((g) => {
+        g.sources.forEach(walk);
+      });
+    });
+  };
+  bp?.pools.forEach((p) => {
+    p.groups.forEach((g) => {
+      g.sources.forEach(walk);
+    });
+  });
+  expect(reads.filter((r) => hasRawCharacterIndex(r))).toEqual([]);
+});
+
 test("every blueprint loads in a stage, and its file's name is its id", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.refused).toEqual([]);
