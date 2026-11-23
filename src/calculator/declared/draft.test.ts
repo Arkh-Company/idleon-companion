@@ -130,6 +130,13 @@ test("a name only with its proof, else null and a pending name; the system, the 
   });
 });
 
+test("the guide says why a descent waits: no part the recording ties, and the save read below, by its path", () => {
+  const { rec, key, ops } = recorded("TreeDeclExpr");
+  expect(stepsGuide(key, rec, ops)).toMatch(
+    /\n\s+TreeLoop\(\)[^\n]*\n(?:[^\n]*\n)*?\s+descer: pendente \(nenhuma parte ligada pela gravação; lê o save embaixo: [A-Za-z_$][^)\n]*\)\n/,
+  );
+});
+
 test("a talent source takes the class of its tab in the game's talent order; a star talent, or one in two places, none", () => {
   const order: unknown[] = Array.from({ length: 700 }, (_, i) => 1000 + i);
   order[16] = 1;

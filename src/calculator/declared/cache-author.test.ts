@@ -8,6 +8,7 @@ import type { Recipe, Recording } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
 import { inventedRecorder } from "./lock-fixture.ts";
@@ -266,6 +267,16 @@ test("a cache read with no recorded write is never a leaf: the lock refuses it a
   expect(descents(rec, "TreeAuthorRead")).toEqual([
     { where: "pools/0/groups/0/sources/0", kind: "descend" },
   ]);
+});
+
+test("the guide says why a descent waits: the opening's refusal, as the lock writes it", () => {
+  const r = inventedRecorder();
+  const rec = record("TreeAuthorRead");
+  const key = keyOf(rec, r);
+  if ("error" in key) throw new Error(key.reason);
+  expect(stepsGuide(key, rec, [...r.ops])).toContain(
+    "descer: pendente (o cache DNSM.TreeAuthor.v não tem escrita gravada: falta o builder na receita ou o builder deu outro valor)",
+  );
 });
 
 test("a cache its author sums in a loop from 0 opens one line a turn, each item down to the save, and closes by their sum", () => {
