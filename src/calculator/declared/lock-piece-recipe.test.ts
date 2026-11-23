@@ -267,6 +267,16 @@ test("pools only in a piece, in place of its count and its children; their sourc
   expect(reason(CALL, { ...piece(), combine: "sum", children: [] })).toMatch(
     /pools vai no lugar de children, leaf, combine e each/,
   );
+  // a part of a count is a value the count adds or multiplies: never a recipe of its own
+  const inner = { key: "inner", name: "Inner", ref: CALL.ref, pools: pools() };
+  expect(
+    reason(CALL, {
+      id: "invented-stat",
+      params: [],
+      combine: "sum",
+      children: [inner],
+    }),
+  ).toMatch(/children\/0.*pools não vai dentro de combine/);
   // a source of the piece's pools: its system from systems.json, as a root's
   const other = pools();
   (other[1] as { groups: Raw[] }).groups[0] = {
