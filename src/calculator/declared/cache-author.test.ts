@@ -124,7 +124,7 @@ test("the draft writes the cache read's child as the block that wrote it, opened
           ],
         ],
       ],
-      [[["TreeCapped", []]]],
+      [["TreeCapped", []]],
     ],
   ]);
 });
