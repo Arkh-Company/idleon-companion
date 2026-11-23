@@ -1420,12 +1420,12 @@ lime.$scripts.N = function (_exports, $global) {
     var d = dnsm();
     d.TreeDeclLit = new StringMap();
     d.TreeDeclLit.h.part =
-      s.TreeLevel + Math.min(s.TreeBase, Blocks._customBlock_TreeLitZero());
+      s.TreeCapped + Math.min(s.TreeBase, Blocks._customBlock_TreeLitZero());
     if (s.TreeFlagOn == 1)
       return (
         (d.TreeDeclLit.h.n = 0),
-        (d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeBase),
-        (d.TreeDeclLit.h.n + s.TreeLevel) * 2
+        (d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeStats.h.b),
+        (d.TreeDeclLit.h.n + s.TreeStats.h.a) * 2
       );
     return 0;
   };
@@ -1436,8 +1436,8 @@ lime.$scripts.N = function (_exports, $global) {
     if (s.TreeFlagOn == 1) {
       var z = Blocks._customBlock_TreeLitZero();
       d.TreeDeclLit.h.n = z;
-      d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeBase + z * 3;
-      return (d.TreeDeclLit.h.n + s.TreeLevel) * 2;
+      d.TreeDeclLit.h.n = d.TreeDeclLit.h.n + s.TreeStats.h.b + z * 3;
+      return (d.TreeDeclLit.h.n + s.TreeStats.h.a) * 2;
     }
     return 0;
   };

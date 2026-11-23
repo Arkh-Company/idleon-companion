@@ -22,9 +22,9 @@ const keyOf = (block: string) =>
 test("a branch that writes a fixed 0 and sums onto it, after a common part's call worth 0 in a step: no refusal", () => {
   const key = keyOf("TreeDeclLit");
   if ("error" in key) throw new Error(key.reason);
-  expect(key.final).toBe(58);
+  expect(key.final).toBe(16);
   expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.ref)])).toEqual([
-    ["additive", ["0", "TreeBase", "TreeLevel"]],
+    ["additive", ["0", "TreeStats.b", "TreeStats.a"]],
     ["multi", ["2"]],
   ]);
 });
