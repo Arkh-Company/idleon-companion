@@ -26,7 +26,8 @@ export function openingOf(
   const { expr, scope } = level;
   if (expr?.t !== "read" || !isCacheRead(expr.p))
     return loopOpening(expr, scope, ctx);
-  const a = cacheAuthor(ctx.rec, expr.p, scope, ctx.stepsOf(scope.id));
+  // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart)
+  const a = cacheAuthor(ctx.rec, expr.p, scope, ctx.stepsOf(scope.id), expr);
   if (a === null) return null;
   if ("refused" in a) return a.refused;
   const v = a.write.v;

@@ -13,6 +13,7 @@ import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
+import { onlyRead } from "./cache-author.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import {
@@ -140,7 +141,9 @@ function levelOfChild(
       ? ref.read.replaceAll("{character}", String(ctx.character))
       : "";
   const value = ref ? valueIn(ref, parent.scope, leaves, ctx) : null;
-  return { expr: { t: "read", p, v: value }, scope: parent.scope, value };
+  // the read at its place in the parent's expression (one only), for a cache's author (cache-author.ts)
+  const at = onlyRead(parent.expr, p);
+  return { expr: at ?? { t: "read", p, v: value }, scope: parent.scope, value };
 }
 
 /**
@@ -364,6 +367,7 @@ export function lockSource(
     for (const r of term.refs.slice(1))
       out.errors.push({ kind: "undeclaredPart", where: ctx.where, got: r });
   const call = ctx.rec.nodes[term.nodes[0] ?? -1];
+  const at = call ? null : termExpr(term, top, ctx);
   const level: Level =
     term.refs.length > 1
       ? {
@@ -375,7 +379,12 @@ export function lockSource(
       : call
         ? { expr: returnOf(call, ctx), scope: call, value: num(call.v) }
         : {
-            expr: { t: "read", p: term.ref, v: term.value },
+            // the term's read at its place in the root's steps, when it is in one only
+            expr: onlyRead(at, term.ref) ?? {
+              t: "read",
+              p: term.ref,
+              v: term.value,
+            },
             scope: top,
             value: term.value,
           };

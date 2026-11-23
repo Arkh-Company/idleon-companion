@@ -8,7 +8,7 @@
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
-import type { AnswerPool } from "./answer-key.ts";
+import type { RawTerm } from "./answer-key-pool.ts";
 import { leavesOf } from "./lock-parts.ts";
 
 export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
@@ -21,32 +21,42 @@ type Steps = Pick<BlockSteps, "steps"> & { stepAt?: number[] | undefined };
 
 /**
  * The numbers the reader's reads of `path` kept (the last write before each): the last read at or before the place of
- * each step that uses the read; with no such step, every read of its step log; with no log, its first read's.
+ * each step that holds the read opened (`leaf`, that very object), else of each step that uses the path; with no such
+ * step, every read of its step log; with no log, its first read's.
  */
 function seenSeqs(
   reader: RecNode,
   path: string,
   { steps, stepAt }: Steps,
+  leaf?: Expr,
 ): (number | undefined)[] {
   const first = reader.r?.find(([p]) => p === path)?.[2];
   const log = (reader.rx ?? []).filter(
     ([p, , , s]) => p === path && s !== undefined,
   );
-  const places = steps.flatMap((s, k) => {
-    const at = stepAt?.[k];
-    const uses = leavesOf(s.e).some((l) => l.t === "read" && l.p === path);
-    return uses && at !== undefined ? [at] : [];
-  });
+  const placesOf = (uses: (l: Expr) => boolean) =>
+    steps.flatMap((s, k) => {
+      const at = stepAt?.[k];
+      return at !== undefined && leavesOf(s.e).some(uses) ? [at] : [];
+    });
+  const exact = leaf ? placesOf((l) => l === leaf) : [];
+  const places = exact.length
+    ? exact
+    : placesOf((l) => l.t === "read" && l.p === path);
   if (places.length === 0) return log.length ? log.map((x) => x[3]) : [first];
   return places.map((at) => log.findLast((x) => x[2] <= at)?.[3] ?? first);
 }
 
-/** The block that wrote the cache `path` the reader read, in its steps; null with no cache or a passage of the root. */
+/**
+ * The block that wrote the cache `path` the reader read, in its steps, at the place of `leaf` (the read opened) when a
+ * step holds it; null with no cache or a passage of the root.
+ */
 export function cacheAuthor(
   rec: Recording,
   path: string,
   reader: RecNode,
   steps: Steps,
+  leaf?: Expr,
 ): Author | null {
   if (!isCacheRead(path)) return null;
   const under = (id: number | null, top: number | null) => {
@@ -70,7 +80,7 @@ export function cacheAuthor(
     const refused = `a leitura de ${path} tem mais de um autor possível (${all})`;
     return { refused, ambiguous: true };
   };
-  const saw = seenSeqs(reader, path, steps).map((s) =>
+  const saw = seenSeqs(reader, path, steps, leaf).map((s) =>
     s === undefined ? undefined : writes.findLast((w) => w.seq <= s),
   );
   // the reader's own write, outside the root: the author reads the cache it wrote (one turn would hide the others)
@@ -123,17 +133,28 @@ export function writeExpr(
   return last && near(last.v, write.v) ? last.e : null;
 }
 
-/** The answer key's refusal of a cache read among its terms whose writes the place does not decide between, or null. */
+/** The read of `path` among the leaves of `e` when there is one only: the place of a read opened, never by order. */
+export function onlyRead(e: Expr | null, path: string): Expr | undefined {
+  const reads = (e ? leavesOf(e) : []).filter(
+    (l) => l.t === "read" && l.p === path,
+  );
+  return reads.length === 1 ? reads[0] : undefined;
+}
+
+/**
+ * The answer key's refusal of a cache read among its terms (before the strip, with their expressions: the read's place)
+ * whose writes the place does not decide between, or null.
+ */
 export function refusedAuthor(
   rec: Recording,
   top: RecNode,
   steps: Steps,
-  ...lists: (readonly AnswerPool[])[]
+  terms: readonly RawTerm[],
 ): string | null {
-  for (const t of lists.flat().flatMap((p) => p.terms))
+  for (const t of terms)
     for (const [i, ref] of t.refs.entries()) {
       if (t.nodes[i] !== null) continue;
-      const a = cacheAuthor(rec, ref, top, steps);
+      const a = cacheAuthor(rec, ref, top, steps, onlyRead(t.e, ref));
       if (a && "ambiguous" in a) return a.refused;
     }
   return null;

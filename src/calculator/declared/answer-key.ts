@@ -279,6 +279,8 @@ export function answerKeyOfSteps(
     return terms;
   };
   const kept = (terms: RawTerm[], prev: number | null): AnswerTerm[] => {
+    const authors = refusedAuthor(rec, top, { steps, stepAt }, terms);
+    if (authors !== null) throw new OutOfRule(authors);
     for (const t of terms) {
       r.keep(t.noise);
       if (t.kind === "constant") r.bump("looseConstant");
@@ -359,8 +361,6 @@ export function answerKeyOfSteps(
   }
 
   const pools = joinPools(raw);
-  const authors = refusedAuthor(rec, top, { steps, stepAt }, pools, divisors);
-  if (authors !== null) return outOfRule(authors);
 
   r.bump("stepOutsideChain", steps.length - r.usedSteps.size);
   const touches = [acc?.[0], ...passage.keys()].filter((p) => p !== undefined);

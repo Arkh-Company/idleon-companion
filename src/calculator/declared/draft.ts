@@ -23,10 +23,11 @@ import type {
   BlueprintPending,
 } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
+import { onlyRead } from "./cache-author.ts";
 import { openingOf } from "./level-openings.ts";
 import { callParts } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { saveChild } from "./lock-parts.ts";
+import { returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
 import { hasRawCharacterIndex } from "./refs.ts";
 import type { Ref, RefArg } from "./refs.ts";
@@ -87,7 +88,8 @@ const MAX_DEPTH = 12;
 
 /**
  * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
- * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value.
+ * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value, or the
+ * read itself at its place (one only) in what its reader's level is.
  */
 function walkPart(
   key: string,
@@ -99,7 +101,8 @@ function walkPart(
 ): Walked {
   if (!call) {
     const level = {
-      expr: { t: "read", p: key, v: null } as const,
+      expr:
+        expr?.t === "read" ? expr : ({ t: "read", p: key, v: null } as const),
       value: null,
     };
     const open = reader ? openingOf({ ...level, scope: reader }, ctx) : null;
@@ -128,10 +131,13 @@ function walkPart(
     call.c
       .map((id) => ctx.rec.nodes[id])
       .find((k) => k !== undefined && callRef(k) === p) ?? null;
+  const level = expr === undefined ? returnOf(call, ctx) : expr;
   return {
     key,
     call,
-    below: parts.map((p) => walkPart(p, kid(p), ctx, depth + 1, call)),
+    below: parts.map((p) =>
+      walkPart(p, kid(p), ctx, depth + 1, call, onlyRead(level, p)),
+    ),
   };
 }
 
@@ -139,9 +145,12 @@ function walkPart(
 export function walkTerm(t: AnswerTerm, ctx: LevelContext): Walked {
   const { nodes } = ctx.rec;
   const top = topOf(ctx.rec) ?? null;
-  const parts = t.refs.map((r, i) =>
-    walkPart(r, nodes[t.nodes[i] ?? -1] ?? null, ctx, 0, top),
-  );
+  // the term's place in the root's steps, for the place of a read among its references
+  const at = top ? termExpr(t, top, ctx) : null;
+  const parts = t.refs.map((r, i) => {
+    const call = nodes[t.nodes[i] ?? -1] ?? null;
+    return walkPart(r, call, ctx, 0, top, call ? undefined : onlyRead(at, r));
+  });
   const [first, ...rest] = parts;
   if (!first) return { key: t.ref, call: null, below: "leaf" };
   if (rest.length === 0) return first;
