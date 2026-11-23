@@ -11,6 +11,7 @@ import type { RecNode } from "../recording.ts";
 import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { lockLevel } from "./lock-levels.ts";
+import { lockRecipePiece } from "./lock-piece-recipe.ts";
 import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
 import {
   leafCheck,
@@ -200,14 +201,19 @@ function pieceLevel(
 
 /**
  * A piece's line: its children down to the leaves, then its combine over their values against the line's value. A
- * call's line reads its parts below its own call; a cache's read, anywhere in the recording.
+ * call's line reads its parts below its own call; a cache's read, anywhere in the recording. A piece with the form of a
+ * recipe closes by the root's engine instead (lock-piece-recipe.ts).
  */
 export function lockPiece(
   node: BlueprintNode,
-  level: Pick<Level, "value" | "scope">,
+  level: Level,
   ctx: LevelContext,
   out: LevelOut,
 ): void {
+  if (node.pools) {
+    lockRecipePiece(node, node.pools, level, ctx, out);
+    return;
+  }
   const { ref } = node;
   const own =
     ref && "call" in ref && callRef(level.scope) === refKey(ref, ctx.character);

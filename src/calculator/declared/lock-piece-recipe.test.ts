@@ -23,8 +23,8 @@ const TWO = {
   constant: 2,
   leaf: "fixedValue",
 };
-/** The recipe's pools: TreeBase, TreeLevel and the constant 2 added, then TreeStats.b's multi. */
-const pools = (additive: Raw[] = [TWO]): Raw[] => [
+/** The recipe's pools: TreeBase, TreeLevel and the constant 2 added (`two` false: left out), then TreeStats.b's multi. */
+const pools = (two = true): Raw[] => [
   {
     kind: "additive",
     groups: [
@@ -32,7 +32,7 @@ const pools = (additive: Raw[] = [TWO]): Raw[] => [
         system: "cards",
         sources: [leaf("base", "TreeBase", "level"), leaf("lv", "TreeLevel")],
       },
-      { system: "bundles", sources: additive },
+      ...(two ? [{ system: "bundles", sources: [TWO] }] : []),
     ],
   },
   {
@@ -103,7 +103,7 @@ test("a piece with two pools, a constant and a floor closes below the line's cal
 });
 
 test("a piece's pools that do not close are refused at their place, as the root's", () => {
-  const errors = lock(piece(pools([]))).errors;
+  const errors = lock(piece(pools(false))).errors;
   expect(errors).toEqual([
     {
       kind: "missingSource",
@@ -123,8 +123,7 @@ test("a piece's pools that do not close are refused at their place, as the root'
     `nível não fecha: ${LINE} pool 1 Additive: as partes dão 29, o valor gravado é 31`,
   );
   // the pools in the wrong order: the line's place says so
-  const [add, multi] = pools();
-  expect(lock(piece([multi as Raw, add as Raw])).errors).toEqual([
+  expect(lock(piece(pools().toReversed())).errors).toEqual([
     {
       kind: "poolOrder",
       where: LINE,

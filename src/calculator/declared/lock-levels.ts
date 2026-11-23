@@ -6,7 +6,7 @@
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
 // counted apart. A level the recording opens (level-openings.ts: a cache's author, a loop's turns) has those parts as
 // its children and closes by their sum; a refused opening is an openingRefused with its reason. A line that calls a
-// recipe piece closes by the piece's count instead (lock-pieces.ts).
+// recipe piece closes by the piece's count or its recipe instead (lock-pieces.ts).
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, relDiff } from "./answer-key-pool.ts";
@@ -28,7 +28,7 @@ import {
   transparentValue,
 } from "./lock-parts.ts";
 import { lockPiece } from "./lock-pieces.ts";
-import type { LockError, LockResult } from "./lock.ts";
+import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import { matchRead, refKey } from "./refs.ts";
 
@@ -44,6 +44,9 @@ export interface LevelContext {
   where: string;
   /** Below a piece's call level (lock-pieces.ts): a level closes by its own count, never by an opening. */
   noOpen?: true;
+  /** The game's code and the character's class, for a piece with the form of a recipe (lock-piece-recipe.ts). */
+  ops?: LockInput["ops"];
+  characterClass?: LockInput["characterClass"];
 }
 export interface LevelOut {
   errors: LockError[];
@@ -301,8 +304,8 @@ function descend(
   ctx: LevelContext,
   out: LevelOut,
 ): void {
-  // a piece's line closes by the piece's count (lock-pieces.ts), never by an opening of the recording
-  if (node.combine) {
+  // a piece's line closes by the piece's count or recipe (lock-pieces.ts), never by an opening of the recording
+  if (node.combine || node.pools) {
     lockPiece(node, level, ctx, out);
     return;
   }

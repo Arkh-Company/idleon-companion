@@ -3,6 +3,7 @@
 // one answers `unknownNumber` for its number. The `*.piece.json` (T169) are the recipe pieces the blueprints call. The
 // `*.review.json` beside them are never imported.
 import { parseBlueprint } from "./blueprint.ts";
+import { isObj } from "./blueprint-root.ts";
 import type { Blueprint, BlueprintStage } from "./blueprint.ts";
 import { SYSTEMS } from "./systems.ts";
 
@@ -29,9 +30,20 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
       refused.push({ file, reason: `id repetido: ${name} já tem pedaço` });
     else pieces.set(name, raw);
   }
+  // another number's recipe is a piece with no params, its pools (T173): a line calls it by the recipe's id
+  const named = new Set(pieces.keys());
+  for (const [file, raw] of Object.entries(files)) {
+    const id = FILE.exec(file)?.[1];
+    if (id === undefined || !isObj(raw) || raw.pools === undefined) continue;
+    if (named.has(id))
+      refused.push({ file, reason: `id repetido: ${id} já tem pedaço` });
+    else if (!pieces.has(id))
+      pieces.set(id, { id, params: [], pools: raw.pools });
+  }
   for (const [file, raw] of Object.entries(files)) {
     const fileId = FILE.exec(file)?.[1];
     if (fileId === undefined) continue;
+    if (refused.some((r) => r.file === file)) continue;
     if (stages.has(fileId)) {
       refused.push({ file, reason: `id repetido: ${fileId} já tem receita` });
       continue;

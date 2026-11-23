@@ -32,20 +32,23 @@ export interface BlueprintNode {
   combine?: "sum" | "product";
   /** Only in a piece: the one model child stands for one child per item of the recorded list (T170). */
   each?: { list: string; as: string };
+  /** Only in a piece with the form of a recipe (T173): its pools, closed as a root's below the node. */
+  pools?: readonly BlueprintPool[];
 }
 /** A piece's args: a value for each of its params, in place of `{param}` in its references. */
 export type PieceArgs = Readonly<Record<string, string | number>>;
 /**
  * A recipe piece (T169; GLOSSARY "Recipe piece", never a "Tree piece"): `blueprints/pieces/<id>.piece.json`, the count
- * and the children a node that calls it takes.
+ * and the children a node that calls it takes, or the pools of a recipe (T173; another number's recipe is one too).
  */
-export interface BlueprintPiece {
-  id: string;
-  params: readonly string[];
-  combine: "sum" | "product";
-  each?: { list: string; as: string };
-  children: readonly BlueprintNode[];
-}
+export type BlueprintPiece = { id: string; params: readonly string[] } & (
+  | {
+      combine: "sum" | "product";
+      each?: { list: string; as: string };
+      children: readonly BlueprintNode[];
+    }
+  | { pools: readonly BlueprintPool[] }
+);
 export interface BlueprintGroup {
   /** In a draft, null where `pending` says `system`. */
   system: string;

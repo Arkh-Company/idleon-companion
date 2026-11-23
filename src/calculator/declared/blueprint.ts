@@ -59,6 +59,7 @@ const NODE_KEYS = [
   "piece",
   "combine",
   "each",
+  "pools",
 ];
 const SLUG = /^[a-z0-9-]{1,60}$/;
 
@@ -93,10 +94,15 @@ function pieceOf(
   const at = `pedaço ${name}`;
   const p = obj(
     w.pieces.get(name),
-    ["id", "params", "combine", "each", "children"],
+    ["id", "params", "combine", "each", "children", "pools"],
     at,
   );
   if (p.id !== name) no(at, "id diferente do nome do arquivo");
+  if (
+    p.pools !== undefined &&
+    ["combine", "each", "children"].some((k) => p[k] !== undefined)
+  )
+    no(at, "pools vai no lugar de children, leaf, combine e each");
   const badParams = "params é uma lista de nomes, sem repetir e sem character";
   const params = Array.isArray(p.params)
     ? (p.params as unknown[])
@@ -224,6 +230,13 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     if (typeof t.system !== "string" || !w.systems.has(t.system))
       no(where, "termPart.system fora de systems.json");
   }
+  if (n.pools !== undefined) {
+    // a piece with the form of a recipe (T173): its pools in place of its count and its children
+    if (w.stack.length === 0) no(where, "pools só em pedaço");
+    if (["children", "leaf", "combine", "each"].some((k) => n[k] !== undefined))
+      no(where, "pools vai no lugar de children, leaf, combine e each");
+    checkPools(n.pools, w, `${where}/pools`);
+  }
   const siblings: unknown[] = [];
   if (n.children !== undefined) {
     if (n.leaf !== undefined) no(where, "leaf com children");
@@ -240,6 +253,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     });
   } else if (
     n.leaf === undefined &&
+    n.pools === undefined &&
     !w.pending("leaf", where) &&
     !w.pending("descend", where)
   )
@@ -260,10 +274,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   uniqueKeys(siblings, where);
 }
 
-function checkPools(raw: unknown, w: Walk): void {
+function checkPools(raw: unknown, w: Walk, at = "pools"): void {
   let prev: unknown = null;
-  list(raw, "pools", "pools").forEach((x, i) => {
-    const where = `pools/${String(i)}`;
+  list(raw, at, "pools").forEach((x, i) => {
+    const where = `${at}/${String(i)}`;
     const p = obj(x, ["kind", "weight", "groups"], where);
     if (p.kind !== "additive" && p.kind !== "multi")
       no(where, "kind é additive ou multi");

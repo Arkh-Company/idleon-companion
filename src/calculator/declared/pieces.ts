@@ -7,6 +7,7 @@ import type {
   Blueprint,
   BlueprintNode,
   BlueprintPiece,
+  BlueprintPool,
   PieceArgs,
 } from "./blueprint-types.ts";
 
@@ -37,17 +38,19 @@ export function fill<T>(x: T, values: PieceArgs): T {
   return walk(x) as T;
 }
 
-/** What a piece puts in the node that calls it: its count, its list and its children, with the args filled in. */
+/** What a piece puts in the node that calls it: its count, its list and its children, or its pools; the args filled in. */
 export const pieceBody = (
   p: BlueprintPiece,
   args: PieceArgs,
-): Pick<BlueprintNode, "combine" | "each" | "children"> =>
+): Pick<BlueprintNode, "combine" | "each" | "children" | "pools"> =>
   fill(
-    {
-      combine: p.combine,
-      ...(p.each && { each: p.each }),
-      children: p.children,
-    },
+    "pools" in p
+      ? { pools: p.pools }
+      : {
+          combine: p.combine,
+          ...(p.each && { each: p.each }),
+          children: p.children,
+        },
     args,
   );
 
@@ -59,13 +62,16 @@ export function inlinePieces(
   const node = (n: BlueprintNode): BlueprintNode => {
     const p = n.piece && (pieces.get(n.piece.name) as BlueprintPiece);
     const own = p && n.piece ? { ...n, ...pieceBody(p, n.piece.args) } : n;
-    return own.children ? { ...own, children: own.children.map(node) } : own;
+    return {
+      ...own,
+      ...(own.children && { children: own.children.map(node) }),
+      ...(own.pools && { pools: poolsOf(own.pools) }),
+    };
   };
-  return {
-    ...bp,
-    pools: bp.pools.map((p) => ({
+  const poolsOf = (ps: readonly BlueprintPool[]): BlueprintPool[] =>
+    ps.map((p) => ({
       ...p,
       groups: p.groups.map((g) => ({ ...g, sources: g.sources.map(node) })),
-    })),
-  };
+    }));
+  return { ...bp, pools: poolsOf(bp.pools) };
 }
