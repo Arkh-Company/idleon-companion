@@ -1568,23 +1568,42 @@ lime.$scripts.N = function (_exports, $global) {
       (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
     );
   };
-  // Spec 010 (T174): a table's items summed in a running total only where the game tests them on (TreeActiveOn; 2 adds
-  // the item twice), then times TreeSignMulti, as the game's active star signs: over the bonuses 5, 10, 20, 40 with
-  // 1, 0, 1, 1 on and a multi of 2, (5 + 20 + 40) × 2 = 130. Each item has its own step (no loop): a sum in a loop
-  // gives the answer key its last turn only (answer-key-chain.ts, loopWrite).
+  // Spec 010 (T174, T175): a table's items summed in a loop, in a running total, only where the game tests them on
+  // (TreeActiveOn; 2 adds the item twice), then times TreeSignMulti, as the game's active star signs: over the bonuses
+  // 5, 10, 20, 40 with 1, 0, 1, 1 on and a multi of 2, (5 + 20 + 40) × 2 = 130. In TreeActiveMixed, every turn but the
+  // last writes the total through a call's value, with no step of its own: the turns do not part by their place.
   Blocks._customBlock_TreeActiveSum = function () {
     var s = state();
     var d = dnsm();
-    var on = s.TreeActiveOn;
+    var i;
     d.TreeActive = new StringMap();
-    d.TreeActive.h.v = 0;
-    if (on[0] >= 1) d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[0];
-    if (on[0] === 2) d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[0];
-    if (on[1] >= 1) d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[1];
-    if (on[2] >= 1) d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[2];
-    if (on[3] >= 1) d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[3];
+    for (d.TreeActive.h.v = 0, i = 0; i < s.TreeActiveBonus.length; i++) {
+      if (s.TreeActiveOn[i] >= 1)
+        d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[i];
+      if (s.TreeActiveOn[i] === 2)
+        d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[i];
+    }
     d.TreeActive.h.v = d.TreeActive.h.v * s.TreeSignMulti;
     return d.TreeActive.h.v;
+  };
+  Blocks._customBlock_TreeActiveAdd = function (t, x) {
+    return t + x;
+  };
+  Blocks._customBlock_TreeActiveMixed = function () {
+    var s = state();
+    var d = dnsm();
+    var i;
+    var last = s.TreeActiveBonus.length - 1;
+    d.TreeActiveMixed = new StringMap();
+    for (d.TreeActiveMixed.h.v = 0, i = 0; i <= last; i++)
+      if (i < last)
+        d.TreeActiveMixed.h.v = Blocks._customBlock_TreeActiveAdd(
+          d.TreeActiveMixed.h.v,
+          s.TreeActiveBonus[i],
+        );
+      else d.TreeActiveMixed.h.v = d.TreeActiveMixed.h.v + s.TreeActiveBonus[i];
+    d.TreeActiveMixed.h.v = d.TreeActiveMixed.h.v * s.TreeSignMulti;
+    return d.TreeActiveMixed.h.v;
   };
   Blocks._customBlock_TreeRecipeCached = function () {
     return (
