@@ -284,15 +284,22 @@ test("every path of a piece passes the ref checks, after its args are filled in,
     ).toMatch(/each/);
 });
 
-test("each has one model child and a combine; every node with children in a piece has a combine, and only there", () => {
+test("each has one model child and a combine; a node with children in a piece has a combine, but a call's level, and only there", () => {
   const two = signsWith((p) => {
     p.children = [model(p), { ...model(p), key: "other" }];
   });
   expect(reason(line(drop), { "invented-signs": two })).toMatch(/filho-modelo/);
+  // a call's level with no combine closes by its own recorded count (the Seraph; F r1, the session's decision): it loads
   const noCombine = signsWith((p) => {
     delete model(p).combine;
   });
-  expect(reason(line(drop), { "invented-signs": noCombine })).toMatch(
+  expect(reason(line(drop), { "invented-signs": noCombine })).toBe("loaded");
+  // a read's level has no count of its own: with children, it asks a combine
+  const readNoCombine = signsWith((p) => {
+    delete model(p).combine;
+    model(p).ref = { read: "TreeSigns[{sign}]" };
+  });
+  expect(reason(line(drop), { "invented-signs": readNoCombine })).toMatch(
     /combine/,
   );
   const badCombine = signsWith((p) => {
