@@ -2,6 +2,7 @@
 // `blueprints/pieces/<id>.piece.json` with its params and called by a node with `piece: { name, args }`. `fill` puts a
 // value in place of `{name}` (a param's arg, or an item of an `each` list in the lock); after the check, the load puts
 // each piece's body, filled in, in the node that calls it, so the lock and the assembly read plain nodes.
+import { isObj } from "./blueprint-root.ts";
 import type {
   Blueprint,
   BlueprintNode,
@@ -9,14 +10,31 @@ import type {
   PieceArgs,
 } from "./blueprint-types.ts";
 
-/** `x` with `{name}` filled in by each value: a whole text `"{name}"` takes the value itself, a number staying one. */
+const NAME = /\{([A-Za-z_$][\w$]*)\}/g;
+const WHOLE = new RegExp(`^${NAME.source}$`);
+
+/**
+ * `x` with `{name}` filled in by each value, in its texts only (never a property's name): a whole text `"{name}"` takes
+ * the value itself, a number staying one; a value goes in as it is, never read as a pattern.
+ */
 export function fill<T>(x: T, values: PieceArgs): T {
-  let s = JSON.stringify(x);
-  for (const [k, v] of Object.entries(values))
-    s = s
-      .replaceAll(JSON.stringify(`{${k}}`), JSON.stringify(v))
-      .replaceAll(`{${k}}`, JSON.stringify(String(v)).slice(1, -1));
-  return JSON.parse(s) as T;
+  const has = (k: string) => Object.hasOwn(values, k);
+  const walk = (v: unknown): unknown => {
+    if (typeof v === "string") {
+      const whole = WHOLE.exec(v)?.[1];
+      if (whole !== undefined && has(whole)) return values[whole];
+      return v.replace(NAME, (m, k: string) =>
+        has(k) ? String(values[k]) : m,
+      );
+    }
+    if (Array.isArray(v)) return v.map(walk);
+    if (isObj(v))
+      return Object.fromEntries(
+        Object.entries(v).map(([k, y]) => [k, walk(y)]),
+      );
+    return v;
+  };
+  return walk(x) as T;
 }
 
 /** What a piece puts in the node that calls it: its count, its list and its children, with the args filled in. */

@@ -24,7 +24,10 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
   const pieces = new Map<string, unknown>();
   for (const [file, raw] of Object.entries(files)) {
     const name = PIECE.exec(file)?.[1];
-    if (name !== undefined) pieces.set(name, raw);
+    if (name === undefined) continue;
+    if (pieces.has(name))
+      refused.push({ file, reason: `id repetido: ${name} já tem pedaço` });
+    else pieces.set(name, raw);
   }
   for (const [file, raw] of Object.entries(files)) {
     const fileId = FILE.exec(file)?.[1];

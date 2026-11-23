@@ -23,7 +23,7 @@ import type {
   PieceArgs,
 } from "./blueprint-types.ts";
 import { fill, inlinePieces, pieceBody } from "./pieces.ts";
-import { ARG_TEXT_MAX } from "./refs.ts";
+import { ARG_TEXT_MAX, hasRawCharacterIndex } from "./refs.ts";
 export type {
   LeafKind,
   ConditionKind,
@@ -132,8 +132,18 @@ function checkPieceLevel(
     if (n.combine !== "sum" && n.combine !== "product")
       no(where, "combine é sum ou product");
   }
-  if (w.stack.length > 0 && n.children !== undefined && n.combine === undefined)
-    no(where, "nó com children num pedaço pede combine");
+  // a call's level closes by its own recorded count (the Seraph); a read's has none of its own
+  const call = isObj(n.ref) && "call" in n.ref;
+  if (
+    w.stack.length > 0 &&
+    n.children !== undefined &&
+    n.combine === undefined &&
+    !call
+  )
+    no(
+      where,
+      "nó com children num pedaço pede combine, menos o de uma chamada",
+    );
   if (n.each === undefined) return;
   const e = obj(n.each, ["list", "as"], `${where}/each`);
   if (typeof e.as !== "string" || !IDENT.test(e.as) || e.as === "character")
@@ -141,9 +151,20 @@ function checkPieceLevel(
   if (typeof e.list !== "string" || e.list.split("[*]").length !== 2)
     no(where, "each.list é um caminho com um [*]");
   checkRef({ read: e.list }, `${where}/each`);
+  if (hasRawCharacterIndex(e.list.replace("[*]", "[0]")))
+    no(where, "each.list nunca percorre os personagens");
   if (!Array.isArray(n.children) || n.children.length !== 1)
     no(where, "each tem um filho-modelo só");
 }
+
+const texts = (x: unknown): string[] =>
+  typeof x === "string"
+    ? [x]
+    : Array.isArray(x)
+      ? x.flatMap(texts)
+      : isObj(x)
+        ? Object.values(x).flatMap(texts)
+        : [];
 
 function uniqueKeys(nodes: unknown[], where: string): void {
   const keys = nodes.map((n) => (isObj(n) ? n.key : undefined));
@@ -165,6 +186,13 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     return;
   }
   checkPieceLevel(n, where, w);
+  // after the args and the items are in, a `{name}` left is one nothing declares
+  const left = Object.entries(n)
+    .flatMap(([k, v]) =>
+      k === "children" || k === "condition" ? [] : texts(v),
+    )
+    .find((s) => s.replaceAll("{character}", "").includes("{"));
+  if (left !== undefined) no(where, `{nome} não declarado: ${left}`);
   if (level === "piece" && n.condition !== undefined)
     no(where, "condition não vai dentro de pedaço");
   if (typeof n.key !== "string" || !SLUG.test(n.key))
