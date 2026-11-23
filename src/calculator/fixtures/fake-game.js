@@ -1486,6 +1486,33 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeAuthorPlacesRoot = function () {
     return Blocks._customBlock_TreeAuthorPlaces() + state().TreeCapped;
   };
+  // Spec 010 (T169-T171): a stat's bonus summed over the items a list equips, each its bonus of the stat times a shared
+  // multi, as the game's star signs (the tests give TreeSigns, TreeSignBonus and TreeSignMulti): over [1, 2, 3], with
+  // bonuses 5, 10, 20 and a multi of 2, 70. A root adds it to TreeCapped; a builder puts it in a cache another root reads.
+  Blocks._customBlock_TreeSign = function (stat, sign) {
+    var s = state();
+    return s.TreeSignBonus.h[stat][sign] * s.TreeSignMulti;
+  };
+  Blocks._customBlock_TreeSigns = function (stat) {
+    var s = state();
+    var t = 0;
+    for (var i = 0; i < s.TreeSigns.length; i++)
+      t = t + Blocks._customBlock_TreeSign(stat, s.TreeSigns[i]);
+    return t;
+  };
+  Blocks._customBlock_TreeSignsRoot = function () {
+    return Blocks._customBlock_TreeSigns("Drop") + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSignsBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeSignsDrop = new StringMap();
+    d.TreeSignsDrop.h.v = Blocks._customBlock_TreeSigns("Drop");
+  };
+  Blocks._customBlock_TreeSignsCached = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeSignsDrop.h.v + state().TreeCapped
+    );
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.
