@@ -7,6 +7,7 @@ import {
   chainInput,
   inventedBlueprint,
   levelContext,
+  present,
   recorded,
   sourceOf,
 } from "./lock-fixture.ts";
@@ -14,7 +15,7 @@ import { lockLevels } from "./lock-levels.ts";
 import { lockBlueprint } from "./lock.ts";
 import type { LockInput } from "./lock.ts";
 
-const lock = (input: LockInput) => lockBlueprint(input, "check").errors;
+const lock = (input: LockInput) => lockBlueprint(input).errors;
 const TALENT = "decl-chain/0/talents/talent";
 const callOf = (rec: Recording, block: string): RecNode => {
   const n = rec.nodes.find((x) => x.b === block);
@@ -38,7 +39,9 @@ test("a source with two levels of children closes at each level by the recorded 
   // the term's level is remounted with its children's values: another recorded TreeTwins[0] breaks it
   const input = chainInput();
   const root = callOf(input.rec, "TreeDeclChain");
-  root.r = root.r?.map((r) => (r[0] === "TreeTwins[0]" ? [r[0], 4] : r));
+  root.r = present(root.r, "reads").map((r) =>
+    r[0] === "TreeTwins[0]" ? [r[0], 4] : r,
+  );
   const term = input.key.pools[0]?.terms[1]?.value ?? NaN;
   expect(lock(input)).toEqual([
     {
@@ -143,7 +146,7 @@ test("a two-source term with no termPart child for its second source is undeclar
     { kind: "undeclaredPart", where: TALENT, got: "TreeTwins[0]" },
   ];
   expect(lock(chainInput(bp))).toEqual(refused);
-  talent.children = talent.children?.slice(0, 1);
+  talent.children = present(talent.children, "children").slice(0, 1);
   expect(lock(chainInput(bp))).toEqual(refused);
 });
 
@@ -179,22 +182,17 @@ test("the LockResult keeps no calculation: only the level, the kind and the two 
   sourceOf(bp, 0, "talents", "talent", "talent", "points").ref = {
     read: "TreeLevel",
   };
-  const out = lockBlueprint(chainInput(bp), "check");
+  const out = lockBlueprint(chainInput(bp));
   expect(new Set(out.errors.map((e) => e.kind))).toEqual(
     new Set(["notClosing", "childNoValue", "undeclaredPart"]),
   );
-  for (const e of out.errors) {
-    expect(
-      Object.keys(e).every((k) =>
-        ["kind", "where", "pool", "expected", "got"].includes(k),
-      ),
-    ).toBe(true);
-    for (const v of [e.expected, e.got])
-      expect(
-        typeof v === "number" || typeof v === "string" || v === undefined,
-      ).toBe(true);
-  }
   const json = JSON.stringify(out);
+  const saved = JSON.parse(json) as { errors: Record<string, unknown>[] };
+  for (const e of saved.errors)
+    for (const [k, v] of Object.entries(e)) {
+      expect(["kind", "where", "pool", "expected", "got"]).toContain(k);
+      expect(["number", "string"]).toContain(typeof v);
+    }
   expect(json).not.toMatch(/"(t|e|l|r|o|args)":/);
   expect(json).not.toMatch(/\s[-+*/]\s|Math\.|\bstep/);
 });

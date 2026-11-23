@@ -12,11 +12,16 @@ import type { Blueprint, BlueprintGroup, BlueprintNode } from "./blueprint.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import type { LockInput } from "./lock.ts";
 
-export type Writable<T> = T extends readonly (infer U)[]
-  ? Writable<U>[]
-  : T extends object
-    ? { -readonly [K in keyof T]: Writable<T[K]> }
-    : T;
+/** A deep copy's type with every list and field writable; a tuple stays a tuple. */
+export type Writable<T> = T extends object
+  ? { -readonly [K in keyof T]: Writable<T[K]> }
+  : T;
+
+/** The value, or a thrown error naming what is missing. */
+export function present<T>(x: T | undefined, what: string): T {
+  if (x === undefined) throw new Error(`no ${what}`);
+  return x;
+}
 
 const DIR = join(import.meta.dirname, "..", "fixtures", "blueprints");
 

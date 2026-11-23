@@ -5,12 +5,13 @@ import {
   chainInput,
   groupOf,
   inventedBlueprint,
+  present,
   sourceOf,
 } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import type { LockError, LockInput } from "./lock.ts";
 
-const lock = (input: LockInput) => lockBlueprint(input, "check");
+const lock = (input: LockInput) => lockBlueprint(input);
 const kinds = (errors: readonly LockError[]) => errors.map((e) => e.kind);
 
 test("the invented blueprint passes, with its counts", () => {
@@ -41,14 +42,14 @@ test("a source of the answer key missing from the blueprint is missingSource, an
     pool: "additive",
     expected: "ArcadeBonus(0)",
   });
-  expect(lockMessage(missing as LockError)).toBe(
+  expect(lockMessage(present(missing, "missingSource"))).toBe(
     "fonte que falta: ArcadeBonus(0) (pool 1 Additive)",
   );
   const value = input.key.pools[0]?.value ?? NaN;
   const notClosing = out.errors.find((e) => e.kind === "notClosing");
   expect(notClosing).toMatchObject({ where: "pool:0", expected: value });
   expect(notClosing?.got).toBeCloseTo(value - 0.08, 12);
-  expect(lockMessage(notClosing as LockError)).toMatch(
+  expect(lockMessage(present(notClosing, "notClosing"))).toMatch(
     /^nível não fecha: pool 1 Additive: as partes dão 12\.91\d*, o valor gravado é 12\.99\d*$/,
   );
 });
@@ -68,7 +69,7 @@ test("pools 1 and 2 swapped are poolOrder, with the expected order", () => {
       got: "Multi → Additive → Additive → Multi",
     },
   ]);
-  expect(lockMessage(out.errors[0] as LockError)).toBe(
+  expect(lockMessage(present(out.errors[0], "poolOrder"))).toBe(
     "ordem dos pools errada: a ordem esperada é Additive → Multi → Additive → Multi; a receita tem Multi → Additive → Additive → Multi",
   );
 });
