@@ -304,3 +304,64 @@ test("pools only in a piece, in place of its count and its children; their sourc
   };
   expect(reason(CALL, piece(twoSources))).toBe("loaded");
 });
+
+// T172, the LUK's % Multi (fake-game.js TreeRecipePart): its Star Signs, a line a recipe piece explains, is the second
+// part of the term, below the term's first part.
+test("a term's part may be a line a recipe piece explains: the piece closes below the part (T172)", () => {
+  const part = {
+    key: "stat",
+    name: "Invented Stat",
+    ref: { call: "TreeRecipeLine", args: [] },
+    termPart: { system: "cards" },
+    piece: { name: "invented-stat", args: {} },
+  };
+  const out = parseBlueprint(
+    {
+      id: "invented-recipe-number",
+      root: {
+        name: "Invented",
+        ref: { call: "TreeRecipePart", args: [0, 0, 0] },
+      },
+      pools: [
+        {
+          kind: "additive",
+          groups: [
+            {
+              system: "stamps",
+              sources: [leaf("capped", "TreeCapped"), leaf("lv", "TreeLevel")],
+            },
+          ],
+        },
+        {
+          kind: "multi",
+          groups: [
+            {
+              system: "prayers",
+              sources: [
+                {
+                  key: "pct",
+                  name: "Invented Pct",
+                  ref: { read: "TreeStats.a" },
+                  children: [leaf("a", "TreeStats.a"), part],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      fileId: "invented-recipe-number",
+      systemIds: SYSTEMS,
+      pieces: new Map([["invented-stat", piece()]]),
+    },
+  );
+  if (!out.ok) throw new Error(out.reason);
+  const lock = lockBlueprint({
+    blueprint: out.blueprint,
+    ...recorded("TreeRecipePart"),
+    character: 0,
+    characterClass: 3,
+  });
+  expect(lock.errors).toEqual([]);
+});

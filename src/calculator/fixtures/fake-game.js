@@ -1560,6 +1560,15 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeRecipeRoot = function () {
     return Blocks._customBlock_TreeRecipeLine() + state().TreeCapped;
   };
+  // Spec 010 (T172, the LUK's % Multi with its Star Signs): the line as the second part of a term,
+  // floor((TreeCapped + TreeLevel) × (1 + (TreeStats.a + TreeRecipeLine()) ÷ 100)).
+  Blocks._customBlock_TreeRecipePart = function () {
+    var s = state();
+    return Math.floor(
+      (s.TreeCapped + s.TreeLevel) *
+        (1 + (s.TreeStats.h.a + Blocks._customBlock_TreeRecipeLine()) / 100),
+    );
+  };
   Blocks._customBlock_TreeRecipeBuild = function () {
     var s = state();
     var d = a.engine.getGameAttribute("DNSM").h;
