@@ -80,6 +80,10 @@ export function answerKeyOfSteps(
     ops?: readonly Op[];
     /** The steps of a turn of a call (`makeSteps(rec, ops).turnOf`): a loop's turns, each at its place (T175). */
     turnOf?: (n: RecNode, range: LoopTurn) => BlockSteps;
+    /** The path of the write a line read (a cache's author): only its writes are the total and the final value… */
+    path?: string;
+    /** …and, with one write, its step at its place (the last of its turn's steps); else its running total's last. */
+    at?: Expr | null;
   } = {},
 ): AnswerKey | RootFormError {
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
@@ -110,8 +114,11 @@ export function answerKeyOfSteps(
       writes: metaOf.get(p) ?? [],
     });
   /** The running total that ends in `v`: the path written most, more than once, whose last write is `v`. */
+  const ownPaths = [...byPath].filter(
+    ([p]) => opts.path === undefined || p === opts.path,
+  );
   const chainFor = (v: number) =>
-    [...byPath]
+    ownPaths
       .filter(
         ([p, vs]) =>
           vs.length > 1 && near(vs.at(-1), v) && match(p, vs) !== null,
@@ -130,7 +137,16 @@ export function answerKeyOfSteps(
       return typeof b.v === "number" && written.some((w) => near(w, b.v));
     return b.t === "fn" && LAYERED.has(b.name ?? "") && b.args.some(fromRoot);
   };
-  const i = steps.findLastIndex((s) => near(s.v, final));
+  /** The step of the write a line read: by its place, never by its value. */
+  const placeOf = (p: string): number => {
+    if (opts.at !== undefined) return steps.findIndex((s) => s.e === opts.at);
+    const m = match(p, byPath.get(p) ?? []);
+    return m && "writes" in m ? (m.writes.at(-1)?.step ?? -1) : -1;
+  };
+  const i =
+    opts.path === undefined
+      ? steps.findLastIndex((s) => near(s.v, final))
+      : placeOf(opts.path);
   const last = steps[i];
   /** An expression that holds a value from what the root wrote, at any depth. */
   const holdsRoot = (e: Expr): boolean =>
@@ -173,7 +189,7 @@ export function answerKeyOfSteps(
     if (under && typeof v === "number") target = v;
   }
 
-  const finals = [...byPath].filter(([, vs]) => near(vs.at(-1), target));
+  const finals = ownPaths.filter(([, vs]) => near(vs.at(-1), target));
   const passage = new Map(
     [...byPath]
       .filter(([p]) => !finals.some(([q]) => q === p) && !p.startsWith(SCRATCH))
