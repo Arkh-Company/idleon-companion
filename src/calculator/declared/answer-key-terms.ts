@@ -41,6 +41,8 @@ export interface TermContext extends PassageContext {
   accumulator: string | null;
   /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
   branches?: readonly { value: number; e: Expr }[];
+  /** The terms a running total kept in a counter of the game opens into, for a sum's term that reads it (T177). */
+  running?: (e: Expr) => RawTerm[] | null;
 }
 
 export function termReader(ctx: TermContext) {
@@ -252,6 +254,14 @@ export function termReader(ctx: TermContext) {
       if (inner.t === "op" && inner.o === "+") {
         bump("divideBy100");
         flat(u.l, op, weight / u.r.v, out, v0, s0, scale);
+        return;
+      }
+    }
+    if (op === "+" && (u.t === "read" || u.t === "val")) {
+      const opened = ctx.running?.(u);
+      if (opened) {
+        bump("runningTotal");
+        for (const t of opened) out.push({ ...t, weight: t.weight * weight });
         return;
       }
     }

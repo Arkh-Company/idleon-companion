@@ -26,6 +26,7 @@ import type {
 } from "./answer-key-terms.ts";
 import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
 import { itemOfStep, placeOfWrite } from "./answer-key-item.ts";
+import { accumulates, runningTerms } from "./answer-key-running.ts";
 import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
@@ -103,14 +104,22 @@ export function answerKeyOfSteps(
         {
           xi: w.xi,
           bound: boundOf(top, w, opts.ops),
-          place: placeOfWrite(top, stepAt, w.xi) ?? null,
+          place: placeOfWrite(top, stepAt, w.xi, opts.ops) ?? null,
           ...(turnOf && {
             turn: () => {
               const a = { node: top, write: w };
               const t = writeTurn(rec, a, turnOf);
+              const op = (at?: number) => top.x?.[at ?? -1]?.[0];
+              // a write of a variable a turn added to (`t += x`, T177): that assignment, with its turn's values
+              const own = op(w.xi - 1);
+              if (own !== undefined && opts.ops?.[own]?.kind === "assign") {
+                const ae = t.exprOf?.(own);
+                return ae && near(ae.v, w.v)
+                  ? { e: ae, step: -1, pos: w.xi - 1, assign: true }
+                  : null;
+              }
               const e = writeExpr(rec, a, turnOf, t);
               // the turn's step is the root's step of the same op of the code: where the step log put each
-              const op = (at?: number) => top.x?.[at ?? -1]?.[0];
               const pos = t.stepAt?.at(-1);
               const mine = op(pos);
               const step = (stepAt ?? []).findIndex((p) => op(p) === mine);
@@ -212,6 +221,16 @@ export function answerKeyOfSteps(
         ),
       ]),
   );
+  // a running total in a counter of the game, told from the loop's index by a write that reads it back (T177)
+  const running = new Map(
+    [...byPath].filter(
+      ([p, vs]) =>
+        p.startsWith(SCRATCH) &&
+        vs.length > 1 &&
+        writes.some((w) => w.path === p && accumulates(top, opts.ops, p, w)),
+    ),
+  );
+  const opening = new Set<string>();
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
   const reads = top.r ?? [];
   const r = termReader({
@@ -225,6 +244,19 @@ export function answerKeyOfSteps(
     ops: opts.ops,
     accumulator: acc?.[0] ?? null,
     branches: opts.branches ?? [],
+    running: (e) =>
+      runningTerms(e, running, opening, (p, vs) => {
+        const local = { layers: [], stepLimits: [], divisors: [] };
+        const raw = chainPools(
+          { ...chain, ...local, kept: (t) => t },
+          vs,
+          metaOf.get(p)?.slice(0, vs.length),
+          p,
+        );
+        if (local.layers.length + local.divisors.length > 0)
+          throw new OutOfRule(`a soma corrente ${p} tem uma camada`);
+        return raw;
+      }),
   });
   r.bump("totalCopy", finals.length - (acc ? 1 : 0));
   r.bump(

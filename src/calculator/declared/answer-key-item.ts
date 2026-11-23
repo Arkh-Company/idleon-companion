@@ -14,10 +14,13 @@ export function placeOfWrite(
   top: RecNode,
   stepAt: readonly number[] | undefined,
   xi: number,
+  ops?: readonly Op[],
 ): number | undefined {
   const opAt = (p: number) => top.x?.[p]?.[0];
   const own = opAt(xi - 1);
   if (own === undefined || !stepAt) return undefined;
+  // a variable a turn added to (`t += x`) and then wrote: the turn's own assignment, never a step by its value (T177)
+  if (ops?.[own]?.kind === "assign") return -1;
   const j = stepAt.findIndex((p) => opAt(p) === own);
   if (j < 0) return undefined;
   return stepAt[j] === xi - 1 ? j : -1;

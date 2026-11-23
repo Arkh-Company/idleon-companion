@@ -32,7 +32,13 @@ export interface WriteMeta {
    * A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), with the index of
    * the root's step of the same op of the code (-1 with none), or null.
    */
-  turn?: () => { e: Expr; step: number; pos?: number } | null;
+  turn?: () => {
+    e: Expr;
+    step: number;
+    pos?: number;
+    /** The turn gave the write through a variable's assignment (`t += x`, T177): no step of the root of its own. */
+    assign?: boolean;
+  } | null;
   /**
    * The write's place (T176, answer-key-item.ts placeOfWrite): the root's step recorded right before it, or -1 for an
    * earlier turn of a loop's step; it gives the write's step in place of a step found by its value.
@@ -204,7 +210,7 @@ export function chainPools(
         throw new OutOfRule(
           `a escrita ${String(w.value)} do acumulador ${path} não tem passo no lugar da sua volta`,
         );
-      if (t.step < 0)
+      if (t.step < 0 && !t.assign)
         throw new OutOfRule(
           `a volta da escrita ${String(w.value)} do acumulador ${path} não tem o seu passo entre os da chamada`,
         );
@@ -218,8 +224,9 @@ export function chainPools(
       before = w.value;
       continue;
     }
-    r.usedSteps.add(at);
-    const opened = new Set([at]);
+    // a turn through a variable has no step of the root: nothing to mark, no place to open passages from
+    if (at >= 0) r.usedSteps.add(at);
+    const opened = new Set(at >= 0 ? [at] : []);
     const prev = raw.length > 0 ? before : null;
     if (w.compound) {
       // `path *= x` or `path += x` in place: the step is the operand, with no running total in it
