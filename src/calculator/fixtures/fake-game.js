@@ -1791,7 +1791,7 @@ lime.$scripts.N = function (_exports, $global) {
       t = U.asNumber(
         a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
       );
-      var g = U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
       var x = Blocks._customBlock_TreeThree(2 * r);
       Blocks._customBlock_TreeThree(2 * r + 1);
       t += x;
