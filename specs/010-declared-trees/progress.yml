@@ -13,11 +13,11 @@ execution:
     - {name: "Done gate", status: done, commits: 0f133a5..a9e272a}
     - {name: "Setup (T002, T004-T010)", status: done, commits: dadeb0c..2cbd7b2}
     - {name: "Foundational (T011-T026)", status: done, commits: 1375ec5..f91ddd3}
-    - {name: "US2 (T027-T035)", status: pending}
+    - {name: "US2 + gerador (T027-T035, T164, T059-T060)", status: pending}
     - {name: "US1 piloto (T036-T041)", status: pending}
     - {name: "US3 (T042-T051)", status: pending}
     - {name: "US4 (T052-T058)", status: pending}
-    - {name: "Gerador de rascunho (T059-T060)", status: pending}
+    - {name: "Gerador de rascunho (T059-T060, feito na fase 4)", status: pending}
     - {name: "Lote W1 (T061-T066)", status: pending}
     - {name: "Lote W2 (T067-T072)", status: pending}
     - {name: "Lote W3 (T073-T078)", status: pending}

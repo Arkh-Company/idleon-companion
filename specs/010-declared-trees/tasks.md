@@ -373,6 +373,8 @@ reprovações da US2 aparecem no jogo real.
     - a revisão guarda só `blueprintSha` e `lock` (`ok`, `gameSha` = sha256 do `N.js`, `at`), nunca motivo nem valor;
     - um número com fonte de classe roda uma vez por classe do retrato (`inactiveMosaic`), e o resultado junta as rodadas;
     - o `summary.txt` traz o tempo de cada etapa e o pico de memória.
+- [ ] T164 [US2] A trava reprova a folha que tem filhos (spec, Open Questions 22/11): `leafHasChildren` quando, embaixo de uma fonte declarada como folha, a gravação mostra leitura do save ou chamada de bloco que lê o save (tabela do jogo não conta); teste primeiro em `lock-levels.test.ts` (uma folha com filho que lê o save reprova; uma folha que só lê tabela do jogo passa); antes da T032
+  - Ordem (Vinicius, 22/11): a T059 e a T060 (o gerador de rascunho) vêm antes da T031 e da T032; a receita do Drop Rate sai do `just draft stats-drop-rate`.
 - [ ] T034 [sessão] [US2] Conferência real do Drop Rate: `just trees stats-drop-rate` (FR-010, SC-001; depende de T032, T033)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.review.json` (o `lock`); fora: `TREES_OUT/lock/`, `summary.txt`
   - Signatures: nenhuma (rodada)
