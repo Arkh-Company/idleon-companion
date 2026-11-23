@@ -38,12 +38,19 @@
               "classes": [3],
               "children": [
                 {
-                  "key": "points",
-                  "name": "Talent points",
-                  "ref": {
-                    "read": "PlayerDATABASE[{character}].SkillLevels[0]"
-                  },
-                  "leaf": "investedPoints"
+                  "key": "talent",
+                  "name": "Invented Talent",
+                  "ref": { "call": "TreeDeclTalent", "args": [0] },
+                  "children": [
+                    {
+                      "key": "points",
+                      "name": "Talent points",
+                      "ref": {
+                        "read": "PlayerDATABASE[{character}].SkillLevels[0]"
+                      },
+                      "leaf": "investedPoints"
+                    }
+                  ]
                 },
                 {
                   "key": "twin",
@@ -123,7 +130,14 @@
               "name": "Invented Owned",
               "ref": { "read": "TreeOwned" },
               "weight": 1,
-              "leaf": "quantity"
+              "leaf": "quantity",
+              "condition": {
+                "key": "owned",
+                "name": "Invented Owned Any",
+                "ref": { "read": "TreeOwned" },
+                "leaf": "condition",
+                "conditionKind": "owned"
+              }
             }
           ]
         }

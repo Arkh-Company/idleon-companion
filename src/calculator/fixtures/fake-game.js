@@ -1342,19 +1342,20 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeBubbleInner() + dnsm().CalcTalentDN2;
     return d.AlchBubbles.h.W2 * 2;
   };
-  // Spec 010 (T017): the roots of the answer key. A curve by its mode; a talent of the tree character on a curve whose
-  // arguments differ, a luck on a curve with three equal arguments, and the best of all characters.
-  Blocks._customBlock_TreeDeclCurve = function (mode, top, mid, level) {
+  // Spec 010 (T017): the roots of the answer key. A curve by its mode, under the game's curve block name (the lock's
+  // not-leaf list knows it; T027); a talent of the tree character on a curve whose arguments differ, a luck on a curve
+  // with three equal arguments, and the best of all characters.
+  Blocks._customBlock_ArbitraryCode5Inputs = function (mode, top, mid, level) {
     return mode === "decay" ? (top * level) / (level + mid) : 0;
   };
   Blocks._customBlock_TreeDeclTalent = function (i) {
     var s = state();
     var level = s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[i];
-    return Blocks._customBlock_TreeDeclCurve("decay", 40, 100, level);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", 40, 100, level);
   };
   Blocks._customBlock_TreeDeclLuck = function () {
     var level = state().TreeLevel - 5;
-    return Blocks._customBlock_TreeDeclCurve("decay", 20, 20, level);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", 20, 20, level);
   };
   Blocks._customBlock_TreeDeclBest = function () {
     var s = state();
@@ -1857,7 +1858,7 @@ lime.$scripts.N = function (_exports, $global) {
   // The seventh probe: an infinite argument and a number below every other, each back at its place in the recording.
   Blocks._customBlock_TreeInfNeg = function () {
     var low = -state().TreeCapped * Math.pow(10, 400);
-    return Blocks._customBlock_TreeDeclCurve("decay", low, 1, 1);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", low, 1, 1);
   };
   // A builder's pass (review of the seventh probe): a write of the whole cache, which the pass drops from the writes,
   // then a scratch box outside the cache that overflows, which the pass moves to the spliced writes.
