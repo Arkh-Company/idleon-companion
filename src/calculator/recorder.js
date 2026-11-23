@@ -79,7 +79,7 @@
       ? "(character " + S.names.get(x) + ")"
       : x.slice(0, 40);
   }
-  // a block by its name; a helper's event (the answer key's only, spec 010 T168) by its whole method
+  // a block by its name; a helper's event (spec 010, T168) by its whole method
   function wrapBlock(C, k) {
     var f = C[k];
     var name = k.indexOf("_customBlock_") === 0 ? k.slice(13) : k;
@@ -268,8 +268,8 @@
 
   G.__rec = {
     // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
-    // key's recording only), a call that returns a list or a map of the state keeps its path (vp), and each helper's
-    // event is a call of its own (spec 010, T168: the count of a cache an event builds; instrument.ts gives its steps).
+    // key's recording only), a call that returns a list or a map of the state keeps its path (vp). Each helper's event
+    // is a call of its own (spec 010, T168: the count of a cache an event builds; instrument.ts gives its steps).
     wrap: (paths) => {
       S.paths = !!paths;
       var hx = G.__hx;
@@ -281,7 +281,7 @@
           if (k.indexOf("_customBlock_") === 0 && typeof C[k] === "function")
             owner[k] = C;
         });
-        var P = paths && typeof C === "function" ? C.prototype : null;
+        var P = typeof C === "function" ? C.prototype : null;
         Object.getOwnPropertyNames(P || {}).forEach((k) => {
           var d = Object.getOwnPropertyDescriptor(P, k); // no getter runs
           if (k.indexOf("_customEvent_") === 0 && typeof d.value === "function")

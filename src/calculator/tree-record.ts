@@ -56,8 +56,8 @@ export function bootRecorder(
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
   /**
    * Keep an infinite number as a number, and the `vp` of a call (the state path of the list or the map it returned)
-   * (spec 010, T162: the answer key only); and a helper's event as a call of its own, with its steps (T168). The live
-   * tree gets null, as always, no `vp` and no event.
+   * (spec 010, T162: the answer key only). The live tree gets null, as always, and no `vp`. A helper's event is a call
+   * of its own, with its steps, in both (T168; spec, Open Questions 23/11).
    */
   { infinite = false }: { infinite?: boolean } = {},
 ): {
@@ -78,8 +78,7 @@ export function bootRecorder(
     routine?: readonly RoutineRun[],
   ): Recording;
 } {
-  // a helper's event's steps: the answer key's only, like its call of its own (recorder.js wrap)
-  const { source, ops } = instrument(anchored(code), { events: infinite });
+  const { source, ops } = instrument(anchored(code));
   const context = bootContext(source, pak, limits, [
     recorderSource,
     recorderPassSource,

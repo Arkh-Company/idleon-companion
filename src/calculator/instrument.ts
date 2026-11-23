@@ -46,9 +46,8 @@ const MATH = new Set([
   "sqrt",
 ]);
 const COMPOUND = new Set(["+=", "-=", "*=", "/=", "%="]);
-const BLOCK = /_customBlock_(\w+)\s*=\s*function\s*\(/g;
-// with the answer key's option, a helper's event too (spec 010, T168): a method of its class, named whole
-const WITH_EVENTS =
+// a block, and a helper's event (spec 010, T168; spec, Open Questions 23/11): a method of its class, named whole
+const BLOCK =
   /(?:_customBlock_(\w+)\s*=|(_customEvent_\w+)\s*[=:])\s*function\s*\(/g;
 
 const isNode = (v: unknown): v is AnyNode =>
@@ -237,18 +236,12 @@ function functionEnd(src: string, start: number): number {
   return -1;
 }
 
-/**
- * The game's code with each block's steps noted, and each helper's event's with `events` (the answer key's recording
- * only: the live tree's code stays as it was). A block the parser refuses keeps its own text.
- */
-export function instrument(
-  source: string,
-  { events = false }: { events?: boolean } = {},
-): { source: string; ops: Op[] } {
+/** The game's code with each block's and each helper's event's steps noted. A block the parser refuses keeps its text. */
+export function instrument(source: string): { source: string; ops: Op[] } {
   const ops: Op[] = [];
   const pieces: string[] = [];
   let copied = 0;
-  for (const m of source.matchAll(events ? WITH_EVENTS : BLOCK)) {
+  for (const m of source.matchAll(BLOCK)) {
     if (m.index < copied) continue; // a match inside a block already rewritten
     const fnStart = m.index + m[0].lastIndexOf("function");
     const end = functionEnd(source, fnStart);
