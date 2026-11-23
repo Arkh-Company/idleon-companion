@@ -348,7 +348,7 @@ reprovações da US2 aparecem no jogo real.
 
 - [X] T029 [US2] A trava no pool em `src/calculator/declared/lock.ts` (depende de T027)
   - Files: `src/calculator/declared/lock.ts`
-  - Signatures: `interface LockInput { blueprint: Blueprint; key: AnswerKey; rec: Recording; ops: readonly Op[]; character: number; characterClass: number | null }`; `lockBlueprint(input: LockInput, mode: "check"): LockResult`; `LockResult`, `LockError` (data-model.md); `lockMessage(e: LockError): string`.
+  - Signatures: `interface LockInput { blueprint: Blueprint; key: AnswerKey; rec: Recording; ops: readonly Op[]; character: number; characterClass: number | null }`; `lockBlueprint(input: LockInput): LockResult` (só o modo check por ora; o runtime entra com a T115); `LockResult`, `LockError` (data-model.md); `lockMessage(e: LockError): string`.
   - Porta o `trava.ts` do protótipo (429 linhas) em dois arquivos, cada um abaixo de 400 linhas.
   - Cases: os da T027, que esta tarefa faz passar.
 - [X] T030 [US2] A descida em `src/calculator/declared/lock-levels.ts` (depende de T016, T020, T028, T029)
@@ -373,7 +373,7 @@ reprovações da US2 aparecem no jogo real.
     - a revisão guarda só `blueprintSha` e `lock` (`ok`, `gameSha` = sha256 do `N.js`, `at`), nunca motivo nem valor;
     - um número com fonte de classe roda uma vez por classe do retrato (`inactiveMosaic`), e o resultado junta as rodadas;
     - o `summary.txt` traz o tempo de cada etapa e o pico de memória.
-- [X] T164 [US2] A trava reprova a folha que tem filhos (spec, Open Questions 22/11): `leafHasChildren` quando, embaixo de uma fonte declarada como folha, a gravação mostra leitura do save ou chamada de bloco que lê o save (tabela do jogo não conta); teste primeiro em `lock-levels.test.ts` (uma folha com filho que lê o save reprova; uma folha que só lê tabela do jogo passa); antes da T032
+- [X] T164 [US2] A trava reprova a folha que tem filhos (spec, Open Questions 22/11): `leafHasChildren` quando, embaixo de uma fonte declarada como folha, a gravação mostra leitura do save ou chamada de bloco que lê o save (tabela do jogo e parte do `not-leaves.ts` não contam); teste primeiro em `lock-levels.test.ts` (uma folha com filho que lê o save reprova; uma folha que só lê tabela do jogo passa); antes da T032
   - Ordem (Vinicius, 22/11): a T059 e a T060 (o gerador de rascunho) vêm antes da T031 e da T032; a receita do Drop Rate sai do `just draft stats-drop-rate`.
 - [ ] T034 [sessão] [US2] Conferência real do Drop Rate: `just trees stats-drop-rate` (FR-010, SC-001; depende de T032, T033)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.review.json` (o `lock`); fora: `TREES_OUT/lock/`, `summary.txt`
