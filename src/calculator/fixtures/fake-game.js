@@ -1361,6 +1361,7 @@ lime.$scripts.N = function (_exports, $global) {
   // not-leaf list knows it; T027); a talent of the tree character on a curve whose arguments differ, a luck on a curve
   // with three equal arguments, and the best of all characters.
   Blocks._customBlock_ArbitraryCode5Inputs = function (mode, top, mid, level) {
+    if (mode === "add") return mid === 0 ? top * level : 0;
     return mode === "decay" ? (top * level) / (level + mid) : 0;
   };
   Blocks._customBlock_TreeDeclTalent = function (i) {
@@ -1896,6 +1897,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTwinRoot = function () {
     var s = state();
     return s.TreeLevel + Blocks._customBlock_TreeTwinKid();
+  };
+  // Spec 010 (T184): two talents of one code on an `add` curve, its level a step before the curve's call: with ×1 the
+  // level and the curve are both 27, with ×4 the curve is 108. The return is the call by its place, in both.
+  Blocks._customBlock_TreeAddTalent = function (k) {
+    var level = state().TreeLevel + 2;
+    return Blocks._customBlock_ArbitraryCode5Inputs("add", [1, 4][k], 0, level);
+  };
+  Blocks._customBlock_TreeAddTalents = function () {
+    return (
+      Blocks._customBlock_TreeAddTalent(0) +
+      Blocks._customBlock_TreeAddTalent(1)
+    );
   };
   // Spec 010 (T177 r3): the same turns with the read of 3 before the calls and only the first call used, through a
   // variable: the variable's call comes from the data flow, never from the read with its value. 3 + 4 = 7; + 25 = 32.
