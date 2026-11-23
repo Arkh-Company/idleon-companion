@@ -15,7 +15,7 @@ import { checkCondition, lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { TOLERANCE } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { matchRead, nodeId, refKey, starPattern } from "./refs.ts";
+import { eachPattern, matchRead, nodeId, refKey } from "./refs.ts";
 
 export const POOL_NAME: Record<PoolKind, string> = {
   additive: "Additive",
@@ -66,9 +66,7 @@ function sourcesOf(
     if (!s.each || s.combine || !model) return [{ s, at }];
     out.counts.branches++;
     const { list, as } = s.each;
-    const path = new RegExp(
-      `^${starPattern(list.replaceAll("{character}", String(ctx.character)))}$`,
-    );
+    const path = eachPattern(list, ctx.character);
     const items = terms.flatMap((t) => {
       const item = t.kind === "source" ? path.exec(t.ref)?.[1] : undefined;
       return item === undefined ? [] : [item];

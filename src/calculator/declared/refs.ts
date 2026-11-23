@@ -38,6 +38,10 @@ export const starPattern = (path: string): string =>
     .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
     .join("\\[(\\d+)\\]");
 
+/** An `each.list`'s item path for the tree's character: the item's place in the list is the match's first group. */
+export const eachPattern = (list: string, character: number): RegExp =>
+  new RegExp(`^${starPattern(resolve(list, character))}$`);
+
 /** The recorded read a path stands for: with `*`, the first one of any character and how many matched. */
 export function matchRead(
   pattern: string,

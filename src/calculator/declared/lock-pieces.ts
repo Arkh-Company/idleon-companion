@@ -21,7 +21,7 @@ import {
   TOLERANCE,
 } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { matchRead, refKey, starPattern } from "./refs.ts";
+import { eachPattern, matchRead, refKey } from "./refs.ts";
 
 type Ctx = Pick<LevelContext, "rec" | "character">;
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -97,9 +97,7 @@ export function pieceChildren(
   const [model] = node.children ?? [];
   if (!node.each || !model) return [...(node.children ?? [])];
   const { list, as } = node.each;
-  const path = new RegExp(
-    `^${starPattern(list.replaceAll("{character}", String(ctx.character)))}$`,
-  );
+  const path = eachPattern(list, ctx.character);
   const items = new Map<number, unknown[]>();
   for (const n of nodes)
     for (const [p, v] of readsOf(n)) {
