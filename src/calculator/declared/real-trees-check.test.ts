@@ -76,13 +76,13 @@ test("the review keeps only the blueprint's hash and the lock (ok, the game's ha
   });
   // a review out of its shape is never written over: its history would be lost
   writeFileSync(file, '{"version": 2}');
-  expect(() =>
+  expect(() => {
     writeLock(dir, "stats-drop-rate", "character", SHA, {
       ok: true,
       gameSha: GAME_SHA,
       at: AT,
-    }),
-  ).toThrow();
+    });
+  }).toThrow();
   expect(readFileSync(file, "utf8")).toBe('{"version": 2}');
 });
 
