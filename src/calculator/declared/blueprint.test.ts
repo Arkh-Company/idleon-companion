@@ -231,7 +231,7 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
   expect(refused(change)).toMatch(reason);
 });
 
-test("each invented blueprint of the tests (fixtures/blueprints) loads complete over the real systems table", () => {
+test("each invented blueprint of the tests (fixtures/blueprints) loads over the real systems table, in its stage", () => {
   const files = import.meta.glob<unknown>(
     "../fixtures/blueprints/*.blueprint.json",
     { eager: true, import: "default" },
@@ -244,7 +244,8 @@ test("each invented blueprint of the tests (fixtures/blueprints) loads complete 
   });
   expect(Object.fromEntries(loaded)).toEqual({
     "decl-chain": "complete",
-    "decl-expr": "complete",
+    // its two leaves read the save below them (T164): the descent is pending
+    "decl-expr": "draft",
   });
 });
 
