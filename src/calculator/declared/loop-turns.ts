@@ -10,7 +10,6 @@
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
-import { ambiguousCall } from "./answer-key-turn.ts";
 import { writeExpr } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -58,11 +57,7 @@ export function loopOpening(
     const e = ctx.turnOf(scope, { from, to }).exprOf?.(op);
     return e?.t === "op" ? e.r : null;
   });
-  // a turn's call no place decides (T177 r2) refuses the turns
-  return (
-    ambiguousCall(ctx.stepsOf(scope.id).ambiguous) ??
-    turnsOf(callRef(scope), items, ctx)
-  );
+  return turnsOf(callRef(scope), items, ctx);
 }
 
 /**
@@ -86,8 +81,6 @@ export function writeTurns(
       ? e.r
       : undefined;
   if (itemOf(exprs.at(-1)) === undefined) return null;
-  const twice = ambiguousCall(ctx.stepsOf(author.id).ambiguous);
-  if (twice !== null) return twice;
   // the sum starts at a write of 0 with no step of its own: no line
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
   const turns = exprs.slice(start);
