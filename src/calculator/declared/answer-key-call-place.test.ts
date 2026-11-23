@@ -7,6 +7,9 @@ import { recordingOf } from "../fixtures/recording-fixture.ts";
 import { instrument } from "../instrument.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import { answerKeyOfSteps } from "./answer-key.ts";
+import { answerKey } from "./answer-key.ts";
+import { inventedRecorder } from "./lock-fixture.ts";
+import { mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { recorded } from "./lock-fixture.ts";
 
 test("a step's call is the one that returned at its place, not the first call of that value", () => {
@@ -47,5 +50,19 @@ test("with no recorded place and two calls of one block with the step's value, t
   expect(key).toMatchObject({ error: "rootForm" });
   expect("reason" in key ? key.reason : "").toMatch(
     /a chamada P de valor 6 sai de mais de uma chamada, e o lugar não decide/,
+  );
+});
+
+test("in a loop's turn, two calls of one block with the step's value and no place refuse the root, never tie to a read", () => {
+  // TreeRunTwins: each turn `x = TreeThree(2r); y = TreeThree(2r + 1); t += x * y + TreeGear[r]`: 3 and 3 by the gear 3, then 4 and 5
+  const recorder = inventedRecorder();
+  const rec = recorder.record(
+    mosaicOf({ TreeGear: [3, 3] }),
+    [["TreeRunTwins", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  const key = answerKey(rec, recorder.ops);
+  expect("reason" in key ? key.reason : JSON.stringify(key)).toMatch(
+    /a chamada TreeThree de valor 3 sai de mais de uma chamada, e o lugar não decide/,
   );
 });

@@ -1761,6 +1761,35 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeFlat(1);
     return s.TreeLevel + Blocks._customBlock_TreeFlat(2);
   };
+  // Spec 010 (T177 r2): in the first turn of a running total's loop, two calls of one block with the same value through
+  // variables (no step of the code of their own) and a later read of that value; in the last turn, two values (the
+  // whole call's steps see only those): no place tells the first turn's calls apart, so the answer key refuses the root,
+  // never ties a call to the read. Gear 3 and 3: 3 * 3 + 3 and 4 * 5 + 3, 35; + 25 = 60.
+  Blocks._customBlock_TreeThree = function (k) {
+    return [3, 3, 4, 5][k];
+  };
+  Blocks._customBlock_TreeRunTwins = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      var x = Blocks._customBlock_TreeThree(2 * r);
+      var y = Blocks._customBlock_TreeThree(2 * r + 1);
+      t += x * y + U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
   // Spec 010 (T179): the equipment's base, as the LUK's: two rows of slots, each turn adds the base of the item the
   // save puts in the slot, from the game's table by the item's name (TreeGearOrder[r][o]), and the slot's upgrade when
   // it has one: floor(TreeLevel + total). itemA (1) + 3, itemB (2), itemA (1) + 5: 12; + 25 = 37.
