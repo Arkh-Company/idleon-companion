@@ -80,3 +80,31 @@ test("a variable set by a call ties by its data flow, never to an earlier read w
     /a chamada TreeThree de valor 3 sai de mais de uma chamada, e o lugar não decide/,
   );
 });
+
+test("a variable set by a call no turn holds never ties to a read of the turn with its value", () => {
+  // TreeRunEarly: `m = TreeThree(0)` before the loop, the total from 1; each turn reads TreeGear[r], adds m; TreeGear[1] 3
+  const recorder = inventedRecorder();
+  const rec = recorder.record(
+    mosaicOf({ TreeGear: [5, 3] }),
+    [["TreeRunEarly", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  const key = answerKey(rec, recorder.ops);
+  const refs =
+    "error" in key
+      ? []
+      : key.pools.flatMap((p) => p.terms.flatMap((t) => t.refs));
+  expect(refs).not.toContain("TreeGear[1]");
+});
+
+test.each(["TreeViaWrapped", "TreeViaChain", "TreeViaTernary"])(
+  "%s: a variable set by a block's call through asNumber, another variable or a ? : takes the call, not a read",
+  (block) => {
+    const { key } = recorded(block, { TreeGear: [5, 3] });
+    expect(key.final).toBe(28);
+    expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+      "TreeLevel",
+      "TreeThree(0)",
+    ]);
+  },
+);

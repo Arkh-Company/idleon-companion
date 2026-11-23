@@ -1768,6 +1768,55 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeThree = function (k) {
     return [3, 3, 4, 5][k];
   };
+  // Spec 010 (T177 r4): a variable set by a call before the loop, added in each turn after a read: the call is in no
+  // turn, and the second turn's read has its value (gear 5 and 3); the variable never ties to that read. The total
+  // starts at 1, so no turn's own total holds 3: 1 + 3 + 3 = 7; + 25 = 32.
+  Blocks._customBlock_TreeRunEarly = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    var m = Blocks._customBlock_TreeThree(0);
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 1;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      t += m;
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T177 r4): a variable set by a block's call through asNumber, another variable or a ? :, after a read with
+  // the call's value (gear 5 and 3): the data flow gives the call, never the read. 25 + 3 = 28.
+  Blocks._customBlock_TreeViaWrapped = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x = U.asNumber(Blocks._customBlock_TreeThree(0));
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  Blocks._customBlock_TreeViaChain = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var y = Blocks._customBlock_TreeThree(0);
+    var x = y;
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  Blocks._customBlock_TreeViaTernary = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x =
+      a.engine.getGameAttribute("TreeLevel") > 0
+        ? Blocks._customBlock_TreeThree(0)
+        : 0;
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
   // Spec 010 (T177 r3): a root whose answer key stands, over a call whose own step reads a variable set by one of two
   // calls of TreeThree with the same value: only the lock, descending into that call, meets them. 25 + 3 * 2 = 31.
   Blocks._customBlock_TreeTwinKid = function () {
