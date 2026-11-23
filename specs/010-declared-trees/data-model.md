@@ -126,7 +126,8 @@ No `BlueprintNode`, `piece: { name, args }` fica no lugar de `children`, `leaf`,
 parâmetros e passa cada caminho pelas checagens do ref; recusa parâmetro que falta ou sobra, pedaço que não existe, pedaço
 que chama a si mesmo, id repetido e `{nome}` não declarado. A linha que chama o pedaço pega o valor da sua referência e
 fecha pela conta dos filhos sobre as folhas gravadas, ligadas pelo lugar; reprova com `notClosing`, `childNoValue` ou
-`leafHasChildren`, nunca com `openingRefused`.
+`leafHasChildren`, nunca com `openingRefused`; um nível de chamada sem `combine` (o Seraph) fecha pela própria conta
+gravada e reprova também pelos erros de cobertura dessa conta (`undeclaredPart`, `childOutside`, `conditionMismatch`).
 
 ## Tabela de sistemas (`SystemEntry`)
 
