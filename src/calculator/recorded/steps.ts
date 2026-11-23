@@ -35,7 +35,7 @@ export interface BlockSteps {
   exprOf?: (op: number) => Expr | null;
   /** Where each step was last recorded in the call's step log (spec 010, T162: a write comes after its step). */
   stepAt?: number[];
-  /** A call of the block by its value ("P de valor 6") that two or more calls gave, with no place to decide (T177 r1). */
+  /** Why a step's call ties to none: two or more calls of its block gave its value, and no place decides (T177 r1). */
   ambiguous?: ReadonlySet<string>;
 }
 
@@ -150,7 +150,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
               ? all[0]
               : undefined;
         if (all.length > 1 && at === undefined)
-          ambiguous.add(`${callee.slice(CUSTOM.length)} de valor ${String(v)}`);
+          ambiguous.add(
+            `a chamada ${callee.slice(CUSTOM.length)} de valor ${String(v)} sai de mais de uma chamada, e o lugar não decide`,
+          );
         if (k) {
           used.add(k.id);
           return { t: "call", id: k.id, v };

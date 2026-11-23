@@ -91,10 +91,7 @@ export function answerKeyOfSteps(
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
   if (!top) return outOfRule("a gravação não tem raiz");
   const [twice] = ambiguous ?? [];
-  if (twice !== undefined)
-    return outOfRule(
-      `a chamada ${twice} sai de mais de uma chamada, e o lugar não decide`,
-    );
+  if (twice !== undefined) return outOfRule(twice);
   const final = opts.value ?? top.v;
   const { turnOf } = opts;
   if (typeof final !== "number") return outOfRule("a raiz não deu número");
@@ -214,7 +211,6 @@ export function answerKeyOfSteps(
     if (layered) acc = under;
     if (under && typeof v === "number") target = v;
   }
-
   const finals = ownPaths.filter(([, vs]) => near(vs.at(-1), target));
   const passage = new Map(
     [...byPath]
@@ -269,7 +265,6 @@ export function answerKeyOfSteps(
     "scratchWrite",
     writes.filter((w) => w.path.startsWith(SCRATCH)).length,
   );
-
   // `scale`: a ➗ line, where a constant times a sum scales each term of the sum
   const termsOf = (
     parts: readonly Part[],
