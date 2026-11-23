@@ -356,7 +356,7 @@ reprovações da US2 aparecem no jogo real.
   - Signature: `lockLevels(node: BlueprintNode, recorded: RecNode, ctx: LevelContext): { errors: LockError[]; counts: LockResult["counts"] }`.
   - A conta remontada só existe em memória durante a chamada (FR-010).
   - Cases: os da T028, que esta tarefa faz passar.
-- [ ] T031 [P] [US2] Teste da receita do Drop Rate em `src/calculator/declared/blueprints.test.ts` (depende de T023)
+- [X] T031 [P] [US2] Teste da receita do Drop Rate em `src/calculator/declared/blueprints.test.ts` (depende de T023)
   - Files: `src/calculator/declared/blueprints.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: `stats-drop-rate` carrega no estágio `complete`; os pools são Additive, Multi, Additive, Multi; nenhum `read` com índice de personagem por extenso; toda fonte com `nameProof`.
