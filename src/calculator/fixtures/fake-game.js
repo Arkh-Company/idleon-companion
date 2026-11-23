@@ -1538,6 +1538,16 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeSeraphRoot = function () {
     return Blocks._customBlock_TreeSeraphLine() + state().TreeCapped;
   };
+  // Spec 010 (review r2): a Seraph that reads a cache (the TreeSignsDrop a builder writes) in place of a save's level
+  Blocks._customBlock_TreeCachedSeraph = function () {
+    return 1 + a.engine.getGameAttribute("DNSM").h.TreeSignsDrop.h.v / 100;
+  };
+  Blocks._customBlock_TreeCachedSeraphLine = function () {
+    return state().TreeSignMulti * Blocks._customBlock_TreeCachedSeraph();
+  };
+  Blocks._customBlock_TreeCachedSeraphRoot = function () {
+    return Blocks._customBlock_TreeCachedSeraphLine() + state().TreeCapped;
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.

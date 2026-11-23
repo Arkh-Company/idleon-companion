@@ -135,16 +135,13 @@ test("the lock closes a piece's line by its children's count over the recorded l
   expect(lock(blueprint(CALL), [1, 3]).errors).toEqual([]);
 });
 
-test("a cache read's line closes by its piece: the cache's author is not looked for", () => {
+/** The lock's input over `root`, the cache TreeSignsDrop built before it by TreeSignsBuild. */
+function withCache(root: string) {
   const r = inventedRecorder();
+  const DNSM = { ...activeAs(0).DNSM.$m, TreeSignsDrop: { $m: { v: 70 } } };
   const rec = r.record(
-    mosaicOf({
-      ...state([1, 2, 3]),
-      DNSM: {
-        $m: { ...activeAs(0).DNSM.$m, TreeSignsDrop: { $m: { v: 70 } } },
-      },
-    }),
-    [["TreeSignsCached", [0, 0, 0]]],
+    mosaicOf({ ...state([1, 2, 3]), DNSM: { $m: DNSM } }),
+    [[root, [0, 0, 0]]],
     {
       recompute: [],
       builders: [
@@ -154,7 +151,12 @@ test("a cache read's line closes by its piece: the cache's author is not looked 
   );
   const key = answerKey(rec, r.ops);
   if ("error" in key) throw new Error(key.reason);
-  expect(key.pools[0]?.terms.map((t) => t.ref)).toEqual([
+  return { key, rec, ops: r.ops, character: 0, characterClass: 3 };
+}
+
+test("a cache read's line closes by its piece: the cache's author is not looked for", () => {
+  const input = withCache("TreeSignsCached");
+  expect(input.key.pools[0]?.terms.map((t) => t.ref)).toEqual([
     "DNSM.TreeSignsDrop.v",
     "TreeCapped",
   ]);
@@ -164,11 +166,7 @@ test("a cache read's line closes by its piece: the cache's author is not looked 
       SIGNS,
       "TreeSignsCached",
     ),
-    key,
-    rec,
-    ops: r.ops,
-    character: 0,
-    characterClass: 3,
+    ...input,
   });
   expect(out.errors).toEqual([]);
   expect(out.counts.branches).toBe(4);
@@ -378,4 +376,24 @@ test("a piece's leaf whose call reads the save is leafHasChildren with its first
   expect(seraphLock({ leaf: "rawBonus" }).errors).toEqual([
     { kind: "leafHasChildren", where: `${LINE}/seraph`, got: "TreeSummonLv" },
   ]);
+});
+
+test("below a piece's call level, a cache's read closes as a leaf: the cache is not opened into its author", () => {
+  const seraph = {
+    key: "seraph",
+    name: "Invented Seraph",
+    ref: { call: "TreeCachedSeraph", args: [] },
+    children: [leaf("drop", { read: "DNSM.TreeSignsDrop.v" })],
+  };
+  const piece = pieceOf("product", [
+    leaf("multi", { read: "TreeSignMulti" }),
+    seraph,
+  ]);
+  const line = { ref: { call: "TreeCachedSeraphLine", args: [] } };
+  const out = lockBlueprint({
+    blueprint: blueprint(line, piece, "TreeCachedSeraphRoot"),
+    ...withCache("TreeCachedSeraphRoot"),
+  });
+  expect(out.errors).toEqual([]);
+  expect(out.counts.leaves).toBe(3);
 });
