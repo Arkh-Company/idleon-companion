@@ -1651,6 +1651,45 @@ lime.$scripts.N = function (_exports, $global) {
       }
     return dnsm().TreeBases.h.b;
   };
+  // Spec 010 (T177): a running total kept in a counter of the game, as the LUK's base: the loop's index in RunI, the
+  // total in RunDN, the gear added in a loop through a variable, then the gallery and the hat, the last step reading the
+  // total: floor(TreeLevel + RunDN). Gear 5, 7 and 9, gallery 11, hat 2: 34; + 25 = 59.
+  Blocks._customBlock_TreeRunTotal = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      t += U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeGallery"));
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeHat"));
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T178): the code writes the end first, as the LUK: floor(TreeLevel + (1 + (TreeStats.a + TreeStats.b) /
+  // 100) × (TreeBase + TreeCapped)); 25 + 1.08 × 84 = 115.72, floored to 115.
+  Blocks._customBlock_TreeEndFirst = function () {
+    var s = state();
+    return Math.floor(
+      s.TreeLevel +
+        (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100) *
+          (s.TreeBase + s.TreeCapped),
+    );
+  };
   Blocks._customBlock_TreeRecipeCached = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeRecipe.h.v + state().TreeCapped
