@@ -1427,6 +1427,38 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < state().TreeList.length; i++)
       d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (T168 r1): blocks that write the cache from 0 more than once, a turn only a write that adds to its own
+  // value: an overwrite by a product (TreeTurnItem(0) × 2 = 4), by a sum of two parts (2 + 4 = 6), two items in the
+  // same turn (3 + 6 + 9 = 18), and an overwrite before the turns (4 + 4 + 6 = 14).
+  Blocks._customBlock_TreeAuthorProduct = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v = Blocks._customBlock_TreeTurnItem(0) * 2;
+  };
+  Blocks._customBlock_TreeAuthorParts = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v =
+      Blocks._customBlock_TreeTurnItem(0) + Blocks._customBlock_TreeTurnItem(1);
+  };
+  Blocks._customBlock_TreeAuthorPair = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v =
+        d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i) + state().TreeList[i];
+  };
+  Blocks._customBlock_TreeAuthorMixed = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v = Blocks._customBlock_TreeTurnItem(0) * 2;
+    for (var i = 1; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
+  };
   // Spec 010 (T168): a block that reads the cache the helpers built, writes it itself (the same number) and returns it
   // read back: the read it returns saw its own write, a passage, not the helpers' cache its first step read.
   Blocks._customBlock_TreeAuthorPlaces = function () {
