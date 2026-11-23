@@ -133,10 +133,13 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     function leaf0(node: AstNode, v: StepValue): Expr {
       const callee = methodOf(node);
       if (callee?.startsWith(CUSTOM)) {
-        const k = kids.find(
-          (x) =>
-            !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v,
-        );
+        const fits = (x: RecNode) =>
+          !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v;
+        // the call that returned at the step's place (its value recorded where it began, spec 010 T177 r1), before the
+        // first one of that value
+        const id = opIndex.get(node);
+        const at = id === undefined ? undefined : lastPos.get(id);
+        const k = kids.find((x) => fits(x) && x.pxi === at) ?? kids.find(fits);
         if (k) {
           used.add(k.id);
           return { t: "call", id: k.id, v };
