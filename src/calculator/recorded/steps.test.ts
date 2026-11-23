@@ -257,7 +257,7 @@ test("a loop turn's steps read only what that turn read (build-tree.cjs 8d2)", (
   expect(step?.e).toMatchObject({ l: { t: "read", p: "A", v: 6 } });
 });
 
-test("a value set before a loop turn is named by a read of that turn, not of the whole call", () => {
+test("a value a call set before a loop turn never ties to a read of that turn by its value", () => {
   const { ops } = instrument(
     "Blocks._customBlock_T = function () { var p = Blocks._customBlock_P(); return p * 2; };",
   );
@@ -291,5 +291,6 @@ test("a value set before a loop turn is named by a read of that turn, not of the
     from: 2,
     to: 4,
   });
-  expect(step?.e).toMatchObject({ l: { t: "read", p: "C", v: 6 } });
+  // P's call is in no turn: a loose value, never the turn's read C with its value (T177 r4)
+  expect(step?.e).toMatchObject({ l: { t: "val", v: 6 } });
 });
