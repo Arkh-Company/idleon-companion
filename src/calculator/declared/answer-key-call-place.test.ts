@@ -112,6 +112,19 @@ test.each(["TreeViaWrapped", "TreeViaChain", "TreeViaTernary"])(
   },
 );
 
+test.each(["TreeTernaryDirect", "TreeViaFloor"])(
+  "%s: a block's call anywhere in the step's leaf or the variable's expression never ties to an earlier read with its value",
+  (block) => {
+    // TreeGear[1] (3) read, then `TreeLevel + (TreeLevel > 0 ? TreeThree(0) : 0)` or `x = Math.floor(TreeThree(0))`
+    const { key } = recorded(block, { TreeGear: [5, 3] });
+    expect(key.final).toBe(28);
+    expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+      "TreeLevel",
+      "TreeThree(0)",
+    ]);
+  },
+);
+
 test("a block's call through asNumber right in the step takes the call, not an earlier read with its value", () => {
   // TreeWrappedDirect: TreeGear[1] (3) read, then `TreeLevel + asNumber(TreeThree(0))`
   const { key } = recorded("TreeWrappedDirect", { TreeGear: [5, 3] });

@@ -1826,6 +1826,23 @@ lime.$scripts.N = function (_exports, $global) {
         : 0;
     return a.engine.getGameAttribute("TreeLevel") + x;
   };
+  // Spec 010 (T177 r5): the call anywhere in the step's leaf or in the variable's expression, never a read by its value
+  Blocks._customBlock_TreeTernaryDirect = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      (a.engine.getGameAttribute("TreeLevel") > 0
+        ? Blocks._customBlock_TreeThree(0)
+        : 0)
+    );
+  };
+  Blocks._customBlock_TreeViaFloor = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x = Math.floor(Blocks._customBlock_TreeThree(0));
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
   // Spec 010 (T177 r3): a root whose answer key stands, over a call whose own step reads a variable set by one of two
   // calls of TreeThree with the same value: only the lock, descending into that call, meets them. 25 + 3 * 2 = 31.
   Blocks._customBlock_TreeTwinKid = function () {
