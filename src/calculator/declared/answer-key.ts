@@ -93,6 +93,17 @@ export function answerKey(
       outOfRule(`nenhuma volta achou o item na lista ${shape.branch}`)
     );
   const own = "error" in key ? key : partKey(key, shape.part);
+  // found inside a bigger term of the root (a total the root crossed, the Obol's TotalStatsDN2, T177 r1): the pool of
+  // the total that builds it, when one holds it whole
+  if (
+    !("error" in own) &&
+    own.pools.some((p) =>
+      p.terms.some((t) => t.refs.some((r) => !shape.part.includes(r))),
+    )
+  ) {
+    const built = partInWriters(rec, top, shape.part, inner);
+    return built && !("error" in built) ? built : own;
+  }
   // found, or refused as ambiguous in the root: never looked for again elsewhere
   if (!("error" in own) || ("part" in own && own.part === "ambiguous"))
     return own;
