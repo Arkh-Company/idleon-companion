@@ -43,6 +43,10 @@ export function checkProof(x: unknown, where: string): void {
   if (!ok) no(where, "nameProof é { table, row } ou { names }");
 }
 
+/** A path through a helper names its behavior (`….getBehavior(ActorEvents_1)._GenINFO[8]`): checked without the name. */
+const throughHelper = (p: string): string =>
+  p.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior");
+
 export function checkRef(x: unknown, where: string, list = false): void {
   if (isObj(x) && "call" in x) {
     const r = obj(x, ["call", "args"], `${where}/ref`);
@@ -68,9 +72,10 @@ export function checkRef(x: unknown, where: string, list = false): void {
     return;
   }
   const r = obj(x, ["read"], `${where}/ref`);
-  if (typeof r.read !== "string" || !isPathRead(r.read))
+  const read = typeof r.read === "string" ? throughHelper(r.read) : null;
+  if (read === null || !isPathRead(read))
     no(where, "ref.read não é um caminho de nomes e índices");
-  else if (hasRawCharacterIndex(r.read))
+  else if (hasRawCharacterIndex(read))
     no(where, "índice de personagem por extenso no ref.read");
 }
 
@@ -179,11 +184,7 @@ function checkRoutine(root: Record<string, unknown>): void {
     ? list(root.routine, "root", "routine")
     : [root.routine];
   steps.forEach(checkRoutineStep);
-  // a path through a helper names its behavior: `….behaviors.getBehavior(ActorEvents_1)._GenINFO[8][*].a`
-  const sum =
-    typeof root.sum === "string"
-      ? root.sum.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior")
-      : null;
+  const sum = typeof root.sum === "string" ? throughHelper(root.sum) : null;
   if (sum !== null && hasRawCharacterIndex(sum))
     no("root", "índice de personagem por extenso no sum");
   if (sum === null || !isStatePath(sum))
