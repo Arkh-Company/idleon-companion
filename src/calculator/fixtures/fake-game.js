@@ -1761,6 +1761,44 @@ lime.$scripts.N = function (_exports, $global) {
     Blocks._customBlock_TreeFlat(1);
     return s.TreeLevel + Blocks._customBlock_TreeFlat(2);
   };
+  // Spec 010 (T179): the equipment's base, as the LUK's: two rows of slots, each turn adds the base of the item the
+  // save puts in the slot, from the game's table by the item's name (TreeGearOrder[r][o]), and the slot's upgrade when
+  // it has one: floor(TreeLevel + total). itemA (1) + 3, itemB (2), itemA (1) + 5: 12; + 25 = 37.
+  Blocks._customBlock_TreeGearTable = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, o, t, i, u, g;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN = 0;
+    for (r = 0; r < 2; r++)
+      for (o = 0; o < a.engine.getGameAttribute("TreeGearOrder")[r].length; o++)
+        ((a.engine.getGameAttribute("DummyNumbersStatManager").h.GearI = o),
+          (i = a.engine.getGameAttribute("TreeGearMap")[r][o]),
+          Object.prototype.hasOwnProperty.call(i.h, "v")
+            ? ((i = a.engine.getGameAttribute("DummyNumbersStatManager")),
+              (t = U.asNumber(
+                a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+              )),
+              (u = a.engine.getGameAttribute("ItemDefinitionsGET")),
+              (g = "" + a.engine.getGameAttribute("TreeGearOrder")[r][o]),
+              (t +=
+                U.asNumber(u.h[g].v) +
+                U.asNumber(a.engine.getGameAttribute("TreeGearMap")[r][o].h.v)),
+              (i.h.GearDN = t))
+            : ((i = a.engine.getGameAttribute("DummyNumbersStatManager")),
+              (t = U.asNumber(
+                a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+              )),
+              (u = a.engine.getGameAttribute("ItemDefinitionsGET")),
+              (g = "" + a.engine.getGameAttribute("TreeGearOrder")[r][o]),
+              (t += U.asNumber(u.h[g].v)),
+              (i.h.GearDN = t)));
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+        ),
+    );
+  };
   // Spec 010 (T178): the code writes the end first, as the LUK: floor(TreeLevel + (1 + (TreeStats.a + TreeStats.b) /
   // 100) × (TreeBase + TreeCapped)); 25 + 1.08 × 84 = 115.72, floored to 115.
   Blocks._customBlock_TreeEndFirst = function () {
