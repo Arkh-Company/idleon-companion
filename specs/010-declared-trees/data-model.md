@@ -129,6 +129,16 @@ fecha pela conta dos filhos sobre as folhas gravadas, ligadas pelo lugar; reprov
 `leafHasChildren`, nunca com `openingRefused`; um nível de chamada sem `combine` (o Seraph) fecha pela própria conta
 gravada e reprova também pelos erros de cobertura dessa conta (`undeclaredPart`, `childOutside`, `conditionMismatch`).
 
+**Pedaço com forma de receita** (Open Questions, 23/11): um pedaço pode ter `pools` no lugar de `combine`, `each` e
+`children`, com as regras dos pools da receita (lugares `<nó>/pools/<n>/groups/<g>/sources/<s>`); `pools` só dentro de um
+pedaço, e `combine` só é obrigatório sem `pools`. A receita de outro número serve de pedaço sem parâmetros, pelo id; um
+id igual entre pedaço e receita é recusado. Uma fonte de pool com `each` e sem `combine` vai sem `ref` nem `constant`,
+com um filho-modelo, repetido por parcela do gabarito que casa com o `[*]` (o item é o índice do caminho; um item em duas
+parcelas é `rootForm` na fonte). O pedaço com `pools` fecha pelo gabarito da chamada da linha ou do autor do cache e
+reprova como a raiz: `poolOrder` na linha; `missingSource`, `extraSource`, `groupOrder` e `notClosing` em
+`<linha>/pool:<n>`; `rootForm` na linha sem gabarito. No gabarito, uma corrente somada num laço tem uma parcela por volta,
+cada uma lida no seu lugar gravado; uma volta sem passo no seu lugar recusa com o motivo.
+
 ## Tabela de sistemas (`SystemEntry`)
 
 | Campo | Tipo | Regra |
