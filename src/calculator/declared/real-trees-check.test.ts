@@ -13,7 +13,8 @@ import { join } from "node:path";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { bootRecorder } from "../tree-record.ts";
-import { inventedBlueprint } from "./lock-fixture.ts";
+import { parseBlueprint } from "./blueprint.ts";
+import { inventedBlueprint, sourceOf } from "./lock-fixture.ts";
 import {
   classCharacters,
   lockNumber,
@@ -23,6 +24,7 @@ import {
 } from "./real-trees-check.ts";
 import type { RecordFn } from "./real-trees-check.ts";
 import { summaryLine } from "./real-trees-run.ts";
+import { SYSTEMS } from "./systems.ts";
 
 const SHA = "a".repeat(64);
 const GAME_SHA = "b".repeat(64);
@@ -106,8 +108,24 @@ test("one character of each class of the snapshot, the active one for its own cl
     ]),
   );
   expect(classCharacters(snapshot([3, 3]))).toEqual(new Map([[3, 0]]));
+  // the active one is the second of its class: it stands for the class
+  const same = snapshot([3, 3]);
+  expect(
+    classCharacters({
+      ...same,
+      attrs: { ...same.attrs, UserInfo: [CHARACTERS[1]] },
+    }),
+  ).toEqual(new Map([[3, 1]]));
   expect(classCharacters({})).toEqual(new Map());
 });
+
+/** Both classes, the class-7 character with no point in class 3's talent: TreeDeclTalent(0) gives it 0, as the game. */
+function twoClasses() {
+  const snap = snapshot([3, 7]);
+  const second = snap.attrs.PlayerDATABASE.$m[CHARACTERS[1]];
+  if (second) second.$m = { ...second.$m, SkillLevels: [0, 8] };
+  return snap;
+}
 
 test("a number with a class source runs once per class of the snapshot; one without, once for the active character", () => {
   const classes = new Map([
@@ -132,56 +150,107 @@ beforeAll(() => {
     { infinite: true },
   );
 });
+/** The recorder over the roots it is given. */
+const recordRoots: RecordFn = (mosaic, scene, roots, routine) =>
+  recorder.record(
+    mosaic,
+    roots,
+    { recompute: [], builders: [] },
+    scene,
+    [],
+    routine,
+  );
+const BOTH = [
+  { character: 0, characterClass: 3 },
+  { character: 1, characterClass: 7 },
+];
 
 test("each class's run records its own character (the other one rebuilt, inactiveMosaic), and the result joins the runs", () => {
   const seen: { active: unknown; scene: boolean }[] = [];
   const record: RecordFn = (mosaic, scene, roots, routine) => {
     const m = JSON.parse(mosaic) as { attrs: { UserInfo: unknown[] } };
     seen.push({ active: m.attrs.UserInfo[0], scene });
-    return recorder.record(
-      mosaic,
-      roots,
-      { recompute: [], builders: [] },
-      scene,
-      [],
-      routine,
-    );
+    return recordRoots(mosaic, scene, roots, routine);
   };
   const bp = inventedBlueprint("decl-chain");
-  const { lock, stages } = lockNumber(
-    record,
-    recorder.ops,
-    bp,
-    JSON.stringify(snapshot([3, 7])),
-    [
-      { character: 0, characterClass: 3 },
-      { character: 1, characterClass: 7 },
-    ],
-  );
+  const mosaic = JSON.stringify(twoClasses());
+  const { lock, stages } = lockNumber(record, recorder.ops, bp, mosaic, BOTH);
   expect(seen).toEqual([
     { active: CHARACTERS[0], scene: false },
     { active: CHARACTERS[1], scene: true },
   ]);
-  // TreeDeclTalent(0) is class 3's, and the game calls it for the class-7 character too
-  expect(lock.ok).toBe(false);
-  expect(lock.errors).toContainEqual({
-    kind: "classMismatch",
-    where: "decl-chain/0/talents/talent",
-    expected: "3",
-    got: 7,
-  });
+  // TreeDeclTalent(0) is class 3's: the game calls it for the class-7 character too, at 0; TreeDeclTalent(1) is class
+  // 7's, run only on its character's map
+  expect(lock.ok).toBe(true);
+  expect(lock.errors).toEqual([]);
   expect(Object.keys(stages)).toEqual(
     expect.arrayContaining(["mosaic", "roots", "answerKey", "lock"]),
   );
 
-  const alone = lockNumber(
-    record,
+  // the same error in both runs is said once
+  const half = inventedBlueprint("decl-chain");
+  sourceOf(half, 2, "guild", "half").constant = 0.7;
+  expect(
+    lockNumber(recordRoots, recorder.ops, half, mosaic, BOTH).lock.errors,
+  ).toEqual([
+    { kind: "extraSource", where: "decl-chain/2/guild/half", got: "0.7" },
+    {
+      kind: "missingSource",
+      where: "pool:2",
+      pool: "additive",
+      expected: "0.5",
+    },
+    {
+      kind: "notClosing",
+      where: "pool:2",
+      pool: "additive",
+      expected: 0.5,
+      got: 0,
+    },
+  ]);
+});
+
+test("a recording whose root is out of the pools' rule is refused as rootForm, at the root", () => {
+  const swap: RecordFn = (mosaic, scene, _roots, routine) =>
+    recordRoots(mosaic, scene, [["TreeDeclSwap", [0, 0, 0]]], routine);
+  const { lock } = lockNumber(
+    swap,
     recorder.ops,
-    bp,
-    JSON.stringify(snapshot([3, 7])),
+    inventedBlueprint("decl-chain"),
+    JSON.stringify(twoClasses()),
     [{ character: 0, characterClass: 3 }],
   );
-  expect(alone.lock).toMatchObject({ ok: true, errors: [] });
+  expect(lock.ok).toBe(false);
+  expect(lock.errors).toEqual([
+    expect.objectContaining({ kind: "rootForm", where: "root" }),
+  ]);
+});
+
+test("every complete invented blueprint (fixtures/blueprints) passes the lock over its root in the invented game", () => {
+  const files = import.meta.glob<unknown>(
+    "../fixtures/blueprints/*.blueprint.json",
+    { eager: true, import: "default" },
+  );
+  const systemIds = new Set(SYSTEMS.map((s) => s.id));
+  const snap = twoClasses();
+  const locked: string[] = [];
+  const refused = Object.entries(files).flatMap(([path, raw]) => {
+    const fileId = /([^/]+)\.blueprint\.json$/.exec(path)?.[1] ?? "";
+    const out = parseBlueprint(raw, { fileId, systemIds });
+    if (!out.ok || out.stage !== "complete") return [];
+    locked.push(fileId);
+    const runs = lockRuns(out.blueprint, classCharacters(snap), 0);
+    const { lock } = lockNumber(
+      recordRoots,
+      recorder.ops,
+      out.blueprint,
+      JSON.stringify(snap),
+      runs,
+    );
+    return lock.ok ? [] : [[fileId, lock.errors]];
+  });
+  expect(locked).toContain("decl-chain");
+  expect(refused).toEqual([]);
 });
 
 test("the summary line carries the time of each stage", () => {
