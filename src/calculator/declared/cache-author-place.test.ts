@@ -96,3 +96,40 @@ test("the author's turn starts after its write before it by number, whether that
   const { ranges } = exprOf(write(4, 9, 7), 15, [write(4, 4, 2)]);
   expect(ranges).toEqual([{ from: 3, to: 6 }]);
 });
+
+test("a place whose read saw the reader's own write is a passage: the other place decides, no second author", () => {
+  // the reader read the cache at place 0 (TreeAuthorAgain's write, seq 1), wrote it itself (seq 2) and read it again
+  const own: Recording = {
+    ...rec,
+    nodes: rec.nodes.map((n) =>
+      n.id === 1
+        ? {
+            ...n,
+            rx: [
+              [X, 15, 0, 1],
+              [X, 30, 3, 2],
+            ],
+          }
+        : n,
+    ),
+    writes: [write(3, 1), { ...write(1, 2), v: 30 }],
+  };
+  const a = cacheAuthor(own, X, present(own.nodes[1], "r"), stepsAt(0, 3));
+  expect(a && "node" in a ? a.node.b : a).toBe("TreeAuthorAgain");
+});
+
+test("an author that reads the cache after its one write is refused as reading its own write, not as a sum in turns", () => {
+  // TreeAuthorAgain, a block of the helpers (outside the root), wrote the cache once and then read it
+  const self: Recording = {
+    ...rec,
+    nodes: rec.nodes.map((n) =>
+      n.id === 3 ? { ...n, rx: [[X, 15, 1, 1]] } : n,
+    ),
+    writes: [write(3, 1)],
+  };
+  expect(
+    cacheAuthor(self, X, present(self.nodes[3], "author"), stepsAt(1)),
+  ).toEqual({
+    refused: `o cache ${X} é lido pelo próprio autor depois de escrevê-lo`,
+  });
+});

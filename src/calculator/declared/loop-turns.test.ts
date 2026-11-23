@@ -4,9 +4,12 @@
 // (fake-game.js, TreeTurns*) sums TreeList's items × 2 over TreeCapped.
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
 import { recorded } from "./lock-fixture.ts";
+import type { LevelContext } from "./lock-levels.ts";
+import { loopOpening } from "./loop-turns.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
 
@@ -158,4 +161,45 @@ test("a product in a loop, and a sum the call returns with a term after it, open
       ],
     ],
   ]);
+});
+
+test("a loop step that is the last step but not what the call returned does not open into turns", () => {
+  // a two-source term's place (lock-parts.ts termExpr) can be the root's own last step, a sum in a loop of 3 turns,
+  // when the root returned another value (20) after it
+  const turn = (k: number): Expr => ({
+    t: "op",
+    o: "+",
+    l: { t: "val", v: 0 },
+    r: { t: "read", p: `TreeList[${String(k)}]`, v: k + 1 },
+    v: 0,
+  });
+  const expr = turn(2);
+  const scope = { id: 0, b: "TreeRoot", a: [], c: [], p: null, pxi: 0 };
+  const ctx: LevelContext = {
+    rec: {
+      nodes: [scope],
+      writes: [],
+      spliced: [],
+      bpStart: null,
+      setup: null,
+      root: null,
+      builders: null,
+      fromGame: [],
+    },
+    stepsOf: () => ({ steps: [{ v: 6, e: expr }], checks: [], stepAt: [2] }),
+    turnOf: (_n, { from }) => ({
+      steps: [],
+      checks: [],
+      exprOf: () => turn(from),
+    }),
+    character: 0,
+    where: "invented",
+  };
+  const x: [number, number][] = [
+    [7, 1],
+    [7, 3],
+    [7, 6],
+  ];
+  expect(loopOpening(expr, { ...scope, v: 6, x }, ctx)).toHaveLength(3);
+  expect(loopOpening(expr, { ...scope, v: 20, x }, ctx)).toBeNull();
 });
