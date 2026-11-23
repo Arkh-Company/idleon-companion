@@ -157,6 +157,26 @@ test("the LUK's groups each have their system: the Shimmer's in islands, the All
   ]);
 });
 
+test("the LUK's EtcBonuses that read no part are raw bonuses, by tree/kinds.ts's rule of a block with no part (T172)", () => {
+  const raw = BLUEPRINTS[
+    "../blueprints/character/stats-luk.blueprint.json"
+  ] as {
+    pending: { where: string; kind: string }[];
+  };
+  const at = (w: string) =>
+    w
+      .split("/")
+      .reduce<Record<string, unknown>>(
+        (o, k) => o[k] as Record<string, unknown>,
+        raw as unknown as Record<string, unknown>,
+      );
+  const etc = (w: string) =>
+    (at(w).ref as { call?: string } | undefined)?.call === "EtcBonuses";
+  expect(raw.pending.filter((p) => p.kind === "leaf" && etc(p.where))).toEqual(
+    [],
+  );
+});
+
 test("every blueprint loads in a stage, and its file's name is its id", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.refused).toEqual([]);
