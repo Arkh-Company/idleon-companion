@@ -59,13 +59,66 @@ export function expressionReader({
     const u = r.unwrap(e, [], true, new Set(seen));
     return u.t === "op" ? KIND[u.o] : undefined;
   };
+  /** `1 + sum / 100`: the % factor of a sum. */
+  const isPct = (p: Part): boolean => {
+    const u = r.unwrap(p.e, [], true, new Set(p.seen));
+    if (u.t !== "op" || u.o !== "+") return false;
+    const one = (x: Expr) => x.t === "num" && x.v === 1;
+    const pct = (x: Expr) => {
+      const d = r.unwrap(x, [], true, new Set(p.seen));
+      return d.t === "op" && d.o === "/" && d.r.t === "num" && d.r.v === 100;
+    };
+    return (one(u.l) && pct(u.r)) || (one(u.r) && pct(u.l));
+  };
+  /**
+   * Of a sum's terms, the one product of a sum and its % factor, `(1 + P/100) × (B + C)`, by the expression's shape
+   * (T178): one only, added with weight 1, and some other term beside it; else null.
+   */
+  function baseTimesPct(all: readonly Part[]) {
+    const hits = all.flatMap((p) => {
+      const u = r.unwrap(p.e, [], true, new Set(p.seen));
+      if (p.w !== 1 || u.t !== "op" || u.o !== "*") return [];
+      const fs = operands(p.e, "multi", 1, p.seen);
+      const pct = fs.filter(isPct);
+      const base = fs.filter(
+        (f) => !isPct(f) && kindOf(f.e, f.seen) === "additive",
+      );
+      return fs.length === 2 && pct.length === 1 && base.length === 1
+        ? [{ part: p, pct: pct[0] as Part, base: base[0] as Part, v: u.v }]
+        : [];
+    });
+    const [hit, ...more] = hits;
+    if (!hit || more.length > 0 || all.length < 2) return null;
+    return {
+      base: hit.base,
+      pct: hit.pct,
+      others: all.filter((p) => p !== hit.part),
+      product: hit.v,
+    };
+  }
   function stretches(e: Expr, step: number, seen: Seen = new Set()): RawPool[] {
     const s = new Set(seen);
     const u = r.unwrap(e, [], true, s);
     const kind = kindOf(u, s);
     if (!kind || typeof u.v !== "number")
       throw new OutOfRule("a expressão da raiz não soma nem multiplica");
-    const [first, ...rest] = operands(u, kind, 1, s);
+    const all = operands(u, kind, 1, s);
+    const endFirst = kind === "additive" ? baseTimesPct(all) : null;
+    if (endFirst) {
+      // the code writes the end first (T178, the LUK): the base's sum, then its % factor, then the other terms
+      const { base, pct, others } = endFirst;
+      return [
+        ...stretches(base.e, step, base.seen),
+        {
+          kind: "multi",
+          terms: kept(termsOf([pct], "multi"), 0),
+          step,
+          after: Number(endFirst.product),
+        },
+        { kind, terms: kept(termsOf(others, kind), 0), step, after: u.v },
+      ];
+    }
+    const [first, ...rest] = all;
     const inner = first ? kindOf(first.e, first.seen) : undefined;
     const lead =
       first && inner ? operands(first.e, inner, 1, first.seen)[0] : undefined;
