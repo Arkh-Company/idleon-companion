@@ -76,6 +76,26 @@ test("an each over two indices repeats its model per slot: the item by the slot 
   });
 });
 
+test("a model with no ref whose leaf is not the term's kind ties nothing: a fixed value is no table's value", () => {
+  const out = parse({
+    ...ITEMS,
+    children: [{ key: "item", name: "Invented Item", leaf: "fixedValue" }],
+  });
+  if (!out.ok) throw new Error(out.reason);
+  const lock = lockBlueprint({
+    blueprint: out.blueprint,
+    ...recorded("TreeGearTable", GEAR),
+    character: 0,
+    characterClass: 3,
+  });
+  expect(lock.errors).toContainEqual(
+    expect.objectContaining({
+      kind: "rootForm",
+      got: "o filho-modelo fixedValue não casa com o termo source",
+    }),
+  );
+});
+
 test("an each's names are one per [*] of its list", () => {
   const reason = (items: Raw) => {
     const out = parse(items);
