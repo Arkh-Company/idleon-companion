@@ -23,6 +23,18 @@ export function sideAt(
   return undefined;
 }
 
+/** Whether a way through ? : sides ran ("on"), did not ("off") or has a side the step log does not give ("open"). */
+export function sideState(
+  sides: DefCall["sides"],
+  took: (owner: AstNode) => boolean | null | undefined,
+): "on" | "off" | "open" {
+  for (const [o, s] of sides) {
+    const side = took(o);
+    if (side !== s) return side === null ? "open" : "off";
+  }
+  return "on";
+}
+
 /**
  * The call a value comes from (Op.defCalls), on the side each ? : on its way took (`took`): a ? : whose test recorded
  * no side (null) is ambiguous, one never recorded there is off; no call or two on the sides taken, a loose value; never a read.
@@ -34,14 +46,7 @@ export function byCalls(
   leaf: (node: AstNode, v: StepValue) => Expr,
   ambiguous: Set<AmbiguousCall>,
 ): Expr {
-  const state = ({ sides }: DefCall) => {
-    for (const [o, s] of sides) {
-      const side = took(o);
-      if (side !== s) return side === null ? "open" : "off";
-    }
-    return "on";
-  };
-  const st = calls.map(state);
+  const st = calls.map((c) => sideState(c.sides, took));
   const open = calls[st.indexOf("open")];
   if (open) {
     const block = (methodOf(open.call) ?? "").slice(CUSTOM.length);

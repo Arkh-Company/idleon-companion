@@ -20,6 +20,8 @@ export interface Op {
   defCalls?: DefCall[];
   /** The leaf, or the assignment's prevDef, has a block's call anywhere in its value (T177 r5): never a read by value. */
   callIn?: true;
+  /** With callIn: the sides of each `? :` on the way to a part of the value with no block's call (T177 r6). */
+  freeSides?: DefCall["sides"][];
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
   /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
@@ -183,31 +185,29 @@ const isBlockCall = (n: AnyNode) => {
   return typeof name === "string" && name.startsWith("_customBlock_");
 };
 
-/** The block calls an expression's value comes from: see Op.defCalls. */
+/** The block calls an expression's value comes from: see Op.defCalls; the ways to a part with none go in `free`. */
 function callsOf(
   rhs: AnyNode | null,
   defs: Defs,
+  memo: CallMemo,
+  free: DefCall["sides"][],
   depth = 0,
   sides: DefCall["sides"] = [],
 ): DefCall[] {
   if (!rhs || depth > 6) return [];
   if (isBlockCall(rhs)) return [{ call: rhs, sides }];
   const args = (rhs.arguments as AnyNode[] | undefined) ?? [];
+  const next = (n: AnyNode | null, s = sides) =>
+    callsOf(n, defs, memo, free, depth + 1, s);
   if (methodName(rhs) === "asNumber" && args.length === 1)
-    return callsOf(args[0] ?? null, defs, depth + 1, sides);
-  if (rhs.type === "Identifier")
-    return callsOf(defOf(rhs, defs), defs, depth + 1, sides);
+    return next(args[0] ?? null);
+  if (rhs.type === "Identifier") return next(defOf(rhs, defs));
   if (rhs.type === "ConditionalExpression")
     return [
-      ...callsOf(at(rhs, "consequent"), defs, depth + 1, [
-        ...sides,
-        [rhs, true],
-      ]),
-      ...callsOf(at(rhs, "alternate"), defs, depth + 1, [
-        ...sides,
-        [rhs, false],
-      ]),
+      ...next(at(rhs, "consequent"), [...sides, [rhs, true]]),
+      ...next(at(rhs, "alternate"), [...sides, [rhs, false]]),
     ];
+  if (!hasCall(rhs, defs, memo)) free.push(sides);
   return [];
 }
 
@@ -277,7 +277,9 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
       const prevDef = defOf(target, defs);
       // a leaf's value is the leaf (a variable opens into its def); an assignment's, what set it before
       const value = m.kind === "leaf" ? m.node : prevDef;
-      const calls = callsOf(value, defs);
+      const free: DefCall["sides"][] = [];
+      const calls = callsOf(value, defs, callMemo, free);
+      const callIn = hasCall(value, defs, callMemo);
       ops.push({
         block,
         kind: m.kind,
@@ -285,7 +287,8 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         parent,
         def,
         ...(calls.length > 0 && { defCalls: calls }),
-        ...(hasCall(value, defs, callMemo) && { callIn: true as const }),
+        ...(callIn && { callIn: true as const }),
+        ...(callIn && free.length > 0 && { freeSides: free }),
         prevDef,
         fnText: text,
         ...(m.owner ? { owner: m.owner } : {}),

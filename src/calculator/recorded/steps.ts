@@ -17,7 +17,7 @@ import {
 } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { near } from "./math.ts";
-import { byCalls as callsBySide, sideAt } from "./sides.ts";
+import { byCalls as callsBySide, sideAt, sideState } from "./sides.ts";
 import { GAME_TABLE } from "./step-types.ts";
 import type {
   AmbiguousCall,
@@ -142,8 +142,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
       // (Op.callIn): the data flow decides, never a read with its value (T177 r3 to r5)
       const op = ops[id ?? -1];
-      if (op?.defCalls) return byCalls(op.defCalls, v, lastPos.get(id ?? -1));
-      if (op?.callIn) return defOrVal(node, v);
+      const pos = lastPos.get(id ?? -1);
+      if (op && (op.defCalls || op.callIn) && !ranFree(op, pos))
+        return op.defCalls ? byCalls(op.defCalls, v, pos) : defOrVal(node, v);
       if (typeof v !== "number") return defOrVal(node, v);
       const pool = poolFor(node);
       // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
@@ -190,14 +191,15 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       return defOrVal(node, v);
     }
     // the call a value comes from, on the side each ? : on its way took at `pos` (sides.ts)
+    const took = (pos?: number) => (o: AstNode) =>
+      sideAt(testOf.get(o), n.x, pos ?? base + xs.length - 1);
     const byCalls = (calls: DefCall[], v: StepValue, pos?: number): Expr =>
-      callsBySide(
-        calls,
-        v,
-        (o) => sideAt(testOf.get(o), n.x, pos ?? base + xs.length - 1),
-        leaf,
-        ambiguous,
-      );
+      callsBySide(calls, v, took(pos), leaf, ambiguous);
+    // no call's side ran and a side with none did: a read like any other (Op.freeSides, T177 r6)
+    const ranFree = (op: Op, pos?: number) =>
+      (op.defCalls ?? []).every(
+        (c) => sideState(c.sides, took(pos)) === "off",
+      ) && (op.freeSides ?? []).some((s) => sideState(s, took(pos)) === "on");
     // the expression that set the variable, when it gave this same value in this turn
     function defOrVal(node: AstNode, v: StepValue): Expr {
       const id = opIndex.get(node);
