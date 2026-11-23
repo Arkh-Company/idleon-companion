@@ -154,3 +154,19 @@ test("an author that reads the cache after its one write is refused as reading i
     refused: `o cache ${X} é lido pelo próprio autor depois de escrevê-lo`,
   });
 });
+
+test("an author that sums the cache in turns and reads it is its own author at the write it saw: its turns open it", () => {
+  // TreeAuthorAgain wrote the cache twice (seq 1 and 2) and read the second write
+  const turns: Recording = {
+    ...rec,
+    nodes: rec.nodes.map((n) =>
+      n.id === 3 ? { ...n, rx: [[X, 15, 2, 2]] } : n,
+    ),
+    writes: [write(3, 1), write(3, 2, 1)],
+  };
+  const a = cacheAuthor(turns, X, present(turns.nodes[3], "a"), stepsAt(2));
+  expect(a && "node" in a ? [a.node.b, a.write.seq] : a).toEqual([
+    "TreeAuthorAgain",
+    2,
+  ]);
+});

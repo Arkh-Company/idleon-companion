@@ -214,7 +214,48 @@ test("a cache read with no recorded write is never a leaf: the lock refuses it a
   ]);
 });
 
-test("a cache its author sums in a loop over its own value is refused below the author, not a leaf of its last turn", () => {
+test("a cache its author sums in a loop from 0 opens one line a turn, each item down to the save, and closes by their sum", () => {
+  // TreeAuthorSum: 0, then + TreeTurnItem(i) a turn: 2 + 4 + 6 = 12, the running game's cache
+  const sumAttrs = {
+    DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 12 } } } },
+  };
+  const rec = inventedRecorder().record(
+    mosaicOf(sumAttrs),
+    [["TreeAuthorRead", [0, 0, 0]]],
+    { recompute: [], builders: [builder("TreeAuthorSum")] },
+  );
+  const item = (i: number): BlueprintNode => ({
+    key: `item-${String(i)}`,
+    name: "Item",
+    ref: { call: "TreeTurnItem", args: [i] },
+    children: [leaf("list", `TreeList[${String(i)}]`)],
+  });
+  const sum: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorSum", args: [] },
+    children: [item(0), item(1), item(2)],
+  };
+  const ok = lock(rec, blueprint("TreeAuthorRead", cache([sum])));
+  expect(ok.errors.map(lockMessage)).toEqual([]);
+  expect(ok.counts).toEqual({
+    closed: 7,
+    closedByRecorded: 0,
+    leaves: 4,
+    branches: 5,
+  });
+  const turn = (i: number): Shape => [
+    `TreeTurnItem(${String(i)})`,
+    [[`TreeList[${String(i)}]`, []]],
+  ];
+  expect(
+    draftOf(rec, "TreeAuthorRead").pools[0]?.groups[0]?.sources.map(shape),
+  ).toEqual([
+    ["DNSM.TreeAuthor.v", [["TreeAuthorSum()", [turn(0), turn(1), turn(2)]]]],
+  ]);
+});
+
+test("a cache its author sums in a loop from a value with no step of its own is refused at the author: no first item", () => {
   const rec = record("TreeAuthorRead", "TreeAuthorLoop");
   expect("error" in keyOf(rec)).toBe(false);
   const loop: BlueprintNode = {
@@ -223,11 +264,11 @@ test("a cache its author sums in a loop over its own value is refused below the 
     ref: { call: "TreeAuthorLoop", args: [] },
     children: [leaf("self", "DNSM.TreeAuthor.v")],
   };
-  expect(refusals(rec, "TreeAuthorRead", cache([loop]))).toContainEqual(
-    "invented-author/0/cards/cache/author/self: o cache DNSM.TreeAuthor.v é somado em voltas pelo autor",
-  );
+  expect(refusals(rec, "TreeAuthorRead", cache([loop]))).toEqual([
+    "invented-author/0/cards/cache/author: a volta 1 do laço de TreeAuthorLoop() não tem o item no seu lugar",
+  ]);
   expect(descents(rec, "TreeAuthorRead")).toContainEqual({
-    where: "pools/0/groups/0/sources/0/children/0/children/0",
+    where: "pools/0/groups/0/sources/0/children/0",
     kind: "descend",
   });
 });
