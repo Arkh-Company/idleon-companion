@@ -229,3 +229,19 @@ function checkRoutineStep(r: unknown): void {
       );
   }
 }
+
+/** Every text inside a value, at any depth. */
+export const texts = (x: unknown): string[] =>
+  typeof x === "string"
+    ? [x]
+    : Array.isArray(x)
+      ? x.flatMap(texts)
+      : isObj(x)
+        ? Object.values(x).flatMap(texts)
+        : [];
+
+export function uniqueKeys(nodes: unknown[], where: string): void {
+  const keys = nodes.map((n) => (isObj(n) ? n.key : undefined));
+  if (new Set(keys).size !== keys.length)
+    no(where, "key repetida entre irmãos");
+}

@@ -14,6 +14,8 @@ import {
   no,
   obj,
   Refused,
+  texts,
+  uniqueKeys,
 } from "./blueprint-root.ts";
 import type {
   Blueprint,
@@ -76,6 +78,8 @@ interface Walk {
   combined?: boolean;
   /** The node is the model child of a pool's source with `each` (T174, T176). */
   eachModel?: boolean;
+  /** The node is below a pool's source, out of any combine: a piece's pools have a root's children (T172). */
+  recipe?: boolean;
 }
 
 const isArg = (v: unknown): boolean =>
@@ -150,6 +154,7 @@ function checkPieceLevel(
   const call = isObj(n.ref) && "call" in n.ref;
   if (
     !poolEach &&
+    !w.recipe &&
     w.stack.length > 0 &&
     n.children !== undefined &&
     n.combine === undefined &&
@@ -170,21 +175,6 @@ function checkPieceLevel(
     no(where, "each.list nunca percorre os personagens");
   if (!Array.isArray(n.children) || n.children.length !== 1)
     no(where, "each tem um filho-modelo só");
-}
-
-const texts = (x: unknown): string[] =>
-  typeof x === "string"
-    ? [x]
-    : Array.isArray(x)
-      ? x.flatMap(texts)
-      : isObj(x)
-        ? Object.values(x).flatMap(texts)
-        : [];
-
-function uniqueKeys(nodes: unknown[], where: string): void {
-  const keys = nodes.map((n) => (isObj(n) ? n.key : undefined));
-  if (new Set(keys).size !== keys.length)
-    no(where, "key repetida entre irmãos");
 }
 
 function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
@@ -268,8 +258,15 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
       checkNode(
         as === null ? c : fill(c, { [as]: 0 }),
         `${where}/children/${String(i)}`,
-        n.combine === undefined && w.stack.length === 0 ? "child" : "piece",
-        { ...w, combined: n.combine !== undefined, eachModel: poolEach },
+        n.combine === undefined && (w.stack.length === 0 || w.recipe)
+          ? "child"
+          : "piece",
+        {
+          ...w,
+          combined: n.combine !== undefined,
+          eachModel: poolEach,
+          recipe: !!w.recipe && n.combine === undefined,
+        },
       );
       siblings.push(c);
     });
@@ -324,7 +321,10 @@ function checkPools(raw: unknown, w: Walk, at = "pools"): void {
           no(gw, "system fora de systems.json");
       const weights = new Set<unknown>();
       list(g.sources, gw, "sources").forEach((s, k) => {
-        checkNode(s, `${gw}/sources/${String(k)}`, "source", w);
+        checkNode(s, `${gw}/sources/${String(k)}`, "source", {
+          ...w,
+          recipe: true,
+        });
         const own = isObj(s) ? s.weight : undefined;
         if (own !== undefined && p.kind !== "additive")
           no(gw, "weight de fonte só no additive");
