@@ -1,13 +1,14 @@
 // The levels that open by the recording rather than by their own expression (spec 010, spec, Open Questions 23/11): a
-// read of a cache built before the root opens into the block that wrote it (T166, cache-author.ts), and a sum of a list
-// in a loop into its turns (T167, loop-turns.ts). The lock and the draft read the same opening: each child is one of
-// its parts, and the level closes by their sum.
-import type { RecNode } from "../recording.ts";
+// read of a cache built before the root opens into the block that wrote it (T166, cache-author.ts), a sum of a list in
+// a loop into its turns (T167, loop-turns.ts), and the author's write of a cache it summed in turns into those turns
+// (T168). The lock and the draft read the same opening: each child is one of its parts, and the level closes by their
+// sum.
+import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import { cacheAuthor, isCacheRead, writeExpr } from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { loopOpening } from "./loop-turns.ts";
+import { loopOpening, writeTurns } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
 
 /** A part of an opened level: its reference key, its recorded call (null for a read) with its expression, its value. */
@@ -16,14 +17,18 @@ export interface Opening {
   call: RecNode | null;
   /** The expression that gave the value, when it is not what the call returned (a cache's write). */
   expr?: Expr | null;
+  /** The cache's write the call made, whose turns open it when it wrote the path more than once. */
+  write?: RecWrite;
   value: number | null;
 }
 /** The opening of a level, its refusal's reason, or null when the level opens by its own expression. */
 export function openingOf(
-  level: { expr: Expr | null; scope: RecNode },
+  level: { expr: Expr | null; scope: RecNode; write?: RecWrite },
   ctx: LevelContext,
 ): Opening[] | string | null {
   const { expr, scope } = level;
+  const turns = level.write ? writeTurns(scope, level.write, ctx) : null;
+  if (turns !== null) return turns;
   if (expr?.t !== "read" || !isCacheRead(expr.p))
     return loopOpening(expr, scope, ctx);
   // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart)
@@ -36,6 +41,7 @@ export function openingOf(
       part: callRef(a.node),
       call: a.node,
       expr: writeExpr(ctx.rec, a, ctx.turnOf),
+      write: a.write,
       value: typeof v === "number" ? v : null,
     },
   ];
@@ -46,11 +52,17 @@ export const levelOfOpening = (
   o: Opening,
   scope: RecNode,
   ctx: LevelContext,
-): { expr: Expr | null; scope: RecNode; value: number | null } =>
+): {
+  expr: Expr | null;
+  scope: RecNode;
+  value: number | null;
+  write?: RecWrite;
+} =>
   o.call
     ? {
         expr: o.expr === undefined ? returnOf(o.call, ctx) : o.expr,
         scope: o.call,
         value: o.value,
+        ...(o.write ? { write: o.write } : {}),
       }
     : { expr: { t: "read", p: o.part, v: o.value }, scope, value: o.value };

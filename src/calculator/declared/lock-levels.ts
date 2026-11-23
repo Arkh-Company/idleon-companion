@@ -6,7 +6,7 @@
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
 // counted apart. A level the recording opens (level-openings.ts: a cache's author, a loop's turns) has those parts as
 // its children and closes by their sum; a refused opening is an openingRefused with its reason.
-import type { RecNode, Recording } from "../recording.ts";
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { callRef, relDiff } from "./answer-key-pool.ts";
@@ -56,6 +56,8 @@ interface Level {
   termParts?: ReadonlySet<string>;
   /** A level that opens by the recording (level-openings.ts): its parts, in place of its expression's. */
   open?: Opening[];
+  /** The cache's write the level's call made (level-openings.ts): its turns open it. */
+  write?: RecWrite;
 }
 
 const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
@@ -184,8 +186,9 @@ export function callParts(
   n: RecNode,
   ctx: LevelContext,
   expr = returnOf(n, ctx),
+  write?: RecWrite,
 ): string[] | null {
-  const level = { expr, scope: n, value: num(n.v) };
+  const level = { expr, scope: n, value: num(n.v), ...(write && { write }) };
   // a level the recording opens gives its own parts; a refused one, none (the agent descends)
   const open = openingOf(level, ctx);
   if (typeof open === "string") return null;

@@ -1,10 +1,11 @@
 // A read of a cache built before the root (spec 010, T166; spec, Open Questions 23/11): it ties to the block that wrote
 // it by the recorded write, never by value or order. The write a read saw is the last of its path up to the number the
-// read keeps, at the place of each step that uses the read; reads that saw no write read the running game's cache, which
-// the builders' pass's writes of the path explain. A write under the reader or the root is a passage, no cache, and
-// does not decide the author. One block is the author; writes of more than one block the places do not decide between
-// are refused with the reason, and so are a write outside a block, no write at all and the author's read of its own. The cache never becomes a
-// leaf: the tree goes down through the expression that gave the write, in the author's turn since its write before it.
+// read keeps, at the place of the read opened (T168), else of each step that uses the read; reads that saw no write read
+// the running game's cache, which the builders' pass's writes of the path explain. A write under the reader or the root
+// is a passage, no cache, and does not decide the author. One block is the author; writes of more than one block the
+// places do not decide between are refused with the reason, and so are a write outside a block, no write at all and the
+// author's read of its one write. The cache never becomes a leaf: the tree goes down through the expression that gave
+// the write, in the author's turn since its write before it; an author that summed it in turns opens one a line.
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
@@ -83,14 +84,15 @@ export function cacheAuthor(
   const saw = seenSeqs(reader, path, steps, leaf).map((s) =>
     s === undefined ? undefined : writes.findLast((w) => w.seq <= s),
   );
-  // the reader's own write, outside the root: the author reads the cache it wrote (one turn would hide the others)
-  if (saw.some((w) => w?.node === reader.id) && !under(reader.id, rec.root))
-    return {
-      refused:
-        writes.filter((w) => w.node === reader.id).length > 1
-          ? `o cache ${path} é somado em voltas pelo autor`
-          : `o cache ${path} é lido pelo próprio autor depois de escrevê-lo`,
-    };
+  // the reader's own write, outside the root: the author reads the cache it wrote; summed in turns, it is its own
+  // author at that write, and its turns open it (loop-turns.ts writeTurns)
+  const own = saw.find((w) => w?.node === reader.id);
+  if (own && !under(reader.id, rec.root))
+    return writes.filter((w) => w.node === reader.id).length > 1
+      ? { node: reader, write: own }
+      : {
+          refused: `o cache ${path} é lido pelo próprio autor depois de escrevê-lo`,
+        };
   // a place whose read saw a write under the reader or the root is a passage: it does not decide the author
   const kept = saw.filter(
     (w) => !w || !(under(w.node, reader.id) || under(w.node, rec.root)),

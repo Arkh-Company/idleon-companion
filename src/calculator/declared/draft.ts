@@ -11,7 +11,7 @@ import { STATIC_NAMES } from "../names/names-table.ts";
 import { nameOf, recipeName } from "../names/names.ts";
 import { renameOf } from "../names/renames.ts";
 import { STATE_NAMES } from "../names/state-names.ts";
-import type { RecNode, Recording } from "../recording.ts";
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
@@ -89,7 +89,8 @@ const MAX_DEPTH = 12;
 /**
  * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
  * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value, or the
- * read itself at its place (one only) in what its reader's level is.
+ * read itself at its place (one only) in what its reader's level is; `write` the cache's write the call made, whose
+ * turns open it (level-openings.ts).
  */
 function walkPart(
   key: string,
@@ -98,6 +99,7 @@ function walkPart(
   depth: number,
   reader: RecNode | null = null,
   expr?: Expr | null,
+  write?: RecWrite,
 ): Walked {
   if (!call) {
     const level = {
@@ -114,11 +116,11 @@ function walkPart(
       key,
       call,
       below: open.map((o) =>
-        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr),
+        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o.write),
       ),
     };
   }
-  const parts = depth < MAX_DEPTH ? callParts(call, ctx, expr) : null;
+  const parts = depth < MAX_DEPTH ? callParts(call, ctx, expr, write) : null;
   if (parts === null) return { key, call, below: "descend" };
   // no part the recording ties: a leaf, unless the call reads the save below it (then the agent descends)
   if (parts.length === 0)
