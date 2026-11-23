@@ -69,7 +69,10 @@ export function saveChild(
   return null;
 }
 
-/** The place of a two-source term in the root's steps: the smallest part around its first call that holds every ref. */
+/**
+ * The place of a two-source term in the root's steps: the smallest part around its first call that holds every ref, or
+ * the % factor around it (`pctOf`).
+ */
 export function termExpr(
   term: AnswerTerm,
   top: RecNode,
@@ -83,11 +86,12 @@ export function termExpr(
   const found: Expr[] = [];
   const visit = (e: Expr, up: readonly Expr[]): void => {
     if (isFirst(e)) {
-      const around = [...up, e].reverse().find((x) => {
+      const chain = [...up, e];
+      const at = chain.findLastIndex((x) => {
         const ks = new Set(leavesOf(x).map((l) => keyOfLeaf(l, ctx.rec)));
         return term.refs.every((r) => ks.has(r));
       });
-      if (around) found.push(around);
+      if (at >= 0) found.push(pctOf(chain, at) ?? (chain[at] as Expr));
       return;
     }
     const kids =
@@ -105,6 +109,28 @@ export function termExpr(
   for (const s of ctx.stepsOf(top.id).steps) visit(s.e, []);
   // a read in more than one place: the place does not decide, and the term is not guessed
   return found.length === 1 ? (found[0] ?? null) : null;
+}
+
+/**
+ * The % factor around a sum, `1 + sum / 100` (T172, the LUK's Multi pools; answer-key-expression.ts `isPct`): a Multi's
+ * term of several parts is the factor, never the sum inside it; null when the sum at `chain[at]` is in no such factor.
+ */
+function pctOf(chain: readonly Expr[], at: number): Expr | null {
+  const sum = chain[at];
+  const div = chain[at - 1];
+  const plus = chain[at - 2];
+  const one = (x: Expr) => x.t === "num" && x.v === 1;
+  const isDiv =
+    div?.t === "op" &&
+    div.o === "/" &&
+    div.l === sum &&
+    div.r.t === "num" &&
+    div.r.v === 100;
+  const isPlus =
+    plus?.t === "op" &&
+    plus.o === "+" &&
+    ((one(plus.l) && plus.r === div) || (one(plus.r) && plus.l === div));
+  return isDiv && isPlus ? plus : null;
 }
 
 /** A recorded value as a number: a boolean is 1 or 0, a text only when it is a number. */
