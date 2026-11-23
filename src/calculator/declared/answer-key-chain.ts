@@ -1,7 +1,8 @@
 // The chain form of the answer key (spec 010, FR-002c, research R1; T148, T158): how each write of a running total
 // maps to the root's steps, and the pools the writes make. A write is the step that gave its value; or, with no such
 // step, `path *= x` or `path += x` in place, when the next step's value times or plus the total gives it (both is
-// ambiguous and refused); or a turn of a loop (the 0 of its start, an earlier turn), never the last write. A step may
+// ambiguous and refused); or a turn of a loop (the 0 of its start, an earlier turn), never the last write: an earlier
+// turn is read at its own place (T175), and a turn with no step there is refused. A step may
 // carry a layer (a max, a floor…): the layer is a line of the root, and a step that only caps the total makes no pool.
 import type { Op } from "../instrument.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
@@ -27,6 +28,8 @@ export interface Bound {
 export interface WriteMeta {
   xi?: number;
   bound?: Bound | null;
+  /** A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), or null. */
+  turn?: () => Expr | null;
 }
 
 export interface ChainWrite {
@@ -124,6 +127,7 @@ export function chainPools(
   c: ChainContext,
   values: readonly number[],
   writes?: readonly WriteMeta[],
+  path = "",
 ): RawPool[] {
   const r = c.reader;
   const m = matchChain(c.steps, values, {
@@ -138,8 +142,9 @@ export function chainPools(
   // a first write divided (New bubble chance): its divisor, and whether every later write only multiplies
   let div: { e: Expr; step: number; value: number } | null = null;
   let onlyTimes = true;
-  for (const w of m.writes) {
-    const s = w.step === null ? undefined : c.steps[w.step];
+  for (const [n, w] of m.writes.entries()) {
+    let s = w.step === null ? undefined : c.steps[w.step];
+    let at = w.step;
     if (w.bound) {
       // a cut to a constant under a test: a Cap or a Floor of the total, and no pool; the stretch before it ends here
       c.layers.push({
@@ -154,14 +159,26 @@ export function chainPools(
       onlyTimes = false;
       continue;
     }
-    if (!s || w.step === null) {
+    // a loop's turn after the total's start (T175): the step at the write's own place, in the place of the loop's step
+    const turn = !s && before !== null ? writes?.[n]?.turn : undefined;
+    // a 0 with no step before any pool sets the total again (the loop's init): where it starts, no turn
+    const e = turn?.() ?? null;
+    if (turn && (e || raw.length > 0 || w.value !== 0)) {
+      if (!e)
+        throw new OutOfRule(
+          `a escrita ${String(w.value)} do acumulador ${path} não tem passo no lugar da sua volta`,
+        );
+      s = { v: w.value, e };
+      at = m.writes.slice(n + 1).find((x) => x.step !== null)?.step ?? null;
+    }
+    if (!s || at === null) {
       onlyTimes = false;
       r.bump("loopWrite");
       before = w.value;
       continue;
     }
-    r.usedSteps.add(w.step);
-    const opened = new Set([w.step]);
+    r.usedSteps.add(at);
+    const opened = new Set([at]);
     const prev = raw.length > 0 ? before : null;
     if (w.compound) {
       // `path *= x` or `path += x` in place: the step is the operand, with no running total in it
@@ -170,7 +187,7 @@ export function chainPools(
       raw.push({
         kind: w.compound,
         terms: c.kept(terms, prev),
-        step: w.step,
+        step: at,
         after: w.value,
       });
       before = w.value;
@@ -182,9 +199,9 @@ export function chainPools(
       noDivision: true,
     });
     if (peeled.refused) throw new OutOfRule(peeled.refused);
-    for (const layer of peeled.layers) layer.step = w.step;
+    for (const layer of peeled.layers) layer.step = at;
     c.layers.push(...peeled.layers);
-    c.stepLimits.push({ limits: peeled.limits, step: w.step });
+    c.stepLimits.push({ limits: peeled.limits, step: at });
     const body = peeled.rest;
     const u = r.unwrap(body, [], true, new Set(opened));
     // a step that only caps or rounds the running total: its layer, and no pool; the stretch before it ends there
@@ -215,16 +232,16 @@ export function chainPools(
       raw.push({
         kind: nk,
         terms: c.kept(terms, null),
-        step: w.step,
+        step: at,
         after: u.l.v,
       });
-      div = { e: u.r, step: w.step, value: u.r.v };
+      div = { e: u.r, step: at, value: u.r.v };
       before = w.value;
       continue;
     }
     const kind = u.t === "op" ? KIND[u.o] : undefined;
     if (!kind || (u.t === "op" && u.o === "-"))
-      throw new OutOfRule(`o passo ${String(w.step)} não soma nem multiplica`);
+      throw new OutOfRule(`o passo ${String(at)} não soma nem multiplica`);
     const terms = c.termsOf([{ e: body, w: 1, seen: opened }], kind);
     const pv = before;
     const k =
@@ -241,11 +258,11 @@ export function chainPools(
       );
       terms.splice(k, 1);
     } else if (pv !== null && raw.length > 0)
-      throw new OutOfRule(`o passo ${String(w.step)} troca o acumulador`);
+      throw new OutOfRule(`o passo ${String(at)} troca o acumulador`);
     raw.push({
       kind,
       terms: c.kept(terms, prev),
-      step: w.step,
+      step: at,
       after:
         peeled.layers.length > 0 && typeof body.v === "number"
           ? body.v

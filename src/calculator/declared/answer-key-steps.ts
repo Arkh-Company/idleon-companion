@@ -2,8 +2,8 @@
 // was, T175): the root's form below its top layer (a chain, an expression or a leaf), its pools and its terms, read
 // from the steps and the writes of the root's call or of another recorded call.
 import type { Op } from "../instrument.ts";
-import type { Recording } from "../recording.ts";
-import type { BlockSteps, Expr } from "../recorded/steps.ts";
+import type { RecNode, Recording } from "../recording.ts";
+import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import {
   callRef,
   near,
@@ -29,7 +29,7 @@ import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
-import { refusedAuthor } from "./cache-author.ts";
+import { refusedAuthor, writeExpr } from "./cache-author.ts";
 
 export interface AnswerPool {
   kind: PoolKind;
@@ -78,11 +78,14 @@ export function answerKeyOfSteps(
     value?: number;
     /** The game's code, to read a write that cuts the total under a test (T162). */
     ops?: readonly Op[];
+    /** The steps of a turn of a call (`makeSteps(rec, ops).turnOf`): a loop's turns, each at its place (T175). */
+    turnOf?: (n: RecNode, range: LoopTurn) => BlockSteps;
   } = {},
 ): AnswerKey | RootFormError {
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
   if (!top) return outOfRule("a gravação não tem raiz");
   const final = opts.value ?? top.v;
+  const { turnOf } = opts;
   if (typeof final !== "number") return outOfRule("a raiz não deu número");
   const writes = rec.writes.filter((w) => w.node === top.id);
   const byPath = new Map<string, number[]>();
@@ -92,7 +95,13 @@ export function answerKeyOfSteps(
       byPath.set(w.path, [...(byPath.get(w.path) ?? []), w.v]);
       metaOf.set(w.path, [
         ...(metaOf.get(w.path) ?? []),
-        { xi: w.xi, bound: boundOf(top, w, opts.ops) },
+        {
+          xi: w.xi,
+          bound: boundOf(top, w, opts.ops),
+          ...(turnOf && {
+            turn: () => writeExpr(rec, { node: top, write: w }, turnOf),
+          }),
+        },
       ]);
     }
   const match = (p: string, vs: readonly number[]) =>
@@ -279,7 +288,7 @@ export function answerKeyOfSteps(
   let divisors: AnswerPool[];
   try {
     raw = acc
-      ? chainPools(chain, acc[1], metaOf.get(acc[0]))
+      ? chainPools(chain, acc[1], metaOf.get(acc[0]), acc[0])
       : expressionPools(at, rest, { kids, reads, target });
     divisors = divisorsAndLimits();
   } catch (e) {

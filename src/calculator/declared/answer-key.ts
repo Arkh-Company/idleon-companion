@@ -58,9 +58,19 @@ export function answerKey(
     // the item's step by its value: more than one step with it is ambiguous
     if (blockSteps.steps.filter((s) => near(s.v, value)).length > 1)
       return outOfRule(`o item ${String(shape.item)} está em mais de um passo`);
-    return answerKeyOfSteps(rec, blockSteps, { branches, value, ops });
+    return answerKeyOfSteps(rec, blockSteps, {
+      branches,
+      value,
+      ops,
+      turnOf: made.turnOf,
+    });
   }
-  const key = answerKeyOfSteps(rec, blockSteps, { gate, branches, ops });
+  const key = answerKeyOfSteps(rec, blockSteps, {
+    gate,
+    branches,
+    ops,
+    turnOf: made.turnOf,
+  });
   if (!shape || !("part" in shape)) return key;
   const inner = (
     node: number,
@@ -69,7 +79,12 @@ export function answerKey(
   ) => {
     const n = rec.nodes[node];
     const steps = turn && n ? made.turnOf(n, turn) : made.of(node);
-    return answerKeyOfSteps(rec, steps, { node, value, ops });
+    return answerKeyOfSteps(rec, steps, {
+      node,
+      value,
+      ops,
+      turnOf: made.turnOf,
+    });
   };
   // a branch's part is only in the loop's turns of that branch (T163)
   if (shape.branch !== undefined)

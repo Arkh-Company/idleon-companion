@@ -44,13 +44,14 @@ test("a running total summed in a loop has one term per turn, each at its own pl
   ]);
   for (const p of key.pools) expect(p.error).toBeLessThanOrEqual(1e-6);
   expect(key.final).toBe(130);
-  expect(key.pollution.loopWrite ?? 0).toBe(0);
+  // only the 0 the total starts at is a write with no term
+  expect(key.pollution.loopWrite).toBe(1);
 });
 
 test("a turn whose write has no step of its own at its place is refused with the reason", () => {
   const key = keyOf("TreeActiveMixed");
   expect(key).toMatchObject({ error: "rootForm" });
-  expect("reason" in key ? key.reason : "").toBe(
-    "a escrita 5 do acumulador DNSM.TreeActiveMixed.v não tem passo no lugar da sua volta",
+  expect("reason" in key ? key.reason : "").toMatch(
+    /a escrita 5 do acumulador DNSM\.TreeActiveMixed\.v não tem passo no lugar da sua volta$/,
   );
 });

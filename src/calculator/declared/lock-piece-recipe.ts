@@ -56,6 +56,7 @@ export function lockRecipePiece(
     node: call.id,
     value,
     ops,
+    turnOf: ctx.turnOf,
   });
   if ("error" in key) refuse(key.reason);
   else lockPools(pools, key, call, ctx, out, ctx.where);
