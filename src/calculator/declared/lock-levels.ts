@@ -4,7 +4,8 @@
 // expression or with no value, a level that does not close, a condition that does not agree and a leaf with no kind are
 // refused with their place. A part of NOT_LEAVES (a curve, a log, a context read) is no child: a curve whose numeric
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
-// counted apart.
+// counted apart. A level the recording opens (level-openings.ts: a cache's author, a loop's turns) has those parts as
+// its children and closes by their sum; a refused opening is a rootForm with its reason.
 import type { RecNode, Recording } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
@@ -172,14 +173,22 @@ function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
   );
 }
 
-/** The parts the lock asks a declared call to have as children: its level's references, without the not-leaves. */
+/**
+ * The parts the lock asks a declared call to have as children: its level's references, without the not-leaves, or the
+ * parts the recording opens it into (level-openings.ts); null when that opening is refused.
+ */
 export function callParts(
   n: RecNode,
   ctx: LevelContext,
   expr = returnOf(n, ctx),
-): string[] {
+): string[] | null {
   const level = { expr, scope: n, value: num(n.v) };
-  return partsOf(level, expr ? leavesOf(expr) : [], ctx);
+  // a level the recording opens gives its own parts; a refused one, none (the agent descends)
+  const open = openingOf(level, ctx);
+  if (typeof open === "string") return null;
+  return open
+    ? open.below.map((o) => o.part)
+    : partsOf(level, expr ? leavesOf(expr) : [], ctx);
 }
 
 function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
@@ -259,7 +268,7 @@ function closeLevel(
   const got = open
     ? open.below.reduce<number | null>(
         (s, o) => (s === null || o.value === null ? null : s + o.value),
-        open.start,
+        0,
       )
     : evalExpr(expr, (e) => {
         if (!leaves.includes(e)) return undefined;

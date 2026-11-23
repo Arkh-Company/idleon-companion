@@ -1,11 +1,13 @@
 // The levels that open by the recording rather than by their own expression (spec 010, spec, Open Questions 23/11): a
-// read of a cache built before the root opens into the block that wrote it (T166, cache-author.ts). The lock and the
-// draft read the same opening: each child is one of its parts, and the level closes by their sum.
+// read of a cache built before the root opens into the block that wrote it (T166, cache-author.ts), and a sum of a list
+// in a loop into its turns (T167, loop-turns.ts). The lock and the draft read the same opening: each child is one of
+// its parts, and the level closes by their sum.
 import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import { cacheAuthor, isCacheRead, writeExpr } from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import { loopOpening } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
 
 /** A part of an opened level: its reference key, its recorded call (null for a read) with its expression, its value. */
@@ -17,8 +19,6 @@ export interface Opening {
   value: number | null;
 }
 export interface Opened {
-  /** What the parts add to (0: the cache's write alone). */
-  start: number;
   below: Opening[];
 }
 
@@ -28,13 +28,13 @@ export function openingOf(
   ctx: LevelContext,
 ): Opened | string | null {
   const { expr, scope, value } = level;
-  if (expr?.t !== "read" || !isCacheRead(expr.p)) return null;
+  if (expr?.t !== "read" || !isCacheRead(expr.p))
+    return loopOpening(expr, scope, ctx);
   const a = cacheAuthor(ctx.rec, expr.p, scope, value ?? undefined);
   if (a === null) return null;
   if ("refused" in a) return a.refused;
   const v = a.write.v;
   return {
-    start: 0,
     below: [
       {
         part: callRef(a.node),
