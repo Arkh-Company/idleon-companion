@@ -7,3 +7,9 @@
    PR 1)
 3. **Um `just check` que falha sem mensagem pede uma rodada sem o proxy `rtk`.** O proxy engole a saída do vitest
    quando a suíte falha. (Executor e Revisor, fase Setup)
+4. **"301 na regra" numa sonda não prova que nada foi decidido pela ordem.** O resultado depende dos valores do retrato;
+   ligar por valor passou por acaso até a ligação pelo lugar gravado recusar três raízes. (Revisor, fim do PR 2)
+5. **Toda ligação do gabarito usa o lugar gravado.** Escritas seguidas de mesmo valor (um acumulador somado com 0, um 0
+   fixo) parecem duas origens quando se olha o valor; a leitura que alimenta o passo é que decide. (Sondas 9 a 13)
+6. **O limite de 400 linhas só se cumpre com um teste.** Por revisão, ele foi achado três vezes; o `file-size.test.ts`
+   fecha isso. (Revisor, fim do PR 2)
