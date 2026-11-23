@@ -48,6 +48,16 @@ test("a running total summed in a loop has one term per turn, each at its own pl
   expect(key.pollution.loopWrite).toBe(1);
 });
 
+test("a turn's pool keeps the turn's own step, never the next write's", () => {
+  // the 30 of the third item is a turn of the first `+` (step 0), after the second `+` (step 1); step 2 is the × multi
+  const key = keyOf("TreeActiveSum", [2, 0, 1, 0]);
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.pools.map((p) => [p.kind, p.value, p.steps])).toEqual([
+    ["additive", 30, [0, 1]],
+    ["multi", 2, [2]],
+  ]);
+});
+
 test("a turn whose write has no step of its own at its place is refused with the reason", () => {
   const key = keyOf("TreeActiveMixed");
   expect(key).toMatchObject({ error: "rootForm" });
