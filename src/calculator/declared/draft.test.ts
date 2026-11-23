@@ -260,6 +260,14 @@ test("the guide of the steps goes only to TREES_OUT, with the recorded values; t
   expect(json).not.toMatch(/"(t|e|v|o|steps|value)":|\s[-+*/]\s|Math\./);
 });
 
+test("the guide writes a recorded value with no number as its text: a call with no value is `undefined`", () => {
+  const { rec, key, ops } = recorded("TreeDeclChain");
+  const luck = rec.nodes.find((n) => n.b === "TreeDeclLuck");
+  if (!luck) throw new Error("no TreeDeclLuck");
+  delete luck.v;
+  expect(stepsGuide(key, rec, ops)).toContain("TreeDeclLuck() = undefined");
+});
+
 test("the draft's JSON is already as prettier leaves it", async () => {
   for (const block of ["TreeDeclChain", "TreeDeclDraft"]) {
     const json = draftJson(draftOf(block));
