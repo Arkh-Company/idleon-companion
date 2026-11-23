@@ -74,6 +74,8 @@ interface Walk {
   stack: readonly string[];
   /** The node is a part of a count (a child of a combine), the piece it calls included. */
   combined?: boolean;
+  /** The node is the model child of a pool's source with `each` (T174, T176). */
+  eachModel?: boolean;
 }
 
 const isArg = (v: unknown): boolean =>
@@ -220,6 +222,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     // its items are the answer key's terms, the condition left out (T174): a class or a condition would go unread
     if (n.classes !== undefined || n.condition !== undefined)
       no(where, "a fonte com each vai sem classes nem condition");
+  } else if (w.eachModel && n.ref === undefined && n.constant === undefined) {
+    // a fixed base of the code the game picks by a test (T176): its item ties it, its name is proved at the item's row
+    if (n.leaf !== "fixedValue")
+      no(where, "o filho-modelo sem ref é folha fixedValue");
   } else if ((n.ref === undefined) === (n.constant === undefined))
     no(where, "ref ou constant: um dos dois, nunca os dois");
   if (n.ref !== undefined) checkRef(n.ref, where);
@@ -263,7 +269,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
         as === null ? c : fill(c, { [as]: 0 }),
         `${where}/children/${String(i)}`,
         n.combine === undefined && w.stack.length === 0 ? "child" : "piece",
-        { ...w, combined: n.combine !== undefined },
+        { ...w, combined: n.combine !== undefined, eachModel: poolEach },
       );
       siblings.push(c);
     });

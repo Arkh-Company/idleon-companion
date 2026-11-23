@@ -37,7 +37,8 @@ export function checkProof(x: unknown, where: string): void {
     "names" in p
       ? Object.keys(p).length === 1 && typeof p.names === "string"
       : typeof p.table === "string" &&
-        IDENT.test(p.table) &&
+        // a game table by its path of names (`CustomLists.StarSigns`, T176)
+        p.table.split(".").every((s) => IDENT.test(s)) &&
         (typeof p.row === "string" ||
           (typeof p.row === "number" && Number.isInteger(p.row)));
   if (!ok) no(where, "nameProof é { table, row } ou { names }");

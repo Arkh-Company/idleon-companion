@@ -39,6 +39,11 @@ export interface AnswerTerm {
   scale?: number;
   /** The passage values crossed to reach the term. */
   via: string[];
+  /**
+   * A constant of the code under a test that finds an item in a list (T176): the list's path with that item, as the
+   * code compares it (`DNSM.StarSignsDL[76]` for `contains(…StarSignsDL, "76")`).
+   */
+  item?: string;
 }
 export type PoolKind = "additive" | "multi";
 /** The pool each operator makes, and the operator of each pool. */
@@ -79,6 +84,7 @@ export const strip = (t: RawTerm): AnswerTerm => ({
   weight: t.weight,
   ...(t.scale === undefined ? {} : { scale: t.scale }),
   via: t.via,
+  ...(t.item === undefined ? {} : { item: t.item }),
 });
 
 /** Same-kind stretches in a row are one pool; each pool's value from the running total around it. */

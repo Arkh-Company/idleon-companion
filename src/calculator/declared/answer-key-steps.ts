@@ -25,6 +25,7 @@ import type {
   RootFormError,
 } from "./answer-key-terms.ts";
 import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
+import { itemOfStep, placeOfWrite } from "./answer-key-item.ts";
 import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
@@ -102,6 +103,7 @@ export function answerKeyOfSteps(
         {
           xi: w.xi,
           bound: boundOf(top, w, opts.ops),
+          place: placeOfWrite(top, stepAt, w.xi) ?? null,
           ...(turnOf && {
             turn: () => {
               const a = { node: top, write: w };
@@ -109,9 +111,10 @@ export function answerKeyOfSteps(
               const e = writeExpr(rec, a, turnOf, t);
               // the turn's step is the root's step of the same op of the code: where the step log put each
               const op = (at?: number) => top.x?.[at ?? -1]?.[0];
-              const mine = op(t.stepAt?.at(-1));
+              const pos = t.stepAt?.at(-1);
+              const mine = op(pos);
               const step = (stepAt ?? []).findIndex((p) => op(p) === mine);
-              return e && { e, step };
+              return e && { e, step, ...(pos !== undefined && { pos }) };
             },
           }),
         },
@@ -266,6 +269,7 @@ export function answerKeyOfSteps(
     touches: holdsRoot,
     layers,
     stepLimits,
+    itemAt: (pos: number | undefined) => itemOfStep(top, opts.ops, pos),
   };
 
   const { operands, kindOf, expressionPools } = expressionReader({

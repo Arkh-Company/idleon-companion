@@ -59,7 +59,7 @@ function sourcesOf(
   terms: readonly AnswerTerm[],
   ctx: LevelContext,
   out: LevelOut,
-): { s: BlueprintNode; at: string }[] {
+): { s: BlueprintNode; at: string; term?: number }[] {
   return g.sources.flatMap((s) => {
     const at = nodeId(ctx.where, pool, g.system, [s.key]);
     const [model] = s.children ?? [];
@@ -67,10 +67,19 @@ function sourcesOf(
     out.counts.branches++;
     const { list, as } = s.each;
     const path = eachPattern(list, ctx.character);
-    const items = terms.flatMap((t) => {
-      const item = t.kind === "source" ? path.exec(t.ref)?.[1] : undefined;
-      return item === undefined ? [] : [item];
+    // a model with no ref is a fixed base of the code (T176): the constants whose guarding test found the item
+    const fixed = !model.ref;
+    const found = terms.flatMap((t, j) => {
+      const item = fixed
+        ? t.kind === "constant" && t.item !== undefined
+          ? path.exec(t.item)?.[1]
+          : undefined
+        : t.kind === "source"
+          ? path.exec(t.ref)?.[1]
+          : undefined;
+      return item === undefined ? [] : [{ item, j }];
     });
+    const items = found.map((f) => f.item);
     const twice = items.find((x, k) => items.indexOf(x) !== k);
     if (twice !== undefined) {
       out.errors.push({
@@ -80,13 +89,14 @@ function sourcesOf(
       });
       return [];
     }
-    return items.map((item) => ({
+    return found.map(({ item, j }) => ({
       s: {
         ...fill(model, { [as]: Number(item) }),
         key: `${model.key}-${item}`,
         ...(s.weight !== undefined && { weight: s.weight }),
       },
       at: `${at}/${model.key}-${item}`,
+      ...(fixed && { term: j }),
     }));
   });
 }
@@ -150,11 +160,18 @@ export function lockPools(
     for (const g of pool.groups) {
       let last = -1;
       let first = Infinity;
-      for (const { s, at: sourceAt } of sourcesOf(g, i, kp.terms, ctx, out)) {
+      for (const { s, at: sourceAt, term } of sourcesOf(
+        g,
+        i,
+        kp.terms,
+        ctx,
+        out,
+      )) {
         const k = sourceKey(s, kp.terms, character);
         const n = (seenB.get(k) ?? 0) + 1;
         seenB.set(k, n);
-        const j = place.get(`${k}#${String(n)}`);
+        // a fixed base comes tied to its term by its item (T176); any other source, by its key and occurrence
+        const j = term ?? place.get(`${k}#${String(n)}`);
         const t = kp.terms[j ?? -1];
         const sctx = { ...ctx, where: sourceAt };
         const otherClass =

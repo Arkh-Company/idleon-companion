@@ -32,7 +32,12 @@ export interface WriteMeta {
    * A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), with the index of
    * the root's step of the same op of the code (-1 with none), or null.
    */
-  turn?: () => { e: Expr; step: number } | null;
+  turn?: () => { e: Expr; step: number; pos?: number } | null;
+  /**
+   * The write's place (T176, answer-key-item.ts placeOfWrite): the root's step recorded right before it, or -1 for an
+   * earlier turn of a loop's step; it gives the write's step in place of a step found by its value.
+   */
+  place?: number | null;
 }
 
 export interface ChainWrite {
@@ -58,6 +63,23 @@ export function matchChain(
     const xi = meta.writes?.[n]?.xi;
     const ok = (j: number) =>
       j >= from && (xi === undefined || (meta.stepAt?.[j] ?? -1) < xi);
+    const meta1 = meta.writes?.[n];
+    // the write's own place (T176): its step there, or an earlier turn of a loop's step, never a step by its value
+    const place = meta1?.bound ? undefined : meta1?.place;
+    if (typeof place === "number" && place >= 0 && ok(place)) {
+      const s = steps[place];
+      if (s && near(s.v, w)) {
+        writes.push({ value: w, step: place, compound: null });
+        from = place + 1;
+        before = w;
+        continue;
+      }
+    }
+    if (place === -1 && meta1?.turn) {
+      writes.push({ value: w, step: null, compound: null });
+      before = w;
+      continue;
+    }
     const i = steps.findIndex((s, j) => ok(j) && near(s.v, w));
     const pv = before;
     // in place only over a total that is not 0 (0 × anything is 0); a write equal to the total is in place only when
@@ -123,6 +145,8 @@ export interface ChainContext {
   stepAt?: readonly number[];
   /** The divisor of a first write divided (T162), to build as ➗ lines. */
   divisors: { e: Expr; step: number }[];
+  /** The item of the test that guards the step recorded at a place of the call's step log (T176). */
+  itemAt?: (pos: number | undefined) => string | undefined;
 }
 
 /** The pools of a chain: each write's step adds to or multiplies the running total it had just before. */
@@ -145,6 +169,14 @@ export function chainPools(
   // a first write divided (New bubble chance): its divisor, and whether every later write only multiplies
   let div: { e: Expr; step: number; value: number } | null = null;
   let onlyTimes = true;
+  // a constant of the code under a test that finds an item takes the item (T176), from its step's own place
+  const tag = (terms: RawTerm[], pos: number | undefined) => {
+    const item = c.itemAt?.(pos);
+    if (item !== undefined)
+      for (const t of terms)
+        if (t.kind === "constant" && t.e.t === "num") t.item = item;
+    return terms;
+  };
   for (const [n, w] of m.writes.entries()) {
     let s = w.step === null ? undefined : c.steps[w.step];
     let at = w.step;
@@ -166,6 +198,7 @@ export function chainPools(
     const turn = !s && before !== null ? writes?.[n]?.turn : undefined;
     // a 0 with no step before any pool sets the total again (the loop's init): where it starts, no turn
     const t = turn?.() ?? null;
+    let pos = at === null ? undefined : c.stepAt?.[at];
     if (turn && (t || raw.length > 0 || w.value !== 0)) {
       if (!t)
         throw new OutOfRule(
@@ -177,6 +210,7 @@ export function chainPools(
         );
       s = { v: w.value, e: t.e };
       at = t.step;
+      pos = t.pos;
     }
     if (!s || at === null) {
       onlyTimes = false;
@@ -190,7 +224,10 @@ export function chainPools(
     if (w.compound) {
       // `path *= x` or `path += x` in place: the step is the operand, with no running total in it
       r.bump("compoundWrite");
-      const terms = c.termsOf([{ e: s.e, w: 1, seen: opened }], w.compound);
+      const terms = tag(
+        c.termsOf([{ e: s.e, w: 1, seen: opened }], w.compound),
+        pos,
+      );
       raw.push({
         kind: w.compound,
         terms: c.kept(terms, prev),
@@ -249,11 +286,16 @@ export function chainPools(
     const kind = u.t === "op" ? KIND[u.o] : undefined;
     if (!kind || (u.t === "op" && u.o === "-"))
       throw new OutOfRule(`o passo ${String(at)} não soma nem multiplica`);
-    const terms = c.termsOf([{ e: body, w: 1, seen: opened }], kind);
+    const terms = tag(c.termsOf([{ e: body, w: 1, seen: opened }], kind), pos);
     const pv = before;
+    // the first write of a sum reads the total before it was ever set: a 0 with no source, its start (T176)
     const k =
       pv === null
-        ? -1
+        ? kind === "additive" && raw.length === 0
+          ? terms.findIndex(
+              (t) => t.kind === "constant" && t.e.t === "val" && t.value === 0,
+            )
+          : -1
         : terms.findIndex(
             (t) =>
               near(t.value, pv) &&
