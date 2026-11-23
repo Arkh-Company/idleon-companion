@@ -10,7 +10,9 @@ import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { answerKey } from "./answer-key.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
+import type { RecNode } from "../recording.ts";
 import { inventedRecorder, levelContext, recorded } from "./lock-fixture.ts";
+import { lockLevels } from "./lock-levels.ts";
 import { pieceChildren } from "./lock-pieces.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
@@ -216,5 +218,162 @@ test("a piece whose count does not close is refused with the level and the two v
   });
   expect(lock(blueprint(CALL, unread), [1]).errors).toEqual([
     { kind: "childNoValue", where: `${LINE}/sign-0/multi` },
+  ]);
+});
+
+/** An invented piece with the count and the children given, and a param it does not use. */
+const pieceOf = (combine: string, children: Raw[]) => ({
+  id: "invented-signs",
+  params: ["stat"],
+  combine,
+  children,
+});
+const leaf = (key: string, ref: Raw, kind = "rawBonus"): Raw => ({
+  key,
+  name: `Invented ${key}`,
+  ref,
+  leaf: kind,
+});
+/** The lock of a line `line` that calls `piece`, over the root `root` of the invented game with `attrs`. */
+const lockOver = (root: string, line: Raw, piece: unknown, attrs: object) =>
+  lockBlueprint({
+    blueprint: blueprint(line, piece, root),
+    ...recorded(root, attrs),
+    character: 0,
+    characterClass: 3,
+  });
+/** A recorded node that only read `r`. */
+const reader = (r: RecNode["r"]): RecNode => ({
+  id: 0,
+  b: "Reader",
+  a: [],
+  c: [],
+  p: null,
+  pxi: 0,
+  r,
+});
+const signsLine = () => {
+  const line = blueprint(CALL).pools[0]?.groups[0]?.sources[0];
+  if (!line) throw new Error("no line");
+  return line;
+};
+
+test("a piece's leaves and items are tied by their place: below the line's call only, and two values for one path are refused with both", () => {
+  // TreeMultiTwice reads TreeSignMulti as 2, then as 3
+  const twice = lockOver(
+    "TreeMultiTwiceRoot",
+    { ref: { call: "TreeMultiTwice", args: [] } },
+    pieceOf("sum", [leaf("multi", { read: "TreeSignMulti" })]),
+    { TreeSignMulti: 2 },
+  ).errors;
+  expect(twice).toEqual([
+    { kind: "childNoValue", where: `${LINE}/multi`, expected: 2, got: 3 },
+  ]);
+  expect(twice.map(lockMessage)).toEqual([
+    `filho sem valor na gravação: ${LINE}/multi: a gravação tem 2 e 3`,
+  ]);
+  // TreeCapped is read by the root, outside the line's call: the sign's place has no value for it
+  const outside = signsWith((kids) =>
+    kids.push(leaf("capped", { read: "TreeCapped" })),
+  );
+  expect(lock(blueprint(CALL, outside), [1]).errors).toEqual([
+    { kind: "childNoValue", where: `${LINE}/sign-0/capped` },
+  ]);
+  // an item of the list read with two values: the line has no children to close by
+  const { rec, ops } = recorded("TreeSignsRoot", state([1]));
+  const ctx = levelContext(rec, ops, LINE);
+  expect(
+    pieceChildren(signsLine(), ctx, [
+      reader([
+        ["TreeSigns[0]", 1],
+        ["TreeSigns[0]", 2],
+      ]),
+    ]),
+  ).toEqual({ two: [1, 2] });
+});
+
+test("an item recorded with a replacement pattern fills its model in as it is", () => {
+  const { rec, ops } = recorded("TreeSignsRoot", state([1]));
+  expect(
+    pieceChildren(signsLine(), levelContext(rec, ops, LINE), [
+      reader([["TreeSigns[0]", "$'"]]),
+    ]),
+  ).toMatchObject([
+    {
+      key: "sign-0",
+      nameProof: { table: "InventedSigns", row: "$'" },
+      ref: { call: "TreeSign", args: ["Drop", "$'"] },
+    },
+  ]);
+});
+
+test("a line whose call gives no number is notClosing, as any level", () => {
+  const { rec, ops } = recorded("TreeSignsRoot", state([1, 2]));
+  const call = rec.nodes.find((n) => n.b === "TreeSigns");
+  if (!call) throw new Error("no call");
+  expect(
+    lockLevels(
+      signsLine(),
+      { ...call, v: "thirty" },
+      levelContext(rec, ops, LINE),
+    ).errors,
+  ).toEqual([
+    { kind: "notClosing", where: LINE, expected: Number.NaN, got: 30 },
+  ]);
+});
+
+test("a middle level whose reference the recording lacks is childNoValue at its place", () => {
+  const never = structuredClone(SIGNS);
+  if (never.children[0])
+    never.children[0].ref = {
+      call: "TreeNeverCalled",
+      args: ["{stat}", "{sign}"],
+    };
+  expect(lock(blueprint(CALL, never), [1]).errors).toEqual([
+    { kind: "childNoValue", where: `${LINE}/sign-0` },
+  ]);
+});
+
+const seraphLock = (below: Raw) =>
+  lockOver(
+    "TreeSeraphRoot",
+    { ref: { call: "TreeSeraphLine", args: [] } },
+    pieceOf("product", [
+      leaf("multi", { read: "TreeSignMulti" }),
+      {
+        key: "seraph",
+        name: "Invented Seraph",
+        ref: { call: "TreeSeraph", args: [] },
+        ...below,
+      },
+      leaf("table", { call: "TreeDeclTable", args: [] }, "fixedValue"),
+    ]),
+    { TreeSignMulti: 2, TreeSummonLv: 40 },
+  );
+
+test("a piece's call level with no combine closes by its own recorded count; a leaf that reads only a game table passes", () => {
+  const out = seraphLock({
+    children: [leaf("summoning", { read: "TreeSummonLv" }, "level")],
+  });
+  expect(out.errors).toEqual([]);
+  // the line, the Seraph, the pool and the root closed; the multi, the summoning, the table and TreeCapped
+  expect(out.counts).toEqual({
+    closed: 4,
+    closedByRecorded: 0,
+    leaves: 4,
+    branches: 2,
+  });
+  // the Seraph's part left out, a read it never made in its place
+  expect(
+    seraphLock({ children: [leaf("capped", { read: "TreeCapped" })] }).errors,
+  ).toEqual([
+    { kind: "childNoValue", where: `${LINE}/seraph/capped` },
+    { kind: "undeclaredPart", where: `${LINE}/seraph`, got: "TreeSummonLv" },
+  ]);
+});
+
+test("a piece's leaf whose call reads the save is leafHasChildren with its first child", () => {
+  expect(seraphLock({ leaf: "rawBonus" }).errors).toEqual([
+    { kind: "leafHasChildren", where: `${LINE}/seraph`, got: "TreeSummonLv" },
   ]);
 });

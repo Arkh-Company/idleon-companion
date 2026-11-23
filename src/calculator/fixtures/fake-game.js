@@ -1513,6 +1513,31 @@ lime.$scripts.N = function (_exports, $global) {
       a.engine.getGameAttribute("DNSM").h.TreeSignsDrop.h.v + state().TreeCapped
     );
   };
+  // Spec 010 (T170, T171, review r1): a multi read twice with two values (raised between the reads); a level that is a
+  // call closing by its own count, as the game's Seraph (1 + a summoning level ÷ 100), times the multi and a call that
+  // reads only a game table. Each under a root that adds TreeCapped.
+  Blocks._customBlock_TreeMultiTwice = function () {
+    var s = state();
+    var first = s.TreeSignMulti;
+    s.TreeSignMulti = first + 1;
+    return first + s.TreeSignMulti;
+  };
+  Blocks._customBlock_TreeMultiTwiceRoot = function () {
+    return Blocks._customBlock_TreeMultiTwice() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSeraph = function () {
+    return 1 + state().TreeSummonLv / 100;
+  };
+  Blocks._customBlock_TreeSeraphLine = function () {
+    return (
+      state().TreeSignMulti *
+      Blocks._customBlock_TreeSeraph() *
+      Blocks._customBlock_TreeDeclTable()
+    );
+  };
+  Blocks._customBlock_TreeSeraphRoot = function () {
+    return Blocks._customBlock_TreeSeraphLine() + state().TreeCapped;
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.
