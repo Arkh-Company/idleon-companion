@@ -31,7 +31,8 @@ import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
-import { refusedAuthor, writeExpr, writeTurn } from "./cache-author.ts";
+import { turnOfWrite } from "./answer-key-turn.ts";
+import { refusedAuthor } from "./cache-author.ts";
 
 export interface AnswerPool {
   kind: PoolKind;
@@ -108,25 +109,7 @@ export function answerKeyOfSteps(
           bound: boundOf(top, w, opts.ops),
           place: placeOfWrite(top, stepAt, w.xi, opts.ops) ?? null,
           ...(turnOf && {
-            turn: () => {
-              const a = { node: top, write: w };
-              const t = writeTurn(rec, a, turnOf);
-              const op = (at?: number) => top.x?.[at ?? -1]?.[0];
-              // a write of a variable a turn added to (`t += x`, T177): that assignment, with its turn's values
-              const own = op(w.xi - 1);
-              if (own !== undefined && opts.ops?.[own]?.kind === "assign") {
-                const ae = t.exprOf?.(own);
-                return ae && near(ae.v, w.v)
-                  ? { e: ae, step: -1, pos: w.xi - 1, assign: true }
-                  : null;
-              }
-              const e = writeExpr(rec, a, turnOf, t);
-              // the turn's step is the root's step of the same op of the code: where the step log put each
-              const pos = t.stepAt?.at(-1);
-              const mine = op(pos);
-              const step = (stepAt ?? []).findIndex((p) => op(p) === mine);
-              return e && { e, step, ...(pos !== undefined && { pos }) };
-            },
+            turn: () => turnOfWrite(rec, top, w, turnOf, stepAt, opts.ops),
           }),
         },
       ]);
