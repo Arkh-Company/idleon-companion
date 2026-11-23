@@ -163,7 +163,10 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
           return { t: "call", id: k.id, v };
         }
       }
-      if (typeof v !== "number") return defOrVal(node, v);
+      // a variable set by a block's call: the data flow decides, never a read with its value (T177 r3)
+      const d = ops[opIndex.get(node) ?? -1]?.def;
+      if (typeof v !== "number" || (d && methodOf(d)?.startsWith(CUSTOM)))
+        return defOrVal(node, v);
       const pool = poolFor(node);
       // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
       const pat = astPattern(node);
