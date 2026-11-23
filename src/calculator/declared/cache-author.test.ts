@@ -4,7 +4,7 @@
 // The invented game (fake-game.js, TreeAuthor*) builds the cache in the recipe's builders' pass.
 import { expect, test } from "vitest";
 import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
-import type { Recording } from "../recording.ts";
+import type { Recipe, Recording } from "../recording.ts";
 import { answerKey } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
@@ -17,11 +17,12 @@ import { refKey } from "./refs.ts";
 const attrs = {
   DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 15 } } } },
 };
-const builder = (block: string) => ({
+type Run = Recipe["builders"][number]["run"];
+const builder = (run: string | Run) => ({
   cache: "TreeAuthor",
-  run: { block, args: [] },
+  run: typeof run === "string" ? { block: run, args: [] } : run,
 });
-const record = (root: string, ...builders: string[]): Recording =>
+const record = (root: string, ...builders: (string | Run)[]): Recording =>
   inventedRecorder().record(mosaicOf(attrs), [[root, [0, 0, 0]]], {
     recompute: [],
     builders: builders.map(builder),
@@ -165,4 +166,55 @@ test("the lock refuses a cache read below a source with two possible authors, wi
       /^invented-author\/0\/cards\/call\/cache: a leitura de DNSM\.TreeAuthor\.v tem mais de um autor possível \(TreeAuthorBuild\(\) seq \d+; TreeAuthorAgain\(\) seq \d+\)$/,
     ),
   ]);
+});
+
+test("a cache a helper's event wrote outside any block has no author to go down: refused", () => {
+  const key = keyOf(
+    record("TreeAuthorRead", {
+      slot: 0,
+      behavior: "ActorEvents_29",
+      event: "_customEvent_TreeAuthorFill",
+      args: [],
+    }),
+  );
+  expect("reason" in key ? key.reason : "no refusal").toMatch(
+    /: o cache DNSM.TreeAuthor.v foi escrito fora de um bloco$/,
+  );
+});
+
+test("the cache never becomes a leaf: a cache read declared as a leaf is leafHasChildren, with its author", () => {
+  const rec = record("TreeAuthorRead", "TreeAuthorBuild");
+  const bp = blueprint("TreeAuthorRead", {
+    ...leaf("cache", "DNSM.TreeAuthor.v"),
+  });
+  expect(lock(rec, bp).errors.map(lockMessage)).toEqual([
+    "folha com filhos na gravação: invented-author/0/cards/cache: o primeiro é TreeAuthorBuild()",
+  ]);
+});
+
+test("the draft waits for the descent of a cache read with two possible authors, and keeps the root's own passage a leaf", () => {
+  const draftOf = (rec: Recording, root: string) => {
+    const key = keyOf(rec);
+    if ("error" in key) throw new Error(key.reason);
+    const ref = { call: root, args: [0, 0, 0] };
+    return draftBlueprint("invented", { name: "I", ref }, key, rec, [
+      ...inventedRecorder().ops,
+    ]);
+  };
+  const deep = draftOf(
+    record("TreeAuthorDeep", "TreeAuthorBuild", "TreeAuthorAgain"),
+    "TreeAuthorDeep",
+  );
+  expect(deep.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["TreeAuthorCall()", [["DNSM.TreeAuthor.v", []]]],
+  ]);
+  expect(deep.pending).toContainEqual({
+    where: "pools/0/groups/0/sources/0/children/0",
+    kind: "descend",
+  });
+  // TreeCountNone writes DNSM.TreeCount.v itself, then reads it: a passage of the root, no cache (the 3 is a constant)
+  const own = draftOf(record("TreeCountNone"), "TreeCountNone");
+  expect(
+    own.pools.map((p) => p.groups.map((g) => g.sources.map(shape))),
+  ).toEqual([[[["", []]], [["DNSM.TreeCount.v", []]], [["TreeLoop()", []]]]]);
 });

@@ -201,6 +201,12 @@ lime.$scripts.N = function (_exports, $global) {
     a.engine.getGameAttribute("DNSM").h.TreeCache.h.total =
       state().TreeBase * 2;
   };
+  // Spec 010 (T166): an event of the helper that builds the cache TreeAuthor itself, outside any block.
+  HelperActor.prototype._customEvent_TreeAuthorFill = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a * 5;
+  };
   // The event a builder needs first: it prepares a field the builder reads.
   HelperActor.prototype._customEvent_Prepare = function () {
     this._ready = this._mode === "d" ? 2 : 0;
