@@ -111,4 +111,10 @@ test("an each source goes in a pool with its model only, with no ref nor constan
   expect(
     reason({ ...EACH, children: [MODEL, { ...MODEL, key: "b" }] }),
   ).toMatch(/each tem um filho-modelo só/);
+  // the items come from the answer key, with no condition: a class or a condition there would go unread
+  const ON = { key: "on", name: "On", ref: { read: "TreeFlagOn" } };
+  for (const extra of [{ classes: [3] }, { condition: ON }])
+    expect(reason({ ...EACH, ...extra })).toMatch(
+      /a fonte com each vai sem classes nem condition/,
+    );
 });
