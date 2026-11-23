@@ -1449,7 +1449,23 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeAuthor.h.v = 0;
     for (var i = 0; i < state().TreeList.length; i++)
       d.TreeAuthor.h.v =
-        d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i) + state().TreeList[i];
+        d.TreeAuthor.h.v +
+        Blocks._customBlock_TreeTurnItem(i) +
+        state().TreeList[i];
+  };
+  // Spec 010 (T168 r1): the author of TreeAuthor reads TreeOther, which TreeOtherBuild wrote (4 + 1 = 5), in its write's
+  // count (× 2 = 10), then writes TreeOther itself (the same number) and reads it again after that one write.
+  Blocks._customBlock_TreeOtherBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeOther = new StringMap();
+    d.TreeOther.h.v = state().TreeBase + 1;
+  };
+  Blocks._customBlock_TreeAuthorNested = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = d.TreeOther.h.v * 2;
+    d.TreeOther.h.v = d.TreeAuthor.h.v / 2;
+    return d.TreeOther.h.v * 3;
   };
   Blocks._customBlock_TreeAuthorMixed = function () {
     var d = a.engine.getGameAttribute("DNSM").h;

@@ -13,16 +13,35 @@ import { inventedRecorder } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
 
-/** The recording of TreeAuthorRead over the cache `author` built, the running game's cache `v`. */
-const record = (author: string, v: number): Recording =>
+/**
+ * The recording of TreeAuthorRead over the cache `author` built, the running game's cache `v`, after TreeOther's
+ * builder when `other` is its cache.
+ */
+const record = (author: string, v: number, other?: number): Recording =>
   inventedRecorder().record(
     mosaicOf({
-      DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v } } } },
+      DNSM: {
+        $m: {
+          ...activeAs(0).DNSM.$m,
+          TreeAuthor: { $m: { v } },
+          ...(other === undefined ? {} : { TreeOther: { $m: { v: other } } }),
+        },
+      },
     }),
     [["TreeAuthorRead", [0, 0, 0]]],
     {
       recompute: [],
-      builders: [{ cache: "TreeAuthor", run: { block: author, args: [] } }],
+      builders: [
+        ...(other === undefined
+          ? []
+          : [
+              {
+                cache: "TreeOther",
+                run: { block: "TreeOtherBuild", args: [] },
+              },
+            ]),
+        { cache: "TreeAuthor", run: { block: author, args: [] } },
+      ],
     },
   );
 const keyOf = (rec: Recording) => {
@@ -146,4 +165,56 @@ test("an author that overwrites the cache and then sums over it in turns is refu
   expect(lock(rec, author).errors.map(lockMessage)).toEqual([
     "invented-author/0/cards/cache/author: a volta 1 do laço de TreeAuthorMixed() escreve DNSM.TreeAuthor.v sem somar sobre o próprio valor",
   ]);
+});
+
+test("a cache read in its author's count ties to the write its own place saw, not to every place that reads it", () => {
+  // TreeAuthorNested reads TreeOther (TreeOtherBuild's, 5) in its write's count (× 2 = 10), then writes it itself and
+  // reads it again: only the place in the count decides TreeOther's author
+  const rec = record("TreeAuthorNested", 10, 5);
+  expect(drafted(rec)).toEqual([
+    [
+      "DNSM.TreeAuthor.v",
+      [
+        [
+          "TreeAuthorNested()",
+          [["DNSM.TreeOther.v", [["TreeOtherBuild()", [["TreeBase", []]]]]]],
+        ],
+      ],
+    ],
+  ]);
+  const author: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorNested", args: [] },
+    children: [
+      {
+        key: "other",
+        name: "Other",
+        ref: { read: "DNSM.TreeOther.v" },
+        children: [
+          {
+            key: "build",
+            name: "Build",
+            ref: { call: "TreeOtherBuild", args: [] },
+            children: [leaf("base", "TreeBase")],
+          },
+        ],
+      },
+    ],
+  };
+  expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});
+
+test("an author's read of its own earlier turn goes down a turn at a time, each its own items", () => {
+  // TreeAuthorPair: each turn's count reads the turn before it: TreeTurnItem(2), then (1), then (0)
+  const items: string[] = [];
+  const [source] = drafted(record("TreeAuthorPair", 18)) ?? [];
+  for (let s = source; s; ) {
+    const [, [author]] = s;
+    const kids = author?.[1] ?? [];
+    const own = kids.find(([k]) => k.startsWith("TreeTurnItem"));
+    if (own) items.push(own[0]);
+    s = kids.find(([k]) => k === "DNSM.TreeAuthor.v");
+  }
+  expect(items).toEqual(["TreeTurnItem(2)", "TreeTurnItem(1)", "TreeTurnItem(0)"]);
 });
