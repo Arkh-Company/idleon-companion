@@ -199,6 +199,10 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeAuthorAgain();
       Blocks._customBlock_TreeAuthorBuild();
     }
+    // Spec 010 (T168): the helper builds it by its own event, or by its own code outside any block or event.
+    if (s.Scenario === "authorFilled") this._customEvent_TreeAuthorFill();
+    if (s.Scenario === "authorInit")
+      s.DNSM.h.TreeAuthor.h.v = s.TreeStats.h.a * 5;
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
   // An event of the helper that builds a cache, as the game's own events do.

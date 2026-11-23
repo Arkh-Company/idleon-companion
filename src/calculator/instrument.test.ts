@@ -122,6 +122,22 @@ test("the prettier-formatted blocks of the invented game are found too", () => {
   expect(new Set(ops.map((o) => o.block))).toEqual(new Set(["Spaced"]));
 });
 
+test("a helper's event has its steps only with the answer key's option, named by its whole method (spec 010, T168)", () => {
+  const events =
+    "H.prototype._customEvent_Fill = function () { this.v = this.a * 5; };" +
+    "var K = { _customEvent_Keyed: function () { return this.a + 1; } };";
+  const blocks = (o?: { events: boolean }) =>
+    new Set(
+      instrument(events + block("Plain", "return a+b"), o).ops.map(
+        (x) => x.block,
+      ),
+    );
+  expect(blocks()).toEqual(new Set(["Plain"]));
+  expect(blocks({ events: true })).toEqual(
+    new Set(["Plain", "_customEvent_Fill", "_customEvent_Keyed"]),
+  );
+});
+
 test("the function text stays with each step, for the worker only", () => {
   const { ops } = instrument(block("Text", "return a+b"));
   expect(ops[0]?.fnText).toBe("function(a,b){return a+b}");

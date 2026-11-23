@@ -3,8 +3,9 @@
 // that block to the save. With more than one possible author it is refused with the reason, never by value or order.
 // The invented game (fake-game.js, TreeAuthor*) builds the cache in the recipe's builders' pass.
 import { expect, test } from "vitest";
-import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { activeAs, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import type { Recipe, Recording } from "../recording.ts";
+import { bootRecorder } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
@@ -27,7 +28,18 @@ const record = (root: string, ...builders: (string | Run)[]): Recording =>
     recompute: [],
     builders: builders.map(builder),
   });
-const keyOf = (rec: Recording) => answerKey(rec, inventedRecorder().ops);
+type Recorder = ReturnType<typeof bootRecorder>;
+const keyOf = (rec: Recording, r: Recorder = inventedRecorder()) =>
+  answerKey(rec, r.ops);
+let answer: Recorder | null = null;
+/** The answer key's recorder: a helper's event is a call of its own there (tree-record.ts, the answer key's option). */
+const answerRecorder = () =>
+  (answer ??= bootRecorder(
+    GAME,
+    PAK,
+    { startMs: 5_000, numberMs: 500 },
+    { infinite: true },
+  ));
 
 /** Each node as its reference and its children's, down the tree. */
 type Shape = [string, Shape[]];
@@ -67,10 +79,10 @@ const cache = (children: BlueprintNode[]): BlueprintNode => ({
   ref: { read: "DNSM.TreeAuthor.v" },
   children,
 });
-const lock = (rec: Recording, bp: Blueprint) => {
-  const key = keyOf(rec);
+const lock = (rec: Recording, bp: Blueprint, r = inventedRecorder()) => {
+  const key = keyOf(rec, r);
   if ("error" in key) throw new Error(key.reason);
-  const { ops } = inventedRecorder();
+  const { ops } = r;
   return lockBlueprint({
     blueprint: bp,
     key,
@@ -81,13 +93,11 @@ const lock = (rec: Recording, bp: Blueprint) => {
   });
 };
 
-const draftOf = (rec: Recording, root: string) => {
-  const key = keyOf(rec);
+const draftOf = (rec: Recording, root: string, r = inventedRecorder()) => {
+  const key = keyOf(rec, r);
   if ("error" in key) throw new Error(key.reason);
   const ref = { call: root, args: [0, 0, 0] };
-  return draftBlueprint("invented", { name: "I", ref }, key, rec, [
-    ...inventedRecorder().ops,
-  ]);
+  return draftBlueprint("invented", { name: "I", ref }, key, rec, [...r.ops]);
 };
 
 test("the answer key keeps the cache read as a source when one block wrote it, and refuses two possible authors", () => {
@@ -185,20 +195,64 @@ const refusals = (rec: Recording, root: string, source: BlueprintNode) =>
 const descents = (rec: Recording, root: string) =>
   draftOf(rec, root).pending.filter((p) => p.kind === "descend");
 
-test("a cache a helper's event wrote outside any block: the answer key keeps it, the lock refuses it and the draft waits", () => {
-  const rec = record("TreeAuthorRead", {
+test("a cache a helper's event wrote, in the recipe or in the helpers, goes down through the event's own count", () => {
+  const r = answerRecorder();
+  const at = [["TreeAuthorRead", [0, 0, 0]]] as const;
+  const event = {
     slot: 0,
     behavior: "ActorEvents_29",
     event: "_customEvent_TreeAuthorFill",
     args: [],
+  };
+  const inRecipe = r.record(mosaicOf(attrs), at, {
+    recompute: [],
+    builders: [builder(event)],
   });
-  expect("error" in keyOf(rec)).toBe(false);
-  expect(refusals(rec, "TreeAuthorRead", cache([author()]))).toEqual([
-    "invented-author/0/cards/cache: o cache DNSM.TreeAuthor.v foi escrito fora de um bloco",
+  const inHelpers = r.record(
+    mosaicOf({ ...attrs, Scenario: "authorFilled" }),
+    at,
+    { recompute: [], builders: [] },
+  );
+  const fill: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "_customEvent_TreeAuthorFill", args: [] },
+    children: [leaf("a", "TreeStats.a")],
+  };
+  const bp = blueprint("TreeAuthorRead", cache([fill]));
+  const tree = [
+    [
+      "DNSM.TreeAuthor.v",
+      [["_customEvent_TreeAuthorFill()", [["TreeStats.a", []]]]],
+    ],
+  ];
+  for (const rec of [inRecipe, inHelpers]) {
+    expect(lock(rec, bp, r).errors.map(lockMessage)).toEqual([]);
+    const draft = draftOf(rec, "TreeAuthorRead", r);
+    expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual(tree);
+  }
+});
+
+test("a cache the helper's own code wrote outside any block or event: the answer key keeps it, the lock refuses it and the draft waits", () => {
+  const r = answerRecorder();
+  const rec = r.record(
+    mosaicOf({ ...attrs, Scenario: "authorInit" }),
+    [["TreeAuthorRead", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  expect("error" in keyOf(rec, r)).toBe(false);
+  expect(
+    lock(rec, blueprint("TreeAuthorRead", cache([author()])), r).errors.map(
+      lockMessage,
+    ),
+  ).toEqual([
+    "invented-author/0/cards/cache: o cache DNSM.TreeAuthor.v foi escrito fora de um bloco ou evento",
   ]);
-  expect(descents(rec, "TreeAuthorRead")).toEqual([
-    { where: "pools/0/groups/0/sources/0", kind: "descend" },
-  ]);
+  expect(
+    draftOf(rec, "TreeAuthorRead", r).pending.filter(
+      (p) => p.kind === "descend",
+    ),
+  ).toEqual([{ where: "pools/0/groups/0/sources/0", kind: "descend" }]);
 });
 
 test("a cache read with no recorded write is never a leaf: the lock refuses it and the draft waits", () => {

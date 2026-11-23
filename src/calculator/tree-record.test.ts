@@ -24,6 +24,23 @@ test("the path of the list a call returns is in the answer key's recording only;
   expect(vpOf(live)).toBeUndefined();
 });
 
+test("a helper's event is a call of its own, with its steps and its writes, in the answer key's recording only", () => {
+  const eventOf = (r: ReturnType<typeof bootRecorder>) => {
+    const rec = r.record(
+      mosaicOf({ Scenario: "authorFilled" }),
+      [["TreeAuthorRead", [0, 0, 0]]],
+      NONE,
+    );
+    const n = rec.nodes.find((x) => x.b === "_customEvent_TreeAuthorFill");
+    const w = rec.writes.find((x) => x.path === "DNSM.TreeAuthor.v");
+    return (
+      n && { parent: n.p, steps: n.x?.length ?? 0, writes: w?.node === n.id }
+    );
+  };
+  expect(eventOf(answer)).toEqual({ parent: 0, steps: 2, writes: true });
+  expect(eventOf(live)).toBeUndefined();
+});
+
 test("an infinite number's place never writes outside the recording, and a place that does not exist is skipped", () => {
   const rec = recordingOf([{ b: "(root)", v: 1 }]);
   for (const k of ["__proto__", "constructor", "prototype"])
