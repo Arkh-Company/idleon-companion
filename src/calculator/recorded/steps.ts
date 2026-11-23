@@ -7,6 +7,7 @@
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
 import { astPattern, at, CUSTOM, MATH, matchPattern, methodOf } from "./ast.ts";
+import { unwrap } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { near } from "./math.ts";
 
@@ -139,7 +140,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     }
     const read = (p: string, v: StepValue): Expr => ({ t: "read", p, v });
     function leaf0(node: AstNode, v: StepValue): Expr {
-      const callee = methodOf(node);
+      // a block's call, bare or through asNumber right in the step (T177 r4)
+      const callee = methodOf(unwrap(node));
       if (callee?.startsWith(CUSTOM)) {
         const fits = (x: RecNode) =>
           !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v;

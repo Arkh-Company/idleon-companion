@@ -28,7 +28,7 @@ export function methodOf(n: AstNode): string | null {
 }
 
 /** `asNumber(x)` is x. */
-function unwrap(n: AstNode): AstNode {
+export function unwrap(n: AstNode): AstNode {
   const [a, ...rest] = (n.arguments as AstNode[] | undefined) ?? [];
   return methodOf(n) === "asNumber" && a && !rest.length ? unwrap(a) : n;
 }
