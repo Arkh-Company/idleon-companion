@@ -175,11 +175,16 @@ test("a call's argument equal to the character's index is not decided by its val
     talentOrder: [],
   });
   expect(other.pending).not.toContainEqual(wait);
-  // a call the draft leaves as a leaf waits too: GetTalentNumber(1, 1) for the character 1
-  expect(
-    draftOf("TreeDeclDraft", { character: 1, talentOrder: [] }).pending,
-  ).toContainEqual({
-    where: "pools/0/groups/1/sources/0/children/0",
+  // a call the draft leaves as a leaf waits too: TreeDeclRow(0) reads nothing
+  expect(sourceAt(d, 0, 2)).toMatchObject({
+    ref: { call: "TreeDeclRow", args: [0] },
+  });
+  expect(d.pending).toContainEqual({
+    where: "pools/0/groups/2/sources/0",
+    kind: "leaf",
+  });
+  expect(d.pending).toContainEqual({
+    where: "pools/0/groups/2/sources/0",
     kind: "descend",
   });
 });

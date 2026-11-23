@@ -1382,7 +1382,15 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // Spec 010 (review r1): a root that passes its character's index to the block below it, as the game's Divinity does.
   Blocks._customBlock_TreeDeclPass = function (c) {
-    return state().TreeBase + Blocks._customBlock_TreeDeclOwn(c);
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclOwn(c) +
+      Blocks._customBlock_TreeDeclRow(c)
+    );
+  };
+  // ...and to a block that reads nothing: a leaf of the draft
+  Blocks._customBlock_TreeDeclRow = function (c) {
+    return c + 5;
   };
   Blocks._customBlock_TreeDeclOwn = function (c) {
     return state().TreeList[c] * 2;
