@@ -47,6 +47,17 @@ export function reviewPath(
   return join(blueprintsDir, lot, `${id}.review.json`);
 }
 
+/** The blueprint beside its review, where the draft mode writes a sketch's draft: from the id and the lot only. */
+export const blueprintPath = (
+  blueprintsDir: string,
+  id: string,
+  lot: string,
+): string =>
+  reviewPath(blueprintsDir, id, lot).replace(
+    /\.review\.json$/,
+    ".blueprint.json",
+  );
+
 /** The lock written into the review; a review out of its shape is refused, never written over with its history. */
 export function writeLock(
   dir: string,

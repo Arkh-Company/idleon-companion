@@ -4,6 +4,7 @@
 // callParts), level by level, down to the leaves the recording shows. A name only with its proof in the names table, a
 // talent's class only from the game's talent order; anything else is pending (`name`, `system`, `leaf`, `descend`),
 // never guessed. The draft carries no value, count or expression, and its JSON is already as prettier leaves it.
+import type { Context } from "../boot.ts";
 import type { Op } from "../instrument.ts";
 import { STATIC_NAMES } from "../names/names-table.ts";
 import { nameOf, recipeName } from "../names/names.ts";
@@ -31,6 +32,31 @@ export interface DraftContext {
   talentOrder: readonly unknown[];
 }
 export const NO_CONTEXT: DraftContext = { character: 0, talentOrder: [] };
+
+/** A list of the game's tables (`CustomLists.TalentOrder`), read in the recorder's context (names-reader.js); empty
+ * when it is none or the reading fails. */
+export function gameList(
+  context: Pick<Context, "run" | "sandbox">,
+  id: string,
+  ms: number,
+): unknown[] {
+  context.sandbox.__namesAsk = JSON.stringify({ cells: [], tables: [id] });
+  try {
+    const json = context.run("__names.read(__namesAsk)", ms);
+    // only a text: JSON.parse would call another value's own toString
+    const read: unknown = typeof json === "string" ? JSON.parse(json) : null;
+    const form: unknown =
+      read !== null && typeof read === "object" && "forms" in read
+        ? (read.forms as unknown[])[0]
+        : null;
+    const list: unknown = typeof form === "string" ? JSON.parse(form) : null;
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  } finally {
+    delete context.sandbox.__namesAsk;
+  }
+}
 
 export type DraftNode = Omit<BlueprintNode, "name" | "children"> & {
   /** Null where `pending` says `name`. */
@@ -268,7 +294,11 @@ export function draftBlueprint(
         sources: [node(walkTerm(t, ctx), sw, taken, { ...extra, ...classes })],
       };
     });
-    return { kind: p.kind, ...(weight === 0.01 ? { weight } : {}), groups };
+    return {
+      kind: p.kind,
+      ...(weight === 0.01 ? { weight: 0.01 as const } : {}),
+      groups,
+    };
   });
   return { id, root, pools, pending };
 }

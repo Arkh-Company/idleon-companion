@@ -8,15 +8,23 @@
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
 // writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint (once per class of the snapshot
 // when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock beside the blueprint and
-// `summary.txt` with each stage's time; the draft mode comes with draft.ts.
+// `summary.txt` with each stage's time. The draft mode writes a draft over each sketch only (draft.ts), beside it in
+// the repository, and its guide of steps to TREES_OUT/draft/.
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { bootRecorder } from "../tree-record.ts";
+import { readGameNames } from "../game-names.ts";
+import { useGameNames } from "../names/names.ts";
+import { useGameTables } from "../names/table-names.ts";
+import { bootRecorder, TREE_LIMITS } from "../tree-record.ts";
 import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
+import { answerKey } from "./answer-key.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import { stepsGuide } from "./draft-steps.ts";
+import { draftBlueprint, draftJson, gameList } from "./draft.ts";
 import {
+  blueprintPath,
   classCharacters,
   lockNumber,
   lockRuns,
@@ -26,10 +34,15 @@ import type { RecordFn } from "./real-trees-check.ts";
 import { blueprintSha, saoPauloTime } from "./review.ts";
 import {
   checkPlan,
+  draftPlan,
   mosaicWith,
   outPath,
   probeRoot,
+  rootCallsOf,
+  rootShapeOf,
   rootsReport,
+  routineStepOf,
+  stepsPath,
   summaryLine,
   targetIds,
   treesEnv,
@@ -153,7 +166,73 @@ describe.skipIf(!ENV)("the real-trees run", () => {
           }
         }
       } else if (mode === "draft") {
-        throw new Error("o modo draft chega com o draft.ts (Fase 3)");
+        const todo = draftPlan(ids, loaded.stages);
+        for (const id of ids)
+          if (!todo.includes(id))
+            lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
+        if (todo.length > 0) {
+          const { recorder } = boot();
+          // the names and the talent order of the installed game, as the worker reads them at its boot
+          const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
+          useGameNames(game.names);
+          useGameTables(game.tables);
+          const dc = {
+            character: activeCharacter(snapshot),
+            talentOrder: gameList(
+              recorder.context,
+              "CustomLists.TalentOrder",
+              TREE_LIMITS.startMs,
+            ),
+          };
+          const state = mosaic(snapshot);
+          const lots = new Map(treeCatalog().map((n) => [n.id, n.lot]));
+          mkdirSync(outPath(out, "draft"), { recursive: true });
+          for (const id of todo) {
+            const bp = loaded.all.get(id);
+            const lot = lots.get(id);
+            if (!bp || !lot) continue;
+            const t1 = performance.now();
+            const done = (
+              result: Parameters<typeof summaryLine>[1]["result"],
+            ) => summaryLine(id, { result, ms: performance.now() - t1 });
+            let rec;
+            try {
+              rec = recorder.record(
+                mosaicWith(state, bp.root.scratch),
+                [...rootCallsOf(bp, dc.character), ...EXTRA_ROOTS],
+                TREE_RECIPE,
+                false,
+                FOLLOW_CALLS,
+                routineStepOf(bp, dc.character),
+              );
+            } catch {
+              lines.push(done("error"));
+              continue;
+            }
+            const key = answerKey(
+              rec,
+              recorder.ops,
+              rootShapeOf(bp, dc.character),
+            );
+            // a root out of the rule, or one with no pool, has no draft: its sketch stays as it is
+            if ("error" in key || key.pools.length === 0) {
+              lines.push(done("error" in key ? "outOfRule" : "leaf"));
+              continue;
+            }
+            writeFileSync(
+              blueprintPath(BLUEPRINTS_DIR, id, lot),
+              draftJson(
+                draftBlueprint(id, bp.root, key, rec, recorder.ops, dc),
+              ),
+            );
+            writeFileSync(
+              stepsPath(out, id),
+              stepsGuide(key, rec, recorder.ops, dc),
+            );
+            lines.push(done("drafted"));
+            peak = Math.max(peak, process.memoryUsage().rss);
+          }
+        }
       } else {
         const { recorder } = boot();
         const state = mosaic(snapshot);
