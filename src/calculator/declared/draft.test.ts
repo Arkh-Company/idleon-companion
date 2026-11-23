@@ -207,6 +207,14 @@ test("filled where it is pending, the draft passes the lock: its order and its p
   const d = JSON.parse(draftJson(draftOf("TreeDeclChain"))) as {
     pending: { where: string; kind: string }[];
   };
+  // only the calls with an argument 0, the character's index: TreeDeclTalent(0) twice and ArcadeBonus(0)
+  expect(
+    d.pending.filter((p) => p.kind === "descend").map((p) => p.where),
+  ).toEqual([
+    "pools/0/groups/1/sources/0/children/0",
+    "pools/0/groups/1/sources/0",
+    "pools/0/groups/2/sources/0",
+  ]);
   for (const p of d.pending) {
     const at = p.where
       .split("/")
