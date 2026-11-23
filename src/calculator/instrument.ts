@@ -13,6 +13,11 @@ export interface Op {
   parent: number | undefined;
   /** For a leaf that is a variable: the expression that last set it before this read (data flow). */
   def: AnyNode | null;
+  /**
+   * For a leaf that is a variable set by a block's call (spec 010, T177 r4): the calls its value comes from by data flow,
+   * bare, through `asNumber(…)`, another variable or either side of a `? :`; absent with none.
+   */
+  defCalls?: AnyNode[];
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
   /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
@@ -160,6 +165,30 @@ function defOf(node: AnyNode | undefined, defs: Defs): AnyNode | null {
   return best ? best.rhs : null;
 }
 
+const methodName = (n: AnyNode): unknown =>
+  n.type === "CallExpression" && at(n, "callee").type === "MemberExpression"
+    ? at(at(n, "callee"), "property").name
+    : undefined;
+
+/** The block calls an expression that set a variable comes from: see Op.defCalls. */
+function callsOf(rhs: AnyNode | null, defs: Defs, depth = 0): AnyNode[] {
+  if (!rhs || depth > 6) return [];
+  const name = methodName(rhs);
+  if (typeof name === "string" && name.startsWith("_customBlock_"))
+    return [rhs];
+  const args = (rhs.arguments as AnyNode[] | undefined) ?? [];
+  if (name === "asNumber" && args.length === 1)
+    return callsOf(args[0] ?? null, defs, depth + 1);
+  if (rhs.type === "Identifier")
+    return callsOf(defOf(rhs, defs), defs, depth + 1);
+  if (rhs.type === "ConditionalExpression")
+    return [
+      ...callsOf(at(rhs, "consequent"), defs, depth + 1),
+      ...callsOf(at(rhs, "alternate"), defs, depth + 1),
+    ];
+  return [];
+}
+
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
@@ -199,12 +228,15 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         m.kind === "assign"
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
+      const def = m.kind === "leaf" ? defOf(m.node, defs) : null;
+      const calls = callsOf(def, defs);
       ops.push({
         block,
         kind: m.kind,
         node: m.node,
         parent,
-        def: m.kind === "leaf" ? defOf(m.node, defs) : null,
+        def,
+        ...(calls.length > 0 && { defCalls: calls }),
         prevDef: defOf(target, defs),
         fnText: text,
         ...(m.owner ? { owner: m.owner } : {}),

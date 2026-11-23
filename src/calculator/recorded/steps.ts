@@ -162,11 +162,18 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
           used.add(k.id);
           return { t: "call", id: k.id, v };
         }
+        // a block's call with no call of its own here is a loose value: never a read with its value (T177 r4)
+        return { t: "val", v };
       }
-      // a variable set by a block's call: the data flow decides, never a read with its value (T177 r3)
-      const d = ops[opIndex.get(node) ?? -1]?.def;
-      if (typeof v !== "number" || (d && methodOf(d)?.startsWith(CUSTOM)))
-        return defOrVal(node, v);
+      // a variable set by a block's call, bare, through asNumber, another variable or a ? : (Op.defCalls): the data
+      // flow decides, never a read with its value (T177 r3, r4)
+      const calls = ops[opIndex.get(node) ?? -1]?.defCalls;
+      if (calls) {
+        // shortcut: each side of a ? : is tried and one tie is kept; two would use both calls up, rare in the game
+        const tied = calls.map((c) => leaf(c, v)).filter((r) => r.t !== "val");
+        return tied.length === 1 && tied[0] ? tied[0] : { t: "val", v };
+      }
+      if (typeof v !== "number") return defOrVal(node, v);
       const pool = poolFor(node);
       // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
       const pat = astPattern(node);
