@@ -217,6 +217,9 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   if (poolEach) {
     if (n.ref !== undefined || n.constant !== undefined)
       no(where, "a fonte com each vai sem ref nem constant");
+    // its items are the answer key's terms, the condition left out (T174): a class or a condition would go unread
+    if (n.classes !== undefined || n.condition !== undefined)
+      no(where, "a fonte com each vai sem classes nem condition");
   } else if ((n.ref === undefined) === (n.constant === undefined))
     no(where, "ref ou constant: um dos dois, nunca os dois");
   if (n.ref !== undefined) checkRef(n.ref, where);
