@@ -1380,6 +1380,13 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDeclDraft = function () {
     return state().TreeBase + Blocks._customBlock_GetTalentNumber(1, 1);
   };
+  // Spec 010 (review r1): a root that passes its character's index to the block below it, as the game's Divinity does.
+  Blocks._customBlock_TreeDeclPass = function (c) {
+    return state().TreeBase + Blocks._customBlock_TreeDeclOwn(c);
+  };
+  Blocks._customBlock_TreeDeclOwn = function (c) {
+    return state().TreeList[c] * 2;
+  };
   // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
   Blocks._customBlock_TreeDeclSum = function () {
     var s = state();

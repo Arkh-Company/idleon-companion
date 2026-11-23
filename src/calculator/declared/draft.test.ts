@@ -159,6 +159,24 @@ test("{character} stands for the tree's character; no character's index is writt
   expect(json).not.toMatch(/PlayerDATABASE\[\d+\]/);
 });
 
+test("a call's argument equal to the character's index is not decided by its value: the node waits for its descent, and the guide shows the argument", () => {
+  // TreeDeclPass(0) passes its character, 0, to TreeDeclOwn
+  const { rec, key, ops } = recorded("TreeDeclPass");
+  const d = draftBlueprint("decl-draft", ROOT, key, rec, ops);
+  expect(sourceAt(d, 0, 1).ref).toEqual({ call: "TreeDeclOwn", args: [0] });
+  const wait = { where: "pools/0/groups/1/sources/0", kind: "descend" };
+  expect(d.pending).toContainEqual(wait);
+  expect(stepsGuide(key, rec, ops)).toMatch(
+    /TreeDeclOwn\(0\)[^\n]*\n(?:[^\n]*\n)*?\s+argumento 1 = 0: o índice do personagem\? se for, a receita escreve "\{character\}"/,
+  );
+  // another character's draft has no such argument
+  const other = draftBlueprint("decl-draft", ROOT, key, rec, ops, {
+    character: 1,
+    talentOrder: [],
+  });
+  expect(other.pending).not.toContainEqual(wait);
+});
+
 test("the draft loads in the draft stage, and the lock refuses it for its pending entries", () => {
   const d = draftOf("TreeDeclChain");
   const out = parseBlueprint(JSON.parse(draftJson(d)), {
