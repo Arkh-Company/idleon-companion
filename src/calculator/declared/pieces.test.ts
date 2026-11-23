@@ -158,6 +158,67 @@ test("a param missing or extra, a piece that does not exist and a bad piece call
   ).toMatch(/id/);
 });
 
+test("an arg with a replacement pattern fills in as it is: a path it breaks is refused, never a thrown error", () => {
+  for (const stat of ["x$&", "$'", "$`"])
+    expect(reason(line({ name: "invented-signs", args: { stat } }))).toMatch(
+      /ref.read não é um caminho/,
+    );
+  // a param's name as a property's name stays a name, refused as any key out of the list
+  const asKey = signsWith((p) => {
+    model(p)["{stat}"] = 1;
+  });
+  expect(
+    reason(line({ name: "invented-signs", args: { stat: 7 } }), {
+      "invented-signs": asKey,
+    }),
+  ).toMatch(/chave fora das listadas: \{stat\}/);
+});
+
+test("two pieces with one id, in two folders, refuse the second", () => {
+  const out = loadBlueprints({
+    "../blueprints/pieces/invented-signs.piece.json": SIGNS,
+    "../blueprints/w1/invented-signs.piece.json": SIGNS,
+    "../blueprints/w1/invented-signs-number.blueprint.json": blueprint(
+      line(drop),
+    ),
+  });
+  expect(out.refused).toEqual([
+    {
+      file: "../blueprints/w1/invented-signs.piece.json",
+      reason: "id repetido: invented-signs já tem pedaço",
+    },
+  ]);
+  expect(out.stages.get("invented-signs-number")).toBe("complete");
+});
+
+test("a {name} no param or item fills in is refused on load, in a call's arg and in a name's row; {character} stays", () => {
+  const arg = signsWith((p) => {
+    model(p).ref = { call: "TreeSign", args: ["{stat}", "{other}"] };
+  });
+  expect(reason(line(drop), { "invented-signs": arg })).toMatch(
+    /\{nome\} não declarado: \{other\}/,
+  );
+  const row = signsWith((p) => {
+    model(p).nameProof = { table: "InventedSigns", row: "{other}" };
+  });
+  expect(reason(line(drop), { "invented-signs": row })).toMatch(
+    /\{nome\} não declarado: \{other\}/,
+  );
+  const character = signsWith((p) => {
+    model(p).ref = { call: "TreeSign", args: ["{stat}", "{character}"] };
+  });
+  expect(reason(line(drop), { "invented-signs": character })).toBe("loaded");
+});
+
+test("an each list never runs over the characters", () => {
+  const characters = signsWith((p) => {
+    p.each = { list: "PlayerDATABASE[*].Signs", as: "sign" };
+  });
+  expect(reason(line(drop), { "invented-signs": characters })).toMatch(
+    /each.list nunca percorre os personagens/,
+  );
+});
+
 test("a piece that calls itself, directly or through another piece, is refused", () => {
   const calling = (id: string, other: string) => ({
     id,
