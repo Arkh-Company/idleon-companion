@@ -30,8 +30,11 @@ export interface BlueprintNode {
   piece?: { name: string; args: PieceArgs };
   /** Only in a piece: the level closes by the sum or the product of its children (T171). */
   combine?: "sum" | "product";
-  /** Only in a piece: the one model child stands for one child per item of the recorded list (T170). */
-  each?: { list: string; as: string };
+  /**
+   * Only in a piece: the one model child stands for one child per item of the recorded list (T170); in a pool's source,
+   * a list with two `[*]` names one index each (T179, the equipment's rows and slots).
+   */
+  each?: { list: string; as: string | readonly string[] };
   /** Only in a piece with the form of a recipe (T173): its pools, closed as a root's below the node. */
   pools?: readonly BlueprintPool[];
 }

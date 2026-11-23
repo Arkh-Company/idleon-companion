@@ -245,3 +245,24 @@ export function uniqueKeys(nodes: unknown[], where: string): void {
   if (new Set(keys).size !== keys.length)
     no(where, "key repetida entre irmãos");
 }
+
+/**
+ * An `each`'s list and names (T170, T174): the list a path with one `[*]`, never through the characters; two only in a
+ * pool's source (T179, the equipment's rows and slots), `as` then naming one index per `[*]`.
+ */
+export function checkEach(x: unknown, where: string, poolEach: boolean): void {
+  const e = obj(x, ["list", "as"], `${where}/each`);
+  const names: unknown[] = Array.isArray(e.as) ? e.as : [e.as];
+  const bad = (a: unknown) =>
+    typeof a !== "string" || !IDENT.test(a) || a === "character";
+  if (names.some(bad) || new Set(names).size !== names.length)
+    no(where, "each.as é um nome, nunca character");
+  const stars = typeof e.list === "string" ? e.list.split("[*]").length - 1 : 0;
+  if (stars < 1 || stars > (poolEach ? 2 : 1))
+    no(where, "each.list é um caminho com um [*]");
+  if (names.length !== stars)
+    no(where, "each.as tem um nome por [*] de each.list");
+  checkRef({ read: e.list }, `${where}/each`);
+  if (hasRawCharacterIndex((e.list as string).replaceAll("[*]", "[0]")))
+    no(where, "each.list nunca percorre os personagens");
+}

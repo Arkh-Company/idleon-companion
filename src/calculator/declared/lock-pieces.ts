@@ -21,7 +21,7 @@ import {
   TOLERANCE,
 } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { eachPattern, matchRead, refKey } from "./refs.ts";
+import { eachNames, eachPattern, matchRead, refKey } from "./refs.ts";
 
 type Ctx = Pick<LevelContext, "rec" | "character">;
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -96,7 +96,9 @@ export function pieceChildren(
 ): BlueprintNode[] | TwoValues {
   const [model] = node.children ?? [];
   if (!node.each || !model) return [...(node.children ?? [])];
-  const { list, as } = node.each;
+  const { list } = node.each;
+  // a piece's list has one [*] (blueprint.ts): one name
+  const [as = ""] = eachNames(node.each.as);
   const path = eachPattern(list, ctx.character);
   const items = new Map<number, unknown[]>();
   for (const n of nodes)

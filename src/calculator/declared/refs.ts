@@ -42,6 +42,10 @@ export const starPattern = (path: string): string =>
 export const eachPattern = (list: string, character: number): RegExp =>
   new RegExp(`^${starPattern(resolve(list, character))}$`);
 
+/** An `each.as`'s names, one per `[*]` of its list (T179: two for the equipment's rows and slots). */
+export const eachNames = (as: string | readonly string[]): string[] =>
+  typeof as === "string" ? [as] : [...as];
+
 /** The recorded read a path stands for: with `*`, the first one of any character and how many matched. */
 export function matchRead(
   pattern: string,

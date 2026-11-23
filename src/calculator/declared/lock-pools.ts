@@ -15,7 +15,7 @@ import { checkCondition, lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { TOLERANCE } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { eachPattern, matchRead, nodeId, refKey } from "./refs.ts";
+import { eachNames, eachPattern, matchRead, nodeId, refKey } from "./refs.ts";
 
 export const POOL_NAME: Record<PoolKind, string> = {
   additive: "Additive",
@@ -65,19 +65,21 @@ function sourcesOf(
     const [model] = s.children ?? [];
     if (!s.each || s.combine || !model) return [{ s, at }];
     out.counts.branches++;
-    const { list, as } = s.each;
+    const { list } = s.each;
+    const names = eachNames(s.each.as);
     const path = eachPattern(list, ctx.character);
-    // a model with no ref is a fixed base of the code (T176): the constants whose guarding test found the item
+    // a model with no ref is a fixed base of the code (T176), or the item a game table's value was read by (T179):
+    // the terms whose item its list holds
     const fixed = !model.ref;
     const found = terms.flatMap((t, j) => {
-      const item = fixed
-        ? t.kind === "constant" && t.item !== undefined
-          ? path.exec(t.item)?.[1]
-          : undefined
+      const m = fixed
+        ? t.item === undefined
+          ? null
+          : path.exec(t.item)
         : t.kind === "source"
-          ? path.exec(t.ref)?.[1]
-          : undefined;
-      return item === undefined ? [] : [{ item, j }];
+          ? path.exec(t.ref)
+          : null;
+      return m ? [{ idx: m.slice(1), item: m.slice(1).join("-"), j }] : [];
     });
     const items = found.map((f) => f.item);
     const twice = items.find((x, k) => items.indexOf(x) !== k);
@@ -89,9 +91,12 @@ function sourcesOf(
       });
       return [];
     }
-    return found.map(({ item, j }) => ({
+    return found.map(({ idx, item, j }) => ({
       s: {
-        ...fill(model, { [as]: Number(item) }),
+        ...fill(
+          model,
+          Object.fromEntries(names.map((a, k) => [a, Number(idx[k])])),
+        ),
         key: `${model.key}-${item}`,
         ...(s.weight !== undefined && { weight: s.weight }),
       },

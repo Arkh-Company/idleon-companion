@@ -66,9 +66,10 @@ test("an each over two indices repeats its model per slot: the item by the slot 
     characterClass: 3,
   });
   expect(lock.errors).toEqual([]);
-  // the pool and the root closed; the level, the 3 items and the 2 upgrades; the two each sources
+  // the pool closed (the floor above it is no blueprint field); the level, the 3 items and the 2 upgrades; the two each
+  // sources
   expect(lock.counts).toEqual({
-    closed: 2,
+    closed: 1,
     closedByRecorded: 0,
     leaves: 6,
     branches: 2,

@@ -4,6 +4,7 @@
 // a name, a system, a leaf or a descent is still missing; only there may it be null or absent.
 import { CALC_CONDITION_KINDS, CALC_LEAF_KINDS } from "../tree-contract.ts";
 import {
+  checkEach,
   checkName,
   checkProof,
   checkRef,
@@ -25,7 +26,7 @@ import type {
   PieceArgs,
 } from "./blueprint-types.ts";
 import { fill, inlinePieces, pieceBody } from "./pieces.ts";
-import { ARG_TEXT_MAX, hasRawCharacterIndex } from "./refs.ts";
+import { ARG_TEXT_MAX, eachNames } from "./refs.ts";
 export type {
   LeafKind,
   ConditionKind,
@@ -165,14 +166,7 @@ function checkPieceLevel(
       "nó com children num pedaço pede combine, menos o de uma chamada",
     );
   if (n.each === undefined) return;
-  const e = obj(n.each, ["list", "as"], `${where}/each`);
-  if (typeof e.as !== "string" || !IDENT.test(e.as) || e.as === "character")
-    no(where, "each.as é um nome, nunca character");
-  if (typeof e.list !== "string" || e.list.split("[*]").length !== 2)
-    no(where, "each.list é um caminho com um [*]");
-  checkRef({ read: e.list }, `${where}/each`);
-  if (hasRawCharacterIndex((e.list as string).replace("[*]", "[0]")))
-    no(where, "each.list nunca percorre os personagens");
+  checkEach(n.each, where, poolEach);
   if (!Array.isArray(n.children) || n.children.length !== 1)
     no(where, "each tem um filho-modelo só");
 }
@@ -213,9 +207,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     if (n.classes !== undefined || n.condition !== undefined)
       no(where, "a fonte com each vai sem classes nem condition");
   } else if (w.eachModel && n.ref === undefined && n.constant === undefined) {
-    // a fixed base of the code the game picks by a test (T176): its item ties it, its name is proved at the item's row
-    if (n.leaf !== "fixedValue")
-      no(where, "o filho-modelo sem ref é folha fixedValue");
+    // a fixed base of the code the game picks by a test (T176), or the item a game table's value was read by (T179,
+    // a choice): its item ties it, its name is proved at the item's row
+    if (n.leaf !== "fixedValue" && n.leaf !== "choice")
+      no(where, "o filho-modelo sem ref é folha fixedValue ou choice");
   } else if ((n.ref === undefined) === (n.constant === undefined))
     no(where, "ref ou constant: um dos dois, nunca os dois");
   if (n.ref !== undefined) checkRef(n.ref, where);
@@ -252,11 +247,15 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   const siblings: unknown[] = [];
   if (n.children !== undefined) {
     if (n.leaf !== undefined) no(where, "leaf com children");
-    // an each's model is checked with its item's name as an index (`[{as}]` as `[0]`)
-    const as = isObj(n.each) ? (n.each.as as string) : null;
+    // an each's model is checked with its items' names as indices (`[{as}]` as `[0]`)
+    const as: Record<string, number> | null = isObj(n.each)
+      ? Object.fromEntries(
+          eachNames(n.each.as as string | string[]).map((a) => [a, 0]),
+        )
+      : null;
     list(n.children, where, "children").forEach((c, i) => {
       checkNode(
-        as === null ? c : fill(c, { [as]: 0 }),
+        as === null ? c : fill(c, as),
         `${where}/children/${String(i)}`,
         n.combine === undefined && (w.stack.length === 0 || w.recipe)
           ? "child"
