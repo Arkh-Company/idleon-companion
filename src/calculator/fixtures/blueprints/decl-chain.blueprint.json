@@ -70,7 +70,14 @@
               "key": "arcade",
               "name": "Invented Arcade",
               "ref": { "call": "ArcadeBonus", "args": [0] },
-              "leaf": "rawBonus"
+              "children": [
+                {
+                  "key": "base",
+                  "name": "Invented Base",
+                  "ref": { "read": "TreeBase" },
+                  "leaf": "rawBonus"
+                }
+              ]
             }
           ]
         },
@@ -150,10 +157,29 @@
           "system": "stamps",
           "sources": [
             {
-              "key": "loop",
-              "name": "Invented Loop",
-              "ref": { "call": "TreeLoop", "args": [] },
-              "leaf": "quantity"
+              "key": "sum",
+              "name": "Invented Sum",
+              "ref": { "call": "TreeDeclSum", "args": [] },
+              "children": [
+                {
+                  "key": "first",
+                  "name": "Invented First",
+                  "ref": { "read": "TreeList[0]" },
+                  "leaf": "quantity"
+                },
+                {
+                  "key": "second",
+                  "name": "Invented Second",
+                  "ref": { "read": "TreeList[1]" },
+                  "leaf": "quantity"
+                },
+                {
+                  "key": "third",
+                  "name": "Invented Third",
+                  "ref": { "read": "TreeList[2]" },
+                  "leaf": "quantity"
+                }
+              ]
             }
           ]
         }

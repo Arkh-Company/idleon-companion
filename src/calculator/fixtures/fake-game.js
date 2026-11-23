@@ -1365,6 +1365,18 @@ lime.$scripts.N = function (_exports, $global) {
       best = Math.max(best, s.PlayerDATABASE.h[names[i]].h.SkillLevels[1]);
     return best;
   };
+  // Spec 010 (T164): a leaf's call that reads only a game table, and one that reads only the map it stands on.
+  Blocks._customBlock_TreeDeclTable = function () {
+    return state().CustomLists.h.ListTwo[0] + 1;
+  };
+  Blocks._customBlock_TreeDeclMap = function () {
+    return state().CurrentMap + 1;
+  };
+  // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
+  Blocks._customBlock_TreeDeclSum = function () {
+    var s = state();
+    return s.TreeList[0] + s.TreeList[1] + s.TreeList[2];
+  };
   // The Drop Rate shape: scratch counters, a working value read back, a sum in percent divided by 100 with a
   // two-source term and two curves, constants behind a condition, a source only one character has, a source the
   // recording never runs; the running total is summed, multiplied, summed and multiplied.
@@ -1384,7 +1396,7 @@ lime.$scripts.N = function (_exports, $global) {
         100;
     s.TreeFlagOn == 1 && (d.TreeDecl.h.v = d.TreeDecl.h.v + 2);
     s.TreeOwned > 0 && (d.TreeDecl.h.v = d.TreeDecl.h.v + s.TreeOwned);
-    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeDeclSum();
     d.TreeDecl.h.v = d.TreeDecl.h.v + 0.5;
     d.TreeDecl.h.v = d.TreeDecl.h.v * (1 + s.TreeStats.h.b / 100);
     s.CurrentMap == 7 &&

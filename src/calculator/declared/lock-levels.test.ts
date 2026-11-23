@@ -12,7 +12,7 @@ import {
   sourceOf,
 } from "./lock-fixture.ts";
 import { lockLevels } from "./lock-levels.ts";
-import { lockBlueprint } from "./lock.ts";
+import { lockBlueprint, lockMessage } from "./lock.ts";
 import type { LockInput } from "./lock.ts";
 
 const lock = (input: LockInput) => lockBlueprint(input).errors;
@@ -170,10 +170,64 @@ test("{character} is the recorded character; * with no reading is childNoValue, 
 
 test("a leaf with no kind is leafType", () => {
   const bp = inventedBlueprint("decl-chain");
-  delete sourceOf(bp, 0, "arcade", "arcade").leaf;
+  delete sourceOf(bp, 0, "cards", "capped").leaf;
   expect(lock(chainInput(bp))).toEqual([
-    { kind: "leafType", where: "decl-chain/0/arcade/arcade" },
+    { kind: "leafType", where: "decl-chain/0/cards/capped" },
   ]);
+});
+
+test("a leaf whose recorded call reads the save, or calls a block that does, is leafHasChildren with its first child", () => {
+  const bp = inventedBlueprint("decl-chain");
+  const arcade = sourceOf(bp, 0, "arcade", "arcade");
+  delete arcade.children;
+  arcade.leaf = "rawBonus";
+  const refused = lock(chainInput(bp));
+  expect(refused).toEqual([
+    {
+      kind: "leafHasChildren",
+      where: "decl-chain/0/arcade/arcade",
+      got: "TreeBase",
+    },
+  ]);
+  expect(lockMessage(present(refused[0], "error"))).toBe(
+    "folha com filhos na gravação: decl-chain/0/arcade/arcade: o primeiro é TreeBase",
+  );
+  // TreeTwice reads nothing itself: its two TreeReads() calls read the save
+  const { rec, ops } = recorded("TreeTwice");
+  const where = "decl-twice/0/cards/twice";
+  expect(
+    lockLevels(
+      {
+        key: "twice",
+        name: "Invented Twice",
+        ref: { call: "TreeTwice", args: [0, 0, 0] },
+        leaf: "rawBonus",
+      },
+      callOf(rec, "TreeTwice"),
+      levelContext(rec, ops, where),
+    ).errors,
+  ).toEqual([{ kind: "leafHasChildren", where, got: "TreeReads()" }]);
+});
+
+test("a leaf whose call reads only a game table, or only a part of not-leaves.ts, keeps passing", () => {
+  for (const block of ["TreeDeclTable", "TreeDeclMap"]) {
+    const { rec, ops } = recorded(block);
+    expect(
+      lockLevels(
+        {
+          key: "aside",
+          name: "Invented Aside",
+          ref: { call: block, args: [0, 0, 0] },
+          leaf: "fixedValue",
+        },
+        callOf(rec, block),
+        levelContext(rec, ops, "decl-aside/0/cards/aside"),
+      ),
+    ).toEqual({
+      errors: [],
+      counts: { closed: 0, closedByRecorded: 0, leaves: 1, branches: 0 },
+    });
+  }
 });
 
 test("the LockResult keeps no calculation: only the level, the kind and the two values (FR-010)", () => {

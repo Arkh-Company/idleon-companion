@@ -18,12 +18,13 @@ test("the invented blueprint passes, with its counts", () => {
   const out = lock(chainInput());
   expect(out.errors).toEqual([]);
   expect(out.ok).toBe(true);
-  // root, 4 pools, the two-source term, the talent's block and the best's block; the luck's curve repeats an argument
+  // root, 4 pools, the two-source term, the talent's, the best's, the arcade's and the sum's blocks; the luck's curve
+  // repeats an argument
   expect(out.counts).toEqual({
-    closed: 8,
+    closed: 10,
     closedByRecorded: 1,
-    leaves: 12,
-    branches: 4,
+    leaves: 14,
+    branches: 6,
   });
 });
 

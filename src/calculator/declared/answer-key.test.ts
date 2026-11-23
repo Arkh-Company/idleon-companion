@@ -106,7 +106,7 @@ test("a sum divided by 100 weighs its terms 0.01; a loose constant is a constant
     ["source", "TreeDeclBest()", 0.01],
     ["source", "TreeCapped", 0.01],
     ["constant", "2", 1],
-    ["source", "TreeLoop()", 1],
+    ["source", "TreeDeclSum()", 1],
     ["constant", "0.5", 1],
     ["source", "TreeStats.b", 1],
     ["constant", "1.2", 1],
