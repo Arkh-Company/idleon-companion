@@ -1548,6 +1548,31 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeCachedSeraphRoot = function () {
     return Blocks._customBlock_TreeCachedSeraphLine() + state().TreeCapped;
   };
+  // Spec 010 (T173): a line counted as a recipe below it, as the game's LUK: floor((TreeBase + TreeLevel + 2) × (1 +
+  // TreeStats.b ÷ 100)), two pools, a constant and a floor (4, 25 and 5: 32). A root adds it to TreeCapped; a builder
+  // counts the same in a cache another root reads.
+  Blocks._customBlock_TreeRecipeLine = function () {
+    var s = state();
+    return Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+  };
+  Blocks._customBlock_TreeRecipeRoot = function () {
+    return Blocks._customBlock_TreeRecipeLine() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeRecipeBuild = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeRecipe = new StringMap();
+    d.TreeRecipe.h.v = Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+  };
+  Blocks._customBlock_TreeRecipeCached = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeRecipe.h.v + state().TreeCapped
+    );
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.
