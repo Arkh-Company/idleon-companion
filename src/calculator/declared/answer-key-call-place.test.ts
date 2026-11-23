@@ -181,6 +181,16 @@ test.each(["TreeTernaryDirect", "TreeViaFloor"])(
   },
 );
 
+test("a variable a few hops from a block's call, met first past the hops the data flow follows, never ties to a read", () => {
+  // TreeFarChain: TreeGear[1] (3) read, b1 = Math.floor(TreeThree(0)), b2 = b1 … b7 = b6, b7 in code that never runs, then TreeLevel + b2
+  const { key } = recorded("TreeFarChain", { TreeGear: [5, 3] });
+  expect(key.final).toBe(28);
+  expect(key.pools.flatMap((p) => p.terms.map((t) => t.ref))).toEqual([
+    "TreeLevel",
+    "3",
+  ]);
+});
+
 test("what a variable was before `t += …`, set through another variable by a block's call, is the call, not a read", () => {
   // TreeAddToChain: TreeGear[1] (3) read, then `y = TreeThree(0); t = y; t += TreeLevel; return Math.floor(t)`
   const { key } = recorded("TreeAddToChain", { TreeGear: [5, 3] });
