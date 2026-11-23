@@ -231,6 +231,27 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
   expect(refused(change)).toMatch(reason);
 });
 
+// Spec 010, T165 (spec, Open Questions 23/11): a read through a helper of the game names its behavior, as the routine's
+// sum does, and passes the same checks as any ref.read; one refusal per check.
+test("a read through a helper's getBehavior(Name) loads, under the checks of ref.read", () => {
+  const read = (path: string) =>
+    refused((bp) => (source(bp, 0, 0, 1).ref = { read: path }));
+  expect(
+    read(
+      "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[8][{character}]",
+    ),
+  ).toBe(null);
+  expect(read("PixelHelperActor[8].getBehavior(A B)._GenINFO[8]")).toMatch(
+    /read/,
+  );
+  expect(
+    read("PixelHelperActor[8].getBehavior(ActorEvents_481)._GenINFO[8]*2"),
+  ).toMatch(/read/);
+  expect(
+    read("PlayerDATABASE[1].getBehavior(ActorEvents_481)._GenINFO[8]"),
+  ).toMatch(/personagem/);
+});
+
 test("each invented blueprint of the tests (fixtures/blueprints) loads over the real systems table, in its stage", () => {
   const files = import.meta.glob<unknown>(
     "../fixtures/blueprints/*.blueprint.json",
