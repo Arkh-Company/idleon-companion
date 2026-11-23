@@ -17,6 +17,7 @@ import {
 } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { near } from "./math.ts";
+import { byCalls as callsBySide, sideAt } from "./sides.ts";
 import { GAME_TABLE } from "./step-types.ts";
 import type {
   AmbiguousCall,
@@ -188,37 +189,15 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       }
       return defOrVal(node, v);
     }
-    // the side a ? : took for the value recorded at `pos`: its test's last record up to there, in the call's whole step
-    // log (the ? : may have run before the turn); undefined with no record, or with a test of no number or yes/no
-    const sideAt = (owner: AstNode, pos = base + xs.length - 1) => {
-      const t = testOf.get(owner);
-      const tv = n.x?.slice(0, pos + 1).findLast(([i]) => i === t)?.[1];
-      return tv === null || tv === undefined ? undefined : !!tv;
-    };
-    // the call a value comes from (Op.defCalls), on the side each ? : on its way took (T177 r5): a ? : whose side the
-    // step log does not give is ambiguous; no call or two on the sides taken, a loose value; never a read
-    function byCalls(calls: DefCall[], v: StepValue, pos?: number): Expr {
-      const state = ({ sides }: DefCall) => {
-        for (const [o, s] of sides) {
-          const took = sideAt(o, pos);
-          if (took !== s) return took === undefined ? "open" : "off";
-        }
-        return "on";
-      };
-      const st = calls.map(state);
-      const open = calls[st.indexOf("open")];
-      if (open) {
-        const block = (methodOf(open.call) ?? "").slice(CUSTOM.length);
-        ambiguous.add({
-          block,
-          v,
-          why: "está num ? : cujo lado o lugar não decide",
-        });
-        return { t: "val", v };
-      }
-      const on = calls.filter((_, i) => st[i] === "on");
-      return on.length === 1 && on[0] ? leaf(on[0].call, v) : { t: "val", v };
-    }
+    // the call a value comes from, on the side each ? : on its way took at `pos` (sides.ts)
+    const byCalls = (calls: DefCall[], v: StepValue, pos?: number): Expr =>
+      callsBySide(
+        calls,
+        v,
+        (o) => sideAt(testOf.get(o), n.x, pos ?? base + xs.length - 1),
+        leaf,
+        ambiguous,
+      );
     // the expression that set the variable, when it gave this same value in this turn
     function defOrVal(node: AstNode, v: StepValue): Expr {
       const id = opIndex.get(node);
