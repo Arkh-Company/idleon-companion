@@ -286,4 +286,21 @@ test("pools only in a piece, in place of its count and its children; their sourc
   expect(reason(CALL, piece(other))).toMatch(
     /pools\/1\/groups\/0.*system fora de systems.json/,
   );
+  // below a source of the piece's pools, the children are a root's (T172): a read with children, a term's second
+  // source in a termPart child; a count's rules stay inside a combine
+  const twoSources = pools();
+  (twoSources[1] as { groups: Raw[] }).groups[0] = {
+    system: "prayers",
+    sources: [
+      {
+        ...leaf("pct", "TreeStats.b"),
+        leaf: undefined,
+        children: [
+          leaf("pct", "TreeStats.b", "level"),
+          { ...leaf("twin", "TreeTwins[0]"), termPart: { system: "cards" } },
+        ],
+      },
+    ],
+  };
+  expect(reason(CALL, piece(twoSources))).toBe("loaded");
 });
