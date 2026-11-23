@@ -35,6 +35,8 @@ export interface BlockSteps {
   exprOf?: (op: number) => Expr | null;
   /** Where each step was last recorded in the call's step log (spec 010, T162: a write comes after its step). */
   stepAt?: number[];
+  /** A call of the block by its value ("P de valor 6") that two or more calls gave, with no place to decide (T177 r1). */
+  ambiguous?: ReadonlySet<string>;
 }
 
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
@@ -113,6 +115,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     const defStack = new Set<AstNode>();
     const used = new Set<number>();
     const usedR = new Set<string>();
+    const ambiguous = new Set<string>();
     const kids = n.c
       .map((c) => nodes[c])
       .filter((k): k is RecNode => !!k && inTurn(k.pxi));
@@ -135,11 +138,19 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (callee?.startsWith(CUSTOM)) {
         const fits = (x: RecNode) =>
           !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v;
-        // the call that returned at the step's place (its value recorded where it began, spec 010 T177 r1), before the
-        // first one of that value
+        // the call that returned at the step's place (its value recorded where it began, spec 010 T177 r1); with no
+        // place, the only call of that value, and two or more are ambiguous: never the first one by order
         const id = opIndex.get(node);
         const at = id === undefined ? undefined : lastPos.get(id);
-        const k = kids.find((x) => fits(x) && x.pxi === at) ?? kids.find(fits);
+        const all = kids.filter(fits);
+        const k =
+          at !== undefined
+            ? all.find((x) => x.pxi === at)
+            : all.length === 1
+              ? all[0]
+              : undefined;
+        if (all.length > 1 && at === undefined)
+          ambiguous.add(`${callee.slice(CUSTOM.length)} de valor ${String(v)}`);
         if (k) {
           used.add(k.id);
           return { t: "call", id: k.id, v };
@@ -340,7 +351,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const o = ops[op];
       return o && vals.has(op) ? e(o.node) : null;
     };
-    return { steps, checks, exprOf, stepAt };
+    return { steps, checks, exprOf, stepAt, ambiguous };
   }
 
   return {

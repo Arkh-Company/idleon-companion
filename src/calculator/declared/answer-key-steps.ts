@@ -70,7 +70,7 @@ export const topOf = (rec: Recording) =>
 /** The answer key from the root block's steps already made (`makeSteps(rec, ops).of(root)`). */
 export function answerKeyOfSteps(
   rec: Recording,
-  { steps, checks, stepAt }: BlockSteps,
+  { steps, checks, stepAt, ambiguous }: BlockSteps,
   opts: {
     gate?: TopLayer | null;
     branches?: readonly Branch[];
@@ -90,6 +90,11 @@ export function answerKeyOfSteps(
 ): AnswerKey | RootFormError {
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
   if (!top) return outOfRule("a gravação não tem raiz");
+  const [twice] = ambiguous ?? [];
+  if (twice !== undefined)
+    return outOfRule(
+      `a chamada ${twice} sai de mais de uma chamada, e o lugar não decide`,
+    );
   const final = opts.value ?? top.v;
   const { turnOf } = opts;
   if (typeof final !== "number") return outOfRule("a raiz não deu número");
