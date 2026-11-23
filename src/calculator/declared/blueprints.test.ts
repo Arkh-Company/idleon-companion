@@ -114,8 +114,12 @@ test("the LUK's blueprint loads with the game's 5 pools, the equipment's items a
     "multi",
     "additive",
   ]);
+  // two groups: two each sources in one group would interleave their slots (sourceOrder)
   const [items, upgrades] =
-    bp?.pools[0]?.groups.flatMap((g) => g.sources) ?? [];
+    bp?.pools[0]?.groups.slice(0, 2).map((g) => g.sources[0]) ?? [];
+  expect(bp?.pools[0]?.groups.slice(0, 2).map((g) => g.sources.length)).toEqual(
+    [1, 1],
+  );
   expect([items?.each, upgrades?.each]).toEqual([
     { list: "EquipmentOrder[*][*]", as: ["r", "s"] },
     { list: "EquipmentMap[*][*].LUK", as: ["r", "s"] },
