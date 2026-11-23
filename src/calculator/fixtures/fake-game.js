@@ -194,6 +194,11 @@ lime.$scripts.N = function (_exports, $global) {
     s.DNSM.h.ShinyBonusS = new StringMap();
     s.DNSM.h.CompanionLVz = new StringMap();
     if (s.Scenario === "companionsBuilt") Blocks._customBlock_TreeCompBuild();
+    // Spec 010 (T166): the helpers build the cache TreeAuthor twice, by two blocks, to the same number.
+    if (s.Scenario === "authorBuilt") {
+      Blocks._customBlock_TreeAuthorAgain();
+      Blocks._customBlock_TreeAuthorBuild();
+    }
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
   // An event of the helper that builds a cache, as the game's own events do.
@@ -1401,6 +1406,14 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeAuthorDeep = function () {
     return Blocks._customBlock_TreeAuthorCall() + state().TreeCapped;
   };
+  // A block that builds the cache by summing a list in a loop over its own last value: 3 + 2 + 4 + 6 = 15.
+  Blocks._customBlock_TreeAuthorLoop = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a;
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
+  };
   // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
   // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
   // under a root that adds TreeCapped.
@@ -1435,6 +1448,25 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeTurnsSameRoot = function () {
     return Blocks._customBlock_TreeTurnsSame() + state().TreeCapped;
+  };
+  // A product in a loop (no sum of turns), and a sum in a loop the call returns with one more term after it.
+  Blocks._customBlock_TreeTurnsProduct = function () {
+    var t = 1;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t * Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsThen = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i);
+    return t + state().TreeBase;
+  };
+  Blocks._customBlock_TreeTurnsProductRoot = function () {
+    return Blocks._customBlock_TreeTurnsProduct() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsThenRoot = function () {
+    return Blocks._customBlock_TreeTurnsThen() + state().TreeCapped;
   };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {

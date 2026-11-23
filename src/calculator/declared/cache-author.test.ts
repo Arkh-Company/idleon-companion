@@ -192,6 +192,18 @@ test("the cache never becomes a leaf: a cache read declared as a leaf is leafHas
   ]);
 });
 
+test("the place decides the author: the read ties to the helpers' last write before it, not to the builders' pass after", () => {
+  // the helpers build it by TreeAuthorAgain, then TreeAuthorBuild (both 15); the root reads it; the pass builds it again
+  const rec = inventedRecorder().record(
+    mosaicOf({ ...attrs, Scenario: "authorBuilt" }),
+    [["TreeAuthorRead", [0, 0, 0]]],
+    { recompute: [], builders: [builder("TreeAuthorBuild")] },
+  );
+  const ok = lock(rec, blueprint("TreeAuthorRead", cache([author()])));
+  expect(ok.errors).toEqual([]);
+  expect(ok.counts.leaves).toBe(3);
+});
+
 test("the draft waits for the descent of a cache read with two possible authors, and keeps the root's own passage a leaf", () => {
   const draftOf = (rec: Recording, root: string) => {
     const key = keyOf(rec);

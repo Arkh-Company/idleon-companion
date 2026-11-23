@@ -1,0 +1,97 @@
+// The write a cache read saw is chosen by its place (spec 010, T166; CODING_STANDARDS, "The answer key ties by the
+// recorded place, never by value alone"): the step that uses the read ties to the last read of the step log at or
+// before its place, never to the read with the same value nor to the first one. When the reads the steps use saw
+// writes of different blocks, the place does not decide: refused with the reason. And the expression of the author's
+// write is its last step in its turn, only with the write's value, the turn starting after its write before it.
+import { expect, test } from "vitest";
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import type { BlockSteps, Expr, LoopTurn, Step } from "../recorded/steps.ts";
+import { cacheAuthor, writeExpr } from "./cache-author.ts";
+
+const X = "DNSM.TreeAuthor.v";
+const node = (id: number, b: string, p: number | null, c: number[] = []) =>
+  ({ id, b, a: [], c, p, pxi: 0 }) satisfies RecNode;
+const write = (n: number, seq: number, xi = 0): RecWrite => ({
+  path: X,
+  node: n,
+  v: 15,
+  xi,
+  seq,
+});
+// the reader, under the root, read the cache at the places 0 and 3: the first saw TreeAuthorAgain's write (seq 1), the
+// second TreeAuthorBuild's (seq 2), both 15
+const rec: Recording = {
+  nodes: [
+    node(0, "(root)", null, [1]),
+    {
+      ...node(1, "TreeAuthorRead", 0),
+      r: [[X, 15, 1]],
+      rx: [
+        [X, 15, 0, 1],
+        [X, 15, 3, 2],
+      ],
+    },
+    node(2, "(setup: game helpers)", null, [3, 4]),
+    node(3, "TreeAuthorAgain", 2),
+    node(4, "TreeAuthorBuild", 2),
+  ],
+  writes: [write(3, 1), write(4, 2)],
+  spliced: [],
+  bpStart: null,
+  setup: 2,
+  root: 0,
+  builders: null,
+  fromGame: [],
+};
+const reader = rec.nodes[1] as RecNode;
+const read: Expr = { t: "read", p: X, v: 15 };
+const step = (v: number): Step => ({
+  v,
+  e: { t: "op", o: "*", l: read, r: { t: "num", v: 2 }, v },
+});
+const stepsAt = (...at: number[]): BlockSteps => ({
+  steps: at.map(() => step(30)),
+  checks: [],
+  stepAt: at,
+});
+const authorOf = (steps: BlockSteps) => {
+  const a = cacheAuthor(rec, X, reader, steps);
+  return a && "node" in a ? a.node.b : a;
+};
+
+test("the step that uses the cache read ties to the read at its place, not to the first read nor by value", () => {
+  // the read at place 0 (a check, no step) saw TreeAuthorAgain; the step at place 3 used the one TreeAuthorBuild wrote
+  expect(authorOf(stepsAt(3))).toBe("TreeAuthorBuild");
+});
+
+test("reads the steps use at places that saw writes of different blocks are refused: the place does not decide", () => {
+  expect(authorOf(stepsAt(0, 3))).toEqual({
+    refused: `a leitura de ${X} tem mais de um autor possível (TreeAuthorAgain() seq 1; TreeAuthorBuild() seq 2)`,
+    ambiguous: true,
+  });
+});
+
+/** writeExpr with a turnOf that keeps the range it got and gives one step of value `v`. */
+const exprOf = (w: RecWrite, v: number, spliced: RecWrite[] = []) => {
+  const ranges: LoopTurn[] = [];
+  const e = writeExpr(
+    { ...rec, writes: [write(4, 5, 3), w], spliced },
+    { node: rec.nodes[4] as RecNode, write: w },
+    (_n, range) => {
+      ranges.push(range);
+      return { steps: [step(v)], checks: [] };
+    },
+  );
+  return { e, ranges };
+};
+
+test("the author's write gives no expression when its last step in the turn has another value", () => {
+  expect(exprOf(write(4, 9, 7), 30).e).toBeNull();
+  expect(exprOf(write(4, 9, 7), 15).e).toEqual(step(15).e);
+});
+
+test("the author's turn starts after its write before it by number, whether that write is the cache's or the pass's", () => {
+  // the pass's scratch write (seq 4) comes before the cache's (seq 5): the turn starts after the cache's, at xi 3
+  const { ranges } = exprOf(write(4, 9, 7), 15, [write(4, 4, 2)]);
+  expect(ranges).toEqual([{ from: 3, to: 6 }]);
+});
