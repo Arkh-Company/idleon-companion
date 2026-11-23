@@ -64,6 +64,46 @@ test("the Drop Rate's blueprint is complete: Additive, Multi, Additive, Multi, n
   expect(nodes.filter((n) => n.nameProof === undefined)).toEqual([]);
 });
 
+test("the Star Signs piece loads below a line that reads a star sign's field: the active signs' bases, then the multis (T172)", () => {
+  const probe = {
+    id: "star-signs-probe",
+    root: {
+      name: "Drop Rate",
+      ref: { call: "TotalStats", args: ["Drop_Rarity", 0, 0] },
+    },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "star-signs",
+            sources: [
+              {
+                key: "signs-drop",
+                name: "Star Signs total: Drop Rate",
+                nameProof: { names: "DNSM.StarSigns.Drop" },
+                ref: { read: "DNSM.StarSigns.Drop" },
+                piece: { name: "star-signs", args: {} },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const out = loadBlueprints({
+    ...BLUEPRINTS,
+    "probe/star-signs-probe.blueprint.json": probe,
+  });
+  expect(out.refused).toEqual([]);
+  const line = out.all.get("star-signs-probe")?.pools[0]?.groups[0]?.sources[0];
+  expect(line?.pools?.map((p) => p.kind)).toEqual(["additive", "multi"]);
+  expect(line?.pools?.[0]?.groups[0]?.sources[0]?.each).toEqual({
+    list: "DNSM.StarSignsDL[*]",
+    as: "sign",
+  });
+});
+
 test("every blueprint loads in a stage, and its file's name is its id", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.refused).toEqual([]);
