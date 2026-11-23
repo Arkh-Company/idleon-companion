@@ -1751,6 +1751,16 @@ lime.$scripts.N = function (_exports, $global) {
         ),
     );
   };
+  // Spec 010 (T177 r1): two calls of one block that give the same value, the first in no step (the AGI's talents at 0):
+  // the step's call is the one that returned at its place, never the first one of that value. 25 + 0 = 25.
+  Blocks._customBlock_TreeFlat = function () {
+    return 0;
+  };
+  Blocks._customBlock_TreeTwoCalls = function () {
+    var s = state();
+    Blocks._customBlock_TreeFlat(1);
+    return s.TreeLevel + Blocks._customBlock_TreeFlat(2);
+  };
   // Spec 010 (T178): the code writes the end first, as the LUK: floor(TreeLevel + (1 + (TreeStats.a + TreeStats.b) /
   // 100) × (TreeBase + TreeCapped)); 25 + 1.08 × 84 = 115.72, floored to 115.
   Blocks._customBlock_TreeEndFirst = function () {
