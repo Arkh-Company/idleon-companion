@@ -177,18 +177,18 @@ function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
 
 /**
  * The parts the lock asks a declared call to have as children: its level's references, without the not-leaves, or the
- * parts the recording opens it into (level-openings.ts); null when that opening is refused.
+ * parts the recording opens it into (level-openings.ts); the refusal's reason when that opening is refused.
  */
 export function callParts(
   n: RecNode,
   ctx: LevelContext,
   expr = returnOf(n, ctx),
   write?: RecWrite,
-): string[] | null {
+): string[] | string {
   const level = { expr, scope: n, value: num(n.v), ...(write && { write }) };
   // a level the recording opens gives its own parts; a refused one, none (the agent descends)
   const open = openingOf(level, ctx);
-  if (typeof open === "string") return null;
+  if (typeof open === "string") return open;
   return open
     ? open.map((o) => o.part)
     : partsOf(level, expr ? leavesOf(expr) : [], ctx);

@@ -80,9 +80,13 @@ export interface Walked {
   key: string;
   call: RecNode | null;
   below: Walked[] | "leaf" | "descend";
+  /** Why the descent waits, for the guide (draft-steps.ts): never in the draft. */
+  why?: string;
   /** The second source of a two-source term, and on (research R4): its system is the agent's. */
   termPart?: true;
 }
+const DEEP = "a descida para nos 12 níveis do rascunho";
+const UNRECORDED = "a chamada não tem gravação neste lugar";
 
 // shortcut: the descent stops 12 levels down, pending `descend`; raise it when a number of the game goes deeper
 const MAX_DEPTH = 12;
@@ -111,9 +115,16 @@ function walkPart(
     };
     const open = reader ? openingOf({ ...level, scope: reader }, ctx) : null;
     if (open === null)
-      return { key, call, below: CALL.test(key) ? "descend" : "leaf" };
+      return CALL.test(key)
+        ? { key, call, below: "descend", why: UNRECORDED }
+        : { key, call, below: "leaf" };
     if (typeof open === "string" || depth >= MAX_DEPTH)
-      return { key, call, below: "descend" };
+      return {
+        key,
+        call,
+        below: "descend",
+        why: typeof open === "string" ? open : DEEP,
+      };
     return {
       key,
       call,
@@ -124,15 +135,22 @@ function walkPart(
   }
   const own = from?.call === call ? from : undefined;
   const parts =
-    depth < MAX_DEPTH ? callParts(call, ctx, expr, own?.write) : null;
-  if (parts === null) return { key, call, below: "descend" };
+    depth < MAX_DEPTH ? callParts(call, ctx, expr, own?.write) : DEEP;
+  // a refused opening gives its reason, as the lock writes it
+  if (typeof parts === "string")
+    return { key, call, below: "descend", why: parts };
   // no part the recording ties: a leaf, unless the call reads the save below it (then the agent descends)
-  if (parts.length === 0)
-    return {
-      key,
-      call,
-      below: saveChild(call, ctx) === null ? "leaf" : "descend",
-    };
+  if (parts.length === 0) {
+    const save = saveChild(call, ctx);
+    return save === null
+      ? { key, call, below: "leaf" }
+      : {
+          key,
+          call,
+          below: "descend",
+          why: `nenhuma parte ligada pela gravação; lê o save embaixo: ${save}`,
+        };
+  }
   const kid = (p: string) =>
     call.c
       .map((id) => ctx.rec.nodes[id])
