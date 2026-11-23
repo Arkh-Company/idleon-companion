@@ -109,6 +109,25 @@ Regras (FR-003, research R5):
 A chave que liga um nó da receita a um termo do gabarito e a um nó da gravação, a mesma do protótipo: `Bloco(args)` com
 os argumentos em JSON, ou o caminho. Ela só existe em memória; a receita guarda o `Ref` estruturado.
 
+## Pedaço de receita (`BlueprintPiece`)
+
+Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alchemy…), escrita uma vez em
+`src/calculator/blueprints/pieces/<id>.piece.json` e chamada pelas receitas (Open Questions, 23/11).
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `id` | texto | Igual ao nome do arquivo; único entre os pedaços |
+| `params` | texto[] | Nomes sem repetir, nunca `character`; usados como `{nome}` nas referências |
+| `combine` | `sum` ou `product` | Como os filhos se juntam; obrigatório em todo nó com filhos dentro do pedaço, menos num nível de chamada que fecha pela própria conta gravada (o Seraph) |
+| `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`) |
+| `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
+
+No `BlueprintNode`, `piece: { name, args }` fica no lugar de `children`, `leaf`, `combine` e `each`. A carga preenche os
+parâmetros e passa cada caminho pelas checagens do ref; recusa parâmetro que falta ou sobra, pedaço que não existe, pedaço
+que chama a si mesmo, id repetido e `{nome}` não declarado. A linha que chama o pedaço pega o valor da sua referência e
+fecha pela conta dos filhos sobre as folhas gravadas, ligadas pelo lugar; reprova com `notClosing`, `childNoValue` ou
+`leafHasChildren`, nunca com `openingRefused`.
+
 ## Tabela de sistemas (`SystemEntry`)
 
 | Campo | Tipo | Regra |
