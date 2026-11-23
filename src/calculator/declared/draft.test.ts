@@ -8,9 +8,14 @@ import { useGameNames } from "../names/names.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { stepsGuide } from "./draft-steps.ts";
-import { draftBlueprint, draftJson, talentClass } from "./draft.ts";
+import { draftBlueprint, draftJson, gameList, talentClass } from "./draft.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
-import { chainInput, inventedBlueprint, recorded } from "./lock-fixture.ts";
+import {
+  chainInput,
+  inventedBlueprint,
+  inventedRecorder,
+  recorded,
+} from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
 import { draftPlan, stepsPath } from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
@@ -140,6 +145,12 @@ test("a talent source takes the class of its tab in the game's talent order; a s
   twice[40] = 1;
   expect(talentClass(twice, 1)).toBe(null);
   expect(talentClass([], 1)).toBe(null);
+});
+
+test("the game's talent order is read as a list of the game's tables, in the recorder's context; none gives an empty list", () => {
+  const { context } = inventedRecorder();
+  expect(gameList(context, "CustomLists.ListTwo", 5_000)).toEqual([32]);
+  expect(gameList(context, "CustomLists.NoSuchList", 5_000)).toEqual([]);
 });
 
 test("{character} stands for the tree's character; no character's index is written out", () => {

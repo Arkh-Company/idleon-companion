@@ -31,13 +31,16 @@ export const inventedBlueprint = (id: string): Writable<Blueprint> =>
   ) as Writable<Blueprint>;
 
 let recorder: ReturnType<typeof bootRecorder> | null = null;
+/** The invented game's recorder, booted once per file. */
+export const inventedRecorder = () =>
+  (recorder ??= bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 }));
 
 /** A recording of `block` over the invented state (with `attrs` over it) and its answer key. */
 export function recorded(
   block: string,
   attrs: object = {},
 ): { rec: Recording; key: AnswerKey; ops: LockInput["ops"] } {
-  recorder ??= bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  const recorder = inventedRecorder();
   const rec = recorder.record(mosaicOf(attrs), [[block, [0, 0, 0]]], {
     recompute: [],
     builders: [],
