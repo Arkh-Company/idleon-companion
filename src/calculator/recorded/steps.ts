@@ -35,8 +35,13 @@ export interface BlockSteps {
   exprOf?: (op: number) => Expr | null;
   /** Where each step was last recorded in the call's step log (spec 010, T162: a write comes after its step). */
   stepAt?: number[];
-  /** Why a step's call ties to none: two or more calls of its block gave its value, and no place decides (T177 r1). */
-  ambiguous?: ReadonlySet<string>;
+  /** The calls a step tied to none, shared by every call and turn of one makeSteps (spec 010, T177 r1, r2). */
+  ambiguous?: ReadonlySet<AmbiguousCall>;
+}
+/** A step's call that two or more calls of its block gave the value of, with no place to decide between them. */
+export interface AmbiguousCall {
+  block: string;
+  v: StepValue;
 }
 
 /** The game's own definition tables are game data, not the player's (build-tree.cjs GAME_TABLE). */
@@ -70,6 +75,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const { nodes } = rec;
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
+  const ambiguous = new Set<AmbiguousCall>();
 
   /**
    * stepsOf(n, xs, range) and its checks; for a loop turn of a cache writer (step 8d2), `xs` is the slice of the step
@@ -81,7 +87,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     const turnReads: Reads | null = range
       ? [...new Map(rxs.filter((x) => inTurn(x[2])).map((x) => [x[0], x[1]]))]
       : null;
-    if (!xs) return { steps: [], checks: [] };
+    if (!xs) return { steps: [], checks: [], ambiguous };
     const vals = new Map<number, StepValue>();
     const order: number[] = [];
     for (const [i, v] of xs) {
@@ -115,7 +121,6 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
     const defStack = new Set<AstNode>();
     const used = new Set<number>();
     const usedR = new Set<string>();
-    const ambiguous = new Set<string>();
     const kids = n.c
       .map((c) => nodes[c])
       .filter((k): k is RecNode => !!k && inTurn(k.pxi));
@@ -139,7 +144,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         const fits = (x: RecNode) =>
           !used.has(x.id) && x.b === callee.slice(CUSTOM.length) && x.v === v;
         // the call that returned at the step's place (its value recorded where it began, spec 010 T177 r1); with no
-        // place, the only call of that value, and two or more are ambiguous: never the first one by order
+        // place, the only call of that value; two or more are ambiguous, a loose value that never ties to a read either
         const id = opIndex.get(node);
         const at = id === undefined ? undefined : lastPos.get(id);
         const all = kids.filter(fits);
@@ -149,10 +154,10 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
             : all.length === 1
               ? all[0]
               : undefined;
-        if (all.length > 1 && at === undefined)
-          ambiguous.add(
-            `a chamada ${callee.slice(CUSTOM.length)} de valor ${String(v)} sai de mais de uma chamada, e o lugar não decide`,
-          );
+        if (all.length > 1 && at === undefined) {
+          ambiguous.add({ block: callee.slice(CUSTOM.length), v });
+          return { t: "val", v };
+        }
         if (k) {
           used.add(k.id);
           return { t: "call", id: k.id, v };
@@ -357,6 +362,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   }
 
   return {
+    /** Every step's call of this recording that tied to none (BlockSteps.ambiguous). */
+    ambiguous: ambiguous as ReadonlySet<AmbiguousCall>,
     /** The steps of one loop turn of `n` (step 8d2): `xs` the turn's slice of its step log, at `range`. */
     turn: (n: RecNode, xs: RecNode["x"], range: LoopTurn): Step[] =>
       stepsOf(n, xs, range).steps,
@@ -368,7 +375,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       let out = memo.get(id);
       if (!out) {
         const n = nodes[id];
-        out = n ? stepsOf(n) : { steps: [], checks: [] };
+        out = n ? stepsOf(n) : { steps: [], checks: [], ambiguous };
         memo.set(id, out);
       }
       return out;

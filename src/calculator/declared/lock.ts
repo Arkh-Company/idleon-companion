@@ -7,6 +7,7 @@ import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import { topOf } from "./answer-key.ts";
+import { ambiguousCall } from "./answer-key-turn.ts";
 import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { emptyOut } from "./lock-levels.ts";
@@ -161,5 +162,9 @@ export function lockBlueprint(input: LockInput): LockResult {
   };
 
   lockPools(bp.pools, key, top, ctx, out);
+  // a step's call no place decides, in any level the lock read (returnOf, transparentValue, the openings: T177 r2)
+  const twice = ambiguousCall(made.ambiguous);
+  if (twice !== null)
+    out.errors.push({ kind: "rootForm", where: "root", got: twice });
   return done();
 }

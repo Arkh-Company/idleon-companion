@@ -31,7 +31,7 @@ import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
-import { turnOfWrite } from "./answer-key-turn.ts";
+import { ambiguousCall, turnOfWrite } from "./answer-key-turn.ts";
 import { refusedAuthor } from "./cache-author.ts";
 
 export interface AnswerPool {
@@ -91,8 +91,6 @@ export function answerKeyOfSteps(
 ): AnswerKey | RootFormError {
   const top = opts.node === undefined ? topOf(rec) : rec.nodes[opts.node];
   if (!top) return outOfRule("a gravação não tem raiz");
-  const [twice] = ambiguous ?? [];
-  if (twice !== undefined) return outOfRule(twice);
   const final = opts.value ?? top.v;
   const { turnOf } = opts;
   if (typeof final !== "number") return outOfRule("a raiz não deu número");
@@ -355,6 +353,9 @@ export function answerKeyOfSteps(
   r.bump("branchCheck", own);
   r.bump("preambleCheck", checks.length - own);
   r.bump("mergedSteps", raw.length - pools.length);
+  // after every turn the pools read: a call no place decides, in any of them, refuses the root
+  const twice = ambiguousCall(ambiguous);
+  if (twice !== null) return outOfRule(twice);
   return {
     root: callRef(top),
     final,

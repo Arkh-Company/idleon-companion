@@ -1,8 +1,9 @@
 // A write's turn in the answer key (spec 010, T175, T177; moved out of answer-key-steps.ts as it was): the step that gave
-// a write of the root at its own place in its loop's turn, read from the turn's steps (makeSteps turnOf).
+// a write of the root at its own place in its loop's turn, read from the turn's steps (makeSteps turnOf); and the
+// refusal of a step's call no place decides (T177 r2), in any call or turn of the recording's steps.
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
-import type { BlockSteps, LoopTurn } from "../recorded/steps.ts";
+import type { AmbiguousCall, BlockSteps, LoopTurn } from "../recorded/steps.ts";
 import { near } from "./answer-key-pool.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { writeExpr, writeTurn } from "./cache-author.ts";
@@ -33,4 +34,14 @@ export function turnOfWrite(
   const mine = op(pos);
   const step = (stepAt ?? []).findIndex((p) => op(p) === mine);
   return e && { e, step, ...(pos !== undefined && { pos }) };
+}
+
+/** The refusal's reason for the first step's call that tied to none (recorded/steps.ts), or null with none. */
+export function ambiguousCall(
+  calls: ReadonlySet<AmbiguousCall> | undefined,
+): string | null {
+  const [c] = calls ?? [];
+  return c
+    ? `a chamada ${c.block} de valor ${String(c.v)} sai de mais de uma chamada, e o lugar não decide`
+    : null;
 }
