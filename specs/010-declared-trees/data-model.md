@@ -151,10 +151,11 @@ A chave de uma fonte na trava é (índice do pool, `ref`, ocorrência no pool).
 
 `LockError.kind`: `poolOrder`, `missingSource`, `extraSource`, `groupOrder`, `sourceOrder`, `notClosing`,
 `undeclaredPart`, `childOutside`, `childNoValue`, `conditionMismatch`, `leafType`, `pending`, `classMismatch`,
-`rootForm`.
+`rootForm`, `leafHasChildren` (Open Questions, 22/11).
 
 Os textos de reprovação (US2) são montados desses campos: "fonte que falta: <ref> (pool 1 Additive)", "ordem dos
-pools errada: a ordem esperada é …", "nível não fecha: <nível>: as partes dão X, o valor gravado é Y".
+pools errada: a ordem esperada é …", "nível não fecha: <nível>: as partes dão X, o valor gravado é Y", "folha com filhos na gravação: <folha>: o primeiro é
+<filho>".
 
 ## Alerta de fechamento (`ClosureAlert`)
 
