@@ -1372,6 +1372,14 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDeclMap = function () {
     return state().CurrentMap + 1;
   };
+  // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
+  Blocks._customBlock_GetTalentNumber = function (mode, t) {
+    var s = state();
+    return s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[t] * 2;
+  };
+  Blocks._customBlock_TreeDeclDraft = function () {
+    return state().TreeBase + Blocks._customBlock_GetTalentNumber(1, 1);
+  };
   // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
   Blocks._customBlock_TreeDeclSum = function () {
     var s = state();
