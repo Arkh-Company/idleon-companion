@@ -33,3 +33,40 @@ test("the loop's index, never added to itself, stays out of the terms", () => {
     [],
   );
 });
+
+// T177 r1, the STR's base (fake-game.js, TreeRunTimes): the total also multiplies, by a step inside an if's test that is
+// no step of the whole call; read first in the sum the code writes end first, its writes are the first pools.
+test("a running total that also multiplies opens as the first pools when it leads the sum", () => {
+  const key = recorded("TreeRunTimes", {
+    TreeGear: [5, 7, 9],
+    TreeGallery: 11,
+    TreeHat: 2,
+    TreeDungeon: -1,
+  }).key;
+  expect(key.final).toBe(146);
+  expect(
+    key.pools.map((p) => [p.kind, p.terms.map((t) => t.refs.join("+"))]),
+  ).toEqual([
+    [
+      "additive",
+      ["TreeGear[0]", "TreeGear[1]", "TreeGear[2]", "TreeGallery"],
+    ],
+    ["multi", ["TreeStats.a+TreeStats.b"]],
+    ["additive", ["TreeHat", "TreeCapped"]],
+    ["multi", ["TreeBase"]],
+    ["additive", ["TreeLevel"]],
+  ]);
+  expect(key.pools.every((p) => p.error < 1e-9)).toBe(true);
+});
+
+// T177 r1, the Accuracy (fake-game.js, TreeRunPow): a running total that multiplies, read after another term, stays
+// the value it holds: the root stands.
+test("a running total that does more than add, read after another term, does not open and the root stands", () => {
+  const key = recorded("TreeRunPow", { TreeGallery: 11 }).key;
+  expect(key.final).toBe(36);
+  expect(key.pools.map((p) => p.kind)).toEqual(["additive"]);
+  expect(key.pools[0]?.terms.map((t) => t.ref)).toEqual([
+    "TreeLevel",
+    "11.33",
+  ]);
+});

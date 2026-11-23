@@ -1680,6 +1680,77 @@ lime.$scripts.N = function (_exports, $global) {
         ),
     );
   };
+  // Spec 010 (T177 r1): the STR's base, a running total that also multiplies: the gear in a loop through a variable,
+  // the gallery through a variable, then × (1 + (TreeStats.a + TreeStats.b) / 100) inside the test of an if (no step
+  // of the whole call), then the hat; the end first: floor(TreeLevel + (1 + TreeBase / 100) × (RunDN + TreeCapped)).
+  // Gear 5, 7 and 9 and gallery 11: 32; × 1.08 = 34.56; + 2 = 36.56; + 80 = 116.56; × 1.04 = 121.2224; + 25, floored: 146.
+  Blocks._customBlock_TreeRunTimes = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t, i;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      t += U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    t = a.engine.getGameAttribute("DummyNumbersStatManager");
+    i =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeGallery"));
+    t.h.RunDN = i;
+    if (
+      (-1 == a.engine.getGameAttribute("TreeDungeon") &&
+        ((t = a.engine.getGameAttribute("DummyNumbersStatManager")),
+        (i =
+          U.asNumber(
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+          ) *
+          (1 +
+            (a.engine.getGameAttribute("TreeStats").h.a +
+              a.engine.getGameAttribute("TreeStats").h.b) /
+              100)),
+        (t.h.RunDN = i)),
+      -1 == a.engine.getGameAttribute("TreeDungeon"))
+    ) {
+      t = a.engine.getGameAttribute("DummyNumbersStatManager");
+      i =
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ) + U.asNumber(a.engine.getGameAttribute("TreeHat"));
+      t.h.RunDN = i;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        (1 + a.engine.getGameAttribute("TreeBase") / 100) *
+          (U.asNumber(
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+          ) +
+            a.engine.getGameAttribute("TreeCapped")),
+    );
+  };
+  // Spec 010 (T177 r1): the Accuracy's total, a running total that multiplies, read after another term of a sum: it
+  // does not open, and the root stands: floor(TreeLevel + RunDN), RunDN = TreeGallery × (1 + TreeStats.a / 100).
+  // 11 × 1.03 = 11.33; + 25 = 36.33, floored: 36.
+  Blocks._customBlock_TreeRunPow = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = U.asNumber(
+      a.engine.getGameAttribute("TreeGallery"),
+    );
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) *
+      (1 + a.engine.getGameAttribute("TreeStats").h.a / 100);
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
   // Spec 010 (T178): the code writes the end first, as the LUK: floor(TreeLevel + (1 + (TreeStats.a + TreeStats.b) /
   // 100) × (TreeBase + TreeCapped)); 25 + 1.08 × 84 = 115.72, floored to 115.
   Blocks._customBlock_TreeEndFirst = function () {
