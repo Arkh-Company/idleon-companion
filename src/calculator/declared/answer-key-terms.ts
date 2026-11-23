@@ -3,7 +3,8 @@
 // reads the recording, and counts each kind of noise of the trace it had to skip or cross.
 import type { Expr } from "../recorded/steps.ts";
 import { callRef, near, OutOfRule } from "./answer-key-pool.ts";
-import type { RawTerm } from "./answer-key-pool.ts";
+import type { RawPool, RawTerm } from "./answer-key-pool.ts";
+import { onlyAdds } from "./answer-key-running.ts";
 import { passageReader } from "./answer-key-passage.ts";
 import type { PassageContext } from "./answer-key-passage.ts";
 import { isCacheRead } from "./cache-author.ts";
@@ -41,8 +42,8 @@ export interface TermContext extends PassageContext {
   accumulator: string | null;
   /** The paths that ran of the root's conditions outside its `return` (answer-key-top.ts, branchesOf). */
   branches?: readonly { value: number; e: Expr }[];
-  /** The terms a running total kept in a counter of the game opens into, for a sum's term that reads it (T177). */
-  running?: (e: Expr) => RawTerm[] | null;
+  /** The pools a running total kept in a counter of the game opens into, for a term that reads it (T177). */
+  running?: (e: Expr) => RawPool[] | null;
 }
 
 export function termReader(ctx: TermContext) {
@@ -59,6 +60,19 @@ export function termReader(ctx: TermContext) {
   const usedSteps = new Set<number>();
   /** The branches crossed, by index: each one is a ❓ layer of the root. */
   const crossed = new Set<number>();
+  /** What reading a chain changes here, to put back when the chain is not opened. */
+  const snapshot = () => {
+    const [u, c, at] = [[...usedSteps], [...crossed], sink];
+    const counts = { ...at };
+    return () => {
+      usedSteps.clear();
+      for (const x of u) usedSteps.add(x);
+      crossed.clear();
+      for (const x of c) crossed.add(x);
+      for (const k of Object.keys(at)) Reflect.deleteProperty(at, k);
+      Object.assign(at, counts);
+    };
+  };
   const branches = ctx.branches ?? [];
   const passageExpr = passageReader(ctx);
   /** The passages that hold a value with no name: never 0 or 1, which any step may give. */
@@ -257,13 +271,17 @@ export function termReader(ctx: TermContext) {
         return;
       }
     }
-    if (op === "+" && (u.t === "read" || u.t === "val")) {
-      const opened = ctx.running?.(u);
-      if (opened) {
+    if (op === "+" && (u.t === "read" || u.t === "val") && ctx.running) {
+      const undo = snapshot();
+      const opened = ctx.running(u);
+      if (opened && onlyAdds(opened)) {
         bump("runningTotal");
-        for (const t of opened) out.push({ ...t, weight: t.weight * weight });
+        for (const t of opened.flatMap((p) => p.terms as RawTerm[]))
+          out.push({ ...t, weight: t.weight * weight });
         return;
       }
+      // one that does more than add stays the value it holds, with nothing of its chain left behind (T177 r1)
+      if (opened) undo();
     }
     if (typeof u.v !== "number") throw new OutOfRule("um termo sem número");
     const scaled = scale !== undefined && scale !== 1 ? { scale } : {};

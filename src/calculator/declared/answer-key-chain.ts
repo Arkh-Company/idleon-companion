@@ -210,7 +210,9 @@ export function chainPools(
         throw new OutOfRule(
           `a escrita ${String(w.value)} do acumulador ${path} não tem passo no lugar da sua volta`,
         );
-      if (t.step < 0 && !t.assign)
+      // a step at the write's own place that is no step of the whole call (inside an if's test, the STR's ×, T177 r1)
+      // stands at its place, as a turn through a variable: only a turn with no place at all is refused
+      if (t.step < 0 && !t.assign && t.pos === undefined)
         throw new OutOfRule(
           `a volta da escrita ${String(w.value)} do acumulador ${path} não tem o seu passo entre os da chamada`,
         );

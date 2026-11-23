@@ -60,13 +60,13 @@ test("a running total that also multiplies opens as the first pools when it lead
 });
 
 // T177 r1, the Accuracy (fake-game.js, TreeRunPow): a running total that multiplies, read after another term, stays
-// the value it holds: the root stands.
+// the read of its path: the root stands.
 test("a running total that does more than add, read after another term, does not open and the root stands", () => {
   const key = recorded("TreeRunPow", { TreeGallery: 11 }).key;
   expect(key.final).toBe(36);
   expect(key.pools.map((p) => p.kind)).toEqual(["additive"]);
   expect(key.pools[0]?.terms.map((t) => t.ref)).toEqual([
     "TreeLevel",
-    "11.33",
+    "DummyNumbersStatManager.RunDN",
   ]);
 });

@@ -26,7 +26,7 @@ import type {
 } from "./answer-key-terms.ts";
 import { boundOf, chainPools, matchChain } from "./answer-key-chain.ts";
 import { itemOfStep, placeOfWrite } from "./answer-key-item.ts";
-import { accumulates, runningTerms } from "./answer-key-running.ts";
+import { accumulates, runningPools } from "./answer-key-running.ts";
 import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { peelTop } from "./answer-key-top.ts";
@@ -231,6 +231,19 @@ export function answerKeyOfSteps(
     ),
   );
   const opening = new Set<string>();
+  const runningOf = (e: Expr) =>
+    runningPools(e, running, opening, (p, vs) => {
+      const local = { layers: [], stepLimits: [], divisors: [] };
+      const raw = chainPools(
+        { ...chain, ...local, kept: (t) => t },
+        vs,
+        metaOf.get(p)?.slice(0, vs.length),
+        p,
+      );
+      if (local.layers.length + local.divisors.length > 0)
+        throw new OutOfRule(`a soma corrente ${p} tem uma camada`);
+      return raw;
+    });
   const kids = top.c.flatMap((c) => rec.nodes[c] ?? []);
   const reads = top.r ?? [];
   const r = termReader({
@@ -244,19 +257,7 @@ export function answerKeyOfSteps(
     ops: opts.ops,
     accumulator: acc?.[0] ?? null,
     branches: opts.branches ?? [],
-    running: (e) =>
-      runningTerms(e, running, opening, (p, vs) => {
-        const local = { layers: [], stepLimits: [], divisors: [] };
-        const raw = chainPools(
-          { ...chain, ...local, kept: (t) => t },
-          vs,
-          metaOf.get(p)?.slice(0, vs.length),
-          p,
-        );
-        if (local.layers.length + local.divisors.length > 0)
-          throw new OutOfRule(`a soma corrente ${p} tem uma camada`);
-        return raw;
-      }),
+    running: runningOf,
   });
   r.bump("totalCopy", finals.length - (acc ? 1 : 0));
   r.bump(
@@ -308,6 +309,7 @@ export function answerKeyOfSteps(
     reader: r,
     termsOf,
     kept,
+    running: runningOf,
   });
 
   /** Each factor of each top division's divisor, as a ➗ line; and each Cap's or Floor's limit, as its sources. */

@@ -26,6 +26,8 @@ export interface ExpressionContext {
     scale?: number,
   ) => RawTerm[];
   kept: (terms: RawTerm[], prev: number | null) => AnswerTerm[];
+  /** The pools a running total kept in a counter of the game opens into (answer-key-running.ts, T177). */
+  running?: (e: Expr) => RawPool[] | null;
 }
 
 /** The expression's readers over one root: its operands, the pool kind of a part, and its pools. */
@@ -33,6 +35,7 @@ export function expressionReader({
   reader: r,
   termsOf,
   kept,
+  running,
 }: ExpressionContext) {
   // 3. An expression: the operands of its top operator; the leftmost one is an earlier stretch when it is a sum inside
   // a product (in parentheses), or a product that starts with such a sum; otherwise it is the first pool's term.
@@ -96,6 +99,19 @@ export function expressionReader({
       product: hit.v,
     };
   }
+  /** The pools of the running total a sum's first term reads, each at the step that reads it when it has none. */
+  function leadingTotal(first: Part, step: number): RawPool[] | null {
+    const u = r.unwrap(first.e, [], true, new Set(first.seen));
+    if (first.w !== 1 || (u.t !== "read" && u.t !== "val")) return null;
+    const raw = running?.(u);
+    if (!raw || raw.length === 0) return null;
+    r.bump("runningTotal");
+    return raw.map((p, k) => ({
+      ...p,
+      step: p.step < 0 ? step : p.step,
+      terms: kept(p.terms as RawTerm[], k === 0 ? null : 0),
+    }));
+  }
   function stretches(e: Expr, step: number, seen: Seen = new Set()): RawPool[] {
     const s = new Set(seen);
     const u = r.unwrap(e, [], true, s);
@@ -119,6 +135,16 @@ export function expressionReader({
       ];
     }
     const [first, ...rest] = all;
+    // a running total that leads a sum (the STR's base, T177 r1): its writes are the first pools, even one that multiplies
+    const total =
+      kind === "additive" && first ? leadingTotal(first, step) : null;
+    if (total)
+      return rest.length === 0
+        ? total
+        : [
+            ...total,
+            { kind, terms: kept(termsOf(rest, kind), 0), step, after: u.v },
+          ];
     const inner = first ? kindOf(first.e, first.seen) : undefined;
     const lead =
       first && inner ? operands(first.e, inner, 1, first.seen)[0] : undefined;

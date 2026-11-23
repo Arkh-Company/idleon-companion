@@ -2,14 +2,15 @@
 // the paths a call writes in DummyNumbersStatManager, the loop's index is noise, and the total it adds to itself is
 // told apart by what the code does with it, never by its value: a write whose own step reads the path back. When a
 // sum's term reads that total, the total opens through its writes, each at its place (answer-key-chain.ts), one term per
-// turn of its loop, in place of a loose constant; a total that does more than add is refused with the reason.
+// turn of its loop, in place of a loose constant; a total that also multiplies opens as the first pools of a sum it
+// leads, and anywhere else stays the value it holds (T177 r1, the STR and the Accuracy).
 import type { Op } from "../instrument.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
 import { astPattern, matchPattern } from "../recorded/ast.ts";
 import type { AstNode } from "../recorded/ast.ts";
 import type { Expr } from "../recorded/steps.ts";
-import { near, OutOfRule } from "./answer-key-pool.ts";
-import type { RawPool, RawTerm } from "./answer-key-pool.ts";
+import { near } from "./answer-key-pool.ts";
+import type { RawPool } from "./answer-key-pool.ts";
 
 /** A node of the code that reads `path` (its own text names it), at any depth. */
 function reads(n: unknown, path: string): boolean {
@@ -37,16 +38,17 @@ export function accumulates(
 }
 
 /**
- * The terms a running total opens into, for a sum's term that reads it (`e`, a read of the path or a value with no
- * name that only one total's write holds): the chain of its writes up to the one with that value, every stretch an
- * addition. Null when `e` is no running total's; refused when its chain does more than add.
+ * The pools a running total opens into, for a term that reads it (`e`, a read of the path or a value with no name that
+ * only one total's write holds): the chain of its writes up to the one with that value. Null when `e` is no running
+ * total's. Inside a sum only a chain that only adds opens (`onlyAdds`); one that also multiplies opens only as the first
+ * pools of a sum it leads (answer-key-expression.ts, T177 r1).
  */
-export function runningTerms(
+export function runningPools(
   e: Expr,
   running: ReadonlyMap<string, readonly number[]>,
   opening: Set<string>,
   chain: (path: string, values: readonly number[]) => RawPool[],
-): RawTerm[] | null {
+): RawPool[] | null {
   if (typeof e.v !== "number") return null;
   const v = e.v;
   const paths =
@@ -66,13 +68,12 @@ export function runningTerms(
   if (k < 0) return null;
   opening.add(path);
   try {
-    const raw = chain(path, vs.slice(0, k + 1));
-    if (raw.some((p) => p.kind !== "additive" || p.next !== undefined))
-      throw new OutOfRule(
-        `a soma corrente ${path} não só soma: não abre dentro de uma soma`,
-      );
-    return raw.flatMap((p) => p.terms as RawTerm[]);
+    return chain(path, vs.slice(0, k + 1));
   } finally {
     opening.delete(path);
   }
 }
+
+/** A running total's chain that only adds: its terms open inside a sum. */
+export const onlyAdds = (raw: readonly RawPool[]): boolean =>
+  raw.every((p) => p.kind === "additive" && p.next === undefined);
