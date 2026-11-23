@@ -230,8 +230,13 @@ export function lockBlueprint(input: LockInput): LockResult {
           characterClass !== null &&
           !s.classes.includes(characterClass);
         if (j === undefined || !t) {
-          // absent: another class's source (FR-002a), or one its condition switched off (research R3)
-          if (otherClass || (s.classes && !s.condition)) continue;
+          // absent: another class's source, or a class source when the snapshot gives no class (FR-002a), or one its
+          // condition switched off (research R3)
+          if (
+            otherClass ||
+            (s.classes !== undefined && characterClass === null)
+          )
+            continue;
           if (s.condition) checkCondition(s, false, top, sctx, out);
           else
             out.errors.push({
@@ -246,7 +251,8 @@ export function lockBlueprint(input: LockInput): LockResult {
           out.errors.push({ kind: "sourceOrder", where: sctx.where });
         last = Math.max(last, j);
         first = Math.min(first, j);
-        if (otherClass)
+        // the game calls another class's talent for every character: only a value that is not neutral is a mismatch
+        if (otherClass && t.value !== (pool.kind === "additive" ? 0 : 1))
           out.errors.push({
             kind: "classMismatch",
             where: sctx.where,
