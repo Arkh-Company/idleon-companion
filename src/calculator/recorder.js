@@ -2,8 +2,9 @@
 // code, so the instrumented blocks find `__X` already there; it records nothing until a request turns it on. Ported
 // from the bench's build-tree.cjs at BASELINE-4: steps 2 (calls), 3 and 3b (reads, writes, searches), 4 (RECOMPUTE),
 // 4b (steps), 5 (helpers) and 6 (roots). recorder-pass.js adds 6b over the same state `S`; step 7 (links) runs
-// in the worker over the JSON (tree/links.ts). The recording leaves only as JSON text, made here. No character name is
-// kept: a key or an argument that is a character's name becomes its index.
+// in the worker over the JSON (tree/links.ts). The recording leaves only as JSON text, made in the context
+// (recorder-pass.js, take). No character name is kept: a key or an argument that is a character's name becomes its
+// index.
 (function () {
   "use strict";
   var G = globalThis;
@@ -78,9 +79,10 @@
       ? "(character " + S.names.get(x) + ")"
       : x.slice(0, 40);
   }
+  // a block by its name; a helper's event (the answer key's only, spec 010 T168) by its whole method
   function wrapBlock(C, k) {
     var f = C[k];
-    var name = k.slice("_customBlock_".length);
+    var name = k.indexOf("_customBlock_") === 0 ? k.slice(13) : k;
     C[k] = function () {
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
@@ -266,7 +268,8 @@
 
   G.__rec = {
     // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
-    // key's recording only), a call that returns a list or a map of the state keeps its path (vp).
+    // key's recording only), a call that returns a list or a map of the state keeps its path (vp), and each helper's
+    // event is a call of its own (spec 010, T168: the count of a cache an event builds; instrument.ts gives its steps).
     wrap: (paths) => {
       S.paths = !!paths;
       var hx = G.__hx;
@@ -277,6 +280,12 @@
         Object.getOwnPropertyNames(C).forEach((k) => {
           if (k.indexOf("_customBlock_") === 0 && typeof C[k] === "function")
             owner[k] = C;
+        });
+        var P = paths && typeof C === "function" ? C.prototype : null;
+        Object.getOwnPropertyNames(P || {}).forEach((k) => {
+          var d = Object.getOwnPropertyDescriptor(P, k); // no getter runs
+          if (k.indexOf("_customEvent_") === 0 && typeof d.value === "function")
+            wrapBlock(P, k);
         });
       });
       Object.keys(owner).forEach((k) => wrapBlock(owner[k], k));
@@ -380,20 +389,7 @@
 
     stop: () => S.stopped(),
     isOn: () => S.on,
-
-    // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as
-    // the live tree always had it.
-    take: () =>
-      JSON.stringify({
-        nodes: S.nodes || [],
-        writes: S.writes || [],
-        spliced: S.spliced || [],
-        bpStart: S.bpStart === Infinity ? null : S.bpStart,
-        setup: S.setup ? S.setup.id : null,
-        root: S.root ? S.root.id : null,
-        builders: S.builders ? S.builders.id : null,
-        fromGame: S.fromGame || [],
-      }),
+    // take(), the recording as text: recorder-pass.js
   };
   G.__rec.state = S;
 })();

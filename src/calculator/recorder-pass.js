@@ -120,6 +120,20 @@
     }
   };
 
+  // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as the
+  // live tree always had it. (Moved from recorder.js as it was, which keeps under 400 lines.)
+  G.__rec.take = () =>
+    JSON.stringify({
+      nodes: S.nodes || [],
+      writes: S.writes || [],
+      spliced: S.spliced || [],
+      bpStart: S.bpStart === Infinity ? null : S.bpStart,
+      setup: S.setup ? S.setup.id : null,
+      root: S.root ? S.root.id : null,
+      builders: S.builders ? S.builders.id : null,
+      fromGame: S.fromGame || [],
+    });
+
   // For the answer key only (spec 010, T162: a cost that overflows): the place of each infinite number in the text
   // take() made, as [...path, sign]; tree-record.ts puts it back there. JSON makes them null, and recorder.js marks
   // where they were, never a pass over the whole recording (seconds on the real game). A node's place is its path from

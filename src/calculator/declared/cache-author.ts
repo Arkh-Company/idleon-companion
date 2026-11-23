@@ -69,7 +69,7 @@ export function cacheAuthor(
   const name = (w: RecWrite | undefined) => {
     const n = rec.nodes[w?.node ?? -1];
     if (!w) return "o cache do jogo";
-    return `${n ? callRef(n) : "fora de um bloco"} seq ${String(w.seq)}`;
+    return `${n ? callRef(n) : "fora de um bloco ou evento"} seq ${String(w.seq)}`;
   };
   /** One write of each writer, or a refusal when there are more. */
   const one = (
@@ -111,7 +111,9 @@ export function cacheAuthor(
     };
   const node = rec.nodes[write.node ?? -1];
   if (!node || node.b.startsWith("("))
-    return { refused: `o cache ${path} foi escrito fora de um bloco` };
+    return {
+      refused: `o cache ${path} foi escrito fora de um bloco ou evento`,
+    };
   return { node, write };
 }
 
