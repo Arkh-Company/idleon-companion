@@ -142,6 +142,21 @@ test("the LUK's blueprint loads with the game's 5 pools, the equipment's items a
   expect(reads.filter((r) => hasRawCharacterIndex(r))).toEqual([]);
 });
 
+test("the LUK's groups each have their system: the Shimmer's in islands, the All Stat's in luk-stats, as the catalog puts them (T172)", () => {
+  const bp = loadBlueprints(BLUEPRINTS).all.get("stats-luk");
+  const groups = bp?.pools.flatMap((p) => p.groups) ?? [];
+  expect(groups.filter((g) => typeof g.system !== "string")).toEqual([]);
+  expect(bp?.pending?.filter((p) => p.kind === "system")).toEqual([]);
+  const systemOf = (ref: string) =>
+    groups.find((g) =>
+      g.sources.some((s) => s.ref && JSON.stringify(s.ref).includes(ref)),
+    )?.system;
+  expect([systemOf("OptionsListAccount[177]"), systemOf('"AllStat"')]).toEqual([
+    "islands",
+    "luk-stats",
+  ]);
+});
+
 test("every blueprint loads in a stage, and its file's name is its id", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.refused).toEqual([]);
