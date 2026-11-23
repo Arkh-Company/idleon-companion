@@ -144,12 +144,22 @@ export const num = (v: unknown): number | null =>
         ? Number(v)
         : null;
 
-/** The expression a call returned: its last step with its value, or else the last call it made (`return Call(…)`). */
+/**
+ * The expression a call returned: its last call when it began after the last step (`return Call(…)`, by the recorded
+ * place, T184), else its last step with its value, or else the last call it made.
+ */
 export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
-  const last = ctx.stepsOf(n.id).steps.at(-1);
-  if (last && near(last.v, n.v)) return last.e;
+  const { steps, stepAt } = ctx.stepsOf(n.id);
+  const last = steps.at(-1);
   const kid = ctx.rec.nodes[n.c.at(-1) ?? -1];
-  return kid ? { t: "call", id: kid.id, v: num(kid.v) } : null;
+  const call: Expr | null = kid
+    ? { t: "call", id: kid.id, v: num(kid.v) }
+    : null;
+  const lastAt = stepAt?.at(-1);
+  if (kid && lastAt !== undefined && lastAt < kid.pxi && near(kid.v, n.v))
+    return call;
+  if (last && near(last.v, n.v)) return last.e;
+  return call;
 }
 
 /** A curve's value: counted again from its own last step when its numeric arguments differ, else the recorded one. */
