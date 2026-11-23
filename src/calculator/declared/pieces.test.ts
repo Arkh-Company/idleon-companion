@@ -219,6 +219,15 @@ test("an each list never runs over the characters", () => {
   );
 });
 
+test("a piece's each list has one [*]: two are only a pool source's", () => {
+  const two = signsWith((p) => {
+    p.each = { list: "TreeSigns[*][*]", as: ["a", "b"] };
+  });
+  expect(reason(line(drop), { "invented-signs": two })).toMatch(
+    /each.list é um caminho com um \[\*\]/,
+  );
+});
+
 test("a piece that calls itself, directly or through another piece, is refused", () => {
   const calling = (id: string, other: string) => ({
     id,
