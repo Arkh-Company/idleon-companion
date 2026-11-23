@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/Arkh-Company/idleon-companion/compare/v0.9.1...v0.10.0) (2026-11-23)
+
+
+### Features
+
+* árvores declaradas, parte 1 (portão e pastas) ([#55](https://github.com/Arkh-Company/idleon-companion/issues/55)) ([e23d0f2](https://github.com/Arkh-Company/idleon-companion/commit/e23d0f2fe1de9516c061a869dd695026ad333985))
+* árvores declaradas, parte 2 (Fundação: receitas e gabarito) ([#57](https://github.com/Arkh-Company/idleon-companion/issues/57)) ([39775f3](https://github.com/Arkh-Company/idleon-companion/commit/39775f36851fdd109c111baf83e29d41f938e041))
+
+
+### Bug Fixes
+
+* dono do estado do band do ponytail-kit ([#52](https://github.com/Arkh-Company/idleon-companion/issues/52)) ([d073315](https://github.com/Arkh-Company/idleon-companion/commit/d073315c11ce50220fe0780601bd1b62fad5f6ad))
+
 ## [0.9.1](https://github.com/Arkh-Company/idleon-companion/compare/v0.9.0...v0.9.1) (2026-11-20)
 
 
