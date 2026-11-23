@@ -202,6 +202,7 @@ export function lockBlueprint(input: LockInput): LockResult {
   const ctx: LevelContext = {
     rec,
     stepsOf: (id) => made.of(id),
+    turnOf: made.turnOf,
     character,
     where: bp.id,
   };

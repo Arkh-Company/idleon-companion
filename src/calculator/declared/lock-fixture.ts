@@ -70,7 +70,13 @@ export function levelContext(
   where: string,
 ): LevelContext {
   const made = makeSteps(rec, ops);
-  return { rec, stepsOf: (id) => made.of(id), character: 0, where };
+  return {
+    rec,
+    stepsOf: (id) => made.of(id),
+    turnOf: made.turnOf,
+    character: 0,
+    where,
+  };
 }
 
 export function groupOf(

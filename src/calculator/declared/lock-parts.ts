@@ -1,12 +1,14 @@
 // The parts of a recorded level the lock and the draft read (spec 010, research R2, R4, R6): the leaves of an
 // expression, the reference each one stands for, the place of a two-source term in the root's steps, and what a
 // declared leaf would hide below it (spec, Open Questions 22/11): a read of the save, or a call that reads it. A game
-// table's read (recorded/steps.ts GAME_TABLE) and a part of not-leaves.ts are no child.
+// table's read (recorded/steps.ts GAME_TABLE) and a part of not-leaves.ts are no child. And the values a level reads
+// (moved out of lock-levels.ts as they were): a recorded value as a number, what a call returned, a curve's value.
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
-import { callRef } from "./answer-key-pool.ts";
+import { callRef, near } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
+import { evalExpr } from "./expr-eval.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { notLeafOf } from "./not-leaves.ts";
 
@@ -82,4 +84,44 @@ export function termExpr(
   for (const s of ctx.stepsOf(top.id).steps) visit(s.e, []);
   // a read in more than one place: the place does not decide, and the term is not guessed
   return found.length === 1 ? (found[0] ?? null) : null;
+}
+
+/** A recorded value as a number: a boolean is 1 or 0, a text only when it is a number. */
+export const num = (v: unknown): number | null =>
+  typeof v === "number"
+    ? v
+    : typeof v === "boolean"
+      ? Number(v)
+      : typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v))
+        ? Number(v)
+        : null;
+
+/** The expression a call returned: its last step with its value, or else the last call it made (`return Call(…)`). */
+export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
+  const last = ctx.stepsOf(n.id).steps.at(-1);
+  if (last && near(last.v, n.v)) return last.e;
+  const kid = ctx.rec.nodes[n.c.at(-1) ?? -1];
+  return kid ? { t: "call", id: kid.id, v: num(kid.v) } : null;
+}
+
+/** A curve's value: counted again from its own last step when its numeric arguments differ, else the recorded one. */
+export function transparentValue(
+  k: RecNode,
+  ctx: LevelContext,
+): { v: number | null; byRecorded: boolean } {
+  const args = k.a.filter((a): a is number => typeof a === "number");
+  const step = ctx.stepsOf(k.id).steps.at(-1);
+  if (step && new Set(args).size === args.length) {
+    const v = evalExpr(step.e, (e) =>
+      e.t === "val"
+        ? typeof e.v === "number" && args.includes(e.v)
+          ? e.v
+          : undefined
+        : e.t === "call" || e.t === "read"
+          ? (num(e.v) ?? undefined)
+          : undefined,
+    );
+    if (v !== null) return { v, byRecorded: false };
+  }
+  return { v: num(k.v), byRecorded: true };
 }

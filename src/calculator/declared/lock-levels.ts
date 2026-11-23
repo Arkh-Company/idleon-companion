@@ -6,13 +6,23 @@
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
 // counted apart.
 import type { RecNode, Recording } from "../recording.ts";
-import type { BlockSteps, Expr } from "../recorded/steps.ts";
+import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
-import { callRef, near, relDiff } from "./answer-key-pool.ts";
+import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
-import { keyOfLeaf, leavesOf, saveChild, termExpr } from "./lock-parts.ts";
+import { levelOfOpening, openingOf } from "./level-openings.ts";
+import type { Opened } from "./level-openings.ts";
+import {
+  keyOfLeaf,
+  leavesOf,
+  num,
+  returnOf,
+  saveChild,
+  termExpr,
+  transparentValue,
+} from "./lock-parts.ts";
 import type { LockError, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import { matchRead, refKey } from "./refs.ts";
@@ -24,6 +34,8 @@ export interface LevelContext {
   rec: Recording;
   /** The recorded steps of a call (`makeSteps(rec, ops).of`). */
   stepsOf: (id: number) => BlockSteps;
+  /** The steps of a turn of a call (`makeSteps(rec, ops).turnOf`). */
+  turnOf: (n: RecNode, range: LoopTurn) => BlockSteps;
   /** The tree's character, for `{character}` and the reads of the other characters. */
   character: number;
   /** The node's id (refs.ts, nodeId). */
@@ -40,6 +52,8 @@ interface Level {
   value: number | null;
   /** In a two-source term, the references only a `termPart` child may give. */
   termParts?: ReadonlySet<string>;
+  /** A level that opens by the recording (level-openings.ts): its parts, in place of its expression's. */
+  open?: Opened;
 }
 
 const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
@@ -50,24 +64,6 @@ export const emptyOut = (): LevelOut => ({
   errors: [],
   counts: { closed: 0, closedByRecorded: 0, leaves: 0, branches: 0 },
 });
-
-/** A recorded value as a number: a boolean is 1 or 0, a text only when it is a number. */
-export const num = (v: unknown): number | null =>
-  typeof v === "number"
-    ? v
-    : typeof v === "boolean"
-      ? Number(v)
-      : typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v))
-        ? Number(v)
-        : null;
-
-/** The expression a call returned: its last step with its value, or else the last call it made (`return Call(…)`). */
-function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
-  const last = ctx.stepsOf(n.id).steps.at(-1);
-  if (last && near(last.v, n.v)) return last.e;
-  const kid = ctx.rec.nodes[n.c.at(-1) ?? -1];
-  return kid ? { t: "call", id: kid.id, v: num(kid.v) } : null;
-}
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
 /** The recorded call a call reference stands for in a level: one of its expression's, or one the level made. */
@@ -96,28 +92,6 @@ function valueIn(
   for (const [p, v] of scope.r ?? []) reads.set(p, v);
   const m = matchRead(ref.read, [...reads.keys()], ctx.character);
   return m ? num(reads.get(m.path)) : null;
-}
-
-/** A curve's value: counted again from its own last step when its numeric arguments differ, else the recorded one. */
-function transparentValue(
-  k: RecNode,
-  ctx: LevelContext,
-): { v: number | null; byRecorded: boolean } {
-  const args = k.a.filter((a): a is number => typeof a === "number");
-  const step = ctx.stepsOf(k.id).steps.at(-1);
-  if (step && new Set(args).size === args.length) {
-    const v = evalExpr(step.e, (e) =>
-      e.t === "val"
-        ? typeof e.v === "number" && args.includes(e.v)
-          ? e.v
-          : undefined
-        : e.t === "call" || e.t === "read"
-          ? (num(e.v) ?? undefined)
-          : undefined,
-    );
-    if (v !== null) return { v, byRecorded: false };
-  }
-  return { v: num(k.v), byRecorded: true };
 }
 
 const leafCheck = (node: BlueprintNode, where: string, out: LevelOut) => {
@@ -199,8 +173,11 @@ function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
 }
 
 /** The parts the lock asks a declared call to have as children: its level's references, without the not-leaves. */
-export function callParts(n: RecNode, ctx: LevelContext): string[] {
-  const expr = returnOf(n, ctx);
+export function callParts(
+  n: RecNode,
+  ctx: LevelContext,
+  expr = returnOf(n, ctx),
+): string[] {
   const level = { expr, scope: n, value: num(n.v) };
   return partsOf(level, expr ? leavesOf(expr) : [], ctx);
 }
@@ -221,13 +198,24 @@ function lockLevel(
   out: LevelOut,
 ): void {
   const leaves = level.expr ? leavesOf(level.expr) : [];
-  const parts = partsOf(level, leaves, ctx);
+  const { open } = level;
+  const parts = open
+    ? open.below.map((o) => o.part)
+    : partsOf(level, leaves, ctx);
   const covered = new Set<string>();
   let whole = true;
   for (const child of children) {
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
-    if (!child.ref || valueIn(child.ref, level.scope, leaves, ctx) === null) {
+    const hit = open?.below.find((o) => covers(child, o.part, ctx));
+    if (open && !hit) {
+      out.errors.push({ kind: "childOutside", where });
+      continue;
+    }
+    if (
+      !child.ref ||
+      (hit ? hit.value : valueIn(child.ref, level.scope, leaves, ctx)) === null
+    ) {
       out.errors.push({ kind: "childNoValue", where });
       whole = false;
       continue;
@@ -239,7 +227,10 @@ function lockLevel(
       if (level.termParts?.has(p) !== (child.termPart === undefined))
         covered.add(p);
     checkCondition(child, true, level.scope, inner, out);
-    descend(child, levelOfChild(child, level, leaves, ctx), inner, out);
+    const below = hit
+      ? levelOfOpening(hit, level.scope, ctx)
+      : levelOfChild(child, level, leaves, ctx);
+    descend(child, below, inner, out);
   }
   for (const p of parts)
     if (!covered.has(p)) {
@@ -264,21 +255,27 @@ function closeLevel(
   }
   const reads = new Map((scope.r ?? []).map(([p, v]) => [p, v]));
   const by = { recorded: false };
-  const got = evalExpr(expr, (e) => {
-    if (!leaves.includes(e)) return undefined;
-    const k = keyOfLeaf(e, ctx.rec);
-    const n = e.t === "call" ? ctx.rec.nodes[e.id] : undefined;
-    if (n && k !== null && notLeafOf(k, ctx.character)) {
-      const t = transparentValue(n, ctx);
-      by.recorded ||= t.byRecorded;
-      return t.v ?? undefined;
-    }
-    if (n) return num(n.v) ?? undefined;
-    // a value with no source (an Expr makeSteps could not tie) gives no number: the level does not close (R2)
-    return e.t === "read"
-      ? (num(reads.get(e.p) ?? e.v) ?? undefined)
-      : undefined;
-  });
+  const { open } = level;
+  const got = open
+    ? open.below.reduce<number | null>(
+        (s, o) => (s === null || o.value === null ? null : s + o.value),
+        open.start,
+      )
+    : evalExpr(expr, (e) => {
+        if (!leaves.includes(e)) return undefined;
+        const k = keyOfLeaf(e, ctx.rec);
+        const n = e.t === "call" ? ctx.rec.nodes[e.id] : undefined;
+        if (n && k !== null && notLeafOf(k, ctx.character)) {
+          const t = transparentValue(n, ctx);
+          by.recorded ||= t.byRecorded;
+          return t.v ?? undefined;
+        }
+        if (n) return num(n.v) ?? undefined;
+        // a value with no source (an Expr makeSteps could not tie) gives no number: the level does not close (R2)
+        return e.t === "read"
+          ? (num(reads.get(e.p) ?? e.v) ?? undefined)
+          : undefined;
+      });
   if (got !== null && value !== null && relDiff(got, value) <= TOLERANCE) {
     if (by.recorded) out.counts.closedByRecorded++;
     else out.counts.closed++;
@@ -298,14 +295,28 @@ function descend(
   out: LevelOut,
 ): void {
   const children = node.children ?? [];
+  const { ref } = node;
+  // a level the recording opens (level-openings.ts); a cache's read opens as a leaf too: the cache is never a leaf
+  const open =
+    children.length > 0 || (ref && "read" in ref)
+      ? openingOf(level, ctx)
+      : null;
+  if (typeof open === "string") {
+    out.errors.push({
+      kind: "rootForm",
+      where: ctx.where,
+      got: `${ctx.where}: ${open}`,
+    });
+    return;
+  }
   if (children.length === 0) {
     leafCheck(node, ctx.where, out);
     // a leaf is the end of the descent: below its own call, the recording reads nothing of the save
-    const { ref } = node;
-    const child =
-      ref &&
-      "call" in ref &&
-      callRef(level.scope) === refKey(ref, ctx.character)
+    const child = open
+      ? (open.below[0]?.part ?? null)
+      : ref &&
+          "call" in ref &&
+          callRef(level.scope) === refKey(ref, ctx.character)
         ? saveChild(level.scope, ctx)
         : null;
     if (child !== null)
@@ -317,7 +328,7 @@ function descend(
     return;
   }
   out.counts.branches++;
-  lockLevel(children, level, ctx, out);
+  lockLevel(children, open ? { ...level, open } : level, ctx, out);
 }
 
 /** The descent below a declared node whose value is a recorded call: each level down to the leaves. */

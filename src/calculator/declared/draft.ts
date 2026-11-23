@@ -13,6 +13,7 @@ import { renameOf } from "../names/renames.ts";
 import { STATE_NAMES } from "../names/state-names.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
 import type {
@@ -21,6 +22,7 @@ import type {
   BlueprintPending,
 } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
+import { openingOf } from "./level-openings.ts";
 import { callParts } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { saveChild } from "./lock-parts.ts";
@@ -82,14 +84,37 @@ export interface Walked {
 // shortcut: the descent stops 12 levels down, pending `descend`; raise it when a number of the game goes deeper
 const MAX_DEPTH = 12;
 
+/**
+ * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
+ * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value.
+ */
 function walkPart(
   key: string,
   call: RecNode | null,
   ctx: LevelContext,
   depth: number,
+  reader: RecNode | null = null,
+  expr?: Expr | null,
 ): Walked {
-  if (!call) return { key, call, below: CALL.test(key) ? "descend" : "leaf" };
-  const parts = depth < MAX_DEPTH ? callParts(call, ctx) : null;
+  if (!call) {
+    const level = {
+      expr: { t: "read", p: key, v: null } as const,
+      value: null,
+    };
+    const open = reader ? openingOf({ ...level, scope: reader }, ctx) : null;
+    if (open === null)
+      return { key, call, below: CALL.test(key) ? "descend" : "leaf" };
+    if (typeof open === "string" || depth >= MAX_DEPTH)
+      return { key, call, below: "descend" };
+    return {
+      key,
+      call,
+      below: open.below.map((o) =>
+        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr),
+      ),
+    };
+  }
+  const parts = depth < MAX_DEPTH ? callParts(call, ctx, expr) : null;
   if (parts === null) return { key, call, below: "descend" };
   // no part the recording ties: a leaf, unless the call reads the save below it (then the agent descends)
   if (parts.length === 0)
@@ -105,14 +130,16 @@ function walkPart(
   return {
     key,
     call,
-    below: parts.map((p) => walkPart(p, kid(p), ctx, depth + 1)),
+    below: parts.map((p) => walkPart(p, kid(p), ctx, depth + 1, call)),
   };
 }
 
 /** A source's parts: its call or read down to the leaves; a two-source term opens into each of its references. */
 export function walkTerm(t: AnswerTerm, ctx: LevelContext): Walked {
+  const { nodes } = ctx.rec;
+  const top = nodes[nodes[ctx.rec.root ?? -1]?.c[0] ?? -1] ?? null;
   const parts = t.refs.map((r, i) =>
-    walkPart(r, ctx.rec.nodes[t.nodes[i] ?? -1] ?? null, ctx, 0),
+    walkPart(r, nodes[t.nodes[i] ?? -1] ?? null, ctx, 0, top),
   );
   const [first, ...rest] = parts;
   if (!first) return { key: t.ref, call: null, below: "leaf" };
@@ -221,6 +248,7 @@ export function draftBlueprint(
   const ctx: LevelContext = {
     rec,
     stepsOf: (n) => made.of(n),
+    turnOf: made.turnOf,
     character: dc.character,
     where: id,
   };

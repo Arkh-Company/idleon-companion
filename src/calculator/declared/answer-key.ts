@@ -42,6 +42,7 @@ import { expressionReader } from "./answer-key-expression.ts";
 import type { WriteMeta } from "./answer-key-chain.ts";
 import { branchesOf, gateOf, peelTop } from "./answer-key-top.ts";
 import type { Branch, TopLayer } from "./answer-key-top.ts";
+import { refusedAuthor } from "./cache-author.ts";
 
 export type {
   AnswerTerm,
@@ -358,6 +359,8 @@ export function answerKeyOfSteps(
   }
 
   const pools = joinPools(raw);
+  const authors = refusedAuthor(rec, top, [...pools, ...divisors]);
+  if (authors !== null) return outOfRule(authors);
 
   r.bump("stepOutsideChain", steps.length - r.usedSteps.size);
   const touches = [acc?.[0], ...passage.keys()].filter((p) => p !== undefined);

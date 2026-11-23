@@ -35,6 +35,7 @@ export function stepsGuide(
   const ctx: LevelContext = {
     rec,
     stepsOf: (n) => made.of(n),
+    turnOf: made.turnOf,
     character: dc.character,
     where: key.root,
   };
