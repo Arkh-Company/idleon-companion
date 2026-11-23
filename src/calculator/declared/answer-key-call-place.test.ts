@@ -66,3 +66,17 @@ test("in a loop's turn, two calls of one block with the step's value and no plac
     /a chamada TreeThree de valor 3 sai de mais de uma chamada, e o lugar não decide/,
   );
 });
+
+test("a variable set by a call ties by its data flow, never to an earlier read with its value", () => {
+  // TreeRunTwinRead: each turn `g = TreeGear[r]; x = TreeThree(2r); TreeThree(2r + 1); t += x`: the gear and both calls 3
+  const recorder = inventedRecorder();
+  const rec = recorder.record(
+    mosaicOf({ TreeGear: [3, 3] }),
+    [["TreeRunTwinRead", [0, 0, 0]]],
+    { recompute: [], builders: [] },
+  );
+  const key = answerKey(rec, recorder.ops);
+  expect("reason" in key ? key.reason : JSON.stringify(key)).toMatch(
+    /a chamada TreeThree de valor 3 sai de mais de uma chamada, e o lugar não decide/,
+  );
+});

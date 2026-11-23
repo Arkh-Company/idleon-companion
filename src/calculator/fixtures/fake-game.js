@@ -1768,6 +1768,31 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeThree = function (k) {
     return [3, 3, 4, 5][k];
   };
+  // Spec 010 (T177 r3): the same turns with the read of 3 before the calls and only the first call used, through a
+  // variable: the variable's call comes from the data flow, never from the read with its value. 3 + 4 = 7; + 25 = 32.
+  Blocks._customBlock_TreeRunTwinRead = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      var g = U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      var x = Blocks._customBlock_TreeThree(2 * r);
+      Blocks._customBlock_TreeThree(2 * r + 1);
+      t += x;
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
   Blocks._customBlock_TreeRunTwins = function () {
     var U = A["com.stencyl.utils.Utils"];
     var r, t;
