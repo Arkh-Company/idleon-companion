@@ -5,10 +5,10 @@
 // refused with their place. A part of NOT_LEAVES (a curve, a log, a context read) is no child: a curve whose numeric
 // arguments differ is counted again from its own steps, and one with a repeated argument closes by its recorded value,
 // counted apart. A level the recording opens (level-openings.ts: a cache's author, a loop's turns) has those parts as
-// its children and closes by their sum; a refused opening is an openingRefused with its reason.
+// its children and closes by their sum; a refused opening is an openingRefused with its reason. A line that calls a
+// recipe piece closes by the piece's count instead (lock-pieces.ts).
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
-import { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
@@ -18,19 +18,19 @@ import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import {
   keyOfLeaf,
+  leafCheck,
   leavesOf,
   num,
   returnOf,
   saveChild,
   termExpr,
+  TOLERANCE,
   transparentValue,
 } from "./lock-parts.ts";
+import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import { matchRead, refKey } from "./refs.ts";
-
-/** SC-001: the parts close with the recorded value within a relative difference of 1e-6. */
-export const TOLERANCE = 1e-6;
 
 export interface LevelContext {
   rec: Recording;
@@ -60,10 +60,6 @@ interface Level {
   write?: RecWrite;
   steps?: BlockSteps | undefined;
 }
-
-const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
-  (k) => k !== "unknown",
-);
 
 export const emptyOut = (): LevelOut => ({
   errors: [],
@@ -98,12 +94,6 @@ function valueIn(
   const m = matchRead(ref.read, [...reads.keys()], ctx.character);
   return m ? num(reads.get(m.path)) : null;
 }
-
-const leafCheck = (node: BlueprintNode, where: string, out: LevelOut) => {
-  if (node.leaf !== undefined && LEAVES.includes(node.leaf))
-    out.counts.leaves++;
-  else out.errors.push({ kind: "leafType", where });
-};
 
 /**
  * A declared condition (research R3): its reading is in the level, and it is on when the game used the node, off when
@@ -309,6 +299,11 @@ function descend(
   ctx: LevelContext,
   out: LevelOut,
 ): void {
+  // a piece's line closes by the piece's count (lock-pieces.ts), never by an opening of the recording
+  if (node.combine) {
+    lockPiece(node, level.value, ctx, out);
+    return;
+  }
   const children = node.children ?? [];
   const { ref } = node;
   // a level the recording opens (level-openings.ts); a cache's read opens as a leaf too: the cache is never a leaf

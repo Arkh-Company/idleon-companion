@@ -10,13 +10,9 @@ import { relDiff } from "./answer-key-pool.ts";
 import { topOf } from "./answer-key.ts";
 import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
-import {
-  checkCondition,
-  emptyOut,
-  lockSource,
-  TOLERANCE,
-} from "./lock-levels.ts";
+import { checkCondition, emptyOut, lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
+import { TOLERANCE } from "./lock-parts.ts";
 import { matchRead, nodeId, refKey } from "./refs.ts";
 
 export type LockErrorKind =

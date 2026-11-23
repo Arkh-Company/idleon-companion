@@ -2,15 +2,36 @@
 // expression, the reference each one stands for, the place of a two-source term in the root's steps, and what a
 // declared leaf would hide below it (spec, Open Questions 22/11): a read of the save, or a call that reads it. A game
 // table's read (recorded/steps.ts GAME_TABLE) and a part of not-leaves.ts are no child. And the values a level reads
-// (moved out of lock-levels.ts as they were): a recorded value as a number, what a call returned, a curve's value.
+// (moved out of lock-levels.ts as they were): a recorded value as a number, what a call returned, a curve's value; the
+// tolerance a level closes within and the leaf's check (moved too, for lock-pieces.ts).
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
+import { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
+import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
-import type { LevelContext } from "./lock-levels.ts";
+import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { notLeafOf } from "./not-leaves.ts";
+
+/** SC-001: the parts close with the recorded value within a relative difference of 1e-6. */
+export const TOLERANCE = 1e-6;
+
+const LEAVES: readonly string[] = CALC_LEAF_KINDS.filter(
+  (k) => k !== "unknown",
+);
+
+/** A declared leaf: one of the 9 kinds, counted, or a leafType refusal at its place. */
+export const leafCheck = (
+  node: BlueprintNode,
+  where: string,
+  out: LevelOut,
+): void => {
+  if (node.leaf !== undefined && LEAVES.includes(node.leaf))
+    out.counts.leaves++;
+  else out.errors.push({ kind: "leafType", where });
+};
 
 export function leavesOf(e: Expr, out: Expr[] = []): Expr[] {
   if (e.t === "def") leavesOf(e.e, out);
