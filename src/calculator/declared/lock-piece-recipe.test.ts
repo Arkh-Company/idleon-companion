@@ -167,11 +167,11 @@ test("a cache read's line with a recipe piece closes over the answer key of the 
 /** The line reads `field` of a builder that writes four fields to 32 (fake-game.js TreeRecipeTwin), under `root`. */
 function twin(field: string, root: string) {
   const r = inventedRecorder();
-  const fields = ["A", "B", "C", "D"].map((k) => [
+  const fields = ["A", "B", "C", "D"].map((k): [string, Raw] => [
     `TreeTwin${k}`,
     { $m: { v: 32 } },
   ]);
-  const DNSM = { ...activeAs(0).DNSM.$m, ...Object.fromEntries(fields) };
+  const DNSM: Raw = { ...activeAs(0).DNSM.$m, ...Object.fromEntries(fields) };
   const rec = r.record(
     mosaicOf({ DNSM: { $m: DNSM }, TreeTwinX: 10, TreeTwinY: 6, TreeTwinZ: 2 }),
     [[root, [0, 0, 0]]],
