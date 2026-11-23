@@ -1898,6 +1898,16 @@ lime.$scripts.N = function (_exports, $global) {
     var s = state();
     return s.TreeLevel + Blocks._customBlock_TreeTwinKid();
   };
+  // Spec 010 (T183): a source zeroed by an early return: its gate TreeOwned is 0, so it gives 0 before its count; the
+  // root is 25 + 0 = 25.
+  Blocks._customBlock_TreeGateBonus = function () {
+    var s = state();
+    if (s.TreeOwned < 1) return 0;
+    return s.TreeBase * s.TreeOwned;
+  };
+  Blocks._customBlock_TreeGateRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeGateBonus();
+  };
   // Spec 010 (T184): two talents of one code on an `add` curve, its level a step before the curve's call: with ×1 the
   // level and the curve are both 27, with ×4 the curve is 108. The return is the call by its place, in both.
   Blocks._customBlock_TreeAddTalent = function (k) {
