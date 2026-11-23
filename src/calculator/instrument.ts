@@ -216,25 +216,27 @@ function callsOf(
 function hasCall(
   n: AnyNode | null,
   defs: Defs,
-  memo: Map<AnyNode, boolean>,
+  memo: CallMemo,
   depth = 0,
 ): boolean {
   if (!n || depth > 6 || n.type === "MemberExpression") return false;
+  // a yes holds from anywhere; a no, met with fewer hops left, only for as few or fewer (T177 r6)
   const hit = memo.get(n);
-  if (hit !== undefined) return hit;
+  if (hit && (hit.out || depth >= hit.depth)) return hit.out;
   const out =
     isBlockCall(n) ||
     (n.type === "Identifier"
       ? hasCall(defOf(n, defs), defs, memo, depth + 1)
       : children(n).some((c) => hasCall(c, defs, memo, depth)));
-  memo.set(n, out);
+  memo.set(n, { out, depth });
   return out;
 }
+type CallMemo = Map<AnyNode, { out: boolean; depth: number }>;
 
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
-  const callMemo = new Map<AnyNode, boolean>(); // the variables' defs are walked once per function, not once per leaf
+  const callMemo: CallMemo = new Map(); // the variables' defs are walked once per function, not once per leaf
   const byRange = new Map<string, Mark>();
   for (const m of marks(fn)) {
     const s = m.node.range[0] - 1;
