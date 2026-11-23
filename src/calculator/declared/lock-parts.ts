@@ -159,8 +159,13 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   if (kid && lastAt !== undefined && lastAt < kid.pxi && near(kid.v, n.v))
     return call;
   if (last && near(last.v, n.v)) return last.e;
+  // a 0 that no step nor call gave is the code's own `return 0` before its count (T183: the gate, a level 0)
+  if (n.v === 0 && !near(kid?.v, 0)) return { t: "num", v: 0 };
   return call;
 }
+
+/** A call zeroed by an early return (`returnOf` gave the code's 0): its parts are what it read before the return. */
+export const zeroed = (e: Expr | null): boolean => e?.t === "num" && e.v === 0;
 
 /** A curve's value: counted again from its own last step when its numeric arguments differ, else the recorded one. */
 export function transparentValue(
