@@ -42,7 +42,7 @@ export function closeLevel(
         if (e.t === "val")
           return e.arg === undefined ? undefined : (num(e.v) ?? undefined);
         return e.t === "read"
-          ? (num(reads.get(e.p) ?? e.v) ?? undefined)
+          ? (num(reads.get(e.p)) ?? num(e.v) ?? undefined)
           : undefined;
       });
   if (got !== null && value !== null && relDiff(got, value) <= TOLERANCE) {

@@ -100,7 +100,9 @@ function valueIn(
   if ("call" in ref) return num(callIn(ref, scope, leaves, ctx)?.v);
   const reads = new Map<string, unknown>();
   for (const l of leaves) if (l.t === "read") reads.set(l.p, l.v);
-  for (const [p, v] of scope.r ?? []) reads.set(p, v);
+  // a text the step read a number from (T209, form 2) keeps the step's number
+  for (const [p, v] of scope.r ?? [])
+    if (num(v) !== null || !reads.has(p)) reads.set(p, v);
   const m = matchRead(ref.read, [...reads.keys()], ctx.character);
   return m ? num(reads.get(m.path)) : null;
 }

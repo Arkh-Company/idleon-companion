@@ -12,7 +12,9 @@ import {
   CUSTOM,
   MATH,
   matchPattern,
+  blockParams,
   methodOf,
+  textRead,
   unwrap,
 } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
@@ -44,17 +46,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const { nodes } = rec;
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
-  // each block's parameters, from its function's text (T209, form 1: a value that is the block's own argument keeps its
-  // place, `arg`; the spec 008 tree reads it as the loose value it was)
-  const params = new Map<string, string[]>();
-  for (const o of ops)
-    if (!params.has(o.block))
-      params.set(
-        o.block,
-        (/function\s*\(([^)]*)\)/.exec(o.fnText)?.[1] ?? "")
-          .split(",")
-          .map((p) => p.trim()),
-      );
+  // T209, form 1: a value that is the block's own argument keeps its place, `arg` (the 008 tree reads a loose value)
+  const params = blockParams(ops);
   const ambiguous = new Set<AmbiguousCall>();
   // each if's and ? :'s test op, by the node it decides (Op.owner)
   const testOf = new Map(
@@ -185,6 +178,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
           return read(only[0], v);
         }
       }
+      // a number read from a text the code names, with a mark taken out (T209, form 2): the read of that path, one only
+      const tp = pat ? null : textRead(node, pool, v);
+      if (tp !== null) return read(tp, v);
       const same = pool.filter(
         ([p, val]) =>
           val === v &&

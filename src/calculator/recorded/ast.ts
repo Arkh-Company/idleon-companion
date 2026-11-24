@@ -70,3 +70,50 @@ export function matchPattern(
   if (pat.root ? P.length !== T.length : P.length < T.length) return false;
   return T.every((t, i) => t === null || t === P[P.length - T.length + i]);
 }
+
+/**
+ * The node whose text a number was read from, through `asNumber(replace("" + string(x), mark, ""))` (spec 010, T209,
+ * form 2: the game's "50TOT"); null for any other node.
+ */
+function textOf(node: AstNode): AstNode | null {
+  const n = unwrap(node);
+  if (methodOf(n) !== "replace") return null;
+  let a = (n.arguments as AstNode[] | undefined)?.[0];
+  if (a?.type === "BinaryExpression" && at(a, "left").value === "")
+    a = at(a, "right");
+  if (a && methodOf(a) === "string") a = (a.arguments as AstNode[])[0];
+  return a ?? null;
+}
+
+/** The one read whose text the number `v` was read from (textOf), by the path the code names; null with none or two. */
+export function textRead(
+  node: AstNode,
+  pool: readonly (readonly [string, unknown])[],
+  v: number,
+): string | null {
+  const tn = textOf(node);
+  const pat = tn ? astPattern(tn) : null;
+  const hits = pat
+    ? pool.filter(
+        ([p, val]) =>
+          typeof val === "string" &&
+          matchPattern(p, pat) &&
+          Number.parseFloat(val) === v,
+      )
+    : [];
+  return hits.length === 1 ? (hits[0]?.[0] ?? null) : null;
+}
+
+/** Each block's parameters, from its function's text (spec 010, T209, form 1). */
+export function blockParams(ops: readonly Op[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const o of ops)
+    if (!out.has(o.block))
+      out.set(
+        o.block,
+        (/function\s*\(([^)]*)\)/.exec(o.fnText)?.[1] ?? "")
+          .split(",")
+          .map((p) => p.trim()),
+      );
+  return out;
+}
