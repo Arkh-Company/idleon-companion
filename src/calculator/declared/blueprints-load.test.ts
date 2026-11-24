@@ -90,9 +90,7 @@ test("a line with a link loads when its tree is another blueprint's file, and is
         groups: [
           {
             system: "talents",
-            sources: [
-              { key: "a", name: "Invented A", ref: root.ref, tree },
-            ],
+            sources: [{ key: "a", name: "Invented A", ref: root.ref, tree }],
           },
         ],
       },

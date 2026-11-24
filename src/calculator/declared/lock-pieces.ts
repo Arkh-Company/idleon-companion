@@ -219,7 +219,9 @@ export function lockPiece(
   }
   const { ref } = node;
   const own =
-    ref && "call" in ref && keyMatches(ref, callRef(level.scope), ctx.character);
+    ref &&
+    "call" in ref &&
+    keyMatches(ref, callRef(level.scope), ctx.character);
   const nodes = own ? below(level.scope, ctx) : ctx.rec.nodes;
   pieceLevel(node, level.value, nodes, ctx, out);
 }

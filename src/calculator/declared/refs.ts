@@ -35,6 +35,12 @@ export const refKey = (ref: Ref, character: number): string =>
 /** A call's argument the game gave from the save (save-args.ts): any value; one save's number is never written out. */
 export const SAVE = "*";
 
+/** A call's reference without its `{character}` and `*` arguments (a draft's key never carries them). */
+export const unmarked = (ref: Ref): Ref =>
+  "call" in ref
+    ? { ...ref, args: ref.args.filter((a) => a !== CHARACTER && a !== SAVE) }
+    : ref;
+
 /** A recorded call's key, `Block(args in JSON)`, as its block and arguments; null for any other text. */
 function keyParts(key: string): { call: string; args: unknown[] } | null {
   const m = /^([A-Za-z_$][\w$]*)\((.*)\)$/s.exec(key);

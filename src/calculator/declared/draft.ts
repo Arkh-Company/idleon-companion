@@ -32,7 +32,7 @@ import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
-import { CHARACTER, hasRawCharacterIndex, SAVE } from "./refs.ts";
+import { hasRawCharacterIndex, unmarked } from "./refs.ts";
 import { markedRef } from "./save-args.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
@@ -325,10 +325,7 @@ export function draftBlueprint(
     if (w.termPart) wait(where, "system");
     const tree = linkedTree(ref, id, dc.trees ?? [], dc.character);
     const own = new Set<string>();
-    const keyRef =
-      "call" in ref
-        ? { ...ref, args: ref.args.filter((a) => a !== CHARACTER && a !== SAVE) }
-        : ref;
+    const keyRef = unmarked(ref);
     const out: DraftNode = {
       key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),
       name: named?.name ?? null,

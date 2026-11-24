@@ -191,17 +191,14 @@ export function lockLevel(
   const { open } = level;
   const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
   const covered = new Set<string>();
+  // the calls a child's `*` may stand for: two of them are refused, never tied by order (refs.ts savedTwice)
+  const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
+  const calls = [...parts, ...made.map(callRef)];
   let whole = true;
   for (const child of children) {
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
-    const twice =
-      child.ref &&
-      savedTwice(
-        child.ref,
-        [...parts, ...level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []).map(callRef)],
-        ctx.character,
-      );
+    const twice = child.ref && savedTwice(child.ref, calls, ctx.character);
     if (twice) {
       out.errors.push({ kind: "rootForm", where, got: twice });
       whole = false;
