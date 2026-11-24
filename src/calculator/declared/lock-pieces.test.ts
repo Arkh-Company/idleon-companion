@@ -3,92 +3,25 @@
 // declared combine over the recorded values of the leaves; an `each` node has one child per item of the recorded list,
 // its size from the recording. There the engine does not look for a cache's author nor a loop's turns. The invented
 // game (fake-game.js, TreeSign*) sums a bonus × a multi over the items of TreeSigns.
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { expect, test } from "vitest";
 import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { answerKey } from "./answer-key.ts";
-import { parseBlueprint } from "./blueprint.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { RecNode } from "../recording.ts";
 import { inventedRecorder, levelContext, recorded } from "./lock-fixture.ts";
 import { lockLevels } from "./lock-levels.ts";
+import { blueprint, CALL, LINE, SIGNS, state } from "./lock-pieces-fixture.ts";
+import type { Raw } from "./lock-pieces-fixture.ts";
 import { pieceChildren } from "./lock-pieces.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
 
-type Raw = Record<string, unknown>;
-const SIGNS = JSON.parse(
-  readFileSync(
-    join(
-      import.meta.dirname,
-      "..",
-      "fixtures",
-      "blueprints",
-      "invented-signs.piece.json",
-    ),
-    "utf8",
-  ),
-) as Raw & { children: (Raw & { children: Raw[] })[] };
 /** The invented piece with `change` made to a deep copy of its model child's children. */
 const signsWith = (change: (kids: Raw[]) => void) => {
   const p = structuredClone(SIGNS);
   change(p.children[0]?.children ?? []);
   return p;
 };
-const state = (list: number[]) => ({
-  TreeSigns: list,
-  TreeSignBonus: { $m: { Drop: [0, 5, 10, 20] } },
-  TreeSignMulti: 2,
-});
-
-const CALL = { ref: { call: "TreeSigns", args: ["Drop"] } };
-const LINE = "invented-signs-number/0/cards/signs";
-/** An invented blueprint whose first source is a line `line` that calls the piece, over `root`. */
-function blueprint(line: Raw, piece: unknown = SIGNS, root = "TreeSignsRoot") {
-  const out = parseBlueprint(
-    {
-      id: "invented-signs-number",
-      root: { name: "Invented", ref: { call: root, args: [0, 0, 0] } },
-      pools: [
-        {
-          kind: "additive",
-          groups: [
-            {
-              system: "cards",
-              sources: [
-                {
-                  key: "signs",
-                  name: "Invented Signs",
-                  ...line,
-                  piece: { name: "invented-signs", args: { stat: "Drop" } },
-                },
-              ],
-            },
-            {
-              system: "stamps",
-              sources: [
-                {
-                  key: "capped",
-                  name: "Invented Capped",
-                  ref: { read: "TreeCapped" },
-                  leaf: "rawBonus",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      fileId: "invented-signs-number",
-      systemIds: new Set(["cards", "stamps"]),
-      pieces: new Map([["invented-signs", piece]]),
-    },
-  );
-  if (!out.ok) throw new Error(out.reason);
-  return out.blueprint;
-}
 const lock = (bp: Blueprint, list: number[]) =>
   lockBlueprint({
     blueprint: bp,
