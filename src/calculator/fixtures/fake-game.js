@@ -2287,6 +2287,40 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDeclOwn = function (c) {
     return state().TreeList[c] * 2;
   };
+  // Spec 010 (Fase 4 r1 of part N): the game passes a count of the save as an argument, as its
+  // ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills; the block below passes that parameter on,
+  // as ArcaneType's Log2(t). Beside it, a 0 written in the code. TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
+  Blocks._customBlock_TreeSaveArg = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[2]),
+        0,
+      ) +
+      Blocks._customBlock_TreeDeclRow(0)
+    );
+  };
+  // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
+  Blocks._customBlock_TreeSaveTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[0]),
+        0,
+      ) +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[1]),
+        0,
+      )
+    );
+  };
+  Blocks._customBlock_TreeDeclKills = function (mode, kills, z) {
+    return Blocks._customBlock_TreeDeclRow(kills) * 2;
+  };
   // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
   Blocks._customBlock_TreeDeclSum = function () {
     var s = state();

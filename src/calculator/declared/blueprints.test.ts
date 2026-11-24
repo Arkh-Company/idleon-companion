@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import type { BlueprintNode } from "./blueprint.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { notLeafOf } from "./not-leaves.ts";
-import type { Ref } from "./refs.ts";
+import type { Ref, RefArg } from "./refs.ts";
 import { hasRawCharacterIndex, refKey } from "./refs.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
@@ -261,7 +261,9 @@ test("no node of any recipe or piece has a part of not-leaves.ts as its ref: a c
   expect(found).toEqual([]);
 });
 
-test("no node whose ref takes {character} at an argument writes a number there in its nameProof or its key (Fase 4 r2)", () => {
+// the save's argument too (Fase 4 r1 of part N): `*`, never the number one save gave
+const MARKED: readonly RefArg[] = ["{character}", "*"];
+test("no node whose ref takes {character} or * at an argument writes a number there in its nameProof or its key (Fase 4 r2)", () => {
   const found: string[] = [];
   const walk = (x: unknown, file: string): void => {
     if (Array.isArray(x)) {
@@ -273,17 +275,15 @@ test("no node whose ref takes {character} at an argument writes a number there i
     if (typeof x !== "object" || x === null) return;
     const n = x as Partial<BlueprintNode>;
     const ref = n.ref;
-    if (ref && "call" in ref && ref.args.includes("{character}")) {
-      const marks = ref.args.flatMap((a, i) =>
-        a === "{character}" ? [i] : [],
-      );
+    if (ref && "call" in ref && ref.args.some((a) => MARKED.includes(a))) {
+      const marks = ref.args.flatMap((a, i) => (MARKED.includes(a) ? [i] : []));
       const proof =
         n.nameProof && "names" in n.nameProof ? n.nameProof.names : "";
       const m = /^[^(]+\((.*)\)$/.exec(proof);
       const args = m ? (JSON.parse(`[${m[1] ?? ""}]`) as unknown[]) : [];
       if (marks.some((i) => typeof args[i] === "number"))
         found.push(`${file}: ${n.key ?? "?"} nameProof ${proof}`);
-      // the key's numbers are only the call's other numbers, never the character's index
+      // the key's numbers are only the call's other numbers, never the character's index nor the save's
       const others = ref.args.filter((a) => typeof a === "number").map(String);
       const left = [...others];
       const extra = (n.key ?? "").split("-").filter((t) => {
