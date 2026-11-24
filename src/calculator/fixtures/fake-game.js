@@ -788,6 +788,29 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // The same in the game's other working map, as CauldronStats("VialBonus") with DummyNumbersStatManager.
+  Blocks._customBlock_TreeChainedDummy = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    var d = a.engine.getGameAttribute("DummyNumbersStatManager").h;
+    d.TreeChn = 1 + s.TreeBase / 100;
+    d.TreeChn =
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeChn +
+      s.TreeLevel / 100;
+    return (
+      0.1 *
+      Math.ceil(
+        s.TreeCapped *
+          Math.max(
+            1,
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeChn,
+          ),
+      )
+    );
+  };
+  Blocks._customBlock_TreeChainedDummyPool = function () {
+    return Blocks._customBlock_TreeChainedDummy() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeChainedPool = function () {
     return Blocks._customBlock_TreeChained() + state().TreeCapped;
   };

@@ -87,3 +87,17 @@ test("how many entries a map of the save holds is a quantity, by the path the co
   };
   expect(lock("TreeCountPool", source)).toEqual([]);
 });
+
+test("a variable of the game's other working map, DummyNumbersStatManager, goes down through its writes too (form 5)", () => {
+  const source: BlueprintNode = {
+    key: "chained",
+    name: "Chained",
+    ref: { call: "TreeChainedDummy", args: [] },
+    children: [
+      leaf("base", "TreeBase"),
+      leaf("level", "TreeLevel"),
+      leaf("capped", "TreeCapped"),
+    ],
+  };
+  expect(lock("TreeChainedDummyPool", source)).toEqual([]);
+});
