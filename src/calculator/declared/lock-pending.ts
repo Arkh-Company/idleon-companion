@@ -158,5 +158,11 @@ export function pendingCover(bp: Blueprint, character: number): Cover {
       ((below(e.where) && !AT_PARENT.has(e.kind)) ||
         (self(e.where) && DESCENT_OWN.has(e.kind)));
   });
-  return (e, all) => covers.some((c) => c(e, all));
+  // a model's item below it (`<model>-<item>/…`, T202, T205) is the model's place there
+  const ids = nodeIds(bp);
+  return (e, all) => {
+    const w = nodeOf(ids, e.where) ?? e.where;
+    const at = w === e.where ? e : { ...e, where: w };
+    return covers.some((c) => c(at, all));
+  };
 }

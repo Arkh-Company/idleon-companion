@@ -242,6 +242,8 @@ test("a pending place below the model covers the same place below each of its ca
     ],
   };
   expect(
-    lock("TreeReadCallsPool", bp).filter((m) => !m.startsWith("pendente")),
+    lock("TreeReadCallsPool", bp).filter(
+      (m) => !m.startsWith("receita com pendência"),
+    ),
   ).toEqual([]);
 });
