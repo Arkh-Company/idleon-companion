@@ -24,6 +24,10 @@ import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
+import type { DraftBlueprint } from "./draft.ts";
+import { gameFamilies } from "./draft-class.ts";
+import { joinDrafts } from "./draft-runs.ts";
+import { inactiveMosaic } from "../inactive.ts";
 import {
   classCharacters,
   lockNumber,
@@ -192,7 +196,11 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             ),
             // a part that is another blueprint's root is a line with a link to its tree (T200)
             trees: [...loaded.all.values()],
+            // each class's tabs, for a talent's classes (T207)
+            families: gameFamilies(recorder.context, TREE_LIMITS.startMs),
           };
+          // one character of each class of the snapshot (T207, T208): its run drafts its class's sources
+          const classes = classCharacters(readJson(snapshot));
           const state = mosaic(snapshot);
           mkdirSync(outPath(out, "draft"), { recursive: true });
           for (const id of todo) {
@@ -226,13 +234,42 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               lines.push(done("error" in key ? "outOfRule" : "leaf"));
               continue;
             }
-            const draft = draftBlueprint(
-              id,
-              bp.root,
-              key,
-              rec,
-              recorder.ops,
-              dc,
+            const own = draftBlueprint(id, bp.root, key, rec, recorder.ops, dc);
+            const others: { draft: DraftBlueprint; characterClass: number }[] =
+              [];
+            for (const [characterClass, character] of classes) {
+              const inactive = inactiveMosaic(state, character);
+              if (inactive === null) continue;
+              try {
+                const r = recorder.record(
+                  mosaicWith(inactive, bp.root.scratch),
+                  [...rootCallsOf(bp, character), ...EXTRA_ROOTS],
+                  TREE_RECIPE,
+                  true,
+                  FOLLOW_CALLS,
+                  routineStepOf(bp, character),
+                );
+                const k = answerKey(
+                  r,
+                  recorder.ops,
+                  rootShapeOf(bp, character),
+                );
+                if (!("error" in k))
+                  others.push({
+                    draft: draftBlueprint(id, bp.root, k, r, recorder.ops, {
+                      ...dc,
+                      character,
+                    }),
+                    characterClass,
+                  });
+              } catch {
+                // a run that does not record drafts nothing: its class keeps the active run's draft
+              }
+            }
+            const active = [...classes].find(([, c]) => c === dc.character);
+            const draft = joinDrafts(
+              { draft: own, characterClass: active ? active[0] : null },
+              others,
             );
             writeFileSync(draftPath(out, id), draftJson(draft));
             // its common branches' pieces beside it (T203), each written once

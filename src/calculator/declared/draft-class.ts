@@ -1,5 +1,6 @@
 // A talent source's class in the draft (spec 010, T059; moved out of draft.ts as it was): from the game's talent order
 // only, never guessed.
+import type { Context } from "../boot.ts";
 import type { RecNode } from "../recording.ts";
 
 /** 008 catalogo-de-arvores.md (provada): class c's tab is TalentOrder[15×(c−1)..+14]; the star talents [615..679]. */
@@ -41,4 +42,26 @@ export function classesOf(
     tabs.includes(tab) ? [c] : [],
   );
   return all.length > 0 ? all.sort((a, b) => a - b) : [tab];
+}
+
+/** The game's ReturnClasses of each class of the talent order's tabs (T207), read in the recorder's context; a class
+ * whose reading fails is left out. */
+export function gameFamilies(
+  context: Pick<Context, "run">,
+  ms: number,
+): Map<number, number[]> {
+  const out = new Map<number, number[]>();
+  for (let c = 1; c <= STAR / TAB; c++)
+    try {
+      const json = context.run(
+        `JSON.stringify(__calc.call("ReturnClasses",[${String(c)}]))`,
+        ms,
+      );
+      const tabs: unknown = typeof json === "string" ? JSON.parse(json) : null;
+      if (Array.isArray(tabs) && tabs.every((t) => typeof t === "number"))
+        out.set(c, tabs);
+    } catch {
+      // a class the game does not answer for has no family
+    }
+  return out;
 }
