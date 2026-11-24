@@ -126,3 +126,41 @@ test("the draft writes the calls of one block that differ in one argument as eac
     { call: "TreeRibbon", args: ["{item}", 0] },
   ]);
 });
+
+test("a list of calls beside another child of its level: the model is the child that calls the block", () => {
+  const plus: Blueprint = {
+    id: "invented-calls",
+    root: {
+      name: "Invented",
+      ref: { call: "TreeCallsPlusPool", args: [0, 0, 0] },
+    },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "cards",
+            sources: [
+              {
+                ...ribbons("TreeRibbonsPlus"),
+                ref: { call: "TreeRibbonsPlus", args: [] },
+                children: [
+                  ...(ribbons("TreeRibbonsPlus").children ?? []),
+                  leaf("base", "TreeBase"),
+                ],
+              },
+            ],
+          },
+          { system: "stamps", sources: [leaf("capped", "TreeCapped")] },
+        ],
+      },
+    ],
+  };
+  expect(lock("TreeCallsPlusPool", plus)).toEqual([]);
+  expect(
+    parseBlueprint(plus, {
+      fileId: "invented-calls",
+      systemIds: new Set(["cards", "stamps"]),
+    }),
+  ).toMatchObject({ ok: true });
+});
