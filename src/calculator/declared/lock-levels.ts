@@ -368,8 +368,9 @@ export function lockSource(
 ): void {
   checkCondition(node, true, top, ctx, out);
   const children = node.children ?? [];
+  // the other references of a two-source term; the same call read again (a curve's, the LUK's) is no other source
   if (children.length === 0 && term.refs.length > 1)
-    for (const r of term.refs.slice(1))
+    for (const r of term.refs.slice(1).filter((x) => x !== term.ref))
       out.errors.push({ kind: "undeclaredPart", where: ctx.where, got: r });
   const call = ctx.rec.nodes[term.nodes[0] ?? -1];
   const at = call ? null : termExpr(term, top, ctx);
