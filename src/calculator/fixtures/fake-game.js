@@ -820,6 +820,7 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeAcc = 0;
     for (var i = 0; i < s.TreeList.length; i++)
       2 == s.TreeList[i] &&
+        Blocks._customBlock_TreeDetails(i) &&
         (d.TreeAcc =
           a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc +
           Blocks._customBlock_ArbitraryCode5Inputs(
@@ -832,6 +833,10 @@ lime.$scripts.N = function (_exports, $global) {
       a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc *
       s.TreeBase
     );
+  };
+  // A call in the turn that gives a list, no number, as the game's StampDetails(37): no part of the count.
+  Blocks._customBlock_TreeDetails = function (i) {
+    return [i, "details"];
   };
   Blocks._customBlock_TreeCurveTurnPool = function () {
     return Blocks._customBlock_TreeCurveTurn() + state().TreeCapped;
