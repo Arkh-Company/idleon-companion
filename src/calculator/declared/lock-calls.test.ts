@@ -164,3 +164,42 @@ test("a list of calls beside another child of its level: the model is the child 
     }),
   ).toMatchObject({ ok: true });
 });
+
+test("the model is the child with {as}: another call of the same block beside it is a child of its own", () => {
+  const bp = nested("TreeRibbons");
+  const src = bp.pools[0]?.groups[0]?.sources[0];
+  if (!src?.children) throw new Error("no source");
+  const withSibling = {
+    ...bp,
+    pools: [
+      {
+        ...bp.pools[0],
+        groups: [
+          {
+            system: "cards",
+            sources: [
+              {
+                ...src,
+                children: [
+                  ...src.children,
+                  {
+                    key: "fixed",
+                    name: "Fixed",
+                    ref: { call: "TreeRibbon", args: [9, 0] },
+                    leaf: "level",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  } as Blueprint;
+  expect(
+    parseBlueprint(withSibling, {
+      fileId: "invented-calls",
+      systemIds: new Set(["cards", "stamps"]),
+    }),
+  ).toMatchObject({ ok: true });
+});
