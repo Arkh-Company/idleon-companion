@@ -134,6 +134,32 @@ function walkPart(
     };
   }
   const own = from?.call === call ? from : undefined;
+  const level = expr === undefined ? returnOf(call, ctx) : expr;
+  // a level the recording opens (a cache's author, a builder's too: no call of this one) goes down by the opening's own
+  // call and the steps of its write, never by a child of the same reference (T187)
+  const open =
+    depth < MAX_DEPTH
+      ? openingOf(
+          { expr: level, scope: call, ...(own?.write && { write: own.write }) },
+          ctx,
+        )
+      : null;
+  if (Array.isArray(open))
+    return {
+      key,
+      call,
+      below: open.map((o) =>
+        walkPart(
+          o.part,
+          o.call,
+          ctx,
+          depth + 1,
+          call,
+          o.call || o.expr !== undefined ? o.expr : onlyRead(level, o.part),
+          o,
+        ),
+      ),
+    };
   const parts =
     depth < MAX_DEPTH ? callParts(call, ctx, expr, own?.write) : DEEP;
   // a refused opening gives its reason, as the lock writes it
@@ -155,7 +181,6 @@ function walkPart(
     call.c
       .map((id) => ctx.rec.nodes[id])
       .find((k) => k !== undefined && callRef(k) === p) ?? null;
-  const level = expr === undefined ? returnOf(call, ctx) : expr;
   return {
     key,
     call,
