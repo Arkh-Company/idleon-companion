@@ -771,8 +771,10 @@ lime.$scripts.N = function (_exports, $global) {
     var d = a.engine.getGameAttribute("DNSM").h;
     var s = state();
     d.TreeDbl = 1;
-    101 == s.TreeUpg[e] &&
-      (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
+    101 == s.TreeUpg[e]
+      ? (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl)
+      : 102 == s.TreeUpg[e] &&
+        (d.TreeDbl = 6 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
     1 == Blocks._customBlock_TreeOwnedFlag() &&
       (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
     return a.engine.getGameAttribute("DNSM").h.TreeDbl * s.TreeLevel;
