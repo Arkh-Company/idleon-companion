@@ -178,10 +178,21 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   )
     no(where, "any só no autor de um cache, e sozinho nos args");
   if (n.constant !== undefined) {
-    if (level !== "source") no(where, "constant só em fonte de pool");
+    // in a call's level, a number of the code with the conditions that apply it as its children (T209, form 3)
+    const applied =
+      level === "child" &&
+      Array.isArray(n.children) &&
+      n.children.length > 0 &&
+      n.children.every((c) => isObj(c) && c.leaf === "condition");
+    if (level !== "source" && !applied)
+      no(
+        where,
+        "constant só em fonte de pool, ou numa chamada com as suas condições",
+      );
     if (typeof n.constant !== "number" || !Number.isFinite(n.constant))
       no(where, "constant não é um número");
-    if (n.leaf !== "fixedValue") no(where, "constant pede leaf fixedValue");
+    if (n.leaf !== "fixedValue" && !applied)
+      no(where, "constant pede leaf fixedValue");
   }
   if (n.weight !== undefined && level !== "source")
     no(where, "weight só em fonte de pool");

@@ -14,6 +14,7 @@ import {
   matchPattern,
   blockParams,
   methodOf,
+  ownRead,
   textRead,
   unwrap,
 } from "./ast.ts";
@@ -203,7 +204,11 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         usedR.add(txt[0][0]);
         return read(txt[0][0], v);
       }
-      return defOrVal(node, v);
+      // a loose value of the call's own variable, written before here, keeps its path (T209, form 3)
+      const loose = defOrVal(node, v);
+      const at0 = lastPos.get(id ?? -1);
+      const own = pat ? ownRead(pat, pool, v, rec.writes, n.id, at0) : null;
+      return own === null || loose.t !== "val" ? loose : { ...loose, own };
     }
     // the call a value comes from, on the side each ? : on its way took at `pos` (sides.ts)
     const took = (pos?: number) => (o: AstNode) =>

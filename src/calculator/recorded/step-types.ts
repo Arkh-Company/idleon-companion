@@ -6,7 +6,8 @@ export type StepValue = number | boolean | null | undefined;
 export type Expr =
   | { t: "num"; v: number | string | boolean | null }
   // `arg`: the block's own argument at that place among its parameters (T209, form 1), a fixed value
-  | { t: "val"; v: StepValue; arg?: number }
+  // `own`: the call's own variable the value was read from, the path it wrote before (T209, form 3)
+  | { t: "val"; v: StepValue; arg?: number; own?: string }
   | { t: "call"; id: number; v: StepValue }
   | { t: "read"; p: string; v: StepValue }
   | { t: "def"; e: Expr; v: StepValue }

@@ -13,6 +13,8 @@ export function closeLevel(
   leaves: readonly Expr[],
   ctx: LevelContext,
   out: LevelOut,
+  /** The call's own variable and the value its constants give (T209, form 3). */
+  own?: { value: number | null; path?: string } | null,
 ): void {
   const { expr, scope, value } = level;
   const expected = value ?? Number.NaN;
@@ -39,6 +41,12 @@ export function closeLevel(
         }
         if (n) return num(n.v) ?? undefined;
         // the block's own argument is a fixed value (T209, form 1); any other value with no source gives no number (R2)
+        if (
+          own &&
+          ((e.t === "val" && e.own !== undefined) ||
+            (e.t === "read" && e.p === own.path))
+        )
+          return own.value ?? undefined;
         if (e.t === "val")
           return e.arg === undefined ? undefined : (num(e.v) ?? undefined);
         return e.t === "read"

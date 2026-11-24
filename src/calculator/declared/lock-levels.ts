@@ -26,6 +26,7 @@ import {
 } from "./lock-parts.ts";
 import { modelChildren } from "./lock-each.ts";
 import { closeLevel } from "./lock-close.ts";
+import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, matchRead, savedTwice } from "./refs.ts";
@@ -196,8 +197,12 @@ export function lockLevel(
   // the calls a child's `*` may stand for: two of them are refused, never tied by order (refs.ts savedTwice)
   const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
   const calls = [...parts, ...made.map(callRef)];
-  let whole = true;
+  // a call's constants with the conditions that apply them (T209, form 3)
+  const consts = lockConstants(children, level, leaves, ctx, out);
+  for (const p of consts?.covered ?? []) covered.add(p);
+  let whole = consts?.value !== null;
   for (const child of children) {
+    if (child.constant !== undefined) continue;
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
     const twice = child.ref && savedTwice(child.ref, calls, ctx.character);
@@ -237,7 +242,7 @@ export function lockLevel(
       whole = false;
     }
   if (!whole) return;
-  closeLevel(level, leaves, ctx, out);
+  closeLevel(level, leaves, ctx, out, consts);
 }
 
 function descend(

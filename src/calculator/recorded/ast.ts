@@ -117,3 +117,25 @@ export function blockParams(ops: readonly Op[]): Map<string, string[]> {
       );
   return out;
 }
+
+/**
+ * The call's own variable a value was read from (spec 010, T209, form 3): the one path the code names whose read at this
+ * place holds the value, and which the call itself wrote before it; null with none, no place, or two.
+ */
+export function ownRead(
+  pat: { toks: (string | null)[]; root: boolean },
+  pool: readonly (readonly [string, unknown])[],
+  v: unknown,
+  writes: readonly { path: string; node: number | null; xi: number }[],
+  node: number,
+  pos: number | undefined,
+): string | null {
+  if (pos === undefined) return null;
+  const hits = pool.filter(
+    ([p, val]) =>
+      val === v &&
+      matchPattern(p, pat) &&
+      writes.some((w) => w.node === node && w.path === p && w.xi <= pos),
+  );
+  return hits.length === 1 ? (hits[0]?.[0] ?? null) : null;
+}
