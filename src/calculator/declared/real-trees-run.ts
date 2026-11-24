@@ -79,13 +79,23 @@ export function outPath(out: string, ...parts: string[]): string {
   return p;
 }
 
-/** The check mode locks only the complete blueprints; a sketch or a draft counts as no blueprint written. */
+/**
+ * The check mode locks the complete blueprints and checks the drafts apart (T199: no review's lock for them); a sketch
+ * counts as no blueprint written.
+ */
 export function checkPlan(
   ids: readonly string[],
   stages: ReadonlyMap<string, BlueprintStage>,
-): { lock: string[]; notWritten: string[] } {
-  const lock = ids.filter((id) => stages.get(id) === "complete");
-  return { lock, notWritten: ids.filter((id) => !lock.includes(id)) };
+): { lock: string[]; draft: string[]; notWritten: string[] } {
+  const of = (stage: BlueprintStage) =>
+    ids.filter((id) => stages.get(id) === stage);
+  const lock = of("complete");
+  const draft = of("draft");
+  return {
+    lock,
+    draft,
+    notWritten: ids.filter((id) => !lock.includes(id) && !draft.includes(id)),
+  };
 }
 
 /** The draft mode drafts only a sketch: a draft or a complete blueprint is never written over. */
@@ -296,12 +306,16 @@ export function rootsReport(probes: readonly RootProbe[]) {
   };
 }
 
-/** One line of `summary.txt`: the id, the result, the time and each stage's; never a text of the save. */
+/**
+ * One line of `summary.txt`: the id, the result, the time, a checked blueprint's nodes (T199) and each stage's time;
+ * never a text of the save.
+ */
 export function summaryLine(
   id: string,
   outcome: {
-    result: RootForm | "passed" | "failed" | "notWritten" | "drafted";
+    result: RootForm | "passed" | "failed" | "notWritten" | "drafted" | "draft";
     ms: number;
+    nodes?: { passed: number; failed: number; pending: number };
     stages?: Record<string, number>;
   },
 ): string {
@@ -309,7 +323,17 @@ export function summaryLine(
   const stages = Object.entries(outcome.stages ?? {}).map(
     ([k, n]) => `${k} ${ms(n)}`,
   );
-  const line = [id, outcome.result, ms(outcome.ms)];
+  const { nodes } = outcome;
+  const line = [
+    id,
+    outcome.result,
+    ms(outcome.ms),
+    ...(nodes
+      ? [
+          `passed ${String(nodes.passed)}, failed ${String(nodes.failed)}, pending ${String(nodes.pending)}`,
+        ]
+      : []),
+  ];
   return [...line, ...(stages.length > 0 ? [stages.join(", ")] : [])].join(
     "\t",
   );

@@ -12,6 +12,7 @@ import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import { pendingCover } from "./lock-pending.ts";
 import { lockPools, POOL_NAME } from "./lock-pools.ts";
 
 export type LockErrorKind =
@@ -134,16 +135,38 @@ export function lockMessage(e: LockError): string {
   }
 }
 
+/**
+ * The nodes of a checked blueprint (T199, `summary.txt`): the levels and leaves that closed, the places with a failure,
+ * and the pending places.
+ */
+export function lockTally(r: LockResult): {
+  passed: number;
+  failed: number;
+  pending: number;
+} {
+  const { closed, closedByRecorded, leaves } = r.counts;
+  const pending = r.errors.filter((e) => e.kind === "pending");
+  return {
+    passed: closed + closedByRecorded + leaves,
+    failed: new Set(
+      r.errors.filter((e) => e.kind !== "pending").map((e) => e.where),
+    ).size,
+    pending: pending.length,
+  };
+}
+
 /** The check mode (research R10): a failure refuses the blueprint. The runtime mode comes with the closing alert (R16). */
 export function lockBlueprint(input: LockInput): LockResult {
   const { blueprint: bp, key, rec, ops, character, characterClass } = input;
   const out = emptyOut();
-  const done = (): LockResult => ({ ok: out.errors.length === 0, ...out });
-  if (bp.pending?.length) {
-    for (const p of bp.pending)
+  // a draft is checked where it is closed (T199): what its pending places lack is no failure, each place is pending
+  const covered = pendingCover(bp, character);
+  const done = (): LockResult => {
+    out.errors = out.errors.filter((e) => !covered(e));
+    for (const p of bp.pending ?? [])
       out.errors.push({ kind: "pending", where: p.where, got: p.kind });
-    return done();
-  }
+    return { ok: out.errors.length === 0, ...out };
+  };
   const top = topOf(rec);
   if (!top) {
     out.errors.push({

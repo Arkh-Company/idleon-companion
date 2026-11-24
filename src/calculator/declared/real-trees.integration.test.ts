@@ -6,9 +6,9 @@
 //   `vars-*.json` beside it;
 // - TREES_OUT: the output folder, outside the repository.
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
-// writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint (once per class of the snapshot
-// when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock beside the blueprint and
-// `summary.txt` with each stage's time. The draft mode drafts each sketch only (draft.ts), into
+// writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint and checks each draft (once per
+// class of the snapshot when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock
+// beside a complete blueprint only, and `summary.txt` with each one's nodes and each stage's time. The draft mode drafts each sketch only (draft.ts), into
 // TREES_OUT/draft/ (never over the repository's blueprint), and its guide of steps beside it.
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -31,6 +31,7 @@ import {
   writeLock,
 } from "./real-trees-check.ts";
 import type { RecordFn } from "./real-trees-check.ts";
+import { lockTally } from "./lock.ts";
 import { blueprintSha, saoPauloTime } from "./review.ts";
 import {
   checkPlan,
@@ -119,7 +120,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         const plan = checkPlan(ids, loaded.stages);
         for (const id of plan.notWritten)
           lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
-        if (plan.lock.length > 0) {
+        if (plan.lock.length + plan.draft.length > 0) {
           const { recorder, gameSha } = boot();
           const state = mosaic(snapshot);
           const classes = classCharacters(readJson(snapshot));
@@ -135,10 +136,12 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               FOLLOW_CALLS,
               routine,
             );
-          for (const id of plan.lock) {
-            const bp = loaded.complete.get(id);
+          // a draft is checked where it is closed (T199); only a complete blueprint gets the review's lock
+          for (const id of [...plan.lock, ...plan.draft]) {
+            const bp = loaded.all.get(id);
             const lot = lots.get(id);
             if (!bp || !lot) continue;
+            const complete = plan.lock.includes(id);
             const t1 = performance.now();
             const { lock, stages } = lockNumber(
               record,
@@ -151,15 +154,17 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               outPath(out, "lock", `${id}.json`),
               `${JSON.stringify(lock, null, 1)}\n`,
             );
-            writeLock(BLUEPRINTS_DIR, id, lot, blueprintSha(bp), {
-              ok: lock.ok,
-              gameSha,
-              at: saoPauloTime(new Date()),
-            });
+            if (complete)
+              writeLock(BLUEPRINTS_DIR, id, lot, blueprintSha(bp), {
+                ok: lock.ok,
+                gameSha,
+                at: saoPauloTime(new Date()),
+              });
             lines.push(
               summaryLine(id, {
-                result: lock.ok ? "passed" : "failed",
+                result: !complete ? "draft" : lock.ok ? "passed" : "failed",
                 ms: performance.now() - t1,
+                nodes: lockTally(lock),
                 stages,
               }),
             );
