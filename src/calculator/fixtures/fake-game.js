@@ -1435,6 +1435,22 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeAuthorBareRoot = function () {
     return Blocks._customBlock_TreeAuthorBare() + state().TreeCapped;
   };
+  // Spec 010 (T191): a builder whose writes have no step of their own, as the game's companions (a CompanionDB cell)
+  // and family bonuses (FamilyBonsuesREAL's value): v is TreeBig k2 (7), w TreeWriteCall's TreeBase × 2 (8); the root
+  // is 7 + 8 + 80 = 95.
+  Blocks._customBlock_TreeWriteCall = function () {
+    return state().TreeBase * 2;
+  };
+  Blocks._customBlock_TreeWriteBare = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    d.TreeWriteBon.h.v = state().TreeBig.h.k2;
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
+  Blocks._customBlock_TreeWriteRead = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    return d.TreeWriteBon.h.v + d.TreeWriteBon.h.w + state().TreeCapped;
+  };
   // Spec 010 (T189): a root that reads the cache an actor's init built (InitActor): 15 + 80 = 95.
   Blocks._customBlock_TreeInitRead = function () {
     return (
