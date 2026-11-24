@@ -51,11 +51,13 @@ export function openingOf(
   if ("refused" in a) return a.refused;
   const v = a.write.v;
   const turn = writeTurn(ctx.rec, a, ctx.turnOf);
+  const source = writeSource(ctx.rec, a, ctx.turnOf, turn);
+  if (typeof source === "string") return source;
   return [
     {
       part: callRef(a.node),
       call: a.node,
-      expr: writeSource(ctx.rec, a, ctx.turnOf, turn),
+      expr: source,
       write: a.write,
       steps: turn,
       value: typeof v === "number" ? v : null,

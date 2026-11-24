@@ -151,41 +151,51 @@ export function writeExpr(
 }
 
 /**
- * What gave the author's write (T191): its turn's last step, or else, with no step of its own, the bare read or the call
- * made right before it, since its write before and after that step, by its place (the value only checks). A read and a
- * call, or two calls, there are no place that decides: none.
+ * What gave the author's write (T191): its turn's last step, or else, with no step of its own, the read or the call made
+ * after that step and its write before, and before the write, by the recorded place (`xi`, `seq`), with no value in
+ * the choice: one only opens when its value checks; more than one is refused with the reason; none, or a value that
+ * does not check, gives none. A part that gives no number (a text, an image's call) is no count.
  */
 export function writeSource(
   rec: Recording,
   a: { node: RecNode; write: RecWrite },
   turnOf: TurnOf,
   turn = writeTurn(rec, a, turnOf),
-): Expr | null {
+): Expr | string | null {
   const e = writeExpr(rec, a, turnOf, turn);
   if (e) return e;
   const { node, write } = a;
   const prev = writeBefore(rec, a);
   const from = Math.max(prev?.xi ?? 0, (turn.stepAt?.at(-1) ?? -1) + 1);
-  const r = (node.rx ?? [])
-    .filter(
-      ([, , pos, seq]) =>
-        pos >= from &&
-        pos <= write.xi &&
-        (seq === undefined || (seq < write.seq && seq >= (prev?.seq ?? 0))),
-    )
-    .at(-1);
-  const read = r && near(num(r[1]), write.v) ? r : undefined;
-  const calls = node.c.flatMap((id) => {
+  // shortcut: a read with no write's number (a game table's text) and a call of a recording before T191 r1 (no `seq`)
+  // are placed by `xi` only; give them a number in recorder.js when two such parts meet in a window
+  const inWindow = (xi: number, seq: number | undefined) =>
+    xi >= from &&
+    xi <= write.xi &&
+    (seq === undefined || (seq >= (prev?.seq ?? 0) && seq < write.seq));
+  // each part by its name; a path read again with the same number is the same part
+  const parts = new Map<string, { e: Expr; v: number }>();
+  for (const [p, v, xi, seq] of node.rx ?? []) {
+    const n = num(v);
+    if (n !== null && inWindow(xi, seq))
+      parts.set(`${p} = ${String(n)}`, {
+        e: { t: "read", p, v: n },
+        v: n,
+      });
+  }
+  for (const id of node.c) {
     const k = rec.nodes[id];
-    return k && k.pxi >= from && k.pxi <= write.xi && near(k.v, write.v)
-      ? [k]
-      : [];
-  });
-  const [k] = calls;
-  if (read && !k) return { t: "read", p: read[0], v: num(read[1]) };
-  return !read && k && calls.length === 1
-    ? { t: "call", id: k.id, v: num(k.v) }
-    : null;
+    const n = num(k?.v);
+    if (k && n !== null && inWindow(k.pxi, k.seq))
+      parts.set(`${callRef(k)} #${String(id)}`, {
+        e: { t: "call", id, v: n },
+        v: n,
+      });
+  }
+  if (parts.size > 1)
+    return `a escrita de ${write.path} seq ${String(write.seq)} sai de mais de uma leitura ou chamada (${[...parts.keys()].join("; ")}), e o lugar não decide entre elas`;
+  const [one] = parts.values();
+  return one && near(one.v, write.v) ? one.e : null;
 }
 
 /** The read of `path` among the leaves of `e` when there is one only: the place of a read opened, never by order. */

@@ -62,9 +62,9 @@
   };
   var stepAt = () => (S.cur && S.cur.x ? S.cur.x.length : 0);
 
-  // 2. Call record.
+  // 2. Call record; `seq`, the last write's number when the call began (spec 010, T191: a call before a write)
   S.newNode = (b, a, parent) => {
-    var n = { id: S.nodes.length, b: b, a: a, c: [] };
+    var n = { id: S.nodes.length, b: b, a: a, c: [], seq: S.seq };
     n.p = parent ? parent.id : null;
     n.pxi = parent && parent.x ? parent.x.length : 0;
     S.nodes.push(n);

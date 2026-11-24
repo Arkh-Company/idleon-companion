@@ -49,7 +49,8 @@ function writeOf(
   const a = { node: scope, write: w };
   const steps = writeTurn(ctx.rec, a, ctx.turnOf);
   const e = writeSource(ctx.rec, a, ctx.turnOf, steps);
-  return e && { e, steps };
+  // a refused source is none here: the pass-through gives no part (the opening of its read gives the reason)
+  return e && typeof e !== "string" ? { e, steps } : null;
 }
 
 /** The leaves, each pass-through variable among them swapped for the leaves of what gave its write, down. */

@@ -17,6 +17,8 @@ export interface RecNode {
   p: number | null;
   /** How many steps the parent had run when this call started. */
   pxi: number;
+  /** The last write's number when this call began (spec 010, T191); absent in a recording made before it. */
+  seq?: number;
   v?: RecValue;
   /** The state path of the list or the map the call returned, when it returned one of the state's. */
   vp?: string;
