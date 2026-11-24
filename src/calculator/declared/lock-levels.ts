@@ -24,7 +24,7 @@ import {
   saveChild,
   termExpr,
 } from "./lock-parts.ts";
-import { modelChildren } from "./lock-each.ts";
+import { modelChildren, sameCalls } from "./lock-each.ts";
 import { closeLevel } from "./lock-close.ts";
 import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
@@ -180,15 +180,6 @@ function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
     : matchRead(ref.read, [part], ctx.character) !== null;
 }
 
-/** The keys of the block's calls a level made twice with the same arguments: no place separates them (T205). */
-function sameCalls(block: string, level: Level, ctx: LevelContext): string[] {
-  const keys = level.scope.c.flatMap((id) => {
-    const n = ctx.rec.nodes[id];
-    return n?.b === block ? [callRef(n)] : [];
-  });
-  return [...new Set(keys.filter((k, i) => keys.indexOf(k) !== i))];
-}
-
 /** One level: its children's coverage and values, the descent into each, and the closing of the remounted count. */
 export function lockLevel(
   declared: readonly BlueprintNode[],
@@ -203,7 +194,9 @@ export function lockLevel(
   // a model child stands for one child per part its list matches (T202), or per call of its block (T205)
   const children = modelChildren(declared, each, parts, ctx);
   const twice =
-    each && "calls" in each ? sameCalls(each.calls, level, ctx) : [];
+    each && "calls" in each
+      ? sameCalls(declared, each, level.scope, ctx.rec)
+      : [];
   for (const k of twice)
     out.errors.push({
       kind: "rootForm",
