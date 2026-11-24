@@ -189,6 +189,8 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               "CustomLists.TalentOrder",
               TREE_LIMITS.startMs,
             ),
+            // a part that is another blueprint's root is a line with a link to its tree (T200)
+            trees: [...loaded.all.values()],
           };
           const state = mosaic(snapshot);
           mkdirSync(outPath(out, "draft"), { recursive: true });

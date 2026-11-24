@@ -26,6 +26,7 @@ import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
 import { characterRef } from "./character-args.ts";
 import { sourceClass } from "./draft-class.ts";
+import { linkedTree } from "./draft-link.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
@@ -40,6 +41,8 @@ export interface DraftContext {
   character: number;
   /** The game's `CustomLists.TalentOrder`, for a talent source's class; empty gives none. */
   talentOrder: readonly unknown[];
+  /** The blueprints of `blueprints/` (T200): a part that is the root of one is a line with a link to its tree. */
+  trees?: readonly Pick<Blueprint, "id" | "root">[];
 }
 export const NO_CONTEXT: DraftContext = { character: 0, talentOrder: [] };
 
@@ -320,6 +323,7 @@ export function draftBlueprint(
     const named = partName(w, dc.character, rec, ops);
     if (!named) wait(where, "name");
     if (w.termPart) wait(where, "system");
+    const tree = linkedTree(ref, id, dc.trees ?? [], dc.character);
     const own = new Set<string>();
     const keyRef =
       "call" in ref
@@ -331,14 +335,16 @@ export function draftBlueprint(
       ...(named ? { nameProof: named.nameProof } : {}),
       ref,
       ...extra,
-      ...(Array.isArray(w.below)
-        ? {
+      ...(tree !== undefined
+        ? { tree }
+        : Array.isArray(w.below) && {
             children: w.below.map((c, i) =>
               node(c, `${where}/children/${String(i)}`, own),
             ),
-          }
-        : {}),
+          }),
     };
+    // a line with a link waits for nothing below it: its tree is the other number's
+    if (tree !== undefined) return out;
     if (!Array.isArray(w.below)) wait(where, w.below);
     // any other argument equal to the character's index may be the character or a number that happens to be it: the
     // agent writes `{character}` or keeps it (research R5); the draft does not decide by the value

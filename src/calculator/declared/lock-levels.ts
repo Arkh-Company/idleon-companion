@@ -291,6 +291,11 @@ function descend(
           where: ctx.where,
           got: `o argumento ${String(i + 1)} de ${ref.call}`,
         });
+  // a line with a link (T200): its value came by its ref, its tree is the other number's; the descent ends here
+  if (node.tree !== undefined) {
+    out.counts.leaves++;
+    return;
+  }
   // a piece's line closes by the piece's count or recipe (lock-pieces.ts), never by an opening of the recording
   if (node.combine || node.pools) {
     lockPiece(node, level, ctx, out);

@@ -37,6 +37,11 @@ export interface BlueprintNode {
   each?: { list: string; as: string | readonly string[] };
   /** Only in a piece with the form of a recipe (T173): its pools, closed as a root's below the node. */
   pools?: readonly BlueprintPool[];
+  /**
+   * A line with a link to another number's tree (T200; the LUK in the Drop Rate): that blueprint's id, in place of the
+   * children, the leaf and the piece; the lock checks the line's value by its `ref` and does not descend.
+   */
+  tree?: string;
 }
 /** A piece's args: a value for each of its params, in place of `{param}` in its references. */
 export type PieceArgs = Readonly<Record<string, string | number>>;

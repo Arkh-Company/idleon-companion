@@ -40,6 +40,10 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
     else if (!pieces.has(id))
       pieces.set(id, { id, params: [], pools: raw.pools });
   }
+  // a line links to another number's tree by its blueprint's id (T200), in any stage
+  const trees = new Set(
+    Object.keys(files).flatMap((f) => FILE.exec(f)?.[1] ?? []),
+  );
   for (const [file, raw] of Object.entries(files)) {
     const fileId = FILE.exec(file)?.[1];
     if (fileId === undefined) continue;
@@ -52,6 +56,7 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
       fileId,
       systemIds: SYSTEM_IDS,
       pieces,
+      trees,
     });
     if (!out.ok) {
       refused.push({ file, reason: out.reason });

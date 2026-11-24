@@ -1,5 +1,6 @@
-// The nodes that stand for another body in a blueprint's check on load (spec 010, contracts/blueprint.md; moved out of
-// blueprint.ts as it was, T200): a recipe piece's call (T169), its body come in its place.
+// The nodes that stand for another body in a blueprint's check on load (spec 010, contracts/blueprint.md): a recipe
+// piece's call (T169, moved out of blueprint.ts as it was), its body come in its place, and a line with a link to
+// another number's tree (T200), which stays a link.
 import { IDENT, isObj, no, obj } from "./blueprint-root.ts";
 import type { BlueprintPiece, PieceArgs } from "./blueprint-types.ts";
 import { pieceBody } from "./pieces.ts";
@@ -10,6 +11,33 @@ export const SLUG = /^[a-z0-9-]{1,60}$/;
 const isArg = (v: unknown): boolean =>
   (typeof v === "number" && Number.isFinite(v)) ||
   (typeof v === "string" && v.length <= ARG_TEXT_MAX && !v.includes("{"));
+
+/** The blueprints a link may name (T200): the one being checked, and the ids of every blueprint file. */
+export interface Trees {
+  own: string;
+  ids: ReadonlySet<string>;
+}
+
+/** A line with a link checked (T200): a ref, a blueprint's id that is not its own, and no descent of its own. */
+export function checkTree(
+  n: Record<string, unknown>,
+  where: string,
+  trees: Trees,
+): void {
+  if (
+    ["children", "leaf", "combine", "each", "piece", "pools"].some(
+      (k) => n[k] !== undefined,
+    )
+  )
+    no(where, "tree vai no lugar de children, leaf, combine, each e piece");
+  if (typeof n.tree !== "string" || !SLUG.test(n.tree))
+    return no(where, "tree fora do slug");
+  if (n.tree === trees.own)
+    no(where, `a linha com link aponta para a própria receita: ${n.tree}`);
+  if (!trees.ids.has(n.tree))
+    no(where, `árvore que não existe em blueprints/: ${n.tree}`);
+  if (n.ref === undefined) no(where, "a linha com link pede ref");
+}
 
 /**
  * A piece's call checked (T169): the piece exists, is no cycle (`stack`, the pieces whose body is being checked), and

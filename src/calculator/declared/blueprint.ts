@@ -17,7 +17,8 @@ import {
   texts,
   uniqueKeys,
 } from "./blueprint-root.ts";
-import { pieceOf, SLUG } from "./blueprint-links.ts";
+import { checkTree, pieceOf, SLUG } from "./blueprint-links.ts";
+import type { Trees } from "./blueprint-links.ts";
 import type {
   Blueprint,
   BlueprintPending,
@@ -61,6 +62,7 @@ const NODE_KEYS = [
   "combine",
   "each",
   "pools",
+  "tree",
 ];
 
 /** `piece`: a child of a node with `combine`, inside a recipe piece. */
@@ -70,6 +72,7 @@ interface Walk {
   pending: (kind: BlueprintPending["kind"], where: string) => boolean;
   places: Set<string>;
   pieces: ReadonlyMap<string, unknown>;
+  trees: Trees;
   /** The pieces whose body is being checked, the outermost first: a call of one of them again is a cycle. */
   stack: readonly string[];
   /** The node is a part of a count (a child of a combine), the piece it calls included. */
@@ -118,6 +121,7 @@ function checkPieceLevel(
 function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   w.places.add(where);
   const n = obj(x, NODE_KEYS, where);
+  if (n.tree !== undefined) checkTree(n, where, w.trees);
   if (n.piece !== undefined) {
     // the node with the piece's body in place of the call, as the load puts it (pieces.ts, inlinePieces)
     const { name, body } = pieceOf(n, where, w.stack, w.pieces);
@@ -216,6 +220,7 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   } else if (
     n.leaf === undefined &&
     n.pools === undefined &&
+    n.tree === undefined &&
     !w.pending("leaf", where) &&
     !w.pending("descend", where)
   )
@@ -287,6 +292,8 @@ export function parseBlueprint(
     systemIds: ReadonlySet<string>;
     /** The recipe pieces by their id (T169): a node may call one. */
     pieces?: ReadonlyMap<string, unknown>;
+    /** The ids of every blueprint file (T200): a line may link to another one's tree. */
+    trees?: ReadonlySet<string>;
   },
 ):
   | { ok: true; stage: BlueprintStage; blueprint: Blueprint }
@@ -322,6 +329,7 @@ export function parseBlueprint(
         pending.some((p) => p.kind === kind && p.where === where),
       places: new Set(),
       pieces: ctx.pieces ?? new Map(),
+      trees: { own: ctx.fileId, ids: ctx.trees ?? new Set() },
       stack: [],
     };
     checkPools(bp.pools, w);

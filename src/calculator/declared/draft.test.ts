@@ -313,7 +313,7 @@ test("a source whose ref is another blueprint's root is a line with a link to it
     id: "invented-luck",
     root: { name: "Invented Luck", ref: { call: "TreeDeclLuck", args: [] } },
   };
-  const linkOf = (trees: (typeof luck)[]) =>
+  const linkOf = (trees: Pick<Blueprint, "id" | "root">[]) =>
     draftOf("TreeDeclChain", { ...NO_CONTEXT, trees });
   const d = linkOf([luck]);
   const s = sourceAt(d, 0, 0);
