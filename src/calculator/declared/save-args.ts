@@ -13,6 +13,7 @@ import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
+import { ranSites } from "./call-site.ts";
 import { at, isCharacter, isNode, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -230,7 +231,9 @@ function marksOf(
   const out: Marks = { yes: [], unsure: [] };
   const caller = rec.nodes[n.p ?? -1];
   const f = caller ? fnIn(ops, caller.b) : null;
-  const sites = (f?.sites.get(n.b) ?? []).filter((s) => fits(s, n));
+  const fit = (f?.sites.get(n.b) ?? []).filter((s) => fits(s, n));
+  // the sites on the sides its caller recorded as taken when the call began (call-site.ts): the recorded place decides
+  const sites = caller && f ? ranSites(fit, f.up, caller, ops, n) : fit;
   if (!caller || !f || sites.length === 0 || depth > 8) return out;
   let up: Marks | undefined;
   const given = () => (up ??= marksOf(rec, ops, caller, mark, depth + 1));
