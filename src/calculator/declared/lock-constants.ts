@@ -109,34 +109,38 @@ export function lockConstants(
     "call" in ref
       ? keyMatches(ref, key, ctx.character)
       : matchRead(ref.read, [key], ctx.character) !== null;
-  const used = new Set<number>();
   for (const c of consts) {
-    const where = `${ctx.where}/${c.key}`;
     const refs = conditionOf(c);
-    for (const x of c.children ?? []) leafCheck(x, `${where}/${x.key}`, out);
-    const i = applied.findIndex(
-      (a, j) => !used.has(j) && refs.some((r) => covers(r, a.key)),
-    );
+    for (const x of c.children ?? [])
+      leafCheck(x, `${ctx.where}/${c.key}/${x.key}`, out);
     covered.push(...refs.map((r) => refKey(r, ctx.character)));
-    // its condition did not apply: the neutral value
-    if (i < 0) continue;
-    used.add(i);
-    const a = applied[i];
-    if (a && a.n !== c.constant)
-      out.errors.push({
-        kind: "notClosing",
-        where,
-        expected: a.n,
-        got: c.constant ?? Number.NaN,
-      });
   }
-  applied.forEach((a, j) => {
-    if (!used.has(j))
+  // each applied write's constant: the one its condition's reading names; two under the same reading part by the
+  // code's own number at the write's place (the x2 at 101 and the x6 at 102 of ArcadeBonus), never by order
+  const taken = new Set<BlueprintNode>();
+  for (const a of applied) {
+    const by = consts.filter(
+      (c) => !taken.has(c) && conditionOf(c).some((r) => covers(r, a.key)),
+    );
+    const pick = by.length > 1 ? by.filter((c) => c.constant === a.n) : by;
+    const [c] = pick;
+    if (!c || pick.length > 1) {
       out.errors.push({
         kind: "undeclaredPart",
         where: ctx.where,
         got: `× ${String(a.n)} (${a.key})`,
       });
-  });
+      continue;
+    }
+    taken.add(c);
+    if (a.n !== c.constant)
+      out.errors.push({
+        kind: "notClosing",
+        where: `${ctx.where}/${c.key}`,
+        expected: a.n,
+        got: c.constant ?? Number.NaN,
+      });
+  }
+  // a constant no write took: its condition did not apply, the neutral value
   return { value, covered, path: own };
 }
