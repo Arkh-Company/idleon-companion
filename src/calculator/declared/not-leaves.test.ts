@@ -9,6 +9,7 @@ test.each([
   ['ArbitraryCode5Inputs("add",1,2,3)', "curve"],
   ['ArbitraryCode5Inputs("intervalAdd",1,5,12)', "curve"],
   ['ArbitraryCode5Inputs("decayMulti",1,100,40)', "curve"],
+  ['ArbitraryCode5Inputs("addDECAY",1,100,40)', "curve"],
   ["getLOG(1250)", "log"],
   ["Dungon()", "context"],
   ["CurrentMap", "context"],
