@@ -185,7 +185,7 @@ const fits = (site: AnyNode, n: RecNode): boolean => {
 const memo = new WeakMap<readonly Op[], Map<string, Fn | null>>();
 function fnIn(ops: readonly Op[], block: string): Fn | null {
   let fns = memo.get(ops);
-  if (!fns) memo.set(ops, (fns = new Map()));
+  if (!fns) memo.set(ops, (fns = new Map<string, Fn | null>()));
   if (!fns.has(block))
     fns.set(block, fnOf(ops.find((o) => o.block === block)?.fnText ?? ""));
   return fns.get(block) ?? null;

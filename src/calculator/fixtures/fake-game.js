@@ -2322,7 +2322,7 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
-  Blocks._customBlock_TreeDeclKills = function (mode, kills, z) {
+  Blocks._customBlock_TreeDeclKills = function (mode, kills) {
     return Blocks._customBlock_TreeDeclRow(kills) * 2;
   };
   // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
