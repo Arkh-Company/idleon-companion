@@ -243,6 +243,22 @@ lime.$scripts.N = function (_exports, $global) {
   };
   A["scripts.ActorEvents_29"] = HelperActor;
 
+  // Spec 010 (T189): a helper actor in the game's shape whose init builds a cache, as the game's ActorEvents_577
+  // builds DNSM.CompanionBon: TreeStats.a × 5 = 15.
+  var InitActor = function (_a, actor) {
+    this.actor = actor;
+  };
+  InitActor.__name__ = "scripts.ActorEvents_577";
+  InitActor.prototype = {
+    init: function () {
+      if (state().Scenario !== "initBuilt") return;
+      var d = a.engine.getGameAttribute("DNSM").h;
+      d.TreeInitBon = new StringMap();
+      d.TreeInitBon.h.v = state().TreeStats.h.a * 5;
+    },
+  };
+  A["scripts.ActorEvents_577"] = InitActor;
+
   var EveryScene = function () {
     brokenConstructor();
   };
@@ -1418,6 +1434,12 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeAuthorBareRoot = function () {
     return Blocks._customBlock_TreeAuthorBare() + state().TreeCapped;
+  };
+  // Spec 010 (T189): a root that reads the cache an actor's init built (InitActor): 15 + 80 = 95.
+  Blocks._customBlock_TreeInitRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeInitBon.h.v + state().TreeCapped
+    );
   };
   // A block that builds the cache by summing a list in a loop over its own last value: 3 + 2 + 4 + 6 = 15.
   Blocks._customBlock_TreeAuthorLoop = function () {

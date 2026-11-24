@@ -134,6 +134,21 @@ test("a helper's event has its steps, named by its whole method (spec 010, T168;
   );
 });
 
+test("an actor's init has its steps, named by its class, and only an actor's (spec 010, T189)", () => {
+  // the game's shape: the class's name, then its prototype with the init among its methods
+  const init = (cls: string) =>
+    `X.__name__="scripts.${cls}",X.prototype=E(o.prototype,{_k:null,init:function(){this.v=this.a*5}});`;
+  const { ops, inits } = instrument(
+    init("ActorEvents_77") +
+      init("Design_1_1_Scene") +
+      block("Plain", "return a+b"),
+  );
+  expect(new Set(ops.map((x) => x.block))).toEqual(
+    new Set(["Plain", "ActorEvents_77_init"]),
+  );
+  expect(inits).toEqual(["scripts.ActorEvents_77"]);
+});
+
 test("the function text stays with each step, for the worker only", () => {
   const { ops } = instrument(block("Text", "return a+b"));
   expect(ops[0]?.fnText).toBe("function(a,b){return a+b}");
