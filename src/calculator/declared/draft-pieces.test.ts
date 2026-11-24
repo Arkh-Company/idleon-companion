@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
+import { shortKey } from "./draft-pieces.ts";
 import { draftBlueprint, NO_CONTEXT } from "./draft.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
 import { recorded } from "./lock-fixture.ts";
@@ -92,6 +93,16 @@ test("the piece's JSON is as prettier leaves it, its keys short (the gitleaks re
   const keys = [...json.matchAll(/"key": "([^"]*)"/g)].map((m) => m[1] ?? "");
   expect(keys.length).toBeGreaterThan(0);
   expect(keys.filter((k) => k.length > 7)).toEqual([]);
+});
+
+test("a short key twice among siblings takes a letter, never a number (a number in a key reads as an argument)", () => {
+  const taken = new Set<string>();
+  const keys = Array.from({ length: 30 }, () =>
+    shortKey(taken, 'Summoning["RibbonBonus","*",0]'),
+  );
+  expect(keys.slice(0, 3)).toEqual(["summoni", "summ-b", "summ-c"]);
+  expect(new Set(keys).size).toBe(30);
+  expect(keys.filter((k) => /\d|.{8}/.test(k))).toEqual([]);
 });
 
 test("the draft loads with its piece, the lock refuses it only for its pending entries; filled, the piece passes at each line", () => {

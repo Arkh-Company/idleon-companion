@@ -65,7 +65,7 @@ export function branchOf(
 }
 
 /** A key of at most 7 letters, unique among its siblings: the slug's start, then a cut start and -2, -3… */
-function shortKey(taken: Set<string>, text: string): string {
+export function shortKey(taken: Set<string>, text: string): string {
   const cut = (s: string, n: number) => s.slice(0, n).replace(/-+$/, "");
   const base = cut(slug(text), 7) || "part";
   let k = base;
