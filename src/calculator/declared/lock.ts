@@ -68,6 +68,8 @@ export interface LockResult {
   };
   /** Each place that closed or is a typed leaf, out of the pending ones (lock-levels.ts LevelOut). */
   closedAt: string[];
+  /** The pending places' node ids (lock-pending.ts pendingIds), once each. */
+  pendingAt: string[];
 }
 
 export interface LockInput {
@@ -142,7 +144,7 @@ export function lockMessage(e: LockError): string {
 
 /**
  * The places of a checked blueprint (T199 r1, `summary.txt`): each that closed once (over every class's round), out of
- * the places with a failure and the pending ones; each place with a failure; each pending place.
+ * the places with a failure and the pending ones; each place with a failure; each pending node out of the failed ones.
  */
 export function lockTally(r: LockResult): {
   passed: number;
@@ -152,10 +154,12 @@ export function lockTally(r: LockResult): {
   const failed = new Set(
     r.errors.filter((e) => e.kind !== "pending").map((e) => e.where),
   );
+  const waits = new Set(r.pendingAt.filter((w) => !failed.has(w)));
   return {
-    passed: new Set(r.closedAt.filter((w) => !failed.has(w))).size,
+    passed: new Set(r.closedAt.filter((w) => !failed.has(w) && !waits.has(w)))
+      .size,
     failed: failed.size,
-    pending: r.errors.filter((e) => e.kind === "pending").length,
+    pending: waits.size,
   };
 }
 
@@ -172,7 +176,7 @@ export function lockBlueprint(input: LockInput): LockResult {
     out.closedAt = out.closedAt.filter((w) => !waits.has(w));
     for (const p of bp.pending ?? [])
       out.errors.push({ kind: "pending", where: p.where, got: p.kind });
-    return { ok: out.errors.length === 0, ...out };
+    return { ok: out.errors.length === 0, ...out, pendingAt: [...waits] };
   };
   const top = topOf(rec);
   if (!top) {

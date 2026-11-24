@@ -47,7 +47,7 @@ function placeOf(bp: Blueprint, where: string) {
   const g = bp.pools[pool]?.groups[Number(m?.[2])];
   if (!m || !g) return null;
   const idOf = (keys: readonly string[]) => nodeId(bp.id, pool, g.system, keys);
-  if (m[3] === undefined) return { pool, group: true as const };
+  if (m[3] === undefined) return { pool, group: true as const, id: idOf([]) };
   const path: BlueprintNode[] = [];
   const kids = (m[4] ?? "").split("/children/").slice(1).map(Number);
   let n = g.sources[Number(m[3])];
@@ -70,12 +70,12 @@ function placeOf(bp: Blueprint, where: string) {
   };
 }
 
-/** The node ids of the draft's pending places (a group's place has none). */
+/** The node ids of the draft's pending places, a group's as `<number>/<pool>/<system>`. */
 export const pendingIds = (bp: Blueprint): Set<string> =>
   new Set(
     (bp.pending ?? []).flatMap((p) => {
       const at = placeOf(bp, p.where);
-      return at && !at.group ? [at.id] : [];
+      return at ? [at.id] : [];
     }),
   );
 
@@ -114,8 +114,7 @@ export function pendingCover(bp: Blueprint, character: number): Cover {
       w === id || (item(w) && !w.slice(id.length).includes("/"));
     const below = (w: string) =>
       !self(w) && (w.startsWith(`${id}/`) || item(w));
-    if (p.kind === "leaf")
-      return (e) => e.kind === "leafType" && self(e.where);
+    if (p.kind === "leaf") return (e) => e.kind === "leafType" && self(e.where);
     return (e) =>
       !DECLARED.has(e.kind) &&
       ((below(e.where) && !AT_PARENT.has(e.kind)) ||

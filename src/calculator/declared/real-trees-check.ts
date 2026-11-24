@@ -123,7 +123,8 @@ function joined(runs: readonly LockResult[]): LockResult {
       out.counts[k] += r.counts[k];
     out.closedAt.push(...r.closedAt);
   }
-  return { ok: runs.every((r) => r.ok), ...out };
+  const pendingAt = [...new Set(runs.flatMap((r) => r.pendingAt))];
+  return { ok: runs.every((r) => r.ok), ...out, pendingAt };
 }
 
 /** A number locked over each run: recorded for the run's character, its answer key taken, then the lock. */
@@ -153,7 +154,7 @@ export function lockNumber(
     if ("error" in key) {
       const out = emptyOut();
       out.errors.push({ kind: "rootForm", where: "root", got: key.reason });
-      return { ok: false, ...out };
+      return { ok: false, ...out, pendingAt: [] };
     }
     t = performance.now();
     const lock = lockBlueprint({
