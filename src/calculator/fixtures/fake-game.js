@@ -1420,6 +1420,15 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeAuthor = new StringMap();
     d.TreeAuthor.h.v = state().TreeStats.h.a * 5;
   };
+  // Spec 010 (T208): a block that writes the cache in a part every argument runs, as the game's TalentCalc writes
+  // DNSM.BoxRewards for any argument up to 0; what follows depends on the argument.
+  Blocks._customBlock_TreeAuthorAny = function (k) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeBase * 3 + state().TreeStats.h.a;
+    d.TreeAuthorOwn = new StringMap();
+    d.TreeAuthorOwn.h.v = k * 2;
+  };
   Blocks._customBlock_TreeAuthorRead = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v + state().TreeCapped
