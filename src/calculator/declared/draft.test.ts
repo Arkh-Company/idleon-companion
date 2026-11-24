@@ -19,7 +19,7 @@ import {
   recorded,
 } from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
-import { draftPlan, stepsPath } from "./real-trees-run.ts";
+import { draftPath, draftPlan, stepsPath } from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
 
 const ROOT = inventedBlueprint("decl-chain").root;
@@ -283,6 +283,13 @@ test("the guide of the steps goes only to TREES_OUT, with the recorded values; t
   expect(json).not.toContain(String(key.final));
   expect(json).not.toContain(String(key.pools[0]?.value));
   expect(json).not.toMatch(/"(t|e|v|o|steps|value)":|\s[-+*/]\s|Math\./);
+});
+
+test("the draft itself goes only to TREES_OUT, never over the repository's blueprint (T190)", () => {
+  expect(draftPath("C:/out", "stats-drop-rate")).toMatch(
+    /out[\\/]draft[\\/]stats-drop-rate\.blueprint\.json$/,
+  );
+  expect(() => draftPath("C:/out", "../x")).toThrow();
 });
 
 test("the guide writes a recorded value with no number as its text: a call with no value is `undefined`", () => {
