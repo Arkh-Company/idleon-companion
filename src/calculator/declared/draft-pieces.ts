@@ -64,12 +64,19 @@ export function branchOf(
   return null;
 }
 
-/** A key of at most 7 letters, unique among its siblings: the slug's start, then a cut start and -2, -3… */
+/**
+ * A key of at most 7 letters, unique among its siblings: the slug's start, then a cut start and -b, -c… (letters: a
+ * number in a key reads as one of the call's arguments).
+ */
 export function shortKey(taken: Set<string>, text: string): string {
   const cut = (s: string, n: number) => s.slice(0, n).replace(/-+$/, "");
   const base = cut(slug(text), 7) || "part";
+  // the n-th of a, b, …, z, aa, ab…
+  const letters = (n: number): string =>
+    (n > 26 ? letters(Math.floor((n - 1) / 26)) : "") +
+    String.fromCharCode(97 + ((n - 1) % 26));
   let k = base;
-  for (let n = 2; taken.has(k); n++) k = `${cut(base, 4)}-${String(n)}`;
+  for (let n = 2; taken.has(k); n++) k = `${cut(base, 4)}-${letters(n)}`;
   taken.add(k);
   return k;
 }
