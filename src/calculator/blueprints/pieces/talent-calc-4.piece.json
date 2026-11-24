@@ -1,0 +1,46 @@
+{
+  "id": "talent-calc-4",
+  "params": [],
+  "children": [
+    {
+      "key": "post-of",
+      "name": null,
+      "ref": {
+        "call": "PostOfficeINFO",
+        "args": ["BonusAmount", 11, "0"]
+      },
+      "children": [
+        {
+          "key": "post-of",
+          "name": "Non Predatory Loot Box (Post Office box)",
+          "nameProof": {
+            "names": "PostOfficeInfo[3][11][0]"
+          },
+          "ref": {
+            "read": "PostOfficeInfo[3][11][0]"
+          }
+        },
+        {
+          "key": "custom",
+          "name": "Non Predatory Loot Box: first curve number of bonus 1",
+          "nameProof": {
+            "names": "CustomLists.PostOffUpgradeInfo[11][1]"
+          },
+          "ref": {
+            "read": "CustomLists.PostOffUpgradeInfo[11][1]"
+          }
+        },
+        {
+          "key": "cust-b",
+          "name": "Non Predatory Loot Box: second curve number of bonus 1",
+          "nameProof": {
+            "names": "CustomLists.PostOffUpgradeInfo[11][2]"
+          },
+          "ref": {
+            "read": "CustomLists.PostOffUpgradeInfo[11][2]"
+          }
+        }
+      ]
+    }
+  ]
+}

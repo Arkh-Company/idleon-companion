@@ -1,0 +1,21 @@
+{
+  "id": "all-talent-lv",
+  "params": ["talent"],
+  "children": [
+    {
+      "key": "skill-l",
+      "name": null,
+      "ref": {
+        "read": "SkillLevels[{talent}]"
+      }
+    },
+    {
+      "key": "run-cod",
+      "name": null,
+      "ref": {
+        "call": "RunCodeOfTypeXforThingY",
+        "args": ["TalentBannedforAllLV", "{talent}"]
+      }
+    }
+  ]
+}
