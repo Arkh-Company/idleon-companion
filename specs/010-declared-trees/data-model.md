@@ -81,7 +81,7 @@ O mesmo tipo serve para a fonte de um pool, a constante solta, o filho e a folha
 | `ref` | `Ref` | Obrigatório, menos numa constante |
 | `constant` | number, opcional | Só numa constante solta de pool (o `+ 2`, o `× 1.2`); sem `ref`; folha `fixedValue` |
 | `weight` | number, opcional | Só numa fonte de Additive, quando difere do pool (a curva da LUK entra com peso 1 num pool de 0.01) |
-| `classes` | number[], opcional | Só numa fonte: os ids de classe do jogo que podem ter a fonte (FR-002a); ausente = todas |
+| `classes` | number[], opcional | Numa fonte, ou num filho de um nível de chamada que só existe em algumas classes (T211): os ids de classe do jogo que podem ter a parte (FR-002a); nas rodadas das outras classes a trava confere o valor neutro; ausente = todas |
 | `condition` | `BlueprintNode`, opcional | O que liga ou desliga o nó sem entrar na conta (`cond && (...)`, research R3); folha `condition` |
 | `termPart` | `{ system }`, opcional | Só num filho: a segunda fonte de um termo de duas fontes (FR-002b), com o sistema dela |
 | `children` | `BlueprintNode[]`, opcional | Os filhos até a folha; sem filhos, o nó é folha |
@@ -121,6 +121,8 @@ Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alche
 | `combine` | `sum` ou `product` | Como os filhos se juntam; obrigatório em todo nó com filhos dentro do pedaço, menos num nível de chamada que fecha pela própria conta gravada (o Seraph) e no pedaço de galho comum que só tem `children` (T203), que fecha pela conta gravada da chamada |
 | `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`); também num nó de receita sem `combine`, quando o rascunho escreve uma lista de leituras como filho-modelo (T202) |
 | `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
+
+**Escolha entre personagens** (research R5; T212): um nó cujo valor é o melhor dos personagens (o maior bônus de família, o `getbonus2(…,-1)`) é uma Escolha: folha `choice` quando é folha; quando é galho, a descida continua no personagem escolhido, e o ⓘ diz a escolha. O personagem escolhido sai do lugar gravado (a escrita ou a leitura que deu o valor), nunca da ordem nem do valor; sem lugar que decida, recusa com o motivo.
 
 **Lista de chamadas** (T205; Open Questions de 24/11: a lista vira um filho-modelo): `each: { calls: <Bloco>, as: <nome> }` repete o filho-modelo uma vez por chamada gravada desse bloco no nível, com `{<nome>}` no argumento que a volta do laço dá; a trava liga cada chamada pela volta do laço em que ela começou (o lugar gravado), nunca pelo valor nem pela ordem; duas chamadas na mesma volta sem lugar que as separe se recusam com o motivo.
 
