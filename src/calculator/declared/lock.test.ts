@@ -9,7 +9,7 @@ import {
   present,
   sourceOf,
 } from "./lock-fixture.ts";
-import { lockBlueprint, lockMessage } from "./lock.ts";
+import { lockBlueprint, lockMessage, lockTally } from "./lock.ts";
 import type { LockError, LockInput } from "./lock.ts";
 
 const lock = (input: LockInput) => lockBlueprint(input);
@@ -200,6 +200,32 @@ test("a blueprint with something pending is always refused with pending", () => 
   expect(out.errors).toEqual([
     { kind: "pending", where: "pools/0/groups/0/sources/0", got: "name" },
   ]);
+});
+
+test("a draft is checked where it is closed: what is pending is listed as pending, never failed by (T199)", () => {
+  const bp = inventedBlueprint("decl-chain");
+  // the arcade waits for its descent, the luck's group for its system; the best's leaf lost its kind, closed
+  delete sourceOf(bp, 0, "arcade", "arcade").children;
+  groupOf(bp, 0, "luk-stats").system = null as unknown as string;
+  delete sourceOf(bp, 0, "family-bonuses", "best", "best-lv").leaf;
+  bp.pending = [
+    { where: "pools/0/groups/2/sources/0", kind: "descend" },
+    { where: "pools/0/groups/0", kind: "system" },
+  ];
+  const out = lock(chainInput(bp));
+  expect(out.ok).toBe(false);
+  expect(out.errors).toEqual([
+    { kind: "leafType", where: "decl-chain/0/family-bonuses/best/best-lv" },
+    { kind: "pending", where: "pools/0/groups/2/sources/0", got: "descend" },
+    { kind: "pending", where: "pools/0/groups/0", got: "system" },
+  ]);
+  const { closed, closedByRecorded, leaves } = out.counts;
+  expect(lockTally(out)).toEqual({
+    passed: closed + closedByRecorded + leaves,
+    failed: 1,
+    pending: 2,
+  });
+  expect(closed + leaves).toBeGreaterThan(10);
 });
 
 test("another class's source absent from the recording is no error; present in the recording of another class it is classMismatch", () => {
