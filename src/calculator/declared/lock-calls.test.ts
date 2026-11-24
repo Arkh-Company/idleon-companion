@@ -247,3 +247,43 @@ test("a pending place below the model covers the same place below each of its ca
     ),
   ).toEqual([]);
 });
+
+/** A pool whose source `root` has the list of calls beside its TreeBase. */
+const beside = (pool: string, root: string): Blueprint => ({
+  id: "invented-calls",
+  root: { name: "Invented", ref: { call: pool, args: [0, 0, 0] } },
+  pools: [
+    {
+      kind: "additive",
+      groups: [
+        {
+          system: "cards",
+          sources: [
+            {
+              ...ribbons(root),
+              ref: { call: root, args: [] },
+              children: [
+                ...(ribbons(root).children ?? []),
+                leaf("base", "TreeBase"),
+              ],
+            },
+          ],
+        },
+        { system: "stamps", sources: [leaf("capped", "TreeCapped")] },
+      ],
+    },
+  ],
+});
+
+test("the same call twice in one place, no turn between them, is refused; in two turns of a loop it is not", () => {
+  expect(
+    lock("TreeSamePool", beside("TreeSamePool", "TreeRibbonsSame")),
+  ).toContain(
+    "invented-calls/0/cards/ribbons: duas chamadas TreeRibbon(3,0) no nível, e o lugar não as separa",
+  );
+  expect(
+    lock("TreeTurnsPool", beside("TreeTurnsPool", "TreeRibbonsTurns")).filter(
+      (m) => m.includes("duas chamadas"),
+    ),
+  ).toEqual([]);
+});

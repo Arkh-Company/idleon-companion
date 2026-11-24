@@ -2721,6 +2721,28 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeReadCallsPool = function () {
     return Blocks._customBlock_TreeReadRibbons() + state().TreeLevel;
   };
+  // ...and the same call twice in one place, no loop between them: the place does not separate them; and twice in two
+  // turns of a loop beside other parts, which the turns separate.
+  Blocks._customBlock_TreeRibbonsSame = function () {
+    return (
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(4, 0) +
+      state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeSamePool = function () {
+    return Blocks._customBlock_TreeRibbonsSame() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeRibbonsTurns = function () {
+    var t = state().TreeBase;
+    for (var i = 0; i < 3; i++)
+      t = t + Blocks._customBlock_TreeRibbon(3 + (i == 2 ? 1 : 0), 0) * 1;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsPool = function () {
+    return Blocks._customBlock_TreeRibbonsTurns() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCallsPool = function () {
     return Blocks._customBlock_TreeRibbons() + state().TreeBase;
   };
