@@ -304,6 +304,24 @@ test("another class's source absent from the recording is no error; present in t
   ]);
 });
 
+test("another class's source is not descended: below it is what its own class's character has (FR-002a)", () => {
+  // the talent's points as the twin's record: its own class's character sees the wrong child
+  const bp = inventedBlueprint("decl-chain");
+  const points = sourceOf(bp, 0, "talents", "talent", "talent", "points");
+  points.ref = { read: "TreeTwins[1]" };
+  points.leaf = "record";
+  expect(kinds(lock(chainInput(bp)).errors)).toContain("undeclaredPart");
+  // another class's character: the source is not in its tree, only its value is checked
+  expect(lock({ ...chainInput(bp), characterClass: 5 }).errors).toEqual([
+    {
+      kind: "classMismatch",
+      where: "decl-chain/0/talents/talent",
+      expected: "3",
+      got: 5,
+    },
+  ]);
+});
+
 test("another class's source the game calls with its neutral value (0 in an Additive pool) passes", () => {
   // the class-3 talent at 0 points gives 0: the game calls it for every character (spec, Open Questions 23/11)
   const [wren, wrenna] = CHARACTERS;
