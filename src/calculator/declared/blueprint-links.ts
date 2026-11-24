@@ -3,8 +3,9 @@
 // another number's tree (T200), which stays a link.
 import { IDENT, isObj, no, obj } from "./blueprint-root.ts";
 import type { BlueprintPiece, PieceArgs } from "./blueprint-types.ts";
+import { SHAPED } from "./draft-link.ts";
 import { pieceBody } from "./pieces.ts";
-import { ARG_TEXT_MAX } from "./refs.ts";
+import { ARG_TEXT_MAX, callKey } from "./refs.ts";
 
 export const SLUG = /^[a-z0-9-]{1,60}$/;
 
@@ -12,13 +13,35 @@ const isArg = (v: unknown): boolean =>
   (typeof v === "number" && Number.isFinite(v)) ||
   (typeof v === "string" && v.length <= ARG_TEXT_MAX && !v.includes("{"));
 
-/** The blueprints a link may name (T200): the one being checked, and the ids of every blueprint file. */
+/** The blueprints a link may name (T200): the one being checked, and each blueprint file's id with its root's text. */
 export interface Trees {
   own: string;
-  ids: ReadonlySet<string>;
+  roots: ReadonlyMap<string, string | null>;
 }
 
-/** A line with a link checked (T200): a ref, a blueprint's id that is not its own, and no descent of its own. */
+/** A ref's text as the file writes it: `Block(args in JSON)`, or the path. */
+const refText = (r: unknown): string | null =>
+  !isObj(r)
+    ? null
+    : typeof r.call === "string" && Array.isArray(r.args)
+      ? callKey(r.call, r.args)
+      : typeof r.read === "string"
+        ? r.read
+        : null;
+
+/** A recipe's root as the number a link opens (T200 r1): its call's text; null for a root that is not the call's value. */
+export function rootText(raw: unknown): string | null {
+  const root = isObj(raw) && isObj(raw.root) ? raw.root : null;
+  if (!root || SHAPED.some((f) => root[f] !== undefined)) return null;
+  return isObj(root.ref) && typeof root.ref.call === "string"
+    ? refText(root.ref)
+    : null;
+}
+
+/**
+ * A line with a link checked (T200): a ref, a blueprint's id that is not its own, no descent of its own, and (r1) the
+ * line is that blueprint's root: its ref has the root's text.
+ */
 export function checkTree(
   n: Record<string, unknown>,
   where: string,
@@ -34,9 +57,16 @@ export function checkTree(
     return no(where, "tree fora do slug");
   if (n.tree === trees.own)
     no(where, `a linha com link aponta para a própria receita: ${n.tree}`);
-  if (!trees.ids.has(n.tree))
+  if (!trees.roots.has(n.tree))
     no(where, `árvore que não existe em blueprints/: ${n.tree}`);
   if (n.ref === undefined) no(where, "a linha com link pede ref");
+  const root = trees.roots.get(n.tree) ?? null;
+  const line = refText(n.ref);
+  if (line !== root)
+    no(
+      where,
+      `a linha não é a raiz de ${n.tree}: ${line ?? "?"}; a raiz é ${root ?? "um valor que não é o da chamada"}`,
+    );
 }
 
 /**

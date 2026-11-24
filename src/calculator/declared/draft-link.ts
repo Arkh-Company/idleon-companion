@@ -5,7 +5,7 @@ import { refKey } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 
 // a root that is a part of its call, an item of it, the call under a marker or a routine is not the call's own value
-const SHAPED = [
+export const SHAPED = [
   "part",
   "branch",
   "item",

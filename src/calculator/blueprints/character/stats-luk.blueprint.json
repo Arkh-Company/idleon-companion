@@ -7,7 +7,7 @@
     },
     "ref": {
       "call": "TotalStats",
-      "args": ["LUK", 0, 0]
+      "args": ["LUK"]
     }
   },
   "pools": [

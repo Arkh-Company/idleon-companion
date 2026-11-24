@@ -3,6 +3,7 @@
 // one answers `unknownNumber` for its number. The `*.piece.json` (T169) are the recipe pieces the blueprints call. The
 // `*.review.json` beside them are never imported.
 import { parseBlueprint } from "./blueprint.ts";
+import { rootText } from "./blueprint-links.ts";
 import { isObj } from "./blueprint-root.ts";
 import type { Blueprint, BlueprintStage } from "./blueprint.ts";
 import { SYSTEMS } from "./systems.ts";
@@ -40,9 +41,12 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
     else if (!pieces.has(id))
       pieces.set(id, { id, params: [], pools: raw.pools });
   }
-  // a line links to another number's tree by its blueprint's id (T200), in any stage
-  const trees = new Set(
-    Object.keys(files).flatMap((f) => FILE.exec(f)?.[1] ?? []),
+  // a line links to another number's tree by its blueprint's id (T200), in any stage, and is that blueprint's root (r1)
+  const trees = new Map(
+    Object.entries(files).flatMap(([f, raw]) => {
+      const id = FILE.exec(f)?.[1];
+      return id === undefined ? [] : [[id, rootText(raw)] as const];
+    }),
   );
   for (const [file, raw] of Object.entries(files)) {
     const fileId = FILE.exec(file)?.[1];

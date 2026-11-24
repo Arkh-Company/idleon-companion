@@ -292,8 +292,8 @@ export function parseBlueprint(
     systemIds: ReadonlySet<string>;
     /** The recipe pieces by their id (T169): a node may call one. */
     pieces?: ReadonlyMap<string, unknown>;
-    /** The ids of every blueprint file (T200): a line may link to another one's tree. */
-    trees?: ReadonlySet<string>;
+    /** Each blueprint file's id with its root's text (T200, blueprint-links.ts rootText): a line may link to its tree. */
+    trees?: ReadonlyMap<string, string | null>;
   },
 ):
   | { ok: true; stage: BlueprintStage; blueprint: Blueprint }
@@ -329,7 +329,7 @@ export function parseBlueprint(
         pending.some((p) => p.kind === kind && p.where === where),
       places: new Set(),
       pieces: ctx.pieces ?? new Map(),
-      trees: { own: ctx.fileId, ids: ctx.trees ?? new Set() },
+      trees: { own: ctx.fileId, roots: ctx.trees ?? new Map() },
       stack: [],
     };
     checkPools(bp.pools, w);
