@@ -30,7 +30,8 @@ export type LockErrorKind =
   | "pending"
   | "classMismatch"
   | "rootForm"
-  | "openingRefused";
+  | "openingRefused"
+  | "characterWritten";
 
 export interface LockError {
   kind: LockErrorKind;
@@ -128,6 +129,8 @@ export function lockMessage(e: LockError): string {
       return e.where === "root" ? fmt(e.got) : `${level}: ${fmt(e.got)}`;
     case "openingRefused":
       return `${level}: ${fmt(e.got)}`;
+    case "characterWritten":
+      return `índice do personagem por extenso: ${level}: ${fmt(e.got)} vem do personagem; a receita escreve "{character}"`;
   }
 }
 

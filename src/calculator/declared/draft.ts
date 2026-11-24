@@ -24,6 +24,8 @@ import type {
 } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
+import { characterRef } from "./character-args.ts";
+import { sourceClass } from "./draft-class.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
@@ -58,6 +60,8 @@ export function gameList(
     return [];
   }
 }
+
+export { sourceClass, talentClass } from "./draft-class.ts";
 
 export type DraftNode = Omit<BlueprintNode, "name" | "children"> & {
   /** Null where `pending` says `name`. */
@@ -255,33 +259,6 @@ export function provenName(
 export const partName = (w: Walked, character: number) =>
   provenName(codeOf(refOf(w, character), w.key));
 
-/** 008 catalogo-de-arvores.md (provada): class c's tab is TalentOrder[15×(c−1)..+14]; the star talents [615..679]. */
-const TAB = 15;
-const STAR = 615;
-export function talentClass(
-  order: readonly unknown[],
-  talent: number,
-): number | null {
-  const at = order.flatMap((t, i) =>
-    (typeof t === "number" || typeof t === "string") && Number(t) === talent
-      ? [i]
-      : [],
-  );
-  const [i] = at;
-  // a talent in two places, or a star talent (any class), has no class of its own: never one by the order
-  return at.length === 1 && i !== undefined && i < STAR
-    ? Math.floor(i / TAB) + 1
-    : null;
-}
-/** The class of a source whose call is a talent (N.js GetTalentNumber(mode, talent)), or null. */
-export function sourceClass(
-  call: RecNode | undefined,
-  order: readonly unknown[],
-): number | null {
-  const talent = call?.b === "GetTalentNumber" ? call.a[1] : undefined;
-  return typeof talent === "number" ? talentClass(order, talent) : null;
-}
-
 const slug = (text: string): string =>
   text
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
@@ -326,8 +303,11 @@ export function draftBlueprint(
     taken: Set<string>,
     extra: Partial<DraftNode> = {},
   ): DraftNode => {
-    const ref = refOf(w, dc.character);
-    const named = provenName(codeOf(ref, w.key));
+    const code = refOf(w, dc.character);
+    // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
+    const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
+    // the names table goes by the game's own arguments
+    const named = provenName(codeOf(code, w.key));
     if (!named) wait(where, "name");
     if (w.termPart) wait(where, "system");
     const own = new Set<string>();
@@ -346,8 +326,8 @@ export function draftBlueprint(
         : {}),
     };
     if (!Array.isArray(w.below)) wait(where, w.below);
-    // an argument equal to the character's index may be the character or a number that happens to be it: the agent
-    // writes `{character}` or keeps it (research R5); the draft does not decide by the value
+    // any other argument equal to the character's index may be the character or a number that happens to be it: the
+    // agent writes `{character}` or keeps it (research R5); the draft does not decide by the value
     if (
       w.below !== "descend" &&
       "call" in ref &&

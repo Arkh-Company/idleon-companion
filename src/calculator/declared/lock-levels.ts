@@ -14,6 +14,7 @@ import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
 import { onlyRead } from "./cache-author.ts";
+import { characterArgs } from "./character-args.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
@@ -31,7 +32,7 @@ import {
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
-import { matchRead, refKey } from "./refs.ts";
+import { CHARACTER, matchRead, refKey } from "./refs.ts";
 
 export interface LevelContext {
   rec: Recording;
@@ -275,13 +276,27 @@ function descend(
   ctx: LevelContext,
   out: LevelOut,
 ): void {
+  const { ref } = node;
+  // a call's argument the game gave from the character's index is `{character}`, never written out (research R5)
+  if (
+    ctx.ops &&
+    ref !== undefined &&
+    "call" in ref &&
+    callRef(level.scope) === refKey(ref, ctx.character)
+  )
+    for (const i of characterArgs(ctx.rec, ctx.ops, level.scope))
+      if (ref.args[i] !== CHARACTER)
+        out.errors.push({
+          kind: "characterWritten",
+          where: ctx.where,
+          got: `o argumento ${String(i + 1)} de ${ref.call}`,
+        });
   // a piece's line closes by the piece's count or recipe (lock-pieces.ts), never by an opening of the recording
   if (node.combine || node.pools) {
     lockPiece(node, level, ctx, out);
     return;
   }
   const children = node.children ?? [];
-  const { ref } = node;
   // a level the recording opens (level-openings.ts); a cache's read opens as a leaf too: the cache is never a leaf
   const open =
     !ctx.noOpen && (children.length > 0 || (ref && "read" in ref))
