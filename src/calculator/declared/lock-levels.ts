@@ -24,7 +24,7 @@ import {
   saveChild,
   termExpr,
 } from "./lock-parts.ts";
-import { modelChildren, sameCalls } from "./lock-each.ts";
+import { listCalls, modelChildren } from "./lock-each.ts";
 import { closeLevel } from "./lock-close.ts";
 import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
@@ -192,11 +192,12 @@ export function lockLevel(
   const { open } = level;
   const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
   // a model child stands for one child per part its list matches (T202), or per call of its block (T205)
-  const children = modelChildren(declared, each, parts, ctx);
-  const twice =
+  const listed =
     each && "calls" in each
-      ? sameCalls(declared, each, level.scope, ctx.rec)
-      : [];
+      ? listCalls(declared, each, level.scope, ctx.rec)
+      : { times: new Map<string, number>(), refused: [] };
+  const children = modelChildren(declared, each, parts, ctx, listed.times);
+  const twice = listed.refused;
   for (const k of twice)
     out.errors.push({
       kind: "rootForm",
