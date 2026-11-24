@@ -182,11 +182,27 @@
               "children": [
                 {
                   "key": "tal-21",
-                  "name": null,
+                  "name": "F'Luk'Ey Fabrics",
                   "ref": {
                     "call": "GetTalentNumber",
                     "args": [1, 21]
-                  }
+                  },
+                  "nameProof": {
+                    "names": "GetTalentNumber(1, 21)"
+                  },
+                  "children": [
+                    {
+                      "key": "skill-levels-21",
+                      "name": "F'Luk'Ey fabrics level",
+                      "nameProof": {
+                        "names": "SkillLevels[21]"
+                      },
+                      "ref": {
+                        "read": "SkillLevels[21]"
+                      },
+                      "leaf": "investedPoints"
+                    }
+                  ]
                 },
                 {
                   "key": "stamp-pct",
@@ -200,7 +216,43 @@
                   },
                   "termPart": {
                     "system": "stamps"
-                  }
+                  },
+                  "children": [
+                    {
+                      "key": "dummy-numbers-stat-manager-stamp-total-bonus-of-type-x",
+                      "name": "Stamp total so far",
+                      "nameProof": {
+                        "names": "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X"
+                      },
+                      "ref": {
+                        "read": "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X"
+                      }
+                    },
+                    {
+                      "key": "ninja-pristine-bon-17-0",
+                      "name": "Liqorice Rolle",
+                      "nameProof": {
+                        "names": "Ninja(\"PristineBon\", 17, 0)"
+                      },
+                      "ref": {
+                        "call": "Ninja",
+                        "args": ["PristineBon", 17, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "custom-maps-nj-eq-nj-tr-p17-3",
+                          "name": "Liqorice Rolle base bonus",
+                          "nameProof": {
+                            "names": "CustomMaps.NjEQ.NjTrP17[3]"
+                          },
+                          "ref": {
+                            "read": "CustomMaps.NjEQ.NjTrP17[3]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -230,14 +282,30 @@
                 },
                 {
                   "key": "tal-36",
-                  "name": null,
+                  "name": "Clever Clover Obols",
                   "ref": {
                     "call": "GetTalentNumber",
                     "args": [1, 36]
                   },
                   "termPart": {
                     "system": "talents"
-                  }
+                  },
+                  "nameProof": {
+                    "names": "GetTalentNumber(1, 36)"
+                  },
+                  "children": [
+                    {
+                      "key": "skill-levels-36",
+                      "name": "Clever clover obols level",
+                      "nameProof": {
+                        "names": "SkillLevels[36]"
+                      },
+                      "ref": {
+                        "read": "SkillLevels[36]"
+                      },
+                      "leaf": "investedPoints"
+                    }
+                  ]
                 },
                 {
                   "key": "gaming-su",
@@ -475,7 +543,17 @@
                       "ref": {
                         "call": "Companions",
                         "args": [1]
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "actor-events-577-init",
+                          "name": null,
+                          "ref": {
+                            "call": "ActorEvents_577_init",
+                            "args": []
+                          }
+                        }
+                      ]
                     },
                     {
                       "key": "div-bon-8",
@@ -634,7 +712,20 @@
                       "ref": {
                         "call": "GetSetBonus",
                         "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                          "name": "Kattlekruk Set",
+                          "nameProof": {
+                            "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                          },
+                          "ref": {
+                            "call": "GetSetBonus",
+                            "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                          }
+                        }
+                      ]
                     },
                     {
                       "key": "arcane-ar",
@@ -1173,7 +1264,32 @@
                           "ref": {
                             "call": "Sailing",
                             "args": ["ArtifactBonus", -1, 0]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "dnsm-sailz-arti-bonus-l-31",
+                              "name": "The Shim Lantern (artifact)",
+                              "nameProof": {
+                                "names": "DNSM.SailzArtiBonusL[31]"
+                              },
+                              "ref": {
+                                "read": "DNSM.SailzArtiBonusL[31]"
+                              },
+                              "children": [
+                                {
+                                  "key": "sailing-artifact-bonus-1-0",
+                                  "name": "Moai Head",
+                                  "nameProof": {
+                                    "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Sailing",
+                                    "args": ["ArtifactBonus", -1, 0]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     }
@@ -1575,7 +1691,32 @@
                       "ref": {
                         "call": "Sailing",
                         "args": ["ArtifactBonus", -1, 0]
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "dnsm-sailz-arti-bonus-l-16",
+                          "name": "Chilled Yarn (artifact)",
+                          "nameProof": {
+                            "names": "DNSM.SailzArtiBonusL[16]"
+                          },
+                          "ref": {
+                            "read": "DNSM.SailzArtiBonusL[16]"
+                          },
+                          "children": [
+                            {
+                              "key": "sailing-artifact-bonus-1-0",
+                              "name": "Moai Head",
+                              "nameProof": {
+                                "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                              },
+                              "ref": {
+                                "call": "Sailing",
+                                "args": ["ArtifactBonus", -1, 0]
+                              }
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 },
@@ -1753,7 +1894,17 @@
                   "ref": {
                     "call": "Companions",
                     "args": [27]
-                  }
+                  },
+                  "children": [
+                    {
+                      "key": "actor-events-577-init",
+                      "name": null,
+                      "ref": {
+                        "call": "ActorEvents_577_init",
+                        "args": []
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -1782,7 +1933,264 @@
                   "ref": {
                     "call": "Summoning2",
                     "args": ["OwlBonuses", 5, 0]
-                  }
+                  },
+                  "children": [
+                    {
+                      "key": "summoning2-owl-bonuses-5-0",
+                      "name": "Shiny Feathers",
+                      "nameProof": {
+                        "names": "Summoning2(\"OwlBonuses\", 5, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning2",
+                        "args": ["OwlBonuses", 5, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "thingies-legend-pts-bonus-26-0",
+                          "name": "Furry Friends Forever",
+                          "nameProof": {
+                            "names": "Thingies(\"LegendPTS_bonus\", 26, 0)"
+                          },
+                          "ref": {
+                            "call": "Thingies",
+                            "args": ["LegendPTS_bonus", 26, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "spelunk-18-26",
+                              "name": "Furry Friends Forever level",
+                              "nameProof": {
+                                "names": "Spelunk[18][26]"
+                              },
+                              "ref": {
+                                "read": "Spelunk[18][26]"
+                              }
+                            },
+                            {
+                              "key": "custom-lists-legend-talents-26-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomLists.LegendTalents[26][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "companions-51",
+                          "name": "Santas Little Helper",
+                          "nameProof": {
+                            "names": "Companions(51)"
+                          },
+                          "ref": {
+                            "call": "Companions",
+                            "args": [51]
+                          },
+                          "children": [
+                            {
+                              "key": "actor-events-577-init",
+                              "name": null,
+                              "ref": {
+                                "call": "ActorEvents_577_init",
+                                "args": []
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "summoning-owl-megafeather-1-0",
+                          "name": "Megafeather 2 from Orion",
+                          "nameProof": {
+                            "names": "Summoning(\"OwlMegafeather\", 1, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["OwlMegafeather", 1, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summoning2-owl-megafeather-1-0",
+                              "name": "Megafeather 2 from Orion",
+                              "nameProof": {
+                                "names": "Summoning2(\"OwlMegafeather\", 1, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["OwlMegafeather", 1, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-262",
+                                  "name": "Megafeathers from Orion",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[262]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[262]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "summoning-owl-megafeather-3-0",
+                          "name": "Megafeather 4 from Orion",
+                          "nameProof": {
+                            "names": "Summoning(\"OwlMegafeather\", 3, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["OwlMegafeather", 3, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summoning2-owl-megafeather-3-0",
+                              "name": "Megafeather 4 from Orion",
+                              "nameProof": {
+                                "names": "Summoning2(\"OwlMegafeather\", 3, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["OwlMegafeather", 3, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-262",
+                                  "name": "Megafeathers from Orion",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[262]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[262]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "summoning-owl-megafeather-5-0",
+                          "name": "Megafeather 6 from Orion",
+                          "nameProof": {
+                            "names": "Summoning(\"OwlMegafeather\", 5, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["OwlMegafeather", 5, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summoning2-owl-megafeather-5-0",
+                              "name": "Megafeather 6 from Orion",
+                              "nameProof": {
+                                "names": "Summoning2(\"OwlMegafeather\", 5, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["OwlMegafeather", 5, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-262",
+                                  "name": "Megafeathers from Orion",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[262]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[262]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "summoning-owl-megafeather-7-0",
+                          "name": "Megafeather 8 from Orion",
+                          "nameProof": {
+                            "names": "Summoning(\"OwlMegafeather\", 7, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["OwlMegafeather", 7, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summoning2-owl-megafeather-7-0",
+                              "name": "Megafeather 8 from Orion",
+                              "nameProof": {
+                                "names": "Summoning2(\"OwlMegafeather\", 7, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["OwlMegafeather", 7, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-262",
+                                  "name": "Megafeathers from Orion",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[262]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[262]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "summoning-owl-megafeather-9-0",
+                          "name": "Megafeather 10 from Orion",
+                          "nameProof": {
+                            "names": "Summoning(\"OwlMegafeather\", 9, 0)"
+                          },
+                          "ref": {
+                            "call": "Summoning",
+                            "args": ["OwlMegafeather", 9, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "summoning2-owl-megafeather-9-0",
+                              "name": "Megafeather 10 from Orion",
+                              "nameProof": {
+                                "names": "Summoning2(\"OwlMegafeather\", 9, 0)"
+                              },
+                              "ref": {
+                                "call": "Summoning2",
+                                "args": ["OwlMegafeather", 9, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-262",
+                                  "name": "Megafeathers from Orion",
+                                  "nameProof": {
+                                    "names": "OptionsListAccount[262]"
+                                  },
+                                  "ref": {
+                                    "read": "OptionsListAccount[262]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "options-list-account-255",
+                          "name": "Bonuses of Orion level (Orion)",
+                          "nameProof": {
+                            "names": "OptionsListAccount[255]"
+                          },
+                          "ref": {
+                            "read": "OptionsListAccount[255]"
+                          }
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -2045,7 +2453,17 @@
                       "ref": {
                         "call": "Companions",
                         "args": [0]
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "actor-events-577-init",
+                          "name": null,
+                          "ref": {
+                            "call": "ActorEvents_577_init",
+                            "args": []
+                          }
+                        }
+                      ]
                     },
                     {
                       "key": "holes-cos",
@@ -2226,7 +2644,32 @@
                               "ref": {
                                 "call": "Sailing",
                                 "args": ["ArtifactBonus", -1, 0]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "dnsm-sailz-arti-bonus-l-32",
+                                  "name": "The Winz Lantern (artifact)",
+                                  "nameProof": {
+                                    "names": "DNSM.SailzArtiBonusL[32]"
+                                  },
+                                  "ref": {
+                                    "read": "DNSM.SailzArtiBonusL[32]"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "sailing-artifact-bonus-1-0",
+                                      "name": "Moai Head",
+                                      "nameProof": {
+                                        "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "Sailing",
+                                        "args": ["ArtifactBonus", -1, 0]
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         },
@@ -2423,7 +2866,17 @@
                                   "ref": {
                                     "call": "Companions",
                                     "args": [27]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "actor-events-577-init",
+                                      "name": null,
+                                      "ref": {
+                                        "call": "ActorEvents_577_init",
+                                        "args": []
+                                      }
+                                    }
+                                  ]
                                 }
                               ]
                             },
@@ -2540,7 +2993,32 @@
                           "ref": {
                             "call": "Sailing",
                             "args": ["ArtifactBonus", -1, 0]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "dnsm-sailz-arti-bonus-l-28",
+                              "name": "Socrates (artifact)",
+                              "nameProof": {
+                                "names": "DNSM.SailzArtiBonusL[28]"
+                              },
+                              "ref": {
+                                "read": "DNSM.SailzArtiBonusL[28]"
+                              },
+                              "children": [
+                                {
+                                  "key": "sailing-artifact-bonus-1-0",
+                                  "name": "Moai Head",
+                                  "nameProof": {
+                                    "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Sailing",
+                                    "args": ["ArtifactBonus", -1, 0]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     },
@@ -2615,7 +3093,17 @@
                           "ref": {
                             "call": "Companions",
                             "args": [174]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "actor-events-577-init",
+                              "name": null,
+                              "ref": {
+                                "call": "ActorEvents_577_init",
+                                "args": []
+                              }
+                            }
+                          ]
                         },
                         {
                           "key": "fambo-66",
@@ -2870,7 +3358,17 @@
                                   "ref": {
                                     "call": "Companions",
                                     "args": [1]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "actor-events-577-init",
+                                      "name": null,
+                                      "ref": {
+                                        "call": "ActorEvents_577_init",
+                                        "args": []
+                                      }
+                                    }
+                                  ]
                                 },
                                 {
                                   "key": "div-bon-8",
@@ -3029,7 +3527,25 @@
                                   "ref": {
                                     "call": "GetSetBonus",
                                     "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                                      "name": "Kattlekruk Set",
+                                      "nameProof": {
+                                        "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "GetSetBonus",
+                                        "args": [
+                                          "KATTLEKRUK_SET",
+                                          "Bonus",
+                                          0,
+                                          0
+                                        ]
+                                      }
+                                    }
+                                  ]
                                 },
                                 {
                                   "key": "arcane-ar",
@@ -3279,7 +3795,32 @@
                                   "ref": {
                                     "call": "Sailing",
                                     "args": ["ArtifactBonus", -1, 0]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "dnsm-sailz-arti-bonus-l-16",
+                                      "name": "Chilled Yarn (artifact)",
+                                      "nameProof": {
+                                        "names": "DNSM.SailzArtiBonusL[16]"
+                                      },
+                                      "ref": {
+                                        "read": "DNSM.SailzArtiBonusL[16]"
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "sailing-artifact-bonus-1-0",
+                                          "name": "Moai Head",
+                                          "nameProof": {
+                                            "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Sailing",
+                                            "args": ["ArtifactBonus", -1, 0]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             },
@@ -3329,7 +3870,614 @@
                               "ref": {
                                 "call": "TalentCalc",
                                 "args": [-6]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "summoning2-bonus-multi-cook-64-0",
+                                  "name": "Yumi Peachring",
+                                  "nameProof": {
+                                    "names": "Summoning2(\"BonusMultiCook\", 64, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning2",
+                                    "args": ["BonusMultiCook", 64, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "cook-master-0-64",
+                                      "name": "Yumi Peachring Cooking Master level",
+                                      "nameProof": {
+                                        "names": "CookMaster[0][64]"
+                                      },
+                                      "ref": {
+                                        "read": "CookMaster[0][64]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "cooking-r-cooking-meal-bonus-multioo-0-0",
+                                  "name": "Meal bonus multi",
+                                  "nameProof": {
+                                    "names": "CookingR(\"CookingMealBonusMultioo\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "CookingR",
+                                    "args": ["CookingMealBonusMultioo", 0, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "mainframe-bonus-116",
+                                      "name": "Black Diamond Rhinestone",
+                                      "nameProof": {
+                                        "names": "MainframeBonus(116)"
+                                      },
+                                      "ref": {
+                                        "call": "MainframeBonus",
+                                        "args": [116]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "talent-calc-7",
+                                          "name": "Lab bonuses (all)",
+                                          "nameProof": {
+                                            "names": "TalentCalc(-7)"
+                                          },
+                                          "ref": {
+                                            "call": "TalentCalc",
+                                            "args": [-7]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "breeding-shiny-bonus-s-nah-20-1",
+                                      "name": "Bonuses from All Meals",
+                                      "nameProof": {
+                                        "names": "Breeding(\"ShinyBonusS\", \"Nah\", 20, -1)"
+                                      },
+                                      "ref": {
+                                        "call": "Breeding",
+                                        "args": ["ShinyBonusS", "Nah", 20, -1]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "breeding-shiny-bonus-s-nah-0-1",
+                                          "name": "Drop Rate",
+                                          "nameProof": {
+                                            "names": "Breeding(\"ShinyBonusS\", \"Nah\", 0, -1)"
+                                          },
+                                          "ref": {
+                                            "call": "Breeding",
+                                            "args": [
+                                              "ShinyBonusS",
+                                              "Nah",
+                                              0,
+                                              -1
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "summoning-win-bonus-26-0",
+                                      "name": "Meal Bonuses",
+                                      "nameProof": {
+                                        "names": "Summoning(\"WinBonus\", 26, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "Summoning",
+                                        "args": ["WinBonus", 26, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "dnsm-summ-win-bonus-26",
+                                          "name": "Meal Bonuses",
+                                          "nameProof": {
+                                            "names": "DNSM.SummWinBonus[26]"
+                                          },
+                                          "ref": {
+                                            "read": "DNSM.SummWinBonus[26]"
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "summoning-win-bonus-18-0",
+                                              "name": "All Stat",
+                                              "nameProof": {
+                                                "names": "Summoning(\"WinBonus\", 18, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "Summoning",
+                                                "args": ["WinBonus", 18, 0]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "ninja-pristine-bon-8-0",
+                                          "name": "Crystal Comb",
+                                          "nameProof": {
+                                            "names": "Ninja(\"PristineBon\", 8, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Ninja",
+                                            "args": ["PristineBon", 8, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-maps-nj-eq-nj-tr-p8-3",
+                                              "name": "Crystal Comb base bonus",
+                                              "nameProof": {
+                                                "names": "CustomMaps.NjEQ.NjTrP8[3]"
+                                              },
+                                              "ref": {
+                                                "read": "CustomMaps.NjEQ.NjTrP8[3]"
+                                              },
+                                              "leaf": "fixedValue"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "gem-items-purchased-11",
+                                          "name": "Gem shop purchase 11",
+                                          "nameProof": {
+                                            "names": "GemItemsPurchased[11]"
+                                          },
+                                          "ref": {
+                                            "read": "GemItemsPurchased[11]"
+                                          }
+                                        },
+                                        {
+                                          "key": "sailing-artifact-bonus-32-0",
+                                          "name": "The Winz Lantern",
+                                          "nameProof": {
+                                            "names": "Sailing(\"ArtifactBonus\", 32, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Sailing",
+                                            "args": ["ArtifactBonus", 32, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "sailing-artifact-bonus-1-0",
+                                              "name": "Moai Head",
+                                              "nameProof": {
+                                                "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "Sailing",
+                                                "args": ["ArtifactBonus", -1, 0]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "dnsm-sailz-arti-bonus-l-32",
+                                                  "name": "The Winz Lantern (artifact)",
+                                                  "nameProof": {
+                                                    "names": "DNSM.SailzArtiBonusL[32]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "DNSM.SailzArtiBonusL[32]"
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "sailing-artifact-bonus-1-0",
+                                                      "name": "Moai Head",
+                                                      "nameProof": {
+                                                        "names": "Sailing(\"ArtifactBonus\", -1, 0)"
+                                                      },
+                                                      "ref": {
+                                                        "call": "Sailing",
+                                                        "args": [
+                                                          "ArtifactBonus",
+                                                          -1,
+                                                          0
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "tasks-2-5-4",
+                                          "name": "Merit shop: Winner's Bonuses from Summoning",
+                                          "nameProof": {
+                                            "names": "Tasks[2][5][4]"
+                                          },
+                                          "ref": {
+                                            "read": "Tasks[2][5][4]"
+                                          }
+                                        },
+                                        {
+                                          "key": "achieve-status-379",
+                                          "name": "Spectre Stars",
+                                          "nameProof": {
+                                            "names": "AchieveStatus(379)"
+                                          },
+                                          "ref": {
+                                            "call": "AchieveStatus",
+                                            "args": [379]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "achieve-reg-379",
+                                              "name": "Spectre Stars (achievement)",
+                                              "nameProof": {
+                                                "names": "AchieveReg[379]"
+                                              },
+                                              "ref": {
+                                                "read": "AchieveReg[379]"
+                                              },
+                                              "leaf": "condition"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "achieve-status-373",
+                                          "name": "Regalis My Beloved",
+                                          "nameProof": {
+                                            "names": "AchieveStatus(373)"
+                                          },
+                                          "ref": {
+                                            "call": "AchieveStatus",
+                                            "args": [373]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "achieve-reg-373",
+                                              "name": "Regalis My Beloved (achievement)",
+                                              "nameProof": {
+                                                "names": "AchieveReg[373]"
+                                              },
+                                              "ref": {
+                                                "read": "AchieveReg[373]"
+                                              },
+                                              "leaf": "condition"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "summoning-win-bonus-31-0",
+                                          "name": "Winner Bonuses",
+                                          "nameProof": {
+                                            "names": "Summoning(\"WinBonus\", 31, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Summoning",
+                                            "args": ["WinBonus", 31, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "summoning-win-bonus-18-0",
+                                              "name": "All Stat",
+                                              "nameProof": {
+                                                "names": "Summoning(\"WinBonus\", 18, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "Summoning",
+                                                "args": ["WinBonus", 18, 0]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-emperor-bon-8-0",
+                                          "name": "Summoning Winner Bonuses",
+                                          "nameProof": {
+                                            "names": "Thingies(\"EmperorBon\", 8, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["EmperorBon", 8, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "dnsm-emperor-bon-8",
+                                              "name": "Summoning Winner Bonuses",
+                                              "nameProof": {
+                                                "names": "DNSM.EmperorBon[8]"
+                                              },
+                                              "ref": {
+                                                "read": "DNSM.EmperorBon[8]"
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "thingies-emperor-bon-8-0",
+                                                  "name": "Summoning Winner Bonuses",
+                                                  "nameProof": {
+                                                    "names": "Thingies(\"EmperorBon\", 8, 0)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "Thingies",
+                                                    "args": ["EmperorBon", 8, 0]
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "arcane-type-arcane-upg-bonus-48-0",
+                                              "name": "Vicar of the Emperor",
+                                              "nameProof": {
+                                                "names": "ArcaneType(\"ArcaneUpgBonus\", 48, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "ArcaneType",
+                                                "args": [
+                                                  "ArcaneUpgBonus",
+                                                  48,
+                                                  0
+                                                ]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "arcane-48",
+                                                  "name": "Vicar of the Emperor level",
+                                                  "nameProof": {
+                                                    "names": "Arcane[48]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "Arcane[48]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "custom-lists-arcane-upg-48-5",
+                                                  "name": "Bonus per level (Arcane)",
+                                                  "nameProof": {
+                                                    "names": "CustomLists.ArcaneUpg[48][5]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "CustomLists.ArcaneUpg[48][5]"
+                                                  },
+                                                  "leaf": "fixedValue"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "arcade-bonus-51",
+                                              "name": "Arcade: Emperor Bonuses",
+                                              "nameProof": {
+                                                "names": "ArcadeBonus(51)"
+                                              },
+                                              "ref": {
+                                                "call": "ArcadeBonus",
+                                                "args": [51]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "arcade-upg-51",
+                                                  "name": "Arcade Emperor Bonuses level",
+                                                  "nameProof": {
+                                                    "names": "ArcadeUpg[51]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "ArcadeUpg[51]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "companions-27",
+                                                  "name": "Spirit Reindeer",
+                                                  "nameProof": {
+                                                    "names": "Companions(27)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "Companions",
+                                                    "args": [27]
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "actor-events-577-init",
+                                                      "name": null,
+                                                      "ref": {
+                                                        "call": "ActorEvents_577_init",
+                                                        "args": []
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "jelly-operation-ro-g-bonus-qty-28-0",
+                                              "name": "Strabbury",
+                                              "nameProof": {
+                                                "names": "JellyOperation(\"RoG_BonusQTY\", 28, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "JellyOperation",
+                                                "args": ["RoG_BonusQTY", 28, 0]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "custom-lists-research-47-28",
+                                                  "name": null,
+                                                  "ref": {
+                                                    "read": "CustomLists.Research[47][28]"
+                                                  },
+                                                  "leaf": "fixedValue"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "get-set-bonus-godshard-set-bonus-0-0",
+                                          "name": "Godshard Set",
+                                          "nameProof": {
+                                            "names": "GetSetBonus(\"GODSHARD_SET\", \"Bonus\", 0, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "GetSetBonus",
+                                            "args": [
+                                              "GODSHARD_SET",
+                                              "Bonus",
+                                              0,
+                                              0
+                                            ]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                                              "name": "Kattlekruk Set",
+                                              "nameProof": {
+                                                "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "GetSetBonus",
+                                                "args": [
+                                                  "KATTLEKRUK_SET",
+                                                  "Bonus",
+                                                  0,
+                                                  0
+                                                ]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-have-ban-i-0-0",
+                                          "name": null,
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["Have_ban_i", 0, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "bundles-received-ban-i",
+                                              "name": "Gem shop pack ban i received",
+                                              "nameProof": {
+                                                "names": "BundlesReceived.ban_i"
+                                              },
+                                              "ref": {
+                                                "read": "BundlesReceived.ban_i"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "companions-162",
+                                      "name": "Wickerlight Spirit",
+                                      "nameProof": {
+                                        "names": "Companions(162)"
+                                      },
+                                      "ref": {
+                                        "call": "Companions",
+                                        "args": [162]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "actor-events-577-init",
+                                          "name": null,
+                                          "ref": {
+                                            "call": "ActorEvents_577_init",
+                                            "args": []
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "summoning-ribbon-bonus-25-0",
+                                  "name": "Ribbon, tier 25",
+                                  "nameProof": {
+                                    "names": "Summoning(\"RibbonBonus\", 25, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Summoning",
+                                    "args": ["RibbonBonus", 25, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "get-set-bonus-emperor-set-bonus-0-0",
+                                      "name": "Emperor Set",
+                                      "nameProof": {
+                                        "names": "GetSetBonus(\"EMPEROR_SET\", \"Bonus\", 0, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "GetSetBonus",
+                                        "args": ["EMPEROR_SET", "Bonus", 0, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                                          "name": "Kattlekruk Set",
+                                          "nameProof": {
+                                            "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "GetSetBonus",
+                                            "args": [
+                                              "KATTLEKRUK_SET",
+                                              "Bonus",
+                                              0,
+                                              0
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "dreamstuff-cloud-bonus-73",
+                                      "name": "Ribbons give +1% extra multi every 10 Ranks!",
+                                      "nameProof": {
+                                        "names": "Dreamstuff(\"CloudBonus\", 73)"
+                                      },
+                                      "ref": {
+                                        "call": "Dreamstuff",
+                                        "args": ["CloudBonus", 73]
+                                      }
+                                    },
+                                    {
+                                      "key": "jelly-operation-ro-g-bonus-qty-60-0",
+                                      "name": "Soldier Shiv",
+                                      "nameProof": {
+                                        "names": "JellyOperation(\"RoG_BonusQTY\", 60, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "JellyOperation",
+                                        "args": ["RoG_BonusQTY", 60, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "research-7-9",
+                                          "name": "Successful Jelly Operations",
+                                          "nameProof": {
+                                            "names": "Research[7][9]"
+                                          },
+                                          "ref": {
+                                            "read": "Research[7][9]"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "meals-0-64",
+                                  "name": "Yumi Peachring level",
+                                  "nameProof": {
+                                    "names": "Meals[0][64]"
+                                  },
+                                  "ref": {
+                                    "read": "Meals[0][64]"
+                                  }
+                                },
+                                {
+                                  "key": "custom-lists-meal-info-64-2",
+                                  "name": "Yumi Peachring meal bonus per level",
+                                  "nameProof": {
+                                    "names": "CustomLists.MealINFO[64][2]"
+                                  },
+                                  "ref": {
+                                    "read": "CustomLists.MealINFO[64][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -3397,7 +4545,20 @@
                                       "ref": {
                                         "call": "ActionBlock",
                                         "args": ["RecalcChipBonuses", "0", 0, 0]
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-chip-desc-15-11",
+                                          "name": "Chip bonus value",
+                                          "nameProof": {
+                                            "names": "CustomLists.ChipDesc[15][11]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.ChipDesc[15][11]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
                                     }
                                   ]
                                 },
@@ -4153,7 +5314,17 @@
                           "ref": {
                             "call": "Companions",
                             "args": [48]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "actor-events-577-init",
+                              "name": null,
+                              "ref": {
+                                "call": "ActorEvents_577_init",
+                                "args": []
+                              }
+                            }
+                          ]
                         },
                         {
                           "key": "thing-leg",
@@ -4218,7 +5389,17 @@
                           "ref": {
                             "call": "Companions",
                             "args": [155]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "actor-events-577-init",
+                              "name": null,
+                              "ref": {
+                                "call": "ActorEvents_577_init",
+                                "args": []
+                              }
+                            }
+                          ]
                         },
                         {
                           "key": "summ-vau",
@@ -5012,7 +6193,52 @@
                               "ref": {
                                 "call": "FarmingStuffs",
                                 "args": ["ExoticBonusQTY", -1, 0]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "dnsm-exotic-farm-bon-14",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "DNSM.ExoticFarmBon[14]"
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "farming-stuffs-exotic-bonus-qty-1-0",
+                                      "name": "Sproutluck I",
+                                      "nameProof": {
+                                        "names": "FarmingStuffs(\"ExoticBonusQTY\", -1, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "FarmingStuffs",
+                                        "args": ["ExoticBonusQTY", -1, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-market-exotic-info-14-3",
+                                          "name": "Max bonus of the exotic seed",
+                                          "nameProof": {
+                                            "names": "CustomLists.MarketExoticInfo[14][3]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.MarketExoticInfo[14][3]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        },
+                                        {
+                                          "key": "farm-upg-34",
+                                          "name": "Plump Database level",
+                                          "nameProof": {
+                                            "names": "FarmUpg[34]"
+                                          },
+                                          "ref": {
+                                            "read": "FarmUpg[34]"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5320,18 +6546,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/1/groups/0/sources/0/children/0",
-      "kind": "name"
-    },
-    {
-      "where": "pools/1/groups/0/sources/0/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/1/groups/0/sources/0/children/1",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/0/sources/0",
       "kind": "name"
     },
@@ -5341,14 +6555,6 @@
     },
     {
       "where": "pools/2/groups/0/sources/0/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/0/sources/0/children/1",
-      "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/0/sources/0/children/1",
       "kind": "descend"
     },
     {
@@ -5365,10 +6571,6 @@
     },
     {
       "where": "pools/2/groups/1/sources/0/children/0/children/5/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/1/sources/0/children/0/children/6",
       "kind": "descend"
     },
     {
@@ -5390,10 +6592,6 @@
     {
       "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/1/children/0",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/2/groups/1/sources/0/children/0/children/11",
-      "kind": "descend"
     },
     {
       "where": "pools/2/groups/1/sources/0/children/0/children/14",
@@ -5456,10 +6654,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/2/groups/5/sources/0/children/1/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/6/sources/0/children/0",
       "kind": "descend"
     },
@@ -5496,10 +6690,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/2/groups/11/sources/0/children/1/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -5520,14 +6710,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/2/groups/14/sources/0/children/2",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/15/sources/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/0/children/0",
       "kind": "descend"
     },
@@ -5541,10 +6723,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/6/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/1",
       "kind": "descend"
     },
     {
@@ -5568,10 +6746,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/3/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/7/children/0",
       "kind": "descend"
     },
@@ -5588,10 +6762,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/3/children/0",
       "kind": "name"
     },
@@ -5605,10 +6775,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/7/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/8/children/0",
       "kind": "descend"
     },
     {
@@ -5632,10 +6798,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/5/children/0",
       "kind": "descend"
     },
@@ -5649,10 +6811,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/5/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6",
       "kind": "descend"
     },
     {
@@ -5674,10 +6832,6 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/1/children/0",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/11",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/14",
@@ -5704,19 +6858,7 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/1/children/0",
       "kind": "descend"
     },
     {
@@ -5792,10 +6934,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/22/children/1",
       "kind": "name"
     },
@@ -5805,10 +6943,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/24",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25",
       "kind": "descend"
     },
     {
@@ -5888,10 +7022,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/16/children/0",
       "kind": "descend"
     },
@@ -5902,6 +7032,250 @@
     {
       "where": "pools/4/groups/2/sources/0",
       "kind": "descend"
+    },
+    {
+      "where": "pools/1/groups/0/sources/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/11/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0/children/1/children/0/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/11/sources/0/children/1/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/14/sources/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/14/sources/0/children/2/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/2/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/3/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/4/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/5/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/6/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/7",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/3/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/8/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/11/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/3/children/0/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/4",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/7/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/2/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/2/children/1/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/9/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/10",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/10/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
     }
   ]
 }
