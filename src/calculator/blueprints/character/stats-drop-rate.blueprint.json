@@ -71,7 +71,7 @@
                 "call": "GetTalentNumber",
                 "args": [1, 279]
               },
-              "classes": [19],
+              "classes": [19, 20, 21, 22, 25, 29],
               "children": [
                 {
                   "key": "skill-levels-279",
@@ -268,7 +268,7 @@
                 "call": "GetTalentNumber",
                 "args": [1, 24]
               },
-              "classes": [2],
+              "classes": [2, 3, 4, 5],
               "children": [
                 {
                   "key": "skill-levels-24",
