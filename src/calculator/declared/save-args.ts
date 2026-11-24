@@ -13,7 +13,7 @@ import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import { ranSites } from "./call-site.ts";
-import { defOf, fnOf } from "./code-fn.ts";
+import { defOf, fnOf, onTheWay } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
 import { at, isCharacter, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
@@ -52,7 +52,7 @@ function readsSave(e: AnyNode, f?: Fn): Says {
 }
 
 const following = new Set<string>();
-/** What the call's own writes of a working map's key gave: `X.h.KEY = …`, `X.h.KEY[…] = …`, `X.h.KEY.push(…)`. */
+/** What the call's own write of a working map's key the read saw gave (`X.h.KEY = …`, `X.h.KEY[…] = …`, `….push(…)`). */
 function workingSays(get: AnyNode, f: Fn): Says {
   const h = f.up.get(get);
   const keyed = h ? f.up.get(h) : undefined;
@@ -63,15 +63,28 @@ function workingSays(get: AnyNode, f: Fn): Says {
     m?.type === "MemberExpression" &&
     (at(m, "property").name === key ||
       isKey(m.computed ? at(m, "object") : undefined));
-  const given = f.all.flatMap((n) =>
-    n.type === "AssignmentExpression" && isKey(at(n, "left"))
-      ? [at(n, "right")]
-      : n.type === "CallExpression" &&
-          member(at(n, "callee")) === "push" &&
-          isKey(at(at(n, "callee"), "object"))
-        ? (n.arguments as AnyNode[])
-        : [],
-  );
+  // the write the read saw by its place: the last set of the key before it on every way there, and the pushes after it
+  const pos = get.range[0];
+  const before = (n: AnyNode) => n.range[1] <= pos && onTheWay(f, n, pos);
+  const last = f.all
+    .filter(
+      (n) =>
+        n.type === "AssignmentExpression" && isKey(at(n, "left")) && before(n),
+    )
+    .reduce<AnyNode | undefined>(
+      (a, n) => (a && a.range[1] > n.range[1] ? a : n),
+      undefined,
+    );
+  const pushed = (n: AnyNode) =>
+    n.type === "CallExpression" &&
+    member(at(n, "callee")) === "push" &&
+    isKey(at(at(n, "callee"), "object")) &&
+    n.range[1] <= pos &&
+    (!last || n.range[0] > last.range[1]);
+  const given = [
+    ...(last ? [at(last, "right")] : []),
+    ...f.all.flatMap((n) => (pushed(n) ? (n.arguments as AnyNode[]) : [])),
+  ];
   if (given.length === 0) return "unsure";
   const params = (x: AnyNode) =>
     namesIn(x).some((i) => f.params.includes(i.name as string));
