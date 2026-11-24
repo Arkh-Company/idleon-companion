@@ -108,7 +108,8 @@ export function pieceChildren(
   nodes: readonly RecNode[] = ctx.rec.nodes,
 ): BlueprintNode[] | TwoValues {
   const [model] = node.children ?? [];
-  if (!node.each || !model) return [...(node.children ?? [])];
+  if (!node.each || !("list" in node.each) || !model)
+    return [...(node.children ?? [])];
   const { list } = node.each;
   // a piece's list has one [*] (blueprint.ts): one name
   const [as = ""] = eachNames(node.each.as);

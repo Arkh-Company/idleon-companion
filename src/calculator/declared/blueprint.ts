@@ -120,6 +120,21 @@ function checkPieceLevel(
   checkEach(n.each, where, poolEach);
   if (!Array.isArray(n.children) || n.children.length !== 1)
     no(where, "each tem um filho-modelo só");
+  // a list of calls (T205): its model calls the block, `{as}` in one of its arguments
+  if (isObj(n.each) && "calls" in n.each) {
+    const [m] = n.children as unknown[];
+    const r = isObj(m) && isObj(m.ref) ? m.ref : null;
+    const args: unknown = r?.args;
+    if (
+      r?.call !== n.each.calls ||
+      !Array.isArray(args) ||
+      !args.includes(`{${String(n.each.as)}}`)
+    )
+      no(
+        where,
+        "each.calls: o filho-modelo chama o bloco com {as} num argumento",
+      );
+  }
 }
 
 function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
@@ -136,11 +151,18 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     });
     return;
   }
+  // a list of calls (T205) is a node's, in a pool's source too: never the answer key's items
+  const calls = isObj(n.each) && "calls" in n.each;
   const poolEach =
-    level === "source" && n.each !== undefined && n.combine === undefined;
+    level === "source" &&
+    n.each !== undefined &&
+    n.combine === undefined &&
+    !calls;
   // a recipe's node with a long list below it (T202): one model child, one child per part of its level the list matches
   const nodeEach =
-    level === "child" && n.each !== undefined && n.combine === undefined;
+    (level === "child" || calls) &&
+    n.each !== undefined &&
+    n.combine === undefined;
   checkPieceLevel(n, where, w, poolEach, poolEach || nodeEach);
   // after the args and the items are in, a `{name}` left is one nothing declares
   const left = Object.entries(n)

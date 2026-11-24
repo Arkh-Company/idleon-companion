@@ -75,7 +75,8 @@ function sourcesOf(
   return g.sources.flatMap((s) => {
     const at = nodeId(ctx.where, pool, g.system, [s.key]);
     const [model] = s.children ?? [];
-    if (!s.each || s.combine || !model) return [{ s, at }];
+    if (!s.each || !("list" in s.each) || s.combine || !model)
+      return [{ s, at }];
     out.counts.branches++;
     const { list } = s.each;
     const names = eachNames(s.each.as);

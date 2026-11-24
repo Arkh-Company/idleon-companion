@@ -34,7 +34,12 @@ export interface BlueprintNode {
    * Only in a piece: the one model child stands for one child per item of the recorded list (T170); in a pool's source,
    * a list with two `[*]` names one index each (T179, the equipment's rows and slots).
    */
-  each?: { list: string; as: string | readonly string[] };
+  each?:
+    | { list: string; as: string | readonly string[] }
+    /** A list of calls of one block (T205): the model once per recorded call, `{as}` in the argument its turn gives. */
+    | { calls: string; as: string };
+  /** Only in the lock: a call list's item's argument (T205), its turn's: no mark of the save or the character to check. */
+  itemArg?: number;
   /** Only in a piece with the form of a recipe (T173): its pools, closed as a root's below the node. */
   pools?: readonly BlueprintPool[];
   /**

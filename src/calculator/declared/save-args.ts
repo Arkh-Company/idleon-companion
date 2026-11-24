@@ -289,6 +289,8 @@ export function writtenArgs(
   ref: Ref | undefined,
   scope: RecNode,
   ctx: LevelContext,
+  /** A call list's item's argument (T205): its turn's, no mark to check. */
+  skip?: number,
 ): LockError[] {
   if (
     !ctx.ops ||
@@ -312,6 +314,7 @@ export function writtenArgs(
       got: `o lugar não decide se ${arg(i)} vem do ${from}`,
     });
   ref.args.forEach((a, i) => {
+    if (i === skip) return;
     // what the recipe writes where the place does not decide is refused, `{character}` too, before any other check
     if (unsureCharacter.includes(i)) undecided(i, "personagem");
     else if (unsure.includes(i)) undecided(i, "save");

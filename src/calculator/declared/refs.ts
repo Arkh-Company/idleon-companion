@@ -42,6 +42,11 @@ export const unmarked = (ref: Ref): Ref =>
     : ref;
 
 /** A recorded call's key, `Block(args in JSON)`, as its block and arguments; null for any other text. */
+export function parseKey(
+  key: string,
+): { call: string; args: unknown[] } | null {
+  return keyParts(key);
+}
 function keyParts(key: string): { call: string; args: unknown[] } | null {
   const m = /^([A-Za-z_$][\w$]*)\((.*)\)$/s.exec(key);
   if (!m) return null;

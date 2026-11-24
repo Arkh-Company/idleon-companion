@@ -180,6 +180,15 @@ function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
     : matchRead(ref.read, [part], ctx.character) !== null;
 }
 
+/** The keys of the block's calls a level made twice with the same arguments: no place separates them (T205). */
+function sameCalls(block: string, level: Level, ctx: LevelContext): string[] {
+  const keys = level.scope.c.flatMap((id) => {
+    const n = ctx.rec.nodes[id];
+    return n?.b === block ? [callRef(n)] : [];
+  });
+  return [...new Set(keys.filter((k, i) => keys.indexOf(k) !== i))];
+}
+
 /** One level: its children's coverage and values, the descent into each, and the closing of the remounted count. */
 export function lockLevel(
   declared: readonly BlueprintNode[],
@@ -191,8 +200,16 @@ export function lockLevel(
   const leaves = level.expr ? leavesOf(level.expr) : [];
   const { open } = level;
   const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
-  // a model child stands for one child per part its list matches (T202)
+  // a model child stands for one child per part its list matches (T202), or per call of its block (T205)
   const children = modelChildren(declared, each, parts, ctx);
+  const twice =
+    each && "calls" in each ? sameCalls(each.calls, level, ctx) : [];
+  for (const k of twice)
+    out.errors.push({
+      kind: "rootForm",
+      where: ctx.where,
+      got: `duas chamadas ${k} no nível, e o lugar não as separa`,
+    });
   const covered = new Set<string>();
   // the calls a child's `*` may stand for: two of them are refused, never tied by order (refs.ts savedTwice)
   const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
@@ -200,7 +217,7 @@ export function lockLevel(
   // a call's constants with the conditions that apply them (T209, form 3)
   const consts = lockConstants(children, level, leaves, ctx, out);
   for (const p of consts?.covered ?? []) covered.add(p);
-  let whole = consts?.value !== null;
+  let whole = consts?.value !== null && twice.length === 0;
   for (const child of children) {
     if (child.constant !== undefined) continue;
     const where = `${ctx.where}/${child.key}`;
@@ -253,7 +270,7 @@ function descend(
 ): void {
   const { ref } = node;
   // a call's argument the game gave from the character's index or the save is never written out (save-args.ts)
-  out.errors.push(...writtenArgs(ref, level.scope, ctx));
+  out.errors.push(...writtenArgs(ref, level.scope, ctx, node.itemArg));
   // a line with a link (T200): its value came by its ref, its tree is the other number's; the descent ends here
   if (node.tree !== undefined) {
     out.counts.leaves++;

@@ -251,6 +251,15 @@ export function uniqueKeys(nodes: unknown[], where: string): void {
  * pool's source (T179, the equipment's rows and slots), `as` then naming one index per `[*]`.
  */
 export function checkEach(x: unknown, where: string, poolEach: boolean): void {
+  // a list of calls of one block (T205): the block's name and the item's
+  if (isObj(x) && "calls" in x) {
+    const c = obj(x, ["calls", "as"], `${where}/each`);
+    if (typeof c.calls !== "string" || !IDENT.test(c.calls))
+      no(where, "each.calls é o nome de um bloco");
+    if (typeof c.as !== "string" || !IDENT.test(c.as) || c.as === "character")
+      no(where, "each.as é um nome, nunca character");
+    return;
+  }
   const e = obj(x, ["list", "as"], `${where}/each`);
   const names: unknown[] = Array.isArray(e.as) ? e.as : [e.as];
   const bad = (a: unknown) =>
