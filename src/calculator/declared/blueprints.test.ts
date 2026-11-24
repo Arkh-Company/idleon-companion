@@ -5,7 +5,9 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import type { BlueprintNode } from "./blueprint.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
-import { hasRawCharacterIndex } from "./refs.ts";
+import { classify } from "../tree/kinds.ts";
+import { notLeafOf } from "./not-leaves.ts";
+import { hasRawCharacterIndex, refKey } from "./refs.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..");
@@ -175,6 +177,44 @@ test("the LUK's EtcBonuses that read no part are raw bonuses, by tree/kinds.ts's
   expect(raw.pending.filter((p) => p.kind === "leaf" && etc(p.where))).toEqual(
     [],
   );
+});
+
+test("the LUK's leaves have the kind tree/kinds.ts proves, and none it proves waits for one (T172)", () => {
+  const raw = BLUEPRINTS[
+    "../blueprints/character/stats-luk.blueprint.json"
+  ] as { pending: { where: string; kind: string }[] };
+  const waits = new Set(
+    raw.pending.filter((p) => p.kind === "leaf").map((p) => p.where),
+  );
+  const bp = loadBlueprints(BLUEPRINTS).all.get("stats-luk");
+  const wrong: string[] = [];
+  const walk = (n: BlueprintNode, w: string): void => {
+    (n.children ?? []).forEach((k, i) => {
+      walk(k, `${w}/children/${String(i)}`);
+    });
+    const ref = n.ref;
+    // a leaf, typed or waiting for its kind; a call that waits to descend is no leaf yet
+    if (!ref || n.children?.length || (!n.leaf && !waits.has(w))) return;
+    // the recipe's `{character}` is the tree's own index, as the lock reads it; a curve is never a leaf (T182)
+    const code =
+      "call" in ref ? refKey(ref, 0) : ref.read.replaceAll("{character}", "0");
+    const k = classify({ name: n.name ?? "", code }).leaf;
+    // a cache's read is never a leaf (T168): it waits to descend, whatever its kind would be
+    const aside = code.startsWith("DNSM.") || notLeafOf(code, 0) !== null;
+    if (k === "unknown" || aside) return;
+    if (waits.has(w) ? true : n.leaf !== k) wrong.push(`${code}: ${k}`);
+  };
+  bp?.pools.forEach((p, pi) => {
+    p.groups.forEach((g, gi) => {
+      g.sources.forEach((s, si) => {
+        walk(
+          s,
+          `pools/${String(pi)}/groups/${String(gi)}/sources/${String(si)}`,
+        );
+      });
+    });
+  });
+  expect(wrong).toEqual([]);
 });
 
 test("every blueprint loads in a stage, and its file's name is its id", () => {
