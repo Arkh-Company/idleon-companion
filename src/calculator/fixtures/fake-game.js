@@ -2597,6 +2597,18 @@ lime.$scripts.N = function (_exports, $global) {
         : Blocks._customBlock_TreeDeclOwn(0))
     );
   };
+  // Spec 010 (group 5 of part P): the same block from two places that both run, with the same numbers: no side of a ? :
+  // separates them, and the place still does not decide.
+  Blocks._customBlock_TreeCharBoth = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclOwn(
+        s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
+      ) +
+      Blocks._customBlock_TreeDeclOwn(0)
+    );
+  };
   Blocks._customBlock_TreeDeclKills = function (mode, kills) {
     return Blocks._customBlock_TreeDeclRow(kills) * 2;
   };

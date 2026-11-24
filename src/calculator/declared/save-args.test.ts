@@ -153,19 +153,19 @@ test("two calls of one block the * makes equal are refused with the reason, neve
   );
 });
 
-test("an argument one place gives from the save and another writes in the code: the place does not decide (r2)", () => {
+test("an argument one place gives from the save and another writes in the code: the side of the ? : that ran decides (r2; group 5 of part P)", () => {
   const { rec, key, ops } = recorded("TreeSaveSplit");
   expect(key.final).toBe(20);
   const ref = { call: "TreeSaveSplit", args: [0, 0, 0] };
   const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
-  // the draft keeps the recorded number, and its name waits
+  // the number written in the code ran (TreeBase is not over 100): the draft keeps it; its name waits for a proof
   const kills = d.pools[0]?.groups[1]?.sources[0];
   expect(kills?.ref).toEqual({ call: "TreeDeclKills", args: ["Map", 3, 0] });
   expect(d.pending).toContainEqual({
     where: "pools/0/groups/1/sources/0",
     kind: "name",
   });
-  // the lock refuses the number written there, with the reason, and the * too
+  // the lock takes the number written there, and refuses the *: that side does not give the save's number
   const input = { rec, key, ops, character: 0, characterClass: 3 };
   const lock = (arg: RefArg) =>
     lockBlueprint({
@@ -206,6 +206,8 @@ test("an argument one place gives from the save and another writes in the code: 
     }).errors.map(lockMessage);
   const unsure =
     "invented-split/0/luk-stats/kills: o lugar não decide se o argumento 2 de TreeDeclKills vem do save";
-  expect(lock(3)).toContain(unsure);
-  expect(lock("*")).toContain(unsure);
+  expect(lock(3)).not.toContain(unsure);
+  expect(lock("*")).toContain(
+    "invented-split/0/luk-stats/kills: o argumento 2 de TreeDeclKills está no código, não vem do save: a receita escreve o número",
+  );
 });

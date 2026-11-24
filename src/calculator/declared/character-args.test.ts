@@ -115,19 +115,19 @@ test("the lock refuses a {character} where the game wrote a number, even one equ
   ]);
 });
 
-test("a block one place gives the character's index and another a 0 written in the code: the place does not decide (r3)", () => {
+test("a block one place gives the character's index and another a 0 written in the code: the side of the ? : that ran decides (r3; group 5 of part P)", () => {
   const { rec, key, ops } = recorded("TreeCharSplit");
   expect(key.final).toBe(6);
   const ref = { call: "TreeCharSplit", args: [0, 0, 0] };
   const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
-  // the draft keeps the recorded number, and its name waits, the static name of TreeDeclOwn(0) too
+  // the 0 written in the code ran (TreeBase is not over 100): the draft keeps it, with its static name
   const own = d.pools[0]?.groups[1]?.sources[0];
   expect(own?.ref).toEqual({ call: "TreeDeclOwn", args: [0] });
-  expect(d.pending).toContainEqual({
+  expect(d.pending).not.toContainEqual({
     where: "pools/0/groups/1/sources/0",
     kind: "name",
   });
-  // the lock refuses the number written there, with the reason, and {character} too
+  // the lock takes the number written there, and refuses {character}: that side does not give the character's index
   const lock = (arg: RefArg) => {
     const sources: BlueprintNode[] = [
       leaf("TreeBase"),
@@ -154,8 +154,42 @@ test("a block one place gives the character's index and another a 0 written in t
   };
   const unsure =
     "invented-split/0/luk-stats/own: o lugar não decide se o argumento 1 de TreeDeclOwn vem do personagem";
-  expect(lock(0)).toContain(unsure);
-  expect(lock("{character}")).toContain(unsure);
+  expect(lock(0)).not.toContain(unsure);
+  expect(lock("{character}")).toContain(
+    "invented-split/0/luk-stats/own: o argumento 1 de TreeDeclOwn não vem do personagem",
+  );
+});
+
+test("a block called from two places that both ran, with the same numbers: the place still does not decide (group 5 of part P)", () => {
+  const { rec, key, ops } = recorded("TreeCharBoth");
+  const ref = { call: "TreeCharBoth", args: [0, 0, 0] };
+  const own = (k: string): BlueprintNode => ({
+    key: k,
+    name: "Own",
+    ref: { call: "TreeDeclOwn", args: [0] },
+    children: [leaf("TreeList[0]")],
+  });
+  const sources = [leaf("TreeBase"), own("own"), own("own-2")];
+  const errors = lockBlueprint({
+    rec,
+    key,
+    ops,
+    character: 0,
+    characterClass: 3,
+    blueprint: {
+      id: "invented-both",
+      root: { name: "Invented", ref },
+      pools: [
+        {
+          kind: "additive",
+          groups: sources.map((s) => ({ system: "luk-stats", sources: [s] })),
+        },
+      ],
+    },
+  }).errors.map(lockMessage);
+  expect(errors).toContain(
+    "invented-both/0/luk-stats/own: o lugar não decide se o argumento 1 de TreeDeclOwn vem do personagem",
+  );
 });
 
 test("a block that passes on the parameter its caller gave from the character's index gets {character} there too (r2)", () => {
