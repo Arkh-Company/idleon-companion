@@ -71,8 +71,387 @@
                 "call": "GetTalentNumber",
                 "args": [1, 279]
               },
-              "classes": [19, 20, 21, 22, 25, 29],
+              "classes": [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
               "children": [
+                {
+                  "key": "run-code-of-type-xfor-thing-y-all-talent-lv-279",
+                  "name": null,
+                  "ref": {
+                    "call": "RunCodeOfTypeXforThingY",
+                    "args": ["AllTalentLV", "279"]
+                  },
+                  "children": [
+                    {
+                      "key": "get-talent-number-1-149",
+                      "name": "Symbols Of Beyond (Warrior)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 149)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 149]
+                      },
+                      "children": [
+                        {
+                          "key": "skill-levels-149",
+                          "name": "Symbols of beyond (Warrior) level",
+                          "nameProof": {
+                            "names": "SkillLevels[149]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[149]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-talent-number-1-374",
+                      "name": "Symbols Of Beyond (Archer)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 374)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 374]
+                      },
+                      "children": [
+                        {
+                          "key": "run-code-of-type-xfor-thing-y-all-talent-lv-374",
+                          "name": null,
+                          "ref": {
+                            "call": "RunCodeOfTypeXforThingY",
+                            "args": ["AllTalentLV", "374"]
+                          },
+                          "piece": {
+                            "name": "all-talent-lv",
+                            "args": {
+                              "talent": "374"
+                            }
+                          }
+                        },
+                        {
+                          "key": "skill-levels-374",
+                          "name": "Symbols of beyond (Archer) level",
+                          "nameProof": {
+                            "names": "SkillLevels[374]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[374]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-talent-descriptions-374-1-0",
+                          "name": "Symbols Of Beyond (Archer) curve constant",
+                          "nameProof": {
+                            "names": "CustomLists.TalentDescriptions[374][1][0]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.TalentDescriptions[374][1][0]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-talent-descriptions-374-1-1",
+                          "name": "Symbols Of Beyond (Archer) curve constant",
+                          "nameProof": {
+                            "names": "CustomLists.TalentDescriptions[374][1][1]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.TalentDescriptions[374][1][1]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-talent-number-1-539",
+                      "name": "Symbols Of Beyond (Mage)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 539)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 539]
+                      },
+                      "children": [
+                        {
+                          "key": "skill-levels-539",
+                          "name": "Symbols of beyond (Mage) level",
+                          "nameProof": {
+                            "names": "SkillLevels[539]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[539]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "achieve-status-291",
+                      "name": "Maroon Warship",
+                      "nameProof": {
+                        "names": "AchieveStatus(291)"
+                      },
+                      "ref": {
+                        "call": "AchieveStatus",
+                        "args": [291]
+                      },
+                      "children": [
+                        {
+                          "key": "achieve-reg-291",
+                          "name": "Maroon Warship (achievement)",
+                          "nameProof": {
+                            "names": "AchieveReg[291]"
+                          },
+                          "ref": {
+                            "read": "AchieveReg[291]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dnsm-fam-bonus-qtys-68",
+                      "name": "LV For All Talents Above LV 1 (family bonus)",
+                      "nameProof": {
+                        "names": "DNSM.FamBonusQTYs[68]"
+                      },
+                      "ref": {
+                        "read": "DNSM.FamBonusQTYs[68]"
+                      }
+                    },
+                    {
+                      "key": "companions-1",
+                      "name": "Rift Slug",
+                      "nameProof": {
+                        "names": "Companions(1)"
+                      },
+                      "ref": {
+                        "call": "Companions",
+                        "args": [1]
+                      }
+                    },
+                    {
+                      "key": "divinity-bonus-minor-2",
+                      "name": null,
+                      "ref": {
+                        "call": "Divinity",
+                        "args": ["Bonus_Minor", "{character}", 2]
+                      },
+                      "children": [
+                        {
+                          "key": "divinity-div-minor-bonus-1",
+                          "name": null,
+                          "ref": {
+                            "call": "Divinity",
+                            "args": ["DivMinorBonus", "{character}", 1]
+                          },
+                          "children": [
+                            {
+                              "key": "dnsm-alch-bubbles-y2-active",
+                              "name": "Big P bubble",
+                              "nameProof": {
+                                "names": "DNSM.AlchBubbles.Y2ACTIVE"
+                              },
+                              "ref": {
+                                "read": "DNSM.AlchBubbles.Y2ACTIVE"
+                              }
+                            },
+                            {
+                              "key": "thingies-coral-kid-upg-bonus-3-0",
+                              "name": "Coral Kid: Divinity Skill Lv boosts Minor Link Bonuses a bit more",
+                              "nameProof": {
+                                "names": "Thingies(\"CoralKidUpgBonus\", 3, 0)"
+                              },
+                              "ref": {
+                                "call": "Thingies",
+                                "args": ["CoralKidUpgBonus", 3, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-430",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "OptionsListAccount[430]"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "lv0-14",
+                              "name": "Divinity level",
+                              "nameProof": {
+                                "names": "Lv0[14]"
+                              },
+                              "ref": {
+                                "read": "Lv0[14]"
+                              }
+                            },
+                            {
+                              "key": "custom-lists-gods-info-2-3",
+                              "name": "Nobisect minor link bonus top",
+                              "nameProof": {
+                                "names": "CustomLists.GodsInfo[2][3]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.GodsInfo[2][3]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dream-12",
+                      "name": "Equinox Symbols LV",
+                      "nameProof": {
+                        "names": "Dream[12]"
+                      },
+                      "ref": {
+                        "read": "Dream[12]"
+                      }
+                    },
+                    {
+                      "key": "options-list-account-232",
+                      "name": "Sneaking Masteries completed",
+                      "nameProof": {
+                        "names": "OptionsListAccount[232]"
+                      },
+                      "ref": {
+                        "read": "OptionsListAccount[232]"
+                      }
+                    },
+                    {
+                      "key": "summoning-grimoire-upg-bonus-39-0",
+                      "name": "Skull of Major Talent",
+                      "nameProof": {
+                        "names": "Summoning(\"GrimoireUpgBonus\", 39, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning",
+                        "args": ["GrimoireUpgBonus", 39, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "grimoire-39",
+                          "name": "Skull of Major Talent level",
+                          "nameProof": {
+                            "names": "Grimoire[39]"
+                          },
+                          "ref": {
+                            "read": "Grimoire[39]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-grimoire-upg-39-5",
+                          "name": "Bonus per level (Grimoire)",
+                          "nameProof": {
+                            "names": "CustomLists.GrimoireUpg[39][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.GrimoireUpg[39][5]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                      "name": "Kattlekruk Set",
+                      "nameProof": {
+                        "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "GetSetBonus",
+                        "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                          "name": "Kattlekruk Set",
+                          "nameProof": {
+                            "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                          },
+                          "ref": {
+                            "call": "GetSetBonus",
+                            "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "custom-maps-equipment-sets-kattlekruk-set-3-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomMaps.EquipmentSets.KATTLEKRUK_SET[3][2]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "arcane-type-arcane-upg-bonus-57-0",
+                      "name": "Universe Talent",
+                      "nameProof": {
+                        "names": "ArcaneType(\"ArcaneUpgBonus\", 57, 0)"
+                      },
+                      "ref": {
+                        "call": "ArcaneType",
+                        "args": ["ArcaneUpgBonus", 57, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "arcane-57",
+                          "name": "Universe Talent level",
+                          "nameProof": {
+                            "names": "Arcane[57]"
+                          },
+                          "ref": {
+                            "read": "Arcane[57]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-arcane-upg-57-5",
+                          "name": "Bonus per level (Arcane)",
+                          "nameProof": {
+                            "names": "CustomLists.ArcaneUpg[57][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.ArcaneUpg[57][5]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "lv0-0",
+                      "name": "Class level",
+                      "nameProof": {
+                        "names": "Lv0[0]"
+                      },
+                      "ref": {
+                        "read": "Lv0[0]"
+                      }
+                    },
+                    {
+                      "key": "gaming-stat-type-super-bit-type-47-0",
+                      "name": "+1 LV for all Talents per 100 Class LV over 500. Total Bonus: LV",
+                      "nameProof": {
+                        "names": "GamingStatType(\"SuperBitType\", 47, 0)"
+                      },
+                      "ref": {
+                        "call": "GamingStatType",
+                        "args": ["SuperBitType", 47, 0]
+                      }
+                    },
+                    {
+                      "key": "thingies-super-talent-pts-lvgiven-0-0",
+                      "name": "Super Talent levels given",
+                      "nameProof": {
+                        "names": "Thingies(\"SuperTalentPTS_LVgiven\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "Thingies",
+                        "args": ["SuperTalentPTS_LVgiven", 0, 0]
+                      },
+                      "tree": "legend-super-lvgiven"
+                    }
+                  ]
+                },
                 {
                   "key": "skill-levels-279",
                   "name": "Robbinghood level",
@@ -81,6 +460,26 @@
                   },
                   "ref": {
                     "read": "SkillLevels[279]"
+                  }
+                },
+                {
+                  "key": "custom-lists-talent-descriptions-279-1-0",
+                  "name": "Robbinghood curve constant",
+                  "nameProof": {
+                    "names": "CustomLists.TalentDescriptions[279][1][0]"
+                  },
+                  "ref": {
+                    "read": "CustomLists.TalentDescriptions[279][1][0]"
+                  }
+                },
+                {
+                  "key": "custom-lists-talent-descriptions-279-1-1",
+                  "name": "Robbinghood curve constant",
+                  "nameProof": {
+                    "names": "CustomLists.TalentDescriptions[279][1][1]"
+                  },
+                  "ref": {
+                    "read": "CustomLists.TalentDescriptions[279][1][1]"
                   }
                 }
               ]
@@ -98,14 +497,11 @@
               },
               "children": [
                 {
-                  "key": "talent-calc-4",
-                  "name": "Talent bonuses (all)",
-                  "nameProof": {
-                    "names": "TalentCalc(-4)"
-                  },
+                  "key": "talent-calc-any",
+                  "name": null,
                   "ref": {
                     "call": "TalentCalc",
-                    "args": [-4]
+                    "args": ["any"]
                   },
                   "children": [
                     {
@@ -271,6 +667,351 @@
               "classes": [2, 3, 4, 5],
               "children": [
                 {
+                  "key": "run-code-of-type-xfor-thing-y-all-talent-lv-24",
+                  "name": null,
+                  "ref": {
+                    "call": "RunCodeOfTypeXforThingY",
+                    "args": ["AllTalentLV", "24"]
+                  },
+                  "children": [
+                    {
+                      "key": "get-talent-number-1-149",
+                      "name": "Symbols Of Beyond (Warrior)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 149)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 149]
+                      },
+                      "children": [
+                        {
+                          "key": "skill-levels-149",
+                          "name": "Symbols of beyond (Warrior) level",
+                          "nameProof": {
+                            "names": "SkillLevels[149]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[149]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-talent-number-1-374",
+                      "name": "Symbols Of Beyond (Archer)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 374)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 374]
+                      },
+                      "children": [
+                        {
+                          "key": "skill-levels-374",
+                          "name": "Symbols of beyond (Archer) level",
+                          "nameProof": {
+                            "names": "SkillLevels[374]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[374]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-talent-number-1-539",
+                      "name": "Symbols Of Beyond (Mage)",
+                      "nameProof": {
+                        "names": "GetTalentNumber(1, 539)"
+                      },
+                      "ref": {
+                        "call": "GetTalentNumber",
+                        "args": [1, 539]
+                      },
+                      "children": [
+                        {
+                          "key": "skill-levels-539",
+                          "name": "Symbols of beyond (Mage) level",
+                          "nameProof": {
+                            "names": "SkillLevels[539]"
+                          },
+                          "ref": {
+                            "read": "SkillLevels[539]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "achieve-status-291",
+                      "name": "Maroon Warship",
+                      "nameProof": {
+                        "names": "AchieveStatus(291)"
+                      },
+                      "ref": {
+                        "call": "AchieveStatus",
+                        "args": [291]
+                      },
+                      "children": [
+                        {
+                          "key": "achieve-reg-291",
+                          "name": "Maroon Warship (achievement)",
+                          "nameProof": {
+                            "names": "AchieveReg[291]"
+                          },
+                          "ref": {
+                            "read": "AchieveReg[291]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dnsm-fam-bonus-qtys-68",
+                      "name": "LV For All Talents Above LV 1 (family bonus)",
+                      "nameProof": {
+                        "names": "DNSM.FamBonusQTYs[68]"
+                      },
+                      "ref": {
+                        "read": "DNSM.FamBonusQTYs[68]"
+                      }
+                    },
+                    {
+                      "key": "companions-1",
+                      "name": "Rift Slug",
+                      "nameProof": {
+                        "names": "Companions(1)"
+                      },
+                      "ref": {
+                        "call": "Companions",
+                        "args": [1]
+                      }
+                    },
+                    {
+                      "key": "divinity-bonus-minor-2",
+                      "name": null,
+                      "ref": {
+                        "call": "Divinity",
+                        "args": ["Bonus_Minor", "{character}", 2]
+                      },
+                      "children": [
+                        {
+                          "key": "divinity-div-minor-bonus-1",
+                          "name": null,
+                          "ref": {
+                            "call": "Divinity",
+                            "args": ["DivMinorBonus", "{character}", 1]
+                          },
+                          "children": [
+                            {
+                              "key": "dnsm-alch-bubbles-y2-active",
+                              "name": "Big P bubble",
+                              "nameProof": {
+                                "names": "DNSM.AlchBubbles.Y2ACTIVE"
+                              },
+                              "ref": {
+                                "read": "DNSM.AlchBubbles.Y2ACTIVE"
+                              }
+                            },
+                            {
+                              "key": "thingies-coral-kid-upg-bonus-3-0",
+                              "name": "Coral Kid: Divinity Skill Lv boosts Minor Link Bonuses a bit more",
+                              "nameProof": {
+                                "names": "Thingies(\"CoralKidUpgBonus\", 3, 0)"
+                              },
+                              "ref": {
+                                "call": "Thingies",
+                                "args": ["CoralKidUpgBonus", 3, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "options-list-account-430",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "OptionsListAccount[430]"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "lv0-14",
+                              "name": "Divinity level",
+                              "nameProof": {
+                                "names": "Lv0[14]"
+                              },
+                              "ref": {
+                                "read": "Lv0[14]"
+                              }
+                            },
+                            {
+                              "key": "custom-lists-gods-info-2-3",
+                              "name": "Nobisect minor link bonus top",
+                              "nameProof": {
+                                "names": "CustomLists.GodsInfo[2][3]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.GodsInfo[2][3]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "dream-12",
+                      "name": "Equinox Symbols LV",
+                      "nameProof": {
+                        "names": "Dream[12]"
+                      },
+                      "ref": {
+                        "read": "Dream[12]"
+                      }
+                    },
+                    {
+                      "key": "options-list-account-232",
+                      "name": "Sneaking Masteries completed",
+                      "nameProof": {
+                        "names": "OptionsListAccount[232]"
+                      },
+                      "ref": {
+                        "read": "OptionsListAccount[232]"
+                      }
+                    },
+                    {
+                      "key": "summoning-grimoire-upg-bonus-39-0",
+                      "name": "Skull of Major Talent",
+                      "nameProof": {
+                        "names": "Summoning(\"GrimoireUpgBonus\", 39, 0)"
+                      },
+                      "ref": {
+                        "call": "Summoning",
+                        "args": ["GrimoireUpgBonus", 39, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "grimoire-39",
+                          "name": "Skull of Major Talent level",
+                          "nameProof": {
+                            "names": "Grimoire[39]"
+                          },
+                          "ref": {
+                            "read": "Grimoire[39]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-grimoire-upg-39-5",
+                          "name": "Bonus per level (Grimoire)",
+                          "nameProof": {
+                            "names": "CustomLists.GrimoireUpg[39][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.GrimoireUpg[39][5]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                      "name": "Kattlekruk Set",
+                      "nameProof": {
+                        "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "GetSetBonus",
+                        "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "get-set-bonus-kattlekruk-set-bonus-0-0",
+                          "name": "Kattlekruk Set",
+                          "nameProof": {
+                            "names": "GetSetBonus(\"KATTLEKRUK_SET\", \"Bonus\", 0, 0)"
+                          },
+                          "ref": {
+                            "call": "GetSetBonus",
+                            "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
+                          },
+                          "children": [
+                            {
+                              "key": "custom-maps-equipment-sets-kattlekruk-set-3-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomMaps.EquipmentSets.KATTLEKRUK_SET[3][2]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "arcane-type-arcane-upg-bonus-57-0",
+                      "name": "Universe Talent",
+                      "nameProof": {
+                        "names": "ArcaneType(\"ArcaneUpgBonus\", 57, 0)"
+                      },
+                      "ref": {
+                        "call": "ArcaneType",
+                        "args": ["ArcaneUpgBonus", 57, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "arcane-57",
+                          "name": "Universe Talent level",
+                          "nameProof": {
+                            "names": "Arcane[57]"
+                          },
+                          "ref": {
+                            "read": "Arcane[57]"
+                          }
+                        },
+                        {
+                          "key": "custom-lists-arcane-upg-57-5",
+                          "name": "Bonus per level (Arcane)",
+                          "nameProof": {
+                            "names": "CustomLists.ArcaneUpg[57][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.ArcaneUpg[57][5]"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "key": "lv0-0",
+                      "name": "Class level",
+                      "nameProof": {
+                        "names": "Lv0[0]"
+                      },
+                      "ref": {
+                        "read": "Lv0[0]"
+                      }
+                    },
+                    {
+                      "key": "gaming-stat-type-super-bit-type-47-0",
+                      "name": "+1 LV for all Talents per 100 Class LV over 500. Total Bonus: LV",
+                      "nameProof": {
+                        "names": "GamingStatType(\"SuperBitType\", 47, 0)"
+                      },
+                      "ref": {
+                        "call": "GamingStatType",
+                        "args": ["SuperBitType", 47, 0]
+                      }
+                    },
+                    {
+                      "key": "thingies-super-talent-pts-lvgiven-0-0",
+                      "name": "Super Talent levels given",
+                      "nameProof": {
+                        "names": "Thingies(\"SuperTalentPTS_LVgiven\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "Thingies",
+                        "args": ["SuperTalentPTS_LVgiven", 0, 0]
+                      },
+                      "tree": "legend-super-lvgiven"
+                    }
+                  ]
+                },
+                {
                   "key": "skill-levels-24",
                   "name": "Curse of mr looty booty level",
                   "nameProof": {
@@ -278,6 +1019,26 @@
                   },
                   "ref": {
                     "read": "SkillLevels[24]"
+                  }
+                },
+                {
+                  "key": "custom-lists-talent-descriptions-24-1-0",
+                  "name": "Curse Of Mr Looty Booty curve constant",
+                  "nameProof": {
+                    "names": "CustomLists.TalentDescriptions[24][1][0]"
+                  },
+                  "ref": {
+                    "read": "CustomLists.TalentDescriptions[24][1][0]"
+                  }
+                },
+                {
+                  "key": "custom-lists-talent-descriptions-24-1-1",
+                  "name": "Curse Of Mr Looty Booty curve constant",
+                  "nameProof": {
+                    "names": "CustomLists.TalentDescriptions[24][1][1]"
+                  },
+                  "ref": {
+                    "read": "CustomLists.TalentDescriptions[24][1][1]"
                   }
                 }
               ]
@@ -2706,14 +3467,11 @@
                   },
                   "children": [
                     {
-                      "key": "talent-calc-4",
-                      "name": "Talent bonuses (all)",
-                      "nameProof": {
-                        "names": "TalentCalc(-4)"
-                      },
+                      "key": "talent-calc-any",
+                      "name": null,
                       "ref": {
                         "call": "TalentCalc",
-                        "args": [-4]
+                        "args": ["any"]
                       },
                       "children": [
                         {
@@ -5873,10 +6631,6 @@
       "kind": "system"
     },
     {
-      "where": "pools/0/groups/1/sources/0/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/0/groups/2",
       "kind": "system"
     },
@@ -5927,10 +6681,6 @@
     {
       "where": "pools/0/groups/7",
       "kind": "system"
-    },
-    {
-      "where": "pools/0/groups/7/sources/0/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/0/groups/9",
@@ -7495,6 +8245,266 @@
     {
       "where": "pools/3/groups/4/sources/0",
       "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/1/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/5",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/7",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/8",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/9/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/9/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/10/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/10/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/11/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/11/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/12",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/0/children/13",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/1/sources/0/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/5",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/7",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/8",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/9/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/9/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/10/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/10/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/11/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/11/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/12",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/0/children/13",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/7/sources/0/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/2/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/18/children/0",
+      "kind": "name"
     }
   ]
 }
