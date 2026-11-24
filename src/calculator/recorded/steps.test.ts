@@ -294,3 +294,22 @@ test("a value a call set before a loop turn never ties to a read of that turn by
   // P's call is in no turn: a loose value, never the turn's read C with its value (T177 r4)
   expect(step?.e).toMatchObject({ l: { t: "val", v: 6 } });
 });
+
+test("a block's own argument in its count is a fixed value, by its place among the block's parameters (T209, form 1)", () => {
+  // TreeArg(t) is TreeBase × t, as the game's Holes("B_UPG", 82, 20) is its 3rd argument × Holes[11][55]
+  const rec = recorder.record(mosaicOf(), [["TreeArg", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  expect(makeSteps(rec, recorder.ops).of(top.id).steps).toEqual([
+    {
+      v: 12,
+      e: {
+        t: "op",
+        o: "*",
+        l: { t: "read", p: "TreeBase", v: 4 },
+        r: { t: "num", v: 3 },
+        v: 12,
+      },
+    },
+  ]);
+});
