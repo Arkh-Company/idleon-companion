@@ -9,7 +9,7 @@ import { callRef } from "./answer-key-pool.ts";
 import {
   cacheAuthor,
   isCacheRead,
-  writeExpr,
+  writeSource,
   writeTurn,
 } from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -55,7 +55,7 @@ export function openingOf(
     {
       part: callRef(a.node),
       call: a.node,
-      expr: writeExpr(ctx.rec, a, ctx.turnOf, turn),
+      expr: writeSource(ctx.rec, a, ctx.turnOf, turn),
       write: a.write,
       steps: turn,
       value: typeof v === "number" ? v : null,

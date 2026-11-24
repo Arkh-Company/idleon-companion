@@ -10,7 +10,7 @@ import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
-import { leavesOf } from "./lock-parts.ts";
+import { leavesOf, num } from "./lock-parts.ts";
 
 export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
 
@@ -119,20 +119,23 @@ export function cacheAuthor(
 
 type TurnOf = (n: RecNode, range: LoopTurn) => BlockSteps;
 
+/** The author's write before `write`, on any path, or null. */
+const writeBefore = (
+  rec: Recording,
+  { node, write }: { node: RecNode; write: RecWrite },
+): RecWrite | null =>
+  [...rec.writes, ...rec.spliced]
+    .filter((w) => w.node === node.id && w.seq < write.seq)
+    .reduce<RecWrite | null>((a, w) => (a && a.seq > w.seq ? a : w), null);
+
 /** The steps of the author's turn that gave its write: since its write before it. */
 export function writeTurn(
   rec: Recording,
-  { node, write }: { node: RecNode; write: RecWrite },
+  a: { node: RecNode; write: RecWrite },
   turnOf: TurnOf,
 ): BlockSteps {
-  const before = [...rec.writes, ...rec.spliced].filter(
-    (w) => w.node === node.id && w.seq < write.seq,
-  );
-  const from = before.reduce<RecWrite | null>(
-    (a, w) => (a && a.seq > w.seq ? a : w),
-    null,
-  );
-  return turnOf(node, { from: from?.xi ?? 0, to: write.xi - 1 });
+  const from = writeBefore(rec, a);
+  return turnOf(a.node, { from: from?.xi ?? 0, to: a.write.xi - 1 });
 }
 
 /** The expression that gave the author's write: the last step of its turn (`turn`), with the value. */
@@ -145,6 +148,44 @@ export function writeExpr(
   // shortcut: a write of a call's value with no step of its own gives none; take the call when a cache needs it
   const last = turn.steps.at(-1);
   return last && near(last.v, a.write.v) ? last.e : null;
+}
+
+/**
+ * What gave the author's write (T191): its turn's last step, or else, with no step of its own, the bare read or the call
+ * made right before it, since its write before and after that step, by its place (the value only checks). A read and a
+ * call, or two calls, there are no place that decides: none.
+ */
+export function writeSource(
+  rec: Recording,
+  a: { node: RecNode; write: RecWrite },
+  turnOf: TurnOf,
+  turn = writeTurn(rec, a, turnOf),
+): Expr | null {
+  const e = writeExpr(rec, a, turnOf, turn);
+  if (e) return e;
+  const { node, write } = a;
+  const prev = writeBefore(rec, a);
+  const from = Math.max(prev?.xi ?? 0, (turn.stepAt?.at(-1) ?? -1) + 1);
+  const r = (node.rx ?? [])
+    .filter(
+      ([, , pos, seq]) =>
+        pos >= from &&
+        pos <= write.xi &&
+        (seq === undefined || (seq < write.seq && seq >= (prev?.seq ?? 0))),
+    )
+    .at(-1);
+  const read = r && near(num(r[1]), write.v) ? r : undefined;
+  const calls = node.c.flatMap((id) => {
+    const k = rec.nodes[id];
+    return k && k.pxi >= from && k.pxi <= write.xi && near(k.v, write.v)
+      ? [k]
+      : [];
+  });
+  const [k] = calls;
+  if (read && !k) return { t: "read", p: read[0], v: num(read[1]) };
+  return !read && k && calls.length === 1
+    ? { t: "call", id: k.id, v: num(k.v) }
+    : null;
 }
 
 /** The read of `path` among the leaves of `e` when there is one only: the place of a read opened, never by order. */

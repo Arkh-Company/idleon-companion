@@ -1,13 +1,18 @@
 // The parts of a level (spec 010, FR-010, research R6; moved out of lock-levels.ts as it was): its expression's
 // references, and with a curve or a log in it what builds their arguments. A pass-through variable (T188; the game's
 // PostOfficeINFO and its DNSM.PostOffInfoDN1) is no part: a DNSM path the call read after its own write, at the read's
-// place. The tree goes down through the expression that gave that write in the call's turn, or the bare read made right
-// before it (by its place; the value only checks), and on through its own passages; never back to the call itself.
+// place. The tree goes down through what gave that write in the call's turn (cache-author.ts writeSource: its step, or
+// the bare read or the call right before it), and on through its own passages; never back to the call itself.
 // The cache whose write the level came from stays: an author's read of its own earlier turn goes a turn at a time (T168).
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
-import { callRef, near } from "./answer-key-pool.ts";
-import { isCacheRead, seenSeqs, writeExpr, writeTurn } from "./cache-author.ts";
+import { callRef } from "./answer-key-pool.ts";
+import {
+  isCacheRead,
+  seenSeqs,
+  writeSource,
+  writeTurn,
+} from "./cache-author.ts";
 import type { Level, LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, literal, num } from "./lock-parts.ts";
 import { notLeafOf } from "./not-leaves.ts";
@@ -35,23 +40,16 @@ function ownWrite(
   return last && saw.every((w) => w?.node === scope.id) ? last : null;
 }
 
-/** What gave the call's write `w`: its turn's step, or else the bare read made right before it, after that step. */
-function writeSource(
+/** What gave the call's write `w` (cache-author.ts writeSource), with the steps of its turn. */
+function writeOf(
   scope: RecNode,
   w: RecWrite,
   ctx: LevelContext,
 ): { e: Expr; steps: BlockSteps } | null {
   const a = { node: scope, write: w };
   const steps = writeTurn(ctx.rec, a, ctx.turnOf);
-  const e = writeExpr(ctx.rec, a, ctx.turnOf, steps);
-  if (e) return { e, steps };
-  const after = steps.stepAt?.at(-1) ?? -1;
-  const r = (scope.rx ?? []).findLast(
-    ([, , pos, seq]) => pos <= w.xi && pos > after && (seq ?? -1) < w.seq,
-  );
-  return r && near(num(r[1]), w.v)
-    ? { e: { t: "read", p: r[0], v: num(r[1]) }, steps }
-    : null;
+  const e = writeSource(ctx.rec, a, ctx.turnOf, steps);
+  return e && { e, steps };
 }
 
 /** The leaves, each pass-through variable among them swapped for the leaves of what gave its write, down. */
@@ -65,8 +63,7 @@ function passThrough(
   return leaves.flatMap((l) => {
     const w = l.t === "read" ? ownWrite(scope, l.p, steps, ctx, sum, l) : null;
     if (!w) return [l];
-    const src = writeSource(scope, w, ctx);
-    // shortcut: a write with no step nor bare read of its own (a call's value) has no part; take the call when one needs it
+    const src = writeOf(scope, w, ctx);
     return src ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum) : [];
   });
 }
