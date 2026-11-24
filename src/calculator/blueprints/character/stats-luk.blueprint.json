@@ -4815,14 +4815,11 @@
                                   ]
                                 },
                                 {
-                                  "key": "summoning-ribbon-bonus-25-0",
-                                  "name": "Ribbon, tier 25",
-                                  "nameProof": {
-                                    "names": "Summoning(\"RibbonBonus\", 25, 0)"
-                                  },
+                                  "key": "summoning-ribbon-bonus-0",
+                                  "name": null,
                                   "ref": {
                                     "call": "Summoning",
-                                    "args": ["RibbonBonus", 25, 0]
+                                    "args": ["RibbonBonus", "*", 0]
                                   },
                                   "children": [
                                     {
@@ -7488,6 +7485,10 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2",
       "kind": "name"
     },
     {

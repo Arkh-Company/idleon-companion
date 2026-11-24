@@ -1860,14 +1860,15 @@
                           },
                           "children": [
                             {
-                              "key": "divinity-div-minor-bonus-8-1",
+                              "key": "divinity-div-minor-bonus-1",
                               "name": "Arctis",
                               "nameProof": {
-                                "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                "table": "CustomLists.GodsInfo",
+                                "row": 1
                               },
                               "ref": {
                                 "call": "Divinity",
-                                "args": ["DivMinorBonus", 8, 1]
+                                "args": ["DivMinorBonus", "{character}", 1]
                               },
                               "children": [
                                 {
@@ -6258,14 +6259,15 @@
                               },
                               "children": [
                                 {
-                                  "key": "divinity-div-minor-bonus-8-1",
+                                  "key": "divinity-div-minor-bonus-1",
                                   "name": "Arctis",
                                   "nameProof": {
-                                    "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                    "table": "CustomLists.GodsInfo",
+                                    "row": 1
                                   },
                                   "ref": {
                                     "call": "Divinity",
-                                    "args": ["DivMinorBonus", 8, 1]
+                                    "args": ["DivMinorBonus", "{character}", 1]
                                   },
                                   "children": [
                                     {
