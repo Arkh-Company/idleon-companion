@@ -1411,6 +1411,14 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeAuthorDeep = function () {
     return Blocks._customBlock_TreeAuthorCall() + state().TreeCapped;
   };
+  // Spec 010 (T187): a call that returns the cache bare, as the game's EtcBonuses returns DNSM.TotalStatsETCmap: its
+  // author, a builder, is no call of its own.
+  Blocks._customBlock_TreeAuthorBare = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v;
+  };
+  Blocks._customBlock_TreeAuthorBareRoot = function () {
+    return Blocks._customBlock_TreeAuthorBare() + state().TreeCapped;
+  };
   // A block that builds the cache by summing a list in a loop over its own last value: 3 + 2 + 4 + 6 = 15.
   Blocks._customBlock_TreeAuthorLoop = function () {
     var d = a.engine.getGameAttribute("DNSM").h;
