@@ -21,7 +21,13 @@ import {
   TOLERANCE,
 } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { eachNames, eachPattern, keyMatches, matchRead } from "./refs.ts";
+import {
+  eachNames,
+  eachPattern,
+  keyMatches,
+  matchRead,
+  savedTwice,
+} from "./refs.ts";
 
 type Ctx = Pick<LevelContext, "rec" | "character">;
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -29,8 +35,12 @@ type Ref = NonNullable<BlueprintNode["ref"]>;
 export interface TwoValues {
   two: [number | string, number | string];
 }
-/** What a place recorded for a reference: nothing, two values, or its one value (with its call, for a call). */
-type Found = "none" | TwoValues | { v: unknown; call?: RecNode | undefined };
+/** What a place recorded for a reference: nothing, two values, two calls its `*` takes, or its one value (and call). */
+type Found =
+  | "none"
+  | TwoValues
+  | { twice: string }
+  | { v: unknown; call?: RecNode | undefined };
 
 const shown = (v: unknown): number | string =>
   typeof v === "number" || typeof v === "string" ? v : JSON.stringify(v);
@@ -72,6 +82,8 @@ function recordedIn(ref: Ref, nodes: readonly RecNode[], ctx: Ctx): Found {
       keyMatches(ref, callRef(n), ctx.character),
     );
     if (calls.length === 0) return "none";
+    const twice = savedTwice(ref, calls.map(callRef), ctx.character);
+    if (twice !== null) return { twice };
     const f = oneOf(calls.map((n) => n.v));
     return "v" in f ? { ...f, call: calls[0] } : f;
   }
@@ -132,6 +144,10 @@ function lockPart(
 ): number | null {
   const { where } = ctx;
   const f: Found = child.ref ? recordedIn(child.ref, nodes, ctx) : "none";
+  if (f !== "none" && "twice" in f) {
+    out.errors.push({ kind: "rootForm", where, got: f.twice });
+    return null;
+  }
   if (f === "none" || "two" in f) {
     if (!child.children) leafCheck(child, where, out);
     out.errors.push(
