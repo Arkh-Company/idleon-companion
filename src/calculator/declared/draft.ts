@@ -24,6 +24,7 @@ import { sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
 import { ITEM, listOf, modelName } from "./draft-list.ts";
 import type { ListModel } from "./draft-list.ts";
+import type { CommonBranch, DraftPiece } from "./draft-pieces.ts";
 import { codeOf, keyIn, partName, refOf } from "./draft-names.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
@@ -41,6 +42,8 @@ export interface DraftContext {
   talentOrder: readonly unknown[];
   /** The blueprints of `blueprints/` (T200): a part that is the root of one is a line with a link to its tree. */
   trees?: readonly Pick<Blueprint, "id" | "root">[];
+  /** The common branches (T203): a part that calls one is a line with its piece; COMMON_BRANCHES by default. */
+  branches?: readonly CommonBranch[];
 }
 export const NO_CONTEXT: DraftContext = { character: 0, talentOrder: [] };
 
@@ -78,6 +81,8 @@ export interface DraftBlueprint {
     groups: { system: string | null; sources: DraftNode[] }[];
   }[];
   pending: BlueprintPending[];
+  /** The pieces of its common branches (T203), each written apart, never in the draft's JSON. */
+  pieces?: DraftPiece[];
 }
 
 /** A part as the recording shows it: its reference key, its recorded call, and what is below it. */

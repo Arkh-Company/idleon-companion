@@ -1,5 +1,6 @@
 // The draft's JSON (spec 010, research R7): already as prettier leaves it, so a draft written to TREES_OUT needs no
 // format before an agent reads or copies it.
+import type { DraftPiece } from "./draft-pieces.ts";
 import type { DraftBlueprint } from "./draft.ts";
 
 const flat = (v: unknown): boolean =>
@@ -26,3 +27,4 @@ function pretty(v: unknown, indent: string): string {
   return `{\n${lines.join(",\n")}\n${indent}}`;
 }
 export const draftJson = (d: DraftBlueprint): string => `${pretty(d, "")}\n`;
+export const pieceJson = (p: DraftPiece): string => `${pretty(p, "")}\n`;
