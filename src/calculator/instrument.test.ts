@@ -19,6 +19,7 @@ function run(source: string, name: string, args: unknown[] = [7, 2]) {
   const sandbox = {
     Blocks: {} as Record<string, (...a: unknown[]) => unknown>,
     __X: (id: number, v: unknown) => (steps.push([id, v]), v),
+    __R: () => undefined,
   };
   runInContext(source, createContext(sandbox));
   const value = sandbox.Blocks[`_customBlock_${name}`]?.(...args);
@@ -177,3 +178,27 @@ test("nothing is written to disk during the instrumentation (FR-011)", () => {
   expect(writers.length).toBeGreaterThan(0);
   for (const [, f] of writers) expect(f).not.toHaveBeenCalled();
 });
+
+test.each([
+  ["return Blocks._customBlock_K(a)", ["call"]],
+  ["var r = Blocks._customBlock_K(a); var k = b.k; return r", ["call"]],
+  ["return b.k", ["read"]],
+  ["var l = b.k; return l", ["read"]],
+  ["return a && b.k", []],
+  ["return 0", []],
+  ["return [1].map(function (x) { return b.k; })[0]", []],
+])(
+  "the return of `%s` notes what it returns by its place: a block's call, a read or neither (spec 010)",
+  (body, noted) => {
+    const { source } = instrument(block("Ret", body) + block("K", "return a"));
+    const rets: unknown[] = [];
+    const sandbox = {
+      Blocks: {} as Record<string, (...a: unknown[]) => unknown>,
+      __X: (_: number, v: unknown) => v,
+      __R: (k: unknown) => rets.push(k),
+    };
+    runInContext(source, createContext(sandbox));
+    sandbox.Blocks._customBlock_Ret?.(7, 2);
+    expect(rets).toEqual(noted);
+  },
+);

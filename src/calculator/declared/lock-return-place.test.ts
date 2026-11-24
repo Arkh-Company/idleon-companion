@@ -3,6 +3,7 @@
 // code on an `add` curve, the level a step before the curve: with ×1 the level and the curve are both 27. TreeEarlyCall
 // and TreeLateCall return a bare read of 7 after their step, with a call worth 7 before the step or right after it.
 import { expect, test } from "vitest";
+import { CHARACTERS, SAVED } from "../fixtures/fake-mosaic.ts";
 import { levelContext, recorded } from "./lock-fixture.ts";
 import { returnOf } from "./lock-parts.ts";
 
@@ -37,4 +38,29 @@ test("a call and a read both after the last step, both worth the call's value: t
   const late = rec.nodes.find((x) => x.b === "TreeLateCall");
   expect(late?.v).toBe(7);
   expect(late && returnOf(late, ctx)).toBeNull();
+});
+
+test("a talent at 0 points returns its curve's call by the return's recorded place, though its level read is 0 too; with no place recorded, none", () => {
+  const [wren, wrenna] = CHARACTERS;
+  const attrs = {
+    PlayerDATABASE: {
+      $m: {
+        [wren]: { $m: { ...SAVED[0].$m, SkillLevels: [0, 4] } },
+        [wrenna]: SAVED[1],
+      },
+    },
+  };
+  const { rec, ops } = recorded("TreeDeclChain", attrs);
+  const ctx = levelContext(rec, ops, "root");
+  const talent = rec.nodes.find(
+    (n) => n.b === "TreeDeclTalent" && n.a[0] === 0,
+  );
+  const curve = rec.nodes[talent?.c.at(-1) ?? -1];
+  expect([talent?.v, curve?.v, talent?.rx?.at(-1)?.[1]]).toEqual([0, 0, 0]);
+  expect(talent && returnOf(talent, ctx)).toMatchObject({
+    t: "call",
+    id: curve?.id,
+  });
+  delete talent?.rt;
+  expect(talent && returnOf(talent, ctx)).toBeNull();
 });
