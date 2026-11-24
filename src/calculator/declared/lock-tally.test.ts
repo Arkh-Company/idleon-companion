@@ -29,3 +29,25 @@ test("the tally counts nodes: a pending one with two kinds once, and a failed on
     }),
   ).toEqual({ passed: 1, failed: 1, pending: 1 });
 });
+
+test("the tally counts as failed only a node: a model child's items as the model, never the root nor a pool (r3)", () => {
+  const at = "decl-chain/0/family-bonuses/best";
+  expect(
+    lockTally(
+      {
+        ok: false,
+        errors: [
+          { kind: "rootForm", where: "root", got: "two" },
+          { kind: "missingSource", where: "pool:0" },
+          { kind: "leafType", where: `${at}/best-lv` },
+          { kind: "notClosing", where: `${at}/best-lv-3` },
+          { kind: "notClosing", where: `${at}/best-lv-4` },
+        ],
+        counts: { closed: 2, closedByRecorded: 0, leaves: 1, branches: 1 },
+        closedAt: ["root", at, `${at}/best-lv-5`],
+        pendingAt: [],
+      },
+      inventedBlueprint("decl-chain"),
+    ),
+  ).toEqual({ passed: 2, failed: 1, pending: 0 });
+});
