@@ -1489,6 +1489,45 @@
               },
               "children": [
                 {
+                  "key": "arcade-max",
+                  "name": null,
+                  "constant": 2,
+                  "children": [
+                    {
+                      "key": "arcade-upg-27-max",
+                      "name": "Arcade Drop Rate level",
+                      "nameProof": {
+                        "names": "ArcadeUpg[27]"
+                      },
+                      "ref": {
+                        "read": "ArcadeUpg[27]"
+                      },
+                      "leaf": "condition",
+                      "conditionKind": "max"
+                    }
+                  ]
+                },
+                {
+                  "key": "spirit-reindeer",
+                  "name": null,
+                  "constant": 2,
+                  "children": [
+                    {
+                      "key": "companions-27",
+                      "name": "Spirit Reindeer",
+                      "nameProof": {
+                        "names": "Companions(27)"
+                      },
+                      "ref": {
+                        "call": "Companions",
+                        "args": [27]
+                      },
+                      "leaf": "condition",
+                      "conditionKind": "owned"
+                    }
+                  ]
+                },
+                {
                   "key": "arcade-upg-27",
                   "name": "Arcade Drop Rate level",
                   "nameProof": {
@@ -1496,17 +1535,6 @@
                   },
                   "ref": {
                     "read": "ArcadeUpg[27]"
-                  }
-                },
-                {
-                  "key": "companions-27",
-                  "name": "Spirit Reindeer",
-                  "nameProof": {
-                    "names": "Companions(27)"
-                  },
-                  "ref": {
-                    "call": "Companions",
-                    "args": [27]
                   }
                 }
               ]
@@ -2006,6 +2034,45 @@
                       },
                       "children": [
                         {
+                          "key": "arcade-max",
+                          "name": null,
+                          "constant": 2,
+                          "children": [
+                            {
+                              "key": "arcade-upg-51-max",
+                              "name": "Arcade Emperor Bonuses level",
+                              "nameProof": {
+                                "names": "ArcadeUpg[51]"
+                              },
+                              "ref": {
+                                "read": "ArcadeUpg[51]"
+                              },
+                              "leaf": "condition",
+                              "conditionKind": "max"
+                            }
+                          ]
+                        },
+                        {
+                          "key": "spirit-reindeer",
+                          "name": null,
+                          "constant": 2,
+                          "children": [
+                            {
+                              "key": "companions-27",
+                              "name": "Spirit Reindeer",
+                              "nameProof": {
+                                "names": "Companions(27)"
+                              },
+                              "ref": {
+                                "call": "Companions",
+                                "args": [27]
+                              },
+                              "leaf": "condition",
+                              "conditionKind": "owned"
+                            }
+                          ]
+                        },
+                        {
                           "key": "arcade-upg-51",
                           "name": "Arcade Emperor Bonuses level",
                           "nameProof": {
@@ -2013,17 +2080,6 @@
                           },
                           "ref": {
                             "read": "ArcadeUpg[51]"
-                          }
-                        },
-                        {
-                          "key": "companions-27",
-                          "name": "Spirit Reindeer",
-                          "nameProof": {
-                            "names": "Companions(27)"
-                          },
-                          "ref": {
-                            "call": "Companions",
-                            "args": [27]
                           }
                         }
                       ]
@@ -4672,6 +4728,45 @@
                   },
                   "children": [
                     {
+                      "key": "arcade-max",
+                      "name": null,
+                      "constant": 2,
+                      "children": [
+                        {
+                          "key": "arcade-upg-51-max",
+                          "name": "Arcade Emperor Bonuses level",
+                          "nameProof": {
+                            "names": "ArcadeUpg[51]"
+                          },
+                          "ref": {
+                            "read": "ArcadeUpg[51]"
+                          },
+                          "leaf": "condition",
+                          "conditionKind": "max"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "spirit-reindeer",
+                      "name": null,
+                      "constant": 2,
+                      "children": [
+                        {
+                          "key": "companions-27",
+                          "name": "Spirit Reindeer",
+                          "nameProof": {
+                            "names": "Companions(27)"
+                          },
+                          "ref": {
+                            "call": "Companions",
+                            "args": [27]
+                          },
+                          "leaf": "condition",
+                          "conditionKind": "owned"
+                        }
+                      ]
+                    },
+                    {
                       "key": "arcade-upg-51",
                       "name": "Arcade Emperor Bonuses level",
                       "nameProof": {
@@ -4679,17 +4774,6 @@
                       },
                       "ref": {
                         "read": "ArcadeUpg[51]"
-                      }
-                    },
-                    {
-                      "key": "companions-27",
-                      "name": "Spirit Reindeer",
-                      "nameProof": {
-                        "names": "Companions(27)"
-                      },
-                      "ref": {
-                        "call": "Companions",
-                        "args": [27]
                       }
                     }
                   ]
@@ -6823,14 +6907,6 @@
       "kind": "system"
     },
     {
-      "where": "pools/0/groups/16/sources/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/16/sources/0/children/1",
-      "kind": "descend"
-    },
-    {
       "where": "pools/0/groups/17",
       "kind": "system"
     },
@@ -6969,14 +7045,6 @@
     {
       "where": "pools/0/groups/22/sources/0/children/8/children/1/children/1",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/22/sources/0/children/8/children/2/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/22/sources/0/children/8/children/2/children/1",
-      "kind": "descend"
     },
     {
       "where": "pools/0/groups/22/sources/0/children/8/children/3/children/0",
@@ -7637,14 +7705,6 @@
     {
       "where": "pools/0/groups/43/sources/0/children/1/children/1",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/43/sources/0/children/2/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/43/sources/0/children/2/children/1",
-      "kind": "descend"
     },
     {
       "where": "pools/0/groups/43/sources/0/children/3/children/0",
@@ -8489,6 +8549,42 @@
     {
       "where": "pools/0/groups/38/sources/0/children/0/children/2",
       "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/16/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/16/sources/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/16/sources/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/22/sources/0/children/8/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/22/sources/0/children/8/children/2/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/22/sources/0/children/8/children/2/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/43/sources/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/43/sources/0/children/2/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/43/sources/0/children/2/children/2",
+      "kind": "leaf"
     }
   ]
 }
