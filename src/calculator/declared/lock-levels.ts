@@ -26,7 +26,7 @@ import {
   termExpr,
   TOLERANCE,
   transparentValue,
-  zeroed,
+  literal,
 } from "./lock-parts.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
@@ -159,7 +159,7 @@ function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
     const role = notLeafOf(k, ctx.character)?.role;
     return role === "curve" || role === "log";
   });
-  if (!fed && !zeroed(level.expr))
+  if (!fed && !literal(level.expr))
     return [...new Set(own)].filter((k) => !transparent(k));
   const { scope } = level;
   const others = ctx

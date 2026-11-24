@@ -38,6 +38,7 @@ export function stepsGuide(
     turnOf: made.turnOf,
     character: dc.character,
     where: key.root,
+    ops,
   };
   const m = (s: string) => marked(s, dc.character);
   const text = (e: Expr): string => {

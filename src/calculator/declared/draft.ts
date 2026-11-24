@@ -285,6 +285,7 @@ export function draftBlueprint(
     turnOf: made.turnOf,
     character: dc.character,
     where: id,
+    ops,
   };
   const pending: BlueprintPending[] = [];
   const wait = (where: string, kind: BlueprintPending["kind"]) => {

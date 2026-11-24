@@ -159,13 +159,24 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   if (kid && lastAt !== undefined && lastAt < kid.pxi && near(kid.v, n.v))
     return call;
   if (last && near(last.v, n.v)) return last.e;
+  if (near(kid?.v, n.v)) return call;
   // a 0 that no step nor call gave is the code's own `return 0` before its count (T183: the gate, a level 0)
-  if (n.v === 0 && !near(kid?.v, 0)) return { t: "num", v: 0 };
+  if (n.v === 0) return { t: "num", v: 0 };
+  // a bare `return read` (a cache, a table's cell): the call's last read, made after its last step, by its place
+  const r = n.rx?.at(-1);
+  if (r && r[2] > (lastAt ?? -1) && near(num(r[1]), n.v))
+    return { t: "read", p: r[0], v: num(r[1]) };
+  // with only tests run (no arithmetic, no call), a number no read gave is the code's literal (an achievement's 1)
+  const tests = ["leaf", "test", "cmp"];
+  const onlyTests =
+    !!ctx.ops &&
+    (n.x ?? []).every(([id]) => tests.includes(ctx.ops?.[id]?.kind ?? ""));
+  if (onlyTests && !kid && typeof n.v === "number") return { t: "num", v: n.v };
   return call;
 }
 
-/** A call zeroed by an early return (`returnOf` gave the code's 0): its parts are what it read before the return. */
-export const zeroed = (e: Expr | null): boolean => e?.t === "num" && e.v === 0;
+/** A call that returned the code's literal (`returnOf`): its parts are what it read before the return. */
+export const literal = (e: Expr | null): boolean => e?.t === "num";
 
 /** A curve's value: counted again from its own last step when its numeric arguments differ, else the recorded one. */
 export function transparentValue(
