@@ -5,7 +5,8 @@ import type { RecNode, RecValue } from "../recording.ts";
 export type StepValue = number | boolean | null | undefined;
 export type Expr =
   | { t: "num"; v: number | string | boolean | null }
-  | { t: "val"; v: StepValue }
+  // `arg`: the block's own argument at that place among its parameters (T209, form 1), a fixed value
+  | { t: "val"; v: StepValue; arg?: number }
   | { t: "call"; id: number; v: StepValue }
   | { t: "read"; p: string; v: StepValue }
   | { t: "def"; e: Expr; v: StepValue }

@@ -9,29 +9,25 @@
 // recipe piece closes by the piece's count or its recipe instead (lock-pieces.ts).
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
-import { callRef, relDiff } from "./answer-key-pool.ts";
+import { callRef } from "./answer-key-pool.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
-import { evalExpr } from "./expr-eval.ts";
 import { onlyRead } from "./cache-author.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
 import {
-  keyOfLeaf,
   leafCheck,
   leavesOf,
   num,
   returnOf,
   saveChild,
   termExpr,
-  TOLERANCE,
-  transparentValue,
 } from "./lock-parts.ts";
 import { modelChildren } from "./lock-each.ts";
+import { closeLevel } from "./lock-close.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
-import { notLeafOf } from "./not-leaves.ts";
 import { keyMatches, matchRead, savedTwice } from "./refs.ts";
 import { writtenArgs } from "./save-args.ts";
 
@@ -240,54 +236,6 @@ export function lockLevel(
     }
   if (!whole) return;
   closeLevel(level, leaves, ctx, out);
-}
-
-function closeLevel(
-  level: Level,
-  leaves: readonly Expr[],
-  ctx: LevelContext,
-  out: LevelOut,
-): void {
-  const { expr, scope, value } = level;
-  const expected = value ?? Number.NaN;
-  if (!expr) {
-    out.errors.push({ kind: "notClosing", where: ctx.where, expected });
-    return;
-  }
-  const reads = new Map((scope.r ?? []).map(([p, v]) => [p, v]));
-  const by = { recorded: false };
-  const { open } = level;
-  const got = open
-    ? open.reduce<number | null>(
-        (s, o) => (s === null || o.value === null ? null : s + o.value),
-        0,
-      )
-    : evalExpr(expr, (e) => {
-        if (!leaves.includes(e)) return undefined;
-        const k = keyOfLeaf(e, ctx.rec);
-        const n = e.t === "call" ? ctx.rec.nodes[e.id] : undefined;
-        if (n && k !== null && notLeafOf(k, ctx.character)) {
-          const t = transparentValue(n, ctx);
-          by.recorded ||= t.byRecorded;
-          return t.v ?? undefined;
-        }
-        if (n) return num(n.v) ?? undefined;
-        // a value with no source (an Expr makeSteps could not tie) gives no number: the level does not close (R2)
-        return e.t === "read"
-          ? (num(reads.get(e.p) ?? e.v) ?? undefined)
-          : undefined;
-      });
-  if (got !== null && value !== null && relDiff(got, value) <= TOLERANCE) {
-    if (by.recorded) out.counts.closedByRecorded++;
-    else out.counts.closed++;
-    out.closedAt.push(ctx.where);
-  } else
-    out.errors.push({
-      kind: "notClosing",
-      where: ctx.where,
-      expected,
-      ...(got === null ? {} : { got }),
-    });
 }
 
 function descend(

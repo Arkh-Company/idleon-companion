@@ -44,6 +44,17 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const { nodes } = rec;
   const opIndex = new Map(ops.map((o, i) => [o.node, i]));
   const memo = new Map<number, BlockSteps>();
+  // each block's parameters, from its function's text (T209, form 1: a value that is the block's own argument keeps its
+  // place, `arg`; the spec 008 tree reads it as the loose value it was)
+  const params = new Map<string, string[]>();
+  for (const o of ops)
+    if (!params.has(o.block))
+      params.set(
+        o.block,
+        (/function\s*\(([^)]*)\)/.exec(o.fnText)?.[1] ?? "")
+          .split(",")
+          .map((p) => p.trim()),
+      );
   const ambiguous = new Set<AmbiguousCall>();
   // each if's and ? :'s test op, by the node it decides (Op.owner)
   const testOf = new Map(
@@ -139,6 +150,14 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         // a block's call with no call of its own here is a loose value: never a read with its value (T177 r4)
         return { t: "val", v };
       }
+      // the block's own argument (T209, form 1): its parameter, set by nothing before in the call, by its place
+      const self = ops[id ?? -1];
+      const k =
+        node.type === "Identifier" && self?.def === null
+          ? (params.get(n.b) ?? []).indexOf(String(node.name))
+          : -1;
+      if (k >= 0 && typeof v === "number" && n.a[k] === v)
+        return { t: "val", v, arg: k };
       // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
       // (Op.callIn): the data flow decides, never a read with its value (T177 r3 to r5)
       const op = ops[id ?? -1];
