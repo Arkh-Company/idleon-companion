@@ -1,6 +1,6 @@
 // A common branch as a piece in the draft (spec 010, T203; spec, Open Questions 24/11): a declared list of branches
-// several sources or recipes call. A branch is a piece only where at least two occurrences with other args run one body
-// (planPieces); a place is `{param}` where it changes between them along with the arg (a read's index, or a call's arg
+// several sources or recipes call. A branch is a piece only where at least two occurrences run one body, with other args
+// when it takes a param (planPieces); a place is `{param}` where it changes between them along with the arg (a read's index, or a call's arg
 // of the same kind; the lock checks each line with its args), never by its value alone. A node whose reference takes a
 // param waits for its name (one name for every arg is the agent's), and the body's keys are short (the gitleaks reads a
 // long `key` as a secret). Those occurrences are lines with `piece: { name, args }`; any other is written as the draft
@@ -229,8 +229,8 @@ function fit(set: readonly Occurrence[]): Places | null {
 }
 
 /**
- * Which occurrences are a piece (Revisor r1 of part O): a branch is one only where it runs one body at least twice with
- * other args; the first occurrence, in order, whose body some other shares wins. Each other line is written whole, and
+ * Which occurrences are a piece (Revisor r1 and r2 of part O): a branch is one only where it runs one body at least
+ * twice, with other args when it takes a param; the first occurrence, in order, whose body some other shares wins. Each other line is written whole, and
  * why goes to the guide.
  */
 export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
@@ -245,7 +245,12 @@ export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
         const got = o === seed ? null : fit([...set, o]);
         if (got) [set, at] = [[...set, o], got];
       }
-      if (new Set(set.map((o) => JSON.stringify(o.branch.args))).size > 1) {
+      // other args only where the branch takes a param; one with none is a piece at two occurrences of one body
+      const twice =
+        seed.branch.params.length === 0
+          ? set.length > 1
+          : new Set(set.map((o) => JSON.stringify(o.branch.args))).size > 1;
+      if (twice) {
         chosen = { set, at };
         break;
       }
