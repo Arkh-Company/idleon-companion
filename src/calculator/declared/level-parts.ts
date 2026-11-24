@@ -29,7 +29,10 @@ function ownWrite(
   sum: string | undefined,
   leaf?: Expr,
 ): RecWrite | null {
-  if (!isCacheRead(path) || path === sum) return null;
+  // the game's working maps: DNSM and DummyNumbersStatManager (T209, form 5)
+  const working =
+    isCacheRead(path) || path.startsWith("DummyNumbersStatManager.");
+  if (!working || path === sum) return null;
   const writes = [...ctx.rec.writes, ...ctx.rec.spliced]
     .filter((w) => w.path === path)
     .sort((a, b) => a.seq - b.seq);
