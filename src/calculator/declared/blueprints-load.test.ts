@@ -91,7 +91,7 @@ test("a line with a link loads when its tree is another blueprint's file, and is
           {
             system: "talents",
             sources: [
-              { key: "a", name: "Invented A", ref: { read: "A[1]" }, tree },
+              { key: "a", name: "Invented A", ref: root.ref, tree },
             ],
           },
         ],
@@ -107,5 +107,14 @@ test("a line with a link loads when its tree is another blueprint's file, and is
   );
   expect(loadBlueprints(files("no-such-one")).refused[0]?.reason).toMatch(
     /não existe/,
+  );
+  // the line is the linked recipe's root (r1): another call is another number
+  const other = files("sketch-one");
+  other["../blueprints/w1/sketch-one.blueprint.json"].root = {
+    ...root,
+    ref: { call: "Invented", args: [1] },
+  };
+  expect(loadBlueprints(other).refused[0]?.reason).toMatch(
+    /a linha não é a raiz de sketch-one/,
   );
 });

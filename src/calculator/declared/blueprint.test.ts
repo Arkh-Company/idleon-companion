@@ -307,13 +307,18 @@ test("a draft: pending says where a name, a system, a leaf or a descent is missi
 });
 
 // Spec 010, T200 (spec, Open Questions 23/11, night): a number with a tree of its own is a line with a link to that
-// tree, in place of its descent; the load checks the id is a blueprint's and not the blueprint's own.
+// tree, in place of its descent; the load checks the id is a blueprint's and not the blueprint's own, and (r1) that the
+// line is that blueprint's root: its ref has the root's text, `Block(args in JSON)`.
 test("a line with a link to another number's tree loads with its link; any other link is refused with its reason", () => {
-  const trees = new Set(["invented-number", "invented-luck"]);
+  const trees = new Map<string, string | null>([
+    ["invented-number", 'InventedRoot("Mode",0,0)'],
+    ["invented-luck", 'TreeLuck("LUK")'],
+  ]);
   const linked = (extra: object, change?: (bp: Bp) => void) => {
     const bp = complete();
     const s = source(bp, 0, 0, 1);
     delete s.leaf;
+    s.ref = { call: "TreeLuck", args: ["LUK"] };
     Object.assign(s, { tree: "invented-luck" }, extra);
     change?.(bp);
     const out = parseBlueprint(bp, { ...ctx, trees });
@@ -324,8 +329,15 @@ test("a line with a link to another number's tree loads with its link; any other
   if (typeof ok !== "string")
     expect(ok.blueprint.pools[0]?.groups[0]?.sources[1]).toMatchObject({
       tree: "invented-luck",
-      ref: { read: "PlayerDATABASE[{character}].SkillLevels[3]" },
+      ref: { call: "TreeLuck", args: ["LUK"] },
     });
+  // the linked recipe's root is another call: the line is not the number its link opens
+  expect(linked({ ref: { call: "TreeLuck", args: ["LUK", 0, 0] } })).toBe(
+    'pools/0/groups/0/sources/1: a linha não é a raiz de invented-luck: TreeLuck("LUK",0,0); a raiz é TreeLuck("LUK")',
+  );
+  expect(linked({ ref: { read: "TreeLuck" } })).toMatch(
+    /a linha não é a raiz de invented-luck/,
+  );
   expect(linked({ tree: "invented-other" })).toMatch(/não existe/);
   expect(linked({ tree: "invented-number" })).toMatch(/própria/);
   expect(linked({ tree: "Invented Luck" })).toMatch(/slug/);

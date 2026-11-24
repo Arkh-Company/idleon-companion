@@ -331,7 +331,7 @@ test("a source whose ref is another blueprint's root is a line with a link to it
   const out = parseBlueprint(JSON.parse(draftJson(d)), {
     fileId: "decl-draft",
     systemIds: new Set(SYSTEMS.map((x) => x.id)),
-    trees: new Set(["invented-luck"]),
+    trees: new Map([["invented-luck", "TreeDeclLuck()"]]),
   });
   expect(out.ok).toBe(true);
   // the draft's own root is no link; a root of the same block with other args is another number; a root that is a part
