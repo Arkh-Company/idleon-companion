@@ -758,6 +758,10 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
   };
+  // Spec 010 (T209, form 1): a source whose count is the block's own argument, as Holes("B_UPG", 82, 20).
+  Blocks._customBlock_TreeArgPool = function () {
+    return Blocks._customBlock_TreeArg(3) + state().TreeCapped;
+  };
   Blocks._customBlock_TreeEntry = function (m, t) {
     return state().TreeBase * t;
   };

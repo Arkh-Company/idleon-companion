@@ -295,7 +295,7 @@ test("a value a call set before a loop turn never ties to a read of that turn by
   expect(step?.e).toMatchObject({ l: { t: "val", v: 6 } });
 });
 
-test("a block's own argument in its count is a fixed value, by its place among the block's parameters (T209, form 1)", () => {
+test("a block's own argument in its count keeps its place among the block's parameters (T209, form 1)", () => {
   // TreeArg(t) is TreeBase × t, as the game's Holes("B_UPG", 82, 20) is its 3rd argument × Holes[11][55]
   const rec = recorder.record(mosaicOf(), [["TreeArg", [3]]], NONE);
   const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
@@ -307,7 +307,7 @@ test("a block's own argument in its count is a fixed value, by its place among t
         t: "op",
         o: "*",
         l: { t: "read", p: "TreeBase", v: 4 },
-        r: { t: "num", v: 3 },
+        r: { t: "val", v: 3, arg: 0 },
         v: 12,
       },
     },
