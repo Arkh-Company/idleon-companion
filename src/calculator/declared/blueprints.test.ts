@@ -198,7 +198,7 @@ test("the LUK's leaves have the kind tree/kinds.ts proves, and none it proves wa
     // the recipe's `{character}` is the tree's own index, as the lock reads it; a curve is never a leaf (T182)
     const code =
       "call" in ref ? refKey(ref, 0) : ref.read.replaceAll("{character}", "0");
-    const k = classify({ name: n.name ?? "", code }).leaf;
+    const k = classify({ name: n.name, code }).leaf;
     // a cache's read is never a leaf (T168): it waits to descend, whatever its kind would be
     const aside = code.startsWith("DNSM.") || notLeafOf(code, 0) !== null;
     if (k === "unknown" || aside) return;

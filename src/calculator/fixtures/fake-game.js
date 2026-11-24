@@ -1909,10 +1909,11 @@ lime.$scripts.N = function (_exports, $global) {
     return state().TreeLevel + Blocks._customBlock_TreeGateBonus();
   };
   // Spec 010 (bare return): a call that returns a read with no step of its own (a cache, a table's cell), its one
-  // step unused: TreeBig k2 is 7; the root is 25 + 7 = 32.
+  // step aside: TreeBig k2 is 7; the root is 25 + 7 = 32.
   Blocks._customBlock_TreeBareRead = function () {
     var s = state();
-    var unused = s.TreeBase * 2;
+    var twice = s.TreeBase * 2;
+    if (twice > 100) return twice;
     return s.TreeBig.h.k2;
   };
   Blocks._customBlock_TreeBareRoot = function () {
