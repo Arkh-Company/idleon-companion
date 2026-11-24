@@ -70,7 +70,7 @@ test("two calls of the block the place does not separate are refused with the re
       },
     }),
   ).toContain(
-    "invented-calls/0/cards/ribbons: duas chamadas TreeRibbon(3,0) no nível, e o lugar não as separa",
+    "invented-calls/0/cards/ribbons: duas voltas do laço de TreeRibbonsTwin() têm o mesmo item (TreeRibbon(3,0))",
   );
 });
 
