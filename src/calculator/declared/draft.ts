@@ -1,7 +1,7 @@
 // The draft of a blueprint (spec 010, research R7, FR-004, FR-009): what the machine proves of a number from its
 // answer key and its recording, for an agent to finish. The pools in the game's order; each source and constant in a
 // group of its own, by its structured reference; below each source, the parts the lock asks for (lock-levels.ts
-// callParts), level by level, down to the leaves the recording shows. A name only with its proof in the names table, a
+// partsOf), level by level, down to the leaves the recording shows. A name only with its proof in the names table, a
 // talent's class only from the game's talent order; anything else is pending (`name`, `system`, `leaf`, `descend`),
 // never guessed. The draft carries no value, count or expression, and its JSON is already as prettier leaves it.
 import type { Context } from "../boot.ts";
@@ -26,9 +26,9 @@ import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
-import { callParts } from "./lock-levels.ts";
+import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { returnOf, saveChild, termExpr } from "./lock-parts.ts";
+import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
 import { hasRawCharacterIndex } from "./refs.ts";
 import type { Ref, RefArg } from "./refs.ts";
@@ -135,15 +135,18 @@ function walkPart(
   }
   const own = from?.call === call ? from : undefined;
   const level = expr === undefined ? returnOf(call, ctx) : expr;
+  if (depth >= MAX_DEPTH) return { key, call, below: "descend", why: DEEP };
   // a level the recording opens (a cache's author, a builder's too: no call of this one) goes down by the opening's own
-  // call and the steps of its write, never by a child of the same reference (T187)
-  const open =
-    depth < MAX_DEPTH
-      ? openingOf(
-          { expr: level, scope: call, ...(own?.write && { write: own.write }) },
-          ctx,
-        )
-      : null;
+  // call and the steps of its write, never by a child of the same reference (T187); a refused one gives its reason, as
+  // the lock writes it
+  const at = {
+    expr: level,
+    scope: call,
+    ...(own?.write && { write: own.write }),
+  };
+  const open = openingOf(at, ctx);
+  if (typeof open === "string")
+    return { key, call, below: "descend", why: open };
   if (Array.isArray(open))
     return {
       key,
@@ -160,11 +163,11 @@ function walkPart(
         ),
       ),
     };
-  const parts =
-    depth < MAX_DEPTH ? callParts(call, ctx, expr, own?.write) : DEEP;
-  // a refused opening gives its reason, as the lock writes it
-  if (typeof parts === "string")
-    return { key, call, below: "descend", why: parts };
+  const parts = partsOf(
+    { ...at, value: num(call.v) },
+    level ? leavesOf(level) : [],
+    ctx,
+  );
   // no part the recording ties: a leaf, unless the call reads the save below it (then the agent descends)
   if (parts.length === 0) {
     const save = saveChild(call, ctx);
