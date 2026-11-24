@@ -203,3 +203,45 @@ test("the model is the child with {as}: another call of the same block beside it
     }),
   ).toMatchObject({ ok: true });
 });
+
+test("a pending place below the model covers the same place below each of its calls", () => {
+  const source: BlueprintNode = {
+    key: "reads",
+    name: "Reads",
+    ref: { call: "TreeReadRibbons", args: [] },
+    each: { calls: "TreeRibbonRead", as: "lv" },
+    children: [
+      {
+        key: "ribbon",
+        name: "Ribbon",
+        ref: { call: "TreeRibbonRead", args: ["{lv}"] },
+        children: [{ key: "base", name: "Base", ref: { read: "TreeBase" } }],
+      },
+    ],
+  };
+  const bp: Blueprint = {
+    id: "invented-calls",
+    root: {
+      name: "Invented",
+      ref: { call: "TreeReadCallsPool", args: [0, 0, 0] },
+    },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          { system: "cards", sources: [source] },
+          { system: "stamps", sources: [leaf("level", "TreeLevel")] },
+        ],
+      },
+    ],
+    pending: [
+      {
+        where: "pools/0/groups/0/sources/0/children/0/children/0",
+        kind: "leaf",
+      },
+    ],
+  };
+  expect(
+    lock("TreeReadCallsPool", bp).filter((m) => !m.startsWith("pendente")),
+  ).toEqual([]);
+});

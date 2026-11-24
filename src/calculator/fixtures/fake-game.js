@@ -2708,6 +2708,19 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeCallsPlusPool = function () {
     return Blocks._customBlock_TreeRibbonsPlus() + state().TreeCapped;
   };
+  // ...and a listed block that reads the save below it: its model has a child, pending on the agent.
+  Blocks._customBlock_TreeRibbonRead = function (k) {
+    return k * state().TreeBase;
+  };
+  Blocks._customBlock_TreeReadRibbons = function () {
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbonRead(i + 1);
+    return t;
+  };
+  Blocks._customBlock_TreeReadCallsPool = function () {
+    return Blocks._customBlock_TreeReadRibbons() + state().TreeLevel;
+  };
   Blocks._customBlock_TreeCallsPool = function () {
     return Blocks._customBlock_TreeRibbons() + state().TreeBase;
   };
