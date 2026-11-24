@@ -573,7 +573,7 @@
                       },
                       "ref": {
                         "call": "Divinity",
-                        "args": ["Bonus_Minor", 8, 2]
+                        "args": ["Bonus_Minor", "{character}", 2]
                       },
                       "children": [
                         {
@@ -584,7 +584,7 @@
                           },
                           "ref": {
                             "call": "Divinity",
-                            "args": ["DivMinorBonus", 8, 1]
+                            "args": ["DivMinorBonus", "{character}", 1]
                           },
                           "children": [
                             {
@@ -896,27 +896,6 @@
                   "leaf": "fixedValue"
                 },
                 {
-                  "key": "dnsm-gurt",
-                  "name": "Bonus of the character in turn",
-                  "nameProof": {
-                    "names": "DNSM.GurtBonuzzDN2"
-                  },
-                  "ref": {
-                    "read": "DNSM.GurtBonuzzDN2"
-                  }
-                },
-                {
-                  "key": "dnsm-gurt-2",
-                  "name": "Best bonus of this talent among your characters",
-                  "nameProof": {
-                    "names": "DNSM.GurtBonuzzDN"
-                  },
-                  "ref": {
-                    "read": "DNSM.GurtBonuzzDN"
-                  },
-                  "leaf": "record"
-                },
-                {
                   "key": "playe-54",
                   "name": null,
                   "ref": {
@@ -1169,26 +1148,6 @@
                           "leaf": "investedPoints"
                         },
                         {
-                          "key": "dnsm-pos",
-                          "name": null,
-                          "ref": {
-                            "read": "DNSM.PostOffInfoDN1"
-                          },
-                          "children": [
-                            {
-                              "key": "post-bon",
-                              "name": "Science Spare Parts",
-                              "nameProof": {
-                                "names": "PostOfficeINFO(\"BonusAmount\", 15, \"2\")"
-                              },
-                              "ref": {
-                                "call": "PostOfficeINFO",
-                                "args": ["BonusAmount", 15, "2"]
-                              }
-                            }
-                          ]
-                        },
-                        {
                           "key": "posto-1-2",
                           "name": "Science Spare Parts: first curve number of bonus 3",
                           "nameProof": {
@@ -1246,12 +1205,48 @@
                       },
                       "children": [
                         {
-                          "key": "arb-add-0",
-                          "name": null,
+                          "key": "custom-lists-post-off-upgrade-info-11-13",
+                          "name": "Non Predatory Loot Box: first curve number of bonus 4",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[11][13]"
+                          },
                           "ref": {
-                            "call": "ArbitraryCode5Inputs",
-                            "args": ["add", 0.25, 0, 375, 0, 0]
-                          }
+                            "read": "CustomLists.PostOffUpgradeInfo[11][13]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "post-office-info-3-11-0",
+                          "name": "Non Predatory Loot Box (Post Office box)",
+                          "nameProof": {
+                            "names": "PostOfficeInfo[3][11][0]"
+                          },
+                          "ref": {
+                            "read": "PostOfficeInfo[3][11][0]"
+                          },
+                          "leaf": "investedPoints"
+                        },
+                        {
+                          "key": "custom-lists-post-off-upgrade-info-11-5",
+                          "name": "Non Predatory Loot Box: first curve number of bonus 2",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[11][5]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.PostOffUpgradeInfo[11][5]"
+                          },
+                          "leaf": "fixedValue"
+                        },
+                        {
+                          "key": "custom-lists-post-off-upgrade-info-11-6",
+                          "name": "Non Predatory Loot Box: second curve number of bonus 2",
+                          "nameProof": {
+                            "names": "CustomLists.PostOffUpgradeInfo[11][6]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.PostOffUpgradeInfo[11][6]"
+                          },
+                          "leaf": "fixedValue"
                         }
                       ]
                     }
@@ -1608,26 +1603,6 @@
                           },
                           "children": [
                             {
-                              "key": "dnsm-pos",
-                              "name": null,
-                              "ref": {
-                                "read": "DNSM.PostOffInfoDN1"
-                              },
-                              "children": [
-                                {
-                                  "key": "post-bon",
-                                  "name": "Myriad Crate",
-                                  "nameProof": {
-                                    "names": "PostOfficeINFO(\"BonusAmount\", 20, \"0\")"
-                                  },
-                                  "ref": {
-                                    "call": "PostOfficeINFO",
-                                    "args": ["BonusAmount", 20, "0"]
-                                  }
-                                }
-                              ]
-                            },
-                            {
                               "key": "posto-3-2",
                               "name": "Myriad Crate (Post Office box)",
                               "nameProof": {
@@ -1913,26 +1888,6 @@
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "key": "dnsm-cal",
-                      "name": null,
-                      "ref": {
-                        "read": "DNSM.CalcTalentDN2"
-                      },
-                      "children": [
-                        {
-                          "key": "calc-4",
-                          "name": "Talent bonuses (all)",
-                          "nameProof": {
-                            "names": "TalentCalc(-4)"
-                          },
-                          "ref": {
-                            "call": "TalentCalc",
-                            "args": [-4]
-                          }
                         }
                       ]
                     }
@@ -3699,7 +3654,7 @@
                                   },
                                   "ref": {
                                     "call": "Divinity",
-                                    "args": ["Bonus_Minor", 8, 2]
+                                    "args": ["Bonus_Minor", "{character}", 2]
                                   },
                                   "children": [
                                     {
@@ -3710,7 +3665,11 @@
                                       },
                                       "ref": {
                                         "call": "Divinity",
-                                        "args": ["DivMinorBonus", 8, 1]
+                                        "args": [
+                                          "DivMinorBonus",
+                                          "{character}",
+                                          1
+                                        ]
                                       },
                                       "children": [
                                         {
@@ -5523,7 +5482,7 @@
                                   },
                                   "ref": {
                                     "call": "Divinity",
-                                    "args": ["Bonus_Minor", 8, 2]
+                                    "args": ["Bonus_Minor", "{character}", 2]
                                   },
                                   "children": [
                                     {
@@ -5534,7 +5493,11 @@
                                       },
                                       "ref": {
                                         "call": "Divinity",
-                                        "args": ["DivMinorBonus", 8, 1]
+                                        "args": [
+                                          "DivMinorBonus",
+                                          "{character}",
+                                          1
+                                        ]
                                       },
                                       "children": [
                                         {
@@ -5761,27 +5724,6 @@
                                 "read": "CustomLists.TalentDescriptions[209][1][1]"
                               },
                               "leaf": "fixedValue"
-                            },
-                            {
-                              "key": "dnsm-gur",
-                              "name": "Bonus of the character in turn",
-                              "nameProof": {
-                                "names": "DNSM.GurtBonuzzDN2"
-                              },
-                              "ref": {
-                                "read": "DNSM.GurtBonuzzDN2"
-                              }
-                            },
-                            {
-                              "key": "dnsm-gu-2",
-                              "name": "Best bonus of this talent among your characters",
-                              "nameProof": {
-                                "names": "DNSM.GurtBonuzzDN"
-                              },
-                              "ref": {
-                                "read": "DNSM.GurtBonuzzDN"
-                              },
-                              "leaf": "record"
                             },
                             {
                               "key": "skill-209",
@@ -6447,7 +6389,7 @@
                                   },
                                   "ref": {
                                     "call": "Divinity",
-                                    "args": ["Bonus_Minor", 8, 2]
+                                    "args": ["Bonus_Minor", "{character}", 2]
                                   },
                                   "children": [
                                     {
@@ -6458,7 +6400,11 @@
                                       },
                                       "ref": {
                                         "call": "Divinity",
-                                        "args": ["DivMinorBonus", 8, 1]
+                                        "args": [
+                                          "DivMinorBonus",
+                                          "{character}",
+                                          1
+                                        ]
                                       },
                                       "children": [
                                         {
@@ -6665,16 +6611,6 @@
                               ]
                             },
                             {
-                              "key": "dnsm-gurt",
-                              "name": "Bonus of the character in turn",
-                              "nameProof": {
-                                "names": "DNSM.GurtBonuzzDN2"
-                              },
-                              "ref": {
-                                "read": "DNSM.GurtBonuzzDN2"
-                              }
-                            },
-                            {
                               "key": "custo-207-1-0",
                               "name": "Dank Ranks curve constant",
                               "nameProof": {
@@ -6695,17 +6631,6 @@
                                 "read": "CustomLists.TalentDescriptions[207][1][1]"
                               },
                               "leaf": "fixedValue"
-                            },
-                            {
-                              "key": "dnsm-gurt-2",
-                              "name": "Best bonus of this talent among your characters",
-                              "nameProof": {
-                                "names": "DNSM.GurtBonuzzDN"
-                              },
-                              "ref": {
-                                "read": "DNSM.GurtBonuzzDN"
-                              },
-                              "leaf": "record"
                             },
                             {
                               "key": "playe-207",
@@ -7128,14 +7053,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/2/groups/1/sources/0/children/0/children/7",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/1/children/0",
       "kind": "name"
     },
@@ -7157,10 +7074,6 @@
     },
     {
       "where": "pools/2/groups/1/sources/1/children/2",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/2/groups/1/sources/1/children/4",
       "kind": "name"
     },
     {
@@ -7168,24 +7081,8 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/2/groups/3/sources/0/children/0/children/0/children/2",
-      "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/3/sources/0/children/0/children/0/children/2/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/3/sources/1",
       "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/3/sources/1/children/0/children/0/children/0",
-      "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/3/sources/1/children/0/children/0/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/2/groups/5/sources/0",
@@ -7216,14 +7113,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/2/groups/10/sources/0/children/0/children/0/children/0/children/0",
-      "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/10/sources/0/children/0/children/0/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/10/sources/0/children/1",
       "kind": "descend"
     },
@@ -7234,14 +7123,6 @@
     {
       "where": "pools/2/groups/10/sources/0/children/2/children/1",
       "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/12/sources/0/children/0/children/1",
-      "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/12/sources/0/children/0/children/1/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/2/groups/13/sources/0/children/0",
@@ -7340,14 +7221,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/1/children/0",
       "kind": "name"
     },
@@ -7408,14 +7281,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/7/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -7445,10 +7310,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/3",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/5",
       "kind": "name"
     },
     {
@@ -7496,14 +7357,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/7",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/7/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/7/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -7532,11 +7385,7 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/1",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/5",
+      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/3",
       "kind": "name"
     },
     {
