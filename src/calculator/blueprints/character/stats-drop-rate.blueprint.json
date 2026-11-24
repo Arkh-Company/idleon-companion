@@ -4324,6 +4324,14 @@
                     "args": ["CropSCbonMulti", 0, 0]
                   },
                   "tree": "farm-depot-multi"
+                },
+                {
+                  "key": "farm-crop",
+                  "name": null,
+                  "ref": {
+                    "read": "FarmCrop"
+                  },
+                  "leaf": "quantity"
                 }
               ]
             }
@@ -8930,6 +8938,10 @@
     },
     {
       "where": "pools/0/groups/43/sources/0/children/2/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/35/sources/0/children/1",
       "kind": "name"
     }
   ]
