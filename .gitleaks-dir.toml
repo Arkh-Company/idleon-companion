@@ -14,7 +14,7 @@ allowlists = [{ description = "os .env locais, que o .gitignore ignora e o gitle
 ] }, { description = "a chave de um nó de receita (spec 010): repete a do .gitleaks.toml, que o extend não traz para uma regra padrão", targetRules = ["generic-api-key"], condition = "AND", paths = [
     '(^|/)src/calculator/blueprints/.+\.blueprint\.json$',
 ], regexTarget = "match", regexes = [
-    '^"?key"\s*:\s*"[a-z0-9-]+"$',
+    '^"?key"\s*:\s*"[a-z0-9-]+"?$',
 ] }]
 
 [extend]

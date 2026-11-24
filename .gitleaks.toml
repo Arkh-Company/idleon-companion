@@ -34,11 +34,12 @@ allowlists = [{ description = "o que o .gitignore ignora e o gitleaks dir não s
     '(^|/)mise\.local\.toml$',
 ] },
 # A regra padrão generic-api-key lê o campo "key" das receitas (spec 010) como chave: só esse campo, com um slug de
-# letras minúsculas, números e hífen, só nas receitas.
+# letras minúsculas, números e hífen, só nas receitas. A aspa do fim é opcional: o gitleaks dir lê o arquivo em pedaços,
+# e um corte pode cair no meio da chave (Vinicius, 24/11).
 { description = "a chave de um nó de receita (spec 010)", targetRules = ["generic-api-key"], condition = "AND", paths = [
     '(^|/)src/calculator/blueprints/.+\.blueprint\.json$',
 ], regexTarget = "match", regexes = [
-    '^"?key"\s*:\s*"[a-z0-9-]+"$',
+    '^"?key"\s*:\s*"[a-z0-9-]+"?$',
 ] }]
 
 # A regra do nome: um nome com key, secret, token, password, senha, chave ou segredo, em qualquer caixa, seguido de =, :,
