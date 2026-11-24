@@ -303,16 +303,22 @@ export function writtenArgs(
   const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope);
   const character = characterArgs(ctx.rec, ctx.ops, scope);
   const out: LockError[] = [];
-  for (const i of character)
-    if (ref.args[i] !== CHARACTER)
-      out.push({ kind: "characterWritten", where: ctx.where, got: arg(i) });
   ref.args.forEach((a, i) => {
-    if (a === CHARACTER || character.includes(i)) return;
+    // what the recipe writes where the place does not decide is refused, `{character}` too, before any other check
     if (unsure.includes(i))
       out.push({
         kind: "rootForm",
         where: ctx.where,
         got: `o lugar não decide se ${arg(i)} vem do save`,
+      });
+    else if (character.includes(i)) {
+      if (a !== CHARACTER)
+        out.push({ kind: "characterWritten", where: ctx.where, got: arg(i) });
+    } else if (a === CHARACTER)
+      out.push({
+        kind: "rootForm",
+        where: ctx.where,
+        got: `${arg(i)} não vem do personagem`,
       });
     else if (save.includes(i) && a !== SAVE)
       out.push({ kind: "saveWritten", where: ctx.where, got: arg(i) });
