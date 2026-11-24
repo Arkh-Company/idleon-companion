@@ -1393,6 +1393,14 @@ lime.$scripts.N = function (_exports, $global) {
     var level = state().TreeLevel - 5;
     return Blocks._customBlock_ArbitraryCode5Inputs("decay", 20, 20, level);
   };
+  // Spec 010 (T200, the Drop Rate's LUK): a source whose value passes through a working value read twice by a curve,
+  // as the game's DropRateLUK: the term's references are the same call twice.
+  Blocks._customBlock_TreeLinkTwice = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeLinkL = Blocks._customBlock_TreeDeclLuck();
+    d.TreeLinkL = (d.TreeLinkL + 1) / (d.TreeLinkL + 4);
+    return 1.4 * d.TreeLinkL + state().TreeCapped;
+  };
   Blocks._customBlock_TreeDeclBest = function () {
     var s = state();
     var best = 0;
