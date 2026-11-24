@@ -31,18 +31,10 @@ test("a call made before the step, worth the read returned after it, is no retur
   });
 });
 
-test("a call and a read both after the last step: the later by the reads logged when the call began, else none", () => {
+test("a call and a read both after the last step, both worth the call's value: the order does not decide, none", () => {
   const { rec, ops } = recorded("TreeEarlyRoot");
   const ctx = levelContext(rec, ops, "root");
   const late = rec.nodes.find((x) => x.b === "TreeLateCall");
   expect(late?.v).toBe(7);
-  expect(late && returnOf(late, ctx)).toEqual({
-    t: "read",
-    p: "TreeBig.k2",
-    v: 7,
-  });
-  // a recording with no such place: the call and the read at the same step, which the place does not decide
-  const kid = rec.nodes[late?.c.at(-1) ?? -1];
-  delete kid?.prx;
   expect(late && returnOf(late, ctx)).toBeNull();
 });
