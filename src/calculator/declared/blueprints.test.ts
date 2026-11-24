@@ -260,3 +260,43 @@ test("no node of any recipe or piece has a part of not-leaves.ts as its ref: a c
   for (const [file, raw] of Object.entries(BLUEPRINTS)) walk(raw, file, "");
   expect(found).toEqual([]);
 });
+
+test("no node whose ref takes {character} at an argument writes a number there in its nameProof or its key (Fase 4 r2)", () => {
+  const found: string[] = [];
+  const walk = (x: unknown, file: string): void => {
+    if (Array.isArray(x)) {
+      x.forEach((v) => {
+        walk(v, file);
+      });
+      return;
+    }
+    if (typeof x !== "object" || x === null) return;
+    const n = x as Partial<BlueprintNode>;
+    const ref = n.ref;
+    if (ref && "call" in ref && ref.args.includes("{character}")) {
+      const marks = ref.args.flatMap((a, i) =>
+        a === "{character}" ? [i] : [],
+      );
+      const proof =
+        n.nameProof && "names" in n.nameProof ? n.nameProof.names : "";
+      const m = /^[^(]+\((.*)\)$/.exec(proof);
+      const args = m ? (JSON.parse(`[${m[1] ?? ""}]`) as unknown[]) : [];
+      if (marks.some((i) => typeof args[i] === "number"))
+        found.push(`${file}: ${n.key ?? "?"} nameProof ${proof}`);
+      // the key's numbers are only the call's other numbers, never the character's index
+      const others = ref.args.filter((a) => typeof a === "number").map(String);
+      const left = [...others];
+      const extra = (n.key ?? "").split("-").filter((t) => {
+        if (!/^\d+$/.test(t)) return false;
+        const at = left.indexOf(t);
+        if (at < 0) return true;
+        left.splice(at, 1);
+        return false;
+      });
+      if (extra.length) found.push(`${file}: key ${n.key ?? "?"}`);
+    }
+    for (const v of Object.values(x)) walk(v, file);
+  };
+  for (const [file, raw] of Object.entries(BLUEPRINTS)) walk(raw, file);
+  expect(found).toEqual([]);
+});
