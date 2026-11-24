@@ -24,7 +24,7 @@ import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
-import type { DraftBlueprint } from "./draft.ts";
+import type { DraftBlueprint, DraftContext } from "./draft.ts";
 import { gameFamilies } from "./draft-class.ts";
 import { joinDrafts } from "./draft-runs.ts";
 import { inactiveMosaic } from "../inactive.ts";
@@ -187,7 +187,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
           const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
           useGameNames(game.names);
           useGameTables(game.tables);
-          const dc = {
+          const dc: DraftContext = {
             character: activeCharacter(snapshot),
             talentOrder: gameList(
               recorder.context,
@@ -196,8 +196,6 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             ),
             // a part that is another blueprint's root is a line with a link to its tree (T200)
             trees: [...loaded.all.values()],
-            // each class's tabs, for a talent's classes (T207)
-            families: gameFamilies(recorder.context, TREE_LIMITS.startMs),
           };
           // one character of each class of the snapshot (T207, T208): its run drafts its class's sources
           const classes = classCharacters(readJson(snapshot));
@@ -224,6 +222,8 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               lines.push(done("error"));
               continue;
             }
+            // each class's tabs, for a talent's classes (T207): the game answers once a state is loaded
+            dc.families ??= gameFamilies(recorder.context, TREE_LIMITS.startMs);
             const key = answerKey(
               rec,
               recorder.ops,
