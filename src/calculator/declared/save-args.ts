@@ -247,12 +247,12 @@ function marksOf(
   return out;
 }
 
-/** The positions of `n`'s arguments its caller gave from the character's index. */
+/** The positions of `n`'s arguments its caller gave from the character's index, and those the place does not decide. */
 export const characterArgs = (
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
-): number[] => marksOf(rec, ops, n, CHARACTER_MARK).yes;
+): Marks => marksOf(rec, ops, n, CHARACTER_MARK);
 
 /** The positions of `n`'s arguments its caller gave from the save, and those the place does not decide. */
 export function saveArgs(
@@ -272,7 +272,7 @@ export function markedRef(
   n: RecNode,
 ): Ref {
   if (!("call" in ref)) return ref;
-  const character = characterArgs(rec, ops, n);
+  const character = characterArgs(rec, ops, n).yes;
   const { save } = saveArgs(rec, ops, n);
   if (character.length + save.length === 0) return ref;
   return {
@@ -301,16 +301,22 @@ export function writtenArgs(
     return [];
   const arg = (i: number) => `o argumento ${String(i + 1)} de ${ref.call}`;
   const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope);
-  const character = characterArgs(ctx.rec, ctx.ops, scope);
+  const { yes: character, unsure: unsureCharacter } = characterArgs(
+    ctx.rec,
+    ctx.ops,
+    scope,
+  );
   const out: LockError[] = [];
+  const undecided = (i: number, from: string) =>
+    out.push({
+      kind: "rootForm",
+      where: ctx.where,
+      got: `o lugar não decide se ${arg(i)} vem do ${from}`,
+    });
   ref.args.forEach((a, i) => {
     // what the recipe writes where the place does not decide is refused, `{character}` too, before any other check
-    if (unsure.includes(i))
-      out.push({
-        kind: "rootForm",
-        where: ctx.where,
-        got: `o lugar não decide se ${arg(i)} vem do save`,
-      });
+    if (unsureCharacter.includes(i)) undecided(i, "personagem");
+    else if (unsure.includes(i)) undecided(i, "save");
     else if (character.includes(i)) {
       if (a !== CHARACTER)
         out.push({ kind: "characterWritten", where: ctx.where, got: arg(i) });
