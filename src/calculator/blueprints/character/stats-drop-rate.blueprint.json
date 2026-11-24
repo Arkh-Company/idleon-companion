@@ -2331,14 +2331,11 @@
                           "tree": "cook-meal-multi"
                         },
                         {
-                          "key": "summoning-ribbon-bonus-25-0",
-                          "name": "Ribbon, tier 25",
-                          "nameProof": {
-                            "names": "Summoning(\"RibbonBonus\", 25, 0)"
-                          },
+                          "key": "summoning-ribbon-bonus-0",
+                          "name": null,
                           "ref": {
                             "call": "Summoning",
-                            "args": ["RibbonBonus", 25, 0]
+                            "args": ["RibbonBonus", "*", 0]
                           },
                           "children": [
                             {
@@ -4123,14 +4120,11 @@
               },
               "children": [
                 {
-                  "key": "thingies-friend-bonus-qty-3-20210",
-                  "name": "Friend bonus: Drop Rate",
-                  "nameProof": {
-                    "names": "Thingies(\"FriendBonusQTY\", 3, 20210)"
-                  },
+                  "key": "thingies-friend-bonus-qty",
+                  "name": null,
                   "ref": {
                     "call": "Thingies",
-                    "args": ["FriendBonusQTY", 3, 20210]
+                    "args": ["FriendBonusQTY", "*", "*"]
                   }
                 },
                 {
@@ -5884,25 +5878,19 @@
                       ]
                     },
                     {
-                      "key": "arcane-type-arcane-map-multi-1593368-0",
-                      "name": "Arcane map multi",
-                      "nameProof": {
-                        "names": "ArcaneType(\"ArcaneMapMulti\", 1593368, 0)"
-                      },
+                      "key": "arcane-type-arcane-map-multi-0",
+                      "name": null,
                       "ref": {
                         "call": "ArcaneType",
-                        "args": ["ArcaneMapMulti", 1593368, 0]
+                        "args": ["ArcaneMapMulti", "*", 0]
                       },
                       "children": [
                         {
-                          "key": "log2-1593368",
-                          "name": "log₂",
-                          "nameProof": {
-                            "names": "Log2(1593368)"
-                          },
+                          "key": "log2",
+                          "name": null,
                           "ref": {
                             "call": "Log2",
-                            "args": [1593368]
+                            "args": ["*"]
                           }
                         }
                       ]
@@ -9818,6 +9806,22 @@
     {
       "where": "pools/3/groups/4/sources/0",
       "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/46/sources/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/1/sources/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/1/sources/0/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/10/children/0/children/2",
+      "kind": "name"
     }
   ]
 }
