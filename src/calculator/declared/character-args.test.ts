@@ -2,9 +2,10 @@
 // current character as GetPlayersUsernames.indexOf(UserInfo[0]) (its Divinity("Bonus_Minor", …, god)). The draft
 // writes `{character}` there, by the code at the call's place, never by a number equal to the index; the lock refuses
 // the recipe that writes the index out. The invented game: TreeCharArg, TreeDeclOwn(its character) + TreeDeclRow(0).
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import type { RefArg } from "./refs.ts";
@@ -32,6 +33,25 @@ test("the draft writes {character} in the argument the game gave from the charac
   // the 0 written in the code is the agent's to decide, as before; the character's is not
   const waits = d.pending.filter((p) => p.kind === "descend");
   expect(waits.map((p) => p.where)).toEqual(["pools/0/groups/2/sources/0"]);
+});
+
+// a static name for the invented call by the character's index, as the real game's Divinity("Bonus_Minor", 8, 2) has
+vi.mock(import("../names/names-table.ts"), async (importOriginal) => {
+  const real = await importOriginal();
+  return {
+    ...real,
+    STATIC_NAMES: new Map([
+      ...real.STATIC_NAMES,
+      ["TreeDeclOwn(0)", { name: "Invented Own", proof: "invented" }],
+    ]),
+  };
+});
+
+test("the steps guide proposes no name proven by the character's index (Fase 4 r3)", () => {
+  const { rec, key, ops } = recorded(ROOT);
+  const guide = stepsGuide(key, rec, ops);
+  expect(guide).toContain("TreeDeclOwn");
+  expect(guide).not.toContain("prova: names TreeDeclOwn(0)");
 });
 
 const leaf = (read: string): BlueprintNode => ({
