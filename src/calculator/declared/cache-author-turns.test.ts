@@ -4,6 +4,7 @@
 // TreeAuthor*) builds the cache in the recipe's builders' pass.
 import { expect, test } from "vitest";
 import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { READ_CAP } from "../recording.ts";
 import type { Recording } from "../recording.ts";
 import { answerKey } from "./answer-key.ts";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
@@ -236,4 +237,28 @@ test("an author that sums into a key not yet set starts on the empty key's 0: on
     children: [itemNode(0), itemNode(1), itemNode(2)],
   };
   expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});
+
+const once: BlueprintNode = {
+  key: "author",
+  name: "Author",
+  ref: { call: "TreeAuthorOnce", args: [] },
+  children: [itemNode(1)],
+};
+
+test("an author that writes a key not yet set once starts on the empty key's 0: its count is the item (as the game's meals)", () => {
+  // TreeAuthorOnce: TreeTurnItem(1) × 2 + asNumber(the empty key) = 8
+  const rec = record("TreeAuthorOnce", 8);
+  expect(lock(rec, once).errors.map(lockMessage)).toEqual([]);
+});
+
+test("with the author's read list full, the empty key is the one with no number of it in its step log before the write", () => {
+  // the recorder keeps 80 first reads (READ_CAP): the read of the empty key falls off the list, as in TalentCalc(-6)
+  const rec = record("TreeAuthorOnce", 8);
+  const author = rec.nodes.find((n) => n.b === "TreeAuthorOnce");
+  if (!author) throw new Error("no author");
+  author.r = (author.r ?? []).filter(([p]) => p !== "DNSM.TreeAuthor.v");
+  while (author.r.length < READ_CAP)
+    author.r.push([`TreePad${String(author.r.length)}`, 0, 0]);
+  expect(lock(rec, once).errors.map(lockMessage)).toEqual([]);
 });

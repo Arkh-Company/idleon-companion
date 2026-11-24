@@ -1664,6 +1664,16 @@ lime.$scripts.N = function (_exports, $global) {
       d.TreeAuthor.h.v =
         U.asNumber(d.TreeAuthor.h.v) + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (Fase 4 q): a block that writes a key not yet set once, as the game's TalentCalc(-6) writes a meal's
+  // bonus through a variable of the map: the item, then the 0 of the empty key on the right: 4 × 2 + 0 = 8.
+  Blocks._customBlock_TreeAuthorOnce = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    var m = d.TreeAuthor;
+    var i = Blocks._customBlock_TreeTurnItem(1) * 2;
+    m.h.v = i + U.asNumber(m.h.v);
+  };
   // Spec 010 (T168 r1): blocks that write the cache from 0 more than once, a turn only a write that adds to its own
   // value: an overwrite by a product (TreeTurnItem(0) × 2 = 4), by a sum of two parts (2 + 4 = 6), two items in the
   // same turn (3 + 6 + 9 = 18), and an overwrite before the turns (4 + 4 + 6 = 14).

@@ -6,6 +6,8 @@ export type RecValue = number | boolean | string | null;
 
 /** How many entries recorder.js keeps in a call's step log (`rx`); the rest is dropped. */
 export const LOG_CAP = 20_000;
+/** How many first reads recorder.js keeps in a call's `r`; the rest is only in the step log (numbers) or dropped. */
+export const READ_CAP = 80;
 
 export interface RecNode {
   id: number;
