@@ -96,6 +96,11 @@ const parse = (raw: unknown) =>
     systemIds: new Set(["cards", "stamps"]),
   });
 
+const refusal = (raw: unknown) => {
+  const r = parse(raw);
+  return r.ok ? "taken" : r.reason;
+};
+
 test("the load takes `any` only as the whole args of a cache's author", () => {
   expect(parse(blueprint(["any"]))).toMatchObject({ ok: true });
   // with another argument
@@ -111,10 +116,7 @@ test("the load takes `any` only as the whole args of a cache's author", () => {
       { ...bp.pools[0], groups: [{ system: "cards", sources: [author] }] },
     ],
   };
-  expect(parse(asSource)).toMatchObject({
-    ok: false,
-    reason: expect.stringMatching(/any só no autor de um cache/),
-  });
+  expect(refusal(asSource)).toMatch(/any só no autor de um cache/);
   const below = {
     ...author,
     key: "below",
@@ -126,10 +128,7 @@ test("the load takes `any` only as the whole args of a cache's author", () => {
       { ...bp.pools[0], groups: [{ system: "cards", sources: [below] }] },
     ],
   };
-  expect(parse(underCall)).toMatchObject({
-    ok: false,
-    reason: expect.stringMatching(/any só no autor de um cache/),
-  });
+  expect(refusal(underCall)).toMatch(/any só no autor de um cache/);
 });
 
 const draftOf = (rec: Recording) =>

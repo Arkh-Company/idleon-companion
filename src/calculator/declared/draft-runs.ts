@@ -49,7 +49,8 @@ function withAny(
       block !== null &&
       mine.some((k) => k && JSON.stringify(k.ref) !== JSON.stringify(c.ref));
     if (!changes) return withAny(c, mine, at, pending);
-    const { nameProof: _proof, ...rest } = c;
+    const rest: DraftNode = { ...c };
+    delete rest.nameProof;
     siblings.delete(c.key);
     const ref = { call: block, args: [ANY_CALL] };
     if (!pending.some((p) => p.where === at && p.kind === "name"))
