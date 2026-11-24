@@ -762,6 +762,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
   };
+  // Spec 010 (T209, form 4): how many entries a map of the save holds, as the game's D.mapCount(FarmCrop).
+  Blocks._customBlock_TreeCount = function () {
+    var D = {
+      mapCount: function (m) {
+        return Object.keys(m.h).length;
+      },
+    };
+    return D.mapCount(a.engine.getGameAttribute("TreeBig")) * state().TreeLevel;
+  };
+  Blocks._customBlock_TreeCountPool = function () {
+    return Blocks._customBlock_TreeCount() + state().TreeCapped;
+  };
   // Spec 010 (T209, form 5): a variable of its own the block writes step by step and reads back, as the game's
   // Holes("MonumentROGbonuses") with DNSM.HoleozDN.
   Blocks._customBlock_TreeChained = function () {

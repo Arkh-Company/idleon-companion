@@ -74,3 +74,16 @@ test("a variable of the block's own, written step by step and read back, goes do
   };
   expect(lock("TreeChainedPool", source)).toEqual([]);
 });
+
+test("how many entries a map of the save holds is a quantity, by the path the code names (form 4)", () => {
+  const source: BlueprintNode = {
+    key: "count",
+    name: "Count",
+    ref: { call: "TreeCount", args: [] },
+    children: [
+      { key: "big", name: "Big", ref: { read: "TreeBig" }, leaf: "quantity" },
+      leaf("level", "TreeLevel"),
+    ],
+  };
+  expect(lock("TreeCountPool", source)).toEqual([]);
+});
