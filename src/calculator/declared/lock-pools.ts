@@ -256,7 +256,8 @@ export function lockPools(
           pool.kind === "additive"
             ? parts + (s.weight ?? pool.weight ?? 1) * t.value
             : parts * t.value;
-        lockSource(s, t, top, sctx, out);
+        // another class's source is not in this character's tree (FR-002a): below it is its own class's form
+        if (!otherClass) lockSource(s, t, top, sctx, out);
       }
       if (first !== Infinity) firsts.push({ system: g.system, first });
     }
