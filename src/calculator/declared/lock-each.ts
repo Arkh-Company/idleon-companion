@@ -63,11 +63,14 @@ function fits(
   return ok ? got : null;
 }
 
-/** Whether two recorded calls are the same node by node: key, value, reads and the calls below. */
+/** Whether two recorded calls are the same node by node: key, value, reads (path and value) and the calls below. */
 function sameDescent(n: RecNode, m: RecNode, rec: Recording): boolean {
   if (callRef(n) !== callRef(m) || JSON.stringify(n.v) !== JSON.stringify(m.v))
     return false;
-  if (JSON.stringify(n.r ?? []) !== JSON.stringify(m.r ?? [])) return false;
+  // a read by its path and value: the write's number it saw is its time, not what it read
+  const reads = (x: RecNode) =>
+    JSON.stringify((x.r ?? []).map(([p, v]) => [p, v]));
+  if (reads(n) !== reads(m)) return false;
   if (n.c.length !== m.c.length) return false;
   return n.c.every((id, k) => {
     const a = rec.nodes[id];
