@@ -1628,6 +1628,18 @@
                       }
                     }
                   ]
+                },
+                {
+                  "key": "windwalker-stamp-doubler-0-0",
+                  "name": "Stamp Doubler",
+                  "nameProof": {
+                    "names": "Windwalker(\"StampDoubler\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Windwalker",
+                    "args": ["StampDoubler", 0, 0]
+                  },
+                  "tree": "stamps-doubler"
                 }
               ]
             }
@@ -2913,13 +2925,10 @@
                   },
                   "children": [
                     {
-                      "key": "dummy-numbers-stat-manager-stamp-total-bonus-of-type-x",
-                      "name": "Stamp total so far",
-                      "nameProof": {
-                        "names": "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X"
-                      },
+                      "key": "dnsm-stamp-bonuses-map-of-val-gfood",
+                      "name": null,
                       "ref": {
-                        "read": "DummyNumbersStatManager.Stamp_TOTAL_bonus_of_type_X"
+                        "read": "DNSM.StampBonuses_Map_Of_Val.GFood"
                       }
                     }
                   ]
@@ -7565,10 +7574,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/0/groups/28/sources/0/children/6/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/0/groups/28/sources/0/children/7/children/0",
       "kind": "leaf"
     },
@@ -8943,6 +8948,14 @@
     {
       "where": "pools/0/groups/35/sources/0/children/1",
       "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/6/children/0",
+      "kind": "descend"
     }
   ]
 }
