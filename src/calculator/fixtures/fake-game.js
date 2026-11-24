@@ -762,6 +762,23 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
   };
+  // Spec 010 (T209, form 5): a variable of its own the block writes step by step and reads back, as the game's
+  // Holes("MonumentROGbonuses") with DNSM.HoleozDN.
+  Blocks._customBlock_TreeChained = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeChn = 1 + s.TreeBase / 100;
+    d.TreeChn = a.engine.getGameAttribute("DNSM").h.TreeChn + s.TreeLevel / 100;
+    return (
+      0.1 *
+      Math.ceil(
+        s.TreeCapped * Math.max(1, a.engine.getGameAttribute("DNSM").h.TreeChn),
+      )
+    );
+  };
+  Blocks._customBlock_TreeChainedPool = function () {
+    return Blocks._customBlock_TreeChained() + state().TreeCapped;
+  };
   // Spec 010 (T209, form 3): a number of the code the block doubles under conditions, in a variable of its own, as the
   // game's ArcadeBonus doubles DNSM.ArcadBonDNz when the upgrade is at its max and when a companion is owned.
   Blocks._customBlock_TreeOwnedFlag = function () {

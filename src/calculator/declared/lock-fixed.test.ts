@@ -60,3 +60,17 @@ test("a number read from a game table's text is a fixed value of the table: its 
   };
   expect(lock("TreeTextPool", source)).toEqual([]);
 });
+
+test("a variable of the block's own, written step by step and read back, goes down through its writes (form 5)", () => {
+  const source: BlueprintNode = {
+    key: "chained",
+    name: "Chained",
+    ref: { call: "TreeChained", args: [] },
+    children: [
+      leaf("base", "TreeBase"),
+      leaf("level", "TreeLevel"),
+      leaf("capped", "TreeCapped"),
+    ],
+  };
+  expect(lock("TreeChainedPool", source)).toEqual([]);
+});
