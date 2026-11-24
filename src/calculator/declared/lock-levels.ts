@@ -53,6 +53,11 @@ export interface LevelOut {
   counts: LockResult["counts"];
   /** Each place that closed or is a typed leaf, once per time (the tally counts it once). */
   closedAt: string[];
+  /**
+   * Each child refused with no value under a level its code's gate gave 0 before its count (T210): the joined runs keep
+   * the refusal only when no run reached it (real-trees-check.ts).
+   */
+  unreached?: string[];
 }
 /** A level: the expression that gave the value, the call whose reads and calls it lives in, and the value. */
 export interface Level {
@@ -232,7 +237,10 @@ export function lockLevel(
       (hit ? hit.value : valueIn(child.ref, level.scope, leaves, ctx)) === null
     ) {
       out.errors.push({ kind: "childNoValue", where });
-      whole = false;
+      // the code's gate gave 0 before its count (T183): the run did not reach the child, the level still closes
+      if (level.expr?.t === "num" && level.expr.v === 0 && level.value === 0)
+        (out.unreached ??= []).push(where);
+      else whole = false;
       continue;
     }
     const hits = parts.filter((p) => covers(child, p, ctx));

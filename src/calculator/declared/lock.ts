@@ -70,6 +70,8 @@ export interface LockResult {
   closedAt: string[];
   /** The pending places' node ids (lock-pending.ts pendingIds), once each. */
   pendingAt: string[];
+  /** The children this run's gate did not reach (lock-levels.ts LevelOut, T210). */
+  unreached?: string[];
 }
 
 export interface LockInput {

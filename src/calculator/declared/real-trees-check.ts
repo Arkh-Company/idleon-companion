@@ -109,13 +109,33 @@ export function lockRuns(
   return [{ character: active, characterClass: own ? own[0] : null }];
 }
 
-/** The runs joined: passed only when each passed; each error once; the counts and the stages' times added. */
+/**
+ * The runs joined: passed only when each error left is none; each error once; the counts and the stages' times added.
+ * A child a run's gate did not reach (T210) is refused only when no run reached it.
+ */
 function joined(runs: readonly LockResult[]): LockResult {
   const out = emptyOut();
   const seen = new Set<string>();
+  // reached: a run whose gate let it through checked it there (it closed, or it or a place below it was refused)
+  const at = (w: string, where: string) =>
+    w === where || w.startsWith(`${where}/`);
+  const reached = (where: string) =>
+    runs.some(
+      (r) =>
+        !r.unreached?.includes(where) &&
+        [...r.closedAt, ...r.errors.map((e) => e.where)].some((w) =>
+          at(w, where),
+        ),
+    );
   for (const r of runs) {
     for (const e of r.errors)
-      if (!seen.has(JSON.stringify(e))) {
+      if (
+        e.kind === "childNoValue" &&
+        r.unreached?.includes(e.where) &&
+        reached(e.where)
+      )
+        continue;
+      else if (!seen.has(JSON.stringify(e))) {
         seen.add(JSON.stringify(e));
         out.errors.push(e);
       }
@@ -124,7 +144,7 @@ function joined(runs: readonly LockResult[]): LockResult {
     out.closedAt.push(...r.closedAt);
   }
   const pendingAt = [...new Set(runs.flatMap((r) => r.pendingAt))];
-  return { ok: runs.every((r) => r.ok), ...out, pendingAt };
+  return { ok: out.errors.length === 0, ...out, pendingAt };
 }
 
 /** A number locked over each run: recorded for the run's character, its answer key taken, then the lock. */
