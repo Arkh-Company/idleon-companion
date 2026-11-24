@@ -188,7 +188,7 @@ test("the scene caches are rebuilt with the TotalStats memory cleared before eac
 });
 
 test("the scene calls each block with the game's own arguments, never filled with zeros (spec 010, a cache's author)", () => {
-  const run = vi.fn((_text: string): unknown => undefined);
+  const run = vi.fn<(text: string) => unknown>();
   rebuildScene(run);
   const calls = run.mock.calls
     .map(([text]) => text)
