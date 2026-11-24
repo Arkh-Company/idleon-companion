@@ -13,7 +13,7 @@ import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
 import { lockPools } from "./lock-pools.ts";
-import { refKey } from "./refs.ts";
+import { keyMatches } from "./refs.ts";
 
 export function lockRecipePiece(
   node: BlueprintNode,
@@ -31,7 +31,8 @@ export function lockRecipePiece(
   let { value } = level;
   let o: Opening | undefined;
   if (ref && "call" in ref) {
-    if (callRef(level.scope) === refKey(ref, ctx.character)) call = level.scope;
+    if (keyMatches(ref, callRef(level.scope), ctx.character))
+      call = level.scope;
   } else if (level.expr?.t === "read" && isCacheRead(level.expr.p)) {
     const open = openingOf(level, ctx);
     if (typeof open === "string") {

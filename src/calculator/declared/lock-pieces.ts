@@ -21,7 +21,7 @@ import {
   TOLERANCE,
 } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { eachNames, eachPattern, matchRead, refKey } from "./refs.ts";
+import { eachNames, eachPattern, keyMatches, matchRead } from "./refs.ts";
 
 type Ctx = Pick<LevelContext, "rec" | "character">;
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -68,8 +68,9 @@ function below(n: RecNode, ctx: Ctx): RecNode[] {
 /** A reference's value in a place: its calls, or its reads (`*` takes the first path that matches). */
 function recordedIn(ref: Ref, nodes: readonly RecNode[], ctx: Ctx): Found {
   if ("call" in ref) {
-    const key = refKey(ref, ctx.character);
-    const calls = nodes.filter((n) => callRef(n) === key);
+    const calls = nodes.filter((n) =>
+      keyMatches(ref, callRef(n), ctx.character),
+    );
     if (calls.length === 0) return "none";
     const f = oneOf(calls.map((n) => n.v));
     return "v" in f ? { ...f, call: calls[0] } : f;
@@ -218,7 +219,7 @@ export function lockPiece(
   }
   const { ref } = node;
   const own =
-    ref && "call" in ref && callRef(level.scope) === refKey(ref, ctx.character);
+    ref && "call" in ref && keyMatches(ref, callRef(level.scope), ctx.character);
   const nodes = own ? below(level.scope, ctx) : ctx.rec.nodes;
   pieceLevel(node, level.value, nodes, ctx, out);
 }

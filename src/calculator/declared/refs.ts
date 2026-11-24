@@ -1,6 +1,7 @@
 // The references of a blueprint (spec 010, FR-003, research R5 and R12). A reference is a call of the game's block or a
 // path the game read, never an expression. `{character}` stands for the tree's character and `*` for any character
-// (the best of them, or their sum); a character's index is never written out.
+// (the best of them, or their sum); a character's index is never written out, nor a call's argument the game gave from
+// the save: that one is `*`.
 
 /** A call's argument: a number, a short text, or a short list of numbers (the points spent per tab, T159). */
 export type RefArg = string | number | readonly number[];
@@ -30,6 +31,52 @@ export const refKey = (ref: Ref, character: number): string =>
   "call" in ref
     ? callKey(ref.call, callArgs(ref, character))
     : resolve(ref.read, character);
+
+/** A call's argument the game gave from the save (save-args.ts): any value; one save's number is never written out. */
+export const SAVE = "*";
+
+/** A recorded call's key, `Block(args in JSON)`, as its block and arguments; null for any other text. */
+function keyParts(key: string): { call: string; args: unknown[] } | null {
+  const m = /^([A-Za-z_$][\w$]*)\((.*)\)$/s.exec(key);
+  if (!m) return null;
+  try {
+    return {
+      call: m[1] ?? "",
+      args: JSON.parse(`[${m[2] ?? ""}]`) as unknown[],
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Whether a recorded key is the one a ref stands for: each `*` argument of a call takes any value, the rest the same. */
+export function keyMatches(ref: Ref, key: string, character: number): boolean {
+  if (!("call" in ref) || !ref.args.includes(SAVE))
+    return refKey(ref, character) === key;
+  const got = keyParts(key);
+  const want = callArgs(ref, character);
+  return (
+    got !== null &&
+    got.call === ref.call &&
+    got.args.length === want.length &&
+    want.every(
+      (a, i) => a === SAVE || JSON.stringify(a) === JSON.stringify(got.args[i]),
+    )
+  );
+}
+
+/** The refusal when two different recorded calls match a ref's `*` (the tie would be by order); null otherwise. */
+export function savedTwice(
+  ref: Ref,
+  keys: readonly string[],
+  character: number,
+): string | null {
+  if (!("call" in ref) || !ref.args.includes(SAVE)) return null;
+  const hits = [...new Set(keys.filter((k) => keyMatches(ref, k, character)))];
+  return hits.length > 1
+    ? `duas chamadas casam com ${refKey(ref, character)}: ${hits.join(" e ")}; a ligação seria pela ordem`
+    : null;
+}
 
 /** A path with `[*]` (any index) as the body of a regular expression: the rest literal, each `[*]` an index caught. */
 export const starPattern = (path: string): string =>

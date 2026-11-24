@@ -9,18 +9,18 @@ import type { RecNode, Recording } from "../recording.ts";
 import { CHARACTER } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 
-type AnyNode = { type: string; range: [number, number] } & Record<
+export type AnyNode = { type: string; range: [number, number] } & Record<
   string,
   unknown
 >;
 
-const isNode = (v: unknown): v is AnyNode =>
+export const isNode = (v: unknown): v is AnyNode =>
   typeof v === "object" &&
   v !== null &&
   typeof (v as { type?: unknown }).type === "string";
-const at = (n: AnyNode, k: string) => n[k] as AnyNode;
+export const at = (n: AnyNode, k: string) => n[k] as AnyNode;
 
-function walk(n: AnyNode, out: AnyNode[] = []): AnyNode[] {
+export function walk(n: AnyNode, out: AnyNode[] = []): AnyNode[] {
   out.push(n);
   for (const v of Object.values(n))
     for (const c of Array.isArray(v) ? (v as unknown[]) : [v])
@@ -28,7 +28,7 @@ function walk(n: AnyNode, out: AnyNode[] = []): AnyNode[] {
   return out;
 }
 
-const member = (n: AnyNode | undefined): string | undefined =>
+export const member = (n: AnyNode | undefined): string | undefined =>
   n?.type === "MemberExpression" && !n.computed
     ? (at(n, "property").name as string)
     : undefined;
@@ -52,7 +52,7 @@ function defOf(all: readonly AnyNode[], name: string, pos: number) {
 }
 
 /** `GetPlayersUsernames.indexOf(UserInfo[0])`, bare, through `asNumber(…)` or through a variable. */
-function isCharacter(
+export function isCharacter(
   e: AnyNode | undefined,
   text: string,
   all: readonly AnyNode[],

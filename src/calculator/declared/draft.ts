@@ -24,7 +24,6 @@ import type {
 } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
-import { characterRef } from "./character-args.ts";
 import { sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
 import { openingOf } from "./level-openings.ts";
@@ -33,7 +32,8 @@ import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
-import { CHARACTER, hasRawCharacterIndex } from "./refs.ts";
+import { CHARACTER, hasRawCharacterIndex, SAVE } from "./refs.ts";
+import { markedRef } from "./save-args.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
 export interface DraftContext {
@@ -267,7 +267,7 @@ export function partName(
   ops: readonly Op[],
 ) {
   const code = refOf(w, character);
-  const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
+  const ref = w.call ? markedRef(code, rec, ops, w.call) : code;
   return ref !== code ? null : provenName(codeOf(code, w.key));
 }
 
@@ -317,7 +317,7 @@ export function draftBlueprint(
   ): DraftNode => {
     const code = refOf(w, dc.character);
     // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
-    const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
+    const ref = w.call ? markedRef(code, rec, ops, w.call) : code;
     // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
     // proof by the row (research R5), and the key keeps only the other arguments
     const named = partName(w, dc.character, rec, ops);
@@ -327,7 +327,7 @@ export function draftBlueprint(
     const own = new Set<string>();
     const keyRef =
       "call" in ref
-        ? { ...ref, args: ref.args.filter((a) => a !== CHARACTER) }
+        ? { ...ref, args: ref.args.filter((a) => a !== CHARACTER && a !== SAVE) }
         : ref;
     const out: DraftNode = {
       key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),

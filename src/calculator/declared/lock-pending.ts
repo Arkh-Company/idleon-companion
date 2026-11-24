@@ -5,7 +5,7 @@
 // (childNoValue, extraSource, missingSource, sourceOrder, classMismatch) is never covered.
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { LockError, LockErrorKind } from "./lock.ts";
-import { nodeId, refKey } from "./refs.ts";
+import { keyMatches, nodeId } from "./refs.ts";
 
 const PLACE =
   /^pools\/(\d+)\/groups\/(\d+)(?:\/sources\/(\d+)((?:\/children\/\d+)*))?$/;
@@ -81,7 +81,7 @@ export function pendingCover(bp: Blueprint, character: number): Cover {
             e.kind === "undeclaredPart" &&
             e.where === parentId &&
             typeof e.got === "string" &&
-            refKey(ref, character) === e.got
+            keyMatches(ref, e.got, character)
         : none;
     }
     // a model's node per item is `<id>-<item>`

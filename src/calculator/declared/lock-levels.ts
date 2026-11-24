@@ -14,7 +14,6 @@ import type { AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { evalExpr } from "./expr-eval.ts";
 import { onlyRead } from "./cache-author.ts";
-import { characterArgs } from "./character-args.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
@@ -32,7 +31,8 @@ import {
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
-import { CHARACTER, matchRead, refKey } from "./refs.ts";
+import { keyMatches, matchRead, savedTwice } from "./refs.ts";
+import { writtenArgs } from "./save-args.ts";
 
 export interface LevelContext {
   rec: Recording;
@@ -84,10 +84,13 @@ function callIn(
   leaves: readonly Expr[],
   ctx: LevelContext,
 ): RecNode | undefined {
-  const key = refKey(ref, ctx.character);
-  return [...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])), ...scope.c]
-    .map((id) => ctx.rec.nodes[id])
-    .find((n) => n !== undefined && callRef(n) === key);
+  const calls = [
+    ...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])),
+    ...scope.c,
+  ].flatMap((id) => ctx.rec.nodes[id] ?? []);
+  // two calls a `*` makes equal tie to none (lockLevel says why)
+  if (savedTwice(ref, calls.map(callRef), ctx.character) !== null) return;
+  return calls.find((n) => keyMatches(ref, callRef(n), ctx.character));
 }
 
 /** The recorded value of a reference in a level: a call it made, or a path it read (`*` takes the first reading). */
@@ -173,7 +176,7 @@ function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
   const { ref } = child;
   if (!ref) return false;
   return "call" in ref
-    ? refKey(ref, ctx.character) === part
+    ? keyMatches(ref, part, ctx.character)
     : matchRead(ref.read, [part], ctx.character) !== null;
 }
 
@@ -192,6 +195,18 @@ export function lockLevel(
   for (const child of children) {
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
+    const twice =
+      child.ref &&
+      savedTwice(
+        child.ref,
+        [...parts, ...level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []).map(callRef)],
+        ctx.character,
+      );
+    if (twice) {
+      out.errors.push({ kind: "rootForm", where, got: twice });
+      whole = false;
+      continue;
+    }
     const hit = open?.find((o) => covers(child, o.part, ctx));
     if (open && !hit) {
       out.errors.push({ kind: "childOutside", where });
@@ -281,20 +296,8 @@ function descend(
   out: LevelOut,
 ): void {
   const { ref } = node;
-  // a call's argument the game gave from the character's index is `{character}`, never written out (research R5)
-  if (
-    ctx.ops &&
-    ref !== undefined &&
-    "call" in ref &&
-    callRef(level.scope) === refKey(ref, ctx.character)
-  )
-    for (const i of characterArgs(ctx.rec, ctx.ops, level.scope))
-      if (ref.args[i] !== CHARACTER)
-        out.errors.push({
-          kind: "characterWritten",
-          where: ctx.where,
-          got: `o argumento ${String(i + 1)} de ${ref.call}`,
-        });
+  // a call's argument the game gave from the character's index or the save is never written out (save-args.ts)
+  out.errors.push(...writtenArgs(ref, level.scope, ctx));
   // a line with a link (T200): its value came by its ref, its tree is the other number's; the descent ends here
   if (node.tree !== undefined) {
     out.counts.leaves++;
@@ -323,7 +326,7 @@ function descend(
       ? (open[0]?.part ?? null)
       : ref &&
           "call" in ref &&
-          callRef(level.scope) === refKey(ref, ctx.character)
+          keyMatches(ref, callRef(level.scope), ctx.character)
         ? saveChild(level.scope, ctx)
         : null;
     if (child !== null)

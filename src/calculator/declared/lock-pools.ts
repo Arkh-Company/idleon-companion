@@ -15,7 +15,16 @@ import { checkCondition, lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { TOLERANCE } from "./lock-parts.ts";
 import { fill } from "./pieces.ts";
-import { eachNames, eachPattern, matchRead, nodeId, refKey } from "./refs.ts";
+import {
+  eachNames,
+  eachPattern,
+  keyMatches,
+  matchRead,
+  nodeId,
+  refKey,
+  SAVE,
+  savedTwice,
+} from "./refs.ts";
 
 export const POOL_NAME: Record<PoolKind, string> = {
   additive: "Additive",
@@ -25,7 +34,7 @@ export const POOL_NAME: Record<PoolKind, string> = {
 const termKey = (t: AnswerTerm): string =>
   t.kind === "constant" ? `=${String(t.value)}` : t.ref;
 
-/** A source's key in its pool: a constant's value, a call's key, or the one recorded path a `*` read stands for. */
+/** A source's key in its pool: a constant's value, a call's key, or the one recorded term a `*` read or argument stands for. */
 function sourceKey(
   s: BlueprintNode,
   terms: readonly AnswerTerm[],
@@ -33,14 +42,17 @@ function sourceKey(
 ): string {
   if (s.constant !== undefined) return `=${String(s.constant)}`;
   if (!s.ref) return "";
-  if ("call" in s.ref || !s.ref.read.includes("[*]"))
-    return refKey(s.ref, character);
-  const { read } = s.ref;
+  const { ref } = s;
+  if ("call" in ref ? !ref.args.includes(SAVE) : !ref.read.includes("[*]"))
+    return refKey(ref, character);
   const hits = new Set(
     terms
       .filter(
         (t) =>
-          t.kind === "source" && matchRead(read, [t.ref], character) !== null,
+          t.kind === "source" &&
+          ("call" in ref
+            ? keyMatches(ref, t.ref, character)
+            : matchRead(ref.read, [t.ref], character) !== null),
       )
       .map((t) => t.ref),
   );
@@ -187,6 +199,18 @@ export function lockPools(
         ctx,
         out,
       )) {
+        // two terms a `*` makes equal: the tie would be by order
+        const twice =
+          s.ref &&
+          savedTwice(
+            s.ref,
+            kp.terms.map((t) => t.ref),
+            character,
+          );
+        if (twice) {
+          out.errors.push({ kind: "rootForm", where: sourceAt, got: twice });
+          continue;
+        }
         const k = sourceKey(s, kp.terms, character);
         const n = (seenB.get(k) ?? 0) + 1;
         seenB.set(k, n);
