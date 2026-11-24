@@ -397,3 +397,24 @@ test("below a piece's call level, a cache's read closes as a leaf: the cache is 
   expect(out.errors).toEqual([]);
   expect(out.counts.leaves).toBe(3);
 });
+
+test("a piece's call with * that two calls of one value match is refused with the reason, never tied by order (r2)", () => {
+  const piece = structuredClone(SIGNS);
+  const model = piece.children[0];
+  if (!model) throw new Error("no model");
+  model.ref = { call: "TreeSign", args: ["{stat}", "*"] };
+  // the signs 1 and 2 give the same 10
+  const input = recorded("TreeSignsRoot", {
+    ...state([1, 2]),
+    TreeSignBonus: { $m: { Drop: [0, 5, 5, 20] } },
+  });
+  const errors = lockBlueprint({
+    blueprint: blueprint(CALL, piece),
+    ...input,
+    character: 0,
+    characterClass: 3,
+  }).errors.map(lockMessage);
+  expect(errors).toContain(
+    `${LINE}/sign-0: duas chamadas casam com TreeSign("Drop","*"): TreeSign("Drop",1) e TreeSign("Drop",2); a ligação seria pela ordem`,
+  );
+});
