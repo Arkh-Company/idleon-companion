@@ -40,6 +40,15 @@ test("a call and a read both after the last step, both worth the call's value: t
   expect(late && returnOf(late, ctx)).toBeNull();
 });
 
+test("a variable set by a call, then another call and a read of the same value before its return: the place does not tell which, none", () => {
+  const { rec, ops } = recorded("TreeTwoCallsRoot");
+  const ctx = levelContext(rec, ops, "root");
+  const two = rec.nodes.find((x) => x.b === "TreeTwoCalls");
+  const kids = (two?.c ?? []).map((c) => rec.nodes[c]?.v);
+  expect([two?.v, kids, two?.rx?.at(-1)?.[1]]).toEqual([7, [7, 7], 7]);
+  expect(two && returnOf(two, ctx)).toBeNull();
+});
+
 test("a talent at 0 points returns its curve's call by the return's recorded place, though its level read is 0 too; with no place recorded, none", () => {
   const [wren, wrenna] = CHARACTERS;
   const attrs = {

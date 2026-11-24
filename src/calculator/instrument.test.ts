@@ -190,6 +190,16 @@ test.each([
   ["return(a)?Blocks._customBlock_K(a):Blocks._customBlock_K(b)", ["call"]],
   ["return(b).k", ["read"]],
   ["return [1].map(function (x) { return b.k; })[0]", []],
+  // Fase 4 r3: by a variable, only its one assignment, with no other call (or no other read) before the return
+  [
+    "var r; switch(a){case 7:r=Blocks._customBlock_K(a);break;default:r=b.k}return r",
+    [],
+  ],
+  ["var r = Blocks._customBlock_K(a); Blocks._customBlock_K(b); return r", []],
+  ["var l = b.k; var m = b.q; return l", []],
+  ["var l = b.k; Blocks._customBlock_K(b); return l", ["read"]],
+  ["var l = b.k; var r = l; return r", ["read"]],
+  ["return a ? Blocks._customBlock_K(a) : b.k", []],
 ])(
   "the return of `%s` notes what it returns by its place: a block's call, a read or neither (spec 010)",
   (body, noted) => {
