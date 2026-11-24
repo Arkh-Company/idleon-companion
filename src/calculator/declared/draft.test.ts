@@ -334,8 +334,9 @@ test("a source whose ref is another blueprint's root is a line with a link to it
     trees: new Set(["invented-luck"]),
   });
   expect(out.ok).toBe(true);
-  // the draft's own root is no link; a root of the same block with other args is another number; two blueprints with
-  // that root leave it as it was, never one picked by order
+  // the draft's own root is no link; a root of the same block with other args is another number; a root that is a part
+  // of the call, an item of it or the call under a marker is not the call's value; two blueprints with that root leave
+  // it as it was, never one picked by order
   const other = {
     id: "other",
     root: { ...luck.root, ref: { call: "TreeDeclLuck", args: [1] } },
@@ -343,6 +344,9 @@ test("a source whose ref is another blueprint's root is a line with a link to it
   for (const trees of [
     [{ ...luck, id: "decl-draft" }],
     [other],
+    [{ ...luck, root: { ...luck.root, part: [{ read: "TreeLevel" }] } }],
+    [{ ...luck, root: { ...luck.root, item: 0 } }],
+    [{ ...luck, root: { ...luck.root, scratch: { TreeFlag: 1 } } }],
     [luck, { ...luck, id: "invented-luck-two" }],
   ])
     expect(sourceAt(linkOf(trees), 0, 0).tree).toBeUndefined();
