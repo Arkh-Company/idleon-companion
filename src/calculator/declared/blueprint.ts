@@ -4,6 +4,7 @@
 // a name, a system, a leaf or a descent is still missing; only there may it be null or absent.
 import { CALC_CONDITION_KINDS, CALC_LEAF_KINDS } from "../tree-contract.ts";
 import {
+  checkCallModel,
   checkEach,
   checkName,
   checkProof,
@@ -118,23 +119,10 @@ function checkPieceLevel(
     );
   if (n.each === undefined) return;
   checkEach(n.each, where, poolEach);
-  if (!Array.isArray(n.children) || n.children.length !== 1)
+  const calls = isObj(n.each) && "calls" in n.each;
+  if (!Array.isArray(n.children) || (!calls && n.children.length !== 1))
     no(where, "each tem um filho-modelo só");
-  // a list of calls (T205): its model calls the block, `{as}` in one of its arguments
-  if (isObj(n.each) && "calls" in n.each) {
-    const [m] = n.children as unknown[];
-    const r = isObj(m) && isObj(m.ref) ? m.ref : null;
-    const args: unknown = r?.args;
-    if (
-      r?.call !== n.each.calls ||
-      !Array.isArray(args) ||
-      !args.includes(`{${String(n.each.as)}}`)
-    )
-      no(
-        where,
-        "each.calls: o filho-modelo chama o bloco com {as} num argumento",
-      );
-  }
+  if (calls) checkCallModel(n.each, n.children, where);
 }
 
 function checkNode(x: unknown, where: string, level: Level, w: Walk): void {

@@ -11,9 +11,16 @@ export function modelChildren(
   parts: readonly string[],
   { character }: { character: number },
 ): readonly BlueprintNode[] {
+  // a list of calls (T205): its model is the child that calls the block, the others stay as they are
+  if (each && "calls" in each) {
+    const isModel = (c: BlueprintNode) =>
+      c.ref !== undefined && "call" in c.ref && c.ref.call === each.calls;
+    const m = children.find(isModel);
+    const rest = children.filter((c) => !isModel(c));
+    return m ? [...rest, ...callChildren(m, each, parts)] : children;
+  }
   const [model] = children;
   if (!each || !model) return children;
-  if ("calls" in each) return callChildren(model, each, parts);
   const names = eachNames(each.as);
   const path = eachPattern(each.list, character);
   return parts.flatMap((p) => {
