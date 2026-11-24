@@ -176,10 +176,7 @@ function says(
       ? (e.arguments as AnyNode[]).slice(0, 1)
       : [];
   const subs = mark.inside ? namesIn(e) : inner;
-  return worst([
-    own,
-    ...subs.map((n) => says(n, f, mark, given, depth + 1)),
-  ]);
+  return worst([own, ...subs.map((n) => says(n, f, mark, given, depth + 1))]);
 }
 
 /** A literal of the code: a number (a negative one too) or a text. */
