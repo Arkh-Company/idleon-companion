@@ -6,7 +6,8 @@
 // A cache its author summed over its own value (T168, `d.X.v = d.X.v + item`) opens the same way: each write of the
 // author on the path a turn, its item the right side of the step that gave that write; a first write of 0 with no step
 // is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
-// write that does not overwrote the cache, and its own count opens it; an overwrite among the turns is refused.
+// write that does not overwrote the cache, and its own count opens it; an overwrite among the turns is refused. The
+// first write may add to the 0 of a key not yet set, the author's first read of it empty (T192: the game's Gallery).
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
@@ -76,18 +77,28 @@ export function writeTurns(
   const exprs = ws.map((w) =>
     writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf),
   );
-  const itemOf = (e: Expr | null | undefined) =>
-    e?.t === "op" && e.o === "+" && e.l.t === "read" && e.l.p === write.path
+  // the first write may add to the 0 of a key not yet set (T192): the author's first read of the path, before that
+  // write, saw no number
+  const first = author.r?.find(([p]) => p === write.path);
+  const empty =
+    first !== undefined &&
+    num(first[1]) === null &&
+    (first[2] ?? -1) < (ws[0]?.seq ?? -1);
+  const itemOf = (e: Expr | null | undefined, j: number) =>
+    e?.t === "op" &&
+    e.o === "+" &&
+    ((e.l.t === "read" && e.l.p === write.path) ||
+      (j === 0 && empty && e.l.t === "val" && e.l.v === 0))
       ? e.r
       : undefined;
-  if (itemOf(exprs.at(-1)) === undefined) return null;
+  if (itemOf(exprs.at(-1), exprs.length - 1) === undefined) return null;
   // the sum starts at a write of 0 with no step of its own: no line
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
-  const turns = exprs.slice(start);
+  const items = exprs.map(itemOf).slice(start);
   const name = callRef(author);
   // the first turn that does not add: with no step of its own it has no item (turnsOf), else it overwrote the cache
-  const k = turns.findIndex((e) => itemOf(e) === undefined);
-  if (k >= 0 && turns[k] !== null)
+  const k = items.findIndex((x) => x === undefined);
+  if (k >= 0 && exprs[k + start] !== null)
     return `a volta ${String(k + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
-  return turnsOf(name, turns.map(itemOf), ctx);
+  return turnsOf(name, items, ctx);
 }
