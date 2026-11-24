@@ -5,11 +5,13 @@
 // the bare read or the call right before it), and on through its own passages; never back to the call itself.
 // The cache whose write the level came from stays: an author's read of its own earlier turn goes a turn at a time (T168).
 import type { RecNode, RecWrite } from "../recording.ts";
-import type { BlockSteps, Expr } from "../recorded/steps.ts";
+import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
+import { astPattern, matchPattern } from "../recorded/ast.ts";
 import { callRef } from "./answer-key-pool.ts";
 import {
   isCacheRead,
   seenSeqs,
+  writeRange,
   writeSource,
   writeTurn,
 } from "./cache-author.ts";
@@ -48,21 +50,27 @@ function writeOf(
   scope: RecNode,
   w: RecWrite,
   ctx: LevelContext,
-): { e: Expr; steps: BlockSteps } | null {
+): { e: Expr; steps: BlockSteps; range: LoopTurn } | null {
   const a = { node: scope, write: w };
   const steps = writeTurn(ctx.rec, a, ctx.turnOf);
   const e = writeSource(ctx.rec, a, ctx.turnOf, steps);
   // a refused source is none here: the pass-through gives no part (the opening of its read gives the reason)
-  return e && typeof e !== "string" ? { e, steps } : null;
+  return e && typeof e !== "string"
+    ? { e, steps, range: writeRange(ctx.rec, a) }
+    : null;
 }
 
-/** The leaves, each pass-through variable among them swapped for the leaves of what gave its write, down. */
+/**
+ * The leaves, each pass-through variable among them swapped for the leaves of what gave its write, down; each write's
+ * turn it went through goes to `turns`, with its steps.
+ */
 function passThrough(
   leaves: readonly Expr[],
   scope: RecNode,
   steps: BlockSteps,
   ctx: LevelContext,
   sum: string | undefined,
+  turns: { range: LoopTurn; steps: BlockSteps }[] = [],
 ): Expr[] {
   return leaves.flatMap((l) => {
     // a loose value of the call's own variable (T209, form 5) is its read at that place
@@ -70,7 +78,10 @@ function passThrough(
     const w = path ? ownWrite(scope, path, steps, ctx, sum, l) : null;
     if (!w) return [l];
     const src = writeOf(scope, w, ctx);
-    return src ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum) : [];
+    if (src) turns.push(src);
+    return src
+      ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum, turns)
+      : [];
   });
 }
 
@@ -86,8 +97,9 @@ export function partsOf(
   const transparent = (k: string) => notLeafOf(k, ctx.character) !== null;
   const { scope } = level;
   const steps = level.steps ?? ctx.stepsOf(scope.id);
+  const turns: { range: LoopTurn; steps: BlockSteps }[] = [];
   const keys = (es: readonly Expr[]) =>
-    passThrough(es, scope, steps, ctx, level.write?.path).flatMap(
+    passThrough(es, scope, steps, ctx, level.write?.path, turns).flatMap(
       (e) => keyOfLeaf(e, ctx.rec) ?? [],
     );
   const own = keys(leaves);
@@ -97,19 +109,56 @@ export function partsOf(
   });
   if (!fed && !literal(level.expr))
     return [...new Set(own)].filter((k) => !transparent(k));
-  const others = ctx
-    .stepsOf(scope.id)
-    .steps.flatMap((s) => (s.e === level.expr ? [] : leavesOf(s.e)));
-  const reads = (scope.r ?? []).flatMap(([p, v]) =>
-    num(v) === null || ownWrite(scope, p, steps, ctx, level.write?.path)
-      ? []
-      : [p],
+  // past a write, a curve's parts are its turn's (as T168's turns); else the call's
+  const inTurn = (i: number) =>
+    turns.length === 0 ||
+    turns.some(({ range }) => i >= range.from && i <= range.to);
+  const all = ctx.stepsOf(scope.id);
+  const others = (turns.length ? turns.map((t) => t.steps) : [all]).flatMap(
+    (b) => b.steps.flatMap((s) => (s.e === level.expr ? [] : leavesOf(s.e))),
   );
+  // a check of the code (a length, a contains, a branch's test only) is never a part (FR-018 of 009: the ⓘ's text)
+  const used = new Set(
+    [...leaves, ...others].flatMap((l) => (l.t === "read" ? [l.p] : [])),
+  );
+  // what a comparison or a branch's test of the call read (each op once)
+  const testOps = new Set(
+    (scope.x ?? []).flatMap(([id]) =>
+      ["cmp", "test"].includes(ctx.ops?.[id]?.kind ?? "") ? [id] : [],
+    ),
+  );
+  // the paths the code names in those: a test's read in any turn, never by its value
+  const testPats = (ctx.ops ?? []).flatMap((o) =>
+    o.kind === "leaf" && o.parent !== undefined && testOps.has(o.parent)
+      ? (astPattern(o.node) ?? [])
+      : [],
+  );
+  const tested = (p: string) => testPats.some((t) => matchPattern(p, t));
+  const check = (p: string) =>
+    p.endsWith(".length") ||
+    p.includes(" contains ") ||
+    (tested(p) && !used.has(p));
+  const seen = turns.length
+    ? (scope.rx ?? []).flatMap(([p, v, xi]) =>
+        inTurn(xi) ? [[p, v] as const] : [],
+      )
+    : (scope.r ?? []);
+  const reads = [
+    ...new Set(
+      seen.flatMap(([p, v]) =>
+        num(v) === null ||
+        check(p) ||
+        ownWrite(scope, p, steps, ctx, level.write?.path)
+          ? []
+          : [p],
+      ),
+    ),
+  ];
   const calls = scope.c.flatMap((c) => {
     const n = ctx.rec.nodes[c];
-    return n ? [callRef(n)] : [];
+    return n && inTurn(n.pxi) ? [callRef(n)] : [];
   });
   return [...new Set([...own, ...keys(others), ...reads, ...calls])].filter(
-    (k) => !transparent(k),
+    (k) => !transparent(k) && !check(k),
   );
 }

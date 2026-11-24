@@ -129,14 +129,22 @@ const writeBefore = (
     .filter((w) => w.node === node.id && w.seq < write.seq)
     .reduce<RecWrite | null>((a, w) => (a && a.seq > w.seq ? a : w), null);
 
+/** The place of the author's turn that gave its write in its step log: since its write before it. */
+export function writeRange(
+  rec: Recording,
+  a: { node: RecNode; write: RecWrite },
+): LoopTurn {
+  const from = writeBefore(rec, a);
+  return { from: from?.xi ?? 0, to: a.write.xi - 1 };
+}
+
 /** The steps of the author's turn that gave its write: since its write before it. */
 export function writeTurn(
   rec: Recording,
   a: { node: RecNode; write: RecWrite },
   turnOf: TurnOf,
 ): BlockSteps {
-  const from = writeBefore(rec, a);
-  return turnOf(a.node, { from: from?.xi ?? 0, to: a.write.xi - 1 });
+  return turnOf(a.node, writeRange(rec, a));
 }
 
 /** The expression that gave the author's write: the last step of its turn (`turn`), with the value. */
