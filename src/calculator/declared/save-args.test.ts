@@ -253,3 +253,7 @@ test("an argument one place gives from the save and another writes in the code: 
 test("the write of a working map's key the read saw is the last one before it, not an earlier one from the save (group 5 of part P)", () => {
   expect(rowLock("TreeWorkLast", 0)).toEqual([]);
 });
+
+test("a working map's key set inside a loop before the read, from its index, is no save's (group 5 of part P)", () => {
+  expect(rowLock("TreeWorkLoop", 1)).toEqual([]);
+});

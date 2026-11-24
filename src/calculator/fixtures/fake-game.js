@@ -2575,6 +2575,22 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // ...and a key the call set inside a loop it left with a break, before the read: as StampBonusOfTypeX's
+  // DummyNumbersStatManager.Stamp_bonuses_DRI = s, then StampOverLevel(s + 1000 × that).
+  Blocks._customBlock_TreeWorkLoop = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    for (var r = 0; r < 3; r++)
+      if (1 == r) {
+        a.engine.getGameAttribute("DNSM").h.TreeFound = r;
+        break;
+      }
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeFound),
+      )
+    );
+  };
   Blocks._customBlock_TreeSetElse = function () {
     a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
     return 0;
