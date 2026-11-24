@@ -1609,6 +1609,25 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeWriteBon.h.v = state().TreeBig.h.k2;
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
+  // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
+  // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
+  Blocks._customBlock_TreeWriteRhs = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteRhs = new StringMap();
+    var t = d.TreeWriteRhs;
+    if (s.TreeLevel > 1) {
+      var n = s.TreeBase;
+      var A = Blocks._customBlock_TreeWriteCall();
+      t.h.w = A;
+    }
+    if (s.TreeCapped > n) t.h.v = 7;
+  };
+  Blocks._customBlock_TreeWriteRhsRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteRhs.h.w + state().TreeCapped
+    );
+  };
   Blocks._customBlock_TreeWriteRead = function () {
     var d = a.engine.getGameAttribute("DNSM").h;
     return d.TreeWriteBon.h.v + d.TreeWriteBon.h.w + state().TreeCapped;

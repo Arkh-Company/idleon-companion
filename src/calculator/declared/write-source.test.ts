@@ -139,3 +139,48 @@ test("the lock closes a write with no step by its bare read and by its call", ()
   });
   expect(lock.errors.map(lockMessage)).toEqual([]);
 });
+
+test("a write with no step whose window has a read and a call is the right side of the code's assignment there", () => {
+  // TreeWriteRhs reads TreeBase, then A = TreeWriteCall(), then t.h.w = A: both are in the write's window
+  const input = recordedWrites(
+    "TreeWriteRhsRead",
+    "TreeWriteRhs",
+    "TreeWriteRhs",
+  );
+  expect(input.key.final).toBe(88);
+  const blueprint: Blueprint = {
+    id: "invented-write",
+    root: {
+      name: "Invented",
+      ref: { call: "TreeWriteRhsRead", args: [0, 0, 0] },
+    },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "cards",
+            sources: [
+              {
+                ...leaf("DNSM.TreeWriteRhs.w"),
+                children: [
+                  call("TreeWriteRhs", [
+                    call("TreeWriteCall", [leaf("TreeBase")]),
+                  ]),
+                ],
+              },
+              leaf("TreeCapped"),
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const lock = lockBlueprint({
+    blueprint,
+    ...input,
+    character: 0,
+    characterClass: 3,
+  });
+  expect(lock.errors.map(lockMessage)).toEqual([]);
+});
