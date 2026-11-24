@@ -1635,14 +1635,6 @@
                   ]
                 },
                 {
-                  "key": "stamp-details-37",
-                  "name": null,
-                  "ref": {
-                    "call": "StampDetails",
-                    "args": [37]
-                  }
-                },
-                {
                   "key": "stamp-over-level-37",
                   "name": null,
                   "ref": {
@@ -9009,19 +9001,11 @@
       "kind": "name"
     },
     {
-      "where": "pools/0/groups/19/sources/0/children/2",
+      "where": "pools/0/groups/19/sources/0/children/2/children/0",
       "kind": "leaf"
     },
     {
-      "where": "pools/0/groups/19/sources/0/children/3",
-      "kind": "name"
-    },
-    {
-      "where": "pools/0/groups/19/sources/0/children/3/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/19/sources/0/children/4/children/0/children/0/children/0",
+      "where": "pools/0/groups/19/sources/0/children/3/children/0/children/0/children/0",
       "kind": "leaf"
     }
   ]
