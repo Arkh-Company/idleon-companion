@@ -2487,6 +2487,27 @@ lime.$scripts.N = function (_exports, $global) {
       d.TreeCount.h.v = d.TreeCount.h.v + 1;
     return 3 * d.TreeCount.h.v * Blocks._customBlock_TreeLoop();
   };
+  // Spec 010 (T188): a pass-through variable the call writes and reads back, as the game's PostOfficeINFO writes
+  // DNSM.PostOffInfoDN1: TreeBase × 2 = 8, then 8 + TreeLevel = 33; the bare one takes TreeBase with no step, × 3 = 12.
+  Blocks._customBlock_TreePassDN = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePassDN1 = s.TreeBase * 2;
+    return d.TreePassDN1 + s.TreeLevel;
+  };
+  Blocks._customBlock_TreePassBare = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePassDN1 = s.TreeBase;
+    return a.engine.getGameAttribute("DNSM").h.TreePassDN1 * 3;
+  };
+  Blocks._customBlock_TreePassRoot = function () {
+    return (
+      Blocks._customBlock_TreePassDN() +
+      Blocks._customBlock_TreePassBare() +
+      state().TreeCapped
+    );
+  };
   Blocks._customBlock_TreeCostCurve = function () {
     var s = state();
     var d = dnsm();
