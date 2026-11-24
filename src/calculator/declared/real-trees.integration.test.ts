@@ -22,7 +22,8 @@ import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
 import { answerKey } from "./answer-key.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
-import { draftBlueprint, draftJson, gameList } from "./draft.ts";
+import { draftJson } from "./draft-json.ts";
+import { draftBlueprint, gameList } from "./draft.ts";
 import {
   classCharacters,
   lockNumber,

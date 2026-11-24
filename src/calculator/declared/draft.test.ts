@@ -10,7 +10,8 @@ import { answerKey } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { stepsGuide } from "./draft-steps.ts";
-import { draftBlueprint, draftJson, gameList, talentClass } from "./draft.ts";
+import { draftJson } from "./draft-json.ts";
+import { draftBlueprint, gameList, talentClass } from "./draft.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
 import {
   chainInput,
