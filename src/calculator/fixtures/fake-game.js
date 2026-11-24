@@ -2192,6 +2192,17 @@ lime.$scripts.N = function (_exports, $global) {
     if (3 > s.TreeMaps[s.CurrentMap].length) return 0;
     return Blocks._customBlock_TreeTurnItem(1);
   };
+  // Spec 010 (T211): a count with a factor only some classes get, as the game's GFoodz × max(1, Opassz) for the
+  // classes 7 to 17: TreeTurnItem(1) = 4, × TreeWriteCall() = 8 above class 6.
+  Blocks._customBlock_TreeClassFactor = function () {
+    var s = state();
+    var b = Blocks._customBlock_TreeTurnItem(1);
+    if (6 < s.CharacterClass) return b * Blocks._customBlock_TreeWriteCall();
+    return b;
+  };
+  Blocks._customBlock_TreeClassFactorRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeClassFactor();
+  };
   Blocks._customBlock_TreeGateMapRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateMap();
   };

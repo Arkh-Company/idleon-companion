@@ -181,10 +181,11 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
     /conditionKind/,
   ],
   [
-    "classes outside a pool's source",
+    // a call's child may have classes too (T211): a condition never does
+    "classes outside a pool's source or a call's child",
     (bp) => {
-      const kids = source(bp).children as Record<string, unknown>[];
-      if (kids[0]) kids[0].classes = [7];
+      const cond = source(bp, 0, 1).condition as Record<string, unknown>;
+      cond.classes = [7];
     },
     /classes/,
   ],
