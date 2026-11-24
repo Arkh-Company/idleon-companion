@@ -9,6 +9,19 @@ import type { AnyNode } from "./character-args.ts";
 const sameRange = (a: AnyNode | undefined, b: AnyNode) =>
   a?.range[0] === b.range[0] && a.range[1] === b.range[1];
 
+// each block's ops by their index, once per op list: the sides are looked up on every call's site
+const byBlock = new WeakMap<readonly Op[], Map<string, number[]>>();
+function opsOf(ops: readonly Op[], block: string): number[] {
+  let m = byBlock.get(ops);
+  if (!m) {
+    m = new Map();
+    for (const [i, o] of ops.entries())
+      m.set(o.block, [...(m.get(o.block) ?? []), i]);
+    byBlock.set(ops, m);
+  }
+  return m.get(block) ?? [];
+}
+
 /** The op of the caller's block whose node is at `node`'s place, of the given kinds. */
 function opAt(
   ops: readonly Op[],
@@ -16,13 +29,14 @@ function opAt(
   node: AnyNode,
   kinds: readonly Op["kind"][],
 ): number | undefined {
-  const i = ops.findIndex(
-    (o) =>
-      o.block === block &&
+  return opsOf(ops, block).find((i) => {
+    const o = ops[i];
+    return (
+      o !== undefined &&
       kinds.includes(o.kind) &&
-      sameRange(o.kind === "test" ? o.owner : o.node, node),
-  );
-  return i < 0 ? undefined : i;
+      sameRange(o.kind === "test" ? o.owner : o.node, node)
+    );
+  });
 }
 
 /** Whether the site ran when the call began, by each side it sits on: false when a test took the other side. */
