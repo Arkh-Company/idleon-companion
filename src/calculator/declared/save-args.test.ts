@@ -249,3 +249,7 @@ test("an argument one place gives from the save and another writes in the code: 
     "invented-split/0/luk-stats/kills: o argumento 2 de TreeDeclKills está no código, não vem do save: a receita escreve o número",
   );
 });
+
+test("the write of a working map's key the read saw is the last one before it, not an earlier one from the save (group 5 of part P)", () => {
+  expect(rowLock("TreeWorkLast", 0)).toEqual([]);
+});

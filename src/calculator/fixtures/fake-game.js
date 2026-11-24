@@ -2560,6 +2560,21 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // ...and a key the call set from the save first and from a number of the code right before the read: the write the
+  // read saw is the code's, as TalentCalc's DNSM.CalcTalentDN3 = r in each of its loops.
+  Blocks._customBlock_TreeWorkLast = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeIdx = U.asNumber(
+      a.engine.getGameAttribute("TreeList")[2],
+    );
+    a.engine.getGameAttribute("DNSM").h.TreeIdx = 0;
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeIdx),
+      )
+    );
+  };
   Blocks._customBlock_TreeSetElse = function () {
     a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
     return 0;
