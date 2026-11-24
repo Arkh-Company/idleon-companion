@@ -300,3 +300,14 @@ test("no node whose ref takes {character} or * at an argument writes a number th
   for (const [file, raw] of Object.entries(BLUEPRINTS)) walk(raw, file);
   expect(found).toEqual([]);
 });
+
+// the game's getbonus2(e, t, -1) asks "AllTalentLVz" for t + "|" + s, s each character's index: an index written out in a
+// text, which `{character}` does not stand for yet (Fase 4 r3 of part N)
+test("no recipe or piece writes a character's index in AllTalentLVz's text, in its ref or its nameProof", () => {
+  const found = Object.entries(BLUEPRINTS).flatMap(([file, raw]) =>
+    (JSON.stringify(raw).match(/AllTalentLVz\\?",\s*\\?"\d+\|\d+/g) ?? []).map(
+      (m) => `${file}: ${m}`,
+    ),
+  );
+  expect(found).toEqual([]);
+});
