@@ -20,7 +20,7 @@ const times = (
   constant: number,
   condition: BlueprintNode,
 ): BlueprintNode => ({ key, name: key, constant, children: [condition] });
-const source = (max = 2): BlueprintNode => ({
+const source = (max = 2, more: BlueprintNode[] = []): BlueprintNode => ({
   key: "doubled",
   name: "Doubled",
   ref: { call: "TreeDoubled", args: [0] },
@@ -39,6 +39,7 @@ const source = (max = 2): BlueprintNode => ({
       leaf: "condition",
       conditionKind: "owned",
     }),
+    ...more,
     level("level", "TreeLevel"),
   ],
 });
@@ -92,4 +93,16 @@ test("the load takes a constant in a call's level only with its conditions as ch
   const kids = [...(bare.children ?? [])];
   kids[0] = { key: "at-max", name: "At max", constant: 2, leaf: "fixedValue" };
   expect(parse({ ...bare, children: kids })).toBe(false);
+});
+
+test("two multipliers under the same reading part by the code's own number at the write's place: the x6 side (form 3)", () => {
+  const x6 = times("past-max", 6, {
+    key: "upg",
+    name: "Upg",
+    ref: { read: "TreeUpg[0]" },
+    leaf: "condition",
+    conditionKind: "equalsValue",
+  });
+  expect(lock(source(2, [x6]), { TreeUpg: [102] })).toEqual([]);
+  expect(lock(source(2, [x6]), {})).toEqual([]);
 });
