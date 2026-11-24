@@ -164,7 +164,9 @@ export function partsOf(
   ];
   const calls = scope.c.flatMap((c) => {
     const n = ctx.rec.nodes[c];
-    return n && inTurn(n.pxi) ? [callRef(n)] : [];
+    // in a turn, a call that gives no number (a list, as StampDetails) is no part
+    const counts = turns.length === 0 || num(n?.v) !== null;
+    return n && inTurn(n.pxi) && counts ? [callRef(n)] : [];
   });
   return [...new Set([...own, ...keys(others), ...reads, ...calls])].filter(
     (k) => !transparent(k),
