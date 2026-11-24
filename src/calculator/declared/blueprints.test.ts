@@ -5,8 +5,6 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import type { BlueprintNode } from "./blueprint.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
-import { classify } from "../tree/kinds.ts";
-import { notLeafOf } from "./not-leaves.ts";
 import { hasRawCharacterIndex, refKey } from "./refs.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
@@ -179,7 +177,22 @@ test("the LUK's EtcBonuses that read no part are raw bonuses, by tree/kinds.ts's
   );
 });
 
-test("the LUK's leaves have the kind tree/kinds.ts proves, and none it proves waits for one (T172)", () => {
+// The kinds the bench's rules prove for the LUK's leaves (bench pieces.cjs KIND_PATHS and RULES, T172): an achievement is
+// a condition, a vote of the week too, a game table's cell a fixed value and a talent's level the points invested.
+const LUK_KINDS: readonly [RegExp, string][] = [
+  [/^AchieveReg\[\d+\]$/, "condition"],
+  [
+    /^OptionsListAccount\[453\]$|ActorEvents_670\)\._GenINFO\[36\]$/,
+    "condition",
+  ],
+  [/^(CustomLists|CustomMaps)\./, "fixedValue"],
+  [
+    /^(PlayerDATABASE\[\{character\}\]\.)?SkillLevels\[\d+\]$/,
+    "investedPoints",
+  ],
+];
+
+test("the LUK's leaves have the kind the bench's rules prove, and none of those waits for one (T172)", () => {
   const raw = BLUEPRINTS[
     "../blueprints/character/stats-luk.blueprint.json"
   ] as { pending: { where: string; kind: string }[] };
@@ -195,13 +208,9 @@ test("the LUK's leaves have the kind tree/kinds.ts proves, and none it proves wa
     const ref = n.ref;
     // a leaf, typed or waiting for its kind; a call that waits to descend is no leaf yet
     if (!ref || n.children?.length || (!n.leaf && !waits.has(w))) return;
-    // the recipe's `{character}` is the tree's own index, as the lock reads it; a curve is never a leaf (T182)
-    const code =
-      "call" in ref ? refKey(ref, 0) : ref.read.replaceAll("{character}", "0");
-    const k = classify({ name: n.name, code }).leaf;
-    // a cache's read is never a leaf (T168): it waits to descend, whatever its kind would be
-    const aside = code.startsWith("DNSM.") || notLeafOf(code, 0) !== null;
-    if (k === "unknown" || aside) return;
+    const code = "call" in ref ? refKey(ref, 0) : ref.read;
+    const k = LUK_KINDS.find(([re]) => re.test(code))?.[1];
+    if (k === undefined) return;
     if (waits.has(w) ? true : n.leaf !== k) wrong.push(`${code}: ${k}`);
   };
   bp?.pools.forEach((p, pi) => {
