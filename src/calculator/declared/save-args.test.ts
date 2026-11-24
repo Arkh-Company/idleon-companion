@@ -46,7 +46,11 @@ const row = (arg: RefArg): BlueprintNode => ({
   ref: { call: "TreeDeclRow", args: [arg] },
   leaf: "level",
 });
-const blueprint = (kills: RefArg, below: RefArg): Blueprint => {
+const blueprint = (
+  kills: RefArg,
+  below: RefArg,
+  row0: RefArg = 0,
+): Blueprint => {
   const sources: BlueprintNode[] = [
     { key: "base", name: "Base", ref: { read: "TreeBase" }, leaf: "level" },
     {
@@ -55,7 +59,7 @@ const blueprint = (kills: RefArg, below: RefArg): Blueprint => {
       ref: { call: "TreeDeclKills", args: ["Map", kills, 0] },
       children: [row(below)],
     },
-    { ...row(0), key: "row-0" },
+    { ...row(row0), key: "row-0" },
   ];
   return {
     id: "invented-save",
@@ -87,6 +91,17 @@ test("the lock ties a call by its place with the *, and refuses a recipe that wr
   expect(lock("*", 3)).toEqual([
     'argumento do save por extenso: invented-save/0/luk-stats/kills/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
     working,
+  ]);
+});
+
+test("a {character} where the place does not decide is refused too, never let through by the index's number (r3)", () => {
+  const input = { ...recorded("TreeSaveArg"), character: 0, characterClass: 3 };
+  const errors = lockBlueprint({
+    ...input,
+    blueprint: blueprint("*", "*", "{character}"),
+  }).errors.map(lockMessage);
+  expect(errors).toEqual([
+    "invented-save/0/luk-stats/row-0: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
   ]);
 });
 

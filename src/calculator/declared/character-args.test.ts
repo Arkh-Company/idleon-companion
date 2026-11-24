@@ -60,7 +60,7 @@ const leaf = (read: string): BlueprintNode => ({
   ref: { read },
   leaf: "level",
 });
-const blueprint = (own: RefArg): Blueprint => {
+const blueprint = (own: RefArg, row: RefArg = 0): Blueprint => {
   const sources: BlueprintNode[] = [
     leaf("TreeBase"),
     {
@@ -72,7 +72,7 @@ const blueprint = (own: RefArg): Blueprint => {
     {
       key: "row",
       name: "Row",
-      ref: { call: "TreeDeclRow", args: [0] },
+      ref: { call: "TreeDeclRow", args: [row] },
       leaf: "level",
     },
   ];
@@ -100,6 +100,18 @@ test("the lock refuses a recipe that writes out the character's index where the 
   expect(lock("{character}")).toEqual([]);
   expect(lock(0)).toEqual([
     'índice do personagem por extenso: invented-char/0/luk-stats/own: o argumento 1 de TreeDeclOwn vem do personagem; a receita escreve "{character}"',
+  ]);
+});
+
+test("the lock refuses a {character} where the game wrote a number, even one equal to the index (r3)", () => {
+  const input = { ...recorded(ROOT), character: 0, characterClass: 3 };
+  expect(
+    lockBlueprint({
+      ...input,
+      blueprint: blueprint("{character}", "{character}"),
+    }).errors.map(lockMessage),
+  ).toEqual([
+    "invented-char/0/luk-stats/row: o argumento 1 de TreeDeclRow não vem do personagem",
   ]);
 });
 
