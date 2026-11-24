@@ -122,6 +122,11 @@ Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alche
 | `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`) |
 | `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
 
+**Linha com link** (Open Questions, 23/11, noite): no `BlueprintNode`, `tree: <id>` (outro número com receita própria,
+como o `stats-luk` dentro do Drop Rate) fica no lugar de `children`, `leaf`, `combine`, `each` e `piece`; o nó tem `ref`;
+a carga confere que o id existe em `blueprints/` e não é o próprio; a trava confere o valor da linha pelo `ref` e não desce;
+a tela mostra a linha com o link que abre a árvore dela (T200).
+
 No `BlueprintNode`, `piece: { name, args }` fica no lugar de `children`, `leaf`, `combine` e `each`. A carga preenche os
 parâmetros e passa cada caminho pelas checagens do ref; recusa parâmetro que falta ou sobra, pedaço que não existe, pedaço
 que chama a si mesmo, id repetido e `{nome}` não declarado. A linha que chama o pedaço pega o valor da sua referência e
