@@ -85,6 +85,25 @@ test("the lock ties a call by its place with the *, and refuses a recipe that wr
   ]);
 });
 
+test("a pending leaf or descent never hides the save's number written out, at its node or below it (r2)", () => {
+  const input = { ...recorded("TreeSaveArg"), character: 0, characterClass: 3 };
+  const lock = (kills: RefArg, below: RefArg, kind: "leaf" | "descend") =>
+    lockBlueprint({
+      ...input,
+      blueprint: {
+        ...blueprint(kills, below),
+        pending: [{ where: "pools/0/groups/1/sources/0", kind }],
+      },
+    }).errors.map(lockMessage);
+  for (const kind of ["leaf", "descend"] as const)
+    expect(lock(3, "*", kind)).toContain(
+      'argumento do save por extenso: invented-save/0/luk-stats/kills: o argumento 2 de TreeDeclKills vem do save; a receita escreve "*"',
+    );
+  expect(lock("*", 3, "descend")).toContain(
+    'argumento do save por extenso: invented-save/0/luk-stats/kills/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
+  );
+});
+
 test("two calls of one block the * makes equal are refused with the reason, never tied by order", () => {
   const input = {
     ...recorded("TreeSaveTwice"),
