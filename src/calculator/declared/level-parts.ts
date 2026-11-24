@@ -3,6 +3,7 @@
 // PostOfficeINFO and its DNSM.PostOffInfoDN1) is no part: a DNSM path the call read after its own write, at the read's
 // place. The tree goes down through the expression that gave that write in the call's turn, or the bare read made right
 // before it (by its place; the value only checks), and on through its own passages; never back to the call itself.
+// The cache whose write the level came from stays: an author's read of its own earlier turn goes a turn at a time (T168).
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
@@ -11,15 +12,19 @@ import type { Level, LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, literal, num } from "./lock-parts.ts";
 import { notLeafOf } from "./not-leaves.ts";
 
-/** The call's own write that each read of `path` saw (at `leaf`, when given), or null when one saw another's or none. */
+/**
+ * The call's own write that each read of `path` saw (at `leaf`, when given), or null when one saw another's or none, or
+ * `path` is `sum`, the cache whose write the level came from.
+ */
 function ownWrite(
   scope: RecNode,
   path: string,
   steps: BlockSteps,
   ctx: LevelContext,
+  sum: string | undefined,
   leaf?: Expr,
 ): RecWrite | null {
-  if (!isCacheRead(path)) return null;
+  if (!isCacheRead(path) || path === sum) return null;
   const writes = [...ctx.rec.writes, ...ctx.rec.spliced]
     .filter((w) => w.path === path)
     .sort((a, b) => a.seq - b.seq);
@@ -55,13 +60,14 @@ function passThrough(
   scope: RecNode,
   steps: BlockSteps,
   ctx: LevelContext,
+  sum: string | undefined,
 ): Expr[] {
   return leaves.flatMap((l) => {
-    const w = l.t === "read" ? ownWrite(scope, l.p, steps, ctx, l) : null;
+    const w = l.t === "read" ? ownWrite(scope, l.p, steps, ctx, sum, l) : null;
     if (!w) return [l];
     const src = writeSource(scope, w, ctx);
     // shortcut: a write with no step nor bare read of its own (a call's value) has no part; take the call when one needs it
-    return src ? passThrough(leavesOf(src.e), scope, src.steps, ctx) : [];
+    return src ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum) : [];
   });
 }
 
@@ -78,7 +84,7 @@ export function partsOf(
   const { scope } = level;
   const steps = level.steps ?? ctx.stepsOf(scope.id);
   const keys = (es: readonly Expr[]) =>
-    passThrough(es, scope, steps, ctx).flatMap(
+    passThrough(es, scope, steps, ctx, level.write?.path).flatMap(
       (e) => keyOfLeaf(e, ctx.rec) ?? [],
     );
   const own = keys(leaves);
@@ -92,7 +98,9 @@ export function partsOf(
     .stepsOf(scope.id)
     .steps.flatMap((s) => (s.e === level.expr ? [] : leavesOf(s.e)));
   const reads = (scope.r ?? []).flatMap(([p, v]) =>
-    num(v) === null || ownWrite(scope, p, steps, ctx) ? [] : [p],
+    num(v) === null || ownWrite(scope, p, steps, ctx, level.write?.path)
+      ? []
+      : [p],
   );
   const calls = scope.c.flatMap((c) => {
     const n = ctx.rec.nodes[c];
