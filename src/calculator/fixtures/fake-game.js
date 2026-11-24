@@ -811,6 +811,31 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeChainedDummyPool = function () {
     return Blocks._customBlock_TreeChainedDummy() + state().TreeCapped;
   };
+  // A working variable summed in a loop turn with a curve, under the code's checks of a list (its length, an item's
+  // test), as the game's StampBonusOfTypeX: the checks are no parts, the curve's are its turn's.
+  Blocks._customBlock_TreeCurveTurn = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    var d = a.engine.getGameAttribute("DummyNumbersStatManager").h;
+    d.TreeAcc = 0;
+    for (var i = 0; i < s.TreeList.length; i++)
+      2 == s.TreeList[i] &&
+        (d.TreeAcc =
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc +
+          Blocks._customBlock_ArbitraryCode5Inputs(
+            "decay",
+            40,
+            100,
+            s.TreeLevel,
+          ));
+    return (
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc *
+      s.TreeBase
+    );
+  };
+  Blocks._customBlock_TreeCurveTurnPool = function () {
+    return Blocks._customBlock_TreeCurveTurn() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeChainedPool = function () {
     return Blocks._customBlock_TreeChained() + state().TreeCapped;
   };

@@ -101,3 +101,13 @@ test("a variable of the game's other working map, DummyNumbersStatManager, goes 
   };
   expect(lock("TreeChainedDummyPool", source)).toEqual([]);
 });
+
+test("a code's check (a length, an item's test) is no part, and a curve past a write takes its turn's parts only (FR-018 of 009)", () => {
+  const source: BlueprintNode = {
+    key: "curve-turn",
+    name: "Curve turn",
+    ref: { call: "TreeCurveTurn", args: [] },
+    children: [leaf("level", "TreeLevel"), leaf("base", "TreeBase")],
+  };
+  expect(lock("TreeCurveTurnPool", source)).toEqual([]);
+});
