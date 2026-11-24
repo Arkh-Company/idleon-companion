@@ -2672,16 +2672,16 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeDeclOwn(0)
     );
   };
-  // Spec 010 (T205): a block called once per turn of a loop, its first argument what the turn gives (the save's list
-  // here, as the game's Summoning("RibbonBonus", ribbon, 0) per meal), summed; and the same call twice in two turns.
+  // Spec 010 (T205): a block called once per turn of a long loop, its first argument what the turn gives (as the game's
+  // Summoning("RibbonBonus", ribbon, 0) per meal), summed; and the same call twice in two turns.
   Blocks._customBlock_TreeRibbon = function (k, m) {
     return 2 * k + m;
   };
   Blocks._customBlock_TreeRibbons = function () {
     var s = state();
     var t = 0;
-    for (var i = 0; i < 3; i++)
-      t = t + Blocks._customBlock_TreeRibbon(s.TreeList[i], 0);
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbon(i + 1, 0);
     return t;
   };
   Blocks._customBlock_TreeRibbonsTwin = function () {

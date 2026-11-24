@@ -1,7 +1,7 @@
 // A list of calls of one block as a model child (spec 010, T205; data-model "Lista de chamadas"): `each: { calls, as }`
 // repeats the model once per recorded call of the block in the level, `{as}` in the argument the loop's turn gives; each
 // call is tied by its own place, never by value or order; two calls the place does not separate are refused. The
-// invented game's TreeRibbons sums TreeRibbon(TreeList[i], 0) over three turns; TreeRibbonsTwin calls TreeRibbon(3, 0)
+// invented game's TreeRibbons sums TreeRibbon(i + 1, 0) over eight turns (a long list, as T202's); TreeRibbonsTwin calls TreeRibbon(3, 0)
 // in both of its turns.
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
