@@ -2289,9 +2289,11 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // Spec 010 (Fase 4 r1 of part N): the game passes a count of the save as an argument, as its
   // ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills; the block below passes that parameter on,
-  // as ArcaneType's Log2(t). Beside it, a 0 written in the code. TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
+  // as ArcaneType's Log2(t). Beside it, a 0 the game set in its working map (as TalentCalc's CalcTalentDN3, a loop's
+  // index), which is no save. TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
   Blocks._customBlock_TreeSaveArg = function () {
     var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeSaveIdx = 0;
     return (
       state().TreeBase +
       Blocks._customBlock_TreeDeclKills(
@@ -2299,7 +2301,9 @@ lime.$scripts.N = function (_exports, $global) {
         U.asNumber(a.engine.getGameAttribute("TreeList")[2]),
         0,
       ) +
-      Blocks._customBlock_TreeDeclRow(0)
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeSaveIdx),
+      )
     );
   };
   // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
