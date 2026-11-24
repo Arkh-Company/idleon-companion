@@ -222,3 +222,18 @@ test("an author's read of its own earlier turn goes down a turn at a time, each 
     "TreeTurnItem(0)",
   ]);
 });
+
+test("an author that sums into a key not yet set starts on the empty key's 0: one line a turn, the first one too (T192)", () => {
+  // TreeAuthorKey: asNumber(the empty key) + TreeTurnItem(i) a turn = 2 + 4 + 6 = 12, as the game's Gallery sums
+  const rec = record("TreeAuthorKey", 12);
+  expect(drafted(rec)).toEqual([
+    ["DNSM.TreeAuthor.v", [["TreeAuthorKey()", [item(0), item(1), item(2)]]]],
+  ]);
+  const author: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorKey", args: [] },
+    children: [itemNode(0), itemNode(1), itemNode(2)],
+  };
+  expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});

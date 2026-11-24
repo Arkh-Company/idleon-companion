@@ -1474,6 +1474,16 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < state().TreeList.length; i++)
       d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (T192): a block that sums into a key not yet set, as the game's Gallery sums a nametag's bonus: the first
+  // turn adds to the 0 of the empty key (asNumber of nothing): 2 + 4 + 6 = 12.
+  Blocks._customBlock_TreeAuthorKey = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + Blocks._customBlock_TreeTurnItem(i);
+  };
   // Spec 010 (T168 r1): blocks that write the cache from 0 more than once, a turn only a write that adds to its own
   // value: an overwrite by a product (TreeTurnItem(0) × 2 = 4), by a sum of two parts (2 + 4 = 6), two items in the
   // same turn (3 + 6 + 9 = 18), and an overwrite before the turns (4 + 4 + 6 = 14).
