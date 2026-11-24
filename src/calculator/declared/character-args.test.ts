@@ -22,6 +22,13 @@ test("the draft writes {character} in the argument the game gave from the charac
     { call: "TreeDeclOwn", args: ["{character}"] },
     { call: "TreeDeclRow", args: [0] },
   ]);
+  // the key and the name never carry the marked argument: the key is the call's other arguments, the name waits
+  const own = d.pools[0]?.groups[1]?.sources[0];
+  expect([own?.key, own?.nameProof]).toEqual(["tree-decl-own", undefined]);
+  expect(d.pending).toContainEqual({
+    where: "pools/0/groups/1/sources/0",
+    kind: "name",
+  });
   // the 0 written in the code is the agent's to decide, as before; the character's is not
   const waits = d.pending.filter((p) => p.kind === "descend");
   expect(waits.map((p) => p.where)).toEqual(["pools/0/groups/2/sources/0"]);
