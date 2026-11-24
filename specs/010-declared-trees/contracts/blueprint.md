@@ -103,7 +103,9 @@ Uma receita fora destas regras responde `unknownNumber` para aquele número, e o
 - Um nó com `children` não tem `leaf`; um nó sem `children` tem `leaf`, um dos 9 tipos.
 - `conditionKind` só com `leaf: "condition"`; `classes` e `weight` só em fonte de pool; `termPart` só em filho.
 - `ref.call` é um identificador; `ref.args` só tem números e textos curtos; `ref.read` é um caminho de nomes, pontos e
-  índices (`[n]`, `[{character}]`, `[*]`), sem operador, parêntese, aspas ou espaço.
+  índices (`[n]`, `[{character}]`, `[*]`), sem operador, parêntese, aspas ou espaço; a exceção é o nome de uma chave
+  depois do ponto, que pode ter `%`, `+` e `{` como o jogo grava (`DNSM.GalleryTrophyBonTOT.%_LUK`,
+  `DNSM.CardBonusS.+{_Base_LUK`), escrito como a gravação o escreve (Vinicius, 23/11).
 - Nenhum índice de personagem por extenso dentro de `PlayerDATABASE[...]` ou outro caminho por personagem (research R5).
 - Nenhuma chave fora das listadas.
 
