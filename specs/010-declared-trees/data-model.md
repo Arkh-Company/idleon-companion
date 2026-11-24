@@ -122,6 +122,8 @@ Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alche
 | `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`); também num nó de receita sem `combine`, quando o rascunho escreve uma lista de leituras como filho-modelo (T202) |
 | `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
 
+**Autor de cache por qualquer chamada** (Open Questions, 24/11): no nó que é o autor de um cache, `ref.args` pode ser `["any"]`: qualquer chamada desse bloco que escreveu o cache lido; a trava liga pela escrita gravada (o lugar), nunca pelo valor; fora do autor de um cache, `any` é recusado na carga (T208).
+
 **Linha com link** (Open Questions, 23/11, noite): no `BlueprintNode`, `tree: <id>` (outro número com receita própria,
 como o `stats-luk` dentro do Drop Rate) fica no lugar de `children`, `leaf`, `combine`, `each` e `piece`; o nó tem `ref`;
 a carga confere que o id existe em `blueprints/` e não é o próprio; a trava confere o valor da linha pelo `ref` e não desce;
