@@ -149,6 +149,19 @@ test("an actor's init has its steps, named by its class, and only an actor's (sp
   expect(inits).toEqual(["scripts.ActorEvents_77"]);
 });
 
+test("the init of a class of another package after an actor is no actor's, and an actor's class goes once", () => {
+  const cls = (name: string, body: string) =>
+    `X.__name__="${name}",X.prototype=E(o.prototype,{${body}});`;
+  const init = "init:function(){this.v=this.a*5}";
+  const { ops, inits } = instrument(
+    cls("scripts.ActorEvents_77", `${init},_m:{${init}}`) +
+      cls("com.x.Y", init),
+  );
+  // each init is two steps (`this.a*5` and its leaf): the actor's two, none of com.x.Y
+  expect(ops.map((x) => x.block)).toEqual(Array(4).fill("ActorEvents_77_init"));
+  expect(inits).toEqual(["scripts.ActorEvents_77"]);
+});
+
 test("the function text stays with each step, for the worker only", () => {
   const { ops } = instrument(block("Text", "return a+b"));
   expect(ops[0]?.fnText).toBe("function(a,b){return a+b}");
