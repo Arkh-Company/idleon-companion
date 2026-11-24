@@ -138,7 +138,7 @@ export function readSeq(
     !range || (step >= range.from && step <= range.to);
   const log = (reader?.rx ?? []).findLast(
     ([p, v, step, seq]) =>
-      p === path && seq !== undefined && inRange(step) && near(v, value),
+      p === path && typeof seq === "number" && inRange(step) && near(v, value),
   );
   return (
     log?.[3] ?? reader?.r?.find(([p, v]) => p === path && near(v, value))?.[2]
@@ -256,7 +256,7 @@ export function scratchWrites(
     const mine = byNode.get(String(n.id)) ?? [];
     const from = mine[mine.findIndex((x) => x === w) - 1]?.seq ?? -Infinity;
     return (n.rx ?? []).filter(
-      ([, , , s]) => s !== undefined && s >= from && s < w.seq,
+      ([, , , s]) => typeof s === "number" && s >= from && s < w.seq,
     );
   };
   const writeOf = (n: RecNode, w: RecWrite, at: number): ScratchWrite => ({

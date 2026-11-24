@@ -33,7 +33,7 @@ export function seenSeqs(
 ): (number | undefined)[] {
   const first = reader.r?.find(([p]) => p === path)?.[2];
   const log = (reader.rx ?? []).filter(
-    ([p, , , s]) => p === path && s !== undefined,
+    ([p, , , s]) => p === path && typeof s === "number",
   );
   const placesOf = (uses: (l: Expr) => boolean) =>
     steps.flatMap((s, k) => {
@@ -44,7 +44,8 @@ export function seenSeqs(
   const places = exact.length
     ? exact
     : placesOf((l) => l.t === "read" && l.p === path);
-  if (places.length === 0) return log.length ? log.map((x) => x[3]) : [first];
+  if (places.length === 0)
+    return log.length ? log.map((x) => x[3] ?? undefined) : [first];
   return places.map((at) => log.findLast((x) => x[2] <= at)?.[3] ?? first);
 }
 
@@ -167,17 +168,19 @@ export function writeSource(
   const { node, write } = a;
   const prev = writeBefore(rec, a);
   const from = Math.max(prev?.xi ?? 0, (turn.stepAt?.at(-1) ?? -1) + 1);
-  // shortcut: a read with no write's number (a game table's text) and a call of a recording before T191 r1 (no `seq`)
-  // are placed by `xi` only; give them a number in recorder.js when two such parts meet in a window
-  const inWindow = (xi: number, seq: number | undefined) =>
+  // a read by `xi` and its write's number (a table's text keeps it fifth); a call of a recording before T191 r1 (no
+  // `seq`) by `xi` only
+  const inWindow = (xi: number, seq: number | null | undefined, call = false) =>
     xi >= from &&
     xi <= write.xi &&
-    (seq === undefined || (seq >= (prev?.seq ?? 0) && seq < write.seq));
+    (typeof seq === "number"
+      ? seq >= (prev?.seq ?? 0) && seq < write.seq
+      : call && seq === undefined);
   // each part by its name; a path read again with the same number is the same part
   const parts = new Map<string, { e: Expr; v: number }>();
-  for (const [p, v, xi, seq] of node.rx ?? []) {
+  for (const [p, v, xi, seq, textSeq] of node.rx ?? []) {
     const n = num(v);
-    if (n !== null && inWindow(xi, seq))
+    if (n !== null && inWindow(xi, seq ?? textSeq))
       parts.set(`${p} = ${String(n)}`, {
         e: { t: "read", p, v: n },
         v: n,
@@ -186,7 +189,7 @@ export function writeSource(
   for (const id of node.c) {
     const k = rec.nodes[id];
     const n = num(k?.v);
-    if (k && n !== null && inWindow(k.pxi, k.seq))
+    if (k && n !== null && inWindow(k.pxi, k.seq, true))
       parts.set(`${callRef(k)} #${String(id)}`, {
         e: { t: "call", id, v: n },
         v: n,

@@ -29,9 +29,9 @@ export interface RecNode {
   r?: ([string, RecValue] | [string, RecValue, number])[];
   /**
    * The step log of the reads: [path, value, how many steps had run] and, for a number, the last write's number before
-   * the read (the write it saw).
+   * the read (the write it saw); a game table's text has null there and that number fifth (absent before Fase 4 r2).
    */
-  rx?: [string, RecValue, number, number?][];
+  rx?: [string, RecValue, number, (number | null)?, number?][];
   /** Checks made without reading the value: [path, it exists]. */
   q?: [string, boolean][];
   /** The steps of the block's arithmetic: [op id, value]. */

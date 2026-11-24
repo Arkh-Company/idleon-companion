@@ -154,8 +154,8 @@
     var r = S.cur.r || (S.cur.r = []);
     var fresh = r.length < READ_CAP && !r.some((x) => x[0] === path);
     if (typeof v === "string" && GAME_TABLE.test(path)) {
-      // a loop's turn is known by the table row it read: kept with its place, inside the worker only
-      log([path, v.slice(0, 120), stepAt()]);
+      // a loop's turn is known by the table row it read, inside the worker only; the last write's number goes fifth
+      log([path, v.slice(0, 120), stepAt(), null, S.seq]);
       if (fresh) r.push([path, v.slice(0, 120)]);
       return;
     }
