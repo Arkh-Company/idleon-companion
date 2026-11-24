@@ -2748,6 +2748,16 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeFlipPool = function () {
     return Blocks._customBlock_TreeFlipSame() + state().TreeCapped;
   };
+  // ...and the same reading call twice, a write of the state between them: its reads saw another write's number, the
+  // same path and value.
+  Blocks._customBlock_TreeReadTwice = function () {
+    var first = Blocks._customBlock_TreeRibbonRead(3);
+    a.engine.getGameAttribute("DNSM").h.TreeTick = 1;
+    return first + Blocks._customBlock_TreeRibbonRead(3) + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeReadTwicePool = function () {
+    return Blocks._customBlock_TreeReadTwice() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeSamePool = function () {
     return Blocks._customBlock_TreeRibbonsSame() + state().TreeCapped;
   };

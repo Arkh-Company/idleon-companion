@@ -322,3 +322,40 @@ test("two calls in one place with the same key and value but another recorded de
     "invented-calls/0/cards/ribbons: duas chamadas TreeFlip(3,0) no nível, e o lugar não as separa",
   );
 });
+
+test("two identical calls whose reads saw another write's number are the same node by node: the path and the value", () => {
+  const source: BlueprintNode = {
+    key: "reads",
+    name: "Reads",
+    ref: { call: "TreeReadTwice", args: [] },
+    each: { calls: "TreeRibbonRead", as: "lv" },
+    children: [
+      {
+        key: "ribbon",
+        name: "Ribbon",
+        ref: { call: "TreeRibbonRead", args: ["{lv}"] },
+        children: [leaf("base", "TreeBase")],
+      },
+      leaf("level", "TreeLevel"),
+    ],
+  };
+  const bp: Blueprint = {
+    id: "invented-calls",
+    root: {
+      name: "Invented",
+      ref: { call: "TreeReadTwicePool", args: [0, 0, 0] },
+    },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          { system: "cards", sources: [source] },
+          { system: "stamps", sources: [leaf("capped", "TreeCapped")] },
+        ],
+      },
+    ],
+  };
+  expect(
+    lock("TreeReadTwicePool", bp).filter((m) => m.includes("duas chamadas")),
+  ).toEqual([]);
+});
