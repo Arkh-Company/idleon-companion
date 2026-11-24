@@ -102,7 +102,12 @@ export function checkPlan(
 export const draftPlan = (
   ids: readonly string[],
   stages: ReadonlyMap<string, BlueprintStage>,
+  _target?: string,
 ): string[] => ids.filter((id) => stages.get(id) === "sketch");
+
+export function piecePath(_out: string, _name: string): string {
+  return "";
+}
 
 /** A number's guide of steps (draft-steps.ts): in TREES_OUT only, its name from the catalog's id. */
 export function stepsPath(out: string, id: string): string {

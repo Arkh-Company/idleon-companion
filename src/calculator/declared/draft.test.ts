@@ -20,7 +20,12 @@ import {
   recorded,
 } from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
-import { draftPath, draftPlan, stepsPath } from "./real-trees-run.ts";
+import {
+  draftPath,
+  draftPlan,
+  piecePath,
+  stepsPath,
+} from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
 
 const ROOT = inventedBlueprint("decl-chain").root;
@@ -266,6 +271,20 @@ test("a number with a blueprint written gets no draft: only a sketch is drafted,
     ["c", "draft"],
   ] as const);
   expect(draftPlan(["a", "b", "c", "d"], stages)).toEqual(["a"]);
+});
+
+test("a number named alone is drafted again when its blueprint is a draft, into TREES_OUT only; a complete one never (T204)", () => {
+  const stages = new Map([
+    ["b", "complete"],
+    ["c", "draft"],
+  ] as const);
+  expect(draftPlan(["c"], stages, "c")).toEqual(["c"]);
+  expect(draftPlan(["b"], stages, "b")).toEqual([]);
+  expect(draftPlan(["b", "c"], stages, "character")).toEqual([]);
+  expect(piecePath("C:/out", "all-talent-lv")).toMatch(
+    /out[\/]draft[\/]pieces[\/]all-talent-lv\.piece\.json$/,
+  );
+  expect(() => piecePath("C:/out", "../x")).toThrow();
 });
 
 test("the guide of the steps goes only to TREES_OUT, with the recorded values; the draft has no value, count or expression", () => {
