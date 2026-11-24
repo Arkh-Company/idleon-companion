@@ -47,8 +47,11 @@ export function closeLevel(
             (e.t === "read" && e.p === own.path))
         )
           return own.value ?? undefined;
+        // a loose value of the call's own variable is its read there (form 5)
         if (e.t === "val")
-          return e.arg === undefined ? undefined : (num(e.v) ?? undefined);
+          return e.arg === undefined && e.own === undefined
+            ? undefined
+            : (num(e.v) ?? undefined);
         return e.t === "read"
           ? (num(reads.get(e.p)) ?? num(e.v) ?? undefined)
           : undefined;

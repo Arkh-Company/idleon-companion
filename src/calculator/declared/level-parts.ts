@@ -62,7 +62,9 @@ function passThrough(
   sum: string | undefined,
 ): Expr[] {
   return leaves.flatMap((l) => {
-    const w = l.t === "read" ? ownWrite(scope, l.p, steps, ctx, sum, l) : null;
+    // a loose value of the call's own variable (T209, form 5) is its read at that place
+    const path = l.t === "read" ? l.p : l.t === "val" ? l.own : undefined;
+    const w = path ? ownWrite(scope, path, steps, ctx, sum, l) : null;
     if (!w) return [l];
     const src = writeOf(scope, w, ctx);
     return src ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum) : [];
