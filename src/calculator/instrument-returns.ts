@@ -36,8 +36,9 @@ export function returnNotes(
         ? at(n, "argument")
         : null;
     const kind = arg && kindOf(arg);
-    // the ranges count from 1 inside the text (instrument.ts parses it as `(text)`)
-    if (arg && kind) out.push([arg.range[0] - 1, `__R("${kind}"), `]);
+    // the ranges count from 1 inside the text (instrument.ts parses it as `(text)`); the space keeps `return(a)?…` of
+    // the minified code from becoming `return__R(…)`
+    if (arg && kind) out.push([arg.range[0] - 1, ` __R("${kind}"), `]);
     children(n).forEach((c) => {
       walk(c, false);
     });
