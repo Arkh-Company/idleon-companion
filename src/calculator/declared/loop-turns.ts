@@ -8,9 +8,10 @@
 // is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
 // write that does not overwrote the cache, and its own count opens it; an overwrite among the turns is refused. The
 // first write may add to the 0 of a key not yet set, the author's first read of it empty (T192: the game's Gallery).
+import { READ_CAP } from "../recording.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
-import { callRef, near } from "./answer-key-pool.ts";
+import { atCap, callRef, near } from "./answer-key-pool.ts";
 import { writeExpr } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -62,6 +63,48 @@ export function loopOpening(
 }
 
 /**
+ * Whether the key of the author's first write `first` was not yet set (T192): its first read of the path saw no number
+ * before that write, or, with its read list full (READ_CAP: the read fell off it, as in the game's TalentCalc(-6)), no
+ * number of the path is in its step log before the write.
+ */
+function emptyKey(author: RecNode, first: RecWrite): boolean {
+  const read = author.r?.find(([p]) => p === first.path);
+  if (read) return num(read[1]) === null && (read[2] ?? -1) < first.seq;
+  return (
+    (author.r?.length ?? 0) >= READ_CAP &&
+    !atCap(author) &&
+    !(author.rx ?? []).some(
+      ([p, v, xi]) => p === first.path && num(v) !== null && xi <= first.xi,
+    )
+  );
+}
+
+/** The other side of a sum onto a loose 0 (`x + 0` or `0 + x`), or undefined. */
+const onZero = (e: Expr | null | undefined): Expr | undefined => {
+  if (e?.t !== "op" || e.o !== "+") return undefined;
+  const zero = (x: Expr) =>
+    x.t === "val" && x.v === 0 && x.arg === undefined && x.own === undefined;
+  return zero(e.l) ? e.r : zero(e.r) ? e.l : undefined;
+};
+
+/**
+ * A cache the author wrote once onto a key not yet set (the game's meals, `x + asNumber(the empty key)`): the count of
+ * that write without the empty key's 0, where the sum starts; null for any other write.
+ */
+export function emptyStart(
+  author: RecNode,
+  write: RecWrite,
+  e: Expr | null,
+  writes: readonly RecWrite[],
+): Expr | null {
+  const own = writes.filter(
+    (w) => w.node === author.id && w.path === write.path && w.seq <= write.seq,
+  );
+  const x = onZero(e);
+  return own.length === 1 && x && emptyKey(author, write) ? x : null;
+}
+
+/**
  * The turns of a cache its author summed over its own value on the path up to `write`; null with one write only or a
  * last write that overwrote it.
  */
@@ -77,20 +120,14 @@ export function writeTurns(
   const exprs = ws.map((w) =>
     writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf),
   );
-  // the first write may add to the 0 of a key not yet set (T192): the author's first read of the path, before that
-  // write, saw no number
-  const first = author.r?.find(([p]) => p === write.path);
-  const empty =
-    first !== undefined &&
-    num(first[1]) === null &&
-    (first[2] ?? -1) < (ws[0]?.seq ?? -1);
+  // the first write may add to the 0 of a key not yet set (T192)
+  const empty = ws[0] !== undefined && emptyKey(author, ws[0]);
   const itemOf = (e: Expr | null | undefined, j: number) =>
-    e?.t === "op" &&
-    e.o === "+" &&
-    ((e.l.t === "read" && e.l.p === write.path) ||
-      (j === 0 && empty && e.l.t === "val" && e.l.v === 0))
+    e?.t === "op" && e.o === "+" && e.l.t === "read" && e.l.p === write.path
       ? e.r
-      : undefined;
+      : j === 0 && empty
+        ? onZero(e)
+        : undefined;
   if (itemOf(exprs.at(-1), exprs.length - 1) === undefined) return null;
   // the sum starts at a write of 0 with no step of its own: no line
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;

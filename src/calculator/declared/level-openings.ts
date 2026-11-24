@@ -13,7 +13,7 @@ import {
   writeTurn,
 } from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { loopOpening, writeTurns } from "./loop-turns.ts";
+import { emptyStart, loopOpening, writeTurns } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
 
 /** A part of an opened level: its reference key, its recorded call (null for a read) with its expression, its value. */
@@ -53,11 +53,13 @@ export function openingOf(
   const turn = writeTurn(ctx.rec, a, ctx.turnOf);
   const source = writeSource(ctx.rec, a, ctx.turnOf, turn);
   if (typeof source === "string") return source;
+  // one write onto a key not yet set: the sum starts at the empty key's 0, no part (loop-turns.ts emptyStart)
+  const start = emptyStart(a.node, a.write, source, ctx.rec.writes);
   return [
     {
       part: callRef(a.node),
       call: a.node,
-      expr: source,
+      expr: start ?? source,
       write: a.write,
       steps: turn,
       value: typeof v === "number" ? v : null,
