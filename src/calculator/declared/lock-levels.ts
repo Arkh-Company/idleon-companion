@@ -16,6 +16,7 @@ import { evalExpr } from "./expr-eval.ts";
 import { onlyRead } from "./cache-author.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
+import { partsOf } from "./level-parts.ts";
 import {
   keyOfLeaf,
   leafCheck,
@@ -26,7 +27,6 @@ import {
   termExpr,
   TOLERANCE,
   transparentValue,
-  literal,
 } from "./lock-parts.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
@@ -144,37 +144,6 @@ function levelOfChild(
   const at = onlyRead(parent.expr, p);
   const expr: Expr = at ?? { t: "read", p, v: value };
   return { expr, scope: parent.scope, value, steps: parent.steps };
-}
-
-/**
- * The parts of a level: its expression's references; with a curve or a log in it, also what builds their arguments
- * (the level's other steps, its numeric reads and its calls), which are the parent's children (research R6).
- */
-function partsOf(level: Level, leaves: readonly Expr[], ctx: LevelContext) {
-  const transparent = (k: string) => notLeafOf(k, ctx.character) !== null;
-  const keys = (es: readonly Expr[]) =>
-    es.flatMap((e) => keyOfLeaf(e, ctx.rec) ?? []);
-  const own = keys(leaves);
-  const fed = own.some((k) => {
-    const role = notLeafOf(k, ctx.character)?.role;
-    return role === "curve" || role === "log";
-  });
-  if (!fed && !literal(level.expr))
-    return [...new Set(own)].filter((k) => !transparent(k));
-  const { scope } = level;
-  const others = ctx
-    .stepsOf(scope.id)
-    .steps.flatMap((s) => (s.e === level.expr ? [] : leavesOf(s.e)));
-  const reads = (scope.r ?? []).flatMap(([p, v]) =>
-    num(v) === null ? [] : [p],
-  );
-  const calls = scope.c.flatMap((c) => {
-    const n = ctx.rec.nodes[c];
-    return n ? [callRef(n)] : [];
-  });
-  return [...new Set([...own, ...keys(others), ...reads, ...calls])].filter(
-    (k) => !transparent(k),
-  );
 }
 
 /**

@@ -25,7 +25,7 @@ type Steps = Pick<BlockSteps, "steps"> & { stepAt?: number[] | undefined };
  * each step that holds the read opened (`leaf`, that very object), else of each step that uses the path; with no such
  * step, every read of its step log; with no log, its first read's.
  */
-function seenSeqs(
+export function seenSeqs(
   reader: RecNode,
   path: string,
   { steps, stepAt }: Steps,
