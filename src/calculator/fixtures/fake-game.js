@@ -2290,7 +2290,7 @@ lime.$scripts.N = function (_exports, $global) {
   // Spec 010 (Fase 4 r1 of part N): the game passes a count of the save as an argument, as its
   // ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills; the block below passes that parameter on,
   // as ArcaneType's Log2(t). Beside it, a 0 the game set in its working map (as TalentCalc's CalcTalentDN3, a loop's
-  // index), which is no save. TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
+  // index), which the place does not tell from a save's count the game cached there (r2). TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
   Blocks._customBlock_TreeSaveArg = function () {
     var U = A["com.stencyl.utils.Utils"];
     a.engine.getGameAttribute("DNSM").h.TreeSaveIdx = 0;
@@ -2319,6 +2319,32 @@ lime.$scripts.N = function (_exports, $global) {
         "Map",
         U.asNumber(a.engine.getGameAttribute("TreeList")[1]),
         0,
+      )
+    );
+  };
+  // Spec 010 (Fase 4 r2 of part N): one block called from two places, one with the save's argument and the other with a
+  // number written in the code: the place does not decide whether the argument comes from the save. 4 + 16 = 20.
+  Blocks._customBlock_TreeSaveSplit = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      state().TreeBase +
+      (state().TreeBase > 100
+        ? Blocks._customBlock_TreeDeclKills(
+            "Map",
+            U.asNumber(a.engine.getGameAttribute("TreeList")[2]),
+            0,
+          )
+        : Blocks._customBlock_TreeDeclKills("Map", 3, 0))
+    );
+  };
+  // ...and a root that gives the character's index to a block that passes its parameter on, as the game's
+  // Divinity("Bonus_Minor", …, 2) to its Divinity("DivMinorBonus", t, 1).
+  Blocks._customBlock_TreeCharPass = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclPass(
+        s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
       )
     );
   };

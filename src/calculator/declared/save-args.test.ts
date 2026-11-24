@@ -76,12 +76,17 @@ test("the lock ties a call by its place with the *, and refuses a recipe that wr
     lockBlueprint({ ...input, blueprint: blueprint(kills, below) }).errors.map(
       lockMessage,
     );
-  expect(lock("*", "*")).toEqual([]);
+  // the 0 the game set in its working map, the place does not decide (r2): the honest refusal
+  const working =
+    "invented-save/0/luk-stats/row-0: o lugar não decide se o argumento 1 de TreeDeclRow vem do save";
+  expect(lock("*", "*")).toEqual([working]);
   expect(lock(3, "*")).toEqual([
     'argumento do save por extenso: invented-save/0/luk-stats/kills: o argumento 2 de TreeDeclKills vem do save; a receita escreve "*"',
+    working,
   ]);
   expect(lock("*", 3)).toEqual([
     'argumento do save por extenso: invented-save/0/luk-stats/kills/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
+    working,
   ]);
 });
 
@@ -131,4 +136,61 @@ test("two calls of one block the * makes equal are refused with the reason, neve
   ).toContain(
     'invented-twice/0/luk-stats/a: duas chamadas casam com TreeDeclKills("Map","*",0): TreeDeclKills("Map",1,0) e TreeDeclKills("Map",2,0); a ligação seria pela ordem',
   );
+});
+
+test("an argument one place gives from the save and another writes in the code: the place does not decide (r2)", () => {
+  const { rec, key, ops } = recorded("TreeSaveSplit");
+  expect(key.final).toBe(20);
+  const ref = { call: "TreeSaveSplit", args: [0, 0, 0] };
+  const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  // the draft keeps the recorded number, and its name waits
+  const kills = d.pools[0]?.groups[1]?.sources[0];
+  expect(kills?.ref).toEqual({ call: "TreeDeclKills", args: ["Map", 3, 0] });
+  expect(d.pending).toContainEqual({
+    where: "pools/0/groups/1/sources/0",
+    kind: "name",
+  });
+  // the lock refuses the number written there, with the reason, and the * too
+  const input = { rec, key, ops, character: 0, characterClass: 3 };
+  const lock = (arg: RefArg) =>
+    lockBlueprint({
+      ...input,
+      blueprint: {
+        id: "invented-split",
+        root: { name: "Invented", ref },
+        pools: [
+          {
+            kind: "additive",
+            groups: [
+              {
+                system: "luk-stats",
+                sources: [
+                  {
+                    key: "base",
+                    name: "Base",
+                    ref: { read: "TreeBase" },
+                    leaf: "level",
+                  },
+                ],
+              },
+              {
+                system: "luk-stats",
+                sources: [
+                  {
+                    key: "kills",
+                    name: "Kills",
+                    ref: { call: "TreeDeclKills", args: ["Map", arg, 0] },
+                    children: [row(3)],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }).errors.map(lockMessage);
+  const unsure =
+    "invented-split/0/luk-stats/kills: o lugar não decide se o argumento 2 de TreeDeclKills vem do save";
+  expect(lock(3)).toContain(unsure);
+  expect(lock("*")).toContain(unsure);
 });

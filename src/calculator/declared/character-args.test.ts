@@ -102,3 +102,17 @@ test("the lock refuses a recipe that writes out the character's index where the 
     'índice do personagem por extenso: invented-char/0/luk-stats/own: o argumento 1 de TreeDeclOwn vem do personagem; a receita escreve "{character}"',
   ]);
 });
+
+test("a block that passes on the parameter its caller gave from the character's index gets {character} there too (r2)", () => {
+  const { rec, key, ops } = recorded("TreeCharPass");
+  const ref = { call: "TreeCharPass", args: [0, 0, 0] };
+  const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const pass = d.pools[0]?.groups[1]?.sources[0];
+  expect(pass?.ref).toEqual({ call: "TreeDeclPass", args: ["{character}"] });
+  expect(pass?.children?.map((c) => c.ref)).toEqual([
+    { read: "TreeBase" },
+    { call: "TreeDeclOwn", args: ["{character}"] },
+    { call: "TreeDeclRow", args: ["{character}"] },
+  ]);
+  expect(pass?.children?.[1]?.key).toBe("tree-decl-own");
+});
