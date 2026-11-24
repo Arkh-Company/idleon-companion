@@ -2241,6 +2241,17 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeDeclRow(c)
     );
   };
+  // Spec 010 (Fase 4 r1, research R5): the game passes the current character as GetPlayersUsernames.indexOf(UserInfo[0]),
+  // as its Divinity("Bonus_Minor", …, god); beside it, a 0 written in the code, which is no character. 4 + 2 + 5 = 11.
+  Blocks._customBlock_TreeCharArg = function () {
+    var s = state();
+    var me = s.GetPlayersUsernames.indexOf(s.UserInfo[0]);
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclOwn(me) +
+      Blocks._customBlock_TreeDeclRow(0)
+    );
+  };
   // ...and to a block that reads nothing: a leaf of the draft
   Blocks._customBlock_TreeDeclRow = function (c) {
     return c + 5;
