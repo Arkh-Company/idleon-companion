@@ -240,9 +240,11 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               mkdirSync(outPath(out, "draft", "pieces"), { recursive: true });
               writeFileSync(piecePath(out, p.id), pieceJson(p));
             }
+            // with why each common branch's line not a piece is written whole
             writeFileSync(
               stepsPath(out, id),
-              stepsGuide(key, rec, recorder.ops, dc),
+              stepsGuide(key, rec, recorder.ops, dc) +
+                (draft.notes ?? []).map((n) => `${n}\n`).join(""),
             );
             lines.push(done("drafted"));
             peak = Math.max(peak, process.memoryUsage().rss);

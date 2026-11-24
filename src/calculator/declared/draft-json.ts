@@ -26,7 +26,7 @@ function pretty(v: unknown, indent: string): string {
   );
   return `{\n${lines.join(",\n")}\n${indent}}`;
 }
-/** The draft's own JSON: its pieces go apart (`pieceJson`, T203). */
+/** The draft's own JSON: its pieces go apart (`pieceJson`, T203), its notes to the guide. */
 export const draftJson = (d: DraftBlueprint): string =>
-  `${pretty({ ...d, pieces: undefined }, "")}\n`;
+  `${pretty({ ...d, pieces: undefined, notes: undefined }, "")}\n`;
 export const pieceJson = (p: DraftPiece): string => `${pretty(p, "")}\n`;

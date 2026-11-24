@@ -24,8 +24,8 @@ import { sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
 import { ITEM, listOf, modelName } from "./draft-list.ts";
 import type { ListModel } from "./draft-list.ts";
-import { branchOf, COMMON_BRANCHES, pieceUse } from "./draft-pieces.ts";
-import type { CommonBranch, DraftPiece, DraftPieces } from "./draft-pieces.ts";
+import { branchOf, COMMON_BRANCHES, piecePasses } from "./draft-pieces.ts";
+import type { CommonBranch, DraftPiece } from "./draft-pieces.ts";
 import { codeOf, keyIn, partName, refOf } from "./draft-names.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
@@ -84,6 +84,8 @@ export interface DraftBlueprint {
   pending: BlueprintPending[];
   /** The pieces of its common branches (T203), each written apart, never in the draft's JSON. */
   pieces?: DraftPiece[];
+  /** Why a common branch's line is written whole, for the guide: never in the draft's JSON. */
+  notes?: string[];
 }
 
 /** A part as the recording shows it: its reference key, its recorded call, and what is below it. */
@@ -244,7 +246,7 @@ export function draftBlueprint(
     ops,
   };
   const pending: BlueprintPending[] = [];
-  const pieces: DraftPieces = new Map();
+  const passes = piecePasses();
   const wait = (
     where: string,
     kind: BlueprintPending["kind"],
@@ -306,7 +308,7 @@ export function draftBlueprint(
         );
     const use =
       branch && children
-        ? pieceUse(pieces, branch, children, mine, where)
+        ? passes.meet({ where, branch, children, pending: mine })
         : null;
     if (branch) sink.push(...(use ? use.pending : mine));
     const out: DraftNode = {
@@ -338,7 +340,7 @@ export function draftBlueprint(
     return out;
   };
 
-  const pools = key.pools.map((p, i) => {
+  const poolOf = (p: AnswerKey["pools"][number], i: number) => {
     const weight =
       p.kind === "additive" && p.terms.some((t) => t.weight === 0.01)
         ? 0.01
@@ -374,8 +376,13 @@ export function draftBlueprint(
       ...(weight === 0.01 ? { weight: 0.01 as const } : {}),
       groups,
     };
-  });
-  const written = [...pieces.values()].map((p): DraftPiece => ({
+  };
+  // the first pass sees the common branches' occurrences, the second writes them by the plan
+  key.pools.forEach(poolOf);
+  passes.plan();
+  pending.length = 0;
+  const pools = key.pools.map(poolOf);
+  const written = [...passes.pieces.values()].map((p): DraftPiece => ({
     id: p.id,
     params: p.params,
     children: p.children,
@@ -386,5 +393,6 @@ export function draftBlueprint(
     pools,
     pending,
     ...(written.length > 0 && { pieces: written }),
+    ...(passes.notes.length > 0 && { notes: passes.notes }),
   };
 }

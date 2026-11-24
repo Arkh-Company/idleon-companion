@@ -1,14 +1,14 @@
 // A common branch as a piece in the draft (spec 010, T203; spec, Open Questions 24/11): a declared list of branches
-// several sources or recipes call. Where the draft meets one, the subtree below it is the piece's body, each param's
-// arg written `{param}` (a read's index, or a call's arg of the same kind; the lock checks each line with its args); a
-// node whose reference takes a param waits for its name (one name for every arg is the agent's), and the body's keys are
-// short (the gitleaks reads a long `key` as a secret). The first occurrence the draft closes writes the piece; an
-// occurrence with the same body is a line with `piece: { name, args }`, and one the game ran another way is written as
-// the draft gives it, never as the piece.
+// several sources or recipes call. A branch is a piece only where at least two occurrences with other args run one body
+// (planPieces); a place is `{param}` where it changes between them along with the arg (a read's index, or a call's arg
+// of the same kind; the lock checks each line with its args), never by its value alone. A node whose reference takes a
+// param waits for its name (one name for every arg is the agent's), and the body's keys are short (the gitleaks reads a
+// long `key` as a secret). Those occurrences are lines with `piece: { name, args }`; any other is written as the draft
+// gives it, never as the piece, with why in the guide.
 import type { BlueprintPending, CallRef } from "./blueprint.ts";
 import type { DraftNode } from "./draft.ts";
 import { slug } from "./draft-names.ts";
-import type { Ref } from "./refs.ts";
+import type { Ref, RefArg } from "./refs.ts";
 
 /** A branch several sources or recipes call: its piece's name and its ref, a `{param}` for each arg it takes. */
 export interface CommonBranch {
@@ -22,6 +22,12 @@ export interface DraftPiece {
   children: DraftNode[];
 }
 type Args = Record<string, string | number>;
+interface Branch {
+  name: string;
+  params: string[];
+  args: Args;
+}
+type Places = ReadonlyMap<string, string>;
 
 /** The common branches (Vinicius, 24/11): the all-talent levels of a talent, the talents', vials' and meals' caches. */
 export const COMMON_BRANCHES: readonly CommonBranch[] = [
@@ -44,7 +50,7 @@ const PARAM = /^\{([A-Za-z_$][\w$]*)\}$/;
 export function branchOf(
   ref: Ref,
   branches: readonly CommonBranch[],
-): { name: string; params: string[]; args: Args } | null {
+): Branch | null {
   if (!("call" in ref)) return null;
   for (const b of branches) {
     if (b.ref.call !== ref.call || b.ref.args.length !== ref.args.length)
@@ -65,12 +71,12 @@ export function branchOf(
 }
 
 /**
- * A key of at most 7 letters, unique among its siblings: the slug's start, then a cut start and -b, -c… (letters: a
- * number in a key reads as one of the call's arguments).
+ * A key of at most 7 letters, unique among its siblings: the slug's start with no digit, then a cut start and -b, -c…
+ * (letters: a number in a key reads as one of the call's arguments).
  */
 export function shortKey(taken: Set<string>, text: string): string {
   const cut = (s: string, n: number) => s.slice(0, n).replace(/-+$/, "");
-  const base = cut(slug(text), 7) || "part";
+  const base = cut(slug(text.replace(/\d/g, "")), 7);
   // the n-th of a, b, …, z, aa, ab…
   const letters = (n: number): string =>
     (n > 26 ? letters(Math.floor((n - 1) / 26)) : "") +
@@ -81,21 +87,29 @@ export function shortKey(taken: Set<string>, text: string): string {
   return k;
 }
 
-/** A ref with each arg's value as its `{param}`: a read's whole index, a call's arg of the same kind. */
-function refWith(ref: Ref, args: Args): Ref {
-  const params = Object.entries(args);
+const INDEX = /\[([^\]]+)\]/g;
+/** A ref's places, by their order: a read's whole indices (text), a call's args. */
+const placesOf = (ref: Ref): RefArg[] =>
+  "read" in ref
+    ? [...ref.read.matchAll(INDEX)].map((m) => m[1] ?? "")
+    : [...ref.args];
+
+/** A ref with the param of each place `at` gives written `{param}`: a place is `<node's where>#<its order>`. */
+function refWith(ref: Ref, where: string, at: Places): Ref {
+  const p = (i: number) => at.get(`${where}#${String(i)}`);
+  let i = 0;
   if ("read" in ref)
     return {
-      read: ref.read.replace(/\[([^\]]+)\]/g, (m, i: string) => {
-        const p = params.find(([, v]) => String(v) === i);
-        return p ? `[{${p[0]}}]` : m;
+      read: ref.read.replace(INDEX, (m) => {
+        const q = p(i++);
+        return q ? `[{${q}}]` : m;
       }),
     };
   return {
     ...ref,
-    args: ref.args.map((a) => {
-      const p = params.find(([, v]) => v === a);
-      return p ? `{${p[0]}}` : a;
+    args: ref.args.map((a, j) => {
+      const q = p(j);
+      return q ? `{${q}}` : a;
     }),
   };
 }
@@ -103,15 +117,15 @@ function refWith(ref: Ref, args: Args): Ref {
 /** The body of a piece from an occurrence's children and their pending places, relative to the occurrence. */
 function bodyOf(
   children: readonly DraftNode[],
-  args: Args,
+  at: Places,
   pending: readonly BlueprintPending[],
 ): { children: DraftNode[]; pending: BlueprintPending[] } {
   const waits = [...pending];
-  const walk = (ns: readonly DraftNode[], at: string): DraftNode[] => {
+  const walk = (ns: readonly DraftNode[], above: string): DraftNode[] => {
     const taken = new Set<string>();
     return ns.map((n, i) => {
-      const where = `${at}/children/${String(i)}`;
-      const ref = n.ref && refWith(n.ref, args);
+      const where = `${above}/children/${String(i)}`;
+      const ref = n.ref && refWith(n.ref, where, at);
       const own = JSON.stringify(ref) !== JSON.stringify(n.ref);
       if (own && !waits.some((p) => p.where === where && p.kind === "name"))
         waits.push({ where, kind: "name" });
@@ -149,36 +163,168 @@ export type DraftPieces = Map<
   DraftPiece & { pending: BlueprintPending[] }
 >;
 
+/** An occurrence of a common branch, as the draft's first pass writes it: whole. */
+export interface Occurrence {
+  where: string;
+  branch: Branch;
+  children: readonly DraftNode[];
+  /** Its pending places, from the draft's root. */
+  pending: readonly BlueprintPending[];
+}
+/** By an occurrence's `where`: the param of each place of its piece, or why its line is written whole. */
+export type PiecePlan = Map<string, Places | string>;
+
+const ONCE = "uma ocorrência só";
+const ALONE = "nenhuma outra ocorrência com o mesmo corpo e outro argumento";
+const OTHER = "o corpo difere do pedaço";
+
+const rel = (o: Occurrence) =>
+  o.pending.map((p) => ({ ...p, where: p.where.slice(o.where.length) }));
+
+/** Each place of a body's refs, by its id, with whether it is a read's index (text) or a call's arg. */
+function placeValues(children: readonly DraftNode[]) {
+  const out = new Map<string, { v: RefArg; read: boolean }>();
+  const walk = (ns: readonly DraftNode[], above: string) => {
+    ns.forEach((n, i) => {
+      const where = `${above}/children/${String(i)}`;
+      if (n.ref) {
+        const read = "read" in n.ref;
+        placesOf(n.ref).forEach((v, k) =>
+          out.set(`${where}#${String(k)}`, { v, read }),
+        );
+      }
+      if (n.children) walk(n.children, where);
+    });
+  };
+  walk(children, "");
+  return out;
+}
+
 /**
- * An occurrence of a branch at `where`: the line's piece and the pending places its body has there, when its body is the
- * piece's (the first one writes it); null when the game ran it another way.
+ * The params of occurrences that run one body (CODING_STANDARDS: by the place, never by the value alone): a place is a
+ * param's where its value changes between them along with that arg; one that never changes stays written. Null when
+ * a place changes apart from every arg, or their bodies differ.
  */
-export function pieceUse(
+function fit(set: readonly Occurrence[]): Places | null {
+  const [first] = set;
+  if (!first) return null;
+  const values = set.map((o) => placeValues(o.children));
+  const at = new Map<string, string>();
+  for (const id of values[0]?.keys() ?? []) {
+    const vs = values.map((m) => m.get(id));
+    const text = vs.map((x) => JSON.stringify(x?.v));
+    if (text.every((t) => t === text[0])) continue;
+    const p = first.branch.params.find((q) =>
+      set.every((o, j) => {
+        const x = vs[j];
+        const a = o.branch.args[q];
+        return x !== undefined && (x.read ? x.v === String(a) : x.v === a);
+      }),
+    );
+    if (p === undefined) return null;
+    at.set(id, p);
+  }
+  const bodies = set.map((o) => JSON.stringify(bodyOf(o.children, at, rel(o))));
+  return bodies.every((b) => b === bodies[0]) ? at : null;
+}
+
+/**
+ * Which occurrences are a piece (Revisor r1 of part O): a branch is one only where it runs one body at least twice with
+ * other args; the first occurrence, in order, whose body some other shares wins. Each other line is written whole, and
+ * why goes to the guide.
+ */
+export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
+  const plan: PiecePlan = new Map();
+  for (const name of new Set(occurrences.map((o) => o.branch.name))) {
+    const all = occurrences.filter((o) => o.branch.name === name);
+    let chosen: { set: Occurrence[]; at: Places } | null = null;
+    for (const seed of all) {
+      let set = [seed];
+      let at: Places = new Map();
+      for (const o of all) {
+        const got = o === seed ? null : fit([...set, o]);
+        if (got) [set, at] = [[...set, o], got];
+      }
+      if (new Set(set.map((o) => JSON.stringify(o.branch.args))).size > 1) {
+        chosen = { set, at };
+        break;
+      }
+    }
+    for (const o of all)
+      plan.set(
+        o.where,
+        chosen?.set.includes(o)
+          ? chosen.at
+          : chosen
+            ? OTHER
+            : all.length === 1
+              ? ONCE
+              : ALONE,
+      );
+  }
+  return plan;
+}
+
+/**
+ * The draft's two passes over its common branches: the first writes each whole and sees its occurrences; `plan` decides
+ * the pieces, and the second gives each occurrence its piece's line, or none with why in `notes` (for the guide).
+ */
+export function piecePasses() {
+  const occurrences: Occurrence[] = [];
+  const pieces: DraftPieces = new Map();
+  const notes: string[] = [];
+  let plan: PiecePlan | null = null;
+  return {
+    pieces,
+    notes,
+    plan: () => {
+      plan = planPieces(occurrences);
+    },
+    meet: (o: Occurrence) => {
+      if (!plan) {
+        occurrences.push(o);
+        return null;
+      }
+      const got = pieceUse(pieces, plan, o);
+      if (typeof got !== "string") return got;
+      notes.push(
+        `galho comum ${o.branch.name} em ${o.where}: escrito por inteiro (${got})`,
+      );
+      return null;
+    },
+  };
+}
+
+/**
+ * An occurrence of a branch, by the plan: the line's piece and the pending places its body has there (the first one
+ * writes the piece); or why its line is written whole.
+ */
+function pieceUse(
   pieces: DraftPieces,
-  branch: { name: string; params: string[]; args: Args },
-  children: readonly DraftNode[],
-  mine: readonly BlueprintPending[],
-  where: string,
-): {
-  piece: { name: string; args: Args };
-  pending: BlueprintPending[];
-} | null {
-  const rel = mine.map((p) => ({ ...p, where: p.where.slice(where.length) }));
-  const body = bodyOf(children, branch.args, rel);
-  const known = pieces.get(branch.name);
+  plan: PiecePlan,
+  o: Occurrence,
+):
+  | { piece: { name: string; args: Args }; pending: BlueprintPending[] }
+  | string {
+  const at = plan.get(o.where) ?? ONCE;
+  if (typeof at === "string") return at;
+  const body = bodyOf(o.children, at, rel(o));
+  const known = pieces.get(o.branch.name);
   if (!known)
-    pieces.set(branch.name, {
-      id: branch.name,
-      params: branch.params,
+    pieces.set(o.branch.name, {
+      id: o.branch.name,
+      params: o.branch.params,
       ...body,
     });
+  // shortcut: a branch inside another's body is planned whole and may differ here by its own piece's line; the plan
+  // would have to run until no piece changes, when a game's common branch calls another
   else if (
     JSON.stringify([known.children, known.pending]) !==
     JSON.stringify([body.children, body.pending])
   )
-    return null;
+    return OTHER;
   return {
-    piece: { name: branch.name, args: branch.args },
-    pending: body.pending.map((p) => ({ ...p, where: where + p.where })),
+    piece: { name: o.branch.name, args: o.branch.args },
+    pending: body.pending.map((p) => ({ ...p, where: o.where + p.where })),
   };
 }
