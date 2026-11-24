@@ -116,7 +116,8 @@ app (Electron main) ◀── IPC ──▶ preload (window.companion) ◀──
   number crosses as `null` and comes back at its place (`__rec.infAt()`, in `recorder-pass.js`), and a call that
   returns a list or a map of the state keeps its path (the node's `vp`); the live tree keeps `null` and no `vp`. In
   both, a helper's event is a call of its own with its steps (`instrument.ts`, the node named by its whole method), so a
-  cache an event builds opens into its count. Each
+  cache an event builds opens into its count; so is the `init` of an actor's class `ActorEvents_*` (the node
+  `ActorEvents_N_init`), in the live tree too. Each
   recording carries the time of its stages (`ms`), also on the error when a stage runs out of time.
   `tree-build.ts` and `tree/` build the root
   and its first level from it, over the same recording. A row's level is built when its parent's level is placed, to decide the row's name and its one
