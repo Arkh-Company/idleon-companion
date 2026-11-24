@@ -61,9 +61,12 @@ const MATH = new Set([
   "sqrt",
 ]);
 const COMPOUND = new Set(["+=", "-=", "*=", "/=", "%="]);
-// a block, and a helper's event (spec 010, T168; spec, Open Questions 23/11): a method of its class, named whole
+// a block, a helper's event (spec 010, T168; spec, Open Questions 23/11): a method of its class, named whole, and an
+// actor's init among its prototype's methods (T189), named by the class whose name the code gave last before it
 const BLOCK =
-  /(?:_customBlock_(\w+)\s*=|(_customEvent_\w+)\s*[=:])\s*function\s*\(/g;
+  /(?:_customBlock_(\w+)\s*=|(_customEvent_\w+)\s*[=:]|[{,]\s*(init)\s*:)\s*function\s*\(/g;
+const CLASS_NAME = /__name__\s*=\s*"scripts\.(\w+)"/g;
+const ACTOR = /^ActorEvents_\d+$/;
 
 const isNode = (v: unknown): v is AnyNode =>
   typeof v === "object" &&
@@ -320,13 +323,26 @@ function functionEnd(src: string, start: number): number {
   return -1;
 }
 
-/** The game's code with each block's and each helper's event's steps noted. A block the parser refuses keeps its text. */
-export function instrument(source: string): { source: string; ops: Op[] } {
+/**
+ * The game's code with each block's, each helper's event's and each actor's init's steps noted, and the classes of those
+ * inits (`scripts.ActorEvents_577`), for the recorder to wrap. A block the parser refuses keeps its text.
+ */
+export function instrument(source: string): {
+  source: string;
+  ops: Op[];
+  inits: string[];
+} {
   const ops: Op[] = [];
   const pieces: string[] = [];
+  const inits: string[] = [];
+  const classes = [...source.matchAll(CLASS_NAME)];
   let copied = 0;
   for (const m of source.matchAll(BLOCK)) {
     if (m.index < copied) continue; // a match inside a block already rewritten
+    const cls = m[3]
+      ? classes.findLast((c) => c.index < m.index)?.[1]
+      : undefined;
+    if (m[3] && (!cls || !ACTOR.test(cls))) continue; // the init of no actor
     const fnStart = m.index + m[0].lastIndexOf("function");
     const end = functionEnd(source, fnStart);
     if (end < 0) continue;
@@ -344,10 +360,11 @@ export function instrument(source: string): { source: string; ops: Op[] } {
     }
     pieces.push(
       source.slice(copied, fnStart),
-      rewrite(text, fn, m[1] ?? m[2] ?? "", ops),
+      rewrite(text, fn, cls ? `${cls}_init` : (m[1] ?? m[2] ?? ""), ops),
     );
+    if (cls) inits.push(`scripts.${cls}`);
     copied = end;
   }
   pieces.push(source.slice(copied));
-  return { source: pieces.join(""), ops };
+  return { source: pieces.join(""), ops, inits };
 }

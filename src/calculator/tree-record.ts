@@ -78,7 +78,7 @@ export function bootRecorder(
     routine?: readonly RoutineRun[],
   ): Recording;
 } {
-  const { source, ops } = instrument(anchored(code));
+  const { source, ops, inits } = instrument(anchored(code));
   const context = bootContext(source, pak, limits, [
     recorderSource,
     recorderPassSource,
@@ -88,7 +88,7 @@ export function bootRecorder(
   const run = (text: string, ms: number) => context.run(text, ms);
   const { startMs, numberMs } = limits;
   // the path of a list a call returns: the answer key's only, like the infinite numbers
-  run(`__rec.wrap(${String(infinite)})`, startMs);
+  run(`__rec.wrap(${String(infinite)}, ${JSON.stringify(inits)})`, startMs);
   // On the original code: the instrumented copy could hide a key from the scan.
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 

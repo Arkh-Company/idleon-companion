@@ -79,10 +79,10 @@
       ? "(character " + S.names.get(x) + ")"
       : x.slice(0, 40);
   }
-  // a block by its name; a helper's event (spec 010, T168) by its whole method
-  function wrapBlock(C, k) {
+  // a block by its name; a helper's event (spec 010, T168) by its whole method; an actor's init (T189) by `as`
+  function wrapBlock(C, k, as) {
     var f = C[k];
-    var name = k.indexOf("_customBlock_") === 0 ? k.slice(13) : k;
+    var name = as || (k.indexOf("_customBlock_") === 0 ? k.slice(13) : k);
     C[k] = function () {
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
@@ -269,8 +269,8 @@
   G.__rec = {
     // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
     // key's recording only), a call that returns a list or a map of the state keeps its path (vp). Each helper's event
-    // is a call of its own (spec 010, T168: the count of a cache an event builds; instrument.ts gives its steps).
-    wrap: (paths) => {
+    // is a call of its own (T168: a cache's count; instrument.ts gives its steps), and each actor's init in `inits` (T189).
+    wrap: (paths, inits) => {
       S.paths = !!paths;
       var hx = G.__hx;
       var owner = {};
@@ -289,6 +289,11 @@
         });
       });
       Object.keys(owner).forEach((k) => wrapBlock(owner[k], k));
+      (inits || []).forEach((cls) => {
+        var P = hx[cls] ? hx[cls].prototype : null; // instrument.ts found its init
+        if (P && hasOwn(P, "init"))
+          wrapBlock(P, "init", cls.slice(8) + "_init");
+      });
       var U = hx["com.stencyl.utils.Utils"];
       if (U) {
         if (typeof U.mapContainsValue === "function")
