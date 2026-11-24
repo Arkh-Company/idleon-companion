@@ -2,7 +2,7 @@
 // read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), else the one
 // read of the call that holds the value, or the one text cell worth it. A path used up is not bound again.
 import type { RecValue } from "../recording.ts";
-import { matchPattern, textRead } from "./ast.ts";
+import { astPattern, matchPattern, methodOf, textRead, unwrap } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { GAME_TABLE } from "./step-types.ts";
 import type { Reads } from "./step-types.ts";
@@ -33,6 +33,9 @@ export function readOfLeaf(
       return only[0];
     }
   }
+  // how many entries a map of the save holds (T209, form 4: the game's D.mapCount(FarmCrop)): the map's path, a quantity
+  const count = countOf(node);
+  if (count !== null) return count;
   // a number read from a text the code names, with a mark taken out (T209, form 2): the read of that path, one only
   const tp = pat ? null : textRead(node, pool, v);
   if (tp !== null) return tp;
@@ -59,4 +62,16 @@ export function readOfLeaf(
     return txt[0][0];
   }
   return null;
+}
+
+/**
+ * The path of the map whose entries a leaf counts, `mapCount(getGameAttribute("X"))` (spec 010, T209 form 4); null for any
+ * other leaf. shortcut: only a map at the top of the state; follow a deeper path when a count reads one.
+ */
+function countOf(node: AstNode): string | null {
+  const n = unwrap(node);
+  const [arg] = (n.arguments as AstNode[] | undefined) ?? [];
+  const pat = methodOf(n) === "mapCount" && arg ? astPattern(arg) : null;
+  const [top] = pat?.toks ?? [];
+  return pat?.root && pat.toks.length === 1 && top ? top : null;
 }
