@@ -65,8 +65,9 @@ const COMPOUND = new Set(["+=", "-=", "*=", "/=", "%="]);
 // actor's init among its prototype's methods (T189), named by the class whose name the code gave last before it
 const BLOCK =
   /(?:_customBlock_(\w+)\s*=|(_customEvent_\w+)\s*[=:]|[{,]\s*(init)\s*:)\s*function\s*\(/g;
-const CLASS_NAME = /__name__\s*=\s*"scripts\.(\w+)"/g;
-const ACTOR = /^ActorEvents_\d+$/;
+// any class's name, so an init after a class of another package (`com.stencyl.*`, `openfl.*`) is none of the actor's
+const CLASS_NAME = /__name__\s*=\s*"([\w.]+)"/g;
+const ACTOR = /^scripts\.ActorEvents_\d+$/;
 
 const isNode = (v: unknown): v is AnyNode =>
   typeof v === "object" &&
@@ -358,13 +359,12 @@ export function instrument(source: string): {
     } catch {
       continue;
     }
-    pieces.push(
-      source.slice(copied, fnStart),
-      rewrite(text, fn, cls ? `${cls}_init` : (m[1] ?? m[2] ?? ""), ops),
-    );
-    if (cls) inits.push(`scripts.${cls}`);
+    const block = cls ? `${cls.slice(8)}_init` : (m[1] ?? m[2] ?? "");
+    pieces.push(source.slice(copied, fnStart), rewrite(text, fn, block, ops));
+    if (cls) inits.push(cls);
     copied = end;
   }
   pieces.push(source.slice(copied));
-  return { source: pieces.join(""), ops, inits };
+  // a class with two inits is wrapped once (recorder.js wraps its prototype's init)
+  return { source: pieces.join(""), ops, inits: [...new Set(inits)] };
 }
