@@ -110,10 +110,7 @@
                   "children": [
                     {
                       "key": "post-office-info-bonus-amount-11-0",
-                      "name": "Non Predatory Loot Box",
-                      "nameProof": {
-                        "names": "PostOfficeINFO(\"BonusAmount\", 11, \"0\")"
-                      },
+                      "name": null,
                       "ref": {
                         "call": "PostOfficeINFO",
                         "args": ["BonusAmount", 11, "0"]
@@ -5885,6 +5882,10 @@
     },
     {
       "where": "pools/0/groups/2/sources/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/2/sources/0/children/0/children/0",
       "kind": "name"
     },
     {
