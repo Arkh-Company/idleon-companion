@@ -8,99 +8,19 @@
 // recorded ones. An argument some of them give from the save and another does not, or read from a working map of the
 // game (r2: a loop's index or a save's count cached there), the place does not decide: the lock refuses what the
 // recipe writes there, and the draft's name waits. The recipe writes `*` where the save gave it.
-import { parse } from "acorn";
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import { ranSites } from "./call-site.ts";
-import { at, isCharacter, isNode, member, walk } from "./character-args.ts";
+import { defOf, fnOf } from "./code-fn.ts";
+import type { Fn } from "./code-fn.ts";
+import { at, isCharacter, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import type { LockError } from "./lock.ts";
 import { ARG_TEXT_MAX, CHARACTER, keyMatches, SAVE } from "./refs.ts";
 import type { Ref } from "./refs.ts";
-
-interface Fn {
-  text: string;
-  all: AnyNode[];
-  params: string[];
-  up: Map<AnyNode, AnyNode>;
-  /** Each block's calls in the function, by the block's name. */
-  sites: Map<string, AnyNode[]>;
-}
-
-function fnOf(fnText: string): Fn | null {
-  const text = `(${fnText})`;
-  let program: AnyNode;
-  try {
-    program = parse(text, { ecmaVersion: 2022, ranges: true }) as never;
-  } catch {
-    return null;
-  }
-  const all = walk(program);
-  const up = new Map<AnyNode, AnyNode>();
-  for (const n of all)
-    for (const v of Object.values(n))
-      for (const c of Array.isArray(v) ? (v as unknown[]) : [v])
-        if (isNode(c)) up.set(c, n);
-  const fn = all.find((n) => n.type === "FunctionExpression");
-  const params = ((fn?.params ?? []) as AnyNode[]).map((p) => p.name as string);
-  const sites = new Map<string, AnyNode[]>();
-  for (const n of all) {
-    const name = n.type === "CallExpression" ? member(at(n, "callee")) : "";
-    if (!name?.startsWith("_customBlock_")) continue;
-    const block = name.slice(13);
-    sites.set(block, [...(sites.get(block) ?? []), n]);
-  }
-  return { text, all, params, up, sites };
-}
-
-// the sides of a node that run only on some ways through it
-const SIDES: Readonly<Record<string, readonly string[]>> = {
-  IfStatement: ["consequent", "alternate"],
-  ConditionalExpression: ["consequent", "alternate"],
-  LogicalExpression: ["right"],
-  ForStatement: ["test", "update", "body"],
-  ForInStatement: ["body"],
-  WhileStatement: ["test", "body"],
-  SwitchCase: ["consequent"],
-};
-const holds = (n: AnyNode, pos: number) =>
-  n.range[0] <= pos && pos < n.range[1];
-
-/** Whether `def` runs on every way to `pos`: each side it sits on holds `pos` too. */
-function onTheWay(f: Fn, def: AnyNode, pos: number): boolean {
-  for (let c = def, p = f.up.get(c); p; c = p, p = f.up.get(p)) {
-    const side = (SIDES[p.type] ?? []).some((k) => {
-      const v = p[k];
-      return v === c || (Array.isArray(v) && v.includes(c));
-    });
-    if (side && !holds(c, pos)) return false;
-  }
-  return true;
-}
-
-/** The last value given to `name` before `pos` on every way there: its declaration or its assignment. */
-function defOf(f: Fn, name: string, pos: number): AnyNode | undefined {
-  let best: AnyNode | undefined;
-  for (const n of f.all) {
-    const set =
-      n.type === "VariableDeclarator" && at(n, "id").name === name
-        ? (n.init as AnyNode | null)
-        : n.type === "AssignmentExpression" && at(n, "left").name === name
-          ? at(n, "right")
-          : null;
-    if (
-      set &&
-      n.range[1] <= pos &&
-      (!best || n.range[1] > best.range[1]) &&
-      onTheWay(f, n, pos)
-    )
-      best = set;
-  }
-  return best;
-}
 
 // a working map of the game holds a loop's index as well as a save's count cached there: the place does not decide
 const WORKING = /^(DNSM|DummyNumbersStatManager)$/;
