@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import type { BlueprintNode } from "./blueprint.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import { notLeafOf } from "./not-leaves.ts";
+import type { Ref } from "./refs.ts";
 import { hasRawCharacterIndex, refKey } from "./refs.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
@@ -236,4 +238,25 @@ test("every blueprint loads in a stage, and its file's name is its id", () => {
     };
     expect(`${String(raw.id)}.blueprint.json`).toBe(f.split("/").at(-1));
   }
+});
+
+test("no node of any recipe or piece has a part of not-leaves.ts as its ref: a curve, a log or a context goes to the ⓘ (research R6)", () => {
+  const found: string[] = [];
+  const walk = (x: unknown, file: string, under: string): void => {
+    if (Array.isArray(x)) {
+      x.forEach((v) => {
+        walk(v, file, under);
+      });
+      return;
+    }
+    if (typeof x !== "object" || x === null) return;
+    const ref = (x as { ref?: Ref }).ref;
+    if (ref !== undefined && under !== "root" && under !== "condition") {
+      const key = refKey(ref, 0);
+      if (notLeafOf(key, 0) !== null) found.push(`${file}: ${key}`);
+    }
+    for (const [k, v] of Object.entries(x)) walk(v, file, k);
+  };
+  for (const [file, raw] of Object.entries(BLUEPRINTS)) walk(raw, file, "");
+  expect(found).toEqual([]);
 });
