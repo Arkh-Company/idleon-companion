@@ -1943,16 +1943,6 @@
               },
               "children": [
                 {
-                  "key": "dnsm-arcad",
-                  "name": "Arcade maxed doubler",
-                  "nameProof": {
-                    "names": "DNSM.ArcadBonDNz"
-                  },
-                  "ref": {
-                    "read": "DNSM.ArcadBonDNz"
-                  }
-                },
-                {
                   "key": "arcad-22",
                   "name": "Arcade Base LUK level",
                   "nameProof": {
@@ -2444,16 +2434,6 @@
                                     "read": "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[108]"
                                   },
                                   "leaf": "quantity"
-                                },
-                                {
-                                  "key": "dnsm-cauld",
-                                  "name": "Vial Mastery (Rift reward)",
-                                  "nameProof": {
-                                    "names": "DNSM.CauldStatDNzz"
-                                  },
-                                  "ref": {
-                                    "read": "DNSM.CauldStatDNzz"
-                                  }
                                 },
                                 {
                                   "key": "summo-42-0",
@@ -3054,16 +3034,6 @@
                                 "args": [51]
                               },
                               "children": [
-                                {
-                                  "key": "dnsm-arcad",
-                                  "name": "Arcade maxed doubler",
-                                  "nameProof": {
-                                    "names": "DNSM.ArcadBonDNz"
-                                  },
-                                  "ref": {
-                                    "read": "DNSM.ArcadBonDNz"
-                                  }
-                                },
                                 {
                                   "key": "arcad-51",
                                   "name": "Arcade Emperor Bonuses level",
@@ -7137,19 +7107,11 @@
       "kind": "descend"
     },
     {
-      "where": "pools/2/groups/14/sources/0/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/0/children/0",
       "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/1/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/2",
       "kind": "descend"
     },
     {
@@ -7179,10 +7141,6 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/0/children/0",
       "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/3/children/0",
@@ -7413,7 +7371,7 @@
       "kind": "name"
     },
     {
-      "where": "pools/2/groups/14/sources/0/children/2/children/0",
+      "where": "pools/2/groups/14/sources/0/children/1/children/0",
       "kind": "name"
     },
     {
@@ -7457,7 +7415,7 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0",
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/1/children/0",
       "kind": "name"
     },
     {
@@ -7629,7 +7587,7 @@
       "kind": "name"
     },
     {
-      "where": "pools/2/groups/14/sources/0/children/2/children/0/children/0",
+      "where": "pools/2/groups/14/sources/0/children/1/children/0/children/0",
       "kind": "name"
     },
     {
@@ -7645,7 +7603,7 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0/children/0",
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/1/children/0/children/0",
       "kind": "name"
     },
     {
