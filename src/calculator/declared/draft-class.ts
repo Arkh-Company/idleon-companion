@@ -1,6 +1,8 @@
 // A talent source's class in the draft (spec 010, T059; moved out of draft.ts as it was): from the game's talent order
 // only, never guessed.
 import type { Context } from "../boot.ts";
+import { askNames } from "../game-names.ts";
+import { isObj } from "./blueprint-root.ts";
 import type { RecNode } from "../recording.ts";
 
 /** 008 catalogo-de-arvores.md (provada): class c's tab is TalentOrder[15×(c−1)..+14]; the star talents [615..679]. */
@@ -64,4 +66,22 @@ export function gameFamilies(
       // a class the game does not answer for has no family
     }
   return out;
+}
+
+/** A list of the game's tables (`CustomLists.TalentOrder`), read in the recorder's context (names-reader.js); empty
+ * when it is none or the reading fails. */
+export function gameList(
+  context: Pick<Context, "run" | "sandbox">,
+  id: string,
+  ms: number,
+): unknown[] {
+  const read = askNames(context, { cells: [], tables: [id] }, ms);
+  const form: unknown =
+    isObj(read) && Array.isArray(read.forms) ? read.forms[0] : null;
+  try {
+    const list: unknown = typeof form === "string" ? JSON.parse(form) : null;
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
 }
