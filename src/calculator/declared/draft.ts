@@ -19,7 +19,13 @@ import type {
 import { onlyRead } from "./cache-author.ts";
 import { classesOf, sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
-import { ITEM, listOf, modelName } from "./draft-list.ts";
+import {
+  callListOf,
+  callModel,
+  ITEM,
+  listOf,
+  modelName,
+} from "./draft-list.ts";
 import type { ListModel } from "./draft-list.ts";
 import { branchOf, COMMON_BRANCHES, piecePasses } from "./draft-pieces.ts";
 import type { CommonBranch, DraftPiece } from "./draft-pieces.ts";
@@ -278,15 +284,25 @@ export function draftBlueprint(
       below && where.includes("/children/")
         ? listOf(below, dc.character)
         : null;
+    // a list of calls of one block (T205): one model, its descent the agent's, its name too (each item has its own)
+    const calls = below && !list ? callListOf(below) : null;
     // a common branch (T203): its children's pending places wait for the piece's verdict
     const branch =
-      below && !list ? branchOf(ref, dc.branches ?? COMMON_BRANCHES) : null;
+      below && !list && !calls
+        ? branchOf(ref, dc.branches ?? COMMON_BRANCHES)
+        : null;
     const mine: BlueprintPending[] = branch ? [] : sink;
     const children = list
       ? [model(list, `${where}/children/0`, mine)]
-      : below?.map((c, i) =>
-          node(c, `${where}/children/${String(i)}`, own, {}, mine),
-        );
+      : calls && below
+        ? [
+            callModel(below, calls, (k) => {
+              wait(`${where}/children/0`, k, mine);
+            }),
+          ]
+        : below?.map((c, i) =>
+            node(c, `${where}/children/${String(i)}`, own, {}, mine),
+          );
     const use =
       branch && children
         ? passes.meet({ where, branch, children, pending: mine })
@@ -304,6 +320,7 @@ export function draftBlueprint(
           ? { piece: use.piece }
           : {
               ...(list && { each: { list: list.list, as: ITEM } }),
+              ...(calls && { each: { calls: calls.block, as: ITEM } }),
               ...(children && { children }),
             }),
     };

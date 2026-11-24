@@ -2,8 +2,10 @@
 // reads of one path, only one index changing, each a leaf, are one model child with `each`, never one child per item.
 // The index is the read's own place in the path, never its value; a path through the characters is no list. The
 // model's name is the items' names with that index as `{item}`, only when it gives back each item's own name.
-import type { Walked } from "./draft.ts";
-import { marked } from "./draft-names.ts";
+import type { DraftNode, Walked } from "./draft.ts";
+import { codeOf, keyIn, marked } from "./draft-names.ts";
+import type { BlueprintPending } from "./blueprint.ts";
+import type { RefArg } from "./refs.ts";
 import { CALL } from "./not-leaves.ts";
 
 /** The name of the item in a model child's references: `[{item}]`. */
@@ -77,4 +79,44 @@ export function modelName(
     if (fits(t)) return t;
   }
   return null;
+}
+
+/** A list of calls of one block (T205): the block and the place of the one argument its turns change. */
+export interface CallList {
+  block: string;
+  at: number;
+}
+
+/**
+ * The children as one list of calls, or null: a long list (as T202's) of calls of one block, the same arguments but for one place,
+ * each item once (T205). The item's place is the argument's, never a value.
+ */
+export function callListOf(below: readonly Walked[]): CallList | null {
+  const calls = below.map((w) => w.call);
+  const [first] = calls;
+  if (below.length < MIN_LIST || !first || calls.some((c) => c?.b !== first.b))
+    return null;
+  const args = calls.map((c) => (c?.a ?? []).map((a) => JSON.stringify(a)));
+  if (args.some((a) => a.length !== first.a.length)) return null;
+  const changing = first.a.flatMap((_, k) =>
+    args.every((a) => a[k] === args[0]?.[k]) ? [] : [k],
+  );
+  const [at] = changing;
+  if (at === undefined || changing.length > 1) return null;
+  const items = args.map((a) => a[at]);
+  return new Set(items).size === items.length ? { block: first.b, at } : null;
+}
+
+/** A list of calls' model (T205): the first call with `{item}` at the turn's argument; its name and descent wait. */
+export function callModel(
+  below: readonly Walked[],
+  l: CallList,
+  wait: (kind: BlueprintPending["kind"]) => void,
+): DraftNode {
+  const args = [...(below[0]?.call?.a ?? [])] as RefArg[];
+  args[l.at] = `{${ITEM}}`;
+  wait("name");
+  wait("descend");
+  const ref = { call: l.block, args };
+  return { key: keyIn(new Set(), codeOf(ref, "")), name: null, ref };
 }
