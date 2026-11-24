@@ -40,7 +40,7 @@ const DESCENT_OWN: ReadonlySet<LockErrorKind> = new Set([
 type Cover = (e: LockError, all: readonly LockError[]) => boolean;
 const none: Cover = () => false;
 
-/** A pending place's node: its id, its parent's id and whether it is a pool source's model child; null out of the forms. */
+/** A pending place's node: its id, its parent's id and whether it is a model child; null out of the forms. */
 function placeOf(bp: Blueprint, where: string) {
   const m = PLACE.exec(where);
   const pool = Number(m?.[1]);
@@ -65,8 +65,8 @@ function placeOf(bp: Blueprint, where: string) {
     node,
     id: idOf(path.map((x) => x.key)),
     parentId: idOf(path.slice(0, -1).map((x) => x.key)),
-    // a pool source's model child stands for one node per item, `<source>/<model>-<item>`
-    model: parent?.each !== undefined && !parent.combine && path.length === 2,
+    // a model child (a pool source's, or a node's: T202) stands for one node per item, `<parent>/<model>-<item>`
+    model: parent?.each !== undefined && !parent.combine,
   };
 }
 

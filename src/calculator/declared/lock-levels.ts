@@ -28,6 +28,7 @@ import {
   TOLERANCE,
   transparentValue,
 } from "./lock-parts.ts";
+import { modelChildren } from "./lock-each.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
@@ -182,14 +183,17 @@ function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
 
 /** One level: its children's coverage and values, the descent into each, and the closing of the remounted count. */
 export function lockLevel(
-  children: readonly BlueprintNode[],
+  declared: readonly BlueprintNode[],
   level: Level,
   ctx: LevelContext,
   out: LevelOut,
+  each?: BlueprintNode["each"],
 ): void {
   const leaves = level.expr ? leavesOf(level.expr) : [];
   const { open } = level;
   const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
+  // a model child stands for one child per part its list matches (T202)
+  const children = modelChildren(declared, each, parts, ctx);
   const covered = new Set<string>();
   // the calls a child's `*` may stand for: two of them are refused, never tied by order (refs.ts savedTwice)
   const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
@@ -335,7 +339,7 @@ function descend(
     return;
   }
   out.counts.branches++;
-  lockLevel(children, open ? { ...level, open } : level, ctx, out);
+  lockLevel(children, open ? { ...level, open } : level, ctx, out, node.each);
 }
 
 /** The descent below a declared node whose value is a recorded call: each level down to the leaves. */

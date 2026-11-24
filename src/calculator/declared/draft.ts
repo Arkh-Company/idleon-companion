@@ -7,10 +7,6 @@
 import type { Context } from "../boot.ts";
 import { askNames } from "../game-names.ts";
 import type { Op } from "../instrument.ts";
-import { STATIC_NAMES } from "../names/names-table.ts";
-import { nameOf, recipeName } from "../names/names.ts";
-import { renameOf } from "../names/renames.ts";
-import { STATE_NAMES } from "../names/state-names.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
 import type { Expr } from "../recorded/steps.ts";
@@ -26,15 +22,17 @@ import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
 import { sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
+import { ITEM, listOf, modelName } from "./draft-list.ts";
+import type { ListModel } from "./draft-list.ts";
+import { codeOf, keyIn, partName, refOf } from "./draft-names.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
-import { hasRawCharacterIndex, unmarked } from "./refs.ts";
-import { markedRef, unnamed } from "./save-args.ts";
-import type { Ref, RefArg } from "./refs.ts";
+import { unmarked } from "./refs.ts";
+import { markedRef } from "./save-args.ts";
 
 export interface DraftContext {
   /** The recorded character: a read of its own is `{character}`, another's `*` (research R5). */
@@ -220,73 +218,7 @@ export function walkTerm(t: AnswerTerm, ctx: LevelContext): Walked {
   };
 }
 
-/** A path with each character's index as its marker: the recorded character `{character}`, any other `*`. */
-export const marked = (path: string, character: number): string =>
-  path.replace(
-    /\bPlayerDATABASE\[(\d+)\]/g,
-    (_, i: string) =>
-      `PlayerDATABASE[${Number(i) === character ? "{character}" : "*"}]`,
-  );
-
-function refOf(w: Walked, character: number): Ref {
-  // shortcut: a call's arguments are taken as the recorder kept them (numbers and short texts)
-  if (w.call) return { call: w.call.b, args: w.call.a as RefArg[] };
-  const m = CALL.exec(w.key);
-  return m
-    ? {
-        call: m[1] ?? "",
-        args: JSON.parse(`[${m[2] ?? ""}]`) as RefArg[],
-      }
-    : { read: marked(w.key, character) };
-}
-
-/** The code the names table goes by: a call as the tree writes it, `Block(a, b)`, or the recorded path. */
-const codeOf = (ref: Ref, key: string): string =>
-  "call" in ref
-    ? `${ref.call}(${ref.args.map((a) => JSON.stringify(a)).join(", ")})`
-    : key;
-
-/** A name with its proof: the names table's own (a rename, a static name, a recipe over the game, a state rule). */
-export function provenName(
-  code: string,
-): { name: string; nameProof: { names: string } } | null {
-  if (hasRawCharacterIndex(code)) return null;
-  const proven =
-    renameOf(code) !== null ||
-    STATIC_NAMES.has(code) ||
-    recipeName(code) !== null ||
-    STATE_NAMES.some((r) => r.test.test(code) && r.name(code) !== null);
-  const name = proven ? nameOf(code) : null;
-  return name ? { name, nameProof: { names: code } } : null;
-}
-/** A part's proven name; none with an argument from the character, the save or a place that does not decide. */
-export function partName(
-  w: Walked,
-  character: number,
-  rec: Recording,
-  ops: readonly Op[],
-) {
-  const code = refOf(w, character);
-  return w.call && unnamed(code, rec, ops, w.call)
-    ? null
-    : provenName(codeOf(code, w.key));
-}
-
-const slug = (text: string): string =>
-  text
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .slice(0, 56)
-    .replace(/^-+|-+$/g, "") || "part";
-/** A key unique among its siblings (research R12): the reference's slug, then -2, -3… */
-function keyIn(taken: Set<string>, text: string): string {
-  const base = slug(text);
-  let k = base;
-  for (let n = 2; taken.has(k); n++) k = `${base}-${String(n)}`;
-  taken.add(k);
-  return k;
-}
+export { marked, partName, provenName } from "./draft-names.ts";
 
 export function draftBlueprint(
   id: string,
@@ -310,6 +242,23 @@ export function draftBlueprint(
     pending.push({ where, kind });
   };
 
+  /** A list's model child: its item's read, a name only when it gives each item's own, one pending each (T202). */
+  const model = (l: ListModel, where: string): DraftNode => {
+    const names = l.items.map(
+      (w) => partName(w, dc.character, rec, ops)?.name ?? null,
+    );
+    const name = modelName(names, l.indices);
+    if (name === null) wait(where, "name");
+    wait(where, "leaf");
+    // each item's proof is its own path (draft-names.ts provenName): the model's, its read
+    return {
+      key: keyIn(new Set(), l.list.replace("[*]", "")),
+      name,
+      ...(name !== null && { nameProof: { names: l.read } }),
+      ref: { read: l.read },
+    };
+  };
+
   const node = (
     w: Walked,
     where: string,
@@ -327,6 +276,13 @@ export function draftBlueprint(
     const tree = linkedTree(ref, id, dc.trees ?? [], dc.character);
     const own = new Set<string>();
     const keyRef = unmarked(ref);
+    // a long list below a node, never a pool's source (its each is the answer key's): one model child (T202)
+    const list =
+      tree === undefined &&
+      Array.isArray(w.below) &&
+      where.includes("/children/")
+        ? listOf(w.below, dc.character)
+        : null;
     const out: DraftNode = {
       key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),
       name: named?.name ?? null,
@@ -335,11 +291,16 @@ export function draftBlueprint(
       ...extra,
       ...(tree !== undefined
         ? { tree }
-        : Array.isArray(w.below) && {
-            children: w.below.map((c, i) =>
-              node(c, `${where}/children/${String(i)}`, own),
-            ),
-          }),
+        : list
+          ? {
+              each: { list: list.list, as: ITEM },
+              children: [model(list, `${where}/children/0`)],
+            }
+          : Array.isArray(w.below) && {
+              children: w.below.map((c, i) =>
+                node(c, `${where}/children/${String(i)}`, own),
+              ),
+            }),
     };
     // a line with a link waits for nothing below it: its tree is the other number's
     if (tree !== undefined) return out;

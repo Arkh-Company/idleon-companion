@@ -47,7 +47,7 @@ function filled(): Filled {
     pending: { where: string; kind: string }[];
   };
   for (const p of d.pending) {
-    const at = p.where.split("/").reduce<Raw>((o, k) => o[k] as Raw, d as Raw);
+    const at = p.where.split("/").reduce<Raw>((o, k) => o[k] as Raw, d);
     if (p.kind === "name") at.name = "Filled";
     else if (p.kind === "leaf") at.leaf = "rawBonus";
     else if (p.kind === "system") at.system = "cards";
@@ -120,10 +120,9 @@ test("each without combine outside a piece is a model child below a node, one mo
   const [model] = turns?.children ?? [];
   if (!turns || !model) throw new Error("no model");
   turns.children = [model, { ...model, key: "other" }];
-  expect(
-    parseBlueprint(two, {
-      fileId: "invented-long",
-      systemIds: new Set(SYSTEMS.map((s) => s.id)),
-    }),
-  ).toMatchObject({ ok: false, reason: expect.stringMatching(/filho-modelo/) });
+  const out = parseBlueprint(two, {
+    fileId: "invented-long",
+    systemIds: new Set(SYSTEMS.map((s) => s.id)),
+  });
+  expect(out.ok ? "loaded" : out.reason).toMatch(/filho-modelo/);
 });

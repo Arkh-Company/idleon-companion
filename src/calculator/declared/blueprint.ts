@@ -85,15 +85,17 @@ interface Walk {
 
 /**
  * A piece's count and list (T170, T171): `combine` and `each` only inside a piece, the list a path with one `[*]`; a
- * pool's source with `each` and no `combine` (`poolEach`, T174) takes its items from the answer key, in any recipe.
+ * pool's source with `each` and no `combine` (`poolEach`, T174) takes its items from the answer key, in any recipe, and
+ * a node below it (`free`, T202), from its level's parts.
  */
 function checkPieceLevel(
   n: Record<string, unknown>,
   where: string,
   w: Walk,
   poolEach: boolean,
+  free = poolEach,
 ): void {
-  if (!poolEach && (n.combine !== undefined || n.each !== undefined)) {
+  if (!free && (n.combine !== undefined || n.each !== undefined)) {
     if (w.stack.length === 0) no(where, "combine e each só em pedaço");
     if (n.combine !== "sum" && n.combine !== "product")
       no(where, "combine é sum ou product");
@@ -134,7 +136,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   }
   const poolEach =
     level === "source" && n.each !== undefined && n.combine === undefined;
-  checkPieceLevel(n, where, w, poolEach);
+  // a recipe's node with a long list below it (T202): one model child, one child per part of its level the list matches
+  const nodeEach =
+    level === "child" && n.each !== undefined && n.combine === undefined;
+  checkPieceLevel(n, where, w, poolEach, poolEach || nodeEach);
   // after the args and the items are in, a `{name}` left is one nothing declares
   const left = Object.entries(n)
     .flatMap(([k, v]) =>
