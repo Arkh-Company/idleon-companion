@@ -33,7 +33,7 @@ import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
 import { hasRawCharacterIndex, unmarked } from "./refs.ts";
-import { markedRef } from "./save-args.ts";
+import { markedRef, saveArgs } from "./save-args.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
 export interface DraftContext {
@@ -259,7 +259,7 @@ export function provenName(
   const name = proven ? nameOf(code) : null;
   return name ? { name, nameProof: { names: code } } : null;
 }
-/** A part's proven name; none when its caller gave an argument from the character's index (it waits for the row). */
+/** A part's proven name; none with an argument from the character, the save or a place that does not decide. */
 export function partName(
   w: Walked,
   character: number,
@@ -268,7 +268,10 @@ export function partName(
 ) {
   const code = refOf(w, character);
   const ref = w.call ? markedRef(code, rec, ops, w.call) : code;
-  return ref !== code ? null : provenName(codeOf(code, w.key));
+  const unsure = w.call ? saveArgs(rec, ops, w.call).unsure : [];
+  return ref !== code || unsure.length > 0
+    ? null
+    : provenName(codeOf(code, w.key));
 }
 
 const slug = (text: string): string =>

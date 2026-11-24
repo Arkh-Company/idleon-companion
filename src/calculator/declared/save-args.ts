@@ -1,25 +1,19 @@
 // The arguments of a block's call the game gives from the save (spec 010, Fase 4 r1 of part N): a count of the save, as
 // N.js's ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills, or Thingies("FriendBonusQTY", …) the
-// friends of OptionsListAccount[476]. Found by the code at the call's place, as `{character}` (character-args.ts): the
-// argument's expression reads the save (`getGameAttribute`, a game table and a working map aside), bare, through
-// `asNumber(…)`, through a variable set before it on every way there, or through a parameter of the caller its own call
-// got from the save (ArcaneType's Log2(t)); never by the number. The call's sites are the caller's calls of the block
-// whose numbers and texts written in the code are the recorded ones; an argument some of them give from the save and
-// another does not, the place does not decide: none. The recipe writes `*` there.
+// friends of OptionsListAccount[476]. Found by the code at the call's place, by one walk with `{character}`
+// (character-args.ts, the character's own form as the other predicate): the argument's expression reads the save
+// (`getGameAttribute`, a game table aside), bare, through `asNumber(…)`, through a variable set before it on every way
+// there, or through a parameter of the caller its own call got from the save (ArcaneType's Log2(t)); never by the
+// number. The call's sites are the caller's calls of the block whose numbers and texts written in the code are the
+// recorded ones. An argument some of them give from the save and another does not, or read from a working map of the
+// game (r2: a loop's index or a save's count cached there), the place does not decide: the lock refuses what the
+// recipe writes there, and the draft's name waits. The recipe writes `*` where the save gave it.
 import { parse } from "acorn";
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
-import {
-  at,
-  characterArgs,
-  characterRef,
-  isCharacter,
-  isNode,
-  member,
-  walk,
-} from "./character-args.ts";
+import { at, isCharacter, isNode, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import type { LockError } from "./lock.ts";
@@ -107,26 +101,43 @@ function defOf(f: Fn, name: string, pos: number): AnyNode | undefined {
   return best;
 }
 
-// shortcut: the game's working maps are never the save, so a save's count the game cached there and then passed is not
-// marked; tell them apart by the read's last write (RecNode.rx) when a recipe needs one.
+// a working map of the game holds a loop's index as well as a save's count cached there: the place does not decide
 const WORKING = /^(DNSM|DummyNumbersStatManager)$/;
 
-/** A read of the save: `….getGameAttribute("<name>")`, no game table and no working map of the game (a loop's index). */
-const readsSave = (e: AnyNode): boolean =>
-  walk(e).some((n) => {
+/** Whether an expression is a mark's, a mark's in a way the place does not decide, or not. */
+type Says = "yes" | "unsure" | "no";
+const worst = (all: readonly Says[]): Says =>
+  all.includes("yes") ? "yes" : all.includes("unsure") ? "unsure" : "no";
+
+/** A read of the save, `….getGameAttribute("<name>")` with no game table; of a working map only, unsure. */
+function readsSave(e: AnyNode): Says {
+  const names = walk(e).flatMap((n) => {
     if (
       n.type !== "CallExpression" ||
       member(at(n, "callee")) !== "getGameAttribute"
     )
-      return false;
+      return [];
     const [k] = n.arguments as AnyNode[];
     const name = k?.type === "Literal" ? k.value : null;
-    return (
-      typeof name === "string" &&
-      !WORKING.test(name) &&
+    return typeof name === "string" &&
       !GAME_TABLE.some((t) => t.test.test(name))
-    );
+      ? [name]
+      : [];
   });
+  return worst(names.map((x) => (WORKING.test(x) ? "unsure" : "yes")));
+}
+
+interface Mark {
+  /** The predicate: the expression itself is the mark's. */
+  is: (e: AnyNode, f: Fn) => Says;
+  /** Whether an expression that reads it anywhere is the mark's too: any value from the save is `*`, the index only itself. */
+  inside: boolean;
+}
+const CHARACTER_MARK: Mark = {
+  is: (e, f) => (isCharacter(e, f.text) ? "yes" : "no"),
+  inside: false,
+};
+const SAVE_MARK: Mark = { is: readsSave, inside: true };
 
 /** The variables an expression reads: no property's name. */
 const namesIn = (e: AnyNode): AnyNode[] =>
@@ -138,23 +149,37 @@ const namesIn = (e: AnyNode): AnyNode[] =>
     return !p || p.computed === true;
   });
 
-function fromSave(
+/** An argument's expression for a mark: itself, a variable set before it, or the caller's parameter its call got. */
+function says(
   e: AnyNode,
   f: Fn,
-  given: () => number[],
+  mark: Mark,
+  given: () => Marks,
   depth = 0,
-): boolean {
-  if (depth > 4 || isCharacter(e, f.text, f.all)) return false;
+): Says {
+  if (depth > 4) return "no";
+  // the character's index is never the save's
+  if (mark !== CHARACTER_MARK && isCharacter(e, f.text)) return "no";
+  const own = mark.is(e, f);
+  if (own === "yes") return own;
   if (e.type === "Identifier") {
     const name = e.name as string;
     const def = defOf(f, name, e.range[0]);
-    if (def) return fromSave(def, f, given, depth + 1);
+    if (def) return says(def, f, mark, given, depth + 1);
     const j = f.params.indexOf(name);
-    return j >= 0 && given().includes(j);
+    if (j < 0) return "no";
+    const { yes, unsure } = given();
+    return yes.includes(j) ? "yes" : unsure.includes(j) ? "unsure" : "no";
   }
-  return (
-    readsSave(e) || namesIn(e).some((n) => fromSave(n, f, given, depth + 1))
-  );
+  const inner =
+    e.type === "CallExpression" && member(at(e, "callee")) === "asNumber"
+      ? (e.arguments as AnyNode[]).slice(0, 1)
+      : [];
+  const subs = mark.inside ? namesIn(e) : inner;
+  return worst([
+    own,
+    ...subs.map((n) => says(n, f, mark, given, depth + 1)),
+  ]);
 }
 
 /** A literal of the code: a number (a negative one too) or a text. */
@@ -191,27 +216,55 @@ function fnIn(ops: readonly Op[], block: string): Fn | null {
   return fns.get(block) ?? null;
 }
 
-/** The positions of `n`'s arguments its caller gave from the save; none with no code of the caller. */
+/** The positions of a call's arguments that are a mark's, and those the place does not decide. */
+interface Marks {
+  yes: number[];
+  unsure: number[];
+}
+
+/** `n`'s arguments for a mark, by every site of its call in the caller; none with no code of the caller. */
+function marksOf(
+  rec: Recording,
+  ops: readonly Op[],
+  n: RecNode,
+  mark: Mark,
+  depth = 0,
+): Marks {
+  const out: Marks = { yes: [], unsure: [] };
+  const caller = rec.nodes[n.p ?? -1];
+  const f = caller ? fnIn(ops, caller.b) : null;
+  const sites = (f?.sites.get(n.b) ?? []).filter((s) => fits(s, n));
+  if (!caller || !f || sites.length === 0 || depth > 8) return out;
+  let up: Marks | undefined;
+  const given = () => (up ??= marksOf(rec, ops, caller, mark, depth + 1));
+  n.a.forEach((_, i) => {
+    const all = new Set(
+      sites.map((s) => {
+        const a = (s.arguments as AnyNode[])[i];
+        return a === undefined ? "no" : says(a, f, mark, given);
+      }),
+    );
+    if (all.size > 1 || all.has("unsure")) out.unsure.push(i);
+    else if (all.has("yes")) out.yes.push(i);
+  });
+  return out;
+}
+
+/** The positions of `n`'s arguments its caller gave from the character's index. */
+export const characterArgs = (
+  rec: Recording,
+  ops: readonly Op[],
+  n: RecNode,
+): number[] => marksOf(rec, ops, n, CHARACTER_MARK).yes;
+
+/** The positions of `n`'s arguments its caller gave from the save, and those the place does not decide. */
 export function saveArgs(
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
-  depth = 0,
-): number[] {
-  const caller = rec.nodes[n.p ?? -1];
-  const f = caller ? fnIn(ops, caller.b) : null;
-  const sites = (f?.sites.get(n.b) ?? []).filter((s) => fits(s, n));
-  if (!caller || !f || sites.length === 0 || depth > 8) return [];
-  let up: number[] | undefined;
-  const given = () => (up ??= saveArgs(rec, ops, caller, depth + 1));
-  return n.a.flatMap((_, i) =>
-    sites.every((s) => {
-      const a = (s.arguments as AnyNode[])[i];
-      return a !== undefined && fromSave(a, f, given);
-    })
-      ? [i]
-      : [],
-  );
+): { save: number[]; unsure: number[] } {
+  const { yes, unsure } = marksOf(rec, ops, n, SAVE_MARK);
+  return { save: yes, unsure };
 }
 
 /** A call's reference with `{character}` and `*` where its caller gave the character's index and the save. */
@@ -221,13 +274,14 @@ export function markedRef(
   ops: readonly Op[],
   n: RecNode,
 ): Ref {
-  const own = characterRef(ref, rec, ops, n);
-  const marks = saveArgs(rec, ops, n);
-  if (!("call" in own) || marks.length === 0) return own;
+  if (!("call" in ref)) return ref;
+  const character = characterArgs(rec, ops, n);
+  const { save } = saveArgs(rec, ops, n);
+  if (character.length + save.length === 0) return ref;
   return {
-    ...own,
-    args: own.args.map((a, i) =>
-      marks.includes(i) && a !== CHARACTER ? SAVE : a,
+    ...ref,
+    args: ref.args.map((a, i) =>
+      character.includes(i) ? CHARACTER : save.includes(i) ? SAVE : a,
     ),
   };
 }
@@ -249,13 +303,21 @@ export function writtenArgs(
   )
     return [];
   const arg = (i: number) => `o argumento ${String(i + 1)} de ${ref.call}`;
-  const save = saveArgs(ctx.rec, ctx.ops, scope);
+  const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope);
+  const character = characterArgs(ctx.rec, ctx.ops, scope);
   const out: LockError[] = [];
-  for (const i of characterArgs(ctx.rec, ctx.ops, scope))
+  for (const i of character)
     if (ref.args[i] !== CHARACTER)
       out.push({ kind: "characterWritten", where: ctx.where, got: arg(i) });
   ref.args.forEach((a, i) => {
-    if (save.includes(i) && a !== SAVE && a !== CHARACTER)
+    if (a === CHARACTER || character.includes(i)) return;
+    if (unsure.includes(i))
+      out.push({
+        kind: "rootForm",
+        where: ctx.where,
+        got: `o lugar não decide se ${arg(i)} vem do save`,
+      });
+    else if (save.includes(i) && a !== SAVE)
       out.push({ kind: "saveWritten", where: ctx.where, got: arg(i) });
     else if (a === SAVE && !save.includes(i))
       out.push({
