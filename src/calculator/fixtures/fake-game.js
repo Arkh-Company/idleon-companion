@@ -2693,16 +2693,15 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // ...and the calls beside another part of the level, as TalentCalc(-6)'s RibbonBonus calls beside its meals' reads.
   Blocks._customBlock_TreeRibbonsPlus = function () {
-    var R = Blocks._customBlock_TreeRibbon;
     return (
-      R(1, 0) +
-      R(2, 0) +
-      R(3, 0) +
-      R(4, 0) +
-      R(5, 0) +
-      R(6, 0) +
-      R(7, 0) +
-      R(8, 0) +
+      Blocks._customBlock_TreeRibbon(1, 0) +
+      Blocks._customBlock_TreeRibbon(2, 0) +
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(4, 0) +
+      Blocks._customBlock_TreeRibbon(5, 0) +
+      Blocks._customBlock_TreeRibbon(6, 0) +
+      Blocks._customBlock_TreeRibbon(7, 0) +
+      Blocks._customBlock_TreeRibbon(8, 0) +
       state().TreeBase
     );
   };
