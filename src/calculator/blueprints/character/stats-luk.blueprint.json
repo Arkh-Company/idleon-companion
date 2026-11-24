@@ -566,10 +566,11 @@
                       ]
                     },
                     {
-                      "key": "div-bon-8",
+                      "key": "div-bon",
                       "name": "Nobisect",
                       "nameProof": {
-                        "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                        "table": "CustomLists.GodsInfo",
+                        "row": 2
                       },
                       "ref": {
                         "call": "Divinity",
@@ -577,10 +578,11 @@
                       },
                       "children": [
                         {
-                          "key": "div-div-8",
+                          "key": "div-div",
                           "name": "Arctis",
                           "nameProof": {
-                            "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                            "table": "CustomLists.GodsInfo",
+                            "row": 1
                           },
                           "ref": {
                             "call": "Divinity",
@@ -3647,10 +3649,11 @@
                                   ]
                                 },
                                 {
-                                  "key": "div-bon-8",
+                                  "key": "div-bon",
                                   "name": "Nobisect",
                                   "nameProof": {
-                                    "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                                    "table": "CustomLists.GodsInfo",
+                                    "row": 2
                                   },
                                   "ref": {
                                     "call": "Divinity",
@@ -3658,10 +3661,11 @@
                                   },
                                   "children": [
                                     {
-                                      "key": "div-div-8",
+                                      "key": "div-div",
                                       "name": "Arctis",
                                       "nameProof": {
-                                        "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                        "table": "CustomLists.GodsInfo",
+                                        "row": 1
                                       },
                                       "ref": {
                                         "call": "Divinity",
@@ -5475,10 +5479,11 @@
                                   }
                                 },
                                 {
-                                  "key": "div-bon-8",
+                                  "key": "div-bon",
                                   "name": "Nobisect",
                                   "nameProof": {
-                                    "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                                    "table": "CustomLists.GodsInfo",
+                                    "row": 2
                                   },
                                   "ref": {
                                     "call": "Divinity",
@@ -5486,10 +5491,11 @@
                                   },
                                   "children": [
                                     {
-                                      "key": "div-div-8",
+                                      "key": "div-div",
                                       "name": "Arctis",
                                       "nameProof": {
-                                        "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                        "table": "CustomLists.GodsInfo",
+                                        "row": 1
                                       },
                                       "ref": {
                                         "call": "Divinity",
@@ -6382,10 +6388,11 @@
                                   }
                                 },
                                 {
-                                  "key": "divin-8-2",
+                                  "key": "divin-2",
                                   "name": "Nobisect",
                                   "nameProof": {
-                                    "names": "Divinity(\"Bonus_Minor\", 8, 2)"
+                                    "table": "CustomLists.GodsInfo",
+                                    "row": 2
                                   },
                                   "ref": {
                                     "call": "Divinity",
@@ -6393,10 +6400,11 @@
                                   },
                                   "children": [
                                     {
-                                      "key": "divin-8-1",
+                                      "key": "divin-1",
                                       "name": "Arctis",
                                       "nameProof": {
-                                        "names": "Divinity(\"DivMinorBonus\", 8, 1)"
+                                        "table": "CustomLists.GodsInfo",
+                                        "row": 1
                                       },
                                       "ref": {
                                         "call": "Divinity",
