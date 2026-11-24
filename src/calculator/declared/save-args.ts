@@ -1,11 +1,11 @@
 // The arguments of a block's call the game gives from the save (spec 010, Fase 4 r1 of part N): a count of the save, as
 // N.js's ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills, or Thingies("FriendBonusQTY", …) the
 // friends of OptionsListAccount[476]. Found by the code at the call's place, as `{character}` (character-args.ts): the
-// argument's expression reads the state (`getGameAttribute`, a game table aside), bare, through `asNumber(…)`, through
-// a variable set before it on every way there, or through a parameter of the caller its own call got from the save
-// (ArcaneType's Log2(t)); never by the number. The call's sites are the caller's calls of the block whose numbers and
-// texts written in the code are the recorded ones; an argument some of them give from the save and another does not,
-// the place does not decide: none. The recipe writes `*` there.
+// argument's expression reads the save (`getGameAttribute`, a game table and a working map aside), bare, through
+// `asNumber(…)`, through a variable set before it on every way there, or through a parameter of the caller its own call
+// got from the save (ArcaneType's Log2(t)); never by the number. The call's sites are the caller's calls of the block
+// whose numbers and texts written in the code are the recorded ones; an argument some of them give from the save and
+// another does not, the place does not decide: none. The recipe writes `*` there.
 import { parse } from "acorn";
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
@@ -107,7 +107,11 @@ function defOf(f: Fn, name: string, pos: number): AnyNode | undefined {
   return best;
 }
 
-/** A read of the state that is no game table: `….getGameAttribute("<name>")`. */
+// shortcut: the game's working maps are never the save, so a save's count the game cached there and then passed is not
+// marked; tell them apart by the read's last write (RecNode.rx) when a recipe needs one.
+const WORKING = /^(DNSM|DummyNumbersStatManager)$/;
+
+/** A read of the save: `….getGameAttribute("<name>")`, no game table and no working map of the game (a loop's index). */
 const readsSave = (e: AnyNode): boolean =>
   walk(e).some((n) => {
     if (
@@ -118,7 +122,9 @@ const readsSave = (e: AnyNode): boolean =>
     const [k] = n.arguments as AnyNode[];
     const name = k?.type === "Literal" ? k.value : null;
     return (
-      typeof name === "string" && !GAME_TABLE.some((t) => t.test.test(name))
+      typeof name === "string" &&
+      !WORKING.test(name) &&
+      !GAME_TABLE.some((t) => t.test.test(name))
     );
   });
 
