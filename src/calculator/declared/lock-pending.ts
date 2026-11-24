@@ -1,11 +1,13 @@
 // A draft in the lock (spec 010, T199, Open Questions 23/11, night): what is closed is checked, and what is pending is
-// listed as pending, never failed by. A pending place covers only what its kind still lacks (r1): a name, nothing; a
-// group's system, its pool's group order; a node's system (a termPart), its part undeclared at the parent; a leaf's
-// kind, the node's own errors; a descent, the node's and those below it. The node's value at the parent's level
-// (childNoValue, extraSource, missingSource, sourceOrder, classMismatch) is never covered.
+// listed as pending, never failed by. A pending place covers only what its kind still lacks (r1, r2): a name, nothing;
+// a group's system, its pool's group order; a node's system (a termPart), its part undeclared at the parent, when no
+// other part its `*` takes is there too; a leaf's kind, its leafType; a descent, what is below the node and, at the
+// node, only what its children would give. What the recipe already declares is never covered: the node's value at the
+// parent's level (childNoValue, extraSource, missingSource, sourceOrder, classMismatch), its place there
+// (childOutside) and its ref's arguments (characterWritten, saveWritten, rootForm).
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { LockError, LockErrorKind } from "./lock.ts";
-import { keyMatches, nodeId } from "./refs.ts";
+import { keyMatches, nodeId, savedTwice } from "./refs.ts";
 
 const PLACE =
   /^pools\/(\d+)\/groups\/(\d+)(?:\/sources\/(\d+)((?:\/children\/\d+)*))?$/;
@@ -18,10 +20,24 @@ const AT_PARENT: ReadonlySet<LockErrorKind> = new Set([
   "classMismatch",
 ]);
 
-const under = (where: string, id: string): boolean =>
-  where === id || where.startsWith(`${id}/`);
+const DECLARED: ReadonlySet<LockErrorKind> = new Set([
+  "childOutside",
+  "characterWritten",
+  "saveWritten",
+  "rootForm",
+]);
 
-type Cover = (e: LockError) => boolean;
+// at a descent's own node: what its children, still to come, would give
+const DESCENT_OWN: ReadonlySet<LockErrorKind> = new Set([
+  "notClosing",
+  "undeclaredPart",
+  "leafType",
+  "leafHasChildren",
+  "openingRefused",
+]);
+
+/** Whether an error is covered, among all the lock's errors. */
+type Cover = (e: LockError, all: readonly LockError[]) => boolean;
 const none: Cover = () => false;
 
 /** A pending place's node: its id, its parent's id and whether it is a pool source's model child; null out of the forms. */
@@ -76,21 +92,34 @@ export function pendingCover(bp: Blueprint, character: number): Cover {
     const { node, id, parentId, model } = at;
     if (p.kind === "system") {
       const { ref } = node;
+      const part = (e: LockError): e is LockError & { got: string } =>
+        e.kind === "undeclaredPart" &&
+        e.where === parentId &&
+        typeof e.got === "string";
+      // two parts its `*` takes: the tie would be by order (refs.ts savedTwice)
       return ref
-        ? (e) =>
-            e.kind === "undeclaredPart" &&
-            e.where === parentId &&
-            typeof e.got === "string" &&
-            keyMatches(ref, e.got, character)
+        ? (e, all) =>
+            part(e) &&
+            keyMatches(ref, e.got, character) &&
+            savedTwice(
+              ref,
+              all.filter(part).map((x) => x.got),
+              character,
+            ) === null
         : none;
     }
     // a model's node per item is `<id>-<item>`
     const item = (w: string) => model && w.startsWith(`${id}-`);
     const self = (w: string) =>
       w === id || (item(w) && !w.slice(id.length).includes("/"));
-    const below = (w: string) => under(w, id) || item(w);
-    const own = p.kind === "descend" ? below : self;
-    return (e) => !AT_PARENT.has(e.kind) && own(e.where);
+    const below = (w: string) =>
+      !self(w) && (w.startsWith(`${id}/`) || item(w));
+    if (p.kind === "leaf")
+      return (e) => e.kind === "leafType" && self(e.where);
+    return (e) =>
+      !DECLARED.has(e.kind) &&
+      ((below(e.where) && !AT_PARENT.has(e.kind)) ||
+        (self(e.where) && DESCENT_OWN.has(e.kind)));
   });
-  return (e) => covers.some((c) => c(e));
+  return (e, all) => covers.some((c) => c(e, all));
 }

@@ -167,7 +167,8 @@ export function lockBlueprint(input: LockInput): LockResult {
   const covered = pendingCover(bp, character);
   const waits = pendingIds(bp);
   const done = (): LockResult => {
-    out.errors = out.errors.filter((e) => !covered(e));
+    const all = out.errors;
+    out.errors = all.filter((e) => !covered(e, all));
     out.closedAt = out.closedAt.filter((w) => !waits.has(w));
     for (const p of bp.pending ?? [])
       out.errors.push({ kind: "pending", where: p.where, got: p.kind });
