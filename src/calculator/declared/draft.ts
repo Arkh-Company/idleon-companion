@@ -24,7 +24,8 @@ import { sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
 import { ITEM, listOf, modelName } from "./draft-list.ts";
 import type { ListModel } from "./draft-list.ts";
-import type { CommonBranch, DraftPiece } from "./draft-pieces.ts";
+import { branchOf, COMMON_BRANCHES, pieceUse } from "./draft-pieces.ts";
+import type { CommonBranch, DraftPiece, DraftPieces } from "./draft-pieces.ts";
 import { codeOf, keyIn, partName, refOf } from "./draft-names.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
@@ -243,18 +244,23 @@ export function draftBlueprint(
     ops,
   };
   const pending: BlueprintPending[] = [];
-  const wait = (where: string, kind: BlueprintPending["kind"]) => {
-    pending.push({ where, kind });
+  const pieces: DraftPieces = new Map();
+  const wait = (
+    where: string,
+    kind: BlueprintPending["kind"],
+    sink = pending,
+  ) => {
+    sink.push({ where, kind });
   };
 
   /** A list's model child: its item's read, a name only when it gives each item's own, one pending each (T202). */
-  const model = (l: ListModel, where: string): DraftNode => {
+  const model = (l: ListModel, where: string, sink: BlueprintPending[]) => {
     const names = l.items.map(
       (w) => partName(w, dc.character, rec, ops)?.name ?? null,
     );
     const name = modelName(names, l.indices);
-    if (name === null) wait(where, "name");
-    wait(where, "leaf");
+    if (name === null) wait(where, "name", sink);
+    wait(where, "leaf", sink);
     // each item's proof is its own path (draft-names.ts provenName): the model's, its read
     return {
       key: keyIn(new Set(), l.list.replace("[*]", "")),
@@ -264,11 +270,13 @@ export function draftBlueprint(
     };
   };
 
+  /** A part's node; its pending places go to `sink`, the recipe's by default. */
   const node = (
     w: Walked,
     where: string,
     taken: Set<string>,
     extra: Partial<DraftNode> = {},
+    sink = pending,
   ): DraftNode => {
     const code = refOf(w, dc.character);
     // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
@@ -276,18 +284,31 @@ export function draftBlueprint(
     // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
     // proof by the row (research R5), and the key keeps only the other arguments
     const named = partName(w, dc.character, rec, ops);
-    if (!named) wait(where, "name");
-    if (w.termPart) wait(where, "system");
+    if (!named) wait(where, "name", sink);
+    if (w.termPart) wait(where, "system", sink);
     const tree = linkedTree(ref, id, dc.trees ?? [], dc.character);
     const own = new Set<string>();
     const keyRef = unmarked(ref);
+    const below = tree === undefined && Array.isArray(w.below) ? w.below : null;
     // a long list below a node, never a pool's source (its each is the answer key's): one model child (T202)
     const list =
-      tree === undefined &&
-      Array.isArray(w.below) &&
-      where.includes("/children/")
-        ? listOf(w.below, dc.character)
+      below && where.includes("/children/")
+        ? listOf(below, dc.character)
         : null;
+    // a common branch (T203): its children's pending places wait for the piece's verdict
+    const branch =
+      below && !list ? branchOf(ref, dc.branches ?? COMMON_BRANCHES) : null;
+    const mine: BlueprintPending[] = branch ? [] : sink;
+    const children = list
+      ? [model(list, `${where}/children/0`, mine)]
+      : below?.map((c, i) =>
+          node(c, `${where}/children/${String(i)}`, own, {}, mine),
+        );
+    const use =
+      branch && children
+        ? pieceUse(pieces, branch, children, mine, where)
+        : null;
+    if (branch) sink.push(...(use ? use.pending : mine));
     const out: DraftNode = {
       key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),
       name: named?.name ?? null,
@@ -296,20 +317,16 @@ export function draftBlueprint(
       ...extra,
       ...(tree !== undefined
         ? { tree }
-        : list
-          ? {
-              each: { list: list.list, as: ITEM },
-              children: [model(list, `${where}/children/0`)],
-            }
-          : Array.isArray(w.below) && {
-              children: w.below.map((c, i) =>
-                node(c, `${where}/children/${String(i)}`, own),
-              ),
+        : use
+          ? { piece: use.piece }
+          : {
+              ...(list && { each: { list: list.list, as: ITEM } }),
+              ...(children && { children }),
             }),
     };
     // a line with a link waits for nothing below it: its tree is the other number's
     if (tree !== undefined) return out;
-    if (!Array.isArray(w.below)) wait(where, w.below);
+    if (!Array.isArray(w.below)) wait(where, w.below, sink);
     // any other argument equal to the character's index may be the character or a number that happens to be it: the
     // agent writes `{character}` or keeps it (research R5); the draft does not decide by the value
     if (
@@ -317,7 +334,7 @@ export function draftBlueprint(
       "call" in ref &&
       ref.args.includes(dc.character)
     )
-      wait(where, "descend");
+      wait(where, "descend", sink);
     return out;
   };
 
@@ -358,5 +375,16 @@ export function draftBlueprint(
       groups,
     };
   });
-  return { id, root, pools, pending };
+  const written = [...pieces.values()].map((p): DraftPiece => ({
+    id: p.id,
+    params: p.params,
+    children: p.children,
+  }));
+  return {
+    id,
+    root,
+    pools,
+    pending,
+    ...(written.length > 0 && { pieces: written }),
+  };
 }
