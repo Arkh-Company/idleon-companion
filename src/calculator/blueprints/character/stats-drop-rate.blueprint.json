@@ -1217,13 +1217,6 @@
                   ]
                 },
                 {
-                  "key": "prayers-active-length",
-                  "name": null,
-                  "ref": {
-                    "read": "PrayersActive.length"
-                  }
-                },
-                {
                   "key": "prayers-active-0",
                   "name": "Prayer in slot 1",
                   "nameProof": {
@@ -1607,6 +1600,18 @@
               },
               "children": [
                 {
+                  "key": "windwalker-stamp-doubler-0-0",
+                  "name": "Stamp Doubler",
+                  "nameProof": {
+                    "names": "Windwalker(\"StampDoubler\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Windwalker",
+                    "args": ["StampDoubler", 0, 0]
+                  },
+                  "tree": "stamps-doubler"
+                },
+                {
                   "key": "ninja-pristine-bon-17-0",
                   "name": "Liqorice Rolle",
                   "nameProof": {
@@ -1630,16 +1635,81 @@
                   ]
                 },
                 {
-                  "key": "windwalker-stamp-doubler-0-0",
-                  "name": "Stamp Doubler",
+                  "key": "stamp-details-37",
+                  "name": null,
+                  "ref": {
+                    "call": "StampDetails",
+                    "args": [37]
+                  }
+                },
+                {
+                  "key": "stamp-over-level-37",
+                  "name": null,
+                  "ref": {
+                    "call": "StampOverLevel",
+                    "args": [37]
+                  },
+                  "children": [
+                    {
+                      "key": "stamp-level-0-37",
+                      "name": "Golden Sixes Stamp level",
+                      "nameProof": {
+                        "names": "StampLevel[0][37]"
+                      },
+                      "ref": {
+                        "read": "StampLevel[0][37]"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "key": "mainframe-bonus-7",
+                  "name": "Certified Stamp Book",
                   "nameProof": {
-                    "names": "Windwalker(\"StampDoubler\", 0, 0)"
+                    "names": "MainframeBonus(7)"
                   },
                   "ref": {
-                    "call": "Windwalker",
-                    "args": ["StampDoubler", 0, 0]
+                    "call": "MainframeBonus",
+                    "args": [7]
                   },
-                  "tree": "stamps-doubler"
+                  "children": [
+                    {
+                      "key": "talent-calc-7",
+                      "name": "Lab bonuses (all)",
+                      "nameProof": {
+                        "names": "TalentCalc(-7)"
+                      },
+                      "ref": {
+                        "call": "TalentCalc",
+                        "args": [-7]
+                      },
+                      "children": [
+                        {
+                          "key": "mainframe-bonus-7",
+                          "name": "Certified Stamp Book",
+                          "nameProof": {
+                            "names": "MainframeBonus(7)"
+                          },
+                          "ref": {
+                            "call": "MainframeBonus",
+                            "args": [7]
+                          },
+                          "children": [
+                            {
+                              "key": "custom-lists-lab-main-bonus-7-5",
+                              "name": "Lab bonus value",
+                              "nameProof": {
+                                "names": "CustomLists.LabMainBonus[7][5]"
+                              },
+                              "ref": {
+                                "read": "CustomLists.LabMainBonus[7][5]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -3732,13 +3802,6 @@
                   },
                   "ref": {
                     "read": "EquipmentQuantity[2][2]"
-                  }
-                },
-                {
-                  "key": "custom-lists-ninja-info-29-length",
-                  "name": null,
-                  "ref": {
-                    "read": "CustomLists.NinjaInfo[29].length"
                   }
                 },
                 {
@@ -7095,10 +7158,6 @@
     },
     {
       "where": "pools/0/groups/13/sources/0/children/1",
-      "kind": "name"
-    },
-    {
-      "where": "pools/0/groups/13/sources/0/children/1",
       "kind": "leaf"
     },
     {
@@ -7147,10 +7206,6 @@
     },
     {
       "where": "pools/0/groups/13/sources/0/children/13",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/13/sources/0/children/14",
       "kind": "descend"
     },
     {
@@ -7200,10 +7255,6 @@
     {
       "where": "pools/0/groups/19",
       "kind": "system"
-    },
-    {
-      "where": "pools/0/groups/19/sources/0/children/0/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/0/groups/20",
@@ -7739,18 +7790,10 @@
     },
     {
       "where": "pools/0/groups/28/sources/0/children/29",
-      "kind": "name"
-    },
-    {
-      "where": "pools/0/groups/28/sources/0/children/29",
       "kind": "leaf"
     },
     {
       "where": "pools/0/groups/28/sources/0/children/30",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/28/sources/0/children/31",
       "kind": "descend"
     },
     {
@@ -8956,6 +8999,30 @@
     {
       "where": "pools/0/groups/28/sources/0/children/6/children/0",
       "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/3",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/19/sources/0/children/4/children/0/children/0/children/0",
+      "kind": "leaf"
     }
   ]
 }
