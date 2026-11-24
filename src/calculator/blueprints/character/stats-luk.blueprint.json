@@ -438,7 +438,8 @@
                           },
                           "ref": {
                             "read": "AchieveReg[291]"
-                          }
+                          },
+                          "leaf": "condition"
                         }
                       ]
                     },
@@ -922,7 +923,8 @@
                       },
                       "ref": {
                         "read": "CustomMaps.NjEQ.NjTrP17[3]"
-                      }
+                      },
+                      "leaf": "fixedValue"
                     }
                   ]
                 }
@@ -1596,7 +1598,8 @@
                       },
                       "ref": {
                         "read": "OptionsListAccount[453]"
-                      }
+                      },
+                      "leaf": "condition"
                     }
                   ]
                 }
@@ -1738,7 +1741,8 @@
                   },
                   "ref": {
                     "read": "ArcadeUpg[22]"
-                  }
+                  },
+                  "leaf": "level"
                 },
                 {
                   "key": "compa-27",
@@ -1919,7 +1923,8 @@
                                       },
                                       "ref": {
                                         "read": "OptionsListAccount[453]"
-                                      }
+                                      },
+                                      "leaf": "condition"
                                     }
                                   ]
                                 },
@@ -1931,7 +1936,8 @@
                                   },
                                   "ref": {
                                     "read": "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[108]"
-                                  }
+                                  },
+                                  "leaf": "quantity"
                                 },
                                 {
                                   "key": "dnsm-cauld",
@@ -1962,7 +1968,8 @@
                                       },
                                       "ref": {
                                         "read": "UpgVault[42]"
-                                      }
+                                      },
+                                      "leaf": "level"
                                     },
                                     {
                                       "key": "custo-42-5",
@@ -1972,7 +1979,8 @@
                                       },
                                       "ref": {
                                         "read": "CustomLists.UpgradeVault[42][5]"
-                                      }
+                                      },
+                                      "leaf": "fixedValue"
                                     }
                                   ]
                                 },
@@ -1984,7 +1992,8 @@
                                   },
                                   "ref": {
                                     "read": "Rift[0]"
-                                  }
+                                  },
+                                  "leaf": "level"
                                 },
                                 {
                                   "key": "cauld-4-49",
@@ -1994,7 +2003,8 @@
                                   },
                                   "ref": {
                                     "read": "CauldronInfo[4][49]"
-                                  }
+                                  },
+                                  "leaf": "level"
                                 },
                                 {
                                   "key": "mainf-10",
@@ -2250,7 +2260,8 @@
                               },
                               "ref": {
                                 "read": "AchieveReg[379]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         },
@@ -2273,7 +2284,8 @@
                               },
                               "ref": {
                                 "read": "AchieveReg[373]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         },
@@ -2399,7 +2411,8 @@
                                   },
                                   "ref": {
                                     "read": "ArcadeUpg[51]"
-                                  }
+                                  },
+                                  "leaf": "level"
                                 },
                                 {
                                   "key": "compa-27",
@@ -2430,7 +2443,8 @@
                                   "name": null,
                                   "ref": {
                                     "read": "CustomLists.Research[47][28]"
-                                  }
+                                  },
+                                  "leaf": "fixedValue"
                                 }
                               ]
                             }
@@ -2476,7 +2490,8 @@
                               },
                               "ref": {
                                 "read": "BundlesReceived.ban_i"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         }
@@ -2818,7 +2833,8 @@
                                       },
                                       "ref": {
                                         "read": "AchieveReg[291]"
-                                      }
+                                      },
+                                      "leaf": "condition"
                                     }
                                   ]
                                 },
@@ -3158,7 +3174,8 @@
                               },
                               "ref": {
                                 "read": "AchieveReg[37]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         },
@@ -3285,7 +3302,8 @@
                                   },
                                   "ref": {
                                     "read": "OptionsListAccount[453]"
-                                  }
+                                  },
+                                  "leaf": "condition"
                                 }
                               ]
                             }
@@ -3444,7 +3462,8 @@
                                       },
                                       "ref": {
                                         "read": "OptionsListAccount[453]"
-                                      }
+                                      },
+                                      "leaf": "condition"
                                     }
                                   ]
                                 },
@@ -3490,7 +3509,8 @@
                               "name": null,
                               "ref": {
                                 "read": "CustomLists.BribeDescriptions[36][5]"
-                              }
+                              },
+                              "leaf": "fixedValue"
                             }
                           ]
                         },
@@ -3513,7 +3533,8 @@
                               },
                               "ref": {
                                 "read": "CustomMaps.NjEQ.NjTrP14[3]"
-                              }
+                              },
+                              "leaf": "fixedValue"
                             }
                           ]
                         },
@@ -3536,7 +3557,8 @@
                               },
                               "ref": {
                                 "read": "AchieveReg[380]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         },
@@ -3559,7 +3581,8 @@
                               },
                               "ref": {
                                 "read": "AchieveReg[383]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         },
@@ -3593,7 +3616,8 @@
                                   },
                                   "ref": {
                                     "read": "PixelHelperActor[25].behaviors.getBehavior(ActorEvents_670)._GenINFO[36]"
-                                  }
+                                  },
+                                  "leaf": "condition"
                                 }
                               ]
                             }
@@ -3780,7 +3804,8 @@
                                       },
                                       "ref": {
                                         "read": "AchieveReg[291]"
-                                      }
+                                      },
+                                      "leaf": "condition"
                                     }
                                   ]
                                 },
@@ -4092,7 +4117,7 @@
                               "ref": {
                                 "read": "PlayerDATABASE[{character}].SkillLevels[209]"
                               },
-                              "leaf": "level"
+                              "leaf": "investedPoints"
                             }
                           ]
                         },
@@ -4246,7 +4271,8 @@
                               "name": null,
                               "ref": {
                                 "read": "CustomLists.Research[47][10]"
-                              }
+                              },
+                              "leaf": "fixedValue"
                             }
                           ]
                         },
@@ -4269,7 +4295,8 @@
                               },
                               "ref": {
                                 "read": "Research[7][9]"
-                              }
+                              },
+                              "leaf": "choice"
                             }
                           ]
                         },
@@ -4345,7 +4372,8 @@
                           },
                           "ref": {
                             "read": "AchieveReg[309]"
-                          }
+                          },
+                          "leaf": "condition"
                         }
                       ]
                     },
@@ -4439,7 +4467,8 @@
                           },
                           "ref": {
                             "read": "AchieveReg[362]"
-                          }
+                          },
+                          "leaf": "condition"
                         }
                       ]
                     },
@@ -4646,7 +4675,8 @@
                                       },
                                       "ref": {
                                         "read": "AchieveReg[291]"
-                                      }
+                                      },
+                                      "leaf": "condition"
                                     }
                                   ]
                                 },
@@ -5040,7 +5070,8 @@
                               },
                               "ref": {
                                 "read": "PixelHelperActor[25].behaviors.getBehavior(ActorEvents_670)._GenINFO[36]"
-                              }
+                              },
+                              "leaf": "condition"
                             }
                           ]
                         }
@@ -5094,7 +5125,8 @@
                       },
                       "ref": {
                         "read": "CustomMaps.NjEQ.NjTrP5[3]"
-                      }
+                      },
+                      "leaf": "fixedValue"
                     }
                   ]
                 },
@@ -5332,10 +5364,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/2/groups/1/sources/0/children/0/children/4/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/2/groups/1/sources/0/children/0/children/5/children/0",
       "kind": "descend"
     },
@@ -5390,10 +5418,6 @@
     {
       "where": "pools/2/groups/1/sources/2/children/1/children/0",
       "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/2/sources/0/children/0/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/2/groups/2/sources/1/children/0",
@@ -5476,10 +5500,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/2/groups/11/sources/0/children/2/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -5500,10 +5520,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/2/groups/14/sources/0/children/1",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/2/groups/14/sources/0/children/2",
       "kind": "descend"
     },
@@ -5520,32 +5536,8 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/1",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/2",
       "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/3/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/3/children/1",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/4",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/5",
-      "kind": "leaf"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/6/children/0",
@@ -5580,14 +5572,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/5/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/6/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/7/children/0",
       "kind": "descend"
     },
@@ -5604,10 +5588,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/1",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2",
       "kind": "descend"
     },
@@ -5616,20 +5596,12 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/3/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/9/children/0",
       "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/10",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/10/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/7/children/0",
@@ -5673,10 +5645,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/4/children/0",
       "kind": "leaf"
     },
     {
@@ -5728,10 +5696,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/9/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/10/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -5742,10 +5706,6 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1/children/0",
       "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/2/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0",
@@ -5764,32 +5724,8 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/13/children/0/children/3/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/14/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/14/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/15/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/16/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/17/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/18/children/0/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/0",
@@ -5797,10 +5733,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/19/children/0/children/4/children/0",
       "kind": "leaf"
     },
     {
@@ -5884,14 +5816,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/27/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/28/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/31",
       "kind": "name"
     },
@@ -5904,23 +5828,11 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/10/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/12/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/0",
       "kind": "name"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/14/children/0/children/0/children/4/children/0",
       "kind": "leaf"
     },
     {
@@ -5980,16 +5892,8 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/15/children/0/children/0",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/16/children/0",
       "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/3/children/0",
-      "kind": "leaf"
     },
     {
       "where": "pools/4/groups/0/sources/0/children/0/children/0/children/0",
