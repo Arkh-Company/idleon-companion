@@ -11,17 +11,15 @@ import {
   at,
   CUSTOM,
   MATH,
-  matchPattern,
   blockParams,
   methodOf,
   ownRead,
-  textRead,
   unwrap,
 } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
+import { readOfLeaf } from "./leaf-reads.ts";
 import { near } from "./math.ts";
 import { byCalls as callsBySide, sideAt, sideState } from "./sides.ts";
-import { GAME_TABLE } from "./step-types.ts";
 import type {
   AmbiguousCall,
   BlockSteps,
@@ -160,50 +158,10 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         return op.defCalls ? byCalls(op.defCalls, v, pos) : defOrVal(node, v);
       if (typeof v !== "number") return defOrVal(node, v);
       const pool = poolFor(node);
-      // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
+      // the read the leaf's own text names, or its value names among the call's reads (leaf-reads.ts)
       const pat = astPattern(node);
-      if (pat) {
-        const cand = pool.filter(
-          ([p, val]) =>
-            (val === v ||
-              (typeof val === "string" &&
-                val.trim() !== "" &&
-                Number(val) === v)) &&
-            matchPattern(p, pat) &&
-            !rxs.some((x) => x[0] === p && Number(x[1]) !== v),
-        );
-        const [only] = cand;
-        if (only && cand.length === 1) {
-          // AUDIT-D R1: a converted text cell is used up, so a later bare number is not bound to it.
-          if (typeof only[1] === "string") usedR.add(only[0]);
-          return read(only[0], v);
-        }
-      }
-      // a number read from a text the code names, with a mark taken out (T209, form 2): the read of that path, one only
-      const tp = pat ? null : textRead(node, pool, v);
-      if (tp !== null) return read(tp, v);
-      const same = pool.filter(
-        ([p, val]) =>
-          val === v &&
-          !GAME_TABLE.some((r) => r.test.test(p)) &&
-          !p.endsWith(".length"),
-      );
-      if (same.length === 1 && same[0] && !usedR.has(same[0][0])) {
-        usedR.add(same[0][0]);
-        return read(same[0][0], v);
-      }
-      // a number the game read as text and converted (a card's per-star value "6", a table constant)
-      const txt = pool.filter(
-        ([p, val]) =>
-          typeof val === "string" &&
-          val.trim() !== "" &&
-          Number(val) === v &&
-          !/.length$/.test(p),
-      );
-      if (txt.length === 1 && txt[0] && !usedR.has(txt[0][0])) {
-        usedR.add(txt[0][0]);
-        return read(txt[0][0], v);
-      }
+      const p = readOfLeaf(node, v, pool, rxs, usedR, pat);
+      if (p !== null) return read(p, v);
       // a loose value of the call's own variable, written before here, keeps its path (T209, form 3)
       const loose = defOrVal(node, v);
       const at0 = lastPos.get(id ?? -1);
