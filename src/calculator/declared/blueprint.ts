@@ -25,7 +25,7 @@ import type {
   BlueprintStage,
 } from "./blueprint-types.ts";
 import { fill, inlinePieces } from "./pieces.ts";
-import { eachNames } from "./refs.ts";
+import { ANY_CALL, eachNames } from "./refs.ts";
 export type {
   LeafKind,
   ConditionKind,
@@ -81,6 +81,8 @@ interface Walk {
   eachModel?: boolean;
   /** The node is below a pool's source, out of any combine: a piece's pools have a root's children (T172). */
   recipe?: boolean;
+  /** The node is a child of a cache's read (`DNSM.*`): its author, the one place `any` may be (T208). */
+  author?: boolean;
 }
 
 /**
@@ -167,6 +169,14 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   } else if ((n.ref === undefined) === (n.constant === undefined))
     no(where, "ref ou constant: um dos dois, nunca os dois");
   if (n.ref !== undefined) checkRef(n.ref, where);
+  // any call of the block (T208): the whole args of a cache's author only
+  const args: unknown = isObj(n.ref) ? n.ref.args : undefined;
+  if (
+    Array.isArray(args) &&
+    args.includes(ANY_CALL) &&
+    !(level === "child" && w.author && args.length === 1)
+  )
+    no(where, "any só no autor de um cache, e sozinho nos args");
   if (n.constant !== undefined) {
     if (level !== "source") no(where, "constant só em fonte de pool");
     if (typeof n.constant !== "number" || !Number.isFinite(n.constant))
@@ -218,6 +228,10 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
           combined: n.combine !== undefined,
           eachModel: poolEach,
           recipe: !!w.recipe && n.combine === undefined,
+          author:
+            isObj(n.ref) &&
+            typeof n.ref.read === "string" &&
+            n.ref.read.startsWith("DNSM."),
         },
       );
       siblings.push(c);

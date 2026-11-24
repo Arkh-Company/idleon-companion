@@ -55,8 +55,17 @@ function keyParts(key: string): { call: string; args: unknown[] } | null {
   }
 }
 
-/** Whether a recorded key is the one a ref stands for: each `*` argument of a call takes any value, the rest the same. */
+/** A cache's author by any call of its block (T208): its whole args; the load takes it only there (blueprint.ts). */
+export const ANY_CALL = "any";
+export const isAnyCall = (ref: Ref): boolean =>
+  "call" in ref && ref.args.length === 1 && ref.args[0] === ANY_CALL;
+
+/**
+ * Whether a recorded key is the one a ref stands for: each `*` argument of a call takes any value, the rest the same;
+ * `any` (T208) is any call of the block.
+ */
 export function keyMatches(ref: Ref, key: string, character: number): boolean {
+  if ("call" in ref && isAnyCall(ref)) return keyParts(key)?.call === ref.call;
   if (!("call" in ref) || !ref.args.includes(SAVE))
     return refKey(ref, character) === key;
   const got = keyParts(key);
