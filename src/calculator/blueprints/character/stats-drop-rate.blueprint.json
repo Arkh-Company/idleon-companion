@@ -4641,6 +4641,207 @@
                   "ref": {
                     "read": "CustomLists.HolesInfo[37][26]"
                   }
+                },
+                {
+                  "key": "holes-monument-rogbonuses-2-9",
+                  "name": "Wisdom Bonuses Multi",
+                  "nameProof": {
+                    "names": "Holes(\"MonumentROGbonuses\", 2, 9)"
+                  },
+                  "ref": {
+                    "call": "Holes",
+                    "args": ["MonumentROGbonuses", 2, 9]
+                  },
+                  "children": [
+                    {
+                      "key": "holes-15-29",
+                      "name": "Wisdom Bonuses Multi level (monument)",
+                      "nameProof": {
+                        "names": "Holes[15][29]"
+                      },
+                      "ref": {
+                        "read": "Holes[15][29]"
+                      }
+                    },
+                    {
+                      "key": "custom-lists-holes-info-37-29",
+                      "name": "Monument bonus base value (slot 29)",
+                      "nameProof": {
+                        "names": "CustomLists.HolesInfo[37][29]"
+                      },
+                      "ref": {
+                        "read": "CustomLists.HolesInfo[37][29]"
+                      }
+                    },
+                    {
+                      "key": "holes2-fountain-bon-tot-2-13",
+                      "name": "Wisdom Boost",
+                      "nameProof": {
+                        "names": "Holes2(\"Fountain_BonTOT\", 2, 13)"
+                      },
+                      "ref": {
+                        "call": "Holes2",
+                        "args": ["Fountain_BonTOT", 2, 13]
+                      },
+                      "children": [
+                        {
+                          "key": "dnsm-fount-bon-t-2-13",
+                          "name": null,
+                          "ref": {
+                            "read": "DNSM.FountBonT[2][13]"
+                          },
+                          "children": [
+                            {
+                              "key": "holes2-fountain-bon-tot-0-17",
+                              "name": "Treasure Boost",
+                              "nameProof": {
+                                "names": "Holes2(\"Fountain_BonTOT\", 0, 17)"
+                              },
+                              "ref": {
+                                "call": "Holes2",
+                                "args": ["Fountain_BonTOT", 0, 17]
+                              },
+                              "children": [
+                                {
+                                  "key": "holes2-fountain-marble-bon-2-13",
+                                  "name": null,
+                                  "ref": {
+                                    "call": "Holes2",
+                                    "args": ["Fountain_MarbleBon", 2, 13]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "holes-32-2-13",
+                                      "name": "Wisdom Boost marble",
+                                      "nameProof": {
+                                        "names": "Holes[32][2][13]"
+                                      },
+                                      "ref": {
+                                        "read": "Holes[32][2][13]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "holes-31-2-13",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "Holes[31][2][13]"
+                                  }
+                                },
+                                {
+                                  "key": "custom-lists-hole-fount-upg-2-13-6",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.HoleFountUPG[2][13][6]"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "holes-cosmo-bonus-qty-0-0",
+                  "name": "Monumental Vibes",
+                  "nameProof": {
+                    "names": "Holes(\"CosmoBonusQTY\", 0, 0)"
+                  },
+                  "ref": {
+                    "call": "Holes",
+                    "args": ["CosmoBonusQTY", 0, 0]
+                  },
+                  "children": [
+                    {
+                      "key": "custom-lists-cosmo-upgrades-0-0-0",
+                      "name": null,
+                      "ref": {
+                        "read": "CustomLists.CosmoUpgrades[0][0][0]"
+                      }
+                    },
+                    {
+                      "key": "holes-4-0",
+                      "name": "Monumental Vibes level",
+                      "nameProof": {
+                        "names": "Holes[4][0]"
+                      },
+                      "ref": {
+                        "read": "Holes[4][0]"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "key": "holes2-fountain-bon-tot-2-13",
+                  "name": "Wisdom Boost",
+                  "nameProof": {
+                    "names": "Holes2(\"Fountain_BonTOT\", 2, 13)"
+                  },
+                  "ref": {
+                    "call": "Holes2",
+                    "args": ["Fountain_BonTOT", 2, 13]
+                  },
+                  "children": [
+                    {
+                      "key": "dnsm-fount-bon-t-2-13",
+                      "name": null,
+                      "ref": {
+                        "read": "DNSM.FountBonT[2][13]"
+                      },
+                      "children": [
+                        {
+                          "key": "holes2-fountain-bon-tot-0-17",
+                          "name": "Treasure Boost",
+                          "nameProof": {
+                            "names": "Holes2(\"Fountain_BonTOT\", 0, 17)"
+                          },
+                          "ref": {
+                            "call": "Holes2",
+                            "args": ["Fountain_BonTOT", 0, 17]
+                          },
+                          "children": [
+                            {
+                              "key": "holes2-fountain-marble-bon-2-13",
+                              "name": null,
+                              "ref": {
+                                "call": "Holes2",
+                                "args": ["Fountain_MarbleBon", 2, 13]
+                              },
+                              "children": [
+                                {
+                                  "key": "holes-32-2-13",
+                                  "name": "Wisdom Boost marble",
+                                  "nameProof": {
+                                    "names": "Holes[32][2][13]"
+                                  },
+                                  "ref": {
+                                    "read": "Holes[32][2][13]"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "holes-31-2-13",
+                              "name": null,
+                              "ref": {
+                                "read": "Holes[31][2][13]"
+                              }
+                            },
+                            {
+                              "key": "custom-lists-hole-fount-upg-2-13-6",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomLists.HoleFountUPG[2][13][6]"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -7683,14 +7884,6 @@
       "kind": "system"
     },
     {
-      "where": "pools/0/groups/42/sources/0/children/0",
-      "kind": "leaf"
-    },
-    {
-      "where": "pools/0/groups/42/sources/0/children/1",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/0/groups/43",
       "kind": "system"
     },
@@ -8584,6 +8777,90 @@
     },
     {
       "where": "pools/0/groups/43/sources/0/children/2/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/2/children/2/children/0/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/3/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/42/sources/0/children/4/children/0/children/0/children/2",
       "kind": "leaf"
     }
   ]
