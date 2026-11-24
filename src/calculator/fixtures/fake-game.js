@@ -762,6 +762,22 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
   };
+  // Spec 010 (T209, form 3): a number of the code the block doubles under conditions, in a variable of its own, as the
+  // game's ArcadeBonus doubles DNSM.ArcadBonDNz when the upgrade is at its max and when a companion is owned.
+  Blocks._customBlock_TreeOwnedFlag = function () {
+    return state().TreeFlagOn;
+  };
+  Blocks._customBlock_TreeDoubled = function (e) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeDbl = 1;
+    101 == s.TreeUpg[e] && (d.TreeDbl = 2 * d.TreeDbl);
+    1 == Blocks._customBlock_TreeOwnedFlag() && (d.TreeDbl = 2 * d.TreeDbl);
+    return d.TreeDbl * s.TreeLevel;
+  };
+  Blocks._customBlock_TreeDoubledPool = function () {
+    return Blocks._customBlock_TreeDoubled(0) + state().TreeCapped;
+  };
   // Spec 010 (T209, form 2): a number read from a game table's text with a mark taken out, as the game's
   // Holes("MeasurementBaseBonus") reads asNumber(replace(string(HolesInfo[55][t]), "TOT", "")).
   Blocks._customBlock_TreeTextTot = function () {
