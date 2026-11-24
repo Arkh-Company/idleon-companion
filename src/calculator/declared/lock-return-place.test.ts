@@ -41,9 +41,9 @@ test("a call and a read both after the last step, both worth the call's value: t
 });
 
 test("a variable set by a call, then another call and a read of the same value before its return: the place does not tell which, none", () => {
-  const { rec, ops } = recorded("TreeTwoCallsRoot");
+  const { rec, ops } = recorded("TreeVarTwoCallsRoot");
   const ctx = levelContext(rec, ops, "root");
-  const two = rec.nodes.find((x) => x.b === "TreeTwoCalls");
+  const two = rec.nodes.find((x) => x.b === "TreeVarTwoCalls");
   const kids = (two?.c ?? []).map((c) => rec.nodes[c]?.v);
   expect([two?.v, kids, two?.rx?.at(-1)?.[1]]).toEqual([7, [7, 7], 7]);
   expect(two && returnOf(two, ctx)).toBeNull();

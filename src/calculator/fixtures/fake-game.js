@@ -2026,14 +2026,14 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // Spec 010 (Fase 4 r3): a variable set by a call worth 7, then a read of 7 and another call worth 7 before its
   // return: the last call is not the one the variable took.
-  Blocks._customBlock_TreeTwoCalls = function () {
+  Blocks._customBlock_TreeVarTwoCalls = function () {
     var s = state();
     var r = Blocks._customBlock_TreeWriteSeven();
     Blocks._customBlock_TreeWriteSeven(s.TreeBig.h.k2);
     return r;
   };
-  Blocks._customBlock_TreeTwoCallsRoot = function () {
-    return Blocks._customBlock_TreeTwoCalls() + state().TreeLevel;
+  Blocks._customBlock_TreeVarTwoCallsRoot = function () {
+    return Blocks._customBlock_TreeVarTwoCalls() + state().TreeLevel;
   };
   Blocks._customBlock_TreeEarlyRoot = function () {
     return (
