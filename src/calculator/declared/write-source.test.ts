@@ -83,6 +83,23 @@ test("a call made after the write, worth the same, is no source of it: the write
   ]);
 });
 
+test("a table's text cell read after a write with no step, worth the written literal, is no source of it", () => {
+  const { rec, key, ops } = recordedWrites(
+    "TreeWriteCellRead",
+    "TreeWriteCell",
+    "TreeWriteCell",
+  );
+  expect(key.final).toBe(87);
+  const author = rec.nodes.find((n) => n.b === "TreeWriteCell");
+  expect(author?.rx).toContainEqual(
+    expect.arrayContaining(["CustomLists.ListCells[0]", "7"]),
+  );
+  const ref = { call: "TreeWriteCellRead", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const shapes = draft.pools[0]?.groups.map((g) => g.sources.map(shape));
+  expect(JSON.stringify(shapes)).not.toContain("ListCells");
+});
+
 test("the lock closes a write with no step by its bare read and by its call", () => {
   const input = recordedWrites();
   const blueprint: Blueprint = {

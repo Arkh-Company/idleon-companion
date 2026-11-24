@@ -120,6 +120,10 @@ lime.$scripts.N = function (_exports, $global) {
     ListNames: function () {
       return [["FIRST_INVENTED_II", 7], ["second|half"]];
     },
+    // A cell the game keeps as text, worth a number (TreeWriteCell).
+    ListCells: function () {
+      return ["7"];
+    },
     // The emporium's foods, by its slot (the golden food's case).
     NinjaInfo: function () {
       var list = [];
@@ -1462,6 +1466,19 @@ lime.$scripts.N = function (_exports, $global) {
     var k = state().TreeBig.h.k2;
     d.TreeWriteLate.h.v = k;
     Blocks._customBlock_TreeWriteSeven();
+  };
+  // Spec 010 (Fase 4 r2): an author with no step writes the literal 7, then reads a table's text cell "7"; the root is
+  // 7 + 80 = 87.
+  Blocks._customBlock_TreeWriteCell = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteCell = new StringMap();
+    d.TreeWriteCell.h.v = 7;
+    return state().CustomLists.h.ListCells[0];
+  };
+  Blocks._customBlock_TreeWriteCellRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteCell.h.v + state().TreeCapped
+    );
   };
   Blocks._customBlock_TreeWriteLateRead = function () {
     return (
