@@ -6,11 +6,14 @@ import { parse } from "acorn";
 import {
   at,
   children,
+  isBlockCall,
   isNode,
+  methodName,
   noted,
+  returnKind,
   returnNotes,
 } from "./instrument-returns.ts";
-import type { AnyNode } from "./instrument-returns.ts";
+import type { AnyNode, Defs } from "./instrument-returns.ts";
 
 export interface Op {
   block: string;
@@ -128,8 +131,6 @@ function marks(fn: AnyNode): Omit<Mark, "s" | "e">[] {
   return out;
 }
 
-type Defs = Map<string, { end: number; rhs: AnyNode }[]>;
-
 /** The assignments of a function by variable, so a value taken from a variable opens into what set it. */
 function assignments(fn: AnyNode): Defs {
   const out: Defs = new Map();
@@ -168,16 +169,6 @@ function defOf(node: AnyNode | undefined, defs: Defs): AnyNode | null {
     if (d.end <= node.range[0] && (!best || d.end > best.end)) best = d;
   return best ? best.rhs : null;
 }
-
-const methodName = (n: AnyNode): unknown =>
-  n.type === "CallExpression" && at(n, "callee").type === "MemberExpression"
-    ? at(at(n, "callee"), "property").name
-    : undefined;
-
-const isBlockCall = (n: AnyNode) => {
-  const name = methodName(n);
-  return typeof name === "string" && name.startsWith("_customBlock_");
-};
 
 /** The block calls an expression's value comes from: see Op.defCalls; the ways to a part with none go in `free`. */
 function callsOf(
@@ -227,33 +218,13 @@ function hasCall(
 }
 type CallMemo = Map<AnyNode, { out: boolean; depth: number }>;
 
-/** A member read of a variable (`s.k`), bare, through `asNumber(…)` or the variable that took it. */
-function isRead(n: AnyNode | null, defs: Defs, depth = 0): boolean {
-  if (!n || depth > 6) return false;
-  if (n.type === "Identifier") return isRead(defOf(n, defs), defs, depth + 1);
-  const args = (n.arguments as AnyNode[] | undefined) ?? [];
-  if (methodName(n) === "asNumber" && args.length === 1)
-    return isRead(args[0] ?? null, defs, depth + 1);
-  let o = n;
-  while (o.type === "MemberExpression") o = at(o, "object");
-  return o !== n && o.type === "Identifier";
-}
-
-/** What a return gives by its place (instrument-returns.ts): a block's call, bare or by a variable, or a read. */
-function returnKind(arg: AnyNode, defs: Defs, memo: CallMemo) {
-  const free: DefCall["sides"][] = [];
-  const calls = callsOf(arg, defs, memo, free);
-  if (calls.length > 0) return free.length === 0 ? "call" : null;
-  return isRead(arg, defs) ? "read" : null;
-}
-
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
   const callMemo: CallMemo = new Map(); // the variables' defs are walked once per function, not once per leaf
   const copy = noted(
     text,
-    returnNotes(fn, (arg) => returnKind(arg, defs, callMemo)),
+    returnNotes(fn, (arg) => returnKind(fn, defs, arg)),
   );
   const byRange = new Map<string, Mark>();
   for (const m of marks(fn)) {
