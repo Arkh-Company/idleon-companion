@@ -80,28 +80,66 @@ test("the lock ties a call by its place with the *, and refuses a recipe that wr
     lockBlueprint({ ...input, blueprint: blueprint(kills, below) }).errors.map(
       lockMessage,
     );
-  // the 0 the game set in its working map, the place does not decide (r2): the honest refusal
-  const working =
-    "invented-save/0/luk-stats/row-0: o lugar não decide se o argumento 1 de TreeDeclRow vem do save";
-  expect(lock("*", "*")).toEqual([working]);
+  // the 0 the game set in its working map goes down through that write, a number of the code: no save's (group 5 of
+  // part P, the recorded place decides)
+  expect(lock("*", "*")).toEqual([]);
   expect(lock(3, "*")).toEqual([
     'argumento do save por extenso: invented-save/0/luk-stats/kills: o argumento 2 de TreeDeclKills vem do save; a receita escreve "*"',
-    working,
   ]);
   expect(lock("*", 3)).toEqual([
     'argumento do save por extenso: invented-save/0/luk-stats/kills/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
-    working,
   ]);
 });
 
-test("a {character} where the place does not decide is refused too, never let through by the index's number (r3)", () => {
+test("a {character} where the code wrote a number is refused, never let through by the index's number (r3)", () => {
   const input = { ...recorded("TreeSaveArg"), character: 0, characterClass: 3 };
   const errors = lockBlueprint({
     ...input,
     blueprint: blueprint("*", "*", "{character}"),
   }).errors.map(lockMessage);
   expect(errors).toEqual([
-    "invented-save/0/luk-stats/row-0: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
+    "invented-save/0/luk-stats/row-0: o argumento 1 de TreeDeclRow não vem do personagem",
+  ]);
+});
+
+/** One source of TreeDeclRow over `root`'s recording, with `arg`, as the lock's messages. */
+const rowLock = (root: string, arg: RefArg) => {
+  const input = { ...recorded(root), character: 0, characterClass: 3 };
+  const source = (s: BlueprintNode) => ({ system: "luk-stats", sources: [s] });
+  return lockBlueprint({
+    ...input,
+    blueprint: {
+      id: "invented-work",
+      root: { name: "Invented", ref: { call: root, args: [0, 0, 0] } },
+      pools: [
+        {
+          kind: "additive",
+          groups: [
+            source({
+              key: "base",
+              name: "Base",
+              ref: { read: "TreeBase" },
+              leaf: "level",
+            }),
+            source(row(arg)),
+          ],
+        },
+      ],
+    },
+  }).errors.map(lockMessage);
+};
+
+test("an argument from a working map the call filled from a game table in a loop is no save's (group 5 of part P)", () => {
+  // TreeWorkArg: DNSM.TreeQdl is ListTwo[0] + r for each turn r; the argument is its indexOf(33), 1
+  expect(rowLock("TreeWorkArg", 1)).toEqual([]);
+  expect(rowLock("TreeWorkArg", "*")).toEqual([
+    "invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow está no código, não vem do save: a receita escreve o número",
+  ]);
+});
+
+test("an argument from a working map another block wrote: the place does not decide, refused with the reason (group 5 of part P)", () => {
+  expect(rowLock("TreeSaveElse", 0)).toEqual([
+    "invented-work/0/luk-stats/row: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
   ]);
 });
 

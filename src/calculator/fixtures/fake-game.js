@@ -2542,6 +2542,38 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (group 5 of part P): an argument read from a working map the call filled in a loop from a game table, as
+  // the game's Divinity("Bonus_Minor") with DNSM.BminorDivQdl.indexOf(i); and one another block wrote there.
+  Blocks._customBlock_TreeWorkArg = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeQdl = [];
+    for (var r = 0; r < 2; r++)
+      a.engine
+        .getGameAttribute("DNSM")
+        .h.TreeQdl.push(
+          U.asNumber(a.engine.getGameAttribute("CustomLists").h.ListTwo[0]) + r,
+        );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        a.engine.getGameAttribute("DNSM").h.TreeQdl.indexOf(33),
+      )
+    );
+  };
+  Blocks._customBlock_TreeSetElse = function () {
+    a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
+    return 0;
+  };
+  Blocks._customBlock_TreeSaveElse = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    Blocks._customBlock_TreeSetElse();
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeElse),
+      )
+    );
+  };
   // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
   Blocks._customBlock_TreeSaveTwice = function () {
     var U = A["com.stencyl.utils.Utils"];
