@@ -2166,6 +2166,16 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeGateRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateBonus();
   };
+  // Spec 010 (T210): a gate by the character's map, as the game's ArcaneMapMulti_bon (3 > MapBon[CurrentMap].length):
+  // open on a map with 3 entries or more, the bonus TreeTurnItem(1); closed on another, the code's 0 before its count.
+  Blocks._customBlock_TreeGateMap = function () {
+    var s = state();
+    if (3 > s.TreeMaps[s.CurrentMap].length) return 0;
+    return Blocks._customBlock_TreeTurnItem(1);
+  };
+  Blocks._customBlock_TreeGateMapRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeGateMap();
+  };
   // Spec 010 (bare return): a call that returns a read with no step of its own (a cache, a table's cell), its one
   // step aside: TreeBig k2 is 7; the root is 25 + 7 = 32.
   Blocks._customBlock_TreeBareRead = function () {

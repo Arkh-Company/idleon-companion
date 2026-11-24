@@ -253,6 +253,79 @@ test("every complete invented blueprint (fixtures/blueprints) passes the lock ov
   expect(refused).toEqual([]);
 });
 
+/** TreeGateMapRoot over both classes, each character's map with `sizes` entries (map 3 the first's, 7 the second's). */
+function gateLock(sizes: [number, number]) {
+  const out = parseBlueprint(
+    {
+      id: "invented-gate",
+      root: { name: "Invented", ref: { call: "TreeGateMapRoot", args: [] } },
+      pools: [
+        {
+          kind: "additive",
+          groups: [
+            {
+              system: "cards",
+              sources: [
+                {
+                  key: "level",
+                  name: "Level",
+                  ref: { read: "TreeLevel" },
+                  leaf: "level",
+                },
+                {
+                  key: "gate",
+                  name: "Gate",
+                  ref: { call: "TreeGateMap", args: [] },
+                  children: [
+                    {
+                      key: "item",
+                      name: "Item",
+                      ref: { call: "TreeTurnItem", args: [1] },
+                      children: [
+                        {
+                          key: "list",
+                          name: "List",
+                          ref: { read: "TreeList[1]" },
+                          leaf: "level",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    { fileId: "invented-gate", systemIds: new Set(["cards"]) },
+  );
+  if (!out.ok) throw new Error(out.reason);
+  const snap = twoClasses() as ReturnType<typeof twoClasses> & {
+    attrs: { TreeMaps?: unknown };
+  };
+  const maps: number[][] = Array.from({ length: 8 }, () => []);
+  maps[3] = Array.from({ length: sizes[0] }, () => 1);
+  maps[7] = Array.from({ length: sizes[1] }, () => 1);
+  snap.attrs.TreeMaps = maps;
+  const mosaic = JSON.stringify(snap);
+  return lockNumber(recordRoots, recorder.ops, out.blueprint, mosaic, BOTH)
+    .lock;
+}
+
+test("a run whose gate gives the code's 0 before its count does not refuse the children it did not reach (T210)", () => {
+  // the first character's map opens the gate (TreeTurnItem(1) = 4), the second's closes it (0)
+  const lock = gateLock([3, 1]);
+  expect(lock.errors).toEqual([]);
+  expect(lock.ok).toBe(true);
+});
+
+test("a child no run reached, the gate closed in every run, is still refused when the runs join (T210)", () => {
+  expect(gateLock([1, 1]).errors).toEqual([
+    { kind: "childNoValue", where: "invented-gate/0/cards/gate/item" },
+  ]);
+});
+
 test("the summary line carries the time of each stage", () => {
   expect(
     summaryLine("stats-drop-rate", {
