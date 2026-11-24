@@ -2678,7 +2678,6 @@ lime.$scripts.N = function (_exports, $global) {
     return 2 * k + m;
   };
   Blocks._customBlock_TreeRibbons = function () {
-    var s = state();
     var t = 0;
     for (var i = 0; i < 8; i++)
       t = t + Blocks._customBlock_TreeRibbon(i + 1, 0);
