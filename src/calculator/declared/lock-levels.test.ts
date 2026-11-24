@@ -35,6 +35,7 @@ test("a source with two levels of children closes at each level by the recorded 
   ).toEqual({
     errors: [],
     counts: { closed: 1, closedByRecorded: 0, leaves: 1, branches: 1 },
+    closedAt: [`${TALENT}/talent/points`, `${TALENT}/talent`],
   });
   // the term's level is remounted with its children's values: another recorded TreeTwins[0] breaks it
   const input = chainInput();
@@ -89,6 +90,10 @@ test("a curve whose arguments tie one to one closes by its own count; an ambiguo
   expect(luck).toEqual({
     errors: [],
     counts: { closed: 0, closedByRecorded: 1, leaves: 1, branches: 1 },
+    closedAt: [
+      "decl-chain/0/luk-stats/luck/level",
+      "decl-chain/0/luk-stats/luck",
+    ],
   });
   // the talent's curve (40, 100, 3) is counted again from its steps: its recorded value plays no part…
   const input = chainInput();
@@ -226,6 +231,7 @@ test("a leaf whose call reads only a game table, or only a part of not-leaves.ts
     ).toEqual({
       errors: [],
       counts: { closed: 0, closedByRecorded: 0, leaves: 1, branches: 0 },
+      closedAt: ["decl-aside/0/cards/aside"],
     });
   }
 });
