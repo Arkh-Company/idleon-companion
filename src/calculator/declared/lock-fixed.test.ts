@@ -41,3 +41,22 @@ test("a block's own argument in its count is a fixed value: the level closes wit
   };
   expect(lock("TreeArgPool", source)).toEqual([]);
 });
+
+test("a number read from a game table's text is a fixed value of the table: its child is that read (form 2)", () => {
+  const source: BlueprintNode = {
+    key: "tot",
+    name: "Tot",
+    ref: { call: "TreeTextTot", args: [] },
+    children: [
+      {
+        key: "cell",
+        name: "Cell",
+        nameProof: { table: "CustomLists.ListTot", row: 0 },
+        ref: { read: "CustomLists.ListTot[0]" },
+        leaf: "fixedValue",
+      },
+      leaf("base", "TreeBase"),
+    ],
+  };
+  expect(lock("TreeTextPool", source)).toEqual([]);
+});

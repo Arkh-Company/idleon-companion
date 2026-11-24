@@ -120,6 +120,10 @@ lime.$scripts.N = function (_exports, $global) {
     ListNames: function () {
       return [["FIRST_INVENTED_II", 7], ["second|half"]];
     },
+    // A cell whose number is the start of its text (T209, form 2), as the game's "50TOT" in HolesInfo[55][15].
+    ListTot: function () {
+      return ["50TOT"];
+    },
     // A cell the game keeps as text, worth a number (TreeWriteCell).
     ListCells: function () {
       return ["7"];
@@ -757,6 +761,25 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
+  };
+  // Spec 010 (T209, form 2): a number read from a game table's text with a mark taken out, as the game's
+  // Holes("MeasurementBaseBonus") reads asNumber(replace(string(HolesInfo[55][t]), "TOT", "")).
+  Blocks._customBlock_TreeTextTot = function () {
+    var c = { asNumber: Number };
+    var h = { string: String };
+    var y = {
+      replace: function (s, a, b) {
+        return s.split(a).join(b);
+      },
+    };
+    return (
+      c.asNumber(
+        y.replace("" + h.string(state().CustomLists.h.ListTot[0]), "TOT", ""),
+      ) * state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeTextPool = function () {
+    return Blocks._customBlock_TreeTextTot() + state().TreeCapped;
   };
   // Spec 010 (T209, form 1): a source whose count is the block's own argument, as Holes("B_UPG", 82, 20).
   Blocks._customBlock_TreeArgPool = function () {

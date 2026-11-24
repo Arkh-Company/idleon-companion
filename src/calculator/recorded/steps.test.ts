@@ -313,3 +313,20 @@ test("a block's own argument in its count keeps its place among the block's para
     },
   ]);
 });
+
+test("a number read from a game table's text with a mark taken out is that read, by the path the code names (T209, form 2)", () => {
+  // TreeTextTot is asNumber(replace(string(ListTot[0]), "TOT", "")) × TreeBase, as the game's "50TOT"
+  const { steps } = blockOf("TreeTextTot");
+  expect(steps).toEqual([
+    {
+      v: 200,
+      e: {
+        t: "op",
+        o: "*",
+        l: { t: "read", p: "CustomLists.ListTot[0]", v: 50 },
+        r: { t: "read", p: "TreeBase", v: 4 },
+        v: 200,
+      },
+    },
+  ]);
+});
