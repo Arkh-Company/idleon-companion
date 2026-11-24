@@ -147,7 +147,7 @@ export const num = (v: unknown): number | null =>
 /**
  * The expression a call returned: its last call when it began after the last step (`return Call(…)`, by the recorded
  * place, T184), else its last step with its value, or else the last call it made. A return with its recorded place (`rt`,
- * Fase 4 r3) gives that place's last call or last read, its value only checking it. With none, a last call and a last read
+ * Fase 4 r3) gives that place's last call, or its last read when the value checks it. With none, a last call and a last read
  * both after the last step: the one worth the call's value; both worth it, none, never by their order.
  */
 export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
@@ -161,7 +161,9 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const rx = n.rx ?? [];
   const r = rx.at(-1);
   const readAfter = r !== undefined && r[2] > lastAt;
-  if (n.rt === "call") return kid && near(kid.v, n.v) ? call : null;
+  // every call is a child, so a call's return is its last one, worth what the lock counts again (lock-levels); a read
+  // of no number (a boolean) is no log entry, so the last one confirms by its value
+  if (n.rt === "call") return call;
   if (n.rt === "read")
     return r && near(num(r[1]), n.v)
       ? { t: "read", p: r[0], v: num(r[1]) }
