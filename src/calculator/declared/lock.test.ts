@@ -220,7 +220,7 @@ test("a draft is checked where it is closed: what is pending is listed as pendin
     { kind: "pending", where: "pools/0/groups/0", got: "system" },
   ]);
   const { closed, closedByRecorded, leaves } = out.counts;
-  expect(lockTally(out)).toEqual({
+  expect(lockTally(out, bp)).toEqual({
     passed: closed + closedByRecorded + leaves,
     failed: 1,
     pending: 2,
@@ -230,7 +230,8 @@ test("a draft is checked where it is closed: what is pending is listed as pendin
 
 test("the tally counts places: each that closed once, out of the failed and the pending ones (T199 r1)", () => {
   // root, 4 pools, 6 levels, the luck's curve by its recorded value and 14 leaves: 25 places
-  expect(lockTally(lock(chainInput()))).toEqual({
+  const chain = inventedBlueprint("decl-chain");
+  expect(lockTally(lock(chainInput()), chain)).toEqual({
     passed: 25,
     failed: 0,
     pending: 0,
@@ -238,20 +239,24 @@ test("the tally counts places: each that closed once, out of the failed and the 
   // the arcade closes, and it is pending: it counts as pending only
   const bp = inventedBlueprint("decl-chain");
   bp.pending = [{ where: "pools/0/groups/2/sources/0", kind: "name" }];
-  expect(lockTally(lock(chainInput(bp)))).toEqual({
+  expect(lockTally(lock(chainInput(bp)), bp)).toEqual({
     passed: 24,
     failed: 0,
     pending: 1,
   });
   // two rounds that close the same place count it once; a place that closed with an error is failed
+  const [a, b] = ["decl-chain/0/cards/capped", "decl-chain/0/shrines/stock"];
   expect(
-    lockTally({
-      ok: false,
-      errors: [{ kind: "leafType", where: "b" }],
-      counts: { closed: 2, closedByRecorded: 0, leaves: 2, branches: 0 },
-      closedAt: ["a", "b", "a", "b"],
-      pendingAt: [],
-    }),
+    lockTally(
+      {
+        ok: false,
+        errors: [{ kind: "leafType", where: b }],
+        counts: { closed: 2, closedByRecorded: 0, leaves: 2, branches: 0 },
+        closedAt: [a, b, a, b],
+        pendingAt: [],
+      },
+      chain,
+    ),
   ).toEqual({ passed: 1, failed: 1, pending: 0 });
 });
 

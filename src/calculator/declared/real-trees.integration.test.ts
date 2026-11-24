@@ -164,7 +164,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               summaryLine(id, {
                 result: !complete ? "draft" : lock.ok ? "passed" : "failed",
                 ms: performance.now() - t1,
-                nodes: lockTally(lock),
+                nodes: lockTally(lock, bp),
                 stages,
               }),
             );

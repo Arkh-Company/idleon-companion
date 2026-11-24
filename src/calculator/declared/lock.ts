@@ -12,7 +12,7 @@ import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { pendingCover, pendingIds } from "./lock-pending.ts";
+import { nodeIds, nodeOf, pendingCover, pendingIds } from "./lock-pending.ts";
 import { lockPools, POOL_NAME } from "./lock-pools.ts";
 
 export type LockErrorKind =
@@ -143,23 +143,27 @@ export function lockMessage(e: LockError): string {
 }
 
 /**
- * The places of a checked blueprint (T199 r1, `summary.txt`): each that closed once (over every class's round), out of
- * the places with a failure and the pending ones; each place with a failure; each pending node out of the failed ones.
+ * The places of a checked blueprint (T199 r1, `summary.txt`): each that closed once (over every class's round; the
+ * pending ones left out by the lock), out of the failed nodes; each node with a failure, a model child's items as the
+ * model, the root's and a pool's out; each pending node out of the failed ones. The sum is of the places checked, not of
+ * every node of the blueprint.
  */
-export function lockTally(r: LockResult): {
-  passed: number;
-  failed: number;
-  pending: number;
-} {
+export function lockTally(
+  r: LockResult,
+  bp: Blueprint,
+): { passed: number; failed: number; pending: number } {
+  const ids = nodeIds(bp);
   const failed = new Set(
-    r.errors.filter((e) => e.kind !== "pending").map((e) => e.where),
+    r.errors.flatMap((e) => {
+      const id = e.kind === "pending" ? undefined : nodeOf(ids, e.where);
+      return id === undefined ? [] : [id];
+    }),
   );
-  const waits = new Set(r.pendingAt.filter((w) => !failed.has(w)));
   return {
-    passed: new Set(r.closedAt.filter((w) => !failed.has(w) && !waits.has(w)))
+    passed: new Set(r.closedAt.filter((w) => !failed.has(nodeOf(ids, w) ?? w)))
       .size,
     failed: failed.size,
-    pending: waits.size,
+    pending: new Set(r.pendingAt.filter((w) => !failed.has(w))).size,
   };
 }
 

@@ -10,23 +10,31 @@ test("the tally counts nodes: a pending one with two kinds once, and a failed on
     { where: "pools/0/groups/2/sources/0", kind: "name" },
     { where: "pools/0/groups/2/sources/0", kind: "descend" },
   ];
-  expect(lockTally(lock(chainInput(bp)))).toEqual({
+  expect(lockTally(lock(chainInput(bp)), bp)).toEqual({
     passed: 24,
     failed: 0,
     pending: 1,
   });
+  const [a, b, c] = [
+    "decl-chain/0/cards/capped",
+    "decl-chain/0/shrines/stock",
+    "decl-chain/0/bundles/bundle",
+  ];
   expect(
-    lockTally({
-      ok: false,
-      errors: [
-        { kind: "leafType", where: "b" },
-        { kind: "pending", where: "pools/0/groups/0/sources/1", got: "name" },
-        { kind: "pending", where: "pools/0/groups/0/sources/2", got: "leaf" },
-      ],
-      counts: { closed: 1, closedByRecorded: 0, leaves: 1, branches: 0 },
-      closedAt: ["a"],
-      pendingAt: ["b", "c"],
-    }),
+    lockTally(
+      {
+        ok: false,
+        errors: [
+          { kind: "leafType", where: b },
+          { kind: "pending", where: "pools/0/groups/0/sources/1", got: "name" },
+          { kind: "pending", where: "pools/0/groups/0/sources/2", got: "leaf" },
+        ],
+        counts: { closed: 1, closedByRecorded: 0, leaves: 1, branches: 0 },
+        closedAt: [a],
+        pendingAt: [b, c],
+      },
+      bp,
+    ),
   ).toEqual({ passed: 1, failed: 1, pending: 1 });
 });
 

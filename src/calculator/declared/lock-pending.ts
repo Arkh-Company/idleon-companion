@@ -79,6 +79,44 @@ export const pendingIds = (bp: Blueprint): Set<string> =>
     }),
   );
 
+/** Every node id of the blueprint, a group's as `<number>/<pool>/<system>`. */
+export function nodeIds(bp: Blueprint): Set<string> {
+  const ids = new Set<string>();
+  const add = (at: string, n: BlueprintNode): void => {
+    ids.add(`${at}/${n.key}`);
+    n.children?.forEach((c) => {
+      add(`${at}/${n.key}`, c);
+    });
+  };
+  bp.pools.forEach((p, i) => {
+    p.groups.forEach((g) => {
+      const at = nodeId(bp.id, i, g.system, []);
+      ids.add(at);
+      g.sources.forEach((s) => {
+        add(at, s);
+      });
+    });
+  });
+  return ids;
+}
+
+/** A place's node id: itself, or a model child's item `<id>-<item>` (and below it) as the model's; none out of the nodes. */
+export function nodeOf(
+  ids: ReadonlySet<string>,
+  where: string,
+): string | undefined {
+  let at = "";
+  for (const part of where.split("/")) {
+    let next = at ? `${at}/${part}` : part;
+    for (let k = part; !ids.has(next) && /-\d+$/.test(k);) {
+      k = k.replace(/-\d+$/, "");
+      if (ids.has(`${at}/${k}`)) next = `${at}/${k}`;
+    }
+    at = next;
+  }
+  return ids.has(at) ? at : undefined;
+}
+
 /** Whether an error comes from what one of the draft's pending places still lacks. */
 export function pendingCover(bp: Blueprint, character: number): Cover {
   const covers = (bp.pending ?? []).map((p): Cover => {
