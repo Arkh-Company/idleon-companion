@@ -551,7 +551,17 @@
                           "ref": {
                             "call": "ActorEvents_577_init",
                             "args": []
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "custom-lists-companion-db-1-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomLists.CompanionDB[1][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -596,7 +606,43 @@
                                   "ref": {
                                     "call": "TalentCalc",
                                     "args": [-2]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "cauldron-stats-bubble-bonus-3-21-0",
+                                      "name": "Big P",
+                                      "nameProof": {
+                                        "names": "CauldronStats(\"BubbleBonus\", 3, 21, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "CauldronStats",
+                                        "args": ["BubbleBonus", 3, 21, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "cauldron-info-3-21",
+                                          "name": "BIG P bubble level",
+                                          "nameProof": {
+                                            "names": "CauldronInfo[3][21]"
+                                          },
+                                          "ref": {
+                                            "read": "CauldronInfo[3][21]"
+                                          }
+                                        },
+                                        {
+                                          "key": "cauldron-stats-is-bubble-superr-3-21-0",
+                                          "name": "BIG P is Prisma",
+                                          "nameProof": {
+                                            "names": "CauldronStats(\"isBubbleSuperr\", 3, 21, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "CauldronStats",
+                                            "args": ["isBubbleSuperr", 3, 21, 0]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             },
@@ -723,7 +769,17 @@
                           "ref": {
                             "call": "GetSetBonus",
                             "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "custom-maps-equipment-sets-kattlekruk-set-3-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomMaps.EquipmentSets.KATTLEKRUK_SET[3][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -949,7 +1005,16 @@
                       "ref": {
                         "call": "TalentCalc",
                         "args": [-4]
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "player-database-character-lv0-0",
+                          "name": null,
+                          "ref": {
+                            "read": "PlayerDATABASE[{character}].Lv0[0]"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -1285,7 +1350,17 @@
                                   "ref": {
                                     "call": "Sailing",
                                     "args": ["ArtifactBonus", -1, 0]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-artifact-info-31-3",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.ArtifactInfo[31][3]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -1712,7 +1787,17 @@
                               "ref": {
                                 "call": "Sailing",
                                 "args": ["ArtifactBonus", -1, 0]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-artifact-info-16-3",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.ArtifactInfo[16][3]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -1791,7 +1876,43 @@
                           "ref": {
                             "call": "TalentCalc",
                             "args": [-2]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "cauldron-stats-bubble-bonus-1-23-0",
+                              "name": "Slabo Agility",
+                              "nameProof": {
+                                "names": "CauldronStats(\"BubbleBonus\", 1, 23, 0)"
+                              },
+                              "ref": {
+                                "call": "CauldronStats",
+                                "args": ["BubbleBonus", 1, 23, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "cauldron-info-1-23",
+                                  "name": "SLABO AGILITY bubble level",
+                                  "nameProof": {
+                                    "names": "CauldronInfo[1][23]"
+                                  },
+                                  "ref": {
+                                    "read": "CauldronInfo[1][23]"
+                                  }
+                                },
+                                {
+                                  "key": "cauldron-stats-is-bubble-superr-1-23-0",
+                                  "name": "SLABO AGILITY is Prisma",
+                                  "nameProof": {
+                                    "names": "CauldronStats(\"isBubbleSuperr\", 1, 23, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "CauldronStats",
+                                    "args": ["isBubbleSuperr", 1, 23, 0]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     },
@@ -1902,7 +2023,17 @@
                       "ref": {
                         "call": "ActorEvents_577_init",
                         "args": []
-                      }
+                      },
+                      "children": [
+                        {
+                          "key": "custom-lists-companion-db-27-2",
+                          "name": null,
+                          "ref": {
+                            "read": "CustomLists.CompanionDB[27][2]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -1994,7 +2125,17 @@
                               "ref": {
                                 "call": "ActorEvents_577_init",
                                 "args": []
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-companion-db-51-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.CompanionDB[51][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -2434,7 +2575,33 @@
                                       "ref": {
                                         "call": "TalentCalc",
                                         "args": [-7]
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "mainframe-bonus-10",
+                                          "name": "My 1st Chemistry Set",
+                                          "nameProof": {
+                                            "names": "MainframeBonus(10)"
+                                          },
+                                          "ref": {
+                                            "call": "MainframeBonus",
+                                            "args": [10]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-lists-lab-main-bonus-10-5",
+                                              "name": "Lab bonus value",
+                                              "nameProof": {
+                                                "names": "CustomLists.LabMainBonus[10][5]"
+                                              },
+                                              "ref": {
+                                                "read": "CustomLists.LabMainBonus[10][5]"
+                                              },
+                                              "leaf": "fixedValue"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -2461,7 +2628,17 @@
                           "ref": {
                             "call": "ActorEvents_577_init",
                             "args": []
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "custom-lists-companion-db-0-11",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomLists.CompanionDB[0][11]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -2517,7 +2694,81 @@
                           "ref": {
                             "call": "TalentCalc",
                             "args": [-7]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "mainframe-bonus-104",
+                              "name": "Sapphire Navette",
+                              "nameProof": {
+                                "names": "MainframeBonus(104)"
+                              },
+                              "ref": {
+                                "call": "MainframeBonus",
+                                "args": [104]
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-jewel-desc-4-12",
+                                  "name": "Jewel bonus value",
+                                  "nameProof": {
+                                    "names": "CustomLists.JewelDesc[4][12]"
+                                  },
+                                  "ref": {
+                                    "read": "CustomLists.JewelDesc[4][12]"
+                                  },
+                                  "leaf": "fixedValue"
+                                },
+                                {
+                                  "key": "mainframe-bonus-8",
+                                  "name": "Spelunker Obol",
+                                  "nameProof": {
+                                    "names": "MainframeBonus(8)"
+                                  },
+                                  "ref": {
+                                    "call": "MainframeBonus",
+                                    "args": [8]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-lab-main-bonus-8-5",
+                                      "name": "Lab bonus value",
+                                      "nameProof": {
+                                        "names": "CustomLists.LabMainBonus[8][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.LabMainBonus[8][5]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    },
+                                    {
+                                      "key": "mainframe-bonus-119",
+                                      "name": "Pure Opal Navette",
+                                      "nameProof": {
+                                        "names": "MainframeBonus(119)"
+                                      },
+                                      "ref": {
+                                        "call": "MainframeBonus",
+                                        "args": [119]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-jewel-desc-19-12",
+                                          "name": "Jewel bonus value",
+                                          "nameProof": {
+                                            "names": "CustomLists.JewelDesc[19][12]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.JewelDesc[19][12]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     },
@@ -2665,7 +2916,17 @@
                                       "ref": {
                                         "call": "Sailing",
                                         "args": ["ArtifactBonus", -1, 0]
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-artifact-info-32-3",
+                                          "name": null,
+                                          "ref": {
+                                            "read": "CustomLists.ArtifactInfo[32][3]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -2874,7 +3135,17 @@
                                       "ref": {
                                         "call": "ActorEvents_577_init",
                                         "args": []
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-companion-db-27-2",
+                                          "name": null,
+                                          "ref": {
+                                            "read": "CustomLists.CompanionDB[27][2]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -2923,7 +3194,17 @@
                               "ref": {
                                 "call": "GetSetBonus",
                                 "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-maps-equipment-sets-godshard-set-3-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomMaps.EquipmentSets.GODSHARD_SET[3][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -3014,7 +3295,17 @@
                                   "ref": {
                                     "call": "Sailing",
                                     "args": ["ArtifactBonus", -1, 0]
-                                  }
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-artifact-info-28-3",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.ArtifactInfo[28][3]"
+                                      },
+                                      "leaf": "fixedValue"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -3080,7 +3371,17 @@
                               "ref": {
                                 "call": "GetSetBonus",
                                 "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-maps-equipment-sets-secret-set-3-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomMaps.EquipmentSets.SECRET_SET[3][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -3101,7 +3402,17 @@
                               "ref": {
                                 "call": "ActorEvents_577_init",
                                 "args": []
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-companion-db-174-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.CompanionDB[174][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -3366,7 +3677,17 @@
                                       "ref": {
                                         "call": "ActorEvents_577_init",
                                         "args": []
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-companion-db-1-2",
+                                          "name": null,
+                                          "ref": {
+                                            "read": "CustomLists.CompanionDB[1][2]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
                                     }
                                   ]
                                 },
@@ -3411,7 +3732,53 @@
                                               "ref": {
                                                 "call": "TalentCalc",
                                                 "args": [-2]
-                                              }
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "cauldron-stats-bubble-bonus-3-21-0",
+                                                  "name": "Big P",
+                                                  "nameProof": {
+                                                    "names": "CauldronStats(\"BubbleBonus\", 3, 21, 0)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "CauldronStats",
+                                                    "args": [
+                                                      "BubbleBonus",
+                                                      3,
+                                                      21,
+                                                      0
+                                                    ]
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "cauldron-info-3-21",
+                                                      "name": "BIG P bubble level",
+                                                      "nameProof": {
+                                                        "names": "CauldronInfo[3][21]"
+                                                      },
+                                                      "ref": {
+                                                        "read": "CauldronInfo[3][21]"
+                                                      }
+                                                    },
+                                                    {
+                                                      "key": "cauldron-stats-is-bubble-superr-3-21-0",
+                                                      "name": "BIG P is Prisma",
+                                                      "nameProof": {
+                                                        "names": "CauldronStats(\"isBubbleSuperr\", 3, 21, 0)"
+                                                      },
+                                                      "ref": {
+                                                        "call": "CauldronStats",
+                                                        "args": [
+                                                          "isBubbleSuperr",
+                                                          3,
+                                                          21,
+                                                          0
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -3543,7 +3910,17 @@
                                           0,
                                           0
                                         ]
-                                      }
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-maps-equipment-sets-kattlekruk-set-3-2",
+                                          "name": null,
+                                          "ref": {
+                                            "read": "CustomMaps.EquipmentSets.KATTLEKRUK_SET[3][2]"
+                                          },
+                                          "leaf": "fixedValue"
+                                        }
+                                      ]
                                     }
                                   ]
                                 },
@@ -3816,7 +4193,17 @@
                                           "ref": {
                                             "call": "Sailing",
                                             "args": ["ArtifactBonus", -1, 0]
-                                          }
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-lists-artifact-info-16-3",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.ArtifactInfo[16][3]"
+                                              },
+                                              "leaf": "fixedValue"
+                                            }
+                                          ]
                                         }
                                       ]
                                     }
@@ -3926,7 +4313,81 @@
                                           "ref": {
                                             "call": "TalentCalc",
                                             "args": [-7]
-                                          }
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "mainframe-bonus-116",
+                                              "name": "Black Diamond Rhinestone",
+                                              "nameProof": {
+                                                "names": "MainframeBonus(116)"
+                                              },
+                                              "ref": {
+                                                "call": "MainframeBonus",
+                                                "args": [116]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "custom-lists-jewel-desc-16-12",
+                                                  "name": "Jewel bonus value",
+                                                  "nameProof": {
+                                                    "names": "CustomLists.JewelDesc[16][12]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "CustomLists.JewelDesc[16][12]"
+                                                  },
+                                                  "leaf": "fixedValue"
+                                                },
+                                                {
+                                                  "key": "mainframe-bonus-8",
+                                                  "name": "Spelunker Obol",
+                                                  "nameProof": {
+                                                    "names": "MainframeBonus(8)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "MainframeBonus",
+                                                    "args": [8]
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "custom-lists-lab-main-bonus-8-5",
+                                                      "name": "Lab bonus value",
+                                                      "nameProof": {
+                                                        "names": "CustomLists.LabMainBonus[8][5]"
+                                                      },
+                                                      "ref": {
+                                                        "read": "CustomLists.LabMainBonus[8][5]"
+                                                      },
+                                                      "leaf": "fixedValue"
+                                                    },
+                                                    {
+                                                      "key": "mainframe-bonus-119",
+                                                      "name": "Pure Opal Navette",
+                                                      "nameProof": {
+                                                        "names": "MainframeBonus(119)"
+                                                      },
+                                                      "ref": {
+                                                        "call": "MainframeBonus",
+                                                        "args": [119]
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "key": "custom-lists-jewel-desc-19-12",
+                                                          "name": "Jewel bonus value",
+                                                          "nameProof": {
+                                                            "names": "CustomLists.JewelDesc[19][12]"
+                                                          },
+                                                          "ref": {
+                                                            "read": "CustomLists.JewelDesc[19][12]"
+                                                          },
+                                                          "leaf": "fixedValue"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -4072,7 +4533,17 @@
                                                           -1,
                                                           0
                                                         ]
-                                                      }
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "key": "custom-lists-artifact-info-32-3",
+                                                          "name": null,
+                                                          "ref": {
+                                                            "read": "CustomLists.ArtifactInfo[32][3]"
+                                                          },
+                                                          "leaf": "fixedValue"
+                                                        }
+                                                      ]
                                                     }
                                                   ]
                                                 }
@@ -4272,7 +4743,17 @@
                                                       "ref": {
                                                         "call": "ActorEvents_577_init",
                                                         "args": []
-                                                      }
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "key": "custom-lists-companion-db-27-2",
+                                                          "name": null,
+                                                          "ref": {
+                                                            "read": "CustomLists.CompanionDB[27][2]"
+                                                          },
+                                                          "leaf": "fixedValue"
+                                                        }
+                                                      ]
                                                     }
                                                   ]
                                                 }
@@ -4331,7 +4812,17 @@
                                                   0,
                                                   0
                                                 ]
-                                              }
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "custom-maps-equipment-sets-godshard-set-3-2",
+                                                  "name": null,
+                                                  "ref": {
+                                                    "read": "CustomMaps.EquipmentSets.GODSHARD_SET[3][2]"
+                                                  },
+                                                  "leaf": "fixedValue"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -4374,7 +4865,17 @@
                                           "ref": {
                                             "call": "ActorEvents_577_init",
                                             "args": []
-                                          }
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-lists-companion-db-162-2",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.CompanionDB[162][2]"
+                                              },
+                                              "leaf": "fixedValue"
+                                            }
+                                          ]
                                         }
                                       ]
                                     }
@@ -4416,7 +4917,17 @@
                                               0,
                                               0
                                             ]
-                                          }
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-maps-equipment-sets-emperor-set-3-2",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomMaps.EquipmentSets.EMPEROR_SET[3][2]"
+                                              },
+                                              "leaf": "fixedValue"
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -5301,7 +5812,20 @@
                               "ref": {
                                 "call": "TalentCalc",
                                 "args": [-4]
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "talent-calc-4",
+                                  "name": "Talent bonuses (all)",
+                                  "nameProof": {
+                                    "names": "TalentCalc(-4)"
+                                  },
+                                  "ref": {
+                                    "call": "TalentCalc",
+                                    "args": [-4]
+                                  }
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5322,7 +5846,17 @@
                               "ref": {
                                 "call": "ActorEvents_577_init",
                                 "args": []
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-companion-db-48-11",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.CompanionDB[48][11]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5397,7 +5931,17 @@
                               "ref": {
                                 "call": "ActorEvents_577_init",
                                 "args": []
-                              }
+                              },
+                              "children": [
+                                {
+                                  "key": "custom-lists-companion-db-155-2",
+                                  "name": null,
+                                  "ref": {
+                                    "read": "CustomLists.CompanionDB[155][2]"
+                                  },
+                                  "leaf": "fixedValue"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -6323,7 +6867,17 @@
                           "ref": {
                             "call": "GetSetBonus",
                             "args": ["KATTLEKRUK_SET", "Bonus", 0, 0]
-                          }
+                          },
+                          "children": [
+                            {
+                              "key": "custom-maps-equipment-sets-marbiglass-set-3-2",
+                              "name": null,
+                              "ref": {
+                                "read": "CustomMaps.EquipmentSets.MARBIGLASS_SET[3][2]"
+                              },
+                              "leaf": "fixedValue"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -6582,10 +7136,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/1/children/0",
       "kind": "name"
     },
@@ -6612,10 +7162,6 @@
     {
       "where": "pools/2/groups/1/sources/1/children/4",
       "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/1/sources/2/children/1/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/2/groups/2/sources/1/children/0",
@@ -6690,10 +7236,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/12/sources/0/children/0/children/1",
       "kind": "name"
     },
@@ -6722,16 +7264,8 @@
       "kind": "descend"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/0/children/0/children/0/children/6/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/2/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/3/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/4/children/0",
@@ -6766,10 +7300,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/9/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/10",
       "kind": "name"
     },
@@ -6794,10 +7324,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/3/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/5/children/0",
       "kind": "descend"
     },
@@ -6819,10 +7345,6 @@
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/0/children/0",
       "kind": "descend"
     },
     {
@@ -6930,10 +7452,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/20/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/22/children/1",
       "kind": "name"
     },
@@ -7022,10 +7540,6 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/16/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/4/groups/0/sources/0/children/0/children/0/children/0",
       "kind": "descend"
     },
@@ -7042,28 +7556,8 @@
       "kind": "name"
     },
     {
-      "where": "pools/2/groups/1/sources/0/children/0/children/6/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/1/sources/0/children/0/children/11/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/5/sources/0/children/1/children/0/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/2/groups/11/sources/0/children/1/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/2/groups/14/sources/0/children/2/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/14/sources/0/children/2/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/2/groups/15/sources/0/children/0/children/0/children/0/children/0",
@@ -7076,10 +7570,6 @@
     {
       "where": "pools/2/groups/15/sources/0/children/0/children/0/children/1/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/1/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/2/groups/15/sources/0/children/0/children/0/children/2/children/0/children/0",
@@ -7110,56 +7600,20 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/1/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/3/children/0/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/8/children/0/children/0/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4/children/0",
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/11/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1/children/0/children/0/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/0/children/0",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/0/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/1/children/0",
@@ -7176,10 +7630,6 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/2",
       "kind": "leaf"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/3/children/0/children/0/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/4",
@@ -7206,19 +7656,11 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/2/children/1/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/3/children/0",
       "kind": "name"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/9/children/0",
       "kind": "descend"
     },
     {
@@ -7232,14 +7674,6 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0",
-      "kind": "descend"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/0/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/1",
@@ -7258,16 +7692,8 @@
       "kind": "name"
     },
     {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25/children/0",
       "kind": "name"
-    },
-    {
-      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25/children/0",
-      "kind": "descend"
     },
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1/children/0/children/0",
@@ -7276,6 +7702,146 @@
     {
       "where": "pools/3/groups/0/sources/0/children/2/children/14/children/1/children/0/children/0/children/0/children/1",
       "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/7/children/0/children/0/children/0/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/2/groups/1/sources/2/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/2/children/1/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/2/groups/12/sources/0/children/0/children/0/children/0/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/3/children/0/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/9/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/3/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/7/children/0/children/0/children/0/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/20/children/0/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/16/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/6/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/1/sources/0/children/0/children/11/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/5/sources/0/children/1/children/0/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/11/sources/0/children/1/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/14/sources/0/children/2/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/2/groups/15/sources/0/children/0/children/0/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/3/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/6/children/8/children/2/children/2/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/8/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/4/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/6/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/7/children/0/children/11/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/11/children/1/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/0/children/0/children/0/children/1",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/3/children/0/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/8/children/2/children/1/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/2/children/9/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/1/children/3/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/12/children/0/children/2/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/21/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/0/sources/0/children/2/children/9/children/25/children/0/children/0",
+      "kind": "name"
     }
   ]
 }
