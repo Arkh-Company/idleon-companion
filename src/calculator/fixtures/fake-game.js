@@ -2348,6 +2348,19 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (Fase 4 r3 of part N): one block called from two places, one with the character's index and the other with a
+  // 0 written in the code: the place does not decide whether the argument comes from the character. 4 + 2 = 6.
+  Blocks._customBlock_TreeCharSplit = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      (s.TreeBase > 100
+        ? Blocks._customBlock_TreeDeclOwn(
+            s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
+          )
+        : Blocks._customBlock_TreeDeclOwn(0))
+    );
+  };
   Blocks._customBlock_TreeDeclKills = function (mode, kills) {
     return Blocks._customBlock_TreeDeclRow(kills) * 2;
   };
