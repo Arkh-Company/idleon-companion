@@ -282,7 +282,7 @@ test("a number named alone is drafted again when its blueprint is a draft, into 
   expect(draftPlan(["b"], stages, "b")).toEqual([]);
   expect(draftPlan(["b", "c"], stages, "character")).toEqual([]);
   expect(piecePath("C:/out", "all-talent-lv")).toMatch(
-    /out[\/]draft[\/]pieces[\/]all-talent-lv\.piece\.json$/,
+    /out[\\/]draft[\\/]pieces[\\/]all-talent-lv\.piece\.json$/,
   );
   expect(() => piecePath("C:/out", "../x")).toThrow();
 });

@@ -98,15 +98,26 @@ export function checkPlan(
   };
 }
 
-/** The draft mode drafts only a sketch: a draft or a complete blueprint is never written over. */
+/**
+ * The draft mode drafts a sketch, and a draft when the target names it alone (T204): the draft goes to TREES_OUT only,
+ * never over the repository's blueprint; a complete blueprint is never drafted.
+ */
 export const draftPlan = (
   ids: readonly string[],
   stages: ReadonlyMap<string, BlueprintStage>,
-  _target?: string,
-): string[] => ids.filter((id) => stages.get(id) === "sketch");
+  target?: string,
+): string[] =>
+  ids.filter(
+    (id) =>
+      stages.get(id) === "sketch" ||
+      (id === target && stages.get(id) === "draft"),
+  );
 
-export function piecePath(_out: string, _name: string): string {
-  return "";
+/** A piece of a draft (draft-pieces.ts, T203): in TREES_OUT only, beside the drafts. */
+export function piecePath(out: string, name: string): string {
+  if (!TARGET.test(name))
+    throw new Error("pedaço fora da regra: um nome em slug");
+  return outPath(out, "draft", "pieces", `${name}.piece.json`);
 }
 
 /** A number's guide of steps (draft-steps.ts): in TREES_OUT only, its name from the catalog's id. */

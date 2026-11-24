@@ -8,8 +8,8 @@
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
 // writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint and checks each draft (once per
 // class of the snapshot when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock
-// beside a complete blueprint only, and `summary.txt` with each one's nodes and each stage's time. The draft mode drafts each sketch only (draft.ts), into
-// TREES_OUT/draft/ (never over the repository's blueprint), and its guide of steps beside it.
+// beside a complete blueprint only, and `summary.txt` with each one's nodes and each stage's time. The draft mode drafts each sketch only (draft.ts), and a draft named alone (T204), into
+// TREES_OUT/draft/ (never over the repository's blueprint), its guide of steps and its pieces (draft/pieces/) beside it.
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -22,7 +22,7 @@ import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
 import { answerKey } from "./answer-key.ts";
 import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
-import { draftJson } from "./draft-json.ts";
+import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
 import {
   classCharacters,
@@ -37,6 +37,7 @@ import {
   checkPlan,
   draftPath,
   draftPlan,
+  piecePath,
   mosaicWith,
   outPath,
   probeRoot,
@@ -172,7 +173,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
           }
         }
       } else if (mode === "draft") {
-        const todo = draftPlan(ids, loaded.stages);
+        const todo = draftPlan(ids, loaded.stages, target);
         for (const id of ids)
           if (!todo.includes(id))
             lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
@@ -225,12 +226,20 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               lines.push(done("error" in key ? "outOfRule" : "leaf"));
               continue;
             }
-            writeFileSync(
-              draftPath(out, id),
-              draftJson(
-                draftBlueprint(id, bp.root, key, rec, recorder.ops, dc),
-              ),
+            const draft = draftBlueprint(
+              id,
+              bp.root,
+              key,
+              rec,
+              recorder.ops,
+              dc,
             );
+            writeFileSync(draftPath(out, id), draftJson(draft));
+            // its common branches' pieces beside it (T203), each written once
+            for (const p of draft.pieces ?? []) {
+              mkdirSync(outPath(out, "draft", "pieces"), { recursive: true });
+              writeFileSync(piecePath(out, p.id), pieceJson(p));
+            }
             writeFileSync(
               stepsPath(out, id),
               stepsGuide(key, rec, recorder.ops, dc),
