@@ -1,5 +1,6 @@
 // The draft over each character run (spec 010, T207, T208; spec, Open Questions 24/11): the active character's draft,
-// with each cache's author whose call changes between the runs written as `any` (any call of its block; its name waits
+// each class source its class has not taken from the run of a class that has it (FR-002a: the source is in that
+// character's tree only), with its pending places and its pieces, and each cache's author whose call changes between the runs written as `any` (any call of its block; its name waits
 // for the agent, as no one call's name is its own). A node of another run stands for one of the active run's by its
 // place: the same pool and source key, then the same key below; a cache's author by its block, the one call of it there.
 import type { BlueprintPending } from "./blueprint.ts";
@@ -66,12 +67,60 @@ function withAny(
   return { ...n, children };
 }
 
+const under = (w: string, p: string) => w === p || w.startsWith(`${p}/`);
+const piecesIn = (n: DraftNode): string[] => [
+  ...(n.piece ? [n.piece.name] : []),
+  ...(n.children ?? []).flatMap(piecesIn),
+];
+
+/** The source as the first run of a class that has it drafted it (T207), or as it is. */
+function classSource(
+  s: DraftNode,
+  where: string,
+  pool: number,
+  active: DraftRun,
+  others: readonly DraftRun[],
+  out: Required<Pick<DraftBlueprint, "pending" | "pieces" | "notes">>,
+): DraftNode {
+  const own = s.classes;
+  const has = (c: number | null) => c !== null && own?.includes(c) === true;
+  if (!own || has(active.characterClass)) return s;
+  const run = others.find((r) => has(r.characterClass));
+  const groups = run?.draft.pools[pool]?.groups ?? [];
+  for (const [j, g] of groups.entries())
+    for (const [k, x] of g.sources.entries()) {
+      if (x.key !== s.key || !run) continue;
+      const from = `pools/${String(pool)}/groups/${String(j)}/sources/${String(k)}`;
+      const kept = out.pending.filter((p) => !under(p.where, where));
+      const moved = run.draft.pending
+        .filter((p) => under(p.where, from))
+        .map((p) => ({ ...p, where: where + p.where.slice(from.length) }));
+      out.pending.splice(0, out.pending.length, ...kept, ...moved);
+      for (const id of new Set(piecesIn(x))) {
+        const theirs = run.draft.pieces?.find((p) => p.id === id);
+        const mine = out.pieces.find((p) => p.id === id);
+        if (theirs && !mine) out.pieces.push(theirs);
+        else if (theirs && JSON.stringify(theirs) !== JSON.stringify(mine))
+          out.notes.push(
+            `o pedaço ${id} da rodada da classe ${String(run.characterClass)} difere do da rodada ativa: ${where} usa o da rodada ativa`,
+          );
+      }
+      return x;
+    }
+  return s;
+}
+
 export function joinDrafts(
   active: DraftRun,
   others: readonly DraftRun[],
 ): DraftBlueprint {
   const { draft } = active;
-  const pending = [...draft.pending];
+  const out = {
+    pending: [...draft.pending],
+    pieces: [...(draft.pieces ?? [])],
+    notes: [...(draft.notes ?? [])],
+  };
+  const { pending } = out;
   const pools = draft.pools.map((p, i) => ({
     ...p,
     groups: p.groups.map((g, j) => ({
@@ -83,9 +132,16 @@ export function joinDrafts(
             .find((x) => x.key === s.key),
         );
         const where = `pools/${String(i)}/groups/${String(j)}/sources/${String(k)}`;
-        return withAny(s, theirs, where, pending);
+        const mine = classSource(s, where, i, active, others, out);
+        return withAny(mine, theirs, where, pending);
       }),
     })),
   }));
-  return { ...draft, pools, pending };
+  return {
+    ...draft,
+    pools,
+    pending,
+    ...(out.pieces.length > 0 && { pieces: out.pieces }),
+    ...(out.notes.length > 0 && { notes: out.notes }),
+  };
 }

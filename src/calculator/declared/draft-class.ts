@@ -28,3 +28,17 @@ export function sourceClass(
   const talent = call?.b === "GetTalentNumber" ? call.a[1] : undefined;
   return typeof talent === "number" ? talentClass(order, talent) : null;
 }
+
+/**
+ * A tab's classes (T207): each class whose tabs hold it, by the game's ReturnClasses (class → the classes whose tabs it
+ * holds, read in the recorder's context); with none read, the tab's class only.
+ */
+export function classesOf(
+  tab: number,
+  families: ReadonlyMap<number, readonly number[]> = new Map(),
+): number[] {
+  const all = [...families].flatMap(([c, tabs]) =>
+    tabs.includes(tab) ? [c] : [],
+  );
+  return all.length > 0 ? all.sort((a, b) => a - b) : [tab];
+}

@@ -20,7 +20,7 @@ import type {
 } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { onlyRead } from "./cache-author.ts";
-import { sourceClass } from "./draft-class.ts";
+import { classesOf, sourceClass } from "./draft-class.ts";
 import { linkedTree } from "./draft-link.ts";
 import { ITEM, listOf, modelName } from "./draft-list.ts";
 import type { ListModel } from "./draft-list.ts";
@@ -41,6 +41,8 @@ export interface DraftContext {
   character: number;
   /** The game's `CustomLists.TalentOrder`, for a talent source's class; empty gives none. */
   talentOrder: readonly unknown[];
+  /** The game's ReturnClasses of each class (T207): a talent's classes are each class whose tabs hold its tab. */
+  families?: ReadonlyMap<number, readonly number[]>;
   /** The blueprints of `blueprints/` (T200): a part that is the root of one is a line with a link to its tree. */
   trees?: readonly Pick<Blueprint, "id" | "root">[];
   /** The common branches (T203): a part that calls one is a line with its piece; COMMON_BRANCHES by default. */
@@ -365,7 +367,7 @@ export function draftBlueprint(
         return { system: null, sources: [constant] };
       }
       const c = sourceClass(rec.nodes[t.nodes[0] ?? -1], dc.talentOrder);
-      const classes = c === null ? {} : { classes: [c] };
+      const classes = c === null ? {} : { classes: classesOf(c, dc.families) };
       return {
         system: null,
         sources: [node(walkTerm(t, ctx), sw, taken, { ...extra, ...classes })],
