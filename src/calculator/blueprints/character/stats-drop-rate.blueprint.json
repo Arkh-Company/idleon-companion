@@ -26,35 +26,7 @@
                 "args": ["LUK"]
               },
               "weight": 1,
-              "children": [
-                {
-                  "key": "total-stats-luk",
-                  "name": "LUK",
-                  "nameProof": {
-                    "names": "TotalStats(\"LUK\")"
-                  },
-                  "ref": {
-                    "call": "TotalStats",
-                    "args": ["LUK"]
-                  },
-                  "tree": "stats-luk"
-                },
-                {
-                  "key": "total-stats-luk-2",
-                  "name": "LUK",
-                  "nameProof": {
-                    "names": "TotalStats(\"LUK\")"
-                  },
-                  "ref": {
-                    "call": "TotalStats",
-                    "args": ["LUK"]
-                  },
-                  "termPart": {
-                    "system": "luk-stats"
-                  },
-                  "tree": "stats-luk"
-                }
-              ]
+              "tree": "stats-luk"
             }
           ]
         },
