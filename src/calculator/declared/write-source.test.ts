@@ -31,18 +31,20 @@ const call = (block: string, children: BlueprintNode[]): BlueprintNode => ({
   children,
 });
 
-function recordedWrites() {
+function recordedWrites(
+  root = ROOT,
+  cache = "TreeWriteBon",
+  block = "TreeWriteBare",
+) {
   const r = inventedRecorder();
   const attrs = {
     DNSM: {
-      $m: { ...activeAs(0).DNSM.$m, TreeWriteBon: { $m: { v: 7, w: 8 } } },
+      $m: { ...activeAs(0).DNSM.$m, [cache]: { $m: { v: 7, w: 8 } } },
     },
   };
-  const rec = r.record(mosaicOf(attrs), [[ROOT, [0, 0, 0]]], {
+  const rec = r.record(mosaicOf(attrs), [[root, [0, 0, 0]]], {
     recompute: [],
-    builders: [
-      { cache: "TreeWriteBon", run: { block: "TreeWriteBare", args: [] } },
-    ],
+    builders: [{ cache, run: { block, args: [] } }],
   });
   const key = answerKey(rec, r.ops);
   if ("error" in key) throw new Error(key.reason);
@@ -62,6 +64,21 @@ test("the draft goes down a write with no step through the bare read or the call
         [["TreeWriteBare()", [["TreeWriteCall()", [["TreeBase", []]]]]]],
       ],
     ],
+    [["TreeCapped", []]],
+  ]);
+});
+
+test("a call made after the write, worth the same, is no source of it: the write's count is the read before it", () => {
+  const { rec, key, ops } = recordedWrites(
+    "TreeWriteLateRead",
+    "TreeWriteLate",
+    "TreeWriteLate",
+  );
+  expect(key.final).toBe(87);
+  const ref = { call: "TreeWriteLateRead", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups.map((g) => g.sources.map(shape))).toEqual([
+    [["DNSM.TreeWriteLate.v", [["TreeWriteLate()", [["TreeBig.k2", []]]]]]],
     [["TreeCapped", []]],
   ]);
 });

@@ -1451,6 +1451,23 @@ lime.$scripts.N = function (_exports, $global) {
     var d = a.engine.getGameAttribute("DNSM").h;
     return d.TreeWriteBon.h.v + d.TreeWriteBon.h.w + state().TreeCapped;
   };
+  // Spec 010 (T191 r1): a builder with no step that writes v from a local variable, then calls a block worth the same
+  // (TreeBig k2, 7): the call came after the write, so the write's count is the read; the root is 7 + 80 = 87.
+  Blocks._customBlock_TreeWriteSeven = function () {
+    return state().TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeWriteLate = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteLate = new StringMap();
+    var k = state().TreeBig.h.k2;
+    d.TreeWriteLate.h.v = k;
+    Blocks._customBlock_TreeWriteSeven();
+  };
+  Blocks._customBlock_TreeWriteLateRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteLate.h.v + state().TreeCapped
+    );
+  };
   // Spec 010 (T189): a root that reads the cache an actor's init built (InitActor): 15 + 80 = 95.
   Blocks._customBlock_TreeInitRead = function () {
     return (
