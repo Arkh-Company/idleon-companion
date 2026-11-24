@@ -28,9 +28,10 @@ export const leafCheck = (
   where: string,
   out: LevelOut,
 ): void => {
-  if (node.leaf !== undefined && LEAVES.includes(node.leaf))
+  if (node.leaf !== undefined && LEAVES.includes(node.leaf)) {
     out.counts.leaves++;
-  else out.errors.push({ kind: "leafType", where });
+    out.closedAt.push(where);
+  } else out.errors.push({ kind: "leafType", where });
 };
 
 export function leavesOf(e: Expr, out: Expr[] = []): Expr[] {

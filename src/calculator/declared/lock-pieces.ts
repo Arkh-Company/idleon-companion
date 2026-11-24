@@ -188,8 +188,10 @@ function pieceLevel(
     node.combine === "product"
       ? values.reduce((a, p) => a * p, 1)
       : values.reduce((a, p) => a + p, 0);
-  if (value !== null && relDiff(got, value) <= TOLERANCE) out.counts.closed++;
-  else
+  if (value !== null && relDiff(got, value) <= TOLERANCE) {
+    out.counts.closed++;
+    out.closedAt.push(ctx.where);
+  } else
     out.errors.push({
       kind: "notClosing",
       where: ctx.where,

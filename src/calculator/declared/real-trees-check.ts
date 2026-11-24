@@ -121,6 +121,7 @@ function joined(runs: readonly LockResult[]): LockResult {
       }
     for (const k of Object.keys(out.counts) as (keyof typeof out.counts)[])
       out.counts[k] += r.counts[k];
+    out.closedAt.push(...r.closedAt);
   }
   return { ok: runs.every((r) => r.ok), ...out };
 }

@@ -53,6 +53,8 @@ export interface LevelContext {
 export interface LevelOut {
   errors: LockError[];
   counts: LockResult["counts"];
+  /** Each place that closed or is a typed leaf, once per time (the tally counts it once). */
+  closedAt: string[];
 }
 /** A level: the expression that gave the value, the call whose reads and calls it lives in, and the value. */
 export interface Level {
@@ -71,6 +73,7 @@ export interface Level {
 export const emptyOut = (): LevelOut => ({
   errors: [],
   counts: { closed: 0, closedByRecorded: 0, leaves: 0, branches: 0 },
+  closedAt: [],
 });
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -261,6 +264,7 @@ function closeLevel(
   if (got !== null && value !== null && relDiff(got, value) <= TOLERANCE) {
     if (by.recorded) out.counts.closedByRecorded++;
     else out.counts.closed++;
+    out.closedAt.push(ctx.where);
   } else
     out.errors.push({
       kind: "notClosing",
@@ -294,6 +298,7 @@ function descend(
   // a line with a link (T200): its value came by its ref, its tree is the other number's; the descent ends here
   if (node.tree !== undefined) {
     out.counts.leaves++;
+    out.closedAt.push(ctx.where);
     return;
   }
   // a piece's line closes by the piece's count or recipe (lock-pieces.ts), never by an opening of the recording

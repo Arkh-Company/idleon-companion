@@ -12,7 +12,7 @@ import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { pendingCover } from "./lock-pending.ts";
+import { pendingCover, pendingIds } from "./lock-pending.ts";
 import { lockPools, POOL_NAME } from "./lock-pools.ts";
 
 export type LockErrorKind =
@@ -65,6 +65,8 @@ export interface LockResult {
     /** Nodes with children. */
     branches: number;
   };
+  /** Each place that closed or is a typed leaf, out of the pending ones (lock-levels.ts LevelOut). */
+  closedAt: string[];
 }
 
 export interface LockInput {
@@ -136,22 +138,21 @@ export function lockMessage(e: LockError): string {
 }
 
 /**
- * The nodes of a checked blueprint (T199, `summary.txt`): the levels and leaves that closed, the places with a failure,
- * and the pending places.
+ * The places of a checked blueprint (T199 r1, `summary.txt`): each that closed once (over every class's round), out of
+ * the places with a failure and the pending ones; each place with a failure; each pending place.
  */
 export function lockTally(r: LockResult): {
   passed: number;
   failed: number;
   pending: number;
 } {
-  const { closed, closedByRecorded, leaves } = r.counts;
-  const pending = r.errors.filter((e) => e.kind === "pending");
+  const failed = new Set(
+    r.errors.filter((e) => e.kind !== "pending").map((e) => e.where),
+  );
   return {
-    passed: closed + closedByRecorded + leaves,
-    failed: new Set(
-      r.errors.filter((e) => e.kind !== "pending").map((e) => e.where),
-    ).size,
-    pending: pending.length,
+    passed: new Set(r.closedAt.filter((w) => !failed.has(w))).size,
+    failed: failed.size,
+    pending: r.errors.filter((e) => e.kind === "pending").length,
   };
 }
 
@@ -161,8 +162,10 @@ export function lockBlueprint(input: LockInput): LockResult {
   const out = emptyOut();
   // a draft is checked where it is closed (T199): what its pending places lack is no failure, each place is pending
   const covered = pendingCover(bp, character);
+  const waits = pendingIds(bp);
   const done = (): LockResult => {
     out.errors = out.errors.filter((e) => !covered(e));
+    out.closedAt = out.closedAt.filter((w) => !waits.has(w));
     for (const p of bp.pending ?? [])
       out.errors.push({ kind: "pending", where: p.where, got: p.kind });
     return { ok: out.errors.length === 0, ...out };

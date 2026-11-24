@@ -126,8 +126,10 @@ function closes(
   expected: number,
   pool?: PoolKind,
 ): void {
-  if (relDiff(got, expected) <= TOLERANCE) out.counts.closed++;
-  else
+  if (relDiff(got, expected) <= TOLERANCE) {
+    out.counts.closed++;
+    out.closedAt.push(where);
+  } else
     out.errors.push({
       kind: "notClosing",
       where,
