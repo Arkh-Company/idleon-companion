@@ -228,6 +228,37 @@ test("a draft is checked where it is closed: what is pending is listed as pendin
   expect(closed + leaves).toBeGreaterThan(10);
 });
 
+test("a pending place covers only what its kind still lacks: a group's system never hides its sources' values (r1)", () => {
+  const bp = inventedBlueprint("decl-chain");
+  sourceOf(bp, 0, "luk-stats", "luck").ref = { call: "TreeNowhere", args: [] };
+  bp.pending = [{ where: "pools/0/groups/0", kind: "system" }];
+  expect(lock(chainInput(bp)).errors).toContainEqual({
+    kind: "extraSource",
+    where: "decl-chain/0/luk-stats/luck",
+    got: "TreeNowhere()",
+  });
+});
+
+test("a node with only its name pending is checked whole: a ref with no recorded value stays childNoValue (r1)", () => {
+  const bp = inventedBlueprint("decl-chain");
+  sourceOf(bp, 0, "arcade", "arcade", "base").ref = { read: "TreeNowhere" };
+  bp.pending = [
+    { where: "pools/0/groups/2/sources/0/children/0", kind: "name" },
+  ];
+  expect(lock(chainInput(bp)).errors).toContainEqual({
+    kind: "childNoValue",
+    where: "decl-chain/0/arcade/arcade/base",
+  });
+  // a descent that waits hides what is below its node, never its value at the parent
+  bp.pending = [
+    { where: "pools/0/groups/2/sources/0/children/0", kind: "descend" },
+  ];
+  expect(lock(chainInput(bp)).errors).toContainEqual({
+    kind: "childNoValue",
+    where: "decl-chain/0/arcade/arcade/base",
+  });
+});
+
 test("another class's source absent from the recording is no error; present in the recording of another class it is classMismatch", () => {
   // TreeDeclTalent(1) (class 7) never runs: the class-3 character passes, as the first test shows
   const input = { ...chainInput(), characterClass: 5 };
