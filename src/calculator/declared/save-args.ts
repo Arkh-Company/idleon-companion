@@ -81,8 +81,17 @@ function workingSays(get: AnyNode, f: Fn): Says {
     isKey(at(at(n, "callee"), "object")) &&
     n.range[1] <= pos &&
     (!last || n.range[0] > last.range[1]);
+  // with no set on every way (one inside a loop that ran before), each set before it: they all have to agree
+  const sets = last
+    ? [last]
+    : f.all.filter(
+        (n) =>
+          n.type === "AssignmentExpression" &&
+          isKey(at(n, "left")) &&
+          n.range[1] <= pos,
+      );
   const given = [
-    ...(last ? [at(last, "right")] : []),
+    ...sets.map((n) => at(n, "right")),
     ...f.all.flatMap((n) => (pushed(n) ? (n.arguments as AnyNode[]) : [])),
   ];
   if (given.length === 0) return "unsure";
