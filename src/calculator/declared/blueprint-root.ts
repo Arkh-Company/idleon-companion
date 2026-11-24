@@ -276,7 +276,7 @@ export function checkEach(x: unknown, where: string, poolEach: boolean): void {
     no(where, "each.list nunca percorre os personagens");
 }
 
-/** A list of calls' model (T205): the one child that calls the block, `{as}` in one of its arguments. */
+/** A list of calls' model (T205): the one child that calls the block with `{as}` in one of its arguments. */
 export function checkCallModel(
   each: unknown,
   children: unknown,
@@ -285,7 +285,12 @@ export function checkCallModel(
   const e = isObj(each) ? each : {};
   const list: unknown[] = Array.isArray(children) ? children : [];
   const models = list.filter(
-    (m) => isObj(m) && isObj(m.ref) && m.ref.call === e.calls,
+    (m) =>
+      isObj(m) &&
+      isObj(m.ref) &&
+      m.ref.call === e.calls &&
+      Array.isArray(m.ref.args) &&
+      m.ref.args.includes(`{${String(e.as)}}`),
   );
   const [m] = models;
   const args: unknown = isObj(m) && isObj(m.ref) ? m.ref.args : null;
