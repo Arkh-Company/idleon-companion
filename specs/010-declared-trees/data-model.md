@@ -184,7 +184,8 @@ A chave de uma fonte na trava é (índice do pool, `ref`, ocorrência no pool).
 `LockError.kind`: `poolOrder`, `missingSource`, `extraSource`, `groupOrder`, `sourceOrder`, `notClosing`,
 `undeclaredPart`, `childOutside`, `childNoValue`, `conditionMismatch`, `leafType`, `pending`, `classMismatch`,
 `rootForm`, `leafHasChildren` (Open Questions, 22/11), `openingRefused` (a abertura de um nível recusada:
-o cache sem autor, com mais de um autor ou somado em voltas, as voltas que não se separam pelo lugar; 23/11).
+o cache sem autor, com mais de um autor ou somado em voltas, as voltas que não se separam pelo lugar; 23/11), `characterWritten` (um argumento de chamada que, pelo código no
+lugar da chamada, é o índice do personagem atual, escrito por extenso em vez de `{character}`; research R5; 23/11).
 
 Os textos de reprovação (US2) são montados desses campos: "fonte que falta: <ref> (pool 1 Additive)", "ordem dos
 pools errada: a ordem esperada é …", "nível não fecha: <nível>: as partes dão X, o valor gravado é Y", "folha com filhos na gravação: <folha>: o primeiro é
