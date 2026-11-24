@@ -118,8 +118,8 @@ Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alche
 |---|---|---|
 | `id` | texto | Igual ao nome do arquivo; único entre os pedaços |
 | `params` | texto[] | Nomes sem repetir, nunca `character`; usados como `{nome}` nas referências |
-| `combine` | `sum` ou `product` | Como os filhos se juntam; obrigatório em todo nó com filhos dentro do pedaço, menos num nível de chamada que fecha pela própria conta gravada (o Seraph) |
-| `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`) |
+| `combine` | `sum` ou `product` | Como os filhos se juntam; obrigatório em todo nó com filhos dentro do pedaço, menos num nível de chamada que fecha pela própria conta gravada (o Seraph) e no pedaço de galho comum que só tem `children` (T203), que fecha pela conta gravada da chamada |
+| `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`); também num nó de receita sem `combine`, quando o rascunho escreve uma lista de leituras como filho-modelo (T202) |
 | `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
 
 **Linha com link** (Open Questions, 23/11, noite): no `BlueprintNode`, `tree: <id>` (outro número com receita própria,
