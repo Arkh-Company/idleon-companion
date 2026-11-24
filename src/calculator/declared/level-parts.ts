@@ -117,7 +117,7 @@ export function partsOf(
   const others = (turns.length ? turns.map((t) => t.steps) : [all]).flatMap(
     (b) => b.steps.flatMap((s) => (s.e === level.expr ? [] : leavesOf(s.e))),
   );
-  // a check of the code (a length, a contains, a branch's test only) is never a part (FR-018 of 009: the ⓘ's text)
+  // a check of the code (a length, a contains) among the call's reads is never a part (FR-018 of 009: the ⓘ's text)
   const used = new Set(
     [...leaves, ...others].flatMap((l) => (l.t === "read" ? [l.p] : [])),
   );
@@ -134,10 +134,11 @@ export function partsOf(
       : [],
   );
   const tested = (p: string) => testPats.some((t) => matchPattern(p, t));
+  // a branch's test only in a loop's turn routes the loop (past a write); out of a loop it is the value's condition
   const check = (p: string) =>
     p.endsWith(".length") ||
     p.includes(" contains ") ||
-    (tested(p) && !used.has(p));
+    (turns.length > 0 && tested(p) && !used.has(p));
   const seen = turns.length
     ? (scope.rx ?? []).flatMap(([p, v, xi]) =>
         inTurn(xi) ? [[p, v] as const] : [],
@@ -159,6 +160,6 @@ export function partsOf(
     return n && inTurn(n.pxi) ? [callRef(n)] : [];
   });
   return [...new Set([...own, ...keys(others), ...reads, ...calls])].filter(
-    (k) => !transparent(k) && !check(k),
+    (k) => !transparent(k),
   );
 }
