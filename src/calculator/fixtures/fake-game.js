@@ -887,6 +887,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArgPool = function () {
     return Blocks._customBlock_TreeArg(3) + state().TreeCapped;
   };
+  // Spec 010 (Fase 4 q, step 2): a block whose parameter a branch that did not run sets, as the game's ArcaneType sets t
+  // in its ArcaneUpgUNLOCKED branch: the t of the count is still the call's own argument.
+  Blocks._customBlock_TreeArgSet = function (e, t) {
+    if ("Set" == e) {
+      t = state().TreeLevel;
+      return t;
+    }
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeArgSetPool = function () {
+    return Blocks._customBlock_TreeArgSet("Count", 3) + state().TreeCapped;
+  };
   Blocks._customBlock_TreeEntry = function (m, t) {
     return state().TreeBase * t;
   };

@@ -42,6 +42,16 @@ test("a block's own argument in its count is a fixed value: the level closes wit
   expect(lock("TreeArgPool", source)).toEqual([]);
 });
 
+test("a block's argument that only a branch that did not run sets is still its own argument (form 1, ArcaneType's t)", () => {
+  const source: BlueprintNode = {
+    key: "arg",
+    name: "Arg",
+    ref: { call: "TreeArgSet", args: ["Count", 3] },
+    children: [leaf("base", "TreeBase")],
+  };
+  expect(lock("TreeArgSetPool", source)).toEqual([]);
+});
+
 test("a number read from a game table's text is a fixed value of the table: its child is that read (form 2)", () => {
   const source: BlueprintNode = {
     key: "tot",
