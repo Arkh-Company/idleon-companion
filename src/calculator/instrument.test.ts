@@ -186,6 +186,9 @@ test.each([
   ["var l = b.k; return l", ["read"]],
   ["return a && b.k", []],
   ["return 0", []],
+  // the game's minified code writes no space before a value that opens with `(` (its PlayerMPmax)
+  ["return(a)?Blocks._customBlock_K(a):Blocks._customBlock_K(b)", ["call"]],
+  ["return(b).k", ["read"]],
   ["return [1].map(function (x) { return b.k; })[0]", []],
 ])(
   "the return of `%s` notes what it returns by its place: a block's call, a read or neither (spec 010)",
@@ -202,3 +205,9 @@ test.each([
     expect(rets).toEqual(noted);
   },
 );
+
+test("a return with no space before its value (`return(a)?…`, the game's minified code) still returns it", () => {
+  const body = "return(a)?Blocks._customBlock_K(a):Blocks._customBlock_K(b)";
+  const { source } = instrument(block("Ret", body) + block("K", "return a"));
+  expect(run(source, "Ret").value).toBe(7);
+});
