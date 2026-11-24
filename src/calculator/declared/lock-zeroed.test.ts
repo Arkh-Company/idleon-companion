@@ -9,13 +9,16 @@ import { lockBlueprint } from "./lock.ts";
 
 const ID = "invented-zeroed";
 
-function lockWith(gate: Partial<BlueprintNode>) {
+function lockWith(
+  gate: Partial<BlueprintNode>,
+  [root, call, final] = ["TreeGateRoot", "TreeGateBonus", 25],
+) {
   const out = parseBlueprint(
     {
       id: ID,
       root: {
         name: "Invented",
-        ref: { call: "TreeGateRoot", args: [0, 0, 0] },
+        ref: { call: root, args: [0, 0, 0] },
       },
       pools: [
         {
@@ -33,7 +36,7 @@ function lockWith(gate: Partial<BlueprintNode>) {
                 {
                   key: "gate",
                   name: "Invented Gate",
-                  ref: { call: "TreeGateBonus", args: [] },
+                  ref: { call, args: [] },
                   ...gate,
                 },
               ],
@@ -45,8 +48,8 @@ function lockWith(gate: Partial<BlueprintNode>) {
     { fileId: ID, systemIds: new Set(["cards"]) },
   );
   if (!out.ok) throw new Error(out.reason);
-  const { key, ...input } = recorded("TreeGateRoot");
-  expect(key.final).toBe(25);
+  const { key, ...input } = recorded(root);
+  expect(key.final).toBe(final);
   return lockBlueprint({
     blueprint: out.blueprint,
     key,
@@ -77,4 +80,42 @@ test("the zeroed source asks for what it read: with no child it is a leaf that h
     where: "invented-zeroed/0/cards/gate",
     got: "TreeOwned",
   });
+});
+
+// A call that returns a read with no step of its own (a cache, a table's cell; the LUK's GetSetBonus, Companions): the
+// read, the last thing the call did, is its level (fake-game.js, TreeBareRoot).
+test("a call that returns a bare read closes by that read, its unused step aside", () => {
+  const lock = lockWith(
+    {
+      children: [
+        {
+          key: "big",
+          name: "Invented Big",
+          ref: { read: "TreeBig.k2" },
+          leaf: "quantity",
+        },
+      ],
+    },
+    ["TreeBareRoot", "TreeBareRead", 32],
+  );
+  expect(lock.errors).toEqual([]);
+});
+
+// A literal the code picks by a test, with no step nor call of its own (the LUK's AchieveStatus: 1 when the
+// achievement is done): its reads are its children (fake-game.js, TreeDoneRoot).
+test("a call that returns a literal by a test closes with the read it tested", () => {
+  const lock = lockWith(
+    {
+      children: [
+        {
+          key: "owned",
+          name: "Invented Owned",
+          ref: { read: "TreeOwned" },
+          leaf: "condition",
+        },
+      ],
+    },
+    ["TreeDoneRoot", "TreeDone", 26],
+  );
+  expect(lock.errors).toEqual([]);
 });

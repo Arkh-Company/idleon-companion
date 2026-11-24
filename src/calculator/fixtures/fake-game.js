@@ -1908,6 +1908,26 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeGateRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateBonus();
   };
+  // Spec 010 (bare return): a call that returns a read with no step of its own (a cache, a table's cell), its one
+  // step unused: TreeBig k2 is 7; the root is 25 + 7 = 32.
+  Blocks._customBlock_TreeBareRead = function () {
+    var s = state();
+    var unused = s.TreeBase * 2;
+    return s.TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeBareRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBareRead();
+  };
+  // Spec 010 (literal return): a 1 the code picks by a test on a read (an achievement done), with no step of its own;
+  // the root is 25 + 1 = 26.
+  Blocks._customBlock_TreeDone = function () {
+    var s = state();
+    if (s.TreeOwned < 1) return 1;
+    return 0;
+  };
+  Blocks._customBlock_TreeDoneRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeDone();
+  };
   // Spec 010 (T184): two talents of one code on an `add` curve, its level a step before the curve's call: with ×1 the
   // level and the curve are both 27, with ×4 the curve is 108. The return is the call by its place, in both.
   Blocks._customBlock_TreeAddTalent = function (k) {
