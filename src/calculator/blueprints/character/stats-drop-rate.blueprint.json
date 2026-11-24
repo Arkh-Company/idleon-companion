@@ -4441,6 +4441,14 @@
                       "ref": {
                         "read": "Holes[22][15]"
                       }
+                    },
+                    {
+                      "key": "custom-lists-holes-info-55-15",
+                      "name": null,
+                      "ref": {
+                        "read": "CustomLists.HolesInfo[55][15]"
+                      },
+                      "leaf": "fixedValue"
                     }
                   ]
                 },
@@ -8476,6 +8484,10 @@
     },
     {
       "where": "pools/0/groups/28/sources/0/children/18/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/38/sources/0/children/0/children/2",
       "kind": "name"
     }
   ]
