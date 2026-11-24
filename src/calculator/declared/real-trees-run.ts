@@ -101,6 +101,13 @@ export function stepsPath(out: string, id: string): string {
   return outPath(out, "draft", `${id}.steps.txt`);
 }
 
+/** A number's draft (draft.ts): in TREES_OUT only, beside its guide, never over the repository's blueprint. */
+export function draftPath(out: string, id: string): string {
+  if (!TARGET.test(id))
+    throw new Error("rascunho fora da regra: um id do catálogo");
+  return outPath(out, "draft", `${id}.blueprint.json`);
+}
+
 /** The root's call (a root of one call), with `{character}` in its arguments resolved. */
 function rootCallOf(bp: Blueprint, character = 0): RootCall {
   const { ref } = bp.root;

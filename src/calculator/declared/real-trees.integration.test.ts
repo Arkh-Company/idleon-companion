@@ -8,8 +8,8 @@
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
 // writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint (once per class of the snapshot
 // when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock beside the blueprint and
-// `summary.txt` with each stage's time. The draft mode writes a draft over each sketch only (draft.ts), beside it in
-// the repository, and its guide of steps to TREES_OUT/draft/.
+// `summary.txt` with each stage's time. The draft mode drafts each sketch only (draft.ts), into
+// TREES_OUT/draft/ (never over the repository's blueprint), and its guide of steps beside it.
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -24,7 +24,6 @@ import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftBlueprint, draftJson, gameList } from "./draft.ts";
 import {
-  blueprintPath,
   classCharacters,
   lockNumber,
   lockRuns,
@@ -34,6 +33,7 @@ import type { RecordFn } from "./real-trees-check.ts";
 import { blueprintSha, saoPauloTime } from "./review.ts";
 import {
   checkPlan,
+  draftPath,
   draftPlan,
   mosaicWith,
   outPath,
@@ -185,12 +185,10 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             ),
           };
           const state = mosaic(snapshot);
-          const lots = new Map(treeCatalog().map((n) => [n.id, n.lot]));
           mkdirSync(outPath(out, "draft"), { recursive: true });
           for (const id of todo) {
             const bp = loaded.all.get(id);
-            const lot = lots.get(id);
-            if (!bp || !lot) continue;
+            if (!bp) continue;
             const t1 = performance.now();
             const done = (
               result: Parameters<typeof summaryLine>[1]["result"],
@@ -220,7 +218,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               continue;
             }
             writeFileSync(
-              blueprintPath(BLUEPRINTS_DIR, id, lot),
+              draftPath(out, id),
               draftJson(
                 draftBlueprint(id, bp.root, key, rec, recorder.ops, dc),
               ),
