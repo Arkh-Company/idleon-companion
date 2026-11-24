@@ -32,7 +32,7 @@ import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
-import { hasRawCharacterIndex } from "./refs.ts";
+import { CHARACTER, hasRawCharacterIndex } from "./refs.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
 export interface DraftContext {
@@ -306,13 +306,19 @@ export function draftBlueprint(
     const code = refOf(w, dc.character);
     // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
     const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
-    // the names table goes by the game's own arguments
-    const named = provenName(codeOf(code, w.key));
+    // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
+    // proof by the row (research R5), and the key keeps only the other arguments
+    const marks = "call" in ref && ref !== code;
+    const named = marks ? null : provenName(codeOf(code, w.key));
     if (!named) wait(where, "name");
     if (w.termPart) wait(where, "system");
     const own = new Set<string>();
+    const keyRef =
+      "call" in ref
+        ? { ...ref, args: ref.args.filter((a) => a !== CHARACTER) }
+        : ref;
     const out: DraftNode = {
-      key: keyIn(taken, "call" in ref ? codeOf(ref, w.key) : ref.read),
+      key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),
       name: named?.name ?? null,
       ...(named ? { nameProof: named.nameProof } : {}),
       ref,
