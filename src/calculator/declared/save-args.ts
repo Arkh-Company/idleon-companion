@@ -283,6 +283,18 @@ export function markedRef(
   };
 }
 
+/** Whether a call's name waits: an argument from the character or the save, or one its place does not decide. */
+export const unnamed = (
+  ref: Ref,
+  rec: Recording,
+  ops: readonly Op[],
+  n: RecNode,
+): boolean =>
+  markedRef(ref, rec, ops, n) !== ref ||
+  [saveArgs(rec, ops, n), characterArgs(rec, ops, n)].some(
+    (m) => m.unsure.length > 0,
+  );
+
 /**
  * A declared call against its place: the character's index and the save's number are never written out, and a `*`
  * stands only where the game gave the save (research R5).

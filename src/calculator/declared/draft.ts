@@ -33,7 +33,7 @@ import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
 import { hasRawCharacterIndex, unmarked } from "./refs.ts";
-import { characterArgs, markedRef, saveArgs } from "./save-args.ts";
+import { markedRef, unnamed } from "./save-args.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
 export interface DraftContext {
@@ -267,14 +267,7 @@ export function partName(
   ops: readonly Op[],
 ) {
   const code = refOf(w, character);
-  const ref = w.call ? markedRef(code, rec, ops, w.call) : code;
-  const unsure = w.call
-    ? [
-        ...saveArgs(rec, ops, w.call).unsure,
-        ...characterArgs(rec, ops, w.call).unsure,
-      ]
-    : [];
-  return ref !== code || unsure.length > 0
+  return w.call && unnamed(code, rec, ops, w.call)
     ? null
     : provenName(codeOf(code, w.key));
 }
