@@ -29,18 +29,39 @@ const draftOf = (): DraftBlueprint => {
     branches: BRANCHES,
   });
 };
-/** The line that calls TreeCommon(k) in the draft. */
-const lineOf = (d: DraftBlueprint, k: number): DraftNode | undefined =>
+/** The line that calls TreeCommon(k) (or another block) in the draft. */
+const lineOf = (
+  d: DraftBlueprint,
+  k: number,
+  call = "TreeCommon",
+): DraftNode | undefined =>
   d.pools
     .flatMap((p) => p.groups.flatMap((g) => g.sources))
     .flatMap((s) => s.children ?? [])
     .find(
       (c) =>
-        c.ref &&
-        "call" in c.ref &&
-        c.ref.call === "TreeCommon" &&
-        c.ref.args[0] === k,
+        c.ref && "call" in c.ref && c.ref.call === call && c.ref.args[0] === k,
     );
+/** The draft of a root over TreeCommonConst(k): it reads TreeList[k] and TreeTwins[1], a constant equal to the arg 1. */
+const constDraft = (block: string): DraftBlueprint => {
+  const { rec, key, ops } = recorded(block);
+  return draftBlueprint(
+    ID,
+    { name: "Invented", ref: { call: block, args: [0, 0, 0] } },
+    key,
+    rec,
+    ops,
+    {
+      ...NO_CONTEXT,
+      branches: [
+        {
+          name: "invented-const",
+          ref: { call: "TreeCommonConst", args: ["{k}"] },
+        },
+      ],
+    },
+  );
+};
 type Raw = Record<string, unknown>;
 const load = (d: unknown, piece: unknown) =>
   parseBlueprint(d, {
@@ -85,6 +106,37 @@ test("a common branch is one piece, from its first occurrence; each call is a li
   expect(draftJson(d)).not.toContain('"pieces"');
 });
 
+test("a branch met once is no piece: its line is written whole, a constant equal to its arg stays, the reason in the guide", () => {
+  const d = constDraft("TreeCommonOnceRoot");
+  const line = lineOf(d, 1, "TreeCommonConst");
+  expect(line?.piece).toBeUndefined();
+  expect(line?.children?.map((c) => c.ref)).toEqual([
+    { read: "TreeList[1]" },
+    { read: "TreeTwins[1]" },
+  ]);
+  expect(d.pieces).toBeUndefined();
+  expect(d.notes).toEqual([
+    expect.stringMatching(/invented-const.*uma ocorrência só/),
+  ]);
+  expect(draftJson(d)).not.toContain('"notes"');
+});
+
+test("met twice with other args and one body, a branch is a piece: only the place that changes with the arg is its param", () => {
+  const d = constDraft("TreeCommonTwiceRoot");
+  expect([
+    lineOf(d, 1, "TreeCommonConst")?.piece,
+    lineOf(d, 2, "TreeCommonConst")?.piece,
+  ]).toEqual([
+    { name: "invented-const", args: { k: 1 } },
+    { name: "invented-const", args: { k: 2 } },
+  ]);
+  const [piece] = d.pieces ?? [];
+  expect(piece?.children.map((c) => c.ref)).toEqual([
+    { read: "TreeList[{k}]" },
+    { read: "TreeTwins[1]" },
+  ]);
+});
+
 test("the piece's JSON is as prettier leaves it, its keys short (the gitleaks reads a long one as a secret)", async () => {
   const [piece] = draftOf().pieces ?? [];
   if (!piece) throw new Error("no piece");
@@ -103,6 +155,8 @@ test("a short key twice among siblings takes a letter, never a number (a number 
   expect(keys.slice(0, 3)).toEqual(["summoni", "summ-b", "summ-c"]);
   expect(new Set(keys).size).toBe(30);
   expect(keys.filter((k) => /\d|.{8}/.test(k))).toEqual([]);
+  // the first one too: the base keeps no digit of the reference
+  expect(shortKey(new Set(), "W1Stat[2]")).not.toMatch(/\d/);
 });
 
 test("the draft loads with its piece, the lock refuses it only for its pending entries; filled, the piece passes at each line", () => {

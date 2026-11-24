@@ -2288,6 +2288,27 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeUsesC()
     );
   };
+  // Spec 010 (Fase 4 r1 of part O): a common branch that reads its item by its argument and a constant place equal to
+  // the argument 1 (TreeTwins[1]); once under TreeCommonOnceRoot, with 1 and 2 under TreeCommonTwiceRoot.
+  Blocks._customBlock_TreeCommonConst = function (k) {
+    var s = state();
+    return s.TreeList[k] + s.TreeTwins[1];
+  };
+  Blocks._customBlock_TreeConstUsesA = function () {
+    return Blocks._customBlock_TreeCommonConst(1) * 2;
+  };
+  Blocks._customBlock_TreeConstUsesB = function () {
+    return Blocks._customBlock_TreeCommonConst(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCommonOnceRoot = function () {
+    return Blocks._customBlock_TreeConstUsesA() + state().TreeBase;
+  };
+  Blocks._customBlock_TreeCommonTwiceRoot = function () {
+    return (
+      Blocks._customBlock_TreeConstUsesA() +
+      Blocks._customBlock_TreeConstUsesB()
+    );
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
