@@ -146,7 +146,9 @@ export const num = (v: unknown): number | null =>
 
 /**
  * The expression a call returned: its last call when it began after the last step (`return Call(…)`, by the recorded
- * place, T184), else its last step with its value, or else the last call it made.
+ * place, T184) and no read came after it, else its last step with its value, or else the last call it made. A last call
+ * and a last read both after the last step: the later by the reads logged when the call began (`prx`); with no `prx`
+ * and the same step, the place does not decide, none.
  */
 export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const { steps, stepAt } = ctx.stepsOf(n.id);
@@ -155,16 +157,22 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const call: Expr | null = kid
     ? { t: "call", id: kid.id, v: num(kid.v) }
     : null;
-  const lastAt = stepAt?.at(-1);
-  if (kid && lastAt !== undefined && lastAt < kid.pxi && near(kid.v, n.v))
-    return call;
+  const lastAt = stepAt?.at(-1) ?? -1;
+  const rx = n.rx ?? [];
+  const r = rx.at(-1);
+  const readAfter = r !== undefined && r[2] > lastAt;
+  if (kid && lastAt < kid.pxi) {
+    if (readAfter && kid.prx === undefined && r[2] === kid.pxi) return null;
+    const readLater =
+      readAfter &&
+      (kid.prx === undefined ? r[2] > kid.pxi : rx.length > kid.prx);
+    if (!readLater && near(kid.v, n.v)) return call;
+  }
   if (last && near(last.v, n.v)) return last.e;
-  if (near(kid?.v, n.v)) return call;
   // a 0 that no step nor call gave is the code's own `return 0` before its count (T183: the gate, a level 0)
   if (n.v === 0) return { t: "num", v: 0 };
   // a bare `return read` (a cache, a table's cell): the call's last read, made after its last step, by its place
-  const r = n.rx?.at(-1);
-  if (r && r[2] > (lastAt ?? -1) && near(num(r[1]), n.v))
+  if (readAfter && near(num(r[1]), n.v))
     return { t: "read", p: r[0], v: num(r[1]) };
   // with only tests run (no arithmetic, no call), a number no read gave is the code's literal (an achievement's 1)
   const tests = ["leaf", "test", "cmp"];

@@ -19,6 +19,8 @@ export interface RecNode {
   pxi: number;
   /** The last write's number when this call began (spec 010, T191); absent in a recording made before it. */
   seq?: number;
+  /** How many reads the parent had logged (`rx`) when this call began (T185 r1); absent in a recording before it. */
+  prx?: number;
   v?: RecValue;
   /** The state path of the list or the map the call returned, when it returned one of the state's. */
   vp?: string;

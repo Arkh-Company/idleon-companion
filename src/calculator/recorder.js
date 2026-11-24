@@ -67,6 +67,7 @@
     var n = { id: S.nodes.length, b: b, a: a, c: [], seq: S.seq };
     n.p = parent ? parent.id : null;
     n.pxi = parent && parent.x ? parent.x.length : 0;
+    n.prx = parent && parent.rx ? parent.rx.length : 0; // its reads logged so far (T185 r1: a read before the call)
     S.nodes.push(n);
     if (parent) parent.c.push(n.id);
     return n;
@@ -310,12 +311,8 @@
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
       Object.assign(S, { infs: [], infWrites: [] });
       S.searching = 0; // a search cut by a time limit never ran its `finally`
-      Object.assign(S, {
-        seq: 0,
-        bpStart: Infinity,
-        builders: null,
-        root: null,
-      });
+      Object.assign(S, { seq: 0, bpStart: Infinity });
+      Object.assign(S, { builders: null, root: null });
       Object.assign(S, { RAW: new WeakMap(), PROX: new WeakMap() });
       Object.assign(S, { PATH: new WeakMap(), LISTED: new WeakMap() });
       seed = 12345;
