@@ -11,9 +11,9 @@ import type { AstNode } from "./ast.ts";
 const inside = (n: AstNode | undefined, x: AstNode) =>
   !!n && n.range[0] <= x.range[0] && x.range[1] <= n.range[1];
 
-// each function's assignments, parsed once (the ranges as the instrument's: the text inside `( )`)
+// each function's assignments and declarations, parsed once (the ranges as the instrument's: the text inside `( )`)
 const assigns = new Map<string, AstNode[]>();
-function assignsOf(fnText: string): AstNode[] {
+export function assignsOf(fnText: string): AstNode[] {
   let out = assigns.get(fnText);
   if (out) return out;
   out = [];

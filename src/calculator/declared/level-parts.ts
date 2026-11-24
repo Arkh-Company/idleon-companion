@@ -53,7 +53,7 @@ function writeOf(
 ): { e: Expr; steps: BlockSteps; range: LoopTurn } | null {
   const a = { node: scope, write: w };
   const steps = writeTurn(ctx.rec, a, ctx.turnOf);
-  const e = writeSource(ctx.rec, a, ctx.turnOf, steps);
+  const e = writeSource(ctx.rec, a, ctx.turnOf, steps, ctx.ops);
   // a refused source is none here: the pass-through gives no part (the opening of its read gives the reason)
   return e && typeof e !== "string"
     ? { e, steps, range: writeRange(ctx.rec, a) }

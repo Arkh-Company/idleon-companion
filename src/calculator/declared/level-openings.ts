@@ -51,7 +51,7 @@ export function openingOf(
   if ("refused" in a) return a.refused;
   const v = a.write.v;
   const turn = writeTurn(ctx.rec, a, ctx.turnOf);
-  const source = writeSource(ctx.rec, a, ctx.turnOf, turn);
+  const source = writeSource(ctx.rec, a, ctx.turnOf, turn, ctx.ops);
   if (typeof source === "string") return source;
   // one write onto a key not yet set: the sum starts at the empty key's 0, no part (loop-turns.ts emptyStart)
   const start = emptyStart(a.node, a.write, source, ctx.rec.writes);

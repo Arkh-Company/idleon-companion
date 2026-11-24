@@ -6,11 +6,14 @@
 // places do not decide between are refused with the reason, and so are a write outside a block, no write at all and the
 // author's read of its one write. The cache never becomes a leaf: the tree goes down through the expression that gave
 // the write, in the author's turn since its write before it; an author that summed it in turns opens one a line.
+import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
+import { matchPattern } from "../recorded/ast.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
 import { leavesOf, num } from "./lock-parts.ts";
+import { rhsSources } from "./write-rhs.ts";
 
 export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
 
@@ -170,6 +173,7 @@ export function writeSource(
   a: { node: RecNode; write: RecWrite },
   turnOf: TurnOf,
   turn = writeTurn(rec, a, turnOf),
+  ops?: readonly Op[],
 ): Expr | string | null {
   const e = writeExpr(rec, a, turnOf, turn);
   if (e) return e;
@@ -203,9 +207,20 @@ export function writeSource(
         v: n,
       });
   }
-  if (parts.size > 1)
+  // more than one: the right side of the code's assignment at the write's place picks (write-rhs.ts)
+  const srcs = parts.size > 1 && ops ? rhsSources(node, write, ops) : null;
+  const picked = srcs
+    ? [...parts.values()].filter(({ e: p }) =>
+        srcs.some((s) =>
+          "call" in s
+            ? p.t === "call" && rec.nodes[p.id]?.b === s.call
+            : p.t === "read" && matchPattern(p.p, s.read),
+        ),
+      )
+    : [...parts.values()];
+  if (parts.size > 1 && picked.length !== 1)
     return `a escrita de ${write.path} seq ${String(write.seq)} sai de mais de uma leitura ou chamada (${[...parts.keys()].join("; ")}), e o lugar não decide entre elas`;
-  const [one] = parts.values();
+  const [one] = picked;
   return one && near(one.v, write.v) ? one.e : null;
 }
 
