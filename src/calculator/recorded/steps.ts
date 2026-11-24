@@ -19,6 +19,7 @@ import {
 import type { AstNode } from "./ast.ts";
 import { readOfLeaf } from "./leaf-reads.ts";
 import { near } from "./math.ts";
+import { maySet } from "./param-set.ts";
 import { byCalls as callsBySide, sideAt, sideState } from "./sides.ts";
 import type {
   AmbiguousCall,
@@ -142,13 +143,21 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         // a block's call with no call of its own here is a loose value: never a read with its value (T177 r4)
         return { t: "val", v };
       }
-      // the block's own argument (T209, form 1): its parameter, set by nothing before in the call, by its place
+      // the block's own argument (T209, form 1): its parameter, set by nothing before in the call, by its place (an
+      // assignment of it on a side its test did not take is none: param-set.ts)
       const self = ops[id ?? -1];
+      const here = lastPos.get(id ?? -1);
       const k =
-        node.type === "Identifier" && self?.def === null
+        node.type === "Identifier" && self
           ? (params.get(n.b) ?? []).indexOf(String(node.name))
           : -1;
-      if (k >= 0 && typeof v === "number" && n.a[k] === v)
+      if (
+        k >= 0 &&
+        typeof v === "number" &&
+        n.a[k] === v &&
+        (self?.def === null ||
+          (self && here !== undefined && !maySet(self, ops, n, here)))
+      )
         return { t: "val", v, arg: k };
       // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
       // (Op.callIn): the data flow decides, never a read with its value (T177 r3 to r5)
