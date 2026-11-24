@@ -84,19 +84,15 @@ export function lockConstants(
     const n = factor(source(w), own);
     const cmp = (scope.x ?? [])
       .slice(prev, w.xi)
-      .findLast(([id]) => ctx.ops?.[id]?.kind === "cmp");
+      // a comparison, or the test of a ? : or an if (the first mark of its place is the test)
+      .findLast(([id]) => ["cmp", "test"].includes(ctx.ops?.[id]?.kind ?? ""));
     const keys = cmp
       ? leavesOf(steps.exprOf?.(cmp[0]) ?? { t: "val", v: null }).flatMap(
           (l) => keyOfLeaf(l, ctx.rec) ?? [],
         )
       : [];
     const [key] = keys;
-    if (
-      n === null ||
-      keys.length !== 1 ||
-      key === undefined ||
-      cmp?.[1] !== true
-    )
+    if (n === null || keys.length !== 1 || key === undefined || !cmp?.[1])
       return refuse(
         ctx.where,
         `a escrita de ${own} na volta ${String(w.xi)} não é um número do código sob uma condição`,
