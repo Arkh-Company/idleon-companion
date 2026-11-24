@@ -79,3 +79,33 @@ test("blueprintOf serves only a complete blueprint: a sketch or an unknown id is
   expect(blueprintOf("no-such-number")).toBe(null);
   expect(blueprintOf("stamps-gilded-chance")).toBe(null);
 });
+
+test("a line with a link loads when its tree is another blueprint's file, and is refused when none is (T200)", () => {
+  const link = (tree: string) => ({
+    id: "with-link",
+    root,
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "talents",
+            sources: [
+              { key: "a", name: "Invented A", ref: { read: "A[1]" }, tree },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  const files = (tree: string) => ({
+    "../blueprints/w1/sketch-one.blueprint.json": { id: "sketch-one", root },
+    "../blueprints/w1/with-link.blueprint.json": link(tree),
+  });
+  expect(loadBlueprints(files("sketch-one")).stages.get("with-link")).toBe(
+    "complete",
+  );
+  expect(loadBlueprints(files("no-such-one")).refused[0]?.reason).toMatch(
+    /não existe/,
+  );
+});

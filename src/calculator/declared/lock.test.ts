@@ -307,3 +307,27 @@ test("a class source missing from the recording of its own class is extraSource"
     },
   ]);
 });
+
+test("a line with a link to another tree is checked by its ref's value and not descended (T200)", () => {
+  // as a leaf, the luck reads the save below it; as a link, its tree is the other number's
+  const leafy = inventedBlueprint("decl-chain");
+  const luck = sourceOf(leafy, 0, "luk-stats", "luck");
+  delete luck.children;
+  luck.leaf = "level";
+  expect(kinds(lock(chainInput(leafy)).errors)).toEqual(["leafHasChildren"]);
+  const bp = inventedBlueprint("decl-chain");
+  const linked = sourceOf(bp, 0, "luk-stats", "luck");
+  delete linked.children;
+  linked.tree = "invented-luck";
+  expect(lock(chainInput(bp)).errors).toEqual([]);
+  // a child as a link: its ref still has to give a recorded value
+  const child = sourceOf(bp, 0, "arcade", "arcade", "base");
+  delete child.leaf;
+  child.tree = "invented-base";
+  expect(lock(chainInput(bp)).errors).toEqual([]);
+  child.ref = { read: "TreeNowhere" };
+  expect(lock(chainInput(bp)).errors).toContainEqual({
+    kind: "childNoValue",
+    where: "decl-chain/0/arcade/arcade/base",
+  });
+});

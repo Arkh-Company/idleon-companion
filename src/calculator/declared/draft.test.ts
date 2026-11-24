@@ -11,7 +11,7 @@ import type { Blueprint } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftJson } from "./draft-json.ts";
-import { draftBlueprint, gameList, talentClass } from "./draft.ts";
+import { draftBlueprint, gameList, NO_CONTEXT, talentClass } from "./draft.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
 import {
   chainInput,
@@ -306,4 +306,44 @@ test("the draft's JSON is already as prettier leaves it", async () => {
     const json = draftJson(draftOf(block));
     expect(await format(json, { parser: "json" })).toBe(json);
   }
+});
+
+test("a source whose ref is another blueprint's root is a line with a link to its tree, by the declared ref (T200)", () => {
+  const luck = {
+    id: "invented-luck",
+    root: { name: "Invented Luck", ref: { call: "TreeDeclLuck", args: [] } },
+  };
+  const linkOf = (trees: (typeof luck)[]) =>
+    draftOf("TreeDeclChain", { ...NO_CONTEXT, trees });
+  const d = linkOf([luck]);
+  const s = sourceAt(d, 0, 0);
+  expect(s).toMatchObject({
+    ref: { call: "TreeDeclLuck", args: [] },
+    tree: "invented-luck",
+  });
+  expect(s.children).toBeUndefined();
+  // nothing waits below the link: no leaf, no descent
+  expect(
+    d.pending.filter(
+      (p) => p.where.startsWith("pools/0/groups/0/") && p.kind !== "name",
+    ),
+  ).toEqual([]);
+  const out = parseBlueprint(JSON.parse(draftJson(d)), {
+    fileId: "decl-draft",
+    systemIds: new Set(SYSTEMS.map((x) => x.id)),
+    trees: new Set(["invented-luck"]),
+  });
+  expect(out.ok).toBe(true);
+  // the draft's own root is no link; a root of the same block with other args is another number; two blueprints with
+  // that root leave it as it was, never one picked by order
+  const other = {
+    id: "other",
+    root: { ...luck.root, ref: { call: "TreeDeclLuck", args: [1] } },
+  };
+  for (const trees of [
+    [{ ...luck, id: "decl-draft" }],
+    [other],
+    [luck, { ...luck, id: "invented-luck-two" }],
+  ])
+    expect(sourceAt(linkOf(trees), 0, 0).tree).toBeUndefined();
 });

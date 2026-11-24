@@ -305,3 +305,38 @@ test("a draft: pending says where a name, a system, a leaf or a descent is missi
   bad.pending = [{ where: "pools/0/groups/0/sources/0", kind: "formula" }];
   expect(parseBlueprint(bad, ctx).ok).toBe(false);
 });
+
+// Spec 010, T200 (spec, Open Questions 23/11, night): a number with a tree of its own is a line with a link to that
+// tree, in place of its descent; the load checks the id is a blueprint's and not the blueprint's own.
+test("a line with a link to another number's tree loads with its link; any other link is refused with its reason", () => {
+  const trees = new Set(["invented-number", "invented-luck"]);
+  const linked = (extra: object, change?: (bp: Bp) => void) => {
+    const bp = complete();
+    const s = source(bp, 0, 0, 1);
+    delete s.leaf;
+    Object.assign(s, { tree: "invented-luck" }, extra);
+    change?.(bp);
+    const out = parseBlueprint(bp, { ...ctx, trees });
+    return out.ok ? out : out.reason;
+  };
+  const ok = linked({});
+  expect(ok).toMatchObject({ ok: true, stage: "complete" });
+  if (typeof ok !== "string")
+    expect(ok.blueprint.pools[0]?.groups[0]?.sources[1]).toMatchObject({
+      tree: "invented-luck",
+      ref: { read: "PlayerDATABASE[{character}].SkillLevels[3]" },
+    });
+  expect(linked({ tree: "invented-other" })).toMatch(/não existe/);
+  expect(linked({ tree: "invented-number" })).toMatch(/própria/);
+  expect(linked({ tree: "Invented Luck" })).toMatch(/slug/);
+  expect(linked({ leaf: "level" })).toMatch(/tree vai no lugar/);
+  expect(linked({ children: [leaf("inner")] })).toMatch(/tree vai no lugar/);
+  expect(linked({ piece: { name: "a", args: {} } })).toMatch(
+    /tree vai no lugar/,
+  );
+  expect(
+    linked({}, (bp) => {
+      delete source(bp, 0, 0, 1).ref;
+    }),
+  ).toMatch(/ref/);
+});
