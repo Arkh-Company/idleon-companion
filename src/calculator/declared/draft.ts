@@ -256,8 +256,17 @@ export function provenName(
   const name = proven ? nameOf(code) : null;
   return name ? { name, nameProof: { names: code } } : null;
 }
-export const partName = (w: Walked, character: number) =>
-  provenName(codeOf(refOf(w, character), w.key));
+/** A part's proven name; none when its caller gave an argument from the character's index (it waits for the row). */
+export function partName(
+  w: Walked,
+  character: number,
+  rec: Recording,
+  ops: readonly Op[],
+) {
+  const code = refOf(w, character);
+  const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
+  return ref !== code ? null : provenName(codeOf(code, w.key));
+}
 
 const slug = (text: string): string =>
   text
@@ -308,8 +317,7 @@ export function draftBlueprint(
     const ref = w.call ? characterRef(code, rec, ops, w.call) : code;
     // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
     // proof by the row (research R5), and the key keeps only the other arguments
-    const marks = "call" in ref && ref !== code;
-    const named = marks ? null : provenName(codeOf(code, w.key));
+    const named = partName(w, dc.character, rec, ops);
     if (!named) wait(where, "name");
     if (w.termPart) wait(where, "system");
     const own = new Set<string>();

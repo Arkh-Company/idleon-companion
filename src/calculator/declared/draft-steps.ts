@@ -69,7 +69,7 @@ export function stepsGuide(
 
   const part = (w: Walked, depth: number): void => {
     const pad = "  ".repeat(depth);
-    const named = partName(w, dc.character);
+    const named = partName(w, dc.character, rec, ops);
     lines.push(
       [
         `${pad}${m(w.key)}${w.call ? ` = ${fmt(w.call.v)}` : ""}`,
