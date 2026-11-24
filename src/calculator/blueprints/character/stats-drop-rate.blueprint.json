@@ -3156,6 +3156,10 @@
                         "call": "TalentCalc",
                         "args": [-6]
                       },
+                      "each": {
+                        "calls": "Summoning",
+                        "as": "ribbon"
+                      },
                       "children": [
                         {
                           "key": "summoning2-bonus-multi-cook-64-0",
@@ -3197,7 +3201,7 @@
                           "name": null,
                           "ref": {
                             "call": "Summoning",
-                            "args": ["RibbonBonus", "*", 0]
+                            "args": ["RibbonBonus", "{ribbon}", 0]
                           },
                           "children": [
                             {
@@ -5234,13 +5238,17 @@
                 "call": "Thingies",
                 "args": ["FriendBonusStatz", 3, 0]
               },
+              "each": {
+                "calls": "Thingies",
+                "as": "friend"
+              },
               "children": [
                 {
                   "key": "thingies-friend-bonus-qty",
                   "name": null,
                   "ref": {
                     "call": "Thingies",
-                    "args": ["FriendBonusQTY", "*", "*"]
+                    "args": ["FriendBonusQTY", "{friend}", "*"]
                   }
                 },
                 {
@@ -5592,6 +5600,10 @@
                     "call": "ArcaneType",
                     "args": ["ArcaneMapMulti_bon", 0, 99]
                   },
+                  "each": {
+                    "calls": "ArcaneType",
+                    "as": "kills"
+                  },
                   "children": [
                     {
                       "key": "arcane-type-arcane-map-multi-bon-max-0-0",
@@ -5655,7 +5667,7 @@
                       "name": null,
                       "ref": {
                         "call": "ArcaneType",
-                        "args": ["ArcaneMapMulti", "*", 0]
+                        "args": ["ArcaneMapMulti", "{kills}", 0]
                       },
                       "children": [
                         {
