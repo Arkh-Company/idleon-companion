@@ -2730,6 +2730,24 @@ lime.$scripts.N = function (_exports, $global) {
       state().TreeBase
     );
   };
+  // ...and a block of the same value each time whose recorded descent differs between its calls: it reads the list at
+  // a counter it moves.
+  var treeFlipN = 0;
+  Blocks._customBlock_TreeFlip = function (k, m) {
+    treeFlipN = treeFlipN + 1;
+    return 2 * k + m + 0 * state().TreeList[treeFlipN % 2];
+  };
+  Blocks._customBlock_TreeFlipSame = function () {
+    return (
+      Blocks._customBlock_TreeFlip(3, 0) +
+      Blocks._customBlock_TreeFlip(3, 0) +
+      Blocks._customBlock_TreeFlip(4, 0) +
+      state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeFlipPool = function () {
+    return Blocks._customBlock_TreeFlipSame() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeSamePool = function () {
     return Blocks._customBlock_TreeRibbonsSame() + state().TreeCapped;
   };

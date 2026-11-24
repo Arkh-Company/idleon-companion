@@ -275,15 +275,50 @@ const beside = (pool: string, root: string): Blueprint => ({
   ],
 });
 
-test("the same call twice in one place, no turn between them, is refused; in two turns of a loop it is not", () => {
+test("two identical calls in one place are two lines of the list: the same key, value and recorded descent tie alike", () => {
   expect(
     lock("TreeSamePool", beside("TreeSamePool", "TreeRibbonsSame")),
-  ).toContain(
-    "invented-calls/0/cards/ribbons: duas chamadas TreeRibbon(3,0) no nível, e o lugar não as separa",
-  );
+  ).toEqual([]);
   expect(
     lock("TreeTurnsPool", beside("TreeTurnsPool", "TreeRibbonsTurns")).filter(
       (m) => m.includes("duas chamadas"),
     ),
   ).toEqual([]);
+});
+
+test("two calls in one place with the same key and value but another recorded descent are refused with the reason", () => {
+  const flips: Blueprint = {
+    ...beside("TreeFlipPool", "TreeFlipSame"),
+  };
+  const src = flips.pools[0]?.groups[0]?.sources[0];
+  if (!src?.children) throw new Error("no source");
+  const model = src.children[0];
+  if (!model) throw new Error("no model");
+  const flipped = {
+    ...flips,
+    pools: [
+      {
+        ...flips.pools[0],
+        groups: [
+          {
+            system: "cards",
+            sources: [
+              {
+                ...src,
+                each: { calls: "TreeFlip", as: "lv" },
+                children: [
+                  { ...model, ref: { call: "TreeFlip", args: ["{lv}", 0] } },
+                  ...src.children.slice(1),
+                ],
+              },
+            ],
+          },
+          ...(flips.pools[0]?.groups.slice(1) ?? []),
+        ],
+      },
+    ],
+  } as Blueprint;
+  expect(lock("TreeFlipPool", flipped)).toContain(
+    "invented-calls/0/cards/ribbons: duas chamadas TreeFlip(3,0) no nível, e o lugar não as separa",
+  );
 });
