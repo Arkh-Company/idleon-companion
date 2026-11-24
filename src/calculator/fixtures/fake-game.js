@@ -2253,6 +2253,41 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTurnsThenRoot = function () {
     return Blocks._customBlock_TreeTurnsThen() + state().TreeCapped;
   };
+  // Spec 010 (T202): a long list summed in a loop, each turn a read of its own place, below a source that doubles it.
+  Blocks._customBlock_TreeLongTurns = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeLong.length; i++)
+      t = t + state().TreeLong[i];
+    return t;
+  };
+  Blocks._customBlock_TreeLongTalent = function () {
+    return Blocks._customBlock_TreeLongTurns() * 2;
+  };
+  Blocks._customBlock_TreeLongRoot = function () {
+    return state().TreeBase + Blocks._customBlock_TreeLongTalent();
+  };
+  // Spec 010 (T203): a common branch three sources call, its item by its argument; with 3, another way of the code.
+  Blocks._customBlock_TreeCommon = function (k) {
+    var s = state();
+    if (k === 3) return s.TreeBase * 3;
+    return s.TreeList[k] + s.TreeBase;
+  };
+  Blocks._customBlock_TreeUsesA = function () {
+    return Blocks._customBlock_TreeCommon(1) * 2;
+  };
+  Blocks._customBlock_TreeUsesB = function () {
+    return Blocks._customBlock_TreeCommon(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeUsesC = function () {
+    return Blocks._customBlock_TreeCommon(3) * 2;
+  };
+  Blocks._customBlock_TreeCommonRoot = function () {
+    return (
+      Blocks._customBlock_TreeUsesA() +
+      Blocks._customBlock_TreeUsesB() +
+      Blocks._customBlock_TreeUsesC()
+    );
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
