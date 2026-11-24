@@ -43,7 +43,13 @@ const lineOf = (
         c.ref && "call" in c.ref && c.ref.call === call && c.ref.args[0] === k,
     );
 /** The draft of a root over TreeCommonConst(k): it reads TreeList[k] and TreeTwins[1], a constant equal to the arg 1. */
-const constDraft = (block: string): DraftBlueprint => {
+const constDraft = (
+  block: string,
+  branch = {
+    name: "invented-const",
+    ref: { call: "TreeCommonConst", args: ["{k}"] },
+  },
+): DraftBlueprint => {
   const { rec, key, ops } = recorded(block);
   return draftBlueprint(
     ID,
@@ -51,15 +57,7 @@ const constDraft = (block: string): DraftBlueprint => {
     key,
     rec,
     ops,
-    {
-      ...NO_CONTEXT,
-      branches: [
-        {
-          name: "invented-const",
-          ref: { call: "TreeCommonConst", args: ["{k}"] },
-        },
-      ],
-    },
+    { ...NO_CONTEXT, branches: [branch] },
   );
 };
 type Raw = Record<string, unknown>;
@@ -135,6 +133,46 @@ test("met twice with other args and one body, a branch is a piece: only the plac
     { read: "TreeList[{k}]" },
     { read: "TreeTwins[1]" },
   ]);
+});
+
+test("a place that changes apart from the arg (TreeTwins[0] in place of [1] with 2) makes no piece, the reason in the guide", () => {
+  const d = constDraft("TreeShiftRoot", {
+    name: "invented-shift",
+    ref: { call: "TreeCommonShift", args: ["{k}"] },
+  });
+  const two = lineOf(d, 2, "TreeCommonShift");
+  expect(two?.piece).toBeUndefined();
+  expect(two?.children?.map((c) => c.ref)).toEqual([
+    { read: "TreeList[2]" },
+    { read: "TreeTwins[0]" },
+  ]);
+  expect(d.pieces).toBeUndefined();
+  expect(d.notes).toContainEqual(
+    expect.stringMatching(
+      /invented-shift.*nenhuma outra ocorrência com o mesmo corpo e outro argumento/,
+    ),
+  );
+});
+
+test("a branch with no param, met twice with one body, is a piece", () => {
+  const d = constDraft("TreeFixedRoot", {
+    name: "invented-fixed",
+    ref: { call: "TreeCommonFixed", args: [] },
+  });
+  const lines = d.pools
+    .flatMap((p) => p.groups.flatMap((g) => g.sources))
+    .flatMap((s) => s.children ?? [])
+    .filter(
+      (c) => c.ref && "call" in c.ref && c.ref.call === "TreeCommonFixed",
+    );
+  expect(lines.map((c) => c.piece)).toEqual([
+    { name: "invented-fixed", args: {} },
+    { name: "invented-fixed", args: {} },
+  ]);
+  expect(d.pieces?.map((p) => [p.id, p.params])).toEqual([
+    ["invented-fixed", []],
+  ]);
+  expect(d.notes ?? []).toEqual([]);
 });
 
 test("the piece's JSON is as prettier leaves it, its keys short (the gitleaks reads a long one as a secret)", async () => {

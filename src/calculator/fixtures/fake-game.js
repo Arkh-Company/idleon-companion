@@ -2309,6 +2309,40 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeConstUsesB()
     );
   };
+  // Spec 010 (Fase 4 r2 of part O): a common branch whose place changes apart from its argument: with 2 it reads
+  // TreeTwins[0] in place of TreeTwins[1] (the save has two twins).
+  Blocks._customBlock_TreeCommonShift = function (k) {
+    var s = state();
+    return s.TreeList[k] + s.TreeTwins[k === 2 ? 0 : 1];
+  };
+  Blocks._customBlock_TreeShiftUsesA = function () {
+    return Blocks._customBlock_TreeCommonShift(1) * 2;
+  };
+  Blocks._customBlock_TreeShiftUsesB = function () {
+    return Blocks._customBlock_TreeCommonShift(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeShiftRoot = function () {
+    return (
+      Blocks._customBlock_TreeShiftUsesA() +
+      Blocks._customBlock_TreeShiftUsesB()
+    );
+  };
+  // Spec 010 (Fase 4 r2 of part O): a common branch with no param, called the same way under two sources.
+  Blocks._customBlock_TreeCommonFixed = function () {
+    return state().TreeBase * 2;
+  };
+  Blocks._customBlock_TreeFixedUsesA = function () {
+    return Blocks._customBlock_TreeCommonFixed() * 2;
+  };
+  Blocks._customBlock_TreeFixedUsesB = function () {
+    return Blocks._customBlock_TreeCommonFixed() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeFixedRoot = function () {
+    return (
+      Blocks._customBlock_TreeFixedUsesA() +
+      Blocks._customBlock_TreeFixedUsesB()
+    );
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
