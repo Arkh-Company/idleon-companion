@@ -1992,6 +1992,28 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeBareRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeBareRead();
   };
+  // Spec 010 (T184, T185 r1): a call worth 7 (TreeWriteSeven) and a step, then the bare read of 7 returned. Made before
+  // the step, the call is no return; made after it, with the read at the same place, the place does not decide. The
+  // root is 7 + 7 + 25 = 39.
+  Blocks._customBlock_TreeEarlyCall = function () {
+    var s = state();
+    Blocks._customBlock_TreeWriteSeven();
+    var twice = s.TreeBase * 2;
+    return twice && s.TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeLateCall = function () {
+    var s = state();
+    var twice = s.TreeBase * 2;
+    Blocks._customBlock_TreeWriteSeven();
+    return twice && s.TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeEarlyRoot = function () {
+    return (
+      Blocks._customBlock_TreeEarlyCall() +
+      Blocks._customBlock_TreeLateCall() +
+      state().TreeLevel
+    );
+  };
   // Spec 010 (literal return): a 1 the code picks by a test on a read (an achievement done), with no step of its own;
   // the root is 25 + 1 = 26.
   Blocks._customBlock_TreeDone = function () {
