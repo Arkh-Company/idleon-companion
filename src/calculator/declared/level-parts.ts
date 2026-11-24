@@ -103,10 +103,17 @@ export function partsOf(
       (e) => keyOfLeaf(e, ctx.rec) ?? [],
     );
   const own = keys(leaves);
-  const fed = own.some((k) => {
+  const feeds = (k: string) => {
     const role = notLeafOf(k, ctx.character)?.role;
     return role === "curve" || role === "log";
+  };
+  const fed = own.some(feeds);
+  // a curve of the level's own count is fed by the whole call; one only past a write, by that write's turn
+  const curveHere = leaves.some((l) => {
+    const k = keyOfLeaf(l, ctx.rec);
+    return k !== null && feeds(k);
   });
+  if (curveHere) turns.length = 0;
   if (!fed && !literal(level.expr))
     return [...new Set(own)].filter((k) => !transparent(k));
   // past a write, a curve's parts are its turn's (as T168's turns); else the call's
