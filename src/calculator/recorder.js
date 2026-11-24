@@ -41,6 +41,9 @@
     return v;
   };
 
+  // A block's return notes what it gives by its place, a call or a read (instrument.ts returnNotes; spec 010, Fase 4 r2).
+  G.__R = (k) => S.on && S.cur && (S.cur.rt = k);
+
   // The game asks its server bridge for the companions you own while the helpers run; the mosaic answers.
   var bridge = G.React.createElement;
   G.React.createElement = (name, args) =>
@@ -67,7 +70,6 @@
     var n = { id: S.nodes.length, b: b, a: a, c: [], seq: S.seq };
     n.p = parent ? parent.id : null;
     n.pxi = parent && parent.x ? parent.x.length : 0;
-    n.prx = parent && parent.rx ? parent.rx.length : 0; // its reads logged so far (T185 r1: a read before the call)
     S.nodes.push(n);
     if (parent) parent.c.push(n.id);
     return n;

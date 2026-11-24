@@ -146,9 +146,9 @@ export const num = (v: unknown): number | null =>
 
 /**
  * The expression a call returned: its last call when it began after the last step (`return Call(…)`, by the recorded
- * place, T184) and no read came after it, else its last step with its value, or else the last call it made. A last call
- * and a last read both after the last step: the later by the reads logged when the call began (`prx`); with no `prx`
- * and the same step, the place does not decide, none.
+ * place, T184), else its last step with its value, or else the last call it made. A last call and a last read both after
+ * the last step: the one worth the call's value; both worth it, the one the return gives by its recorded place (`rt`),
+ * never by their order; with no such place, none.
  */
 export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const { steps, stepAt } = ctx.stepsOf(n.id);
@@ -162,11 +162,16 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   const r = rx.at(-1);
   const readAfter = r !== undefined && r[2] > lastAt;
   if (kid && lastAt < kid.pxi) {
-    if (readAfter && kid.prx === undefined && r[2] === kid.pxi) return null;
-    const readLater =
-      readAfter &&
-      (kid.prx === undefined ? r[2] > kid.pxi : rx.length > kid.prx);
-    if (!readLater && near(kid.v, n.v)) return call;
+    const byCall = near(kid.v, n.v);
+    const byRead = readAfter && near(num(r[1]), n.v);
+    if (byCall && byRead)
+      return n.rt === "call"
+        ? call
+        : n.rt === "read"
+          ? { t: "read", p: r[0], v: num(r[1]) }
+          : null;
+    if (byCall) return call;
+    if (byRead) return { t: "read", p: r[0], v: num(r[1]) };
   }
   if (last && near(last.v, n.v)) return last.e;
   // a 0 that no step nor call gave is the code's own `return 0` before its count (T183: the gate, a level 0)

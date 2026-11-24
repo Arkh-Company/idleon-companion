@@ -3,7 +3,14 @@
 // instrument.cjs at BASELINE-4 (`build`, `marks`, `assignments`, `rewrite`). In memory only (FR-011): this file reads
 // and writes no file, and `ops[].fnText` and the AST never leave the worker.
 import { parse } from "acorn";
-import type { Node } from "acorn";
+import {
+  at,
+  children,
+  isNode,
+  noted,
+  returnNotes,
+} from "./instrument-returns.ts";
+import type { AnyNode } from "./instrument-returns.ts";
 
 export interface Op {
   block: string;
@@ -36,8 +43,6 @@ export interface DefCall {
   sides: [AnyNode, boolean][];
 }
 
-/** acorn's nodes, read by field name: the walk visits every child, whatever its type. */
-type AnyNode = Node & Record<string, unknown> & { range: [number, number] };
 interface Mark {
   node: AnyNode;
   kind: Op["kind"];
@@ -69,21 +74,6 @@ const BLOCK =
 const CLASS_NAME = /__name__\s*=\s*"([\w.]+)"/g;
 const ACTOR = /^scripts\.ActorEvents_\d+$/;
 
-const isNode = (v: unknown): v is AnyNode =>
-  typeof v === "object" &&
-  v !== null &&
-  typeof (v as { type?: unknown }).type === "string";
-const at = (n: AnyNode, k: string) => n[k] as AnyNode;
-
-function children(node: AnyNode): AnyNode[] {
-  const out: AnyNode[] = [];
-  for (const [k, v] of Object.entries(node)) {
-    if (k === "parent") continue;
-    const list: unknown[] = Array.isArray(v) ? v : [v];
-    out.push(...list.filter(isNode));
-  }
-  return out;
-}
 const isMathCall = (n: AnyNode) => {
   if (n.type !== "CallExpression") return false;
   const callee = at(n, "callee");
@@ -237,10 +227,34 @@ function hasCall(
 }
 type CallMemo = Map<AnyNode, { out: boolean; depth: number }>;
 
+/** A member read of a variable (`s.k`), bare, through `asNumber(…)` or the variable that took it. */
+function isRead(n: AnyNode | null, defs: Defs, depth = 0): boolean {
+  if (!n || depth > 6) return false;
+  if (n.type === "Identifier") return isRead(defOf(n, defs), defs, depth + 1);
+  const args = (n.arguments as AnyNode[] | undefined) ?? [];
+  if (methodName(n) === "asNumber" && args.length === 1)
+    return isRead(args[0] ?? null, defs, depth + 1);
+  let o = n;
+  while (o.type === "MemberExpression") o = at(o, "object");
+  return o !== n && o.type === "Identifier";
+}
+
+/** What a return gives by its place (instrument-returns.ts): a block's call, bare or by a variable, or a read. */
+function returnKind(arg: AnyNode, defs: Defs, memo: CallMemo) {
+  const free: DefCall["sides"][] = [];
+  const calls = callsOf(arg, defs, memo, free);
+  if (calls.length > 0) return free.length === 0 ? "call" : null;
+  return isRead(arg, defs) ? "read" : null;
+}
+
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
   const callMemo: CallMemo = new Map(); // the variables' defs are walked once per function, not once per leaf
+  const copy = noted(
+    text,
+    returnNotes(fn, (arg) => returnKind(arg, defs, callMemo)),
+  );
   const byRange = new Map<string, Mark>();
   for (const m of marks(fn)) {
     const s = m.node.range[0] - 1;
@@ -271,7 +285,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         ),
     );
     for (const m of outer) {
-      out += text.slice(from, m.s);
+      out += copy(from, m.s);
       const id = ops.length;
       const target =
         m.kind === "assign"
@@ -303,7 +317,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         : `(__X(${String(id)},(${emit(m.s, m.e, top, id)})))`;
       from = m.e;
     }
-    return out + text.slice(from, e);
+    return out + copy(from, e);
   }
   return emit(0, text.length, all, undefined);
 }
