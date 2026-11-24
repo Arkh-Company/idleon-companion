@@ -110,9 +110,13 @@ type Says = "yes" | "unsure" | "no";
 const worst = (all: readonly Says[]): Says =>
   all.includes("yes") ? "yes" : all.includes("unsure") ? "unsure" : "no";
 
-/** A read of the save, `….getGameAttribute("<name>")` with no game table; of a working map only, unsure. */
-function readsSave(e: AnyNode): Says {
-  const names = walk(e).flatMap((n) => {
+/**
+ * A read of the save, `….getGameAttribute("<name>")` with no game table; of a working map, what the call's own writes
+ * of that key there gave (group 5 of part P, as T188: a table, a number of the code or a loop's index is no save's), and
+ * unsure when the call wrote it nowhere, its writes read a parameter, or the key is the one being followed.
+ */
+function readsSave(e: AnyNode, f?: Fn): Says {
+  const says1 = walk(e).flatMap((n): Says[] => {
     if (
       n.type !== "CallExpression" ||
       member(at(n, "callee")) !== "getGameAttribute"
@@ -120,12 +124,49 @@ function readsSave(e: AnyNode): Says {
       return [];
     const [k] = n.arguments as AnyNode[];
     const name = k?.type === "Literal" ? k.value : null;
-    return typeof name === "string" &&
-      !GAME_TABLE.some((t) => t.test.test(name))
-      ? [name]
-      : [];
+    if (typeof name !== "string" || GAME_TABLE.some((t) => t.test.test(name)))
+      return [];
+    return [WORKING.test(name) ? (f ? workingSays(n, f) : "unsure") : "yes"];
   });
-  return worst(names.map((x) => (WORKING.test(x) ? "unsure" : "yes")));
+  return worst(says1);
+}
+
+const following = new Set<string>();
+/** What the call's own writes of a working map's key gave: `X.h.KEY = …`, `X.h.KEY[…] = …`, `X.h.KEY.push(…)`. */
+function workingSays(get: AnyNode, f: Fn): Says {
+  const h = f.up.get(get);
+  const keyed = h ? f.up.get(h) : undefined;
+  const key =
+    keyed?.type === "MemberExpression" ? at(keyed, "property").name : undefined;
+  if (typeof key !== "string" || following.has(key)) return "unsure";
+  const isKey = (m: AnyNode | undefined): boolean =>
+    m?.type === "MemberExpression" &&
+    (at(m, "property").name === key ||
+      isKey(m.computed ? at(m, "object") : undefined));
+  const given = f.all.flatMap((n) =>
+    n.type === "AssignmentExpression" && isKey(at(n, "left"))
+      ? [at(n, "right")]
+      : n.type === "CallExpression" &&
+          member(at(n, "callee")) === "push" &&
+          isKey(at(at(n, "callee"), "object"))
+        ? (n.arguments as AnyNode[])
+        : [],
+  );
+  if (given.length === 0) return "unsure";
+  const params = (x: AnyNode) =>
+    namesIn(x).some((i) => f.params.includes(i.name as string));
+  following.add(key);
+  try {
+    return worst(
+      given.map((x) =>
+        params(x)
+          ? "unsure"
+          : says(x, f, SAVE_MARK, () => ({ yes: [], unsure: [] }), 1),
+      ),
+    );
+  } finally {
+    following.delete(key);
+  }
 }
 
 interface Mark {
@@ -138,7 +179,7 @@ const CHARACTER_MARK: Mark = {
   is: (e, f) => (isCharacter(e, f.text) ? "yes" : "no"),
   inside: false,
 };
-const SAVE_MARK: Mark = { is: readsSave, inside: true };
+const SAVE_MARK: Mark = { is: (e, f) => readsSave(e, f), inside: true };
 
 /** The variables an expression reads: no property's name. */
 const namesIn = (e: AnyNode): AnyNode[] =>
