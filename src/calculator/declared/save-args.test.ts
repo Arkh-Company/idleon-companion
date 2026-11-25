@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
 import { mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { LOG_CAP } from "../recording.ts";
 import { inventedRecorder, recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import type { RefArg } from "./refs.ts";
@@ -296,6 +297,24 @@ test("a working map's key read in a builder of the pass: its write is the pass's
   if (!row) throw new Error("no TreeDeclRow in the pass");
   expect(rec.spliced.map((w) => w.path)).toContain("DNSM.TreeCond");
   expect(saveArgs(rec, r.ops, row)).toEqual({ save: [0], unsure: [] });
+});
+
+test("a caller whose step log the cap cut before the call's place: an older read is no proof, the place does not decide (r2 of P and Q)", () => {
+  const { rec, ops } = recorded("TreeWorkCond", { TreeCondOn: 1 });
+  const caller = rec.nodes.find((n) => n.b === "TreeWorkCond");
+  const row = rec.nodes.find((n) => n.b === "TreeDeclRow");
+  const zero = rec.writes.find((w) => w.path === "DNSM.TreeCond" && w.v === 0);
+  if (!caller || !row || !zero) throw new Error("no TreeWorkCond");
+  // the log full of reads at its first step, which saw the 0: the read right before the call fell past the cap
+  const rx = Array.from(
+    { length: LOG_CAP },
+    (): [string, number, number, number] => ["DNSM.TreeCond", 0, 0, zero.seq],
+  );
+  const cut = {
+    ...rec,
+    nodes: rec.nodes.map((n) => (n === caller ? { ...n, rx } : n)),
+  };
+  expect(saveArgs(cut, ops, row)).toEqual({ save: [], unsure: [0] });
 });
 
 test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
