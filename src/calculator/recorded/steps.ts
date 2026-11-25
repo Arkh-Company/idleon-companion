@@ -205,9 +205,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       (op.defCalls ?? []).every(
         (c) => sideState(c.sides, took(pos)) === "off",
       ) && (op.freeSides ?? []).some((s) => sideState(s, took(pos)) === "on");
-    // a variable's last recorded write before `here` (T232), its value only confirming it; with none, or another value,
-    // what no step set (leaf-reads.ts setBy). A write a later turn did again is built as the log was then, the
-    // writes before it first (no deep recursion)
+    // a variable's last recorded write before `here` (T232), its value only confirming it; else what no step set
+    // (setBy). A write done again later, or before a turn, is built as the log was then, the earlier ones first
     function wrote(node: AstNode, v: number, here: number): Expr {
       const op = ops[opIndex.get(node) ?? -1];
       const ids = (op?.writes ?? []).map((w) => opIndex.get(w));
@@ -215,8 +214,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         j < here && ids.includes(i) ? [[j, i, x] as const] : [],
       );
       const [w, wid, x] = at.at(-1) ?? [];
-      // a loop turn's own steps: what an earlier turn wrote came from outside it
-      if (w !== undefined && w < base) return { t: "val", v };
+      // a loop turn's own steps: what an earlier turn wrote, by a write the turn does too, came from outside it
+      if (w !== undefined && w < base && lastPos.has(wid ?? -1))
+        return { t: "val", v };
       if (w === undefined || wid === undefined || x !== v)
         return setBy(op?.def, poolFor(node), v) ?? { t: "val", v };
       if (lastPos.get(wid) === w) return defOrVal(node, v, ops[wid]?.node);
