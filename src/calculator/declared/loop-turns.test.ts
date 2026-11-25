@@ -5,9 +5,12 @@
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { Expr } from "../recorded/steps.ts";
+import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { answerKey } from "./answer-key.ts";
 import { draftBlueprint } from "./draft.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import type { DraftNode } from "./draft.ts";
-import { recorded } from "./lock-fixture.ts";
+import { inventedRecorder, recorded } from "./lock-fixture.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { loopOpening } from "./loop-turns.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
@@ -228,4 +231,33 @@ test("a loop step that is the last step but not what the call returned does not 
   ];
   expect(loopOpening(expr, { ...scope, v: 6, x }, ctx)).toHaveLength(3);
   expect(loopOpening(expr, { ...scope, v: 20, x }, ctx)).toBeNull();
+});
+
+test("a count in turns that adds a fixed number to its own value waits for its form, never a chain of its own turns (T215)", () => {
+  // TreeSigils: `d.TreeSigils = round(d.TreeSigils + 1)` a turn, as the game's purple sigils; built again by its block
+  const r = inventedRecorder();
+  const rec = r.record(
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 2 } } }),
+    [["TreeSigilsRoot", [0, 0, 0]]],
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeSigils", run: { block: "TreeSigils", args: [] } },
+      ],
+    },
+  );
+  const key = answerKey(rec, r.ops);
+  if ("error" in key) throw new Error(key.reason);
+  const ref = { call: "TreeSigilsRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, r.ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["TreeSigils()", [["DNSM.TreeSigils", []]]],
+  ]);
+  expect(draft.pending).toContainEqual({
+    where: "pools/0/groups/0/sources/0/children/0",
+    kind: "descend",
+  });
+  expect(stepsGuide(key, rec, r.ops)).toContain(
+    "descer: pendente (o laço de TreeSigils() conta DNSM.TreeSigils, um número fixo a volta: a forma do contador espera a decisão da T215)",
+  );
 });

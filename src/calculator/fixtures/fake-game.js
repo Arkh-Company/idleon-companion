@@ -555,6 +555,9 @@ lime.$scripts.N = function (_exports, $global) {
           d.TreeSigils = Math.round(d.TreeSigils + 1);
     return Math.round(d.TreeSigils);
   };
+  Blocks._customBlock_TreeSigilsRoot = function () {
+    return Blocks._customBlock_TreeSigils() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCacheRead = function () {
     return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total + 1;
   };
