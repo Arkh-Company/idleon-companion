@@ -81,11 +81,22 @@
       }
       S.cur = null;
       var bad = differences(key, liveCopy, S.mapOf(S.raw(Dh[key])));
+      // a cache that is a number (T196: the game's purple sigils) keeps its own path's writes when it ends as the game's
+      var live = S.raw(liveObj);
+      var built = S.raw(Dh[key]);
+      var number =
+        typeof live === "number" &&
+        typeof built === "number" &&
+        Math.abs(live - built) <= 1e-9 * Math.max(1, Math.abs(live));
       // only this builder's writes of this cache count, and only where they equal the game's
       for (var j = S.writes.length - 1; j >= before; j--) {
         var w = S.writes[j];
         var ofKey = S.inCache(w.path, key);
-        if (!ofKey || bad.has(w.path) || w.path === "DNSM." + key) {
+        if (
+          !ofKey ||
+          bad.has(w.path) ||
+          (w.path === "DNSM." + key && !number)
+        ) {
           if (!ofKey) S.spliced.push(w); // the scratch of the pass, not the cache it rebuilds
           S.writes.splice(j, 1);
         }

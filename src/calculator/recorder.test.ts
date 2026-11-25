@@ -243,10 +243,14 @@ test("a builder of a cache that is a number keeps its writes of the cache, each 
     mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 2 } } }),
     {
       recompute: [],
-      builders: [{ cache: "TreeSigils", run: { block: "TreeSigils", args: [] } }],
+      builders: [
+        { cache: "TreeSigils", run: { block: "TreeSigils", args: [] } },
+      ],
     },
   );
-  const pass = found(under(rec, rec.builders).find((n) => n.b === "TreeSigils"));
+  const pass = found(
+    under(rec, rec.builders).find((n) => n.b === "TreeSigils"),
+  );
   expect(
     rec.writes
       .filter((w) => w.path === "DNSM.TreeSigils")
@@ -255,6 +259,8 @@ test("a builder of a cache that is a number keeps its writes of the cache, each 
     [pass.id, 0],
     [pass.id, 1],
     [pass.id, 2],
+    // the pass puts the game's cache back through the record, as for a map
+    [null, 2],
   ]);
 });
 
