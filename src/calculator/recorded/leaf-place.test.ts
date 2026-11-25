@@ -86,9 +86,8 @@ test("a variable leaf with a place is still tied by value to the one read of its
   });
 });
 
-test("a leaf whose code names a path is the read of it at its own place, never one read elsewhere that the call's lock leaves alone (T231 r1)", () => {
-  // x.A is 6 at the leaf's place and 5 after it, so the call's lock takes it out; y.x.A and z.x.A, worth 6, are read
-  // before and after the place
+test("a leaf whose code names a path is the read of it at its own place, never one read before it that the call's lock leaves alone (T231 r1)", () => {
+  // x.A is 6 at the leaf's place and 5 after it, so the call's lock takes it out; y.x.A, worth 6, is read before
   expect(
     stepOf(
       "s.x.A",
@@ -97,11 +96,53 @@ test("a leaf whose code names a path is the read of it at its own place, never o
         ["y.x.A", 6, 0],
         ["x.A", 6, 1],
         ["x.A", 5, 2],
+      ],
+      5,
+    ),
+  ).toMatchObject({ r: { t: "read", p: "x.A", v: 6 } });
+});
+
+test("a leaf whose code names a path is the read of it at its own place, never one read after it that the call's lock leaves alone (T231 r1)", () => {
+  // as above, with z.x.A, worth 6, read after the place
+  expect(
+    stepOf(
+      "s.x.A",
+      [
+        ["B", 5, 0],
+        ["x.A", 6, 1],
+        ["x.A", 5, 2],
         ["z.x.A", 6, 2],
       ],
       5,
     ),
   ).toMatchObject({ r: { t: "read", p: "x.A", v: 6 } });
+});
+
+test("a leaf that reads, with a place, is never tied by value to a read made before its place (T231 r1)", () => {
+  // Q, the only read worth 6, was read at s.B's place: s.A names no path Q fits
+  expect(
+    stepOf(
+      "s.A",
+      [
+        ["B", 5, 0],
+        ["Q", 6, 0],
+      ],
+      5,
+    ),
+  ).toMatchObject({ r: { t: "val", v: 6 } });
+});
+
+test("a leaf that reads, with a place, is never tied by value to a read made after its place (T231 r1)", () => {
+  expect(
+    stepOf(
+      "s.A",
+      [
+        ["B", 5, 0],
+        ["Q", 6, 2],
+      ],
+      5,
+    ),
+  ).toMatchObject({ r: { t: "val", v: 6 } });
 });
 
 test("two reads of the path a leaf names at its own place are refused with the reason (T231 r1)", () => {
