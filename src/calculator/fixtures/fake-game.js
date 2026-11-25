@@ -2359,6 +2359,24 @@ lime.$scripts.N = function (_exports, $global) {
       t.h["" + p] = x;
     }
   };
+  // Spec 010 (Fase 4 q, the LUK's star signs): keys that start at the same number, as a sign gives 3 to STR, AGI, WIS and
+  // LUK: a = 3 + 0, b = 3 + 0, b = 5 + b = 8 (its 3 read first), then a = 8 + a = 11 and a = 4 + a = 15.
+  Blocks._customBlock_TreeKeysSameBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeKeys = new StringMap();
+    var t = d.TreeKeys;
+    var v = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.b);
+    t.h.b = w;
+    var z = 5 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.b);
+    t.h.b = z;
+    var x = 8 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = x;
+    var y = 4 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = y;
+  };
   Blocks._customBlock_TreeKeysRead = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a + state().TreeCapped

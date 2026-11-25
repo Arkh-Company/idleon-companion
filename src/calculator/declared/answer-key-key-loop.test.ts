@@ -57,3 +57,33 @@ test("the cache's running total closes through the loop's turn of its last write
     ["multi", 2],
   ]);
 });
+
+test("a key's running total read back at its place, when another key holds the same number, is its own total (the LUK's signs)", () => {
+  const r = inventedRecorder();
+  const rec = r.record(
+    mosaicOf({
+      DNSM: {
+        $m: { ...activeAs(0).DNSM.$m, TreeKeys: { $m: { a: 15, b: 8 } } },
+      },
+    }),
+    [["TreeKeysRead", [0, 0, 0]]],
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeKeys", run: { block: "TreeKeysSameBuild", args: [] } },
+      ],
+    },
+  );
+  const author = rec.nodes.find((n) => n.b === "TreeKeysSameBuild");
+  if (!author) throw new Error("no author");
+  const made = makeSteps(rec, r.ops);
+  const key = answerKeyOfSteps(rec, made.of(author.id), {
+    node: author.id,
+    value: 15,
+    ops: r.ops,
+    turnOf: made.turnOf,
+    path: "DNSM.TreeKeys.a",
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.pools.map((p) => [p.kind, p.value])).toEqual([["additive", 15]]);
+});
