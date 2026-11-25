@@ -558,6 +558,45 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeSigilsRoot = function () {
     return Blocks._customBlock_TreeSigils() + state().TreeCapped;
   };
+  // Spec 010 (T215): the count as the game's purple sigils write it (`test && (count + 1)`, no if), with another test of
+  // the turn, `TreeList[i] > 0`, before the count's test in one block and after it in the other; and a count from 1.
+  Blocks._customBlock_TreeCountBefore = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountBefore"))
+      for (var i = (d.TreeCountBefore = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] > 0 && (d.TreeSeen = i);
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountBefore = Math.round(d.TreeCountBefore + 1));
+      }
+    return Math.round(d.TreeCountBefore);
+  };
+  Blocks._customBlock_TreeCountAfter = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountAfter"))
+      for (var i = (d.TreeCountAfter = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountAfter = Math.round(d.TreeCountAfter + 1));
+        state().TreeList[i] > 0 && (d.TreeSeen = i);
+      }
+    return Math.round(d.TreeCountAfter);
+  };
+  Blocks._customBlock_TreeCountFrom = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountFrom"))
+      for (var i = (d.TreeCountFrom = 1); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeCountFrom = Math.round(d.TreeCountFrom + 1);
+    return Math.round(d.TreeCountFrom);
+  };
+  Blocks._customBlock_TreeCountBeforeRoot = function () {
+    return Blocks._customBlock_TreeCountBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountAfterRoot = function () {
+    return Blocks._customBlock_TreeCountAfter() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountFromRoot = function () {
+    return Blocks._customBlock_TreeCountFrom() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCacheRead = function () {
     return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total + 1;
   };
