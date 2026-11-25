@@ -15,7 +15,7 @@ import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { atCap, callRef, near } from "./answer-key-pool.ts";
 import { writeExpr, writeTurn } from "./cache-author.ts";
-import { countTurns } from "./count-turns.ts";
+import { codeStep, countTurns } from "./count-turns.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsAndOwn } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -167,7 +167,16 @@ export function writeTurns(
   const ws = writesBy(ctx.rec, author.id, false).filter(
     (w) => w.path === write.path && w.seq <= write.seq,
   );
-  if (ws.length < 2) return null;
+  const [first] = ws;
+  if (ws.length < 2) {
+    // no item passed (r1 of part V): the start at 0 alone, the count's step only in the author's code
+    const zero =
+      first?.v === 0 &&
+      ctx.ops &&
+      writeExpr(ctx.rec, { node: author, write: first }, ctx.turnOf) === null;
+    const coded = zero ? codeStep(author, write.path, ctx.ops ?? []) : -1;
+    return coded < 0 ? null : countTurns(author, coded, write.path, ctx);
+  }
   const turns = ws.map((w) =>
     writeTurn(ctx.rec, { node: author, write: w }, ctx.turnOf),
   );
@@ -189,11 +198,15 @@ export function writeTurns(
   };
   const j = exprs.findIndex((e) => by(e) !== undefined);
   if (j >= 0) {
+    // each write a step of 1, or the start at 0 with no step: a cap after the count or a start of its own is none (r1)
+    const k = exprs.findIndex(
+      (e, i) => by(e) !== 1 && !(i === 0 && first?.v === 0 && e === null),
+    );
     // the count's step: the last the step log recorded before its write
     const step = author.x?.[(ws[j]?.xi ?? 0) - 1]?.[0];
-    if (by(exprs[j] ?? null) !== 1 || step === undefined)
-      return `o laço de ${name} conta ${write.path}, ${String(by(exprs[j] ?? null))} a volta: a forma do contador (T215) é a de 1 a volta`;
-    return countTurns(author, step, ctx);
+    if (k >= 0 || step === undefined)
+      return `o laço de ${name} conta ${write.path}, mas a escrita ${String(k + 1)} não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)`;
+    return countTurns(author, step, write.path, ctx);
   }
   // the first write may add to the 0 of a key not yet set (T192)
   const empty = ws[0] !== undefined && emptyKey(author, ws[0]);

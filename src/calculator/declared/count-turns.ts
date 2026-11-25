@@ -47,10 +47,38 @@ function guardOf(step: number, ops: readonly Op[]): number {
   return -1;
 }
 
-/** The turns of the count whose step is the op `step`, or the reason the form does not hold. */
+/**
+ * The count's step in the author's code when no turn ran it (r1 of part V): a `+ 1` onto the path's own key, by its
+ * last name as the code writes it (`d.X`, `h.X`), under a test of its loop's turn; -1 with none.
+ */
+export function codeStep(
+  author: RecNode,
+  path: string,
+  ops: readonly Op[],
+): number {
+  const key = /\.(\w+)$/.exec(path)?.[1];
+  if (!key) return -1;
+  const own = new RegExp(`\\.${key}\\b`);
+  return ops.findIndex((o, i) => {
+    const n = o.node;
+    if (o.block !== author.b || o.kind !== "op" || n.operator !== "+")
+      return false;
+    const l = at(n, "left");
+    const r = at(n, "right");
+    return (
+      r.type === "Literal" &&
+      r.value === 1 &&
+      own.test(o.fnText.slice(l.range[0] - 1, l.range[1] - 1)) &&
+      guardOf(i, ops) >= 0
+    );
+  });
+}
+
+/** The turns of the count of `path` whose step is the op `step`, or the reason the form does not hold. */
 export function countTurns(
   author: RecNode,
   step: number,
+  path: string,
   ctx: LevelContext,
 ): Opening[] | string {
   const name = callRef(author);
@@ -59,6 +87,8 @@ export function countTurns(
     return `o laço de ${name} soma 1 a volta fora de um teste: não é a forma do contador (T215)`;
   const xs = author.x ?? [];
   const places = xs.flatMap(([o], j) => (o === test ? [j] : []));
+  if (places.length === 0)
+    return `o laço de ${name} conta ${path}: nenhuma volta foi testada`;
   const out: Opening[] = [];
   for (const [k, to] of places.entries()) {
     const from = k === 0 ? 0 : (places[k - 1] ?? 0) + 1;

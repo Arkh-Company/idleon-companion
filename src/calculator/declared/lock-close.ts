@@ -18,7 +18,9 @@ export function closeLevel(
 ): void {
   const { expr, scope, value } = level;
   const expected = value ?? Number.NaN;
-  if (!expr) {
+  // an opened level closes by its parts, even with no step of its own (a count no item passed, T215 r1)
+  const { open } = level;
+  if (!expr && !open) {
     out.errors.push({ kind: "notClosing", where: ctx.where, expected });
     return;
   }
@@ -28,13 +30,13 @@ export function closeLevel(
       (w) => w.node === scope.id && w.path === p,
     );
   const by = { recorded: false };
-  const { open } = level;
   const got = open
     ? open.reduce<number | null>(
         (s, o) => (s === null || o.value === null ? null : s + o.value),
         0,
       )
-    : evalExpr(expr, (e) => {
+    : expr &&
+      evalExpr(expr, (e) => {
         if (!leaves.includes(e)) return undefined;
         const k = keyOfLeaf(e, ctx.rec);
         const n = e.t === "call" ? ctx.rec.nodes[e.id] : undefined;
