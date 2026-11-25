@@ -784,7 +784,7 @@ lime.$scripts.N = function (_exports, $global) {
     var f = function (t) {
       return state().TreeBase * t;
     };
-    return f(3);
+    return f(t);
   };
   // Spec 010 (T209, form 4): how many entries a map of the save holds, as the game's D.mapCount(FarmCrop).
   Blocks._customBlock_TreeCount = function () {
