@@ -78,7 +78,7 @@ export function pieceOf(
   where: string,
   stack: readonly string[],
   pieces: ReadonlyMap<string, unknown>,
-): { name: string; body: object } {
+): { name: string; body: object; pending: unknown } {
   if (["children", "leaf", "combine", "each"].some((k) => n[k] !== undefined))
     no(where, "piece vai no lugar de children, leaf, combine e each");
   const c = obj(n.piece, ["name", "args"], `${where}/piece`);
@@ -89,7 +89,7 @@ export function pieceOf(
   const at = `pedaço ${name}`;
   const p = obj(
     pieces.get(name),
-    ["id", "params", "combine", "each", "children", "pools"],
+    ["id", "params", "combine", "each", "children", "pools", "pending"],
     at,
   );
   if (p.id !== name) no(at, "id diferente do nome do arquivo");
@@ -119,5 +119,7 @@ export function pieceOf(
   return {
     name,
     body: pieceBody(p as unknown as BlueprintPiece, args as PieceArgs),
+    // its pending places (T216), each `where` in the piece's own body
+    pending: p.pending,
   };
 }

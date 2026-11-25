@@ -71,11 +71,23 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   if (n.tree !== undefined) checkTree(n, where, w.trees);
   if (n.piece !== undefined) {
     // the node with the piece's body in place of the call, as the load puts it (pieces.ts, inlinePieces)
-    const { name, body } = pieceOf(n, where, w.stack, w.pieces);
+    const { name, body, pending } = pieceOf(n, where, w.stack, w.pieces);
     const stack = [...w.stack, name];
+    // its pending places (T216), at their place below the line that calls it
+    const own =
+      pending === undefined
+        ? []
+        : pendingOf(pending, `pedaço ${name}/pending`).map((x) => ({
+            ...x,
+            where: `${where}/${x.where}`,
+          }));
+    w.piecePending.push(...own);
     checkNode({ ...n, piece: undefined, ...body }, where, level, {
       ...w,
       stack,
+      pending: (kind, at) =>
+        w.pending(kind, at) ||
+        own.some((x) => x.kind === kind && x.where === at),
     });
     return;
   }
@@ -269,6 +281,22 @@ function checkPools(raw: unknown, w: Walk, at = "pools"): void {
   });
 }
 
+/** A list of pending places: `{ where, kind }`, the kind one of PENDING_KINDS (T199, T216). */
+function pendingOf(raw: unknown, at: string): BlueprintPending[] {
+  return list(raw, at, at).map((x, i) => {
+    const p = obj(x, ["where", "kind"], `${at}/${String(i)}`);
+    if (
+      typeof p.where !== "string" ||
+      !PENDING_KINDS.includes(p.kind as string)
+    )
+      no(
+        `${at}/${String(i)}`,
+        "pendência é { where, kind: name | system | leaf | descend }",
+      );
+    return p as unknown as BlueprintPending;
+  });
+}
+
 export function parseBlueprint(
   raw: unknown,
   ctx: {
@@ -293,20 +321,7 @@ export function parseBlueprint(
         blueprint: { ...(bp as unknown as Blueprint), pools: [] },
       };
     const pending =
-      bp.pending === undefined
-        ? []
-        : list(bp.pending, "pending", "pending").map((x, i) => {
-            const p = obj(x, ["where", "kind"], `pending/${String(i)}`);
-            if (
-              typeof p.where !== "string" ||
-              !PENDING_KINDS.includes(p.kind as string)
-            )
-              no(
-                `pending/${String(i)}`,
-                "pendência é { where, kind: name | system | leaf | descend }",
-              );
-            return p as unknown as BlueprintPending;
-          });
+      bp.pending === undefined ? [] : pendingOf(bp.pending, "pending");
     const w: Walk = {
       systems: ctx.systemIds,
       pending: (kind, where) =>
@@ -315,14 +330,21 @@ export function parseBlueprint(
       pieces: ctx.pieces ?? new Map(),
       trees: { own: ctx.fileId, roots: ctx.trees ?? new Map() },
       stack: [],
+      piecePending: [],
     };
     checkPools(bp.pools, w);
     for (const p of pending)
       if (!w.places.has(p.where)) no(p.where, "pendência fora da receita");
+    for (const p of w.piecePending)
+      if (!w.places.has(p.where)) no(p.where, "pendência fora do pedaço");
+    const all = [...pending, ...w.piecePending];
+    const inlined = inlinePieces(bp as unknown as Blueprint, w.pieces);
     return {
       ok: true,
-      stage: pending.length > 0 ? "draft" : "complete",
-      blueprint: inlinePieces(bp as unknown as Blueprint, w.pieces),
+      stage: all.length > 0 ? "draft" : "complete",
+      // a piece's pending places are the recipe's, at their place (T216)
+      blueprint:
+        w.piecePending.length > 0 ? { ...inlined, pending: all } : inlined,
     };
   } catch (e) {
     if (e instanceof Refused) return { ok: false, reason: e.message };

@@ -9,8 +9,9 @@ import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { LockError, LockErrorKind } from "./lock.ts";
 import { keyMatches, nodeId, savedTwice } from "./refs.ts";
 
+// a place, and below a piece's line its own pools' places (T216: a piece's pending)
 const PLACE =
-  /^pools\/(\d+)\/groups\/(\d+)(?:\/sources\/(\d+)((?:\/children\/\d+)*))?$/;
+  /^pools\/(\d+)\/groups\/(\d+)(?:\/sources\/(\d+)((?:\/children\/\d+)*)(\/pools\/.+)?)?$/;
 
 const AT_PARENT: ReadonlySet<LockErrorKind> = new Set([
   "childNoValue",
@@ -41,7 +42,20 @@ type Cover = (e: LockError, all: readonly LockError[]) => boolean;
 const none: Cover = () => false;
 
 /** A pending place's node: its id, its parent's id and whether it is a model child; null out of the forms. */
-function placeOf(bp: Blueprint, where: string) {
+type Place =
+  | { pool: number; group: true; id: string }
+  | {
+      pool: number;
+      group: false;
+      node: BlueprintNode;
+      id: string;
+      parentId: string;
+      model: boolean;
+    };
+function placeOf(
+  bp: Pick<Blueprint, "id" | "pools">,
+  where: string,
+): Place | null {
   const m = PLACE.exec(where);
   const pool = Number(m?.[1]);
   const g = bp.pools[pool]?.groups[Number(m?.[2])];
@@ -58,6 +72,12 @@ function placeOf(bp: Blueprint, where: string) {
   }
   const node = path.at(-1);
   if (!node || path.length !== 1 + kids.length) return null;
+  // below a piece's line, its own pools: the place there, its ids under the line's
+  if (m[5] !== undefined)
+    return placeOf(
+      { id: idOf(path.map((x) => x.key)), pools: node.pools ?? [] },
+      m[5].slice(1),
+    );
   const parent = path.at(-2);
   return {
     pool,

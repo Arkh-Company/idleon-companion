@@ -23,6 +23,8 @@ export interface Walk {
   recipe?: boolean;
   /** The node is a child of a cache's read (`DNSM.*`): its author, the one place `any` may be (T208). */
   author?: boolean;
+  /** The pieces' pending places (T216), at their place in the recipe: the recipe is then a draft. */
+  piecePending: BlueprintPending[];
 }
 
 /**
