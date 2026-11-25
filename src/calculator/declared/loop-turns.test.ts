@@ -8,6 +8,8 @@ import type { Expr } from "../recorded/steps.ts";
 import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { answerKey } from "./answer-key.ts";
 import { draftBlueprint } from "./draft.ts";
+import { keyIn } from "./draft-names.ts";
+import { keyTurn } from "./level-openings.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import type { DraftNode } from "./draft.ts";
 import { inventedRecorder, recorded } from "./lock-fixture.ts";
@@ -207,6 +209,15 @@ test("a turn's number stays at the end of its key when the read's slug passes th
     characterClass: 3,
   });
   expect(out.errors.map(lockMessage)).toEqual([]);
+});
+
+test("two keys of one turn whose slugs are cut the same part before the turn's number (T198)", () => {
+  // one loop gives one part a turn: the key is checked alone, two long reads of one prefix in the same turn
+  const prefix = "TreeReadWithANameLongEnoughToPassTheCutOfTheSlug";
+  const taken = new Set<string>();
+  const keys = ["A", "B"].map((x) => keyIn(taken, prefix + x, "-turn-1"));
+  expect(new Set(keys).size).toBe(2);
+  expect(keys.map(keyTurn)).toEqual([1, 1]);
 });
 
 test("a turn whose item is a part of an expression is refused as no call nor read", () => {
