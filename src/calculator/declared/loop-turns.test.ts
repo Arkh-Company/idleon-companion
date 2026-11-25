@@ -162,6 +162,53 @@ test("two turns with the same item are a line each, keyed by the number of its t
   ]);
 });
 
+test("a turn's number stays at the end of its key when the read's slug passes the cut (T198)", () => {
+  const LONG = "TreeReadWithANameLongEnoughToPassTheCutOfTheSlug";
+  const { rec, key, ops } = recorded("TreeTurnsLongRoot", { [LONG]: 4 });
+  const ref = { call: "TreeTurnsLongRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const keys = draft.pools[0]?.groups[0]?.sources[0]?.children?.map(
+    (c) => c.key,
+  );
+  expect(keys?.map((k) => /-turn-\d+$/.exec(k)?.[0])).toEqual([
+    "-turn-1",
+    "-turn-2",
+  ]);
+  // the lock ties the draft's own keys to their turns
+  const bp: Blueprint = {
+    id: "invented-turns",
+    root: { name: "Invented", ref },
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "cards",
+            sources: [
+              call(
+                "turns",
+                "TreeTurnsLong",
+                [],
+                (keys ?? []).map((k) => leaf(k, LONG)),
+              ),
+            ],
+          },
+          { system: "stamps", sources: [leaf("capped", "TreeCapped")] },
+        ],
+      },
+    ],
+  };
+  const out = lockBlueprint({
+    blueprint: bp,
+    rec,
+    key,
+    ops,
+    character: 0,
+    characterClass: 3,
+  });
+  expect(out.errors.map(lockMessage)).toEqual([]);
+});
+
 test("a turn whose item is a part of an expression is refused as no call nor read", () => {
   expect(
     lock(

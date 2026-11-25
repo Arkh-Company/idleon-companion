@@ -2730,6 +2730,16 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTurnsSameRoot = function () {
     return Blocks._customBlock_TreeTurnsSame() + state().TreeCapped;
   };
+  // ...and a read whose slug passes the key's cut (56 letters), read in two turns (the test puts it in the state)
+  Blocks._customBlock_TreeTurnsLong = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t = t + state().TreeReadWithANameLongEnoughToPassTheCutOfTheSlug;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsLongRoot = function () {
+    return Blocks._customBlock_TreeTurnsLong() + state().TreeCapped;
+  };
   // A product in a loop (no sum of turns), and a sum in a loop the call returns with one more term after it.
   Blocks._customBlock_TreeTurnsProduct = function () {
     var t = 1;
