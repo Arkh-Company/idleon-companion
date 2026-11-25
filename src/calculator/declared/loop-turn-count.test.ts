@@ -129,6 +129,20 @@ test.each(BLOCKS)(
   },
 );
 
+test("the lock refuses a turn's count line declared as a leaf: its item's other references are undeclared (r1 of part U)", () => {
+  const leafLine: BlueprintNode = {
+    key: "item-0",
+    name: "Item",
+    ref: { call: "TreeTurnItem", args: [0] },
+    leaf: "level",
+  };
+  for (const block of BLOCKS)
+    expect(lock(block, [leafLine, line(1)])).toEqual([
+      "parte não declarada: invented-turns/0/cards/turns/item-0: TreeTwins[0]",
+      "folha com filhos na gravação: invented-turns/0/cards/turns/item-0: o primeiro é TreeList[0]",
+    ]);
+});
+
 test("the lock checks a turn's count line's arguments at its first reference's call: the save's number is never written out (r1 of part U)", () => {
   // TreeTurnsCountSave: TreeTurnItemAt(i, TreeBase), its second argument from the save (TreeBase is 4)
   const at = (i: number, arg: RefArg): BlueprintNode => ({
