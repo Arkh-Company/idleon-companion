@@ -115,14 +115,6 @@ test("turns that do not part by their place are refused with the reason, in the 
   expect(refused.map(lockMessage)).toEqual([
     "invented-turns/0/cards/turns: a volta 1 do laço de TreeTurnsBefore() não tem o item no seu lugar",
   ]);
-  expect(
-    lock(
-      "TreeTurnsSameRoot",
-      call("turns", "TreeTurnsSame", [], [leaf("base", "TreeBase")]),
-    ).errors.map(lockMessage),
-  ).toEqual([
-    "invented-turns/0/cards/turns: duas voltas do laço de TreeTurnsSame() têm o mesmo item (TreeBase)",
-  ]);
   const before = draftOf("TreeTurnsBeforeRoot");
   expect(before.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
     ["TreeTurnsBefore()", []],
@@ -131,6 +123,40 @@ test("turns that do not part by their place are refused with the reason, in the 
     where: "pools/0/groups/0/sources/0",
     kind: "descend",
   });
+});
+
+test("two turns with the same item are a line each, keyed by the number of its turn, in the draft and in the lock (T198)", () => {
+  const same = draftOf("TreeTurnsSameRoot").pools[0]?.groups[0]?.sources[0];
+  expect(same && shape(same)).toEqual([
+    "TreeTurnsSame()",
+    [
+      ["TreeBase", []],
+      ["TreeBase", []],
+    ],
+  ]);
+  expect(same?.children?.map((c) => c.key)).toEqual([
+    "tree-base-turn-1",
+    "tree-base-turn-2",
+  ]);
+  const turns = (...keys: string[]) =>
+    lock(
+      "TreeTurnsSameRoot",
+      call(
+        "turns",
+        "TreeTurnsSame",
+        [],
+        keys.map((k) => leaf(k, "TreeBase")),
+      ),
+    ).errors.map(lockMessage);
+  expect(turns("tree-base-turn-1", "tree-base-turn-2")).toEqual([]);
+  // a turn with no line is a part with no child, by its number; a key with no number of a turn ties to no turn
+  expect(turns("tree-base-turn-1")).toEqual([
+    "parte não declarada: invented-turns/0/cards/turns: TreeBase (volta 2)",
+  ]);
+  expect(turns("tree-base", "tree-base-turn-2")).toEqual([
+    "fonte fora do gabarito: invented-turns/0/cards/turns/tree-base",
+    "parte não declarada: invented-turns/0/cards/turns: TreeBase (volta 1)",
+  ]);
 });
 
 test("a turn whose item is a part of an expression is refused as no call nor read", () => {
