@@ -11,6 +11,7 @@
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
+import { atCap } from "./answer-key-pool.ts";
 import { ranSites } from "./call-site.ts";
 import { defOf, fnOf } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
@@ -62,9 +63,11 @@ function readsSave(e: AnyNode, f?: Fn, place?: Place): Says {
 function ownWrite(place: Place, path: string): RecWrite | undefined {
   const of = (p: string) =>
     p === path || p.startsWith(`${path}[`) || p.startsWith(`${path}.`);
-  const read = place.caller.rx
-    ?.filter(([p, , xi]) => of(p) && xi <= place.pos)
-    .at(-1);
+  const rx = place.caller.rx ?? [];
+  // a log the cap cut at the call's place or before it may have lost the read right before the call
+  if (atCap(place.caller) && (rx.at(-1)?.[2] ?? -1) <= place.pos)
+    return undefined;
+  const read = rx.filter(([p, , xi]) => of(p) && xi <= place.pos).at(-1);
   const seen = read?.[3] ?? read?.[4];
   if (seen === undefined) return undefined;
   // the builders' pass writes its scratch among the spliced ones (recorder-pass.js): the last by number of both
