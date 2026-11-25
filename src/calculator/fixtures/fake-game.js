@@ -3097,6 +3097,20 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < 2; i++) t = t + d.TreeEarlyDN * 3;
     return t;
   };
+  // ...the same call before the loop as the item's other part, after the turn's read (r1 of part X): no place in turn 2
+  Blocks._customBlock_TreeTurnsCountEarlyPart = function () {
+    var d = dnsm();
+    d.TreeEarlyDN = Blocks._customBlock_TreeTurnItemAt(
+      0,
+      a.engine.getGameAttribute("TreeBase"),
+    );
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + state().TreeTwins[i] * d.TreeEarlyDN;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountEarlyPartRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountEarlyPart() + state().TreeCapped;
+  };
   // ...one whose item reads before a call with an argument of the save that changes a turn (T227): TreeArg(TreeList[i])
   Blocks._customBlock_TreeTurnsCountArg = function () {
     var U = A["com.stencyl.utils.Utils"];

@@ -308,6 +308,21 @@ test("a turn whose count's call has no place in the turn is refused with the rea
   ]);
 });
 
+test("the draft never writes a save's number out on a call with no call of its own in the turn: it is `*` (r1 of part X)", () => {
+  // TreeTurnsCountEarlyPart: TreeTurnItemAt(0, TreeBase) is made before the loop; turn 2's line has no call of it
+  const root = "TreeTurnsCountEarlyPartRoot";
+  const { rec, key, ops } = recorded(root);
+  const ref = { call: root, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const calls = JSON.stringify(draft).match(
+    /\{"call":"TreeTurnItemAt","args":\[[^\]]*\]\}/g,
+  );
+  expect(calls?.length).toBeGreaterThan(1);
+  expect(new Set(calls)).toEqual(
+    new Set(['{"call":"TreeTurnItemAt","args":[0,"*"]}']),
+  );
+});
+
 test("a turn whose item has a curve waits with its reason: its parts would be the whole call's, never the turn's (r1 of part U)", () => {
   const root = "TreeTurnsCountCurveRoot";
   const { rec, key, ops } = recorded(root);
