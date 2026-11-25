@@ -31,10 +31,10 @@ export interface Opening {
   /** The number of its loop's turn, only on a part another turn has too (T198): the child ties by its key's `-turn-N`. */
   turn?: number;
   /**
-   * A turn's item that is a count (T193, research R4): its references in code order, each at its place in `expr`; the
-   * line is the first's, the others are termPart children, and it closes by `expr`.
+   * A turn's item that is a count (T193, research R4): its parts as the lock reads them (level-parts.ts partsOf) in
+   * the turn's `steps`; the line is the first's, the others are termPart children, and it closes by `expr`.
    */
-  refs?: { part: string; call: RecNode | null; leaf: Expr }[];
+  refs?: string[];
 }
 
 /** The part's label in a level's coverage: with its turn's number when another turn has the same part (T198). */
@@ -111,7 +111,8 @@ export const levelOfOpening = (
         expr: o.expr ?? null,
         scope,
         value: o.value,
-        termParts: new Set(o.refs.slice(1).map((r) => r.part)),
+        ...(o.steps ? { steps: o.steps } : {}),
+        termParts: new Set(o.refs.slice(1)),
       }
     : o.call
       ? {

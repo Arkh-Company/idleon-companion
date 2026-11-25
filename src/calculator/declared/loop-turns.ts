@@ -12,39 +12,50 @@
 // first write may add to the 0 of a key not yet set, the author's first read of it empty (T192: the game's Gallery).
 import { READ_CAP } from "../recording.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
-import type { Expr } from "../recorded/steps.ts";
+import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { atCap, callRef, near } from "./answer-key-pool.ts";
-import { writeExpr } from "./cache-author.ts";
+import { writeExpr, writeTurn } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
+import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
 import { writesBy } from "./own-writes.ts";
 
 /** One line a turn, by its item, or the refusal's reason when the turns do not part by their place. */
 function turnsOf(
-  name: string,
+  scope: RecNode,
   items: readonly (Expr | null | undefined)[],
   ctx: LevelContext,
+  /** The steps of each turn, where its item's reads have their place. */
+  turns: readonly BlockSteps[],
 ): Opening[] | string {
+  const name = callRef(scope);
   const below: Opening[] = [];
   for (const [k, item] of items.entries()) {
     if (!item || item.t === "val")
       return `a volta ${String(k + 1)} do laço de ${name} não tem o item no seu lugar`;
     const part = keyOfLeaf(item, ctx.rec);
-    // an item that is a count (T193, research R4): a line by its first call or read, its other references termPart
-    const refs = part === null ? refsOf(item, ctx) : [];
-    const first = part ?? refs[0]?.part;
+    // an item that is a count (T193, research R4): a line by its first part, as the lock reads it (a pass-through
+    // variable through what gave its write, T188), the others termPart children, in its turn's steps
+    const steps = turns[k];
+    const level = { expr: item, scope, value: num(item.v), steps };
+    const refs = part === null ? partsOf(level, leavesOf(item), ctx) : [];
+    const first = part ?? refs[0];
     if (first === undefined)
       return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
     // the same read in two turns is a line a turn, by its number (T198); the same call, two calls the place must part
     if (below.some((b) => b.part === part) && item.t === "call")
       return `duas voltas do laço de ${name} têm o mesmo item (${first})`;
     const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
-    const count = refs.length > 0 && { expr: item, refs };
+    const count = refs.length > 0 && {
+      expr: item,
+      refs,
+      ...(steps && { steps }),
+    };
     below.push({
       part: first,
       call,
-      value: num(item.v),
+      value: level.value,
       turn: k + 1,
       ...count,
     });
@@ -57,17 +68,6 @@ function turnsOf(
     return one;
   });
 }
-
-/** A count's references in code order, once each, with the call or read at its place. */
-const refsOf = (item: Expr, ctx: LevelContext) => {
-  const seen = new Map<string, NonNullable<Opening["refs"]>[number]>();
-  for (const leaf of leavesOf(item)) {
-    const part = keyOfLeaf(leaf, ctx.rec);
-    const call = leaf.t === "call" ? (ctx.rec.nodes[leaf.id] ?? null) : null;
-    if (part !== null && !seen.has(part)) seen.set(part, { part, call, leaf });
-  }
-  return [...seen.values()];
-};
 
 /** The turns of the loop whose sum the call returned, their refusal's reason, or null when it returned no such sum. */
 export function loopOpening(
@@ -85,12 +85,14 @@ export function loopOpening(
   const op = scope.x?.[at]?.[0];
   const places = (scope.x ?? []).flatMap(([o], j) => (o === op ? [j] : []));
   if (op === undefined || places.length < 2) return null;
-  const items = places.map((to, k) => {
-    const from = k === 0 ? 0 : (places[k - 1] ?? 0) + 1;
-    const e = ctx.turnOf(scope, { from, to }).exprOf?.(op);
+  const turns = places.map((to, k) =>
+    ctx.turnOf(scope, { from: k === 0 ? 0 : (places[k - 1] ?? 0) + 1, to }),
+  );
+  const items = turns.map((t) => {
+    const e = t.exprOf?.(op);
     return e?.t === "op" ? e.r : null;
   });
-  return turnsOf(callRef(scope), items, ctx);
+  return turnsOf(scope, items, ctx, turns);
 }
 
 /**
@@ -148,8 +150,11 @@ export function writeTurns(
     (w) => w.path === write.path && w.seq <= write.seq,
   );
   if (ws.length < 2) return null;
-  const exprs = ws.map((w) =>
-    writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf),
+  const turns = ws.map((w) =>
+    writeTurn(ctx.rec, { node: author, write: w }, ctx.turnOf),
+  );
+  const exprs = ws.map((w, j) =>
+    writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf, turns[j]),
   );
   const name = callRef(author);
   // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): its form
@@ -182,5 +187,5 @@ export function writeTurns(
   const k = items.findIndex((x) => x === undefined);
   if (k >= 0 && exprs[k + start] !== null)
     return `a volta ${String(k + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
-  return turnsOf(name, items, ctx);
+  return turnsOf(author, items, ctx, turns.slice(start));
 }
