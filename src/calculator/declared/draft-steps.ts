@@ -109,7 +109,7 @@ export function stepsGuide(
     if (Array.isArray(w.below)) for (const c of w.below) part(c, depth + 1);
     else
       lines.push(
-        `${pad}  ${w.below === "leaf" ? "folha: tipo pendente" : `descer: pendente (${m(w.why ?? "a gravação lê o save embaixo")})`}`,
+        `${pad}  ${w.below === "leaf" ? (w.condition ? "folha: condition; tipo da condição (conditionKind) pendente" : "folha: tipo pendente") : `descer: pendente (${m(w.why ?? "a gravação lê o save embaixo")})`}`,
       );
   };
 
