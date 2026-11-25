@@ -14,13 +14,17 @@ import type { DraftNode } from "./draft.ts";
 import { inventedRecorder } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 
-const BLOCKS = ["TreeCountBefore", "TreeCountAfter"];
+// the other test before the count's, after it, and inside its if before its step (r1 of part V)
+const BLOCKS = ["TreeCountBefore", "TreeCountAfter", "TreeCountInside"];
 
 /** A recording of `${block}Root`, the cache (the game's `value`) built again by its block, as the builders pass does. */
-function recordCount(block: string, value = 2) {
+function recordCount(block: string, value = 2, attrs: object = {}) {
   const r = inventedRecorder();
   const rec = r.record(
-    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, [block]: value } } }),
+    mosaicOf({
+      ...attrs,
+      DNSM: { $m: { ...activeAs(0).DNSM.$m, [block]: value } },
+    }),
     [[`${block}Root`, [0, 0, 0]]],
     { recompute: [], builders: [{ cache: block, run: { block, args: [] } }] },
   );
@@ -83,13 +87,20 @@ const recipe = (block: string, line = countLine(block)): Blueprint => ({
     },
   ],
 });
-const lock = (block: string, bp = recipe(block), value = 2) =>
+const lockOut = (block: string, bp = recipe(block), value = 2, attrs = {}) =>
   lockBlueprint({
     blueprint: bp,
-    ...recordCount(block, value),
+    ...recordCount(block, value, attrs),
     character: 0,
     characterClass: 3,
-  }).errors.map(lockMessage);
+  });
+const lock = (block: string, bp = recipe(block), value = 2) =>
+  lockOut(block, bp, value).errors.map(lockMessage);
+/** The items the lock checked as typed leaves below the count line. */
+const items = (out: ReturnType<typeof lockOut>) =>
+  out.closedAt
+    .filter((w) => w.includes("/author/item-"))
+    .map((w) => w.split("/").pop());
 
 test("the load takes a quantity line with a model child each, its item a condition; any other leaf with children is refused (T215)", () => {
   const load = (line: BlueprintNode) => {
@@ -141,7 +152,10 @@ test.each(BLOCKS)(
 test.each(BLOCKS)(
   "the lock checks the count is the number of items whose test the recording saw true, by the count's test's place (%s, T215)",
   (block) => {
-    expect(lock(block)).toEqual([]);
+    const out = lockOut(block);
+    expect(out.errors.map(lockMessage)).toEqual([]);
+    // TreeList[0] fails the count's test, a ✗ item: the other test never saw it in TreeCountInside
+    expect(items(out)).toEqual(["item-0", "item-1", "item-2"]);
   },
 );
 
