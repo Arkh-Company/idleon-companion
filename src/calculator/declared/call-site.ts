@@ -81,6 +81,8 @@ export function ranSites(
   n: RecNode,
 ): AnyNode[] {
   if (sites.length < 2) return [...sites];
-  const kept = sites.filter((s) => ran(s, up, caller, ops, n.pxi - 1) !== false);
+  const kept = sites.filter(
+    (s) => ran(s, up, caller, ops, n.pxi - 1) !== false,
+  );
   return kept.length > 0 ? kept : [...sites];
 }
