@@ -160,3 +160,10 @@ test("the lock refuses an item the recording did not test, and a count that is n
     "nível não fecha: invented-count/0/cards/count/cache/author: as partes dão 2, o valor gravado é 3",
   ]);
 });
+
+test("the lock refuses a count its author writes again after it counted: each write is a step of 1 or the start at 0 (r1 of part V)", () => {
+  // TreeCountCap: the 2 items that pass, then `min(count, 5)`, a cap the count does not reach: never closed without it
+  expect(lock("TreeCountCap")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountCap() conta DNSM.TreeCountCap, mas a escrita 4 não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)",
+  ]);
+});

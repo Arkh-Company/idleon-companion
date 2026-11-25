@@ -588,6 +588,33 @@ lime.$scripts.N = function (_exports, $global) {
           d.TreeCountFrom = Math.round(d.TreeCountFrom + 1);
     return Math.round(d.TreeCountFrom);
   };
+  // ...the other test inside the count's if, before its step (r1); and a count its author caps after (no count, r1)
+  Blocks._customBlock_TreeCountInside = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountInside"))
+      for (var i = (d.TreeCountInside = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2) {
+          state().TreeList[i] > 0 && (d.TreeSeen = i);
+          d.TreeCountInside = Math.round(d.TreeCountInside + 1);
+        }
+    return Math.round(d.TreeCountInside);
+  };
+  Blocks._customBlock_TreeCountCap = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountCap")) {
+      for (var i = (d.TreeCountCap = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeCountCap = Math.round(d.TreeCountCap + 1);
+      d.TreeCountCap = Math.min(d.TreeCountCap, 5);
+    }
+    return Math.round(d.TreeCountCap);
+  };
+  Blocks._customBlock_TreeCountInsideRoot = function () {
+    return Blocks._customBlock_TreeCountInside() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountCapRoot = function () {
+    return Blocks._customBlock_TreeCountCap() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCountBeforeRoot = function () {
     return Blocks._customBlock_TreeCountBefore() + state().TreeCapped;
   };
