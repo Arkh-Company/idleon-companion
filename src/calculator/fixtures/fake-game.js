@@ -1687,6 +1687,17 @@ lime.$scripts.N = function (_exports, $global) {
       : (d.TreeWriteBon.h.v = state().TreeBig.h.k2);
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
+  // ...and through a variable set on both sides, as the game's companions (`1 == CompanionLVz[s] ? (_ = CompanionDB[s]
+  // [11], r.h[s] = _) : (_ = CompanionDB[s][2], r.h[s] = _)`): TreeOwned is 0, so v is the other side's TreeBig k2 (7).
+  Blocks._customBlock_TreeWriteSideVar = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    var r, t;
+    1 == state().TreeOwned
+      ? ((r = d.TreeWriteBon), (t = state().TreeBase), (r.h.v = t))
+      : ((r = d.TreeWriteBon), (t = state().TreeBig.h.k2), (r.h.v = t));
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
   // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
   // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
   Blocks._customBlock_TreeWriteRhs = function () {

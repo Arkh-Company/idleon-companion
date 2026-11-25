@@ -199,3 +199,17 @@ test("a write on the side of a ? : its test took goes down that side's read, nev
     ["DNSM.TreeWriteBon.v", [["TreeWriteSide()", [["TreeBig.k2", []]]]]],
   ]);
 });
+
+test("a write through a variable set on both sides of a ? : goes down the side its test took (Fase 4 t)", () => {
+  // TreeWriteSideVar: `1 == TreeOwned ? (t = TreeBase, v = t) : (t = TreeBig k2, v = t)`, as the game's companions
+  const { rec, key, ops } = recordedWrites(
+    ROOT,
+    "TreeWriteBon",
+    "TreeWriteSideVar",
+  );
+  const ref = { call: ROOT, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["DNSM.TreeWriteBon.v", [["TreeWriteSideVar()", [["TreeBig.k2", []]]]]],
+  ]);
+});
