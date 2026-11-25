@@ -333,6 +333,16 @@ test("a caller whose step log the cap cut before the call's place: an older read
   expect(saveArgs(cut, ops, row)).toEqual({ save: [], unsure: [0] });
 });
 
+test("the draft never writes out an argument the place does not decide is the save's: it is `*` (r1 of part X)", () => {
+  const { rec, key, ops } = recorded("TreeWorkMid");
+  const ref = { call: "TreeWorkMid", args: [0, 0, 0] };
+  const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(d.pools[0]?.groups[1]?.sources[0]?.ref).toEqual({
+    call: "TreeDeclRow",
+    args: ["*"],
+  });
+});
+
 test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
   expect(rowLock("TreeWorkMid", 3)).toEqual([
     "invented-work/0/luk-stats/row: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
