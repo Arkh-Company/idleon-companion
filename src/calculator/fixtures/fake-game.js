@@ -1733,6 +1733,21 @@ lime.$scripts.N = function (_exports, $global) {
       }
     }
   };
+  // Spec 010 (T212): the best of three whose bonus is a call with the member's number of the save, as the game's
+  // FamilyBonsuesREAL(class, I, level): TreeArg(TreeList[g]) = 4, 12, 8; the cache is TreeArg(3)'s 12.
+  Blocks._customBlock_TreeAuthorBestSave = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var g = 0; g < state().TreeList.length; g++) {
+      d.TreeBestDN = Blocks._customBlock_TreeArg(state().TreeList[g]);
+      var b = U.asNumber(d.TreeBestDN);
+      if (b > U.asNumber(d.TreeAuthor.h.v)) {
+        var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
+        d.TreeAuthor.h.v = G;
+      }
+    }
+  };
   // Spec 010 (T212): the same best of three, with a factor only when the best member is TreeMe, as TalentCalc(-3)
   // gives the talent 144 only when the best family bonus is the active character's: × (1 + TreeWriteCall() / 100).
   Blocks._customBlock_TreeAuthorBestMe = function () {

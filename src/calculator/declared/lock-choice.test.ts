@@ -9,7 +9,7 @@ import { answerKey } from "./answer-key.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
 import { inventedRecorder } from "./lock-fixture.ts";
-import { lockMessage } from "./lock.ts";
+import { lockBlueprint, lockMessage } from "./lock.ts";
 import { lockNumber } from "./real-trees-check.ts";
 import type { RecordFn } from "./real-trees-check.ts";
 import { refKey } from "./refs.ts";
@@ -132,4 +132,46 @@ test("the draft goes down the chosen member's turn: its item and the factor of T
       ],
     ],
   ]);
+});
+
+test("the chosen member's call with a number of the save, `*`, is the chosen turn's, not any of the others' (T212)", () => {
+  const rec = inventedRecorder().record(
+    mosaicOf({
+      TreeList: [1, 3, 2],
+      DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 12 } } } },
+    }),
+    [["TreeAuthorRead", [0, 0, 0]]],
+    {
+      recompute: [],
+      builders: [
+        {
+          cache: "TreeAuthor",
+          run: { block: "TreeAuthorBestSave", args: [] },
+        },
+      ],
+    },
+  );
+  const bp = structuredClone(blueprint);
+  const [cache] = bp.pools[0]?.groups[0]?.sources ?? [];
+  if (!cache) throw new Error("no source");
+  cache.children = [
+    call("author", { call: "TreeAuthorBestSave", args: [] }, [
+      call("item", { call: "TreeArg", args: ["*"] }, [
+        leaf("base", "TreeBase"),
+      ]),
+    ]),
+  ];
+  const { ops } = inventedRecorder();
+  const key = answerKey(rec, ops);
+  if ("error" in key) throw new Error(key.reason);
+  expect(
+    lockBlueprint({
+      blueprint: bp,
+      key,
+      rec,
+      ops,
+      character: 0,
+      characterClass: 3,
+    }).errors.map(lockMessage),
+  ).toEqual([]);
 });
