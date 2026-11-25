@@ -30,6 +30,12 @@ const UNRECORDED = "a chamada não tem gravação neste lugar";
 // shortcut: the descent stops 12 levels down, pending `descend`; raise it when a number of the game goes deeper
 const MAX_DEPTH = 12;
 
+/** The call `scope` made whose reference is the part `p`, or null. */
+const kidOf = (scope: RecNode, p: string, ctx: LevelContext): RecNode | null =>
+  scope.c
+    .map((id) => ctx.rec.nodes[id])
+    .find((k) => k !== undefined && callRef(k) === p) ?? null;
+
 /**
  * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
  * refused one waits for the agent's descent. `reader` is the call that read it, `expr` what gave a call's value, or the
@@ -53,6 +59,24 @@ function walkPart(
       steps: from?.steps,
     };
     const open = reader ? openingOf({ ...level, scope: reader }, ctx) : null;
+    // a read of its reader's own working list or map (the game's PlayerHPmaxLIST) goes down through the write it saw,
+    // as the lock's parts do (level-parts.ts)
+    const parts =
+      reader && open === null
+        ? partsOf({ ...level, scope: reader }, [level.expr], ctx).filter(
+            (p) => p !== key,
+          )
+        : [];
+    if (reader && parts.length > 0)
+      return depth >= MAX_DEPTH
+        ? { key, call, below: "descend", why: DEEP }
+        : {
+            key,
+            call,
+            below: parts.map((p) =>
+              walkPart(p, kidOf(reader, p, ctx), ctx, depth + 1, reader),
+            ),
+          };
     if (open === null)
       return CALL.test(key)
         ? { key, call, below: "descend", why: UNRECORDED }
@@ -121,15 +145,19 @@ function walkPart(
           why: `nenhuma parte ligada pela gravação; lê o save embaixo: ${save}`,
         };
   }
-  const kid = (p: string) =>
-    call.c
-      .map((id) => ctx.rec.nodes[id])
-      .find((k) => k !== undefined && callRef(k) === p) ?? null;
   return {
     key,
     call,
     below: parts.map((p) =>
-      walkPart(p, kid(p), ctx, depth + 1, call, onlyRead(level, p), own),
+      walkPart(
+        p,
+        kidOf(call, p, ctx),
+        ctx,
+        depth + 1,
+        call,
+        onlyRead(level, p),
+        own,
+      ),
     ),
   };
 }
