@@ -201,6 +201,17 @@ test("a block called from two places that both ran, with the same numbers: the p
   );
 });
 
+test("the draft never writes out an argument the place does not decide is the character's index: it is `*` (r2 of part X)", () => {
+  const { rec, key, ops } = recorded("TreeCharBoth");
+  const ref = { call: "TreeCharBoth", args: [0, 0, 0] };
+  const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(d.pools[0]?.groups.map((g) => g.sources[0]?.ref)).toEqual([
+    { read: "TreeBase" },
+    { call: "TreeDeclOwn", args: ["*"] },
+    { call: "TreeDeclOwn", args: ["*"] },
+  ]);
+});
+
 test("a block that passes on the parameter its caller gave from the character's index gets {character} there too (r2)", () => {
   const { rec, key, ops } = recorded("TreeCharPass");
   const ref = { call: "TreeCharPass", args: [0, 0, 0] };
