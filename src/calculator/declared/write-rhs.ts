@@ -16,7 +16,7 @@ import {
 import type { AstNode } from "../recorded/ast.ts";
 import { at, isNode } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
-import { defOf, fnOf, onTheWay } from "./code-fn.ts";
+import { defOf, fnOf, LOOPS, onTheWay } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
 
 export type RhsSource =
@@ -28,6 +28,19 @@ export const fnFor = (text: string): Fn | null => {
   if (!fns.has(text)) fns.set(text, fnOf(text));
   return fns.get(text) ?? null;
 };
+
+/** Whether the code's `write` sits in the innermost loop around the op `read` (spec 010, T232 r2: a loop turn's write
+ * by its place, never by whether the turn ran it); null with no loop around `read`. */
+export function inLoopOf(read: Op | undefined, write: AstNode): boolean | null {
+  if (!read) return null;
+  const f = fnFor(read.fnText);
+  const [s, e] = read.node.range;
+  const n = f?.all.find((m) => m.range[0] === s && m.range[1] === e);
+  let p = n && f?.up.get(n);
+  while (p && !LOOPS.has(p.type)) p = f?.up.get(p);
+  if (!p) return null;
+  return p.range[0] <= write.range[0] && write.range[1] <= p.range[1];
+}
 
 /** A write's place in its call's code: the text, from the end of the step before it to the step after it; null with none. */
 export function writeSpan(

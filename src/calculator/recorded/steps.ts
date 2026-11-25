@@ -4,6 +4,7 @@
 // value with no source; each node carries the value it took. Steps live only in the worker: a step names a method only
 // when it is one of the closed MATH list, and a text literal of the code is kept only as empty or not (FR-010).
 // Step 8c (`formulaOf`, the text of the validation page) has no reader in pieces.cjs and is not ported.
+import { inLoopOf } from "../declared/write-rhs.ts";
 import type { DefCall, Op } from "../instrument.ts";
 import type { RecNode, Recording, RecValue } from "../recording.ts";
 import {
@@ -73,8 +74,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   };
 
   /**
-   * stepsOf(n, xs, range) and its checks; for a loop turn of a cache writer (step 8d2), `xs` is the slice of the step
-   * log since the writer's previous write and `range` its place, so the turn's reads and calls are its own.
+   * stepsOf(n, xs, range) and its checks; a loop turn's (step 8d2) `xs` is its slice of the log and `range` its place:
+   * its own reads and calls; an earlier turn's write in the code's loop around it (none: one it does too) is outside.
    */
   function stepsOf(
     n: RecNode,
@@ -202,9 +203,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       (op.defCalls ?? []).every(
         (c) => sideState(c.sides, took(pos)) === "off",
       ) && (op.freeSides ?? []).some((s) => sideState(s, took(pos)) === "on");
-    // a variable's last recorded write before `here` (T232), its value only confirming it; else what no step set
-    // (setBy), as when an assignment no step recorded comes after that write (a name reused: T232 r2). A write done
-    // again later, or before a turn, is built as the log was then, the earlier ones first
+    // a variable's last recorded write before `here` (T232), the value only confirming it, built as the log was then;
+    // else what no step set (setBy), as when an assignment no step recorded follows that write (a name reused, T232 r2)
     function wrote(node: AstNode, v: number, here: number): Expr {
       const op = ops[opIndex.get(node) ?? -1];
       const ids = (op?.writes ?? []).map((w) => opIndex.get(w));
@@ -216,8 +216,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const none = () => setBy(d, poolFor(node), v) ?? { t: "val", v };
       if (!wn || (d && !opIndex.has(d) && d.range[0] > wn.range[1]))
         return none();
-      // a loop turn's own steps: what an earlier turn wrote, by a write the turn does too, came from outside it
-      if (w < base && lastPos.has(wid)) return { t: "val", v };
+      if (w < base && (inLoopOf(op, wn) ?? lastPos.has(wid)))
+        return { t: "val", v };
       if (x !== v) return none();
       if (lastPos.get(wid) === w) return defOrVal(node, v, wn);
       for (const [j] of at) writeAt(n, j);

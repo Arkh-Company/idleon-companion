@@ -11,14 +11,9 @@ import type { AnyNode } from "./character-args.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf } from "./lock-parts.ts";
+import { LOOPS } from "./code-fn.ts";
 import { fnFor } from "./write-rhs.ts";
 
-const LOOPS = new Set([
-  "ForStatement",
-  "ForInStatement",
-  "WhileStatement",
-  "DoWhileStatement",
-]);
 export const sameRange = (a: AnyNode, b: AnyNode) =>
   a.range[0] === b.range[0] && a.range[1] === b.range[1];
 

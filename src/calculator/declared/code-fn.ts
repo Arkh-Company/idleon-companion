@@ -40,6 +40,13 @@ export function fnOf(fnText: string): Fn | null {
   return { text, all, params, up, sites };
 }
 
+export const LOOPS = new Set([
+  "ForStatement",
+  "ForInStatement",
+  "WhileStatement",
+  "DoWhileStatement",
+]);
+
 // the sides of a node that run only on some ways through it
 const SIDES: Readonly<Record<string, readonly string[]>> = {
   IfStatement: ["consequent", "alternate"],
