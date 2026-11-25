@@ -322,9 +322,20 @@ export function rootsReport(probes: readonly RootProbe[]) {
   };
 }
 
+/** Why the load refused a number's recipe (part S), or undefined when it did not; the reason is the recipe's, never the save's. */
+export const refusalOf = (
+  id: string,
+  refused: readonly { file: string; reason: string }[],
+): string | undefined =>
+  refused.find(
+    (r) =>
+      r.file === `${id}.blueprint.json` ||
+      r.file.endsWith(`/${id}.blueprint.json`),
+  )?.reason;
+
 /**
- * One line of `summary.txt`: the id, the result, the time, a checked blueprint's nodes (T199) and each stage's time;
- * never a text of the save.
+ * One line of `summary.txt`: the id, the result, the time, a checked blueprint's nodes (T199), each stage's time and why
+ * the load refused the recipe; never a text of the save.
  */
 export function summaryLine(
   id: string,
@@ -333,6 +344,7 @@ export function summaryLine(
     ms: number;
     nodes?: { passed: number; failed: number; pending: number };
     stages?: Record<string, number>;
+    reason?: string | undefined;
   },
 ): string {
   const ms = (n: number) => `${String(Math.round(n))} ms`;
@@ -350,7 +362,9 @@ export function summaryLine(
         ]
       : []),
   ];
-  return [...line, ...(stages.length > 0 ? [stages.join(", ")] : [])].join(
-    "\t",
-  );
+  return [
+    ...line,
+    ...(stages.length > 0 ? [stages.join(", ")] : []),
+    ...(outcome.reason === undefined ? [] : [outcome.reason]),
+  ].join("\t");
 }

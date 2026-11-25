@@ -45,6 +45,7 @@ import {
   mosaicWith,
   outPath,
   probeRoot,
+  refusalOf,
   rootCallsOf,
   rootShapeOf,
   rootsReport,
@@ -105,6 +106,12 @@ describe.skipIf(!ENV)("the real-trees run", () => {
       const lines: string[] = [];
       const t0 = performance.now();
       let peak = process.memoryUsage().rss;
+      // a number with no recipe loaded says why the load refused it, in the summary and on the output (part S)
+      const notWritten = (id: string) => {
+        const reason = refusalOf(id, loaded.refused);
+        if (reason !== undefined) console.warn(`${id}: ${reason}`);
+        lines.push(summaryLine(id, { result: "notWritten", ms: 0, reason }));
+      };
 
       const boot = () => {
         const code = readFileSync(join(gameDir, "N.js"), "utf8");
@@ -123,8 +130,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
 
       if (mode === "check") {
         const plan = checkPlan(ids, loaded.stages);
-        for (const id of plan.notWritten)
-          lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
+        for (const id of plan.notWritten) notWritten(id);
         if (plan.lock.length + plan.draft.length > 0) {
           const { recorder, gameSha } = boot();
           const state = mosaic(snapshot);
@@ -178,9 +184,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         }
       } else if (mode === "draft") {
         const todo = draftPlan(ids, loaded.stages, target);
-        for (const id of ids)
-          if (!todo.includes(id))
-            lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
+        for (const id of ids) if (!todo.includes(id)) notWritten(id);
         if (todo.length > 0) {
           const { recorder } = boot();
           // the names and the talent order of the installed game, as the worker reads them at its boot
@@ -312,7 +316,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
         for (const id of ids) {
           const bp = loaded.all.get(id);
           if (!bp) {
-            lines.push(summaryLine(id, { result: "notWritten", ms: 0 }));
+            notWritten(id);
             continue;
           }
           const probe = probeRoot(
