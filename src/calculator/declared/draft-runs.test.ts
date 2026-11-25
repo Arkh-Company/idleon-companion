@@ -5,7 +5,7 @@
 import { expect, test } from "vitest";
 import { classesOf } from "./draft-class.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
-import { joinDrafts } from "./draft-runs.ts";
+import { joinDrafts, needsClassRuns } from "./draft-runs.ts";
 
 const FAMILIES = new Map([
   [3, [3]],
@@ -81,4 +81,23 @@ test("a class source the active character's class has not comes from the run of 
     { draft: other, characterClass: 7 },
   ]);
   expect(mine).toEqual(active);
+});
+
+test("a number with no class source and no cache's author needs no other class's run; either one does (T221)", () => {
+  const plain = draftWith(read("points", "SkillLevels[3]"), []);
+  expect(needsClassRuns(plain)).toBe(false);
+  expect(needsClassRuns(draftWith(talent([]), []))).toBe(true);
+  // a cache's author may change call between the runs (T208)
+  const cache: DraftNode = {
+    ...read("cache", "DNSM.InventedCache"),
+    children: [
+      {
+        key: "author",
+        name: null,
+        ref: { call: "TalentCalc", args: [3] },
+        children: [read("points", "SkillLevels[3]")],
+      },
+    ],
+  };
+  expect(needsClassRuns(draftWith(cache, []))).toBe(true);
 });
