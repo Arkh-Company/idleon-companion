@@ -239,17 +239,17 @@ test("a builder that gives another number than the game's explains nothing", () 
 
 test("a builder of a cache that is a number keeps its writes of the cache, each by its call (T196)", () => {
   const rec = record(
-    ["TreeCount"],
-    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeCount: 2 } } }),
+    ["TreeSigils"],
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 2 } } }),
     {
       recompute: [],
-      builders: [{ cache: "TreeCount", run: { block: "TreeCount", args: [] } }],
+      builders: [{ cache: "TreeSigils", run: { block: "TreeSigils", args: [] } }],
     },
   );
-  const pass = found(under(rec, rec.builders).find((n) => n.b === "TreeCount"));
+  const pass = found(under(rec, rec.builders).find((n) => n.b === "TreeSigils"));
   expect(
     rec.writes
-      .filter((w) => w.path === "DNSM.TreeCount")
+      .filter((w) => w.path === "DNSM.TreeSigils")
       .map((w) => [w.node, w.v]),
   ).toEqual([
     [pass.id, 0],

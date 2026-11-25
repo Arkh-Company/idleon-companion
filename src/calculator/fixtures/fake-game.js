@@ -547,12 +547,12 @@ lime.$scripts.N = function (_exports, $global) {
   };
   // Spec 010 (T196): a cache that is a number, counted in a loop by the block that reads it, as the game's purple sigils
   // (DNSM.SigTotPup): the items of TreeList at 2 or more, 2; the block returns the count read back.
-  Blocks._customBlock_TreeCount = function () {
+  Blocks._customBlock_TreeSigils = function () {
     var d = a.engine.getGameAttribute("DNSM").h;
-    if (!Object.prototype.hasOwnProperty.call(d, "TreeCount"))
-      for (var i = (d.TreeCount = 0); i < state().TreeList.length; i++)
-        if (state().TreeList[i] >= 2) d.TreeCount = Math.round(d.TreeCount + 1);
-    return Math.round(d.TreeCount);
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeSigils"))
+      for (var i = (d.TreeSigils = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2) d.TreeSigils = Math.round(d.TreeSigils + 1);
+    return Math.round(d.TreeSigils);
   };
   Blocks._customBlock_TreeCacheRead = function () {
     return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total + 1;
