@@ -13,7 +13,7 @@ import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
 import { leavesOf, num } from "./lock-parts.ts";
-import { writesBy } from "./own-writes.ts";
+import { writesAt, writesBy } from "./own-writes.ts";
 import { rhsSources } from "./write-rhs.ts";
 
 export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
@@ -77,7 +77,7 @@ export function cacheAuthor(
       if (n === top) return true;
     return false;
   };
-  const writes = rec.writes.filter((w) => w.path === path);
+  const writes = writesAt(rec, path, false);
   const name = (w: RecWrite | undefined) => {
     const n = rec.nodes[w?.node ?? -1];
     if (!w) return "o cache do jogo";

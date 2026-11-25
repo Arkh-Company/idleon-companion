@@ -12,21 +12,32 @@ export interface Place {
   pos: number;
 }
 
-const indexes = new WeakMap<Recording, Map<string, RecWrite[]>>();
-/** A recording's writes of one path by number, the builders' pass's scratch among the spliced ones (recorder-pass.js). */
-export function writesAt(rec: Recording, path: string): readonly RecWrite[] {
-  let byPath = indexes.get(rec);
-  if (!byPath) {
-    byPath = new Map<string, RecWrite[]>();
-    for (const w of [...rec.writes, ...rec.spliced]) {
-      const all = byPath.get(w.path);
-      if (all) all.push(w);
-      else byPath.set(w.path, [w]);
-    }
-    for (const all of byPath.values()) all.sort((a, b) => a.seq - b.seq);
-    indexes.set(rec, byPath);
+const indexes = new WeakMap<Recording, Map<string, RecWrite[]>[]>();
+/**
+ * A recording's writes of one path by number, the builders' pass's scratch among the spliced ones (recorder-pass.js);
+ * with `spliced` false, `rec.writes` only.
+ */
+export function writesAt(
+  rec: Recording,
+  path: string,
+  spliced = true,
+): readonly RecWrite[] {
+  let ix = indexes.get(rec);
+  if (!ix) {
+    const group = (ws: readonly RecWrite[]) => {
+      const byPath = new Map<string, RecWrite[]>();
+      for (const w of ws) {
+        const all = byPath.get(w.path);
+        if (all) all.push(w);
+        else byPath.set(w.path, [w]);
+      }
+      for (const all of byPath.values()) all.sort((a, b) => a.seq - b.seq);
+      return byPath;
+    };
+    ix = [group([...rec.writes, ...rec.spliced]), group(rec.writes)];
+    indexes.set(rec, ix);
   }
-  return byPath.get(path) ?? [];
+  return ix[spliced ? 0 : 1]?.get(path) ?? [];
 }
 
 type ByNode = Map<number | null, RecWrite[]>;

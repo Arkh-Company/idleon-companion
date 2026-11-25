@@ -16,11 +16,36 @@ export function sideAt(
   pos: number,
 ): boolean | null | undefined {
   const xs = log ?? [];
-  for (let j = Math.min(pos, xs.length - 1); j >= 0; j--) {
-    const [i, tv] = xs[j] ?? [];
-    if (i === test) return tv === null || tv === undefined ? null : !!tv;
+  const at = test === undefined ? undefined : placesOf(xs).get(test);
+  // the last of its places up to `pos`, by halves (they are in the log's order)
+  const end = Math.min(pos, xs.length - 1);
+  let [lo, hi] = [0, (at?.length ?? 0) - 1];
+  while (at && lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if ((at[mid] ?? Infinity) <= end) lo = mid + 1;
+    else hi = mid - 1;
   }
-  return undefined;
+  const j = at?.[hi];
+  if (j === undefined) return undefined;
+  const tv = xs[j]?.[1];
+  return tv === null || tv === undefined ? null : !!tv;
+}
+
+type Log = NonNullable<RecNode["x"]>;
+const places = new WeakMap<Log, Map<number, number[]>>();
+/** Each op's places in a step log, once per log (spec 010, part R: a scan back per call site was most of a draft's time). */
+function placesOf(xs: Log): Map<number, number[]> {
+  let m = places.get(xs);
+  if (!m) {
+    m = new Map();
+    for (const [j, [i]] of xs.entries()) {
+      const at = m.get(i);
+      if (at) at.push(j);
+      else m.set(i, [j]);
+    }
+    places.set(xs, m);
+  }
+  return m;
 }
 
 /** Whether a way through ? : sides ran ("on"), did not ("off") or has a side the step log does not give ("open"). */
