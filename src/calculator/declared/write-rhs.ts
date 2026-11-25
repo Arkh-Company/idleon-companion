@@ -125,8 +125,9 @@ function rhsOf(
     return read ? { read } : null;
   };
   // the last test before the write, a `? :`'s or an `if`'s around the write's place (a step of the key may come between,
-  // the game's `r.h["" + s] = _`): only the side it took ran, by its recorded value
-  let side: unknown;
+  // the game's `r.h["" + s] = _`): the side it did not take never ran, by its recorded value; what is out of both
+  // sides (`if (c) { … } d.M.h.v = t`) may still be the write's
+  let off: unknown;
   for (let k = write.xi - 1; k >= Math.max(0, write.xi - 4); k--) {
     const [id, took] = node.x?.[k] ?? [];
     const test = ops[id ?? -1];
@@ -138,12 +139,11 @@ function rhsOf(
       owner.range[0] <= from &&
       from <= owner.range[1]
     )
-      side = owner[took ? "consequent" : "alternate"];
+      off = owner[took ? "alternate" : "consequent"];
     break;
   }
   const ran = (a: AnyNode) =>
-    !isNode(side) ||
-    (a.range[0] >= side.range[0] && a.range[1] <= side.range[1]);
+    !isNode(off) || a.range[1] <= off.range[0] || a.range[0] >= off.range[1];
   // the first assignment to the written key after the step before the write: no step ran between them
   const [first] = f.all
     .filter((a) => {
