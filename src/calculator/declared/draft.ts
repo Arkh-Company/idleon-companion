@@ -31,7 +31,7 @@ import { walkTerm } from "./draft-walk.ts";
 import type { Walked } from "./draft-walk.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { unmarked } from "./refs.ts";
-import { markedRef } from "./save-args.ts";
+import { keyMarkedRef, markedRef } from "./save-args.ts";
 
 export interface DraftContext {
   /** The recorded character: a read of its own is `{character}`, another's `*` (research R5). */
@@ -139,7 +139,10 @@ export function draftBlueprint(
   ): DraftNode => {
     const code = refOf(w, dc.character);
     // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
-    const ref = w.call ? markedRef(code, rec, ops, w.call, root.ref) : code;
+    // with no call of its own, as every call of its key is marked: never a save's number written out (r1 of part X)
+    const ref = w.call
+      ? markedRef(code, rec, ops, w.call, root.ref)
+      : keyMarkedRef(code, rec, ops, root.ref);
     // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
     // proof by the row (research R5), and the key keeps only the other arguments
     const named = partName(w, dc.character, rec, ops, root.ref);

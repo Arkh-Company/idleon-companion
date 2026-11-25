@@ -325,6 +325,30 @@ export function markedRef(
   };
 }
 
+/**
+ * A call's reference with no call of its own at its place (a turn's other part made before the loop, r1 of part X):
+ * marked where any recorded call of its key is, so a save's number is never written out.
+ */
+export function keyMarkedRef(
+  ref: Ref,
+  rec: Recording,
+  ops: readonly Op[],
+  rootRef?: Ref,
+): Ref {
+  if (!("call" in ref)) return ref;
+  const same = JSON.stringify(ref.args);
+  const args = [...ref.args];
+  for (const n of rec.nodes) {
+    if (n.b !== ref.call || JSON.stringify(n.a) !== same) continue;
+    const m = markedRef(ref, rec, ops, n, rootRef);
+    if ("call" in m)
+      m.args.forEach((a, i) => {
+        if (a !== ref.args[i]) args[i] = a;
+      });
+  }
+  return args.some((a, i) => a !== ref.args[i]) ? { ...ref, args } : ref;
+}
+
 /** Whether a call's name waits: an argument from the character or the save, or one its place does not decide. */
 export const unnamed = (
   ref: Ref,
