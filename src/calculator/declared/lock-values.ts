@@ -4,9 +4,9 @@ import type { RecNode } from "../recording.ts";
 import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
-import { testedText } from "./level-parts.ts";
+import { textPart } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { literal, num } from "./lock-parts.ts";
+import { num } from "./lock-parts.ts";
 import { keyMatches, matchRead, savedTwice } from "./refs.ts";
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -64,10 +64,6 @@ export const textCondition = (
   ctx: LevelContext,
 ) =>
   child.leaf === "condition" &&
-  literal(level.expr) &&
   (level.scope.r ?? []).some(
-    ([p, v]) =>
-      v === "(text)" &&
-      covers(child, p, ctx) &&
-      testedText(level.scope, p, ctx),
+    ([p]) => covers(child, p, ctx) && textPart(level.scope, level.expr, p, ctx),
   );
