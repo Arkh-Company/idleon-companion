@@ -90,7 +90,8 @@ test("a variable leaf with a place and no recorded write is never tied by value 
 });
 
 test("a loop's variable is its write of the turn before, by its place: never the one read of its value, the first turn's write nor its own turn's (T232)", () => {
-  // TreeLoopBest over TreeList [3, 1, 2]: every turn writes 3, and TreeList[0] is the one read worth 3
+  // TreeLoopBest over TreeList [3, 1, 2]: every turn writes 3, and TreeList[0] is the one read worth 3; the first turn's
+  // best is the code's 0 it was set to
   const recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
   const rec = recorder.record(
     mosaicOf({ TreeList: [3, 1, 2] }),
@@ -106,8 +107,9 @@ test("a loop's variable is its write of the turn before, by its place: never the
     v: 3,
   });
   const was = (e: object) => ({ t: "def", e, v: 3 });
+  const zero = { t: "def", e: { t: "num", v: 0 }, v: 0 };
   expect(makeSteps(rec, recorder.ops).of(n.id).steps).toEqual([
-    { v: 3, e: max(was(max(was(max({ t: "val", v: 0 }, 0, 3)), 1, 1)), 2, 2) },
+    { v: 3, e: max(was(max(was(max(zero, 0, 3)), 1, 1)), 2, 2) },
   ]);
 });
 
