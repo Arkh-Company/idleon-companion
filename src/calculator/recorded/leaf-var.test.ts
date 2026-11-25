@@ -101,6 +101,37 @@ test("a loop turn's own steps take the write made before the loop, by its place:
   scaled(first + 1, second, 1);
 });
 
+test("a loop turn whose test skips the loop's write takes an earlier turn's write as from outside it, by the write's place in the loop: never the write built (T232 r2)", () => {
+  // TreeLoopIf over TreeList [3, 1, 2]: only the first turn writes best = TreeList[0] * 1 = 3; the second turn's test
+  // reads best 3 and TreeList[0] is the read worth 3
+  const recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  const rec = recorder.record(
+    mosaicOf({ TreeList: [3, 1, 2] }),
+    [["TreeLoopIf", []]],
+    { recompute: [], builders: [] },
+  );
+  const n = rec.nodes.find((x) => x.b === "TreeLoopIf");
+  if (!n) throw new Error("no call");
+  const mine = (kind: string) =>
+    recorder.ops.flatMap((o, i) =>
+      o.block === "TreeLoopIf" && o.kind === kind ? [i] : [],
+    );
+  const [test0] = mine("test");
+  const [mul] = mine("op");
+  const log = n.x ?? [];
+  const write = log.findIndex(([o]) => o === mul);
+  const second = log.findIndex(([o], j) => o === test0 && j > write);
+  if (write < 0 || second < 0) throw new Error("no turns");
+  const turn = makeSteps(rec, recorder.ops).turnOf(n, {
+    from: write + 1,
+    to: second,
+  });
+  expect(turn.checks[0]?.e).toMatchObject({
+    l: { t: "read", p: "TreeList[1]" },
+    r: { t: "val", v: 3 },
+  });
+});
+
 test("a variable set last by an assignment no step recorded is never an earlier write of its name of the same value: no place decides (T232 r2)", () => {
   // the minifier reuses `o`: A and B both worth 5, and only `s.A * 1` is a step of the log
   const last = (body: string) => {

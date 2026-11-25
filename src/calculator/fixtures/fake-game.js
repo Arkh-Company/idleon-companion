@@ -1719,6 +1719,14 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i] * m);
     return best;
   };
+  // Spec 010 (T232 r2): a write in the loop only on the turns its test passes, an earlier turn's in a turn that skips it.
+  Blocks._customBlock_TreeLoopIf = function () {
+    var s = state();
+    var best = 0;
+    for (var i = 0; i < 3; i++)
+      if (s.TreeList[i] > best) best = s.TreeList[i] * 1;
+    return best;
+  };
   // Spec 010 (T229): the last turn whose test passed, as the game's Breeding("SpecialPassives","Lv",…) (`DN1 = r + 2`)
   Blocks._customBlock_TreeTier = function () {
     var s = state();
