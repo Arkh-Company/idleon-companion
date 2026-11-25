@@ -145,10 +145,10 @@ export function lockMessage(e: LockError): string {
 }
 
 /**
- * The places of a checked blueprint (T199 r1, `summary.txt`): each that closed once (over every class's round; the
- * pending ones left out by the lock), out of the failed nodes; each node with a failure, a model child's items as the
- * model, the root's and a pool's out; each pending node out of the failed ones. The sum is of the places checked, not of
- * every node of the blueprint.
+ * The nodes of a checked blueprint (T199 r1, `summary.txt`; r1 of parts P and Q): each that closed (over every class's
+ * round; the pending ones left out by the lock), out of the failed ones; each with a failure; each pending one out of
+ * the failed ones. A model child's items count as the model, a piece's places as the node that calls it, and the root
+ * and a pool are no node. The sum is of the nodes checked, not of every node of the blueprint.
  */
 export function lockTally(
   r: LockResult,
@@ -171,7 +171,12 @@ export function lockTally(
     }),
   );
   return {
-    passed: new Set(r.closedAt.filter((w) => !failed.has(nodeAt(w) ?? w))).size,
+    passed: new Set(
+      r.closedAt.flatMap((w) => {
+        const id = nodeAt(w);
+        return id === undefined || failed.has(id) ? [] : [id];
+      }),
+    ).size,
     failed: failed.size,
     pending: new Set(r.pendingAt.filter((w) => !failed.has(w))).size,
   };
