@@ -27,17 +27,31 @@ export const inTurn = (n: RecNode, range?: LoopTurn): boolean =>
 export const lineTurn = (level: Level): LoopTurn | undefined =>
   level.line ? level.steps?.range : undefined;
 
-/** The call `scope` made whose reference is the part `p` (in the turn `range`, when given), or null. */
+/** The calls `scope` made whose reference is the part `p` (in the turn `range`, when given). */
+export const kidsOf = (
+  scope: RecNode,
+  p: string,
+  ctx: LevelContext,
+  range?: LoopTurn,
+): RecNode[] =>
+  scope.c.flatMap((id) => {
+    const k = ctx.rec.nodes[id];
+    return k && callRef(k) === p && inTurn(k, range) ? [k] : [];
+  });
+
+/**
+ * The call `scope` made whose reference is the part `p`, or null; in the turn `range`, two of them the place does not
+ * part tie to none, never to the first (r1 of part W).
+ */
 export const kidOf = (
   scope: RecNode,
   p: string,
   ctx: LevelContext,
   range?: LoopTurn,
-): RecNode | null =>
-  scope.c
-    .map((id) => ctx.rec.nodes[id])
-    .find((k) => k !== undefined && callRef(k) === p && inTurn(k, range)) ??
-  null;
+): RecNode | null => {
+  const ks = kidsOf(scope, p, ctx, range);
+  return range && ks.length > 1 ? null : (ks[0] ?? null);
+};
 
 /**
  * The call a turn's item's reference `p` stands for (T193, research R4), by its place: the item's call leaf of that key,
@@ -70,15 +84,20 @@ export function callIn(
     const n = ctx.rec.nodes[id];
     return n !== undefined && inTurn(n, range);
   });
-  const calls = [
-    ...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])),
-    ...made,
-  ]
+  const own = leaves.flatMap((l) => (l.t === "call" ? [l.id] : []));
+  const calls = [...new Set([...own, ...made])]
     .flatMap((id) => ctx.rec.nodes[id] ?? [])
     .filter((n) => !only || only.has(callRef(n)));
   // two calls a `*` makes equal tie to none (lockLevel says why)
   if (savedTwice(ref, calls.map(callRef), ctx.character) !== null) return;
-  return calls.find((n) => keyMatches(ref, callRef(n), ctx.character));
+  const hits = calls.filter((n) => keyMatches(ref, callRef(n), ctx.character));
+  // in a turn, two of one key tie to the expression's call leaf, its own place, or to none (r1 of part W)
+  const leaf = hits.filter((n) => own.includes(n.id));
+  return range && hits.length > 1
+    ? leaf.length === 1
+      ? leaf[0]
+      : undefined
+    : hits[0];
 }
 
 /** The recorded value of a reference in a level: a call it made, or a path it read (`*` takes the first reading). */

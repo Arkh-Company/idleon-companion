@@ -20,7 +20,7 @@ import type { Opening } from "./level-openings.ts";
 import { partsAndOwn } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
-import { callAt } from "./lock-values.ts";
+import { callAt, kidsOf } from "./lock-values.ts";
 import { writesBy } from "./own-writes.ts";
 import { parseKey } from "./refs.ts";
 
@@ -63,7 +63,9 @@ function turnsOf(
     const head =
       refs.length > 0 ? callAt(leaves, first, scope, ctx, steps?.range) : null;
     if (refs.length > 0 && parseKey(first) !== null && head === null)
-      return `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
+      return kidsOf(scope, first, ctx, steps?.range).length > 1
+        ? `duas chamadas de ${first} na volta ${String(k + 1)} do laço de ${name}, e o lugar não as separa`
+        : `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
     const count = refs.length > 0 && {
       expr: item,
       refs,
