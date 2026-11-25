@@ -42,6 +42,7 @@ import type { Ref } from "./refs.ts";
 import { writtenArgs } from "./written-args.ts";
 import {
   covers,
+  inTurn,
   levelOfChild,
   lineTurn,
   textCondition,
@@ -188,7 +189,11 @@ export function lockLevel(
   // in an author's write's turn, one write or more, a child's `*` stands for that turn's calls only, its parts
   const turn = !open && level.write !== undefined;
   const chosen = turn ? new Set(parts) : undefined;
-  const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
+  // a turn's count line's, those of its own turn only, by their place (T227)
+  const made = level.scope.c.flatMap((id) => {
+    const n = ctx.rec.nodes[id];
+    return n && inTurn(n, lineTurn(level)) ? [n] : [];
+  });
   const calls = turn ? parts : [...parts, ...made.map(callRef)];
   // a call's constants with the conditions that apply them (T209, form 3)
   const consts = lockConstants(children, level, leaves, ctx, out);
