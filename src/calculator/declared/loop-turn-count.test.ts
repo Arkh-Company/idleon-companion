@@ -127,3 +127,17 @@ test.each(BLOCKS)(
     ]);
   },
 );
+
+test("a turn whose item is a bare number has no part: the call's other calls are no line of it (T193)", () => {
+  const root = "TreeTurnsCountOneRoot";
+  const { rec, key, ops } = recorded(root);
+  const ref = { call: root, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["TreeTurnsCountOne()", []],
+  ]);
+  expect(draft.pending).toContainEqual({
+    where: "pools/0/groups/0/sources/0",
+    kind: "descend",
+  });
+});

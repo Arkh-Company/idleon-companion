@@ -2841,6 +2841,16 @@ lime.$scripts.N = function (_exports, $global) {
     }
     return t;
   };
+  // ...and one that adds a bare 1 a turn its test passes (a count, T215), with calls of its own in each turn
+  Blocks._customBlock_TreeTurnsCountOne = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      if (Blocks._customBlock_TreeTurnItem(i) > 0) t = t + 1;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountOneRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountOne() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsCountPassageRoot = function () {
     return Blocks._customBlock_TreeTurnsCountPassage() + state().TreeCapped;
   };
