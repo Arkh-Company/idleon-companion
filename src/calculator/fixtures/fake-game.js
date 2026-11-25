@@ -2831,6 +2831,19 @@ lime.$scripts.N = function (_exports, $global) {
     }
     return t;
   };
+  // ...and one whose item reads back a pass-through variable the turn wrote (T188, the game's GalleryDN2)
+  Blocks._customBlock_TreeTurnsCountPassage = function () {
+    var d = dnsm();
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountDN = Blocks._customBlock_TreeTurnItem(i);
+      t = t + d.TreeCountDN * state().TreeTwins[i];
+    }
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountPassageRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountPassage() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsCountBeforeRoot = function () {
     return Blocks._customBlock_TreeTurnsCountBefore() + state().TreeCapped;
   };

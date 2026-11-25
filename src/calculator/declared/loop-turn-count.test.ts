@@ -1,7 +1,8 @@
 // A turn whose item is a count (spec 010, T193; research R4): the turn's line takes the item's first call or read as
 // its ref, the item's other references are termPart children, and the line closes by the item's recorded expression.
 // The invented game (fake-game.js, TreeTurnsCount*) reads TreeLevel in each turn out of the item, before the item's
-// step in one block and after it in the other: the item's place decides, never the turn's other reads.
+// step in one block and after it in the other: the item's place decides, never the turn's other reads. In a third,
+// the item reads back a pass-through variable the turn wrote (T188): the line goes by what gave its write.
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
@@ -15,7 +16,11 @@ const shape = (n: DraftNode | BlueprintNode): Shape => [
   n.ref ? refKey(n.ref, 0) : "",
   (n.children ?? []).map(shape),
 ];
-const BLOCKS = ["TreeTurnsCountBefore", "TreeTurnsCountAfter"];
+const BLOCKS = [
+  "TreeTurnsCountBefore",
+  "TreeTurnsCountAfter",
+  "TreeTurnsCountPassage",
+];
 
 const line = (i: number, termPart = true): BlueprintNode => ({
   key: `item-${String(i)}`,
