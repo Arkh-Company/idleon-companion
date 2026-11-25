@@ -6,7 +6,7 @@
 import type { RecNode } from "../recording.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
-import { guardOf } from "./count-turns.ts";
+import { guardOf, sameRange } from "./count-turns.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf } from "./lock-parts.ts";
 import { fnFor } from "./write-rhs.ts";
@@ -15,9 +15,7 @@ import { fnFor } from "./write-rhs.ts";
 function setsAfresh(op: number, ctx: LevelContext): boolean {
   const o = ctx.ops?.[op];
   const f = o ? fnFor(o.fnText) : null;
-  const same = (a: { range: number[] }, b: { range: number[] }) =>
-    a.range[0] === b.range[0] && a.range[1] === b.range[1];
-  const n = o && f?.all.find((m) => same(m, o.node));
+  const n = o && f?.all.find((m) => sameRange(m, o.node));
   const w = n && f?.up.get(n);
   if (!f || !n || w?.type !== "AssignmentExpression" || w.right !== n)
     return false;

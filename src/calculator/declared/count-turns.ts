@@ -19,7 +19,7 @@ const LOOPS = new Set([
   "WhileStatement",
   "DoWhileStatement",
 ]);
-const sameRange = (a: AnyNode, b: AnyNode) =>
+export const sameRange = (a: AnyNode, b: AnyNode) =>
   a.range[0] === b.range[0] && a.range[1] === b.range[1];
 
 /** The op of the test whose `if`, `? :` or `&&` holds the step `step` in its loop's turn; -1 with none. */
