@@ -101,6 +101,35 @@ test("a loop turn's own steps take the write made before the loop, by its place:
   scaled(first + 1, second, 1);
 });
 
+test("a variable set last by an assignment no step recorded is never an earlier write of its name of the same value: no place decides (T232 r2)", () => {
+  // the minifier reuses `o`: A and B both worth 5, and only `s.A * 1` is a step of the log
+  const last = (body: string) => {
+    const { ops } = instrument(
+      `Blocks._customBlock_T = function () { ${body} return s.C + o; };`,
+    );
+    const [a, c, o] = ops.flatMap((x, i) => (x.kind === "leaf" ? [i] : []));
+    const [mul, add] = ops.flatMap((x, i) => (x.kind === "op" ? [i] : []));
+    const xs = [a, mul, c, o, add].map((id, j): [number, number] => [
+      id ?? -1,
+      [5, 5, 6, 5, 11][j] ?? 0,
+    ]);
+    const rx: Rx = [
+      ["A", 5, 0],
+      ["B", 5, 1],
+      ["C", 6, 2],
+    ];
+    const r = rx.map(([p, v]): [string, number] => [p, Number(v)]);
+    const rec = recordingOf([{ b: "T", v: 11, r, rx, x: xs }]);
+    return makeSteps(rec, ops).of(0).steps.at(-1)?.e;
+  };
+  expect(last("var o = s.A * 1; o = U.asNumber(s.B);")).toMatchObject({
+    r: { t: "val", v: 5 },
+  });
+  expect(last("var o = U.asNumber(s.B); o = s.A * 1;")).toMatchObject({
+    r: { t: "def", e: { o: "*" }, v: 5 },
+  });
+});
+
 /** `var x = <def>; return s.B + <leaf>;` recorded with the reads `rx`, s.B worth 6 and the leaf `v`: the step's expression. */
 function varOf(def: string, rx: Rx, v: number, leaf = "x") {
   const { ops } = instrument(
