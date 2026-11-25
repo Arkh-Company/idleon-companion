@@ -84,6 +84,36 @@ test("a constant the code does not have at its condition's place is refused (for
   );
 });
 
+test("a constant no write took is checked by its condition read off in the level, and never counts as passed (r1 of P and Q)", () => {
+  const run = (s: BlueprintNode, attrs: object) =>
+    lockBlueprint({
+      ...recorded("TreeDoubledPool", { TreeUpg: [101], ...attrs }),
+      blueprint: blueprint(s),
+      character: 0,
+      characterClass: 3,
+    });
+  // the wrong constant under a condition off: no write to check it by, so its condition is no passed leaf
+  const off = run(source(3), { TreeUpg: [5] });
+  expect(off.errors).toEqual([]);
+  expect(off.closedAt).not.toContain(
+    "invented-constants/0/cards/doubled/at-max/upg",
+  );
+  // a constant whose condition the level never read: refused, never let through as off
+  const unread = times("other", 2, {
+    key: "nope",
+    name: "Nope",
+    ref: { read: "TreeNope" },
+    leaf: "condition",
+    conditionKind: "max",
+  });
+  expect(run(source(2, [unread]), {}).errors).toContainEqual(
+    expect.objectContaining({
+      kind: "conditionMismatch",
+      where: "invented-constants/0/cards/doubled/other/nope",
+    }),
+  );
+});
+
 test("the load takes a constant in a call's level only with its conditions as children (form 3)", () => {
   const parse = (s: BlueprintNode) =>
     parseBlueprint(blueprint(s), {
