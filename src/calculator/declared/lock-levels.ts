@@ -39,6 +39,7 @@ import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, savedTwice } from "./refs.ts";
 import type { Ref } from "./refs.ts";
+import { tierLeaf } from "./tier-turns.ts";
 import { writtenArgs } from "./written-args.ts";
 import {
   covers,
@@ -324,7 +325,9 @@ function descend(
     const child = open
       ? (open[0]?.part ?? null)
       : ref && "call" in ref && keyMatches(ref, callRef(at), ctx.character)
-        ? saveChild(at, ctx)
+        ? tierLeaf(node, at, ctx, out)
+          ? null
+          : saveChild(at, ctx)
         : null;
     if (child !== null)
       out.errors.push({

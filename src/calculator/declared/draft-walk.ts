@@ -20,6 +20,7 @@ import {
   termExpr,
 } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
+import { tierOf } from "./tier-turns.ts";
 
 /** A part as the recording shows it: its reference key, its recorded call, and what is below it. */
 export interface Walked {
@@ -36,6 +37,8 @@ export interface Walked {
   condition?: true;
   /** A count (T215, count-turns.ts): a `quantity` line, its parts the items its test saw. */
   count?: true;
+  /** The last turn whose test passed (T229, tier-turns.ts): a `tier` leaf, its ladder's tests its ⓘ. */
+  tier?: true;
 }
 
 /** A part of an opened level, with the number of its turn when the opening gives one (T198). */
@@ -118,6 +121,11 @@ function walkPart(
     // the reads of its write's turn, at their place (T212: the chosen member's), as the lock's levelOfOpening
     ...(own?.steps && { steps: own.steps }),
   };
+  const tier = tierOf(call, ctx);
+  if (tier !== null)
+    return tier
+      ? { key, call, below: "descend", why: tier }
+      : { key, call, below: "leaf", tier: true };
   const open = openingOf(at, ctx);
   if (typeof open === "string")
     return { key, call, below: "descend", why: open };

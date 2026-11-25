@@ -23,7 +23,7 @@ const sameRange = (a: AnyNode, b: AnyNode) =>
   a.range[0] === b.range[0] && a.range[1] === b.range[1];
 
 /** The op of the test whose `if`, `? :` or `&&` holds the step `step` in its loop's turn; -1 with none. */
-function guardOf(step: number, ops: readonly Op[]): number {
+export function guardOf(step: number, ops: readonly Op[]): number {
   const op = ops[step];
   const f = op ? fnFor(op.fnText) : null;
   let c = op && f?.all.find((n) => sameRange(n, op.node));
