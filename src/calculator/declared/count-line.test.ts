@@ -116,6 +116,13 @@ test("the load takes a quantity line with a model child each, its item a conditi
   delete noEach.each;
   expect(load(noEach)).toMatch(/leaf com children/);
   expect(load({ ...line, leaf: "level" })).toMatch(/leaf com children/);
+  // two children: the model and a plain item beside it
+  expect(
+    load({
+      ...line,
+      children: [item, { ...item, key: "twin", ref: { read: "TreeList[5]" } }],
+    }),
+  ).toMatch(/leaf com children/);
   expect(load({ ...line, children: [{ ...item, leaf: "level" }] })).toMatch(
     /leaf com children/,
   );
@@ -179,5 +186,18 @@ test("the lock refuses a count its author writes again after it counted: each wr
   // TreeCountCap: the 2 items that pass, then `min(count, 5)`, a cap the count does not reach: never closed without it
   expect(lock("TreeCountCap")).toEqual([
     "invented-count/0/cards/count/cache/author: o laço de TreeCountCap() conta DNSM.TreeCountCap, mas a escrita 4 não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)",
+  ]);
+});
+
+test("a count no item passed closes at 0, each tested item a ✗; with no turn tested it is refused with the reason (r1 of part V)", () => {
+  // TreeList all below 2: the author's one write is the start at 0, its count's step in its code never ran
+  const none = lockOut("TreeCountBefore", undefined, 0, {
+    TreeList: [1, 0, 1],
+  });
+  expect(none.errors.map(lockMessage)).toEqual([]);
+  expect(items(none)).toEqual(["item-0", "item-1", "item-2"]);
+  const empty = lockOut("TreeCountBefore", undefined, 0, { TreeList: [] });
+  expect(empty.errors.map(lockMessage)).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountBefore() conta DNSM.TreeCountBefore: nenhuma volta foi testada",
   ]);
 });
