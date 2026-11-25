@@ -6,6 +6,7 @@ import { expect, test } from "vitest";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
 import { instrument } from "../instrument.ts";
 import type { BlueprintNode } from "./blueprint.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import { draftBlueprint } from "./draft.ts";
 import { levelContext, recorded } from "./lock-fixture.ts";
 import { lockLevels } from "./lock-levels.ts";
@@ -72,6 +73,29 @@ test("the lock passes a tier leaf on the call whose value is its last passing tu
     characterClass: 3,
   });
   expect(out.errors).toEqual([]);
+});
+
+test("the draft waits on a descent, with the reason, for a call whose ladder's last passing test has no step after it (T229 r1)", () => {
+  const { rec, key, ops } = recorded("TreeTierRoot");
+  const tier = rec.nodes.find((n) => n.b === "TreeTier");
+  const log = (tier?.x ?? []) as [number, unknown][];
+  const last = log.findLastIndex(([o]) => ops[o]?.kind === "test");
+  const end = log[last];
+  if (end?.[1] !== false) throw new Error("no failing test");
+  end[1] = true; // the third test passes too, and no step follows it
+  const ref = { call: "TreeTierRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const g = (draft.pools[0]?.groups ?? []).findIndex((x) => {
+    const ref = x.sources[0]?.ref;
+    return !!ref && "call" in ref && ref.call === "TreeTier";
+  });
+  expect(draft.pending).toContainEqual({
+    where: `pools/0/groups/${String(g)}/sources/0`,
+    kind: "descend",
+  });
+  expect(stepsGuide(key, rec, ops)).toContain(
+    "descer: pendente (o valor de TreeTier() não é o passo da volta do último teste que passou, pelo lugar: não é a forma do tier (T229))",
+  );
 });
 
 /** A ladder written by hand, `lv = r + 2` under each turn's test, its step log `log` of tests and steps; the lock's errors. */
