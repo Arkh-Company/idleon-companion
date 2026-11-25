@@ -18,10 +18,24 @@ export function readOfLeaf(
   pat: { toks: (string | null)[]; root: boolean } | null,
   /** The step count the leaf's own record holds: the reads it made there. */
   here?: number,
+  /** The step count of the leaf's first own step (a text's `"" + string(…)` inside it, T209 form 2); `here` with none. */
+  from = here,
 ): string | null | { why: string } {
   const worth = (val: RecValue) =>
     val === v ||
     (typeof val === "string" && val.trim() !== "" && Number(val) === v);
+  // with a place, a path counts only when read there, from the leaf's first own step to its own, with a value `ok`
+  // takes (T231 r1; r2 of part X)
+  const atHere = (p: string, ok: (val: RecValue) => boolean) =>
+    here === undefined ||
+    rxs.some(
+      ([q, val, xi]) =>
+        q === p &&
+        typeof xi === "number" &&
+        xi >= (from ?? here) &&
+        xi <= here &&
+        ok(val),
+    );
   // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value. With a
   // place, only one read there (T231 r1)
   if (pat) {
@@ -30,8 +44,7 @@ export function readOfLeaf(
         worth(val) &&
         matchPattern(p, pat) &&
         !rxs.some((x) => x[0] === p && Number(x[1]) !== v) &&
-        (here === undefined ||
-          rxs.some((x) => x[0] === p && x[2] === here && worth(x[1]))),
+        atHere(p, worth),
     );
     const [only] = cand;
     if (only && cand.length === 1) {
@@ -47,7 +60,8 @@ export function readOfLeaf(
       ([p, val]) =>
         val === EMPTY_READ &&
         matchPattern(p, pat) &&
-        !/^(DNSM|DummyNumbersStatManager)\./.test(p),
+        !/^(DNSM|DummyNumbersStatManager)\./.test(p) &&
+        atHere(p, (x) => x === EMPTY_READ),
     );
     if (empty.length === 1 && empty[0]) return empty[0][0];
   }
@@ -55,7 +69,13 @@ export function readOfLeaf(
   const count = countOf(node);
   if (count !== null) return count;
   // a number read from a text the code names, with a mark taken out (T209, form 2): the read of that path, one only
-  const tp = pat ? null : textRead(node, pool, v);
+  const tp = pat
+    ? null
+    : textRead(
+        node,
+        pool.filter(([p, val]) => atHere(p, (x) => x === val)),
+        v,
+      );
   if (tp !== null) return tp;
   // the read at the leaf's own place (T231): the place decides, never the value among the call's reads; two there the
   // place does not part are refused with the reason; a variable reads nothing at its own place. A leaf that reads, with

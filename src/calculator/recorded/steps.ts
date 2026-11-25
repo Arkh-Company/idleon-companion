@@ -174,7 +174,16 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const pool = poolFor(node);
       // the read the leaf's own text names, or its value names among the call's reads (leaf-reads.ts)
       const pat = astPattern(node);
-      const p = readOfLeaf(node, v, pool, rxs, usedR, pat, here);
+      // the leaf's own place spans the steps logged inside it right before its own (a text's `"" + string(…)`)
+      let from = here;
+      const within = (j: number) => {
+        const o = ops[xs?.[j - base]?.[0] ?? -1]?.node;
+        return (
+          !!o && o.range[0] >= node.range[0] && o.range[1] <= node.range[1]
+        );
+      };
+      while (from !== undefined && within(from - 1)) from--;
+      const p = readOfLeaf(node, v, pool, rxs, usedR, pat, here, from);
       if (typeof p === "string") return read(p, v);
       if (p) return { t: "val", v, why: p.why };
       // a loose value of the call's own variable, written before here, keeps its path (T209, form 3)
