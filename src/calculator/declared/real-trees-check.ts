@@ -9,7 +9,7 @@ import type { Op } from "../instrument.ts";
 import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
-import type { Blueprint } from "./blueprint.ts";
+import type { Blueprint, BlueprintNode, BlueprintPool } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { emptyOut } from "./lock-levels.ts";
 import { lockBlueprint } from "./lock.ts";
@@ -91,15 +91,22 @@ export function classCharacters(snapshot: unknown): Map<number, number> {
   return out;
 }
 
-/** The runs a blueprint needs: one per class of the snapshot when a source has a class; else the active character. */
+/**
+ * The runs a blueprint needs: one per class of the snapshot when any node has a class (a source, a child, a node of an
+ * inlined piece's pools); else the active character.
+ */
 export function lockRuns(
   bp: Blueprint,
   classes: ReadonlyMap<number, number>,
   active: number,
 ): LockRun[] {
-  const byClass = bp.pools.some((p) =>
-    p.groups.some((g) => g.sources.some((s) => s.classes !== undefined)),
-  );
+  const inPools = (ps: readonly BlueprintPool[]): boolean =>
+    ps.some((p) => p.groups.some((g) => g.sources.some(classed)));
+  const classed = (n: BlueprintNode): boolean =>
+    n.classes !== undefined ||
+    (n.children ?? []).some(classed) ||
+    inPools(n.pools ?? []);
+  const byClass = inPools(bp.pools);
   if (byClass && classes.size > 0)
     return [...classes].map(([characterClass, character]) => ({
       character,
