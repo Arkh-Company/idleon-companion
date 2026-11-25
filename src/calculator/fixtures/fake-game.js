@@ -2870,6 +2870,19 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeRhsB = Blocks._customBlock_TreeDeclOwn(0);
     return x;
   };
+  // ...and a variable set on a side of an if, then on every way, then written: the set on every way hides the one before
+  // it; set again on a side after it, the place does not decide.
+  Blocks._customBlock_TreeRhsVar = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var A = 0;
+    if (state().TreeBase > 100) A = Blocks._customBlock_TreeDeclRow(2);
+    var x = state().TreeBase * 2;
+    A = Blocks._customBlock_TreeDeclOwn(0);
+    d.TreeRhsC = A;
+    if (state().TreeBase > 100) A = Blocks._customBlock_TreeDeclRow(3);
+    d.TreeRhsD = A;
+    return x;
+  };
   Blocks._customBlock_TreeSetElse = function () {
     a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
     return 0;

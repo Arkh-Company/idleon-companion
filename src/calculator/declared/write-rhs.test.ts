@@ -16,3 +16,15 @@ test("a write's source is the assignment to its own key, never the first one aft
   expect(of("DNSM.TreeRhsA")).toEqual([{ call: "TreeDeclRow" }]);
   expect(of("DNSM.TreeRhsB")).toEqual([{ call: "TreeDeclOwn" }]);
 });
+
+test("a variable's set on every way hides a set on a side before it; a set on a side after it leaves no source", () => {
+  const { rec, ops } = recorded("TreeRhsVar");
+  const node = rec.nodes.find((n) => n.b === "TreeRhsVar");
+  const of = (path: string) => {
+    const w = rec.writes.find((x) => x.path === path);
+    if (!node || !w || !ops) throw new Error(`no write of ${path}`);
+    return rhsSources(node, w, ops);
+  };
+  expect(of("DNSM.TreeRhsC")).toEqual([{ call: "TreeDeclOwn" }]);
+  expect(of("DNSM.TreeRhsD")).toBeNull();
+});
