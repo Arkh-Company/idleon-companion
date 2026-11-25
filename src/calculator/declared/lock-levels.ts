@@ -18,7 +18,9 @@ import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
 import {
   leafCheck,
+  keyOfLeaf,
   leavesOf,
+  neutralOf,
   num,
   returnOf,
   saveChild,
@@ -205,12 +207,13 @@ export function lockLevel(
     if (child.classes && (cls == null || !child.classes.includes(cls))) {
       const at = parts.filter((p) => covers(child, p, ctx));
       for (const p of at) covered.add(p);
-      // shortcut: neutral is 0 or 1, whichever the part's role is; read the role off the count if a case needs it
-      const v =
-        at.length > 0 && child.ref
-          ? valueIn(child.ref, level.scope, leaves, ctx)
-          : 0;
-      if (v !== 0 && v !== 1)
+      // present, it holds the neutral value of its role in the count: 0 in a sum, 1 in a product (as lock-pools.ts)
+      const leaf = leaves.find((l) =>
+        covers(child, keyOfLeaf(l, ctx.rec) ?? "", ctx),
+      );
+      const neutral = leaf && level.expr ? neutralOf(level.expr, leaf) : null;
+      const v = child.ref ? valueIn(child.ref, level.scope, leaves, ctx) : null;
+      if (at.length > 0 && (neutral === null || v !== neutral))
         out.errors.push({
           kind: "classMismatch",
           where,

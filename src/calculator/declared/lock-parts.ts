@@ -43,6 +43,38 @@ export function leavesOf(e: Expr, out: Expr[] = []): Expr[] {
   return out;
 }
 
+/**
+ * A leaf's neutral value by its role in a count (T211; r1 of parts P and Q): 0 as a side of a sum, 1 as a side of a
+ * product or a division; null when the step above it is no such operator, or the leaf is not in the count.
+ */
+export function neutralOf(e: Expr, leaf: Expr): 0 | 1 | null {
+  const bare = (x: Expr): Expr => (x.t === "def" ? bare(x.e) : x);
+  const sides = (x: Expr): Expr[] =>
+    x.t === "op"
+      ? [x.l, x.r]
+      : x.t === "fn"
+        ? x.args
+        : x.t === "def"
+          ? [x.e]
+          : [];
+  const go = (x: Expr): 0 | 1 | null | undefined => {
+    for (const side of sides(x)) {
+      if (x.t !== "def" && bare(side) === leaf)
+        return x.t !== "op"
+          ? null
+          : "+-".includes(x.o)
+            ? 0
+            : "*/".includes(x.o)
+              ? 1
+              : null;
+      const r = go(side);
+      if (r !== undefined) return r;
+    }
+    return undefined;
+  };
+  return go(e) ?? null;
+}
+
 export const keyOfLeaf = (e: Expr, rec: Recording): string | null => {
   if (e.t === "read") return e.p;
   const n = e.t === "call" ? rec.nodes[e.id] : undefined;
