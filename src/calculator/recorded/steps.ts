@@ -124,7 +124,6 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (r.t !== "val") leafMemo.set(node, r);
       return r;
     }
-    const read = (p: string, v: StepValue): Expr => ({ t: "read", p, v });
     function leaf0(node: AstNode, v: StepValue): Expr {
       // a block's call, bare or through asNumber right in the step (T177 r4)
       const callee = methodOf(unwrap(node));
@@ -173,9 +172,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
       // (Op.callIn): the data flow decides, never a read with its value (T177 r3 to r5)
       const op = ops[id ?? -1];
-      const pos = lastPos.get(id ?? -1);
-      if (op && (op.defCalls || op.callIn) && !ranFree(op, pos))
-        return op.defCalls ? byCalls(op.defCalls, v, pos) : defOrVal(node, v);
+      if (op && (op.defCalls || op.callIn) && !ranFree(op, here))
+        return op.defCalls ? byCalls(op.defCalls, v, here) : defOrVal(node, v);
       if (typeof v !== "number") return defOrVal(node, v);
       // a variable with a place is its last write before it, by that place, never a read of its value (T232)
       if (unwrap(node).type === "Identifier" && here !== undefined)
@@ -187,12 +185,11 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const pat = astPattern(node);
       const from = placeFrom(node, here, (j) => ops[xs?.[j - base]?.[0] ?? -1]);
       const p = readOfLeaf(node, v, pool, rxs, usedR, pat, here, from);
-      if (typeof p === "string") return read(p, v);
+      if (typeof p === "string") return { t: "read", p, v };
       if (p) return { t: "val", v, why: p.why };
       // a loose value of the call's own variable, written before here, keeps its path (T209, form 3)
       const loose = defOrVal(node, v);
-      const at0 = lastPos.get(id ?? -1);
-      const own = pat ? ownRead(pat, pool, v, allWrites, n.id, at0) : null;
+      const own = pat ? ownRead(pat, pool, v, allWrites, n.id, here) : null;
       return own === null || loose.t !== "val" ? loose : { ...loose, own };
     }
     // the call a value comes from, on the side each ? : on its way took at `pos` (sides.ts)
@@ -206,20 +203,23 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         (c) => sideState(c.sides, took(pos)) === "off",
       ) && (op.freeSides ?? []).some((s) => sideState(s, took(pos)) === "on");
     // a variable's last recorded write before `here` (T232), its value only confirming it; else what no step set
-    // (setBy). A write done again later, or before a turn, is built as the log was then, the earlier ones first
+    // (setBy), as when an assignment no step recorded comes after that write (a name reused: T232 r2). A write done
+    // again later, or before a turn, is built as the log was then, the earlier ones first
     function wrote(node: AstNode, v: number, here: number): Expr {
       const op = ops[opIndex.get(node) ?? -1];
       const ids = (op?.writes ?? []).map((w) => opIndex.get(w));
       const at = (n.x ?? []).flatMap(([i, x], j) =>
         j < here && ids.includes(i) ? [[j, i, x] as const] : [],
       );
-      const [w, wid, x] = at.at(-1) ?? [];
+      const [w, wid, x] = at.at(-1) ?? ([-1, -1, null] as const);
+      const [d, wn] = [op?.def, ops[wid]?.node];
+      const none = () => setBy(d, poolFor(node), v) ?? { t: "val", v };
+      if (!wn || (d && !opIndex.has(d) && d.range[0] > wn.range[1]))
+        return none();
       // a loop turn's own steps: what an earlier turn wrote, by a write the turn does too, came from outside it
-      if (w !== undefined && w < base && lastPos.has(wid ?? -1))
-        return { t: "val", v };
-      if (w === undefined || wid === undefined || x !== v)
-        return setBy(op?.def, poolFor(node), v) ?? { t: "val", v };
-      if (lastPos.get(wid) === w) return defOrVal(node, v, ops[wid]?.node);
+      if (w < base && lastPos.has(wid)) return { t: "val", v };
+      if (x !== v) return none();
+      if (lastPos.get(wid) === w) return defOrVal(node, v, wn);
       for (const [j] of at) writeAt(n, j);
       const e0 = writeAt(n, w);
       return e0 ? { t: "def", e: e0, v } : { t: "val", v };
