@@ -56,6 +56,7 @@
     var liveObj = Dh[key];
     var liveH = S.mapOf(S.raw(liveObj));
     var liveCopy = Object.assign(Array.isArray(liveH) ? [] : {}, liveH);
+    var number = false;
     S.on = true;
     try {
       // a cache the block makes new by itself is not deleted first (keepLive): its loop then reads the game's
@@ -84,7 +85,7 @@
       // a cache that is a number (T196: the game's purple sigils) keeps its own path's writes when it ends as the game's
       var live = S.raw(liveObj);
       var built = S.raw(Dh[key]);
-      var number =
+      number =
         typeof live === "number" &&
         typeof built === "number" &&
         Math.abs(live - built) <= 1e-9 * Math.max(1, Math.abs(live));
@@ -105,7 +106,9 @@
       S.cur = null;
       Object.assign(DhRaw, snapDh); // the builder's scratch leaves the state too
       Object.assign(S.top, snapTop);
-      Dh[key] = liveObj; // through the record, as the bench puts it back
+      // through the record, as the bench puts it back; a number cache its builder ended at the game's number is back
+      // already (snapDh), and a write of it would be a second author of its reads
+      if (!number) Dh[key] = liveObj;
       S.pending = null;
       S.stopped();
     }
