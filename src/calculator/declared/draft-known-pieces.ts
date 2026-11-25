@@ -15,14 +15,25 @@ export type KnownPieces = ReadonlyMap<string, unknown>;
 /** Why a line is written whole when its piece is already written with another body. */
 export const KNOWN_OTHER = "o corpo difere do pedaço já escrito";
 
-/** A body's form, level by level: what the lock checks, never what the agent fills. */
-const formOf = (ns: unknown): unknown =>
+/**
+ * A body's form, level by level: what the lock checks, never what the agent fills; below an `open` place (one the
+ * occurrence leaves to descend), none, as the agent fills it in the piece's file.
+ */
+const formOf = (ns: unknown, open: ReadonlySet<string>, above = ""): unknown =>
   Array.isArray(ns)
-    ? ns.map((n) =>
-        isObj(n)
-          ? [n.ref, n.piece, n.tree, n.each, n.constant, formOf(n.children)]
-          : null,
-      )
+    ? ns.map((n, i) => {
+        const where = `${above}/children/${String(i)}`;
+        return isObj(n)
+          ? [
+              n.ref,
+              n.piece,
+              n.tree,
+              n.each,
+              n.constant,
+              open.has(where) ? null : formOf(n.children, open, where),
+            ]
+          : null;
+      })
     : null;
 
 /** The node at a pending place relative to the line (`/children/0/children/1`), or undefined. */
@@ -93,7 +104,17 @@ export function knownUse(
   )
     return KNOWN_OTHER;
   const filled: unknown = fill(raw.children, branch.args);
-  if (JSON.stringify(formOf(filled)) !== JSON.stringify(formOf(o.children)))
+  const open = new Set(
+    o.pending
+      .filter(
+        (p) => p.kind === "descend" && !nodeAt(o.children, p.where)?.children,
+      )
+      .map((p) => p.where),
+  );
+  if (
+    JSON.stringify(formOf(filled, open)) !==
+    JSON.stringify(formOf(o.children, open))
+  )
     return KNOWN_OTHER;
   return {
     piece: { name: branch.name, args: branch.args },
