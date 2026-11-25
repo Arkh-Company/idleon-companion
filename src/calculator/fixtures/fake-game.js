@@ -2064,6 +2064,23 @@ lime.$scripts.N = function (_exports, $global) {
           U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeBase;
     }
   };
+  // ...one whose turn begins with its pass-through's call right after the cache's write, no write between (the window's
+  // edges), a number of the save its argument, no two reads of one number: TreeTurnItem(i) × TreeArg(TreeList[i]) × 3 =
+  // 2 × 4 × 3 + 4 × 8 × 3 = 120
+  Blocks._customBlock_TreeAuthorRelayNext = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountDN = Blocks._customBlock_TreeArg(
+        U.asNumber(a.engine.getGameAttribute("TreeList")[i]),
+      );
+      d.TreeRelayDN = i + 10;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) +
+        Blocks._customBlock_TreeTurnItem(i) * d.TreeCountDN * 3;
+    }
+  };
   // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
   Blocks._customBlock_TreeAuthorRelayEarly = function () {
     var U = A["com.stencyl.utils.Utils"];
@@ -3055,6 +3072,24 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeTurnsCountArgRoot = function () {
     return Blocks._customBlock_TreeTurnsCountArg() + state().TreeCapped;
+  };
+  // ...and one that also calls TreeArg(7) in each turn, out of the item (r1 of part W): two calls a `*` takes in a turn
+  Blocks._customBlock_TreeTurnsCountArgTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      Blocks._customBlock_TreeArg(7);
+      t =
+        t +
+        state().TreeTwins[i] *
+          Blocks._customBlock_TreeArg(
+            U.asNumber(a.engine.getGameAttribute("TreeList")[i]),
+          );
+    }
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountArgTwiceRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountArgTwice() + state().TreeCapped;
   };
   Blocks._customBlock_TreeTurnsCountEarlyRoot = function () {
     return Blocks._customBlock_TreeTurnsCountEarly() + state().TreeCapped;

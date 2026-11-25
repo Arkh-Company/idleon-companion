@@ -344,6 +344,31 @@ test("an author's write's turn with two calls of its pass-through's key is refus
   ]);
 });
 
+test("a write's turn holds the call begun right after the write before it, never the one begun after its own (r1 of W)", () => {
+  // TreeAuthorRelayNext: turn 2's TreeArg(2) began right after the cache's first write (seq equal); a `*` child, whose
+  // argument of the save differs a turn, is turn 1's only
+  const line = (i: number): BlueprintNode => ({
+    ...itemNode(i),
+    key: `line-${String(i)}`,
+    children: [
+      itemNode(i),
+      {
+        key: "arg",
+        name: "Arg",
+        ref: { call: "TreeArg", args: ["*"] },
+        termPart: { system: "achievements" },
+        children: [leaf("base", "TreeBase")],
+      },
+    ],
+  });
+  const author = {
+    ...relay("TreeAuthorRelayNext"),
+    children: [line(0), line(1)],
+  };
+  const rec = record("TreeAuthorRelayNext", 120);
+  expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});
+
 test("the best of three members goes down the member whose turn wrote the cache, by its place, never the last turn's (T212)", () => {
   // TreeAuthorBest over TreeList [1, 3, 2]: the bonuses 2, 6, 4; the cache is the second member's 6
   const rec = inventedRecorder().record(
