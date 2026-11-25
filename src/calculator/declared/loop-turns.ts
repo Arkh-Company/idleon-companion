@@ -16,7 +16,7 @@ import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { atCap, callRef, near } from "./answer-key-pool.ts";
 import { writeExpr, writeTurn } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
-import { ownParts, partsOf } from "./level-parts.ts";
+import { partsAndOwn } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
 import { callAt } from "./lock-values.ts";
@@ -44,9 +44,10 @@ function turnsOf(
     // an item with no call nor read of its own (a bare number: a count, T215) has no part, never the call's others
     const leaves = leavesOf(item);
     const own = leaves.some((l) => keyOfLeaf(l, ctx.rec) !== null);
-    const refs = part === null && own ? partsOf(level, leaves, ctx) : [];
+    const found = part === null && own ? partsAndOwn(level, leaves, ctx) : null;
+    const refs = found?.parts ?? [];
     // a curve in the item takes the whole call's parts (level-parts.ts), never the turn's: refused until a real case
-    const mine = new Set(refs.length > 0 ? ownParts(level, leaves, ctx) : []);
+    const mine = new Set(found?.own);
     if (refs.some((r) => !mine.has(r)))
       return `o item da volta ${String(k + 1)} do laço de ${name} tem uma curva: suas partes passam das próprias folhas, e a forma espera um caso real`;
     const first = part ?? refs[0];

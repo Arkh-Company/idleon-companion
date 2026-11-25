@@ -87,23 +87,6 @@ function passThrough(
   });
 }
 
-/** A level's own references, each pass-through variable through what gave its write (T188): partsOf with no curve. */
-export const ownParts = (
-  level: Level,
-  leaves: readonly Expr[],
-  ctx: LevelContext,
-): string[] =>
-  passThrough(
-    leaves,
-    level.scope,
-    level.steps ?? ctx.stepsOf(level.scope.id),
-    ctx,
-    level.write?.path,
-  ).flatMap((e) => {
-    const k = keyOfLeaf(e, ctx.rec);
-    return k === null || notLeafOf(k, ctx.character) !== null ? [] : [k];
-  });
-
 /** Whether the code names `path` inside a test or a comparison the call ran (T195: the text its literal was picked by). */
 export function testedText(
   scope: RecNode,
@@ -138,11 +121,21 @@ export const textPart = (
  * The parts of a level: its expression's references; with a curve or a log in it, also what builds their arguments
  * (the level's other steps, its numeric reads and its calls), which are the parent's children (research R6).
  */
-export function partsOf(
+export const partsOf = (
   level: Level,
   leaves: readonly Expr[],
   ctx: LevelContext,
-): string[] {
+): string[] => partsAndOwn(level, leaves, ctx).parts;
+
+/**
+ * The parts of a level (partsOf) and its own references, each pass-through variable through what gave its write
+ * (T188): the parts with no curve.
+ */
+export function partsAndOwn(
+  level: Level,
+  leaves: readonly Expr[],
+  ctx: LevelContext,
+): { parts: string[]; own: string[] } {
   const transparent = (k: string) => notLeafOf(k, ctx.character) !== null;
   const { scope } = level;
   const steps = level.steps ?? ctx.stepsOf(scope.id);
@@ -163,8 +156,8 @@ export function partsOf(
     return k !== null && feeds(k);
   });
   if (curveHere) turns.length = 0;
-  if (!fed && !literal(level.expr))
-    return [...new Set(own)].filter((k) => !transparent(k));
+  const mine = [...new Set(own)].filter((k) => !transparent(k));
+  if (!fed && !literal(level.expr)) return { parts: mine, own: mine };
   // past a write, a curve's parts are its turn's (as T168's turns); else the call's
   const inTurn = (i: number) =>
     turns.length === 0 ||
@@ -234,5 +227,5 @@ export function partsOf(
             : [],
         )
       : [];
-  return [...parts, ...new Set(texts)];
+  return { parts: [...parts, ...new Set(texts)], own: mine };
 }
