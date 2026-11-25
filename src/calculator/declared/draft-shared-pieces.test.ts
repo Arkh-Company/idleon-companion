@@ -153,6 +153,43 @@ test("a body other than the piece already written is written whole, the reason i
   ]);
 });
 
+test("a piece with a param the branch does not take, or with no children, is another body", () => {
+  const piece = written(draftOf("TreeSharedRootA")).get("invented-shared");
+  if (!piece) throw new Error("no piece");
+  for (const other of [
+    { ...piece, params: ["x"] },
+    { ...piece, children: undefined },
+  ]) {
+    const d = draftOf(
+      "TreeSharedRootB",
+      SHARED,
+      new Map([["invented-shared", other]]),
+    );
+    expect(linesOf(d, "TreeShared").map((l) => l.piece)).toEqual([undefined]);
+    expect(d.notes).toEqual([expect.stringMatching(/o corpo difere/)]);
+  }
+});
+
+test("a place the piece's own pending holds is never pending below the line (T216)", () => {
+  const piece = written(draftOf("TreeSharedRootA")).get("invented-shared");
+  if (!piece) throw new Error("no piece");
+  const pending = ["children/0", "children/1"].flatMap((where) => [
+    { where, kind: "name" },
+    { where, kind: "leaf" },
+  ]);
+  const d = draftOf(
+    "TreeSharedRootB",
+    SHARED,
+    new Map([["invented-shared", { ...piece, pending }]]),
+  );
+  expect(linesOf(d, "TreeShared").map((l) => l.piece)).toEqual([
+    { name: "invented-shared", args: {} },
+  ]);
+  expect(
+    d.pending.filter((p) => /\/children\/\d+\/children\//.test(p.where)),
+  ).toEqual([]);
+});
+
 test("a place the occurrence leaves pending `descend` with no children calls the piece whose file descended it", () => {
   const leaf = { call: "TreeDeep", args: [0] };
   const piece = {
