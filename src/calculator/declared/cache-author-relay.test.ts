@@ -13,8 +13,9 @@ import { lockBlueprint, lockMessage } from "./lock.ts";
 const block = "TreeAuthorRelayRead";
 const rec = inventedRecorder().record(
   mosaicOf({
+    TreeTwins: [5, 3, 7],
     DNSM: {
-      $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 24 } } },
+      $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 52 } } },
     },
   }),
   [["TreeAuthorRead", [0, 0, 0]]],
@@ -33,11 +34,11 @@ const leaf = (k: string, read: string): BlueprintNode => ({
   ref: { read },
   leaf: "level",
 });
-/** A turn: a line by the read TreeTwins[i], the pass-through's TreeTurnAt() a termPart child. */
-const line = (turn: number): BlueprintNode => ({
-  key: `twin-turn-${String(turn)}`,
+/** A turn, by its twin's index: a line by the read TreeTwins[i], the pass-through's TreeTurnAt() a termPart child. */
+const line = (i: number): BlueprintNode => ({
+  key: `twin-${String(i)}`,
   name: "Twin",
-  ref: { read: `TreeTwins[${String(turn - 1)}]` },
+  ref: { read: `TreeTwins[${String(i)}]` },
   leaf: "record",
   children: [
     {
@@ -76,7 +77,7 @@ test("a turn's item read first, with two calls of its pass-through's key in its 
                       key: "author",
                       name: "Author",
                       ref: { call: block, args: [] },
-                      children: [line(1), line(2)],
+                      children: [line(0), line(2)],
                     },
                   ],
                 },
