@@ -265,3 +265,17 @@ test("a variable no step set from a working map is the call's own value, never a
     ),
   ).toMatchObject({ r: { t: "val", v: 15 } });
 });
+
+test("a variable no step set is never the one path left once a working map's that fits is taken out: two fit (T232 r2)", () => {
+  expect(
+    varOf(
+      "s.x.T",
+      [
+        ["B", 6, 0],
+        ["DNSM.x.T", "15", 0],
+        ["y.x.T", "15", 0],
+      ],
+      15,
+    ),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
+});
