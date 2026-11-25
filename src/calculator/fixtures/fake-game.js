@@ -1676,6 +1676,17 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeWriteBon.h.v = state().TreeBig.h.k2;
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
+  // Spec 010 (Fase 4 t): the same writes, v on the side of a ? : its test took, each side an assignment with no step of
+  // its own, as the game's SailzArtiBonusL (0 when the artifact is not found, else its table's bonus): TreeFlagOn is 1,
+  // so v is TreeBig k2 (7); the test's read is no source of it.
+  Blocks._customBlock_TreeWriteSide = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    0 == state().TreeFlagOn
+      ? (d.TreeWriteBon.h.v = 0)
+      : (d.TreeWriteBon.h.v = state().TreeBig.h.k2);
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
   // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
   // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
   Blocks._customBlock_TreeWriteRhs = function () {

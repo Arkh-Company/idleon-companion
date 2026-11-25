@@ -184,3 +184,18 @@ test("a write with no step whose window has a read and a call is the right side 
   });
   expect(lock.errors.map(lockMessage)).toEqual([]);
 });
+
+test("a write on the side of a ? : its test took goes down that side's read, never the test's (Fase 4 t)", () => {
+  // TreeWriteSide: `0 == TreeFlagOn ? v = 0 : v = TreeBig k2`, as the game's SailzArtiBonusL
+  const { rec, key, ops } = recordedWrites(
+    ROOT,
+    "TreeWriteBon",
+    "TreeWriteSide",
+  );
+  expect(key.final).toBe(95);
+  const ref = { call: ROOT, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["DNSM.TreeWriteBon.v", [["TreeWriteSide()", [["TreeBig.k2", []]]]]],
+  ]);
+});
