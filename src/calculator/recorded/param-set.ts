@@ -46,8 +46,6 @@ function parsedOf(fnText: string): Parsed {
   parsed.set(fnText, out);
   return out;
 }
-export const assignsOf = (fnText: string): AstNode[] =>
-  parsedOf(fnText).assigns;
 
 // each block's tests of an `if` or a `? :`, by op id, once per op list
 const testsBy = new WeakMap<readonly Op[], Map<string, number[]>>();

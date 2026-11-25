@@ -292,13 +292,7 @@ export function checkCallModel(
       Array.isArray(m.ref.args) &&
       m.ref.args.includes(`{${String(e.as)}}`),
   );
-  const [m] = models;
-  const args: unknown = isObj(m) && isObj(m.ref) ? m.ref.args : null;
-  if (
-    models.length !== 1 ||
-    !Array.isArray(args) ||
-    !args.includes(`{${String(e.as)}}`)
-  )
+  if (models.length !== 1)
     no(
       where,
       "each.calls: o filho-modelo chama o bloco com {as} num argumento",

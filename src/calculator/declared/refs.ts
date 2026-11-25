@@ -45,9 +45,6 @@ export const unmarked = (ref: Ref): Ref =>
 export function parseKey(
   key: string,
 ): { call: string; args: unknown[] } | null {
-  return keyParts(key);
-}
-function keyParts(key: string): { call: string; args: unknown[] } | null {
   const m = /^([A-Za-z_$][\w$]*)\((.*)\)$/s.exec(key);
   if (!m) return null;
   try {
@@ -70,10 +67,10 @@ export const isAnyCall = (ref: Ref): boolean =>
  * `any` (T208) is any call of the block.
  */
 export function keyMatches(ref: Ref, key: string, character: number): boolean {
-  if ("call" in ref && isAnyCall(ref)) return keyParts(key)?.call === ref.call;
+  if ("call" in ref && isAnyCall(ref)) return parseKey(key)?.call === ref.call;
   if (!("call" in ref) || !ref.args.includes(SAVE))
     return refKey(ref, character) === key;
-  const got = keyParts(key);
+  const got = parseKey(key);
   const want = callArgs(ref, character);
   return (
     got !== null &&
