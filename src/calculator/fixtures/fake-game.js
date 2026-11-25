@@ -2292,6 +2292,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeClassFactorRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeClassFactor();
   };
+  // ...and a part of a sum some classes have that every class's run calls (r1 of parts P and Q): its 1 is a real value.
+  Blocks._customBlock_TreeClassOne = function () {
+    return state().TreeList[0];
+  };
+  Blocks._customBlock_TreeClassAdd = function () {
+    return (
+      Blocks._customBlock_TreeTurnItem(1) + Blocks._customBlock_TreeClassOne()
+    );
+  };
+  Blocks._customBlock_TreeClassAddRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeClassAdd();
+  };
   // Spec 010 (T213): the bonus of the slot the save holds the item in, as the game's GoldFoodBonuses reads
   // EquipmentQuantity[2][i] for the slot whose food is the gold one: TreeFoodQty[i] × 2 + TreeBase.
   Blocks._customBlock_TreeSlotBonus = function () {

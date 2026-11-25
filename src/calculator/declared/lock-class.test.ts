@@ -34,7 +34,11 @@ test("another class's source is not descended: below it is what its own class's 
 });
 
 /** TreeClassFactorRoot locked for a character of class `cls`: the factor TreeWriteCall() is only above class 6. */
-function factorLock(cls: number) {
+function factorLock(
+  cls: number,
+  block = "TreeClassFactor",
+  gated: [call: string, read: string] = ["TreeWriteCall", "TreeBase"],
+) {
   const leaf = (key: string, read: string): BlueprintNode => ({
     key,
     name: key,
@@ -46,7 +50,7 @@ function factorLock(cls: number) {
       id: "invented-factor",
       root: {
         name: "Invented",
-        ref: { call: "TreeClassFactorRoot", args: [] },
+        ref: { call: `${block}Root`, args: [] },
       },
       pools: [
         {
@@ -59,7 +63,7 @@ function factorLock(cls: number) {
                 {
                   key: "factor",
                   name: "Factor",
-                  ref: { call: "TreeClassFactor", args: [] },
+                  ref: { call: block, args: [] },
                   children: [
                     {
                       key: "item",
@@ -70,9 +74,9 @@ function factorLock(cls: number) {
                     {
                       key: "times",
                       name: "Times",
-                      ref: { call: "TreeWriteCall", args: [] },
+                      ref: { call: gated[0], args: [] },
                       classes: [7, 8],
-                      children: [leaf("base", "TreeBase")],
+                      children: [leaf("base", gated[1])],
                     },
                   ],
                 },
@@ -85,7 +89,7 @@ function factorLock(cls: number) {
     { fileId: "invented-factor", systemIds: new Set(["cards"]) },
   );
   if (!out.ok) throw new Error(out.reason);
-  const { key, ...input } = recorded("TreeClassFactorRoot", {
+  const { key, ...input } = recorded(`${block}Root`, {
     CharacterClass: cls,
   });
   return lockBlueprint({
@@ -100,4 +104,16 @@ function factorLock(cls: number) {
 test("a call's child only some classes have: their runs check it, the others' runs pass without it (T211)", () => {
   expect(factorLock(7)).toEqual([]);
   expect(factorLock(3)).toEqual([]);
+});
+
+test("another class's child at 1 in a sum is a real value: its neutral is 0 by its role in the count (r1 of P and Q)", () => {
+  // TreeClassAdd is TreeTurnItem(1) + TreeClassOne(), TreeClassOne() TreeList[0], 1, in every class's run
+  expect(
+    factorLock(3, "TreeClassAdd", ["TreeClassOne", "TreeList[0]"]),
+  ).toEqual([
+    expect.objectContaining({
+      kind: "classMismatch",
+      where: "invented-factor/0/cards/factor/times",
+    }),
+  ]);
 });
