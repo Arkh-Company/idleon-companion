@@ -36,7 +36,8 @@ test("a running total its own block reads back: no row shows inside itself", () 
   expect(insideItself("TreeZeroTotal")).toEqual([]);
 });
 
-test("the read of the total in the turn being opened is the total of the earlier turns, with no piece and no rows", () => {
+test("the read of the total in the turn being opened is read at its own place: no row of the earlier turns (T231)", () => {
+  // the old tree follows the read's place too, by Vinicius's decision ("a antiga não me importa"); it goes in Phase 11
   const build = buildTree(
     recorder.record(mosaicOf(), [["TreeZeroTotal", []]], {
       recompute: [],
@@ -54,7 +55,7 @@ test("the read of the total in the turn being opened is the total of the earlier
   };
   walk(build.root, 0);
   const earlier = rows.filter((n) => n.name === "Total of the earlier turns");
-  expect(earlier.length).toBeGreaterThan(0);
+  expect(earlier.length).toBe(0);
   for (const n of earlier)
     expect([n.pieceKey, n.kids, n.leaf]).toEqual([null, [], "unknown"]);
 });
