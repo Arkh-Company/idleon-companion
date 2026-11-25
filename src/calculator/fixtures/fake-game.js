@@ -1729,6 +1729,9 @@ lime.$scripts.N = function (_exports, $global) {
     var t = a.engine.getGameAttribute("TreeBig").h.k2;
     d.TreeWriteBon.h.v = t;
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+    // kept where no root reads them (the lint wants each variable used)
+    d.TreeWriteBon.h.y = y;
+    d.TreeWriteBon.h.u = u;
   };
   // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
   // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
@@ -2579,6 +2582,7 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeBitTwo = function () {
     var h = { string: String };
     var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
+    a.engine.getGameAttribute("DNSM").h.TreeBitOther = other; // kept aside, no root reads it
     return -1 !=
       ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
       ? 1
