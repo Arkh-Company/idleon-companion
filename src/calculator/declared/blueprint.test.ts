@@ -253,6 +253,29 @@ test("a read through a helper's getBehavior(Name) loads, under the checks of ref
   ).toMatch(/personagem/);
 });
 
+// Spec 010, T197 (spec, Open Questions 23/11; contracts/blueprint.md): a key's name after a dot as the game writes it.
+test("a key's name after a dot may have %, + and { as the game writes it; an operator outside a key's name is refused", () => {
+  const read = (path: string) =>
+    refused((bp) => (source(bp, 0, 0, 1).ref = { read: path }));
+  for (const ok of [
+    "DNSM.GalleryTrophyBonTOT.%_SKILL_EFFICIENCY",
+    "DNSM.CardBonusS.+{%_Total_Mining_Efficiency",
+    // a { in a key's name with no } is no param
+    "DNSM.CardBonusS.+{_Base_LUK",
+  ])
+    expect(read(ok)).toBe(null);
+  for (const bad of [
+    "DNSM+CardBonusS.%_LUK",
+    "DNSM.Cards[1]+2",
+    "DNSM.Cards.%_LUK*2",
+    "DNSM.Cards.%_LUK B",
+    "DNSM.Cards.(%_LUK)",
+  ])
+    expect(read(bad)).toMatch(/read/);
+  // a {name} with an identifier is still a param nothing declares
+  expect(read("DNSM.Cards.{talent}")).toMatch(/não declarado/);
+});
+
 test("each invented blueprint of the tests (fixtures/blueprints) loads over the real systems table, in its stage", () => {
   const files = import.meta.glob<unknown>(
     "../fixtures/blueprints/*.blueprint.json",
