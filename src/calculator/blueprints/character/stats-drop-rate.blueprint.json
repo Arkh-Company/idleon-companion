@@ -2961,7 +2961,8 @@
                       },
                       "ref": {
                         "read": "CustomLists.TalentDescriptions[99][1][0]"
-                      }
+                      },
+                      "classes": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
                     },
                     {
                       "key": "custom-lists-talent-descriptions-99-1-1",
@@ -2971,7 +2972,8 @@
                       },
                       "ref": {
                         "read": "CustomLists.TalentDescriptions[99][1][1]"
-                      }
+                      },
+                      "classes": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
                     }
                   ]
                 },
