@@ -1733,6 +1733,25 @@ lime.$scripts.N = function (_exports, $global) {
       }
     }
   };
+  // Spec 010 (T212): the same best of three, with a factor only when the best member is TreeMe, as TalentCalc(-3)
+  // gives the talent 144 only when the best family bonus is the active character's: × (1 + TreeWriteCall() / 100).
+  Blocks._customBlock_TreeAuthorBestMe = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var g = 0; g < state().TreeList.length; g++) {
+      d.TreeBestDN = Blocks._customBlock_TreeTurnItem(g);
+      var b = U.asNumber(d.TreeBestDN);
+      if (b > U.asNumber(d.TreeAuthor.h.v)) {
+        var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
+        d.TreeAuthor.h.v = G;
+        if (g == state().TreeMe)
+          d.TreeAuthor.h.v =
+            U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeBestDN) *
+            (1 + Blocks._customBlock_TreeWriteCall() / 100);
+      }
+    }
+  };
   // Spec 010 (T168 r1): blocks that write the cache from 0 more than once, a turn only a write that adds to its own
   // value: an overwrite by a product (TreeTurnItem(0) × 2 = 4), by a sum of two parts (2 + 4 = 6), two items in the
   // same turn (3 + 6 + 9 = 18), and an overwrite before the turns (4 + 4 + 6 = 14).
