@@ -39,7 +39,10 @@ function turnsOf(
     // variable through what gave its write, T188), the others termPart children, in its turn's steps
     const steps = turns[k];
     const level = { expr: item, scope, value: num(item.v), steps };
-    const refs = part === null ? partsOf(level, leavesOf(item), ctx) : [];
+    // an item with no call nor read of its own (a bare number: a count, T215) has no part, never the call's others
+    const leaves = leavesOf(item);
+    const own = leaves.some((l) => keyOfLeaf(l, ctx.rec) !== null);
+    const refs = part === null && own ? partsOf(level, leaves, ctx) : [];
     const first = part ?? refs[0];
     if (first === undefined)
       return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
