@@ -45,14 +45,19 @@ export function rhsSources(
   const to = next >= from ? next : Infinity;
   const f = text === undefined ? null : fnFor(text);
   if (!f) return null;
-  // the variable's value on every way to `pos`; none when a set of it off some way may be the one after that
+  // the variable's value on every way to `pos`; none when a set of it off some way, after that one, may be the one
   const valueOf = (name: string, pos: number): AnyNode | undefined => {
     const def = defOf(f, name, pos);
     const off = f.all.some((n) => {
       const set =
         (n.type === "AssignmentExpression" && at(n, "left").name === name) ||
         (n.type === "VariableDeclarator" && at(n, "id").name === name);
-      return set && n.range[1] <= pos && !onTheWay(f, n, pos);
+      return (
+        set &&
+        n.range[1] <= pos &&
+        (!def || n.range[0] > def.range[1]) &&
+        !onTheWay(f, n, pos)
+      );
     });
     return off ? undefined : def;
   };
