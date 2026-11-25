@@ -67,8 +67,8 @@ test("a variable leaf reads nothing at its own place: a read made there with its
   ).toMatchObject({ r: { t: "val", v: 6 } });
 });
 
-test("a variable leaf with a place is never tied by value to the one read of its value made elsewhere (T231 r1)", () => {
-  // Q, the only read worth 6, was read at s.B's place, before p's
+test("a variable leaf with a place is still tied by value to the one read of its value made elsewhere (T231 r1, Vinicius's option A)", () => {
+  // Q, the only read worth 6, was read at s.B's place, before p's; a variable's tie by the turn's write is a later task
   expect(
     stepOf(
       "p",
@@ -78,7 +78,10 @@ test("a variable leaf with a place is never tied by value to the one read of its
       ],
       5,
     ),
-  ).toMatchObject({ l: { t: "read", p: "B", v: 5 }, r: { t: "val", v: 6 } });
+  ).toMatchObject({
+    l: { t: "read", p: "B", v: 5 },
+    r: { t: "read", p: "Q", v: 6 },
+  });
 });
 
 test("a leaf whose code names a path is the read of it at its own place, never one read elsewhere that the call's lock leaves alone (T231 r1)", () => {
