@@ -6,8 +6,10 @@ import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { draftJson } from "./draft-json.ts";
-import { modelName } from "./draft-list.ts";
+import { callListOf, modelName } from "./draft-list.ts";
 import { draftBlueprint } from "./draft.ts";
+import type { Walked } from "./draft.ts";
+import type { RecNode } from "../recording.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { SYSTEMS } from "./systems.ts";
@@ -125,4 +127,31 @@ test("each without combine outside a piece is a model child below a node, one mo
     systemIds: new Set(SYSTEMS.map((s) => s.id)),
   });
   expect(out.ok ? "loaded" : out.reason).toMatch(/filho-modelo/);
+});
+
+test("a long list of calls whose items are count lines with termPart children is no model of calls (T205; r1 of part U)", () => {
+  const call = (i: number): RecNode => ({
+    id: i,
+    b: "TreeTurnItem",
+    a: [i],
+    c: [],
+    p: null,
+    pxi: i,
+  });
+  const items = (termPart: boolean): Walked[] =>
+    Array.from({ length: 8 }, (_, i) => ({
+      key: `TreeTurnItem(${String(i)})`,
+      call: call(i),
+      below: [
+        { key: `TreeTurnItem(${String(i)})`, call: call(i), below: "leaf" },
+        {
+          key: `TreeTwins[${String(i)}]`,
+          call: null,
+          below: "leaf",
+          ...(termPart && { termPart: true as const }),
+        },
+      ],
+    }));
+  expect(callListOf(items(false))).toEqual({ block: "TreeTurnItem", at: 0 });
+  expect(callListOf(items(true))).toBeNull();
 });
