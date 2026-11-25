@@ -59,13 +59,18 @@ function turnsOf(
       return `duas voltas do laço de ${name} têm o mesmo item (${first})`;
     const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
     // a count line's call with no place in its turn (a pass-through written before it) is refused: its arguments are
-    // checked at that place only (r2 of part U)
+    // checked at that place only (r2 of part U); any call reference of the item with two calls the place does not part
+    // is refused too, not the head's alone (r2 of part W)
+    for (const r of refs) {
+      if (parseKey(r) === null) continue;
+      if (callAt(leaves, r, scope, ctx, steps?.range) !== null) continue;
+      if (kidsOf(scope, r, ctx, steps?.range).length > 1)
+        return `duas chamadas de ${r} na volta ${String(k + 1)} do laço de ${name}, e o lugar não as separa`;
+      if (r === first)
+        return `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
+    }
     const head =
       refs.length > 0 ? callAt(leaves, first, scope, ctx, steps?.range) : null;
-    if (refs.length > 0 && parseKey(first) !== null && head === null)
-      return kidsOf(scope, first, ctx, steps?.range).length > 1
-        ? `duas chamadas de ${first} na volta ${String(k + 1)} do laço de ${name}, e o lugar não as separa`
-        : `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
     const count = refs.length > 0 && {
       expr: item,
       refs,
