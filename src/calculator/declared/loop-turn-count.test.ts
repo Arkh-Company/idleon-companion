@@ -246,6 +246,25 @@ test("a turn whose item reads before its call is a line by the read, the call a 
   expect(lock(block, [readLine(0), readLine(1)])).toEqual([]);
 });
 
+test("a turn whose count's call has no place in the turn is refused with the reason, never left unchecked (r2 of part U)", () => {
+  // TreeTurnsCountEarly: DNSM.TreeEarlyDN = TreeTurnItemAt(0, TreeBase) before the loop, `d.TreeEarlyDN * 3` a turn;
+  // the first turn starts at the call's step 0, so the call has a place in it and none in the second
+  const block = "TreeTurnsCountEarly";
+  const reason =
+    "a chamada de TreeTurnItemAt(0,4) não tem lugar na volta 2 do laço de TreeTurnsCountEarly()";
+  const { rec, key, ops } = recorded(`${block}Root`);
+  expect(stepsGuide(key, rec, ops)).toContain(`descer: pendente (${reason})`);
+  const early: BlueprintNode = {
+    key: "early",
+    name: "Early",
+    ref: { call: "TreeTurnItemAt", args: [0, "*"] },
+    leaf: "level",
+  };
+  expect(lock(block, [early])).toEqual([
+    `invented-turns/0/cards/turns: ${reason}`,
+  ]);
+});
+
 test("a turn whose item has a curve waits with its reason: its parts would be the whole call's, never the turn's (r1 of part U)", () => {
   const root = "TreeTurnsCountCurveRoot";
   const { rec, key, ops } = recorded(root);

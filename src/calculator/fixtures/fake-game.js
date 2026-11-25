@@ -2895,6 +2895,20 @@ lime.$scripts.N = function (_exports, $global) {
           state().TreeTwins[i];
     return t;
   };
+  // ...one whose pass-through variable was written before the loop, by a call with an argument of the save (r2 of U)
+  Blocks._customBlock_TreeTurnsCountEarly = function () {
+    var d = dnsm();
+    d.TreeEarlyDN = Blocks._customBlock_TreeTurnItemAt(
+      0,
+      a.engine.getGameAttribute("TreeBase"),
+    );
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + d.TreeEarlyDN * 3;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountEarlyRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountEarly() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsCountSaveRoot = function () {
     return Blocks._customBlock_TreeTurnsCountSave() + state().TreeCapped;
   };
