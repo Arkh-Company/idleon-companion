@@ -3047,7 +3047,1409 @@
                           },
                           "ref": {
                             "read": "DNSM.AlchBubbles.GFoodz"
-                          }
+                          },
+                          "classes": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+                          "children": [
+                            {
+                              "key": "talent-calc-2",
+                              "name": "Vials and bubbles (all)",
+                              "nameProof": {
+                                "names": "TalentCalc(-2)"
+                              },
+                              "ref": {
+                                "call": "TalentCalc",
+                                "args": [-2]
+                              },
+                              "children": [
+                                {
+                                  "key": "cauldron-stats-bubble-bonus-0-18-0",
+                                  "name": "Shimmeron",
+                                  "nameProof": {
+                                    "names": "CauldronStats(\"BubbleBonus\", 0, 18, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "CauldronStats",
+                                    "args": ["BubbleBonus", 0, 18, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcane-type-prisma-bonus-mult-0-0",
+                                      "name": "Prisma Bubble bonus multi",
+                                      "nameProof": {
+                                        "names": "ArcaneType(\"PrismaBonusMult\", 0, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "ArcaneType",
+                                        "args": ["PrismaBonusMult", 0, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "arcane-type-arcane-upg-bonus-45-0",
+                                          "name": "Pinnacle of Prisma",
+                                          "nameProof": {
+                                            "names": "ArcaneType(\"ArcaneUpgBonus\", 45, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "ArcaneType",
+                                            "args": ["ArcaneUpgBonus", 45, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "arcane-45",
+                                              "name": "Pinnacle of Prisma level",
+                                              "nameProof": {
+                                                "names": "Arcane[45]"
+                                              },
+                                              "ref": {
+                                                "read": "Arcane[45]"
+                                              }
+                                            },
+                                            {
+                                              "key": "custom-lists-arcane-upg-45-5",
+                                              "name": "Bonus per level (Arcane)",
+                                              "nameProof": {
+                                                "names": "CustomLists.ArcaneUpg[45][5]"
+                                              },
+                                              "ref": {
+                                                "read": "CustomLists.ArcaneUpg[45][5]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "arcade-bonus-54",
+                                          "name": "Arcade: Prisma Bonuses",
+                                          "nameProof": {
+                                            "names": "ArcadeBonus(54)"
+                                          },
+                                          "ref": {
+                                            "call": "ArcadeBonus",
+                                            "args": [54]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "arcade-max",
+                                              "name": null,
+                                              "constant": 2,
+                                              "children": [
+                                                {
+                                                  "key": "arcade-upg-54-max",
+                                                  "name": "Arcade Prisma Bonuses level",
+                                                  "nameProof": {
+                                                    "names": "ArcadeUpg[54]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "ArcadeUpg[54]"
+                                                  },
+                                                  "leaf": "condition",
+                                                  "conditionKind": "max"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "arcade-past-max",
+                                              "name": null,
+                                              "constant": 6,
+                                              "children": [
+                                                {
+                                                  "key": "arcade-upg-54-past-max",
+                                                  "name": "Arcade Prisma Bonuses level",
+                                                  "nameProof": {
+                                                    "names": "ArcadeUpg[54]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "ArcadeUpg[54]"
+                                                  },
+                                                  "leaf": "condition",
+                                                  "conditionKind": "equalsValue"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "spirit-reindeer",
+                                              "name": null,
+                                              "constant": 2,
+                                              "children": [
+                                                {
+                                                  "key": "companions-27",
+                                                  "name": "Spirit Reindeer",
+                                                  "nameProof": {
+                                                    "names": "Companions(27)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "Companions",
+                                                    "args": [27]
+                                                  },
+                                                  "leaf": "condition",
+                                                  "conditionKind": "owned"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "key": "arcade-upg-54",
+                                              "name": "Arcade Prisma Bonuses level",
+                                              "nameProof": {
+                                                "names": "ArcadeUpg[54]"
+                                              },
+                                              "ref": {
+                                                "read": "ArcadeUpg[54]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "sushi-stuff-ro-g-bonus-qty-23-0",
+                                          "name": "Tobo Tamago",
+                                          "nameProof": {
+                                            "names": "SushiStuff(\"RoG_BonusQTY\", 23, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "SushiStuff",
+                                            "args": ["RoG_BonusQTY", 23, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-lists-research-37-23",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.Research[37][23]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "jelly-operation-ro-g-bonus-qty-36-0",
+                                          "name": "Bowling Pin",
+                                          "nameProof": {
+                                            "names": "JellyOperation(\"RoG_BonusQTY\", 36, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "JellyOperation",
+                                            "args": ["RoG_BonusQTY", 36, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "custom-lists-research-47-36",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.Research[47][36]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-have-w6-trophy-0-0",
+                                          "name": "Heroic Spirit owned",
+                                          "nameProof": {
+                                            "names": "Thingies(\"HaveW6Trophy\", 0, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["HaveW6Trophy", 0, 0]
+                                          }
+                                        },
+                                        {
+                                          "key": "gaming-stat-type-palette-bonus-28-0",
+                                          "name": "Violet",
+                                          "nameProof": {
+                                            "names": "GamingStatType(\"PaletteBonus\", 28, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "GamingStatType",
+                                            "args": ["PaletteBonus", 28, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "gaming-stat-type-palette-bonus-23-0",
+                                              "name": "Honey Yellow",
+                                              "nameProof": {
+                                                "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "GamingStatType",
+                                                "args": ["PaletteBonus", 23, 0]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "dnsm-palette-bonz-28",
+                                                  "name": "Violet (palette)",
+                                                  "nameProof": {
+                                                    "names": "DNSM.PaletteBonz[28]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "DNSM.PaletteBonz[28]"
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "gaming-stat-type-palette-bonus-23-0",
+                                                      "name": "Honey Yellow",
+                                                      "nameProof": {
+                                                        "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                                      },
+                                                      "ref": {
+                                                        "call": "GamingStatType",
+                                                        "args": [
+                                                          "PaletteBonus",
+                                                          23,
+                                                          0
+                                                        ]
+                                                      },
+                                                      "children": [
+                                                        {
+                                                          "key": "spelunk-9-28",
+                                                          "name": "Violet level",
+                                                          "nameProof": {
+                                                            "names": "Spelunk[9][28]"
+                                                          },
+                                                          "ref": {
+                                                            "read": "Spelunk[9][28]"
+                                                          }
+                                                        },
+                                                        {
+                                                          "key": "custom-lists-gaming-palette-28-4",
+                                                          "name": "Violet constant",
+                                                          "nameProof": {
+                                                            "names": "CustomLists.GamingPalette[28][4]"
+                                                          },
+                                                          "ref": {
+                                                            "read": "CustomLists.GamingPalette[28][4]"
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "key": "thingies-legend-pts-bonus-10-0",
+                                                  "name": "Picasso Gaming",
+                                                  "nameProof": {
+                                                    "names": "Thingies(\"LegendPTS_bonus\", 10, 0)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "Thingies",
+                                                    "args": [
+                                                      "LegendPTS_bonus",
+                                                      10,
+                                                      0
+                                                    ]
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "spelunk-18-10",
+                                                      "name": "Picasso Gaming level",
+                                                      "nameProof": {
+                                                        "names": "Spelunk[18][10]"
+                                                      },
+                                                      "ref": {
+                                                        "read": "Spelunk[18][10]"
+                                                      }
+                                                    },
+                                                    {
+                                                      "key": "custom-lists-legend-talents-10-2",
+                                                      "name": null,
+                                                      "ref": {
+                                                        "read": "CustomLists.LegendTalents[10][2]"
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "key": "spelunk-49-28",
+                                                  "name": "Violet black star",
+                                                  "nameProof": {
+                                                    "names": "Spelunk[49][28]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "Spelunk[49][28]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "spelunk-do-we-have-lore-n1-8-0",
+                                                  "name": "Spelunking lore: Scoutpost",
+                                                  "nameProof": {
+                                                    "names": "Spelunk(\"DoWeHaveLoreN1\", 8, 0)"
+                                                  },
+                                                  "ref": {
+                                                    "call": "Spelunk",
+                                                    "args": [
+                                                      "DoWeHaveLoreN1",
+                                                      8,
+                                                      0
+                                                    ]
+                                                  },
+                                                  "children": [
+                                                    {
+                                                      "key": "spelunk-0-8",
+                                                      "name": "Spelunking lore: Scoutpost found",
+                                                      "nameProof": {
+                                                        "names": "Spelunk[0][8]"
+                                                      },
+                                                      "ref": {
+                                                        "read": "Spelunk[0][8]"
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "labb-total-purple-sigils-0-0-0",
+                                          "name": "Sigils at purple tier",
+                                          "nameProof": {
+                                            "names": "Labb(\"TotalPurpleSigils\", \"0\", 0, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Labb",
+                                            "args": [
+                                              "TotalPurpleSigils",
+                                              "0",
+                                              0,
+                                              0
+                                            ]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "dnsm-sig-tot-pup",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "DNSM.SigTotPup"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "farming-stuffs-exotic-bonus-qty-48-0",
+                                          "name": "Prisma Petal",
+                                          "nameProof": {
+                                            "names": "FarmingStuffs(\"ExoticBonusQTY\", 48, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "FarmingStuffs",
+                                            "args": ["ExoticBonusQTY", 48, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "farming-stuffs-exotic-bonus-qty-1-0",
+                                              "name": "Sproutluck I",
+                                              "nameProof": {
+                                                "names": "FarmingStuffs(\"ExoticBonusQTY\", -1, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "FarmingStuffs",
+                                                "args": [
+                                                  "ExoticBonusQTY",
+                                                  -1,
+                                                  0
+                                                ]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "custom-lists-market-exotic-info-48-3",
+                                                  "name": "Max bonus of the exotic seed",
+                                                  "nameProof": {
+                                                    "names": "CustomLists.MarketExoticInfo[48][3]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "CustomLists.MarketExoticInfo[48][3]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "farm-upg-68",
+                                                  "name": "Prisma Petal level",
+                                                  "nameProof": {
+                                                    "names": "FarmUpg[68]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "FarmUpg[68]"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-legend-pts-bonus-36-0",
+                                          "name": "Wowa Woowa",
+                                          "nameProof": {
+                                            "names": "Thingies(\"LegendPTS_bonus\", 36, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["LegendPTS_bonus", 36, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "spelunk-18-36",
+                                              "name": "Wowa Woowa level",
+                                              "nameProof": {
+                                                "names": "Spelunk[18][36]"
+                                              },
+                                              "ref": {
+                                                "read": "Spelunk[18][36]"
+                                              }
+                                            },
+                                            {
+                                              "key": "custom-lists-legend-talents-36-2",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.LegendTalents[36][2]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "companions-88",
+                                          "name": "Rift Hivemind",
+                                          "nameProof": {
+                                            "names": "Companions(88)"
+                                          },
+                                          "ref": {
+                                            "call": "Companions",
+                                            "args": [88]
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "cauldron-info-0-18",
+                                      "name": "SHIMMERON bubble level",
+                                      "nameProof": {
+                                        "names": "CauldronInfo[0][18]"
+                                      },
+                                      "ref": {
+                                        "read": "CauldronInfo[0][18]"
+                                      }
+                                    },
+                                    {
+                                      "key": "cauldron-stats-is-bubble-superr-0-18-0",
+                                      "name": "SHIMMERON is Prisma",
+                                      "nameProof": {
+                                        "names": "CauldronStats(\"isBubbleSuperr\", 0, 18, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "CauldronStats",
+                                        "args": ["isBubbleSuperr", 0, 18, 0]
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "key": "cauldron-stats-bubble-bonus-0-1-0",
+                          "name": "Warriors Rule",
+                          "nameProof": {
+                            "names": "CauldronStats(\"BubbleBonus\", 0, 1, 0)"
+                          },
+                          "ref": {
+                            "call": "CauldronStats",
+                            "args": ["BubbleBonus", 0, 1, 0]
+                          },
+                          "classes": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+                          "children": [
+                            {
+                              "key": "arcane-type-prisma-bonus-mult-0-0",
+                              "name": "Prisma Bubble bonus multi",
+                              "nameProof": {
+                                "names": "ArcaneType(\"PrismaBonusMult\", 0, 0)"
+                              },
+                              "ref": {
+                                "call": "ArcaneType",
+                                "args": ["PrismaBonusMult", 0, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "arcane-type-arcane-upg-bonus-45-0",
+                                  "name": "Pinnacle of Prisma",
+                                  "nameProof": {
+                                    "names": "ArcaneType(\"ArcaneUpgBonus\", 45, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcaneType",
+                                    "args": ["ArcaneUpgBonus", 45, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcane-45",
+                                      "name": "Pinnacle of Prisma level",
+                                      "nameProof": {
+                                        "names": "Arcane[45]"
+                                      },
+                                      "ref": {
+                                        "read": "Arcane[45]"
+                                      }
+                                    },
+                                    {
+                                      "key": "custom-lists-arcane-upg-45-5",
+                                      "name": "Bonus per level (Arcane)",
+                                      "nameProof": {
+                                        "names": "CustomLists.ArcaneUpg[45][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.ArcaneUpg[45][5]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "arcade-bonus-54",
+                                  "name": "Arcade: Prisma Bonuses",
+                                  "nameProof": {
+                                    "names": "ArcadeBonus(54)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcadeBonus",
+                                    "args": [54]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcade-max",
+                                      "name": null,
+                                      "constant": 2,
+                                      "children": [
+                                        {
+                                          "key": "arcade-upg-54-max",
+                                          "name": "Arcade Prisma Bonuses level",
+                                          "nameProof": {
+                                            "names": "ArcadeUpg[54]"
+                                          },
+                                          "ref": {
+                                            "read": "ArcadeUpg[54]"
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "max"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "arcade-past-max",
+                                      "name": null,
+                                      "constant": 6,
+                                      "children": [
+                                        {
+                                          "key": "arcade-upg-54-past-max",
+                                          "name": "Arcade Prisma Bonuses level",
+                                          "nameProof": {
+                                            "names": "ArcadeUpg[54]"
+                                          },
+                                          "ref": {
+                                            "read": "ArcadeUpg[54]"
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "equalsValue"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "spirit-reindeer",
+                                      "name": null,
+                                      "constant": 2,
+                                      "children": [
+                                        {
+                                          "key": "companions-27",
+                                          "name": "Spirit Reindeer",
+                                          "nameProof": {
+                                            "names": "Companions(27)"
+                                          },
+                                          "ref": {
+                                            "call": "Companions",
+                                            "args": [27]
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "owned"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "arcade-upg-54",
+                                      "name": "Arcade Prisma Bonuses level",
+                                      "nameProof": {
+                                        "names": "ArcadeUpg[54]"
+                                      },
+                                      "ref": {
+                                        "read": "ArcadeUpg[54]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "sushi-stuff-ro-g-bonus-qty-23-0",
+                                  "name": "Tobo Tamago",
+                                  "nameProof": {
+                                    "names": "SushiStuff(\"RoG_BonusQTY\", 23, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "SushiStuff",
+                                    "args": ["RoG_BonusQTY", 23, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-research-37-23",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.Research[37][23]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "jelly-operation-ro-g-bonus-qty-36-0",
+                                  "name": "Bowling Pin",
+                                  "nameProof": {
+                                    "names": "JellyOperation(\"RoG_BonusQTY\", 36, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "JellyOperation",
+                                    "args": ["RoG_BonusQTY", 36, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-research-47-36",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.Research[47][36]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "thingies-have-w6-trophy-0-0",
+                                  "name": "Heroic Spirit owned",
+                                  "nameProof": {
+                                    "names": "Thingies(\"HaveW6Trophy\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Thingies",
+                                    "args": ["HaveW6Trophy", 0, 0]
+                                  }
+                                },
+                                {
+                                  "key": "gaming-stat-type-palette-bonus-28-0",
+                                  "name": "Violet",
+                                  "nameProof": {
+                                    "names": "GamingStatType(\"PaletteBonus\", 28, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GamingStatType",
+                                    "args": ["PaletteBonus", 28, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "gaming-stat-type-palette-bonus-23-0",
+                                      "name": "Honey Yellow",
+                                      "nameProof": {
+                                        "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "GamingStatType",
+                                        "args": ["PaletteBonus", 23, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "dnsm-palette-bonz-28",
+                                          "name": "Violet (palette)",
+                                          "nameProof": {
+                                            "names": "DNSM.PaletteBonz[28]"
+                                          },
+                                          "ref": {
+                                            "read": "DNSM.PaletteBonz[28]"
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "gaming-stat-type-palette-bonus-23-0",
+                                              "name": "Honey Yellow",
+                                              "nameProof": {
+                                                "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "GamingStatType",
+                                                "args": ["PaletteBonus", 23, 0]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "spelunk-9-28",
+                                                  "name": "Violet level",
+                                                  "nameProof": {
+                                                    "names": "Spelunk[9][28]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "Spelunk[9][28]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "custom-lists-gaming-palette-28-4",
+                                                  "name": "Violet constant",
+                                                  "nameProof": {
+                                                    "names": "CustomLists.GamingPalette[28][4]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "CustomLists.GamingPalette[28][4]"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-legend-pts-bonus-10-0",
+                                          "name": "Picasso Gaming",
+                                          "nameProof": {
+                                            "names": "Thingies(\"LegendPTS_bonus\", 10, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["LegendPTS_bonus", 10, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "spelunk-18-10",
+                                              "name": "Picasso Gaming level",
+                                              "nameProof": {
+                                                "names": "Spelunk[18][10]"
+                                              },
+                                              "ref": {
+                                                "read": "Spelunk[18][10]"
+                                              }
+                                            },
+                                            {
+                                              "key": "custom-lists-legend-talents-10-2",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.LegendTalents[10][2]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "spelunk-49-28",
+                                          "name": "Violet black star",
+                                          "nameProof": {
+                                            "names": "Spelunk[49][28]"
+                                          },
+                                          "ref": {
+                                            "read": "Spelunk[49][28]"
+                                          }
+                                        },
+                                        {
+                                          "key": "spelunk-do-we-have-lore-n1-8-0",
+                                          "name": "Spelunking lore: Scoutpost",
+                                          "nameProof": {
+                                            "names": "Spelunk(\"DoWeHaveLoreN1\", 8, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Spelunk",
+                                            "args": ["DoWeHaveLoreN1", 8, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "spelunk-0-8",
+                                              "name": "Spelunking lore: Scoutpost found",
+                                              "nameProof": {
+                                                "names": "Spelunk[0][8]"
+                                              },
+                                              "ref": {
+                                                "read": "Spelunk[0][8]"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "labb-total-purple-sigils-0-0-0",
+                                  "name": "Sigils at purple tier",
+                                  "nameProof": {
+                                    "names": "Labb(\"TotalPurpleSigils\", \"0\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Labb",
+                                    "args": ["TotalPurpleSigils", "0", 0, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "dnsm-sig-tot-pup",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "DNSM.SigTotPup"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "farming-stuffs-exotic-bonus-qty-48-0",
+                                  "name": "Prisma Petal",
+                                  "nameProof": {
+                                    "names": "FarmingStuffs(\"ExoticBonusQTY\", 48, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "FarmingStuffs",
+                                    "args": ["ExoticBonusQTY", 48, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "farming-stuffs-exotic-bonus-qty-1-0",
+                                      "name": "Sproutluck I",
+                                      "nameProof": {
+                                        "names": "FarmingStuffs(\"ExoticBonusQTY\", -1, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "FarmingStuffs",
+                                        "args": ["ExoticBonusQTY", -1, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-market-exotic-info-48-3",
+                                          "name": "Max bonus of the exotic seed",
+                                          "nameProof": {
+                                            "names": "CustomLists.MarketExoticInfo[48][3]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.MarketExoticInfo[48][3]"
+                                          }
+                                        },
+                                        {
+                                          "key": "farm-upg-68",
+                                          "name": "Prisma Petal level",
+                                          "nameProof": {
+                                            "names": "FarmUpg[68]"
+                                          },
+                                          "ref": {
+                                            "read": "FarmUpg[68]"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "thingies-legend-pts-bonus-36-0",
+                                  "name": "Wowa Woowa",
+                                  "nameProof": {
+                                    "names": "Thingies(\"LegendPTS_bonus\", 36, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Thingies",
+                                    "args": ["LegendPTS_bonus", 36, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "spelunk-18-36",
+                                      "name": "Wowa Woowa level",
+                                      "nameProof": {
+                                        "names": "Spelunk[18][36]"
+                                      },
+                                      "ref": {
+                                        "read": "Spelunk[18][36]"
+                                      }
+                                    },
+                                    {
+                                      "key": "custom-lists-legend-talents-36-2",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.LegendTalents[36][2]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "companions-88",
+                                  "name": "Rift Hivemind",
+                                  "nameProof": {
+                                    "names": "Companions(88)"
+                                  },
+                                  "ref": {
+                                    "call": "Companions",
+                                    "args": [88]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "cauldron-info-0-1",
+                              "name": "WARRIORS RULE bubble level",
+                              "nameProof": {
+                                "names": "CauldronInfo[0][1]"
+                              },
+                              "ref": {
+                                "read": "CauldronInfo[0][1]"
+                              }
+                            },
+                            {
+                              "key": "cauldron-stats-is-bubble-superr-0-1-0",
+                              "name": "WARRIORS RULE is Prisma",
+                              "nameProof": {
+                                "names": "CauldronStats(\"isBubbleSuperr\", 0, 1, 0)"
+                              },
+                              "ref": {
+                                "call": "CauldronStats",
+                                "args": ["isBubbleSuperr", 0, 1, 0]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "key": "cauldron-stats-bubble-bonus-0-18-0",
+                          "name": "Shimmeron",
+                          "nameProof": {
+                            "names": "CauldronStats(\"BubbleBonus\", 0, 18, 0)"
+                          },
+                          "ref": {
+                            "call": "CauldronStats",
+                            "args": ["BubbleBonus", 0, 18, 0]
+                          },
+                          "classes": [
+                            0, 1, 2, 3, 4, 5, 6, 18, 19, 20, 21, 22, 23, 24, 25,
+                            26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                            39, 40, 41
+                          ],
+                          "children": [
+                            {
+                              "key": "arcane-type-prisma-bonus-mult-0-0",
+                              "name": "Prisma Bubble bonus multi",
+                              "nameProof": {
+                                "names": "ArcaneType(\"PrismaBonusMult\", 0, 0)"
+                              },
+                              "ref": {
+                                "call": "ArcaneType",
+                                "args": ["PrismaBonusMult", 0, 0]
+                              },
+                              "children": [
+                                {
+                                  "key": "arcane-type-arcane-upg-bonus-45-0",
+                                  "name": "Pinnacle of Prisma",
+                                  "nameProof": {
+                                    "names": "ArcaneType(\"ArcaneUpgBonus\", 45, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcaneType",
+                                    "args": ["ArcaneUpgBonus", 45, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcane-45",
+                                      "name": "Pinnacle of Prisma level",
+                                      "nameProof": {
+                                        "names": "Arcane[45]"
+                                      },
+                                      "ref": {
+                                        "read": "Arcane[45]"
+                                      }
+                                    },
+                                    {
+                                      "key": "custom-lists-arcane-upg-45-5",
+                                      "name": "Bonus per level (Arcane)",
+                                      "nameProof": {
+                                        "names": "CustomLists.ArcaneUpg[45][5]"
+                                      },
+                                      "ref": {
+                                        "read": "CustomLists.ArcaneUpg[45][5]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "arcade-bonus-54",
+                                  "name": "Arcade: Prisma Bonuses",
+                                  "nameProof": {
+                                    "names": "ArcadeBonus(54)"
+                                  },
+                                  "ref": {
+                                    "call": "ArcadeBonus",
+                                    "args": [54]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "arcade-max",
+                                      "name": null,
+                                      "constant": 2,
+                                      "children": [
+                                        {
+                                          "key": "arcade-upg-54-max",
+                                          "name": "Arcade Prisma Bonuses level",
+                                          "nameProof": {
+                                            "names": "ArcadeUpg[54]"
+                                          },
+                                          "ref": {
+                                            "read": "ArcadeUpg[54]"
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "max"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "arcade-past-max",
+                                      "name": null,
+                                      "constant": 6,
+                                      "children": [
+                                        {
+                                          "key": "arcade-upg-54-past-max",
+                                          "name": "Arcade Prisma Bonuses level",
+                                          "nameProof": {
+                                            "names": "ArcadeUpg[54]"
+                                          },
+                                          "ref": {
+                                            "read": "ArcadeUpg[54]"
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "equalsValue"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "spirit-reindeer",
+                                      "name": null,
+                                      "constant": 2,
+                                      "children": [
+                                        {
+                                          "key": "companions-27",
+                                          "name": "Spirit Reindeer",
+                                          "nameProof": {
+                                            "names": "Companions(27)"
+                                          },
+                                          "ref": {
+                                            "call": "Companions",
+                                            "args": [27]
+                                          },
+                                          "leaf": "condition",
+                                          "conditionKind": "owned"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "key": "arcade-upg-54",
+                                      "name": "Arcade Prisma Bonuses level",
+                                      "nameProof": {
+                                        "names": "ArcadeUpg[54]"
+                                      },
+                                      "ref": {
+                                        "read": "ArcadeUpg[54]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "sushi-stuff-ro-g-bonus-qty-23-0",
+                                  "name": "Tobo Tamago",
+                                  "nameProof": {
+                                    "names": "SushiStuff(\"RoG_BonusQTY\", 23, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "SushiStuff",
+                                    "args": ["RoG_BonusQTY", 23, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-research-37-23",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.Research[37][23]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "jelly-operation-ro-g-bonus-qty-36-0",
+                                  "name": "Bowling Pin",
+                                  "nameProof": {
+                                    "names": "JellyOperation(\"RoG_BonusQTY\", 36, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "JellyOperation",
+                                    "args": ["RoG_BonusQTY", 36, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "custom-lists-research-47-36",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.Research[47][36]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "thingies-have-w6-trophy-0-0",
+                                  "name": "Heroic Spirit owned",
+                                  "nameProof": {
+                                    "names": "Thingies(\"HaveW6Trophy\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Thingies",
+                                    "args": ["HaveW6Trophy", 0, 0]
+                                  }
+                                },
+                                {
+                                  "key": "gaming-stat-type-palette-bonus-28-0",
+                                  "name": "Violet",
+                                  "nameProof": {
+                                    "names": "GamingStatType(\"PaletteBonus\", 28, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "GamingStatType",
+                                    "args": ["PaletteBonus", 28, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "gaming-stat-type-palette-bonus-23-0",
+                                      "name": "Honey Yellow",
+                                      "nameProof": {
+                                        "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "GamingStatType",
+                                        "args": ["PaletteBonus", 23, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "dnsm-palette-bonz-28",
+                                          "name": "Violet (palette)",
+                                          "nameProof": {
+                                            "names": "DNSM.PaletteBonz[28]"
+                                          },
+                                          "ref": {
+                                            "read": "DNSM.PaletteBonz[28]"
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "gaming-stat-type-palette-bonus-23-0",
+                                              "name": "Honey Yellow",
+                                              "nameProof": {
+                                                "names": "GamingStatType(\"PaletteBonus\", 23, 0)"
+                                              },
+                                              "ref": {
+                                                "call": "GamingStatType",
+                                                "args": ["PaletteBonus", 23, 0]
+                                              },
+                                              "children": [
+                                                {
+                                                  "key": "spelunk-9-28",
+                                                  "name": "Violet level",
+                                                  "nameProof": {
+                                                    "names": "Spelunk[9][28]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "Spelunk[9][28]"
+                                                  }
+                                                },
+                                                {
+                                                  "key": "custom-lists-gaming-palette-28-4",
+                                                  "name": "Violet constant",
+                                                  "nameProof": {
+                                                    "names": "CustomLists.GamingPalette[28][4]"
+                                                  },
+                                                  "ref": {
+                                                    "read": "CustomLists.GamingPalette[28][4]"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "thingies-legend-pts-bonus-10-0",
+                                          "name": "Picasso Gaming",
+                                          "nameProof": {
+                                            "names": "Thingies(\"LegendPTS_bonus\", 10, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Thingies",
+                                            "args": ["LegendPTS_bonus", 10, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "spelunk-18-10",
+                                              "name": "Picasso Gaming level",
+                                              "nameProof": {
+                                                "names": "Spelunk[18][10]"
+                                              },
+                                              "ref": {
+                                                "read": "Spelunk[18][10]"
+                                              }
+                                            },
+                                            {
+                                              "key": "custom-lists-legend-talents-10-2",
+                                              "name": null,
+                                              "ref": {
+                                                "read": "CustomLists.LegendTalents[10][2]"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "key": "spelunk-49-28",
+                                          "name": "Violet black star",
+                                          "nameProof": {
+                                            "names": "Spelunk[49][28]"
+                                          },
+                                          "ref": {
+                                            "read": "Spelunk[49][28]"
+                                          }
+                                        },
+                                        {
+                                          "key": "spelunk-do-we-have-lore-n1-8-0",
+                                          "name": "Spelunking lore: Scoutpost",
+                                          "nameProof": {
+                                            "names": "Spelunk(\"DoWeHaveLoreN1\", 8, 0)"
+                                          },
+                                          "ref": {
+                                            "call": "Spelunk",
+                                            "args": ["DoWeHaveLoreN1", 8, 0]
+                                          },
+                                          "children": [
+                                            {
+                                              "key": "spelunk-0-8",
+                                              "name": "Spelunking lore: Scoutpost found",
+                                              "nameProof": {
+                                                "names": "Spelunk[0][8]"
+                                              },
+                                              "ref": {
+                                                "read": "Spelunk[0][8]"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "labb-total-purple-sigils-0-0-0",
+                                  "name": "Sigils at purple tier",
+                                  "nameProof": {
+                                    "names": "Labb(\"TotalPurpleSigils\", \"0\", 0, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Labb",
+                                    "args": ["TotalPurpleSigils", "0", 0, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "dnsm-sig-tot-pup",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "DNSM.SigTotPup"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "farming-stuffs-exotic-bonus-qty-48-0",
+                                  "name": "Prisma Petal",
+                                  "nameProof": {
+                                    "names": "FarmingStuffs(\"ExoticBonusQTY\", 48, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "FarmingStuffs",
+                                    "args": ["ExoticBonusQTY", 48, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "farming-stuffs-exotic-bonus-qty-1-0",
+                                      "name": "Sproutluck I",
+                                      "nameProof": {
+                                        "names": "FarmingStuffs(\"ExoticBonusQTY\", -1, 0)"
+                                      },
+                                      "ref": {
+                                        "call": "FarmingStuffs",
+                                        "args": ["ExoticBonusQTY", -1, 0]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-market-exotic-info-48-3",
+                                          "name": "Max bonus of the exotic seed",
+                                          "nameProof": {
+                                            "names": "CustomLists.MarketExoticInfo[48][3]"
+                                          },
+                                          "ref": {
+                                            "read": "CustomLists.MarketExoticInfo[48][3]"
+                                          }
+                                        },
+                                        {
+                                          "key": "farm-upg-68",
+                                          "name": "Prisma Petal level",
+                                          "nameProof": {
+                                            "names": "FarmUpg[68]"
+                                          },
+                                          "ref": {
+                                            "read": "FarmUpg[68]"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "thingies-legend-pts-bonus-36-0",
+                                  "name": "Wowa Woowa",
+                                  "nameProof": {
+                                    "names": "Thingies(\"LegendPTS_bonus\", 36, 0)"
+                                  },
+                                  "ref": {
+                                    "call": "Thingies",
+                                    "args": ["LegendPTS_bonus", 36, 0]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "spelunk-18-36",
+                                      "name": "Wowa Woowa level",
+                                      "nameProof": {
+                                        "names": "Spelunk[18][36]"
+                                      },
+                                      "ref": {
+                                        "read": "Spelunk[18][36]"
+                                      }
+                                    },
+                                    {
+                                      "key": "custom-lists-legend-talents-36-2",
+                                      "name": null,
+                                      "ref": {
+                                        "read": "CustomLists.LegendTalents[36][2]"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "key": "companions-88",
+                                  "name": "Rift Hivemind",
+                                  "nameProof": {
+                                    "names": "Companions(88)"
+                                  },
+                                  "ref": {
+                                    "call": "Companions",
+                                    "args": [88]
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "key": "cauldron-info-0-18",
+                              "name": "SHIMMERON bubble level",
+                              "nameProof": {
+                                "names": "CauldronInfo[0][18]"
+                              },
+                              "ref": {
+                                "read": "CauldronInfo[0][18]"
+                              }
+                            },
+                            {
+                              "key": "cauldron-stats-is-bubble-superr-0-18-0",
+                              "name": "SHIMMERON is Prisma",
+                              "nameProof": {
+                                "names": "CauldronStats(\"isBubbleSuperr\", 0, 18, 0)"
+                              },
+                              "ref": {
+                                "call": "CauldronStats",
+                                "args": ["isBubbleSuperr", 0, 18, 0]
+                              }
+                            }
+                          ]
                         }
                       ]
                     }
@@ -7633,10 +9035,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/0/groups/28/sources/0/children/9/children/0",
       "kind": "leaf"
     },
@@ -9018,6 +10416,354 @@
     },
     {
       "where": "pools/0/groups/19/sources/0/children/3/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/1/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/5/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/7/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/7/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/8/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/8/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/8/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/9",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/1/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/5/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/7/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/7/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/8/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/8/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/8/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/9",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/2/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/2/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/3/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/4",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/0/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/0/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/1/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/1/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/2",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/3/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/5/children/0/children/3",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/6/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/6/children/0",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/7/children/0/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/7/children/0/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/8/children/0",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/8/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/8/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/9",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/1",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/2",
+      "kind": "descend"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/1/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/0/children/0/children/0/children/0/children/1/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/1/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/1/children/0/children/1/children/3",
+      "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/1/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/1/children/1",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/1/children/2",
+      "kind": "name"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/8/children/0/children/2/children/0/children/1/children/3",
       "kind": "leaf"
     }
   ]
