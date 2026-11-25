@@ -11,7 +11,10 @@
             {
               "key": "signs",
               "name": "Star Signs",
-              "each": { "list": "DNSM.StarSignsDL[*]", "as": "sign" },
+              "each": {
+                "list": "DNSM.StarSignsDL[*]",
+                "as": "sign"
+              },
               "children": [
                 {
                   "key": "sign",
@@ -37,15 +40,50 @@
             {
               "key": "chip",
               "name": "Silkrode Nanochip",
-              "nameProof": { "names": "chipBonuses(\"star\")" },
-              "ref": { "call": "chipBonuses", "args": ["star"] },
+              "nameProof": {
+                "names": "chipBonuses(\"star\")"
+              },
+              "ref": {
+                "call": "chipBonuses",
+                "args": ["star"]
+              },
               "children": [
                 {
                   "key": "chip",
                   "name": "Silkrode Nanochip",
-                  "nameProof": { "names": "chipBonuses(\"star\")" },
-                  "ref": { "call": "chipBonuses", "args": ["star"] },
-                  "leaf": "choice"
+                  "nameProof": {
+                    "names": "chipBonuses(\"star\")"
+                  },
+                  "ref": {
+                    "call": "chipBonuses",
+                    "args": ["star"]
+                  },
+                  "children": [
+                    {
+                      "key": "labchip",
+                      "name": "Lab chips (all)",
+                      "nameProof": {
+                        "names": "ActionBlock(\"RecalcChipBonuses\", \"0\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "ActionBlock",
+                        "args": ["RecalcChipBonuses", "0", 0, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "value",
+                          "name": "Chip bonus value",
+                          "nameProof": {
+                            "names": "CustomLists.ChipDesc[15][11]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.ChipDesc[15][11]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "key": "rift",
@@ -57,7 +95,9 @@
                     "call": "RiftStuff",
                     "args": ["enabledStarSigns", 0]
                   },
-                  "termPart": { "system": "rift" },
+                  "termPart": {
+                    "system": "rift"
+                  },
                   "children": [
                     {
                       "key": "shiny",
@@ -90,7 +130,20 @@
                 "call": "Summoning2",
                 "args": ["MeritocBonusz", 22, 0]
               },
-              "leaf": "rawBonus"
+              "children": [
+                {
+                  "key": "vote",
+                  "name": "Meritocracy vote of the week",
+                  "nameProof": {
+                    "names": "OptionsListAccount[453]"
+                  },
+                  "ref": {
+                    "read": "OptionsListAccount[453]"
+                  },
+                  "leaf": "condition",
+                  "conditionKind": "equalsValue"
+                }
+              ]
             }
           ]
         },
@@ -100,22 +153,37 @@
             {
               "key": "seraph",
               "name": "Seraph Cosmos",
-              "nameProof": { "table": "CustomLists.StarSigns", "row": 79 },
-              "ref": { "read": "Arcane[40]" },
+              "nameProof": {
+                "table": "CustomLists.StarSigns",
+                "row": 79
+              },
+              "ref": {
+                "read": "Arcane[40]"
+              },
               "children": [
                 {
                   "key": "cultism",
                   "name": "Astrology Cultism level",
-                  "nameProof": { "names": "Arcane[40]" },
-                  "ref": { "read": "Arcane[40]" },
+                  "nameProof": {
+                    "names": "Arcane[40]"
+                  },
+                  "ref": {
+                    "read": "Arcane[40]"
+                  },
                   "leaf": "level"
                 },
                 {
                   "key": "summon",
                   "name": "Summoning level",
-                  "nameProof": { "names": "Lv0[18]" },
-                  "ref": { "read": "Lv0[18]" },
-                  "termPart": { "system": "summoning" },
+                  "nameProof": {
+                    "names": "Lv0[18]"
+                  },
+                  "ref": {
+                    "read": "Lv0[18]"
+                  },
+                  "termPart": {
+                    "system": "summoning"
+                  },
                   "leaf": "level"
                 }
               ]
