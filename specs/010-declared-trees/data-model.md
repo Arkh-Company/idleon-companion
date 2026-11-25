@@ -122,6 +122,8 @@ Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alche
 | `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`); também num nó de receita sem `combine`, quando o rascunho escreve uma lista de leituras como filho-modelo (T202) |
 | `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
 
+**Pendência num pedaço** (T216; como a T199 na receita): um pedaço pode ter `pending`, com os mesmos tipos e a mesma cobertura da receita (um pendente esconde só o que o tipo dele não tem); a receita que chama um pedaço com pendência fica em rascunho.
+
 **Escolha entre personagens** (research R5; T212): um nó cujo valor é o melhor dos personagens (o maior bônus de família, o `getbonus2(…,-1)`) é uma Escolha: folha `choice` quando é folha; quando é galho, a descida continua no personagem escolhido, e o ⓘ diz a escolha. O personagem escolhido sai do lugar gravado (a escrita ou a leitura que deu o valor), nunca da ordem nem do valor; sem lugar que decida, recusa com o motivo.
 
 **Lista de chamadas** (T205; Open Questions de 24/11: a lista vira um filho-modelo): `each: { calls: <Bloco>, as: <nome> }` repete o filho-modelo uma vez por chamada gravada desse bloco no nível, com `{<nome>}` no argumento que a volta do laço dá; a trava liga cada chamada pela volta do laço em que ela começou (o lugar gravado), nunca pelo valor nem pela ordem; duas chamadas na mesma volta sem lugar que as separe se recusam com o motivo.
