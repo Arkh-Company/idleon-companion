@@ -16,6 +16,13 @@ type Ref = NonNullable<BlueprintNode["ref"]>;
 export const inTurn = (n: RecNode, range?: LoopTurn): boolean =>
   !range || (n.pxi >= range.from && n.pxi <= range.to);
 
+/**
+ * A turn's count line's loop turn (T193), where its children's calls are, as the draft's (draft-walk.ts walkOpening); an
+ * author's write's turn ends before its write, the call that gave it after (pxi): no range there.
+ */
+export const lineTurn = (level: Level): LoopTurn | undefined =>
+  level.line ? level.steps?.range : undefined;
+
 /** The call `scope` made whose reference is the part `p` (in the turn `range`, when given), or null. */
 export const kidOf = (
   scope: RecNode,
@@ -52,10 +59,16 @@ export function callIn(
   ctx: LevelContext,
   /** The parts of the chosen member's turn (T212): its calls only. */
   only?: ReadonlySet<string>,
+  /** A count line's loop turn (lineTurn, r1 of part U): the calls the level made in it only, by their place. */
+  range?: LoopTurn,
 ): RecNode | undefined {
+  const made = scope.c.filter((id) => {
+    const n = ctx.rec.nodes[id];
+    return n !== undefined && inTurn(n, range);
+  });
   const calls = [
     ...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])),
-    ...scope.c,
+    ...made,
   ]
     .flatMap((id) => ctx.rec.nodes[id] ?? [])
     .filter((n) => !only || only.has(callRef(n)));
@@ -71,8 +84,10 @@ export function valueIn(
   leaves: readonly Expr[],
   ctx: LevelContext,
   only?: ReadonlySet<string>,
+  range?: LoopTurn,
 ): number | null {
-  if ("call" in ref) return num(callIn(ref, scope, leaves, ctx, only)?.v);
+  if ("call" in ref)
+    return num(callIn(ref, scope, leaves, ctx, only, range)?.v);
   const reads = new Map<string, unknown>();
   for (const l of leaves) if (l.t === "read") reads.set(l.p, l.v);
   // a text the step read a number from (T209, form 2) keeps the step's number
@@ -93,7 +108,7 @@ export function levelOfChild(
   const { ref } = child;
   const n =
     ref && "call" in ref
-      ? callIn(ref, parent.scope, leaves, ctx, only)
+      ? callIn(ref, parent.scope, leaves, ctx, only, lineTurn(parent))
       : undefined;
   if (n) return { expr: returnOf(n, ctx), scope: n, value: num(n.v) };
   const p =
