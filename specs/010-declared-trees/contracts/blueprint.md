@@ -98,6 +98,7 @@ Uma receita fora destas regras responde `unknownNumber` para aquele número, e o
 - `pools` não é vazio, e dois pools seguidos nunca têm o mesmo `kind`.
 - Todo `system` existe em `systems.json`.
 - Toda `key` é um slug (`[a-z0-9-]`, até 60 caracteres), única entre os irmãos.
+- A linha de uma volta que lê o mesmo item de outra volta leva `-turn-N` no fim da chave (N é o número da volta); a trava liga a linha à volta por esse número (T198).
 - Todo nó tem `name` e `nameProof`; nenhum `name` é "no name yet", "Game value" ou vazio.
 - Todo nó tem `ref` ou `constant`, nunca os dois.
 - Um nó com `children` não tem `leaf`; um nó sem `children` tem `leaf`, um dos 9 tipos.

@@ -167,6 +167,12 @@ ser uma lista de nomes, um por `[*]` (dois índices, como `EquipmentMap[*][*]`);
 
 Semeada pela tabela da 009 (`tree/systems.ts`, a ordem e os emojis da V1), sem a entrada "Other".
 
+### Contador (T215)
+
+- Uma linha `leaf: "quantity"` cujo `ref` é o valor que o jogo leu, com um filho-modelo `each` sobre a lista que a volta percorre; cada item é uma folha `condition` com o teste do jogo.
+- A trava confere que o valor da linha é o número de itens cujo teste a gravação viu verdadeiro, volta a volta, pelo lugar.
+- Exemplo inventado: `for i: if (TreeList[i] >= 2) n = round(n + 1)` dá a linha `quantity` com `each: { list: "TreeList[*]", as: "i" }` e o filho `condition` `TreeList[{i}]`.
+
 ## Gabarito (`AnswerKey`)
 
 O que a gravação entrega de um número (FR-008). Só em memória ou em `TREES_OUT`.
