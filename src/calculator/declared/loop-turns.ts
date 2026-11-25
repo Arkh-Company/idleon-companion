@@ -31,12 +31,18 @@ function turnsOf(
       return `a volta ${String(k + 1)} do laço de ${name} não tem o item no seu lugar`;
     if (part === null)
       return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
-    if (below.some((b) => b.part === part))
+    // the same read in two turns is a line a turn, by its number (T198); the same call, two calls the place must part
+    if (below.some((b) => b.part === part) && item.t === "call")
       return `duas voltas do laço de ${name} têm o mesmo item (${part})`;
     const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
-    below.push({ part, call, value: num(item.v) });
+    below.push({ part, call, value: num(item.v), turn: k + 1 });
   }
-  return below;
+  // the turn's number only on a part another turn has too: any other part ties by its reference alone
+  return below.map((o) =>
+    below.filter((b) => b.part === o.part).length > 1
+      ? o
+      : { part: o.part, call: o.call, value: o.value },
+  );
 }
 
 /** The turns of the loop whose sum the call returned, their refusal's reason, or null when it returned no such sum. */

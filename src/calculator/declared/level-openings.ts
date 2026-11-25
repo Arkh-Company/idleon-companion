@@ -28,7 +28,20 @@ export interface Opening {
   /** The steps of the call's turn `expr` came from (a cache's write): the places of the reads in it. */
   steps?: BlockSteps;
   value: number | null;
+  /** The number of its loop's turn, only on a part another turn has too (T198): the child ties by its key's `-turn-N`. */
+  turn?: number;
 }
+
+/** The part's label in a level's coverage: with its turn's number when another turn has the same part (T198). */
+export const openingLabel = (o: Opening): string =>
+  o.turn === undefined ? o.part : `${o.part} (volta ${String(o.turn)})`;
+
+/** The turn's number a child's key names (`-turn-N`, T198), or null. */
+export const keyTurn = (key: string): number | null => {
+  const m = /-turn-(\d+)$/.exec(key);
+  return m ? Number(m[1]) : null;
+};
+
 /** The opening of a level, its refusal's reason, or null when the level opens by its own expression. */
 export function openingOf(
   level: {

@@ -13,7 +13,12 @@ import { callRef } from "./answer-key-pool.ts";
 import type { AnswerPool, AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { onlyRead } from "./cache-author.ts";
-import { levelOfOpening, openingOf } from "./level-openings.ts";
+import {
+  keyTurn,
+  levelOfOpening,
+  openingLabel,
+  openingOf,
+} from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
 import {
@@ -162,7 +167,19 @@ export function lockLevel(
 ): void {
   const leaves = level.expr ? leavesOf(level.expr) : [];
   const { open } = level;
-  const parts = open ? open.map((o) => o.part) : partsOf(level, leaves, ctx);
+  const parts = open ? open.map(openingLabel) : partsOf(level, leaves, ctx);
+  // a part another turn has too ties only to the child whose key names its turn (T198)
+  const byTurn = new Map(
+    (open ?? []).flatMap((o) =>
+      o.turn === undefined ? [] : [[openingLabel(o), o] as const],
+    ),
+  );
+  const coversPart = (child: BlueprintNode, p: string) => {
+    const o = byTurn.get(p);
+    return o
+      ? covers(child, o.part, ctx) && keyTurn(child.key) === o.turn
+      : covers(child, p, ctx);
+  };
   // a model child stands for one child per part its list matches (T202), or per call of its block (T205)
   const listed =
     each && "calls" in each
@@ -198,7 +215,7 @@ export function lockLevel(
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
     // a part of the chosen turn ties to its calls only; another member's child stays outside (below)
-    const only = parts.some((p) => covers(child, p, ctx)) ? chosen : undefined;
+    const only = parts.some((p) => coversPart(child, p)) ? chosen : undefined;
     const twice = child.ref && savedTwice(child.ref, calls, ctx.character);
     if (twice) {
       out.errors.push({ kind: "rootForm", where, got: twice });
@@ -208,7 +225,7 @@ export function lockLevel(
     // a child only some classes have (T211, FR-002a): in another class's run it is absent, or there at its neutral value
     const cls = ctx.characterClass;
     if (child.classes && (cls == null || !child.classes.includes(cls))) {
-      const at = parts.filter((p) => covers(child, p, ctx));
+      const at = parts.filter((p) => coversPart(child, p));
       for (const p of at) covered.add(p);
       // present, it holds the neutral value of its role in the count: 0 in a sum, 1 in a product (as lock-pools.ts)
       const leaf = leaves.find((l) =>
@@ -225,7 +242,7 @@ export function lockLevel(
         });
       continue;
     }
-    const hit = open?.find((o) => covers(child, o.part, ctx));
+    const hit = open?.find((o) => coversPart(child, openingLabel(o)));
     if (open && !hit) {
       out.errors.push({ kind: "childOutside", where });
       continue;
@@ -242,7 +259,7 @@ export function lockLevel(
       else whole = false;
       continue;
     }
-    const hits = parts.filter((p) => covers(child, p, ctx));
+    const hits = parts.filter((p) => coversPart(child, p));
     if (hits.length === 0) out.errors.push({ kind: "childOutside", where });
     // the best of the members (T212): a child of another member's descent is one this run's chosen one did not reach
     if (hits.length === 0 && choice) {

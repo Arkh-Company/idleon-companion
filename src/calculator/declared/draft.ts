@@ -170,7 +170,11 @@ export function draftBlueprint(
         : null;
     if (branch) sink.push(...(use ? use.pending : mine));
     const out: DraftNode = {
-      key: keyIn(taken, "call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read),
+      // a turn with the same item as another is keyed by its turn's number (T198)
+      key: keyIn(
+        taken,
+        `${"call" in keyRef ? codeOf(keyRef, w.key) : keyRef.read}${w.turn === undefined ? "" : ` turn ${String(w.turn)}`}`,
+      ),
       name: named?.name ?? null,
       ...(named ? { nameProof: named.nameProof } : {}),
       ref,

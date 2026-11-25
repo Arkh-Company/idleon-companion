@@ -154,7 +154,7 @@ test("two turns with the same item are a line each, keyed by the number of its t
     "parte não declarada: invented-turns/0/cards/turns: TreeBase (volta 2)",
   ]);
   expect(turns("tree-base", "tree-base-turn-2")).toEqual([
-    "fonte fora do gabarito: invented-turns/0/cards/turns/tree-base",
+    "filho fora da conta: invented-turns/0/cards/turns/tree-base",
     "parte não declarada: invented-turns/0/cards/turns: TreeBase (volta 1)",
   ]);
 });

@@ -23,7 +23,13 @@ export interface Walked {
   why?: string;
   /** The second source of a two-source term, and on (research R4): its system is the agent's. */
   termPart?: true;
+  /** The number of its loop's turn, when another turn has the same item (T198): its key says it. */
+  turn?: number;
 }
+
+/** A part of an opened level, with the number of its turn when the opening gives one (T198). */
+const withTurn = (w: Walked, o: Opening): Walked =>
+  o.turn === undefined ? w : { ...w, turn: o.turn };
 const DEEP = "a descida para nos 12 níveis do rascunho";
 const UNRECORDED = "a chamada não tem gravação neste lugar";
 
@@ -92,7 +98,10 @@ function walkPart(
       key,
       call,
       below: open.map((o) =>
-        walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o),
+        withTurn(
+          walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o),
+          o,
+        ),
       ),
     };
   }
@@ -117,13 +126,16 @@ function walkPart(
       key,
       call,
       below: open.map((o) =>
-        walkPart(
-          o.part,
-          o.call,
-          ctx,
-          depth + 1,
-          call,
-          o.call || o.expr !== undefined ? o.expr : onlyRead(level, o.part),
+        withTurn(
+          walkPart(
+            o.part,
+            o.call,
+            ctx,
+            depth + 1,
+            call,
+            o.call || o.expr !== undefined ? o.expr : onlyRead(level, o.part),
+            o,
+          ),
           o,
         ),
       ),
