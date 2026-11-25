@@ -45,8 +45,11 @@ export function lockConstants(
   const consts = declared.filter((c) => c.constant !== undefined);
   if (consts.length === 0) return null;
   // the variable: a value the steps tied to it (`own`), or its read when it held one value only
+  // in a builder of the pass, the variable's writes are its scratch, among the spliced ones
   const wrote = (p: string) =>
-    ctx.rec.writes.some((w) => w.node === level.scope.id && w.path === p);
+    [...ctx.rec.writes, ...ctx.rec.spliced].some(
+      (w) => w.node === level.scope.id && w.path === p,
+    );
   const leaf = leaves.find(
     (l) =>
       (l.t === "val" && l.own !== undefined) || (l.t === "read" && wrote(l.p)),

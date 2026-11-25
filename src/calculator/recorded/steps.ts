@@ -48,6 +48,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
   const memo = new Map<number, BlockSteps>();
   // T209, form 1: a value that is the block's own argument keeps its place, `arg` (the 008 tree reads a loose value)
   const params = blockParams(ops);
+  // a builder's scratch (a variable of its own) is among the spliced writes: the call's own variable all the same
+  const allWrites = [...rec.writes, ...rec.spliced];
   const ambiguous = new Set<AmbiguousCall>();
   // each if's and ? :'s test op, by the node it decides (Op.owner)
   const testOf = new Map(
@@ -174,7 +176,7 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       // a loose value of the call's own variable, written before here, keeps its path (T209, form 3)
       const loose = defOrVal(node, v);
       const at0 = lastPos.get(id ?? -1);
-      const own = pat ? ownRead(pat, pool, v, rec.writes, n.id, at0) : null;
+      const own = pat ? ownRead(pat, pool, v, allWrites, n.id, at0) : null;
       return own === null || loose.t !== "val" ? loose : { ...loose, own };
     }
     // the call a value comes from, on the side each ? : on its way took at `pos` (sides.ts)
