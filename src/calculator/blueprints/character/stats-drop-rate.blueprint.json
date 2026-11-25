@@ -5015,20 +5015,7 @@
                       "ref": {
                         "call": "TalentCalc",
                         "args": ["any"]
-                      },
-                      "children": [
-                        {
-                          "key": "talent-calc-4",
-                          "name": "Talent bonuses (all)",
-                          "nameProof": {
-                            "names": "TalentCalc(-4)"
-                          },
-                          "ref": {
-                            "call": "TalentCalc",
-                            "args": [-4]
-                          }
-                        }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -9148,10 +9135,6 @@
       "kind": "descend"
     },
     {
-      "where": "pools/0/groups/28/sources/0/children/18/children/0/children/0",
-      "kind": "descend"
-    },
-    {
       "where": "pools/0/groups/28/sources/0/children/19",
       "kind": "descend"
     },
@@ -10794,6 +10777,10 @@
     {
       "where": "pools/3/groups/5/sources/0/children/0/children/0/children/0",
       "kind": "leaf"
+    },
+    {
+      "where": "pools/0/groups/28/sources/0/children/18/children/0",
+      "kind": "descend"
     }
   ]
 }
