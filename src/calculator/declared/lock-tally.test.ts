@@ -11,7 +11,7 @@ test("the tally counts nodes: a pending one with two kinds once, and a failed on
     { where: "pools/0/groups/2/sources/0", kind: "descend" },
   ];
   expect(lockTally(lock(chainInput(bp)), bp)).toEqual({
-    passed: 24,
+    passed: 18,
     failed: 0,
     pending: 1,
   });
@@ -38,7 +38,7 @@ test("the tally counts nodes: a pending one with two kinds once, and a failed on
   ).toEqual({ passed: 1, failed: 1, pending: 1 });
 });
 
-test("the tally counts as failed only a node: a model child's items as the model, never the root nor a pool (r3)", () => {
+test("the tally counts only a node, failed or passed: a model child's items as the model, never the root nor a pool (r3; r1 of P and Q)", () => {
   const at = "decl-chain/0/family-bonuses/best";
   expect(
     lockTally(
@@ -57,7 +57,7 @@ test("the tally counts as failed only a node: a model child's items as the model
       },
       inventedBlueprint("decl-chain"),
     ),
-  ).toEqual({ passed: 2, failed: 1, pending: 0 });
+  ).toEqual({ passed: 1, failed: 1, pending: 0 });
 });
 
 test("an error inside a piece fails the node that calls it, and the piece's places below it are no pass", () => {

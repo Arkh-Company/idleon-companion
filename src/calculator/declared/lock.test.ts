@@ -220,19 +220,18 @@ test("a draft is checked where it is closed: what is pending is listed as pendin
     { kind: "pending", where: "pools/0/groups/0", got: "system" },
   ]);
   const { closed, closedByRecorded, leaves } = out.counts;
-  expect(lockTally(out, bp)).toEqual({
-    passed: closed + closedByRecorded + leaves,
-    failed: 1,
-    pending: 2,
-  });
+  // the places that closed, by node (r1 of P and Q): fewer than the counts, the root and the pools are no node
+  expect(lockTally(out, bp)).toEqual({ passed: 16, failed: 1, pending: 2 });
+  expect(closed + closedByRecorded + leaves).toBe(22);
   expect(closed + leaves).toBeGreaterThan(10);
 });
 
-test("the tally counts places: each that closed once, out of the failed and the pending ones (T199 r1)", () => {
-  // root, 4 pools, 6 levels, the luck's curve by its recorded value and 14 leaves: 25 places
+test("the tally counts nodes: each that closed once, out of the failed and the pending ones (T199 r1; r1 of P and Q)", () => {
+  // root, 4 pools, 6 levels, the luck's curve by its recorded value and 14 leaves: 25 places, 19 nodes (the root and
+  // the pools are no node, a node closed at two places counts once)
   const chain = inventedBlueprint("decl-chain");
   expect(lockTally(lock(chainInput()), chain)).toEqual({
-    passed: 25,
+    passed: 19,
     failed: 0,
     pending: 0,
   });
@@ -240,7 +239,7 @@ test("the tally counts places: each that closed once, out of the failed and the 
   const bp = inventedBlueprint("decl-chain");
   bp.pending = [{ where: "pools/0/groups/2/sources/0", kind: "name" }];
   expect(lockTally(lock(chainInput(bp)), bp)).toEqual({
-    passed: 24,
+    passed: 18,
     failed: 0,
     pending: 1,
   });
