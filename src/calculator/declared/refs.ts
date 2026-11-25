@@ -143,8 +143,10 @@ export const hasRawCharacterIndex = (read: string): boolean =>
   /\bPlayerDATABASE\[\d+\]/.test(read);
 
 /**
- * A path of names, dots and indices (`[n]`, `[{character}]`, `[*]`); a key's name after a dot may have `%`, `+` and `{`
- * as the game writes it (T197, `DNSM.GalleryTrophyBonTOT.%_LUK`).
+ * A path of names, dots and indices (`[n]`, `[{character}]`, `[*]`); a key's name after a dot may start with `+{` and
+ * `%` as the game writes it (T197, `DNSM.GalleryTrophyBonTOT.%_LUK`, `DNSM.CardBonusS.+{%_Total_Mining_Efficiency`).
  */
 export const isPathRead = (read: string): boolean =>
-  /^[A-Za-z_$][\w$]*(?:\.[\w$%+{]+|\[(?:\d+|\{character\}|\*)\])*$/.test(read);
+  /^[A-Za-z_$][\w$]*(?:\.(?:\+\{)?%?[\w$]+|\[(?:\d+|\{character\}|\*)\])*$/.test(
+    read,
+  );
