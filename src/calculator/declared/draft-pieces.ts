@@ -1,10 +1,11 @@
 // A common branch as a piece in the draft (spec 010, T203; spec, Open Questions 24/11): a declared list of branches
-// several sources or recipes call. A branch is a piece only where at least two occurrences run one body, with other args
-// when it takes a param (planPieces); a place is `{param}` where it changes between them along with the arg (a read's index, or a call's arg
-// of the same kind; the lock checks each line with its args), never by its value alone. A node whose reference takes a
-// param waits for its name (one name for every arg is the agent's), and the body's keys are short (the gitleaks reads a
-// long `key` as a secret). Those occurrences are lines with `piece: { name, args }`; any other is written as the draft
-// gives it, never as the piece, with why in the guide.
+// several sources or recipes call. A branch is a piece where at least two occurrences run one body, with other args when
+// it takes a param; one with no param is a piece from its first occurrence, and one whose piece is already written is
+// called where it has its body (planPieces, piecePasses). A place is `{param}` where it changes between occurrences along
+// with the arg (a read's index, or a call's arg of the same kind; the lock checks each line with its args), never by its
+// value alone. A node whose reference takes a param waits for its name (one name for every arg is the agent's), and the
+// body's keys are short (the gitleaks reads a long `key` as a secret). Those occurrences are lines with
+// `piece: { name, args }`; any other is written as the draft gives it, never as the piece, with why in the guide.
 import type { BlueprintPending, CallRef } from "./blueprint.ts";
 import type { DraftNode } from "./draft.ts";
 import { knownUse } from "./draft-known-pieces.ts";
