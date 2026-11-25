@@ -1590,6 +1590,14 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeAuthorOwn = new StringMap();
     d.TreeAuthorOwn.h.v = k * 2;
   };
+  // Spec 010 (Fase 4 q): a cache read as a Multi pool's factor, as the Drop Rate's (1 + FamBonusQTYs[32] / 100):
+  // (4 + 80) × (1 + TreeAuthor.v / 100).
+  Blocks._customBlock_TreeAuthorMulti = function () {
+    return (
+      (state().TreeBase + state().TreeCapped) *
+      (1 + a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v / 100)
+    );
+  };
   Blocks._customBlock_TreeAuthorRead = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v + state().TreeCapped
