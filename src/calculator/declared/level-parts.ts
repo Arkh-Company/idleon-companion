@@ -87,6 +87,23 @@ function passThrough(
   });
 }
 
+/** A level's own references, each pass-through variable through what gave its write (T188): partsOf with no curve. */
+export const ownParts = (
+  level: Level,
+  leaves: readonly Expr[],
+  ctx: LevelContext,
+): string[] =>
+  passThrough(
+    leaves,
+    level.scope,
+    level.steps ?? ctx.stepsOf(level.scope.id),
+    ctx,
+    level.write?.path,
+  ).flatMap((e) => {
+    const k = keyOfLeaf(e, ctx.rec);
+    return k === null || notLeafOf(k, ctx.character) !== null ? [] : [k];
+  });
+
 /** Whether the code names `path` inside a test or a comparison the call ran (T195: the text its literal was picked by). */
 export function testedText(
   scope: RecNode,
