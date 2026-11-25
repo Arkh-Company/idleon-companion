@@ -145,7 +145,7 @@ test.each(BLOCKS)(
   },
 );
 
-test("the lock refuses an item the recording did not test, and a count that is not the number of items that passed (T215)", () => {
+test("the lock refuses an item the recording did not test, and a count that does not start at 0 (T215, r1 of part V)", () => {
   const block = "TreeCountBefore";
   const other: BlueprintNode = {
     ...item,
@@ -155,9 +155,9 @@ test("the lock refuses an item the recording did not test, and a count that is n
   expect(lock(block, recipe(block, countLine(block, [item, other])))).toEqual([
     "filho fora da conta: invented-count/0/cards/count/cache/author/other",
   ]);
-  // TreeCountFrom counts from 1: 1 + the 2 items that pass is 3, never the 2 the turns give
+  // TreeCountFrom counts from 1: its first write is no start at 0, so the form does not hold
   expect(lock("TreeCountFrom", recipe("TreeCountFrom"), 3)).toEqual([
-    "nível não fecha: invented-count/0/cards/count/cache/author: as partes dão 2, o valor gravado é 3",
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountFrom() conta DNSM.TreeCountFrom, mas a escrita 1 não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)",
   ]);
 });
 
