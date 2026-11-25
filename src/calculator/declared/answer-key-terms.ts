@@ -109,16 +109,18 @@ export function termReader(ctx: TermContext) {
         continue;
       }
       if (e.t === "read" || e.t === "val") {
-        // a read is a passage by its path; a value with no name, by the value the root wrote
+        // a read is a passage by its path, and so is a value of the call's own variable (T209 form 3: the path its
+        // place gave, never another path that holds the same number); a value with no name, by the value the root wrote
+        const path = e.t === "read" ? e.p : e.own;
         const ps =
-          e.t === "read"
-            ? ctx.passage.has(e.p)
-              ? [e.p]
+          path !== undefined
+            ? ctx.passage.has(path)
+              ? [path]
               : []
             : passagePathsOf(e.v);
         const x =
           ps.length > 0 && typeof e.v === "number"
-            ? passageExpr(ps, e.v, seen, e.t === "read")
+            ? passageExpr(ps, e.v, seen, path !== undefined)
             : null;
         const step = x?.step ?? null;
         const p = x?.path ?? ps[0];
