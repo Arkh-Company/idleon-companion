@@ -6,7 +6,9 @@
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
-import { recorded } from "./lock-fixture.ts";
+import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { answerKey } from "./answer-key.ts";
+import { inventedRecorder, recorded } from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
 
 const level = (key: string, read: string): BlueprintNode => ({
@@ -105,4 +107,50 @@ test("two multipliers under the same reading part by the code's own number at th
   });
   expect(lock(source(2, [x6]), { TreeUpg: [102] })).toEqual([]);
   expect(lock(source(2, [x6]), {})).toEqual([]);
+});
+
+test("the block's constants in a builder of the pass, whose writes of the variable are the pass's scratch (form 3)", () => {
+  const r = inventedRecorder();
+  const attrs = {
+    TreeUpg: [101],
+    DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeDblCache: { $m: { v: 100 } } } },
+  };
+  const rec = r.record(mosaicOf(attrs), [["TreeDoubledCacheRead", [0, 0, 0]]], {
+    recompute: [],
+    builders: [
+      { cache: "TreeDblCache", run: { block: "TreeDoubledBuild", args: [] } },
+    ],
+  });
+  const key = answerKey(rec, r.ops);
+  if ("error" in key) throw new Error(key.reason);
+  const cache: BlueprintNode = {
+    key: "cache",
+    name: "Cache",
+    ref: { read: "DNSM.TreeDblCache.v" },
+    children: [
+      {
+        key: "build",
+        name: "Build",
+        ref: { call: "TreeDoubledBuild", args: [] },
+        children: [source()],
+      },
+    ],
+  };
+  const bp: Blueprint = {
+    ...blueprint(cache),
+    root: {
+      name: "Invented",
+      ref: { call: "TreeDoubledCacheRead", args: [0, 0, 0] },
+    },
+  };
+  expect(
+    lockBlueprint({
+      blueprint: bp,
+      key,
+      rec,
+      ops: r.ops,
+      character: 0,
+      characterClass: 3,
+    }).errors,
+  ).toEqual([]);
 });

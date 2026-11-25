@@ -864,6 +864,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDoubledPool = function () {
     return Blocks._customBlock_TreeDoubled(0) + state().TreeCapped;
   };
+  // Spec 010 (Fase 4 q): the same block called by a builder of the pass, as the game's TalentCalc(-2) reaches
+  // ArcadeBonus(54) through a bubble: the variable's writes are the pass's scratch.
+  Blocks._customBlock_TreeDoubledBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeDblCache = new StringMap();
+    d.TreeDblCache.h.v = Blocks._customBlock_TreeDoubled(0);
+  };
+  Blocks._customBlock_TreeDoubledCacheRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeDblCache.h.v + state().TreeCapped
+    );
+  };
   // Spec 010 (T209, form 2): a number read from a game table's text with a mark taken out, as the game's
   // Holes("MeasurementBaseBonus") reads asNumber(replace(string(HolesInfo[55][t]), "TOT", "")).
   Blocks._customBlock_TreeTextTot = function () {
