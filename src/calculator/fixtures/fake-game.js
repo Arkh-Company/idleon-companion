@@ -2050,6 +2050,20 @@ lime.$scripts.N = function (_exports, $global) {
         U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeTwins[i];
     }
   };
+  // ...one that skips the cache's write in the middle turn (r1 of part W): the write after it has two TreeTurnAt() in
+  // its window, the same key, that the place does not part: 2 × 4 + 6 × 4 = 32
+  Blocks._customBlock_TreeAuthorRelaySkip = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 3; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      if (i != 1)
+        d.TreeAuthor.h.v =
+          U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeBase;
+    }
+  };
   // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
   Blocks._customBlock_TreeAuthorRelayEarly = function () {
     var U = A["com.stencyl.utils.Utils"];

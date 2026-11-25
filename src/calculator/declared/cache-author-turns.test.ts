@@ -334,6 +334,16 @@ test("an author's pass-through call made before the loop has no place in the tur
   ]);
 });
 
+test("an author's write's turn with two calls of its pass-through's key is refused with the reason, never tied to the first (r1 of W)", () => {
+  // TreeAuthorRelaySkip: no write of the cache in the middle turn, so the last write's turn holds two TreeTurnAt()
+  const rec = record("TreeAuthorRelaySkip", 32);
+  expect(
+    lock(rec, relay("TreeAuthorRelaySkip")).errors.map(lockMessage),
+  ).toEqual([
+    "invented-author/0/cards/cache/author: duas chamadas de TreeTurnAt() na volta 2 do laço de TreeAuthorRelaySkip(), e o lugar não as separa",
+  ]);
+});
+
 test("the best of three members goes down the member whose turn wrote the cache, by its place, never the last turn's (T212)", () => {
   // TreeAuthorBest over TreeList [1, 3, 2]: the bonuses 2, 6, 4; the cache is the second member's 6
   const rec = inventedRecorder().record(
