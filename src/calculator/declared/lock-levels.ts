@@ -179,10 +179,11 @@ export function lockLevel(
     ctx.rec.writes.filter(
       (w) => w.node === level.scope.id && w.path === level.write?.path,
     ).length > 1;
-  // in it, a child's `*` stands for the chosen turn's calls only, its parts
-  const chosen = choice ? new Set(parts) : undefined;
+  // in an author's write's turn, one write or more, a child's `*` stands for that turn's calls only, its parts
+  const turn = !open && level.write !== undefined;
+  const chosen = turn ? new Set(parts) : undefined;
   const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
-  const calls = choice ? parts : [...parts, ...made.map(callRef)];
+  const calls = turn ? parts : [...parts, ...made.map(callRef)];
   // a call's constants with the conditions that apply them (T209, form 3)
   const consts = lockConstants(children, level, leaves, ctx, out);
   for (const p of consts?.covered ?? []) covered.add(p);
