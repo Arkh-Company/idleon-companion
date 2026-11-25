@@ -35,11 +35,16 @@ function recordedWrites(
   root = ROOT,
   cache = "TreeWriteBon",
   block = "TreeWriteBare",
+  over: { v?: number; attrs?: object } = {},
 ) {
   const r = inventedRecorder();
   const attrs = {
+    ...over.attrs,
     DNSM: {
-      $m: { ...activeAs(0).DNSM.$m, [cache]: { $m: { v: 7, w: 8 } } },
+      $m: {
+        ...activeAs(0).DNSM.$m,
+        [cache]: { $m: { v: over.v ?? 7, w: 8 } },
+      },
     },
   };
   const rec = r.record(mosaicOf(attrs), [[root, [0, 0, 0]]], {
@@ -211,6 +216,21 @@ test("a write through a variable set on both sides of a ? : goes down the side i
   const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
   expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
     ["DNSM.TreeWriteBon.v", [["TreeWriteSideVar()", [["TreeBig.k2", []]]]]],
+  ]);
+});
+
+test("a write through a variable set on both sides of a ? : goes down the first side when its test took it (Fase 4 t)", () => {
+  // TreeOwned 1: v is the first side's TreeBase (4); the order of the sides never decides
+  const { rec, key, ops } = recordedWrites(
+    ROOT,
+    "TreeWriteBon",
+    "TreeWriteSideVar",
+    { v: 4, attrs: { TreeOwned: 1 } },
+  );
+  const ref = { call: ROOT, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["DNSM.TreeWriteBon.v", [["TreeWriteSideVar()", [["TreeBase", []]]]]],
   ]);
 });
 

@@ -1691,13 +1691,16 @@ lime.$scripts.N = function (_exports, $global) {
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
   // ...and through a variable set on both sides, as the game's companions (`1 == CompanionLVz[s] ? (_ = CompanionDB[s]
-  // [11], r.h[s] = _) : (_ = CompanionDB[s][2], r.h[s] = _)`): TreeOwned is 0, so v is the other side's TreeBig k2 (7).
+  // [11], r.h[s] = _) : (_ = CompanionDB[s][2], r.h[s] = _)`): TreeOwned is 0, so v is the other side's TreeBig k2 (7);
+  // with TreeOwned 1, the first side's TreeBase, read as the game names it.
   Blocks._customBlock_TreeWriteSideVar = function () {
     var d = a.engine.getGameAttribute("DNSM").h;
     d.TreeWriteBon = new StringMap();
     var r, t;
     1 == state().TreeOwned
-      ? ((r = d.TreeWriteBon), (t = state().TreeBase), (r.h.v = t))
+      ? ((r = d.TreeWriteBon),
+        (t = a.engine.getGameAttribute("TreeBase")),
+        (r.h.v = t))
       : ((r = d.TreeWriteBon), (t = state().TreeBig.h.k2), (r.h.v = t));
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
