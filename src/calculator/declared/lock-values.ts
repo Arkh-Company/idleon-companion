@@ -15,11 +15,15 @@ export function callIn(
   scope: RecNode,
   leaves: readonly Expr[],
   ctx: LevelContext,
+  /** The parts of the chosen member's turn (T212): its calls only. */
+  only?: ReadonlySet<string>,
 ): RecNode | undefined {
   const calls = [
     ...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])),
     ...scope.c,
-  ].flatMap((id) => ctx.rec.nodes[id] ?? []);
+  ]
+    .flatMap((id) => ctx.rec.nodes[id] ?? [])
+    .filter((n) => !only || only.has(callRef(n)));
   // two calls a `*` makes equal tie to none (lockLevel says why)
   if (savedTwice(ref, calls.map(callRef), ctx.character) !== null) return;
   return calls.find((n) => keyMatches(ref, callRef(n), ctx.character));
@@ -31,8 +35,9 @@ export function valueIn(
   scope: RecNode,
   leaves: readonly Expr[],
   ctx: LevelContext,
+  only?: ReadonlySet<string>,
 ): number | null {
-  if ("call" in ref) return num(callIn(ref, scope, leaves, ctx)?.v);
+  if ("call" in ref) return num(callIn(ref, scope, leaves, ctx, only)?.v);
   const reads = new Map<string, unknown>();
   for (const l of leaves) if (l.t === "read") reads.set(l.p, l.v);
   // a text the step read a number from (T209, form 2) keeps the step's number

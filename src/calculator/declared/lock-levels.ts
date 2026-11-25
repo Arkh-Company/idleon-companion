@@ -109,10 +109,13 @@ function levelOfChild(
   parent: Level,
   leaves: readonly Expr[],
   ctx: LevelContext,
+  only?: ReadonlySet<string>,
 ): Level {
   const { ref } = child;
   const n =
-    ref && "call" in ref ? callIn(ref, parent.scope, leaves, ctx) : undefined;
+    ref && "call" in ref
+      ? callIn(ref, parent.scope, leaves, ctx, only)
+      : undefined;
   if (n) return { expr: returnOf(n, ctx), scope: n, value: num(n.v) };
   const p =
     ref && "read" in ref
@@ -170,22 +173,26 @@ export function lockLevel(
     });
   const covered = new Set<string>();
   // the calls a child's `*` may stand for: two of them are refused, never tied by order (refs.ts savedTwice)
-  const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
-  const calls = [...parts, ...made.map(callRef)];
-  // a call's constants with the conditions that apply them (T209, form 3)
-  const consts = lockConstants(children, level, leaves, ctx, out);
-  for (const p of consts?.covered ?? []) covered.add(p);
-  let whole = consts?.value !== null && twice.length === 0;
   // an author that overwrote the cache in more than one turn (T212): the cache is the best member's, by its turn
   const choice =
     !open &&
     ctx.rec.writes.filter(
       (w) => w.node === level.scope.id && w.path === level.write?.path,
     ).length > 1;
+  // in it, a child's `*` stands for the chosen turn's calls only, its parts
+  const chosen = choice ? new Set(parts) : undefined;
+  const made = level.scope.c.flatMap((id) => ctx.rec.nodes[id] ?? []);
+  const calls = choice ? parts : [...parts, ...made.map(callRef)];
+  // a call's constants with the conditions that apply them (T209, form 3)
+  const consts = lockConstants(children, level, leaves, ctx, out);
+  for (const p of consts?.covered ?? []) covered.add(p);
+  let whole = consts?.value !== null && twice.length === 0;
   for (const child of children) {
     if (child.constant !== undefined) continue;
     const where = `${ctx.where}/${child.key}`;
     const inner = { ...ctx, where };
+    // a part of the chosen turn ties to its calls only; another member's child stays outside (below)
+    const only = parts.some((p) => covers(child, p, ctx)) ? chosen : undefined;
     const twice = child.ref && savedTwice(child.ref, calls, ctx.character);
     if (twice) {
       out.errors.push({ kind: "rootForm", where, got: twice });
@@ -218,7 +225,8 @@ export function lockLevel(
     }
     if (
       !child.ref ||
-      (hit ? hit.value : valueIn(child.ref, level.scope, leaves, ctx)) === null
+      (hit ? hit.value : valueIn(child.ref, level.scope, leaves, ctx, only)) ===
+        null
     ) {
       out.errors.push({ kind: "childNoValue", where });
       // the code's gate gave 0 before its count (T183): the run did not reach the child, the level still closes
@@ -241,7 +249,7 @@ export function lockLevel(
     checkCondition(child, true, level.scope, inner, out);
     const below = hit
       ? levelOfOpening(hit, level.scope, ctx)
-      : levelOfChild(child, level, leaves, ctx);
+      : levelOfChild(child, level, leaves, ctx, only);
     descend(child, below, inner, out);
   }
   for (const p of parts)
