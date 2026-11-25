@@ -124,14 +124,23 @@ function rhsOf(
     const read = astPattern(n as AstNode);
     return read ? { read } : null;
   };
-  // the step right before the write a `? :`'s or an `if`'s test: only the side it took ran (its recorded value)
-  const [id, took] = node.x?.[write.xi - 1] ?? [];
-  const test = ops[id ?? -1];
-  const owner = test?.kind === "test" ? test.owner : undefined;
-  const side =
-    owner && typeof took === "boolean"
-      ? (owner as AnyNode)[took ? "consequent" : "alternate"]
-      : undefined;
+  // the last test before the write, a `? :`'s or an `if`'s around the write's place (a step of the key may come between,
+  // the game's `r.h["" + s] = _`): only the side it took ran, by its recorded value
+  let side: unknown;
+  for (let k = write.xi - 1; k >= Math.max(0, write.xi - 4); k--) {
+    const [id, took] = node.x?.[k] ?? [];
+    const test = ops[id ?? -1];
+    if (test?.kind !== "test") continue;
+    const owner = test.owner as AnyNode | undefined;
+    if (
+      owner &&
+      typeof took === "boolean" &&
+      owner.range[0] <= from &&
+      from <= owner.range[1]
+    )
+      side = owner[took ? "consequent" : "alternate"];
+    break;
+  }
   const ran = (a: AnyNode) =>
     !isNode(side) ||
     (a.range[0] >= side.range[0] && a.range[1] <= side.range[1]);
@@ -140,7 +149,8 @@ function rhsOf(
     .filter((a) => {
       if (a.type !== "AssignmentExpression" || a.operator !== "=") return false;
       // the place first: a left side's pattern reads the variables back, over the whole function (part R)
-      if (a.range[0] < from || a.range[1] > to || !ran(a)) return false;
+      // an assignment after it, or the one the step before is in (its left side's key)
+      if (a.range[1] < from || a.range[1] > to || !ran(a)) return false;
       const left = at(a, "left");
       const pat = left.type === "MemberExpression" ? patternOf(left) : null;
       return pat !== null && matchPattern(write.path, pat);
