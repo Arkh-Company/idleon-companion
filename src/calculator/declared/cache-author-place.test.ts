@@ -92,9 +92,10 @@ test("the author's write gives no expression when its last step in the turn has 
 });
 
 test("the author's turn starts after its write before it by number, whether that write is the cache's or the pass's", () => {
-  // the pass's scratch write (seq 4) comes before the cache's (seq 5): the turn starts after the cache's, at xi 3
+  // the pass's scratch write (seq 4) comes before the cache's (seq 5): the turn starts after the cache's, at xi 3; its
+  // calls began after the write before on the same path, up to the write, by number (T226)
   const { ranges } = exprOf(write(4, 9, 7), 15, [write(4, 4, 2)]);
-  expect(ranges).toEqual([{ from: 3, to: 6 }]);
+  expect(ranges).toEqual([{ from: 3, to: 6, seq: { from: 5, to: 9 } }]);
 });
 
 // the reader read the cache at place 0 (TreeAuthorAgain's write, seq 1), wrote it itself (seq 2) and read it again
