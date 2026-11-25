@@ -220,15 +220,15 @@ test("two keys of one turn whose slugs are cut the same part before the turn's n
   expect(keys.map(keyTurn)).toEqual([1, 1]);
 });
 
-test("a turn whose item is a part of an expression is refused as no call nor read", () => {
+test("a turn whose item is a count of a call and a number is a line by the call, closing by the item's expression (T193)", () => {
+  const line = (i: number) =>
+    call(`item-${String(i)}`, "TreeTurnItem", [i], [item(i)]);
   expect(
     lock(
       "TreeTurnsMixedRoot",
-      call("turns", "TreeTurnsMixed", [], [item(0)]),
+      call("turns", "TreeTurnsMixed", [], [line(0), line(1), line(2)]),
     ).errors.map(lockMessage),
-  ).toEqual([
-    "invented-turns/0/cards/turns: o item da volta 1 do laço de TreeTurnsMixed() não é uma chamada nem uma leitura",
-  ]);
+  ).toEqual([]);
 });
 
 test("a product in a loop, and a sum the call returns with a term after it, open by their own expression, not by turns", () => {
