@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
 import type { CommonBranch } from "./draft-pieces.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
+import { knownUse } from "./draft-known-pieces.ts";
 import type { KnownPieces } from "./draft-known-pieces.ts";
 import { draftBlueprint, NO_CONTEXT } from "./draft.ts";
 import type { DraftBlueprint, DraftNode } from "./draft.ts";
@@ -150,6 +151,32 @@ test("a body other than the piece already written is written whole, the reason i
       /invented-shared.*o corpo difere do pedaço já escrito/,
     ),
   ]);
+});
+
+test("a place the occurrence leaves pending `descend` with no children calls the piece whose file descended it", () => {
+  const leaf = { call: "TreeDeep", args: [0] };
+  const piece = {
+    id: "invented-shared",
+    params: [],
+    children: [
+      {
+        key: "deep",
+        name: "Deep",
+        ref: leaf,
+        children: [{ key: "base", name: "Base", ref: { read: "TreeBase" } }],
+      },
+    ],
+  };
+  const use = knownUse(piece, {
+    where: "/pools/0/groups/0/sources/0/children/0",
+    branch: { name: "invented-shared", params: [], args: {} },
+    children: [{ key: "deep", name: null, ref: leaf }],
+    pending: [{ where: "/children/0", kind: "descend" }],
+  });
+  expect(use).toEqual({
+    piece: { name: "invented-shared", args: {} },
+    pending: [],
+  });
 });
 
 test("a branch with a param met once calls the piece already written where its places hold the arg; never by value", () => {
