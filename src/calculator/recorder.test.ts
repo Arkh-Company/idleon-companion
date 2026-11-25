@@ -263,6 +263,28 @@ test("a builder of a cache that is a number keeps its writes of the cache, each 
   ]);
 });
 
+test("a builder of a number cache that ends off the game's number is no author of it: the record puts the game's back (T196)", () => {
+  // the game's 3, where the block counts 2
+  const rec = record(
+    ["TreeSigils"],
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 3 } } }),
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeSigils", run: { block: "TreeSigils", args: [] } },
+      ],
+    },
+  );
+  const pass = found(
+    under(rec, rec.builders).find((n) => n.b === "TreeSigils"),
+  );
+  expect(
+    rec.writes
+      .filter((w) => w.path === "DNSM.TreeSigils")
+      .map((w) => [w.node === pass.id, w.v]),
+  ).toEqual([[false, 3]]);
+});
+
 test("an event before the builder prepares what the builder reads", () => {
   const before = {
     slot: 0,
