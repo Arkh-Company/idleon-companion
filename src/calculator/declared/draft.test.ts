@@ -222,6 +222,55 @@ test("a leaf call's argument equal to the character's index is not decided by it
   });
 });
 
+test("the character's index a root passes on by its parameter is {character} where the recipe's root has it, in the draft and the lock (r2 of P and Q)", () => {
+  // TreeDeclPass(c) passes its c to TreeDeclOwn and TreeDeclRow, as the game's Divinity("DivPerHr_EXP", {character}, 0)
+  const { rec, key, ops } = recorded("TreeDeclPass");
+  const ref = { call: "TreeDeclPass", args: ["{character}", 0, 0] };
+  const d = draftBlueprint("decl-pass", { name: "Pass", ref }, key, rec, ops);
+  expect(sourceAt(d, 0, 1).ref).toEqual({
+    call: "TreeDeclOwn",
+    args: ["{character}"],
+  });
+  expect(sourceAt(d, 0, 2).ref).toEqual({
+    call: "TreeDeclRow",
+    args: ["{character}"],
+  });
+  const lock = (root: typeof ref) =>
+    lockBlueprint({
+      rec,
+      key,
+      ops,
+      character: 0,
+      characterClass: 3,
+      blueprint: {
+        id: "decl-pass",
+        root: { name: "Pass", ref: root },
+        pools: [
+          {
+            kind: "additive",
+            groups: [
+              {
+                system: "luk-stats",
+                sources: [
+                  {
+                    key: "row",
+                    name: "Row",
+                    ref: { call: "TreeDeclRow", args: ["{character}"] },
+                    leaf: "level",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }).errors.map((e) => e.got);
+  const notCharacter = "o argumento 1 de TreeDeclRow não vem do personagem";
+  expect(lock(ref)).not.toContain(notCharacter);
+  // a root that writes its number: the index below it is no character's
+  expect(lock({ ...ref, args: [0, 0, 0] })).toContain(notCharacter);
+});
+
 test("the draft loads in the draft stage, and the lock refuses it for its pending entries", () => {
   const d = draftOf("TreeDeclChain");
   const out = parseBlueprint(JSON.parse(draftJson(d)), {
