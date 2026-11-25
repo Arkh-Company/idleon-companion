@@ -67,7 +67,13 @@ function ownWrite(place: Place, path: string): RecWrite | undefined {
     .at(-1);
   const seen = read?.[3] ?? read?.[4];
   if (seen === undefined) return undefined;
-  const w = place.rec.writes.filter((x) => of(x.path) && x.seq <= seen).at(-1);
+  // the builders' pass writes its scratch among the spliced ones (recorder-pass.js): the last by number of both
+  const w = [...place.rec.writes, ...place.rec.spliced]
+    .filter((x) => of(x.path) && x.seq <= seen)
+    .reduce<RecWrite | undefined>(
+      (a, x) => (a && a.seq > x.seq ? a : x),
+      undefined,
+    );
   return w?.node === place.caller.id ? w : undefined;
 }
 
