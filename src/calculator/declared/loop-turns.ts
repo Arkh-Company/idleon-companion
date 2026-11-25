@@ -128,6 +128,21 @@ export function writeTurns(
   const exprs = ws.map((w) =>
     writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf),
   );
+  const name = callRef(author);
+  // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): its form
+  // waits for the decision of T215, never a chain of its own turns
+  const counts = (e: Expr | null) => {
+    const s = e?.t === "fn" && e.args.length === 1 ? e.args[0] : e;
+    return (
+      s?.t === "op" &&
+      s.o === "+" &&
+      s.l.t === "read" &&
+      s.l.p === write.path &&
+      s.r.t === "num"
+    );
+  };
+  if (exprs.some(counts))
+    return `o laço de ${name} conta ${write.path}, um número fixo a volta: a forma do contador espera a decisão da T215`;
   // the first write may add to the 0 of a key not yet set (T192)
   const empty = ws[0] !== undefined && emptyKey(author, ws[0]);
   const itemOf = (e: Expr | null | undefined, j: number) =>
@@ -140,7 +155,6 @@ export function writeTurns(
   // the sum starts at a write of 0 with no step of its own: no line
   const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
   const items = exprs.map(itemOf).slice(start);
-  const name = callRef(author);
   // the first turn that does not add: with no step of its own it has no item (turnsOf), else it overwrote the cache
   const k = items.findIndex((x) => x === undefined);
   if (k >= 0 && exprs[k + start] !== null)

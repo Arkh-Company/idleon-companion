@@ -251,10 +251,11 @@ test("a count in turns that adds a fixed number to its own value waits for its f
   const ref = { call: "TreeSigilsRoot", args: [0, 0, 0] };
   const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, r.ops);
   expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
-    ["TreeSigils()", [["DNSM.TreeSigils", []]]],
+    // the cache opens into its author, the builder, whose count waits
+    ["TreeSigils()", [["DNSM.TreeSigils", [["TreeSigils()", []]]]]],
   ]);
   expect(draft.pending).toContainEqual({
-    where: "pools/0/groups/0/sources/0/children/0",
+    where: "pools/0/groups/0/sources/0/children/0/children/0",
     kind: "descend",
   });
   expect(stepsGuide(key, rec, r.ops)).toContain(
