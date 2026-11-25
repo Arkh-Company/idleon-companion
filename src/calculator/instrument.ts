@@ -164,6 +164,14 @@ function assignments(fn: AnyNode): Defs {
   return out;
 }
 
+/** `asNumber(x)` is x. */
+const bare = (n: AnyNode): AnyNode => {
+  const args = (n.arguments as AnyNode[] | undefined) ?? [];
+  return methodName(n) === "asNumber" && args.length === 1 && args[0]
+    ? bare(args[0])
+    : n;
+};
+
 function defOf(node: AnyNode | undefined, defs: Defs): AnyNode | null {
   if (node?.type !== "Identifier") return null;
   let best: { end: number; rhs: AnyNode } | null = null;
@@ -264,10 +272,12 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         m.kind === "assign"
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
-      const def = m.kind === "leaf" ? defOf(m.node, defs) : null;
+      // a variable leaf, bare or through asNumber(…) as callsOf reads it (T232 r1)
+      const v0 = m.kind === "leaf" ? bare(m.node) : null;
+      const def = v0 ? defOf(v0, defs) : null;
       const writes =
-        m.kind === "leaf" && m.node.type === "Identifier"
-          ? (defs.get(m.node.name as string) ?? []).map((d) => d.rhs)
+        v0?.type === "Identifier"
+          ? (defs.get(v0.name as string) ?? []).map((d) => d.rhs)
           : [];
       const prevDef = defOf(target, defs);
       // a leaf's value is the leaf (a variable opens into its def); an assignment's, what set it before
