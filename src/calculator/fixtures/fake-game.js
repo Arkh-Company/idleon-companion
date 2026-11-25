@@ -551,7 +551,8 @@ lime.$scripts.N = function (_exports, $global) {
     var d = a.engine.getGameAttribute("DNSM").h;
     if (!Object.prototype.hasOwnProperty.call(d, "TreeSigils"))
       for (var i = (d.TreeSigils = 0); i < state().TreeList.length; i++)
-        if (state().TreeList[i] >= 2) d.TreeSigils = Math.round(d.TreeSigils + 1);
+        if (state().TreeList[i] >= 2)
+          d.TreeSigils = Math.round(d.TreeSigils + 1);
     return Math.round(d.TreeSigils);
   };
   Blocks._customBlock_TreeCacheRead = function () {
