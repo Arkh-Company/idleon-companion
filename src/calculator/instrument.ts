@@ -14,6 +14,7 @@ import {
   returnNotes,
 } from "./instrument-returns.ts";
 import type { AnyNode, Defs } from "./instrument-returns.ts";
+import { unwrap } from "./recorded/ast.ts";
 
 export interface Op {
   block: string;
@@ -164,14 +165,6 @@ function assignments(fn: AnyNode): Defs {
   return out;
 }
 
-/** `asNumber(x)` is x. */
-const bare = (n: AnyNode): AnyNode => {
-  const args = (n.arguments as AnyNode[] | undefined) ?? [];
-  return methodName(n) === "asNumber" && args.length === 1 && args[0]
-    ? bare(args[0])
-    : n;
-};
-
 function defOf(node: AnyNode | undefined, defs: Defs): AnyNode | null {
   if (node?.type !== "Identifier") return null;
   let best: { end: number; rhs: AnyNode } | null = null;
@@ -273,7 +266,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
       // a variable leaf, bare or through asNumber(…) as callsOf reads it (T232 r1)
-      const v0 = m.kind === "leaf" ? bare(m.node) : null;
+      const v0 = m.kind === "leaf" ? unwrap(m.node) : null;
       const def = v0 ? defOf(v0, defs) : null;
       const writes =
         v0?.type === "Identifier"
