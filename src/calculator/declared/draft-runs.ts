@@ -110,6 +110,18 @@ function classSource(
   return s;
 }
 
+/**
+ * Whether the other classes' runs can change the active draft (T221): only a class source (T207) or a cache's author
+ * below a cache read (T208) takes anything from them; with neither, joinDrafts gives the active draft as it is.
+ */
+export const needsClassRuns = (d: DraftBlueprint): boolean => {
+  const takes = (n: DraftNode): boolean =>
+    n.classes !== undefined ||
+    (isCacheRead(n) && (n.children ?? []).some((c) => blockOf(c) !== null)) ||
+    (n.children ?? []).some(takes);
+  return d.pools.some((p) => p.groups.some((g) => g.sources.some(takes)));
+};
+
 export function joinDrafts(
   active: DraftRun,
   others: readonly DraftRun[],

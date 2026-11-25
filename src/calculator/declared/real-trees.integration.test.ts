@@ -26,7 +26,7 @@ import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
 import type { DraftBlueprint, DraftContext } from "./draft.ts";
 import { gameFamilies } from "./draft-class.ts";
-import { joinDrafts } from "./draft-runs.ts";
+import { joinDrafts, needsClassRuns } from "./draft-runs.ts";
 import { inactiveMosaic } from "../inactive.ts";
 import {
   classCharacters,
@@ -255,7 +255,10 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             stage("draft");
             const others: { draft: DraftBlueprint; characterClass: number }[] =
               [];
-            for (const [characterClass, character] of classes) {
+            // only a class source or a cache's author takes anything from another class's run (T221)
+            for (const [characterClass, character] of needsClassRuns(own)
+              ? classes
+              : []) {
               const inactive = inactiveMosaic(state, character);
               if (inactive === null) continue;
               try {
