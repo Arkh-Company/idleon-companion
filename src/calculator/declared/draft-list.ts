@@ -8,7 +8,7 @@ import type { BlueprintPending } from "./blueprint.ts";
 import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { markedRef } from "./save-args.ts";
-import { unmarked } from "./refs.ts";
+import { SAVE, unmarked } from "./refs.ts";
 import type { Ref, RefArg } from "./refs.ts";
 import { CALL } from "./not-leaves.ts";
 
@@ -118,8 +118,9 @@ export function callListOf(below: readonly Walked[]): CallList | null {
 }
 
 /**
- * A list of calls' model (T205): the first call marked by its place (`{character}`, `*`, as every node's), with `{item}` at
- * the turn's argument, its key over the marked ref; its name and descent wait.
+ * A list of calls' model (T205): the first call's arguments marked by every call's place (`{character}`, `*`, as every
+ * node's; `*` where two calls mark one differently: r2 of part X), with `{item}` at the turn's argument, its key over the
+ * marked ref; its name and descent wait.
  */
 export function callModel(
   below: readonly Walked[],
@@ -130,9 +131,23 @@ export function callModel(
   wait: (kind: BlueprintPending["kind"]) => void,
 ): DraftNode {
   const first = below[0]?.call;
-  const code: Ref = { call: l.block, args: (first?.a ?? []) as RefArg[] };
-  const marked = first ? markedRef(code, rec, ops, first, rootRef) : code;
-  const args = [...("call" in marked ? marked.args : [])];
+  const code = (first?.a ?? []) as RefArg[];
+  const args = [...code];
+  for (const w of below) {
+    if (!w.call) continue;
+    const m = markedRef(
+      { call: l.block, args: w.call.a as RefArg[] },
+      rec,
+      ops,
+      w.call,
+      rootRef,
+    );
+    if ("call" in m)
+      m.args.forEach((a, i) => {
+        if (a === w.call?.a[i]) return;
+        args[i] = args[i] === code[i] || args[i] === a ? a : SAVE;
+      });
+  }
   args[l.at] = `{${ITEM}}`;
   wait("name");
   wait("descend");
