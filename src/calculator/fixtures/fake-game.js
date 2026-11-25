@@ -1711,6 +1711,17 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i]);
     return best;
   };
+  // Spec 010 (T229): the last turn whose test passed, as the game's Breeding("SpecialPassives","Lv",…) (`DN1 = r + 2`)
+  Blocks._customBlock_TreeTier = function () {
+    var s = state();
+    var lv = 1;
+    for (var r = 0; r < 3; r++)
+      if (s.TreeLevel > s.TreeList[r] * 10) lv = r + 2;
+    return lv;
+  };
+  Blocks._customBlock_TreeTierRoot = function () {
+    return Blocks._customBlock_TreeTier() + state().TreeCapped;
+  };
   // Spec 010 (T164): a leaf's call that reads only a game table, and one that reads only the map it stands on.
   Blocks._customBlock_TreeDeclTable = function () {
     return state().CustomLists.h.ListTwo[0] + 1;
