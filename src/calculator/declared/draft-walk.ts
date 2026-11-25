@@ -9,7 +9,7 @@ import type { AnswerTerm } from "./answer-key.ts";
 import { onlyRead } from "./cache-author.ts";
 import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
-import { partsOf } from "./level-parts.ts";
+import { partsOf, textPart } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { leavesOf, num, returnOf, saveChild, termExpr } from "./lock-parts.ts";
 import { CALL } from "./not-leaves.ts";
@@ -25,6 +25,8 @@ export interface Walked {
   termPart?: true;
   /** The number of its loop's turn, when another turn has the same item (T198): its key says it. */
   turn?: number;
+  /** A text of the save its reader's literal was picked by (T195): a `condition` leaf. */
+  condition?: true;
 }
 
 /** A part of an opened level, with the number of its turn when the opening gives one (T198). */
@@ -160,8 +162,8 @@ function walkPart(
   return {
     key,
     call,
-    below: parts.map((p) =>
-      walkPart(
+    below: parts.map((p) => {
+      const w = walkPart(
         p,
         kidOf(call, p, ctx),
         ctx,
@@ -169,8 +171,11 @@ function walkPart(
         call,
         onlyRead(level, p),
         own,
-      ),
-    ),
+      );
+      return w.below === "leaf" && textPart(call, level, p, ctx)
+        ? { ...w, condition: true as const }
+        : w;
+    }),
   };
 }
 

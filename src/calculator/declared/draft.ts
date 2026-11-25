@@ -179,6 +179,8 @@ export function draftBlueprint(
       name: named?.name ?? null,
       ...(named ? { nameProof: named.nameProof } : {}),
       ref,
+      // the leaf's kind by its role (T195): a text only a test reads is a condition; its kind is the agent's
+      ...(w.condition && { leaf: "condition" as const }),
       ...extra,
       ...(tree !== undefined
         ? { tree }
@@ -192,7 +194,7 @@ export function draftBlueprint(
     };
     // a line with a link waits for nothing below it: its tree is the other number's
     if (tree !== undefined) return out;
-    if (!Array.isArray(w.below)) wait(where, w.below, sink);
+    if (!Array.isArray(w.below) && !w.condition) wait(where, w.below, sink);
     // any other argument of a leaf call equal to the character's index may be the character or a number that happens
     // to be it: the agent writes `{character}` or keeps it (research R5); a node with children is descended already
     if (

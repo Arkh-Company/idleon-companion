@@ -106,6 +106,17 @@ export function testedText(
   });
 }
 
+/** A text of the save the level's literal was picked by, read in its test (T195): a condition, by its role in the count. */
+export const textPart = (
+  scope: RecNode,
+  expr: Expr | null | undefined,
+  path: string,
+  ctx: LevelContext,
+): boolean =>
+  literal(expr ?? null) &&
+  (scope.r ?? []).some(([p, v]) => p === path && v === "(text)") &&
+  testedText(scope, path, ctx);
+
 /**
  * The parts of a level: its expression's references; with a curve or a log in it, also what builds their arguments
  * (the level's other steps, its numeric reads and its calls), which are the parent's children (research R6).
