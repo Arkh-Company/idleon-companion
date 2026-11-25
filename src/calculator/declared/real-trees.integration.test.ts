@@ -20,7 +20,7 @@ import { useGameTables } from "../names/table-names.ts";
 import { bootRecorder, TREE_LIMITS } from "../tree-record.ts";
 import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
 import { answerKey } from "./answer-key.ts";
-import { BLUEPRINTS, loadBlueprints, pieceFiles } from "./blueprints.ts";
+import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
@@ -187,7 +187,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
           const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
           useGameNames(game.names);
           useGameTables(game.tables);
-          const known = pieceFiles(BLUEPRINTS);
+          const known = new Map(loaded.pieces);
           const dc: DraftContext = {
             character: activeCharacter(snapshot),
             talentOrder: gameList(

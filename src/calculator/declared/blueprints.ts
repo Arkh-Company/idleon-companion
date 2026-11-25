@@ -18,6 +18,8 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
   all: ReadonlyMap<string, Blueprint>;
   refused: { file: string; reason: string }[];
   stages: ReadonlyMap<string, BlueprintStage>;
+  /** The pieces, raw by their id (the draft calls a common branch's own, part R), and each recipe as a piece (T173). */
+  pieces: ReadonlyMap<string, unknown>;
 } {
   const complete = new Map<string, Blueprint>();
   const all = new Map<string, Blueprint>();
@@ -70,19 +72,8 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
     all.set(fileId, out.blueprint);
     if (out.stage === "complete") complete.set(fileId, out.blueprint);
   }
-  return { complete, all, refused, stages };
+  return { complete, all, refused, stages, pieces };
 }
-
-/** The recipe pieces' files (`*.piece.json`), raw, by their id: the draft calls a common branch's own (part R). */
-export const pieceFiles = (
-  files: Readonly<Record<string, unknown>>,
-): Map<string, unknown> =>
-  new Map(
-    Object.entries(files).flatMap(([file, raw]) => {
-      const id = PIECE.exec(file)?.[1];
-      return id === undefined ? [] : [[id, raw] as const];
-    }),
-  );
 
 export const BLUEPRINTS = import.meta.glob<unknown>(
   "../blueprints/**/*.{blueprint,piece}.json",
