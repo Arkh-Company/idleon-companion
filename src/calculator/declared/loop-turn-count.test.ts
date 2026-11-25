@@ -10,6 +10,7 @@ import type { DraftNode } from "./draft.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
+import type { RefArg } from "./refs.ts";
 
 type Shape = [string, Shape[]];
 const shape = (n: DraftNode | BlueprintNode): Shape => [
@@ -127,6 +128,42 @@ test.each(BLOCKS)(
     ]);
   },
 );
+
+test("the lock checks a turn's count line's arguments at its first reference's call: the save's number is never written out (r1 of part U)", () => {
+  // TreeTurnsCountSave: TreeTurnItemAt(i, TreeBase), its second argument from the save (TreeBase is 4)
+  const at = (i: number, arg: RefArg): BlueprintNode => ({
+    key: `item-${String(i)}`,
+    name: "Item",
+    ref: { call: "TreeTurnItemAt", args: [i, arg] },
+    children: [
+      {
+        key: "item",
+        name: "Item",
+        ref: { call: "TreeTurnItemAt", args: [i, "*"] },
+        children: [
+          {
+            key: "list",
+            name: "List",
+            ref: { read: `TreeList[${String(i)}]` },
+            leaf: "level",
+          },
+        ],
+      },
+      {
+        key: "twin",
+        name: "Twin",
+        ref: { read: `TreeTwins[${String(i)}]` },
+        leaf: "record",
+        termPart: { system: "achievements" },
+      },
+    ],
+  });
+  const block = "TreeTurnsCountSave";
+  expect(lock(block, [at(0, "*"), at(1, "*")])).toEqual([]);
+  expect(lock(block, [at(0, 4), at(1, "*")])).toEqual([
+    'argumento do save por extenso: invented-turns/0/cards/turns/item-0: o argumento 2 de TreeTurnItemAt vem do save; a receita escreve "*"',
+  ]);
+});
 
 test("a turn whose item is a bare number has no part: the call's other calls are no line of it (T193)", () => {
   const root = "TreeTurnsCountOneRoot";

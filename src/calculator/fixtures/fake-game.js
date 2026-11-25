@@ -2848,6 +2848,65 @@ lime.$scripts.N = function (_exports, $global) {
       if (Blocks._customBlock_TreeTurnItem(i) > 0) t = t + 1;
     return t;
   };
+  // ...one whose item's call takes an argument from the save (r1 of part U): the line's arguments are its call's
+  Blocks._customBlock_TreeTurnItemAt = function (i, s) {
+    return state().TreeList[i] * 2;
+  };
+  Blocks._customBlock_TreeTurnsCountSave = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t =
+        t +
+        Blocks._customBlock_TreeTurnItemAt(
+          i,
+          a.engine.getGameAttribute("TreeBase"),
+        ) *
+          state().TreeTwins[i];
+    return t;
+  };
+  // ...one whose item reads before its call: the line is the read's, the call a termPart child (r1 of part U)
+  Blocks._customBlock_TreeTurnsCountRead = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t = t + state().TreeTwins[i] * Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  // ...one whose pass-through call has the same arguments in every turn, its value the turn's (r1 of part U)
+  Blocks._customBlock_TreeTurnAt = function () {
+    return state().TreeList[dnsm().TreeCountAt] * 2;
+  };
+  Blocks._customBlock_TreeTurnsCountSame = function () {
+    var d = dnsm();
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      t = t + d.TreeCountDN * state().TreeTwins[i];
+    }
+    return t;
+  };
+  // ...one whose item has a curve (a log): its parts would be the whole call's (r1 of part U)
+  Blocks._customBlock_TreeTurnsCountCurve = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t =
+        t +
+        Blocks._customBlock_getLOG(Blocks._customBlock_TreeTurnItem(i)) *
+          state().TreeTwins[i];
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountSaveRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountSave() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountReadRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountRead() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountSameRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountSame() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountCurveRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountCurve() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsCountOneRoot = function () {
     return Blocks._customBlock_TreeTurnsCountOne() + state().TreeCapped;
   };
