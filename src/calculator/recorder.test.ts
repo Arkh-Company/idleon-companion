@@ -237,7 +237,7 @@ test("a builder that gives another number than the game's explains nothing", () 
   expect(writer.p).toBe(rec.setup);
 });
 
-test("a builder of a cache that is a number keeps its writes of the cache, each by its call (T196)", () => {
+test("a builder of a cache that is a number keeps its writes of the cache, each by its call, its one author (T196)", () => {
   const rec = record(
     ["TreeSigils"],
     mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 2 } } }),
@@ -259,8 +259,7 @@ test("a builder of a cache that is a number keeps its writes of the cache, each 
     [pass.id, 0],
     [pass.id, 1],
     [pass.id, 2],
-    // the pass puts the game's cache back through the record, as for a map
-    [null, 2],
+    // no write of its own when the pass puts the same number back: the builder is the cache's one author
   ]);
 });
 
