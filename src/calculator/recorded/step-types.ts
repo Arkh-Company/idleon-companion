@@ -29,6 +29,8 @@ export interface BlockSteps {
   exprOf?: (op: number) => Expr | null;
   /** Where each step was last recorded in the call's step log (spec 010, T162: a write comes after its step). */
   stepAt?: number[];
+  /** A loop turn's place in the call's step log, for the steps of that turn (makeSteps turnOf; T212). */
+  range?: LoopTurn;
   /** The calls a step tied to none, shared by every call and turn of one makeSteps (spec 010, T177 r1, r2). */
   ambiguous?: ReadonlySet<AmbiguousCall>;
 }

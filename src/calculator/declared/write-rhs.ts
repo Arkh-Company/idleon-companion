@@ -1,8 +1,8 @@
 // The source a write with no step of its own names in the code (spec 010, Fase 4 q, step 3; the session's rule: the
-// recorded place decides): the assignment that made it lies in the code between the steps the call's log recorded
-// right before and right after the write, and its right side, through the variables that set it, is a block's call or
-// a read the code names (the game's TalentCalc(-2) writes a bubble as `A = CauldronStats(…), t.h[R] = A`). Null when
-// the place gives no such assignment, or one whose right side is something else.
+// recorded place decides): the assignment that made it is the first to a map's key after the step the call's log
+// recorded right before the write (and before the one right after, unless a loop went back), and its right side,
+// through the variables that set it, is a block's call or a read the code names (the game's TalentCalc(-2) writes a
+// bubble as `A = CauldronStats(…), t.h[R] = A`). Null when the place gives none, or one whose right side is else.
 import type { Op } from "../instrument.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
 import { astPattern, CUSTOM, methodOf, unwrap } from "../recorded/ast.ts";
@@ -19,7 +19,7 @@ const leftOf = (a: AstNode) =>
 const rightOf = (a: AstNode) =>
   (a.type === "VariableDeclarator" ? a.init : a.right) as AstNode | null;
 
-/** What each assignment the code has at the write's place gives: null when one gives something else, or there is none. */
+/** What the assignment at the write's place gives, or null. */
 export function rhsSources(
   node: RecNode,
   write: RecWrite,
@@ -30,8 +30,10 @@ export function rhsSources(
   const after = ops[xs[write.xi]?.[0] ?? -1];
   const text = (before ?? after)?.fnText;
   const from = before?.node.range[1] ?? 0;
-  const to = after?.node.range[0] ?? Infinity;
-  if (text === undefined || from > to) return null;
+  // the step after the write bounds it, unless the code went back to it (a loop's next turn)
+  const next = after?.node.range[0] ?? Infinity;
+  const to = next >= from ? next : Infinity;
+  if (text === undefined) return null;
   const all = assignsOf(text);
   // the variable's last value before `pos` in the text (as the instrument's defOf)
   const defOf = (name: unknown, pos: number) =>
@@ -56,13 +58,16 @@ export function rhsSources(
     const read = astPattern(n);
     return read ? { read } : null;
   };
-  const here = all.filter(
-    (a) =>
-      sets(a) &&
-      leftOf(a).type === "MemberExpression" &&
-      a.range[0] >= from &&
-      a.range[1] <= to,
-  );
-  const out = here.map((a) => resolve(rightOf(a)));
-  return out.length > 0 && out.every((s) => s !== null) ? out : null;
+  // the first assignment to a map's key after the step before the write: no step ran between them
+  const [first] = all
+    .filter(
+      (a) =>
+        sets(a) &&
+        leftOf(a).type === "MemberExpression" &&
+        a.range[0] >= from &&
+        a.range[1] <= to,
+    )
+    .sort((a, b) => a.range[0] - b.range[0]);
+  const src = first ? resolve(rightOf(first)) : null;
+  return src ? [src] : null;
 }

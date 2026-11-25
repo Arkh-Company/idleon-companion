@@ -342,7 +342,14 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       const o = ops[op];
       return o && vals.has(op) ? e(o.node) : null;
     };
-    return { steps, checks, exprOf, stepAt, ambiguous };
+    return {
+      steps,
+      checks,
+      exprOf,
+      stepAt,
+      ambiguous,
+      ...(range && { range }),
+    };
   }
 
   return {

@@ -21,22 +21,29 @@ export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
 export type Author =
   { node: RecNode; write: RecWrite } | { refused: string; ambiguous?: true };
 
-type Steps = Pick<BlockSteps, "steps"> & { stepAt?: number[] | undefined };
+type Steps = Pick<BlockSteps, "steps"> & {
+  stepAt?: number[] | undefined;
+  range?: LoopTurn | undefined;
+};
 
 /**
  * The numbers the reader's reads of `path` kept (the last write before each): the last read at or before the place of
  * each step that holds the read opened (`leaf`, that very object), else of each step that uses the path; with no such
- * step, every read of its step log; with no log, its first read's.
+ * step, every read of its step log (of the turn, for a turn's steps); with no log, its first read's.
  */
 export function seenSeqs(
   reader: RecNode,
   path: string,
-  { steps, stepAt }: Steps,
+  { steps, stepAt, range }: Steps,
   leaf?: Expr,
 ): (number | undefined)[] {
   const first = reader.r?.find(([p]) => p === path)?.[2];
+  // the steps of a turn (T212): only the reads of that turn, with one after its last step, at its write's place
   const log = (reader.rx ?? []).filter(
-    ([p, , , s]) => p === path && typeof s === "number",
+    ([p, , xi, s]) =>
+      p === path &&
+      typeof s === "number" &&
+      (!range || (xi >= range.from && xi <= range.to + 1)),
   );
   const placesOf = (uses: (l: Expr) => boolean) =>
     steps.flatMap((s, k) => {

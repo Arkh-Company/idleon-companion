@@ -43,6 +43,17 @@ export function openingOf(
   if (turns !== null) return turns;
   if (expr?.t !== "read" || !isCacheRead(expr.p))
     return loopOpening(expr, scope, ctx);
+  // in an author's turn, its own working variable (T212: TalentCalc(-3)'s CalcTalentDN3) is a passage, no cache
+  // (level-parts.ts goes down through its write); the path it sums is the author's earlier turn (T168)
+  const { write } = level;
+  const own = (w: RecWrite) =>
+    w.node === scope.id && w.path === expr.p && w.seq < (write?.seq ?? 0);
+  if (
+    write &&
+    expr.p !== write.path &&
+    [...ctx.rec.writes, ...ctx.rec.spliced].some(own)
+  )
+    return null;
   // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart),
   // in the steps of the turn its expression came from when it did (an author's write: new objects at each turnOf)
   const steps = level.steps ?? ctx.stepsOf(scope.id);

@@ -23,6 +23,10 @@ export function closeLevel(
     return;
   }
   const reads = new Map((scope.r ?? []).map(([p, v]) => [p, v]));
+  const wrote = (p: string) =>
+    [...ctx.rec.writes, ...ctx.rec.spliced].some(
+      (w) => w.node === scope.id && w.path === p,
+    );
   const by = { recorded: false };
   const { open } = level;
   const got = open
@@ -52,9 +56,10 @@ export function closeLevel(
           return e.arg === undefined && e.own === undefined
             ? undefined
             : (num(e.v) ?? undefined);
-        return e.t === "read"
-          ? (num(reads.get(e.p)) ?? num(e.v) ?? undefined)
-          : undefined;
+        if (e.t !== "read") return undefined;
+        // the call's own working variable, written again turn by turn (T212): the number its read had at its place
+        if (wrote(e.p)) return num(e.v) ?? undefined;
+        return num(reads.get(e.p)) ?? num(e.v) ?? undefined;
       });
   if (got !== null && value !== null && relDiff(got, value) <= TOLERANCE) {
     if (by.recorded) out.counts.closedByRecorded++;
