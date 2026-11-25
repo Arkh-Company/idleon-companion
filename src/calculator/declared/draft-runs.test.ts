@@ -100,4 +100,35 @@ test("a number with no class source and no cache's author needs no other class's
     ],
   };
   expect(needsClassRuns(draftWith(cache, []))).toBe(true);
+  // with neither, another class's run with its own source and author leaves the draft as it is
+  const theirs: DraftNode = {
+    ...cache,
+    children: [
+      {
+        key: "author",
+        name: null,
+        ref: { call: "OtherCalc", args: [7] },
+        children: [read("points", "SkillLevels[7]")],
+      },
+    ],
+  };
+  const other: DraftBlueprint = {
+    ...draftWith(talent([read("curve", "TreeCurve")]), [
+      { where: "pools/0/groups/1/sources/0/children/0", kind: "leaf" },
+    ]),
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          { system: null, sources: [theirs] },
+          { system: null, sources: [talent([])] },
+        ],
+      },
+    ],
+  };
+  expect(
+    joinDrafts({ draft: plain, characterClass: 3 }, [
+      { draft: other, characterClass: 7 },
+    ]),
+  ).toEqual(plain);
 });
