@@ -29,22 +29,33 @@ const fnFor = (text: string): Fn | null => {
   return fns.get(text) ?? null;
 };
 
+/** A write's place in its call's code: the text, from the end of the step before it to the step after it; null with none. */
+export function writeSpan(
+  node: RecNode,
+  write: RecWrite,
+  ops: readonly Op[],
+): { text: string; from: number; to: number } | null {
+  const xs = node.x ?? [];
+  const before = ops[xs[write.xi - 1]?.[0] ?? -1];
+  const after = ops[xs[write.xi]?.[0] ?? -1];
+  const text = (before ?? after)?.fnText;
+  if (text === undefined) return null;
+  const from = before?.node.range[1] ?? 0;
+  // the step after the write bounds it, unless the code went back to it (a loop's next turn)
+  const next = after?.node.range[0] ?? Infinity;
+  return { text, from, to: next >= from ? next : Infinity };
+}
+
 /** What the assignment at the write's place gives, or null. */
 export function rhsSources(
   node: RecNode,
   write: RecWrite,
   ops: readonly Op[],
 ): RhsSource[] | null {
-  const xs = node.x ?? [];
-  const before = ops[xs[write.xi - 1]?.[0] ?? -1];
-  const after = ops[xs[write.xi]?.[0] ?? -1];
-  const text = (before ?? after)?.fnText;
-  const from = before?.node.range[1] ?? 0;
-  // the step after the write bounds it, unless the code went back to it (a loop's next turn)
-  const next = after?.node.range[0] ?? Infinity;
-  const to = next >= from ? next : Infinity;
-  const f = text === undefined ? null : fnFor(text);
-  if (!f) return null;
+  const span = writeSpan(node, write, ops);
+  const f = span ? fnFor(span.text) : null;
+  if (!span || !f) return null;
+  const { from, to } = span;
   // the variable's value on every way to `pos`; none when a set of it off some way, after that one, may be the one
   const valueOf = (name: string, pos: number): AnyNode | undefined => {
     const def = defOf(f, name, pos);

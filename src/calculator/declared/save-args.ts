@@ -9,15 +9,16 @@
 // game (r2: a loop's index or a save's count cached there), the place does not decide: the lock refuses what the
 // recipe writes there, and the draft's name waits. The recipe writes `*` where the save gave it.
 import type { Op } from "../instrument.ts";
-import type { RecNode, Recording } from "../recording.ts";
+import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
-import { ran, ranSites } from "./call-site.ts";
-import { defOf, fnOf, onTheWay } from "./code-fn.ts";
+import { ranSites } from "./call-site.ts";
+import { defOf, fnOf } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
 import { at, isCharacter, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
 import { ARG_TEXT_MAX, CHARACTER, SAVE } from "./refs.ts";
 import type { Ref } from "./refs.ts";
+import { writeSpan } from "./write-rhs.ts";
 
 // a working map of the game holds a loop's index as well as a save's count cached there: the place does not decide
 const WORKING = /^(DNSM|DummyNumbersStatManager)$/;
@@ -57,8 +58,8 @@ function readsSave(e: AnyNode, f?: Fn, place?: Place): Says {
   return worst(says1);
 }
 
-/** Whether the write of `map.key` the call's read saw (its recorded number) is the caller's own; undefined unrecorded. */
-function ownWrite(place: Place, path: string): boolean | undefined {
+/** The caller's own write of `map.key` the call's read saw, by its recorded number; undefined unrecorded or another's. */
+function ownWrite(place: Place, path: string): RecWrite | undefined {
   const of = (p: string) =>
     p === path || p.startsWith(`${path}[`) || p.startsWith(`${path}.`);
   const read = place.caller.rx
@@ -67,88 +68,50 @@ function ownWrite(place: Place, path: string): boolean | undefined {
   const seen = read?.[3] ?? read?.[4];
   if (seen === undefined) return undefined;
   const w = place.rec.writes.filter((x) => of(x.path) && x.seq <= seen).at(-1);
-  return w?.node === place.caller.id;
+  return w?.node === place.caller.id ? w : undefined;
 }
 
-const LOOP = /^(For|ForIn|ForOf|While|DoWhile)Statement$/;
 const following = new Set<string>();
 /**
  * What the call's own write of a working map's key the read saw gave (`X.h.KEY = …`, `X.h.KEY[…] = …`, `….push(…)`), by
- * the recorded write (r1 of parts P and Q): another block's is unsure; of the caller's sets that may be the one seen (the
- * last on every way, those after it, those after the read in a loop around it), those on the sides that ran, which all
- * have to agree. Unrecorded, a block called between the last set and the read is unsure.
+ * the recorded write (r2 of parts P and Q): the set at that write's place in the caller's step log (write-rhs.ts), the
+ * k-th in the text for the k-th write of one path at one step. Another block's write, none recorded, or a place that
+ * does not give one set, is unsure: never the text's order.
  */
 function workingSays(get: AnyNode, f: Fn, map: string, place?: Place): Says {
   const h = f.up.get(get);
   const keyed = h ? f.up.get(h) : undefined;
   const key =
     keyed?.type === "MemberExpression" ? at(keyed, "property").name : undefined;
-  if (typeof key !== "string" || following.has(key)) return "unsure";
+  if (typeof key !== "string" || following.has(key) || !place) return "unsure";
   const isKey = (m: AnyNode | undefined): boolean =>
     m?.type === "MemberExpression" &&
     (at(m, "property").name === key ||
       isKey(m.computed ? at(m, "object") : undefined));
-  const pos = get.range[0];
-  const own = place ? ownWrite(place, `${map}.${key}`) : undefined;
-  if (own === false) return "unsure";
-  const sets = f.all.filter(
-    (n) => n.type === "AssignmentExpression" && isKey(at(n, "left")),
-  );
-  const last = sets
-    .filter((n) => n.range[1] <= pos && onTheWay(f, n, pos))
-    .reduce<AnyNode | undefined>(
-      (a, n) => (a && a.range[1] > n.range[1] ? a : n),
-      undefined,
-    );
-  const after = (n: AnyNode) => !last || n.range[0] > last.range[1];
-  const inside = (n: AnyNode, l: AnyNode) =>
-    l.range[0] <= n.range[0] && n.range[1] <= l.range[1];
-  const loops: AnyNode[] = [];
-  for (let p = f.up.get(get); p; p = f.up.get(p))
-    if (LOOP.test(p.type)) loops.push(p);
-  // a set's side when the call began: true it ran, false it did not, null not recorded (`last` runs on every way)
-  const state = (n: AnyNode) =>
-    n === last
-      ? true
-      : place
-        ? ran(n, f.up, place.caller, place.ops, place.pos - 1)
-        : null;
-  const before = sets.filter(
-    (n) => n.range[1] <= pos && (n === last || after(n)) && state(n) !== false,
-  );
-  // the last one in the text that ran hides those before it; one after it whose side is not recorded may be the one
-  const top = before
-    .filter((n) => state(n) === true)
-    .reduce<AnyNode | undefined>(
-      (a, n) => (a && a.range[1] > n.range[1] ? a : n),
-      undefined,
-    );
-  const later = sets.filter(
-    (n) =>
-      n.range[0] >= pos &&
-      loops.some((l) => inside(n, l) && !(last && inside(last, l))) &&
-      state(n) !== false,
-  );
-  if (
-    own === undefined &&
-    [...f.sites.values()]
-      .flat()
-      .some((c) => c.range[1] <= pos && after(c) && !inside(get, c))
-  )
-    return "unsure";
-  const pushed = (n: AnyNode) =>
-    n.type === "CallExpression" &&
-    member(at(n, "callee")) === "push" &&
-    isKey(at(at(n, "callee"), "object")) &&
-    n.range[1] <= pos &&
-    after(n);
-  const given = [
-    ...before
-      .filter((n) => !top || n.range[1] >= top.range[1])
-      .map((n) => at(n, "right")),
-    ...later.map((n) => at(n, "right")),
-    ...f.all.flatMap((n) => (pushed(n) ? (n.arguments as AnyNode[]) : [])),
-  ];
+  const w = ownWrite(place, `${map}.${key}`);
+  const span = w ? writeSpan(place.caller, w, place.ops) : null;
+  if (!w || !span || `(${span.text})` !== f.text) return "unsure";
+  const sets = f.all
+    .filter(
+      (n) =>
+        ((n.type === "AssignmentExpression" && isKey(at(n, "left"))) ||
+          (n.type === "CallExpression" &&
+            member(at(n, "callee")) === "push" &&
+            isKey(at(at(n, "callee"), "object")))) &&
+        n.range[1] >= span.from &&
+        n.range[1] <= span.to,
+    )
+    .sort((a, b) => a.range[1] - b.range[1]);
+  // no step ran between the writes of one path at one step: the k-th write is the k-th set in the text
+  const same = [...place.rec.writes, ...place.rec.spliced]
+    .filter((x) => x.node === w.node && x.xi === w.xi && x.path === w.path)
+    .sort((a, b) => a.seq - b.seq);
+  const set = sets.length === same.length ? sets[same.indexOf(w)] : undefined;
+  if (!set) return "unsure";
+  const given =
+    set.type === "CallExpression"
+      ? (set.arguments as AnyNode[])
+      : [at(set, "right")];
   const params = (x: AnyNode) =>
     namesIn(x).some((i) => f.params.includes(i.name as string));
   following.add(key);
