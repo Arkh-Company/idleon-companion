@@ -888,6 +888,19 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeDoubledPool = function () {
     return Blocks._customBlock_TreeDoubled(0) + state().TreeCapped;
   };
+  // Spec 010 (r2 of parts P and Q): the upgrade's condition read and on, with no write of the variable under it.
+  Blocks._customBlock_TreeDoubledIdle = function (e) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeDbl = 1;
+    d.TreeIdleMax = 101 == s.TreeUpg[e];
+    1 == Blocks._customBlock_TreeOwnedFlag() &&
+      (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
+    return a.engine.getGameAttribute("DNSM").h.TreeDbl * s.TreeLevel;
+  };
+  Blocks._customBlock_TreeDoubledIdlePool = function () {
+    return Blocks._customBlock_TreeDoubledIdle(0) + state().TreeCapped;
+  };
   // Spec 010 (Fase 4 q): the same block called by a builder of the pass, as the game's TalentCalc(-2) reaches
   // ArcadeBonus(54) through a bubble: the variable's writes are the pass's scratch.
   Blocks._customBlock_TreeDoubledBuild = function () {

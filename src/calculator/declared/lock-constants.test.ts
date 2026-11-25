@@ -114,6 +114,29 @@ test("a constant no write took is checked by its condition read off in the level
   );
 });
 
+test("a constant whose condition the level read on, with no write that took it, is refused (r2 of P and Q)", () => {
+  // TreeDoubledIdle reads TreeUpg[0] == 101 and writes no factor under it: the x2 declared there has no write
+  const idle = { ...source(), ref: { call: "TreeDoubledIdle", args: [0] } };
+  const errors = lockBlueprint({
+    ...recorded("TreeDoubledIdlePool", { TreeUpg: [101] }),
+    blueprint: {
+      ...blueprint(idle),
+      root: {
+        name: "Invented",
+        ref: { call: "TreeDoubledIdlePool", args: [0, 0, 0] },
+      },
+    },
+    character: 0,
+    characterClass: 3,
+  }).errors;
+  expect(errors).toContainEqual(
+    expect.objectContaining({
+      kind: "conditionMismatch",
+      where: "invented-constants/0/cards/doubled/at-max/upg",
+    }),
+  );
+});
+
 test("the load takes a constant in a call's level only with its conditions as children (form 3)", () => {
   const parse = (s: BlueprintNode) =>
     parseBlueprint(blueprint(s), {
