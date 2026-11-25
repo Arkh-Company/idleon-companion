@@ -59,3 +59,19 @@ test("the tally counts as failed only a node: a model child's items as the model
     ),
   ).toEqual({ passed: 2, failed: 1, pending: 0 });
 });
+
+test("an error inside a piece fails the node that calls it, and the piece's places below it are no pass", () => {
+  const line = "decl-chain/0/cards/capped";
+  expect(
+    lockTally(
+      {
+        ok: false,
+        errors: [{ kind: "notClosing", where: `${line}/1/chips/chip` }],
+        counts: { closed: 2, closedByRecorded: 0, leaves: 1, branches: 1 },
+        closedAt: ["decl-chain/0/shrines/stock", `${line}/0/signs/sign-3`],
+        pendingAt: [],
+      },
+      inventedBlueprint("decl-chain"),
+    ),
+  ).toEqual({ passed: 1, failed: 1, pending: 0 });
+});
