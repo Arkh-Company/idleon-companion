@@ -246,6 +246,38 @@ test("a turn whose item reads before its call is a line by the read, the call a 
   expect(lock(block, [readLine(0), readLine(1)])).toEqual([]);
 });
 
+test("a turn's count line's `*` child ties to its own turn's call: the other turns' calls are no second call (T227)", () => {
+  // TreeTurnsCountArg: TreeTwins[i] × TreeArg(TreeList[i]), the argument of the save 1, then 2: one call a turn
+  const argLine = (i: number): BlueprintNode => ({
+    key: `twins-${String(i)}`,
+    name: "Twins",
+    ref: { read: `TreeTwins[${String(i)}]` },
+    children: [
+      {
+        key: "twin",
+        name: "Twin",
+        ref: { read: `TreeTwins[${String(i)}]` },
+        leaf: "record",
+      },
+      {
+        key: "arg",
+        name: "Arg",
+        ref: { call: "TreeArg", args: ["*"] },
+        termPart: { system: "achievements" },
+        children: [
+          {
+            key: "base",
+            name: "Base",
+            ref: { read: "TreeBase" },
+            leaf: "level",
+          },
+        ],
+      },
+    ],
+  });
+  expect(lock("TreeTurnsCountArg", [argLine(0), argLine(1)])).toEqual([]);
+});
+
 test("a turn whose count's call has no place in the turn is refused with the reason, never left unchecked (r2 of part U)", () => {
   // TreeTurnsCountEarly: DNSM.TreeEarlyDN = TreeTurnItemAt(0, TreeBase) before the loop, `d.TreeEarlyDN * 3` a turn;
   // the first turn starts at the call's step 0, so the call has a place in it and none in the second
