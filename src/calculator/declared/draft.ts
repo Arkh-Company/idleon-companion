@@ -298,7 +298,7 @@ export function draftBlueprint(
       ? [model(list, `${where}/children/0`, mine)]
       : calls && below
         ? [
-            callModel(below, calls, (k) => {
+            callModel(below, calls, rec, ops, (k) => {
               wait(`${where}/children/0`, k, mine);
             }),
           ]

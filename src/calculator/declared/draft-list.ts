@@ -5,7 +5,11 @@
 import type { DraftNode, Walked } from "./draft.ts";
 import { codeOf, keyIn, marked } from "./draft-names.ts";
 import type { BlueprintPending } from "./blueprint.ts";
-import type { RefArg } from "./refs.ts";
+import type { Op } from "../instrument.ts";
+import type { Recording } from "../recording.ts";
+import { markedRef } from "./save-args.ts";
+import { unmarked } from "./refs.ts";
+import type { Ref, RefArg } from "./refs.ts";
 import { CALL } from "./not-leaves.ts";
 
 /** The name of the item in a model child's references: `[{item}]`. */
@@ -107,16 +111,24 @@ export function callListOf(below: readonly Walked[]): CallList | null {
   return new Set(items).size === items.length ? { block: first.b, at } : null;
 }
 
-/** A list of calls' model (T205): the first call with `{item}` at the turn's argument; its name and descent wait. */
+/**
+ * A list of calls' model (T205): the first call marked by its place (`{character}`, `*`, as every node's), with `{item}` at
+ * the turn's argument, its key over the marked ref; its name and descent wait.
+ */
 export function callModel(
   below: readonly Walked[],
   l: CallList,
+  rec: Recording,
+  ops: readonly Op[],
   wait: (kind: BlueprintPending["kind"]) => void,
 ): DraftNode {
-  const args = [...(below[0]?.call?.a ?? [])] as RefArg[];
+  const first = below[0]?.call;
+  const code: Ref = { call: l.block, args: (first?.a ?? []) as RefArg[] };
+  const marked = first ? markedRef(code, rec, ops, first) : code;
+  const args = [...("call" in marked ? marked.args : [])];
   args[l.at] = `{${ITEM}}`;
   wait("name");
   wait("descend");
   const ref = { call: l.block, args };
-  return { key: keyIn(new Set(), codeOf(ref, "")), name: null, ref };
+  return { key: keyIn(new Set(), codeOf(unmarked(ref), "")), name: null, ref };
 }
