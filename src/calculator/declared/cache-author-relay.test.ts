@@ -101,6 +101,17 @@ test("a turn's item read first: its pass-through's call is the one that gave the
   expect(lockOf(relay, "TreeAuthorRelayRead", [line(0), line(2)])).toEqual([]);
 });
 
+test("a turn's item with two calls of one key through its pass-throughs is refused with the reason, in the guide and the lock (r1 of part X)", () => {
+  // TreeAuthorRelayTwice: each turn's item is TreeCountDN × TreeRelayDN, both written by TreeTurnAt() in the turn
+  const reason =
+    "duas chamadas de TreeTurnAt() na volta 1 do laço de TreeAuthorRelayTwice(), e o lugar não as separa";
+  const relay = recordOf("TreeAuthorRelayTwice", 32);
+  expect(relay.guide).toContain(`descer: pendente (${reason})`);
+  expect(lockOf(relay, "TreeAuthorRelayTwice", [at(0)])).toContain(
+    `invented-author/0/cards/cache/author: ${reason}`,
+  );
+});
+
 test("a write's turn with two calls of its pass-through's key: the line's head is the one that gave the write, never the first (T230)", () => {
   // TreeAuthorRelaySkip: no write of the cache in the middle turn, so the last write's window holds TreeTurnAt() of the
   // turns 2 and 3; the first, the order's, reads TreeList[1]

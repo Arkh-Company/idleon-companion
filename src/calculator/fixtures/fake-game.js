@@ -2095,6 +2095,21 @@ lime.$scripts.N = function (_exports, $global) {
         Blocks._customBlock_TreeTurnItem(i) * d.TreeCountDN * 3;
     }
   };
+  // ...one whose item multiplies two pass-throughs of the same call, each a turn, by the turn's place alone (r1 of part
+  // X): 2 × 4 + 4 × 6 = 32
+  Blocks._customBlock_TreeAuthorRelayTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeCountAt = i + 1;
+      d.TreeRelayDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * d.TreeRelayDN;
+    }
+  };
   // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
   Blocks._customBlock_TreeAuthorRelayEarly = function () {
     var U = A["com.stencyl.utils.Utils"];
