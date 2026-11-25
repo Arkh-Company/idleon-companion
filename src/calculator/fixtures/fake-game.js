@@ -1711,6 +1711,14 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i]);
     return best;
   };
+  // Spec 010 (T232 r1): a multiplier set before the loop and read in each turn, as its write before the loop by its place.
+  Blocks._customBlock_TreeLoopScaled = function () {
+    var s = state();
+    var m = s.TreeBase * 2;
+    var best = 0;
+    for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i] * m);
+    return best;
+  };
   // Spec 010 (T229): the last turn whose test passed, as the game's Breeding("SpecialPassives","Lv",…) (`DN1 = r + 2`)
   Blocks._customBlock_TreeTier = function () {
     var s = state();

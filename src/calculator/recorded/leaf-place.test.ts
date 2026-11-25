@@ -141,6 +141,45 @@ test("a loop turn's own steps take no write of an earlier turn: from the write's
   });
 });
 
+test("a loop turn's own steps take the write made before the loop, by its place: never a value with no source, nor the read of its value (T232 r1)", () => {
+  // TreeLoopScaled over TreeBase 4 and TreeList [8, 1, 2]: m = TreeBase * 2 = 8 before the loop, and TreeList[0] is 8 too
+  const recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  const rec = recorder.record(
+    mosaicOf({ TreeList: [8, 1, 2] }),
+    [["TreeLoopScaled", []]],
+    { recompute: [], builders: [] },
+  );
+  const n = rec.nodes.find((x) => x.b === "TreeLoopScaled");
+  if (!n) throw new Error("no call");
+  const [scale, max] = recorder.ops.flatMap((o, i) =>
+    o.block === "TreeLoopScaled" && o.kind === "op" && o.parent === undefined
+      ? [i]
+      : [],
+  );
+  const log = n.x ?? [];
+  const m = log.findIndex(([o]) => o === scale);
+  const [first, second] = log.flatMap(([o], j) => (o === max ? [j] : []));
+  if (first === undefined || second === undefined) throw new Error("no turns");
+  const made = makeSteps(rec, recorder.ops);
+  const scaled = (from: number, to: number, i: number) => {
+    expect(made.turnOf(n, { from, to }).steps[0]?.e).toMatchObject({
+      args: [
+        {},
+        {
+          l: { t: "read", p: `TreeList[${String(i)}]` },
+          r: {
+            t: "def",
+            e: { o: "*", l: { t: "read", p: "TreeBase", v: 4 }, v: 8 },
+            v: 8,
+          },
+        },
+      ],
+    });
+  };
+  scaled(m + 1, first, 0);
+  scaled(first + 1, second, 1);
+});
+
 test("a leaf whose code names a path is the read of it at its own place, never one read before it that the call's lock leaves alone (T231 r1)", () => {
   // x.A is 6 at the leaf's place and 5 after it, so the call's lock takes it out; y.x.A, worth 6, is read before
   expect(
