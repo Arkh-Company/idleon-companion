@@ -212,6 +212,40 @@ test("the lock ties a turn's pass-through call by the turn's place, never by ord
   expect(lock("TreeTurnsCountSame", [same(1), same(2)])).toEqual([]);
 });
 
+test("a turn whose item reads before its call is a line by the read, the call a termPart child, in the draft and the lock (r1 of part U)", () => {
+  const block = "TreeTurnsCountRead";
+  const { rec, key, ops } = recorded(`${block}Root`);
+  const ref = { call: `${block}Root`, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const turn = (i: number): Shape => [
+    `TreeTwins[${String(i)}]`,
+    [
+      [`TreeTwins[${String(i)}]`, []],
+      [`TreeTurnItem(${String(i)})`, [[`TreeList[${String(i)}]`, []]]],
+    ],
+  ];
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    [`${block}()`, [turn(0), turn(1)]],
+  ]);
+  for (const i of [0, 1])
+    expect(draft.pending).toContainEqual({
+      where: `pools/0/groups/0/sources/0/children/${String(i)}/children/1`,
+      kind: "system",
+    });
+  const readLine = (i: number): BlueprintNode => {
+    const [item, twin] = line(i).children ?? [];
+    if (!item || !twin) throw new Error("no children");
+    const { termPart, ...read } = twin;
+    return {
+      key: `twins-${String(i)}`,
+      name: "Twins",
+      ref: { read: `TreeTwins[${String(i)}]` },
+      children: [read, { ...item, ...(termPart && { termPart }) }],
+    };
+  };
+  expect(lock(block, [readLine(0), readLine(1)])).toEqual([]);
+});
+
 test("a turn whose item has a curve waits with its reason: its parts would be the whole call's, never the turn's (r1 of part U)", () => {
   const root = "TreeTurnsCountCurveRoot";
   const { rec, key, ops } = recorded(root);
