@@ -7,6 +7,7 @@ import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { refKey } from "./refs.ts";
@@ -191,4 +192,7 @@ test("a turn whose item is a bare number has no part: the call's other calls are
     where: "pools/0/groups/0/sources/0",
     kind: "descend",
   });
+  expect(stepsGuide(key, rec, ops)).toContain(
+    "descer: pendente (o item da volta 1 do laço de TreeTurnsCountOne() não é uma chamada nem uma leitura)",
+  );
 });
