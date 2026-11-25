@@ -16,11 +16,11 @@ import { lockBlueprint, lockMessage } from "./lock.ts";
 
 const BLOCKS = ["TreeCountBefore", "TreeCountAfter"];
 
-/** A recording of `${block}Root`, the cache built again by its block, as the game's builders pass does. */
-function recordCount(block: string) {
+/** A recording of `${block}Root`, the cache (the game's `value`) built again by its block, as the builders pass does. */
+function recordCount(block: string, value = 2) {
   const r = inventedRecorder();
   const rec = r.record(
-    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, [block]: 2 } } }),
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, [block]: value } } }),
     [[`${block}Root`, [0, 0, 0]]],
     { recompute: [], builders: [{ cache: block, run: { block, args: [] } }] },
   );
@@ -83,10 +83,10 @@ const recipe = (block: string, line = countLine(block)): Blueprint => ({
     },
   ],
 });
-const lock = (block: string, bp = recipe(block)) =>
+const lock = (block: string, bp = recipe(block), value = 2) =>
   lockBlueprint({
     blueprint: bp,
-    ...recordCount(block),
+    ...recordCount(block, value),
     character: 0,
     characterClass: 3,
   }).errors.map(lockMessage);
@@ -155,7 +155,7 @@ test("the lock refuses an item the recording did not test, and a count that is n
     "filho fora da conta: invented-count/0/cards/count/cache/author/other",
   ]);
   // TreeCountFrom counts from 1: 1 + the 2 items that pass is 3, never the 2 the turns give
-  expect(lock("TreeCountFrom")).toEqual([
+  expect(lock("TreeCountFrom", recipe("TreeCountFrom"), 3)).toEqual([
     "nível não fecha: invented-count/0/cards/count/cache/author: as partes dão 2, o valor gravado é 3",
   ]);
 });
