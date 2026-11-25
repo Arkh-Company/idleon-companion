@@ -1,7 +1,7 @@
 // The read a leaf of a step stands for (spec 008, T022, build-tree.cjs step 8d; moved out of steps.ts as it was): the
 // read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), the read at
-// the leaf's own place (T231), else the one read of the call that holds the value, or the one text cell worth it. A path
-// used up is not bound again.
+// the leaf's own place (T231), else, for a leaf with no place or a variable, the one read of the call that holds the
+// value, or the one text cell worth it. A path used up is not bound again.
 import { EMPTY_READ } from "../recording.ts";
 import type { RecValue } from "../recording.ts";
 import { astPattern, matchPattern, methodOf, textRead, unwrap } from "./ast.ts";
@@ -19,16 +19,19 @@ export function readOfLeaf(
   /** The step count the leaf's own record holds: the reads it made there. */
   here?: number,
 ): string | null | { why: string } {
-  // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
+  const worth = (val: RecValue) =>
+    val === v ||
+    (typeof val === "string" && val.trim() !== "" && Number(val) === v);
+  // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value. With a
+  // place, only one read there (T231 r1)
   if (pat) {
     const cand = pool.filter(
       ([p, val]) =>
-        (val === v ||
-          (typeof val === "string" &&
-            val.trim() !== "" &&
-            Number(val) === v)) &&
+        worth(val) &&
         matchPattern(p, pat) &&
-        !rxs.some((x) => x[0] === p && Number(x[1]) !== v),
+        !rxs.some((x) => x[0] === p && Number(x[1]) !== v) &&
+        (here === undefined ||
+          rxs.some((x) => x[0] === p && x[2] === here && worth(x[1]))),
     );
     const [only] = cand;
     if (only && cand.length === 1) {
@@ -55,13 +58,15 @@ export function readOfLeaf(
   const tp = pat ? null : textRead(node, pool, v);
   if (tp !== null) return tp;
   // the read at the leaf's own place (T231): the place decides, never the value among the call's reads; two there the
-  // place does not part are refused with the reason; a variable reads nothing at its own place
+  // place does not part are refused with the reason; a variable reads nothing at its own place. A leaf that reads, with
+  // a place, is never tied by value elsewhere (T231 r1). shortcut: a variable still is (a loop's max set in the turn
+  // before, TreeDeclBest); tie it by the turn's write when the session's task does
   const reads = unwrap(node).type !== "Identifier";
   const at = new Set(
     rxs.flatMap(([p, val, xi]) =>
       reads &&
       xi === here &&
-      val === v &&
+      worth(val) &&
       (!pat || matchPattern(p, pat)) &&
       !table(p)
         ? [p]
@@ -77,6 +82,7 @@ export function readOfLeaf(
     usedR.add(one);
     return one;
   }
+  if (here !== undefined && reads) return null;
   const same = pool.filter(([p, val]) => val === v && !table(p));
   if (same.length === 1 && same[0] && !usedR.has(same[0][0])) {
     usedR.add(same[0][0]);
