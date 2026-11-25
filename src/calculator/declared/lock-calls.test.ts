@@ -127,6 +127,23 @@ test("the draft writes the calls of one block that differ in one argument as eac
   ]);
 });
 
+test("the model's argument the game gave from the character's index is {character}, never in its key (r1 of P and Q)", () => {
+  const { rec, key, ops } = recorded("TreeCallsCharPool");
+  const d = draftBlueprint(
+    "invented-calls",
+    { name: "I", ref: { call: "TreeCallsCharPool", args: [0, 0, 0] } },
+    key,
+    rec,
+    ops,
+  );
+  const model = d.pools[0]?.groups[0]?.sources[0]?.children?.[0];
+  expect(model?.ref).toEqual({
+    call: "TreeRibbon",
+    args: ["{item}", "{character}"],
+  });
+  expect(model?.key).toBe("tree-ribbon-item");
+});
+
 test("a list of calls beside another child of its level: the model is the child that calls the block", () => {
   const plus: Blueprint = {
     id: "invented-calls",

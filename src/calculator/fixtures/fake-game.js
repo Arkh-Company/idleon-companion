@@ -2966,6 +2966,18 @@ lime.$scripts.N = function (_exports, $global) {
       t = t + Blocks._customBlock_TreeRibbon(s.TreeTwins[i], 0);
     return t;
   };
+  // ...and the turns given the character's index beside the turn's (r1 of parts P and Q): the model's `{character}`.
+  Blocks._customBlock_TreeRibbonsChar = function () {
+    var s = state();
+    var me = s.GetPlayersUsernames.indexOf(s.UserInfo[0]);
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbon(i + 1, me);
+    return t;
+  };
+  Blocks._customBlock_TreeCallsCharPool = function () {
+    return Blocks._customBlock_TreeRibbonsChar() + state().TreeCapped;
+  };
   // ...and the calls beside another part of the level, as TalentCalc(-6)'s RibbonBonus calls beside its meals' reads.
   Blocks._customBlock_TreeRibbonsPlus = function () {
     return (
