@@ -1740,7 +1740,9 @@ lime.$scripts.N = function (_exports, $global) {
     var d = a.engine.getGameAttribute("DNSM").h;
     d.TreeAuthor = new StringMap();
     for (var g = 0; g < state().TreeList.length; g++) {
-      d.TreeBestDN = Blocks._customBlock_TreeArg(state().TreeList[g]);
+      d.TreeBestDN = Blocks._customBlock_TreeArg(
+        U.asNumber(a.engine.getGameAttribute("TreeList")[g]),
+      );
       var b = U.asNumber(d.TreeBestDN);
       if (b > U.asNumber(d.TreeAuthor.h.v)) {
         var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
