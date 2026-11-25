@@ -10,7 +10,7 @@
 import type { RecNode, Recording, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
-import type { AnswerTerm } from "./answer-key.ts";
+import type { AnswerPool, AnswerTerm } from "./answer-key.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { onlyRead } from "./cache-author.ts";
 import { levelOfOpening, openingOf } from "./level-openings.ts";
@@ -337,6 +337,8 @@ export function lockSource(
   top: RecNode,
   ctx: LevelContext,
   out: LevelOut,
+  /** The pool's kind: a Multi's term of two parts is its whole factor (lock-parts.ts termExpr). */
+  kind?: AnswerPool["kind"],
 ): void {
   checkCondition(node, true, top, ctx, out);
   const children = node.children ?? [];
@@ -345,13 +347,13 @@ export function lockSource(
     for (const r of term.refs.slice(1).filter((x) => x !== term.ref))
       out.errors.push({ kind: "undeclaredPart", where: ctx.where, got: r });
   const call = ctx.rec.nodes[term.nodes[0] ?? -1];
-  const at = call ? null : termExpr(term, top, ctx);
+  const at = call ? null : termExpr(term, top, ctx, kind);
   // the read at its place: its value is the read's, not the factor a Multi pool multiplies by (1 + x / 100)
   const read = call ? undefined : onlyRead(at, term.ref);
   const level: Level =
     term.refs.length > 1
       ? {
-          expr: termExpr(term, top, ctx),
+          expr: termExpr(term, top, ctx, kind),
           scope: top,
           value: term.value,
           termParts: new Set(term.refs.slice(1)),

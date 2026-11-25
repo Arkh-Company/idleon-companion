@@ -73,5 +73,13 @@ export function lockRecipePiece(
     ...(steps !== all && { at: o?.expr ?? null }),
   });
   if ("error" in key) refuse(key.reason);
-  else lockPools(pools, key, call, ctx, out, ctx.where);
+  else {
+    // more than one write: the terms of the last are in its own turn (a loop over the cache's keys, the star signs), at
+    // the write's place, never in the call's last step of that code
+    const turn = !one && o?.steps;
+    const at: typeof ctx = turn
+      ? { ...ctx, stepsOf: (n) => (n === id ? turn : ctx.stepsOf(n)) }
+      : ctx;
+    lockPools(pools, key, call, at, out, ctx.where);
+  }
 }

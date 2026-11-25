@@ -78,6 +78,7 @@ export function termExpr(
   term: AnswerTerm,
   top: RecNode,
   ctx: LevelContext,
+  kind?: "additive" | "multi",
 ): Expr | null {
   const first = term.nodes[0];
   const isFirst = (e: Expr) =>
@@ -92,7 +93,16 @@ export function termExpr(
         const ks = new Set(leavesOf(x).map((l) => keyOfLeaf(l, ctx.rec)));
         return term.refs.every((r) => ks.has(r));
       });
-      const around = at < 0 ? undefined : (pctOf(chain, at) ?? chain[at]);
+      // a Multi's term is its operand of the product, by its place: the code's cap or floor around it is the term's
+      // (FR-018 of 009: its ⓘ), never a number of its own
+      let k = at;
+      const times = (x: Expr | undefined) => x?.t === "op" && x.o === "*";
+      if (kind === "multi" && k > 0) {
+        while (k > 0 && !times(chain[k - 1])) k--;
+        if (!times(chain[k - 1])) k = at;
+      }
+      const around =
+        at < 0 ? undefined : (pctOf(chain, at) ?? chain[k] ?? chain[at]);
       if (around) found.push(around);
       return;
     }
