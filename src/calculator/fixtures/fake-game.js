@@ -2287,6 +2287,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeSlotRoot = function () {
     return state().TreeCapped + Blocks._customBlock_TreeSlotBonus();
   };
+  // Spec 010 (T214): a key the save does not have, read through asNumber, as the game reads an equipment's UQ2val
+  // with no upgrade stone: TreeBase × 2 + asNumber(TreeBig.k9) = 8 + 0.
+  Blocks._customBlock_TreeEmptyKey = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      state().TreeBase * 2 +
+      U.asNumber(a.engine.getGameAttribute("TreeBig").h.k9)
+    );
+  };
+  Blocks._customBlock_TreeEmptyKeyRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeEmptyKey();
+  };
   Blocks._customBlock_TreeGateMapRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateMap();
   };
