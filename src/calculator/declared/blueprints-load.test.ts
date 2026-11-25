@@ -2,6 +2,7 @@
 // the others down; a review file is never read as a blueprint.
 import { expect, test } from "vitest";
 import { blueprintOf, loadBlueprints } from "./blueprints.ts";
+import { refusalOf, summaryLine } from "./real-trees-run.ts";
 
 const root = { name: "Invented", ref: { call: "Invented", args: [0] } };
 const pools = [
@@ -127,4 +128,22 @@ test("a line with a link loads when its tree is another blueprint's file, and is
   expect(loadBlueprints(other).refused[0]?.reason).toMatch(
     /a linha não é a raiz de sketch-one/,
   );
+});
+
+test("a recipe the load refuses has the load's reason in its summary line, not only notWritten (part S)", () => {
+  const { refused, stages } = loadBlueprints({
+    "../blueprints/w1/invented-number.blueprint.json": {
+      id: "other-number",
+      root,
+      pools,
+    },
+  });
+  expect(stages.has("invented-number")).toBe(false);
+  const reason = refusalOf("invented-number", refused);
+  expect(reason).toContain("id diferente do nome do arquivo");
+  expect(
+    summaryLine("invented-number", { result: "notWritten", ms: 0, reason }),
+  ).toBe(`invented-number\tnotWritten\t0 ms\t${String(reason)}`);
+  // a number the load did not refuse (a sketch, or no file) has no reason
+  expect(refusalOf("number", refused)).toBeUndefined();
 });
