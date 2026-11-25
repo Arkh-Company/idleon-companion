@@ -141,6 +141,35 @@ test("a number with a class source runs once per class of the snapshot; one with
   ]);
 });
 
+test("a number with a class only on a child, or in a piece's pools inlined in a node, runs once per class (r1 of P and Q)", () => {
+  const classes = new Map([
+    [3, 0],
+    [7, 1],
+  ]);
+  const runs = [
+    { character: 0, characterClass: 3 },
+    { character: 1, characterClass: 7 },
+  ];
+  const bp = inventedBlueprint("decl-expr");
+  const [source] = bp.pools[0]?.groups[0]?.sources ?? [];
+  if (!source) throw new Error("no source");
+  const gated = {
+    key: "gated",
+    name: "Gated",
+    ref: { read: "TreeBase" },
+    classes: [7],
+  };
+  source.children = [...(source.children ?? []), gated];
+  expect(lockRuns(bp, classes, 0)).toEqual(runs);
+  const inlined = inventedBlueprint("decl-expr");
+  const [first] = inlined.pools[0]?.groups[0]?.sources ?? [];
+  if (!first) throw new Error("no source");
+  first.pools = [
+    { kind: "additive", groups: [{ system: "cards", sources: [gated] }] },
+  ];
+  expect(lockRuns(inlined, classes, 0)).toEqual(runs);
+});
+
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
   recorder = bootRecorder(
