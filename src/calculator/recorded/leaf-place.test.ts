@@ -287,10 +287,10 @@ test("an author's pass-through read by its alias in a turn is its read there, no
   });
 });
 
-/** `var x = <def>; return s.B + x;` recorded with the reads `rx`, s.B worth 6 and x `v`: the step's right leaf. */
-function varOf(def: string, rx: Rx, v: number) {
+/** `var x = <def>; return s.B + <leaf>;` recorded with the reads `rx`, s.B worth 6 and the leaf `v`: the step's expression. */
+function varOf(def: string, rx: Rx, v: number, leaf = "x") {
   const { ops } = instrument(
-    `Blocks._customBlock_T = function () { var x = ${def}; return s.B + x; };`,
+    `Blocks._customBlock_T = function () { var x = ${def}; return s.B + ${leaf}; };`,
   );
   const [b, x] = ops.flatMap((o, i) => (o.kind === "leaf" ? [i] : []));
   const op = ops.findIndex((o) => o.kind === "op");
@@ -317,6 +317,23 @@ test("a variable no step set is the read its setting code names, a number read a
   ).toMatchObject({
     r: { t: "read", p: "x.T", v: 15 },
   });
+});
+
+test("a variable no step set, read through asNumber, is the read its setting code names, never one of two of its value (T232)", () => {
+  const num = (rx: Rx) => varOf("s.x.T", rx, 15, "U.asNumber(x)");
+  expect(
+    num([
+      ["B", 6, 0],
+      ["x.T", "15", 0],
+    ]),
+  ).toMatchObject({ r: { t: "read", p: "x.T", v: 15 } });
+  expect(
+    num([
+      ["B", 6, 0],
+      ["x.T", "15", 0],
+      ["y.x.T", "15", 0],
+    ]),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
 });
 
 test("a variable no step set from a working map is the call's own value, never a read of the map (T232; T209 form 3)", () => {
