@@ -13,6 +13,7 @@ const ID = "invented-zeroed";
 function lockWith(
   gate: Partial<BlueprintNode>,
   [root, call, final] = ["TreeGateRoot", "TreeGateBonus", 25],
+  attrs: object = {},
 ) {
   const out = parseBlueprint(
     {
@@ -49,7 +50,7 @@ function lockWith(
     { fileId: ID, systemIds: new Set(["cards"]) },
   );
   if (!out.ok) throw new Error(out.reason);
-  const { key, ...input } = recorded(root);
+  const { key, ...input } = recorded(root, attrs);
   expect(key.final).toBe(final);
   return lockBlueprint({
     blueprint: out.blueprint,
@@ -150,4 +151,37 @@ test("a call that returns a literal by a test on a text of the save goes down to
     ["TreeBitRoot", "TreeBit", 26],
   );
   expect(lock.errors).toEqual([]);
+});
+
+// The same literal, with a second text of the save read aside (fake-game.js, TreeBitTwoRoot): the call goes down to the
+// read the test reads, by its place in the code, and the lock takes that child only as a condition (T195).
+test("a call that reads two texts of the save and tests one goes down to that one only, a condition (T195)", () => {
+  const attrs = { TreeOtherLabel: "Other label" };
+  const { rec, key, ops } = recorded("TreeBitTwoRoot", attrs);
+  const ref = { call: "TreeBitTwoRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const bit = draft.pools[0]?.groups
+    .flatMap((g) => g.sources)
+    .find((s) => s.ref && "call" in s.ref && s.ref.call === "TreeBitTwo");
+  expect(bit?.children?.map((c) => c.ref)).toEqual([{ read: "TreeLabel" }]);
+  const label = (leaf: Partial<BlueprintNode>) =>
+    lockWith(
+      {
+        children: [
+          {
+            key: "label",
+            name: "Invented Label",
+            ref: { read: "TreeLabel" },
+            ...leaf,
+          },
+        ],
+      },
+      ["TreeBitTwoRoot", "TreeBitTwo", 26],
+      attrs,
+    ).errors;
+  expect(label({ leaf: "condition", conditionKind: "owned" })).toEqual([]);
+  expect(label({ leaf: "quantity" })).toContainEqual({
+    kind: "childNoValue",
+    where: "invented-zeroed/0/cards/gate/label",
+  });
 });

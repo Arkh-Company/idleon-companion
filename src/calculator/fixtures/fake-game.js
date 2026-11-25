@@ -2567,10 +2567,25 @@ lime.$scripts.N = function (_exports, $global) {
   // (a letter in Gaming[12]): "Plain label" has an "l", so 1; the root is 25 + 1 = 26.
   Blocks._customBlock_TreeBit = function () {
     var h = { string: String };
-    return -1 != ("" + h.string(state().TreeLabel)).indexOf("l") ? 1 : 0;
+    return -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
+      ? 1
+      : 0;
   };
   Blocks._customBlock_TreeBitRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeBit();
+  };
+  // ...and a second text read that the test does not read (the test puts TreeOtherLabel in the state): 1, as TreeBit.
+  Blocks._customBlock_TreeBitTwo = function () {
+    var h = { string: String };
+    var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
+    return -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
+      ? 1
+      : 0;
+  };
+  Blocks._customBlock_TreeBitTwoRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBitTwo();
   };
   Blocks._customBlock_TreeDoneRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeDone();
