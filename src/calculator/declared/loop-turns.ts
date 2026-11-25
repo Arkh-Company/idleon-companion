@@ -15,6 +15,7 @@ import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr } from "../recorded/steps.ts";
 import { atCap, callRef, near } from "./answer-key-pool.ts";
 import { writeExpr, writeTurn } from "./cache-author.ts";
+import { countTurns } from "./count-turns.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsAndOwn } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
@@ -174,20 +175,26 @@ export function writeTurns(
     writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf, turns[j]),
   );
   const name = callRef(author);
-  // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): its form
-  // waits for the decision of T215, never a chain of its own turns
-  const counts = (e: Expr | null) => {
+  // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): a quantity
+  // line over the items its test saw (T215, count-turns.ts), never a chain of its own turns
+  const by = (e: Expr | null) => {
     const s = e?.t === "fn" && e.args.length === 1 ? e.args[0] : e;
-    return (
-      s?.t === "op" &&
+    return s?.t === "op" &&
       s.o === "+" &&
       s.l.t === "read" &&
       s.l.p === write.path &&
       s.r.t === "num"
-    );
+      ? s.r.v
+      : undefined;
   };
-  if (exprs.some(counts))
-    return `o laço de ${name} conta ${write.path}, um número fixo a volta: a forma do contador espera a decisão da T215`;
+  const j = exprs.findIndex((e) => by(e) !== undefined);
+  if (j >= 0) {
+    // the count's step: the last the step log recorded before its write
+    const step = author.x?.[(ws[j]?.xi ?? 0) - 1]?.[0];
+    if (by(exprs[j] ?? null) !== 1 || step === undefined)
+      return `o laço de ${name} conta ${write.path}, ${String(by(exprs[j] ?? null))} a volta: a forma do contador (T215) é a de 1 a volta`;
+    return countTurns(author, step, ctx);
+  }
   // the first write may add to the 0 of a key not yet set (T192)
   const empty = ws[0] !== undefined && emptyKey(author, ws[0]);
   const itemOf = (e: Expr | null | undefined, j: number) =>

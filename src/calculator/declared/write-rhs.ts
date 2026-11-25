@@ -24,7 +24,7 @@ export type RhsSource =
 type Pattern = NonNullable<ReturnType<typeof astPattern>>;
 
 const fns = new Map<string, Fn | null>();
-const fnFor = (text: string): Fn | null => {
+export const fnFor = (text: string): Fn | null => {
   if (!fns.has(text)) fns.set(text, fnOf(text));
   return fns.get(text) ?? null;
 };

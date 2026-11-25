@@ -103,20 +103,29 @@ export function draftBlueprint(
     sink.push({ where, kind });
   };
 
-  /** A list's model child: its item's read, a name only when it gives each item's own, one pending each (T202). */
-  const model = (l: ListModel, where: string, sink: BlueprintPending[]) => {
+  /**
+   * A list's model child: its item's read, a name only when it gives each item's own, one pending each (T202); a count's
+   * item is a condition (T215), its kind the agent's.
+   */
+  const model = (
+    l: ListModel,
+    where: string,
+    sink: BlueprintPending[],
+    count?: true,
+  ) => {
     const names = l.items.map(
       (w) => partName(w, dc.character, rec, ops, root.ref)?.name ?? null,
     );
     const name = modelName(names, l.indices);
     if (name === null) wait(where, "name", sink);
-    wait(where, "leaf", sink);
+    if (!count) wait(where, "leaf", sink);
     // each item's proof is its own path (draft-names.ts provenName): the model's, its read
     return {
       key: keyIn(new Set(), l.list.replace("[*]", "")),
       name,
       ...(name !== null && { nameProof: { names: l.read } }),
       ref: { read: l.read },
+      ...(count && { leaf: "condition" as const }),
     };
   };
 
@@ -140,11 +149,13 @@ export function draftBlueprint(
     const own = new Set<string>();
     const keyRef = unmarked(ref);
     const below = tree === undefined && Array.isArray(w.below) ? w.below : null;
-    // a long list below a node, never a pool's source (its each is the answer key's): one model child (T202)
+    // a long list below a node, never a pool's source (its each is the answer key's): one model child (T202); a count's
+    // items at any length (T215)
     const list =
       below && where.includes("/children/")
-        ? listOf(below, dc.character)
+        ? listOf(below, dc.character, w.count ? 0 : undefined)
         : null;
+    const count = w.count && list ? w.count : undefined;
     // a list of calls of one block (T205): one model, its descent the agent's, its name too (each item has its own)
     const calls = below && !list ? callListOf(below) : null;
     // a common branch (T203): its children's pending places wait for the piece's verdict
@@ -154,7 +165,7 @@ export function draftBlueprint(
         : null;
     const mine: BlueprintPending[] = branch ? [] : sink;
     const children = list
-      ? [model(list, `${where}/children/0`, mine)]
+      ? [model(list, `${where}/children/0`, mine, count)]
       : calls && below
         ? [
             callModel(below, calls, rec, ops, root.ref, (k) => {
@@ -181,6 +192,7 @@ export function draftBlueprint(
       ref,
       // the leaf's kind by its role (T195): a text only a test reads is a condition; its kind is the agent's
       ...(w.condition && { leaf: "condition" as const }),
+      ...(count && { leaf: "quantity" as const }),
       ...extra,
       ...(tree !== undefined
         ? { tree }

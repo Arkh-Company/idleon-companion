@@ -30,8 +30,10 @@ export interface ListModel {
 export function listOf(
   below: readonly Walked[],
   character: number,
+  /** A count's items are a list at any length (T215). */
+  min = MIN_LIST,
 ): ListModel | null {
-  if (below.length < MIN_LIST) return null;
+  if (below.length < min) return null;
   if (
     below.some(
       (w) =>

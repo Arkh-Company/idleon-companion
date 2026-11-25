@@ -186,7 +186,16 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   }
   const siblings: unknown[] = [];
   if (n.children !== undefined) {
-    if (n.leaf !== undefined) no(where, "leaf com children");
+    // a count (T215): a quantity line, its one child the model each item's condition is, over the list its turns test
+    const count =
+      n.leaf === "quantity" &&
+      isObj(n.each) &&
+      "list" in n.each &&
+      Array.isArray(n.children) &&
+      n.children.length === 1 &&
+      isObj(n.children[0]) &&
+      n.children[0].leaf === "condition";
+    if (n.leaf !== undefined && !count) no(where, "leaf com children");
     // an each's model is checked with its items' names as indices (`[{as}]` as `[0]`)
     const as: Record<string, number> | null = isObj(n.each)
       ? Object.fromEntries(

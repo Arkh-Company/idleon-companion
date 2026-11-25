@@ -38,6 +38,8 @@ export interface Opening {
   refs?: string[];
   /** The call of `refs[0]`, by its place (lock-values.ts callAt): where the line's arguments are checked (r1 of U). */
   head?: RecNode | null;
+  /** A count's turn (T215, count-turns.ts): whether the recording saw its test true; its value is then 1, else 0. */
+  passed?: boolean;
 }
 
 /** A turn's count line declared as a leaf (T193, research R4 r1): its item's other references, each undeclared. */

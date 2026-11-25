@@ -34,6 +34,8 @@ export interface Walked {
   turn?: number;
   /** A text of the save its reader's literal was picked by (T195): a `condition` leaf. */
   condition?: true;
+  /** A count (T215, count-turns.ts): a `quantity` line, its parts the items its test saw. */
+  count?: true;
 }
 
 /** A part of an opened level, with the number of its turn when the opening gives one (T198). */
@@ -123,6 +125,7 @@ function walkPart(
     return {
       key,
       call,
+      ...(open.some((o) => o.passed !== undefined) && { count: true as const }),
       below: open.map((o) =>
         walkOpening(
           o,
