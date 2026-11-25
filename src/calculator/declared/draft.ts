@@ -7,7 +7,7 @@
 import type { Op } from "../instrument.ts";
 import type { Recording } from "../recording.ts";
 import { makeSteps } from "../recorded/steps.ts";
-import type { AnswerKey, PoolKind } from "./answer-key.ts";
+import type { AnswerKey, AnswerTerm, PoolKind } from "./answer-key.ts";
 import type {
   Blueprint,
   BlueprintNode,
@@ -200,6 +200,13 @@ export function draftBlueprint(
     return out;
   };
 
+  // each term's walk once: the two passes below read the same one (part R: the walk was most of a draft's time)
+  const walks = new Map<AnswerTerm, Walked>();
+  const walkOf = (t: AnswerTerm): Walked => {
+    const w = walks.get(t) ?? walkTerm(t, ctx);
+    walks.set(t, w);
+    return w;
+  };
   const poolOf = (p: AnswerKey["pools"][number], i: number) => {
     const weight =
       p.kind === "additive" && p.terms.some((t) => t.weight === 0.01)
@@ -228,7 +235,7 @@ export function draftBlueprint(
       const classes = c === null ? {} : { classes: classesOf(c, dc.families) };
       return {
         system: null,
-        sources: [node(walkTerm(t, ctx), sw, taken, { ...extra, ...classes })],
+        sources: [node(walkOf(t), sw, taken, { ...extra, ...classes })],
       };
     });
     return {

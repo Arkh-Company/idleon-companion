@@ -65,8 +65,20 @@ export function onTheWay(f: Fn, def: AnyNode, pos: number): boolean {
   return true;
 }
 
+const defs = new WeakMap<Fn, Map<string, AnyNode | undefined>>();
 /** The last value given to `name` before `pos` on every way there: its declaration or its assignment. */
 export function defOf(f: Fn, name: string, pos: number): AnyNode | undefined {
+  // once per function, name and place (part R: each argument's marks read it again over the whole function)
+  let known = defs.get(f);
+  if (!known) defs.set(f, (known = new Map<string, AnyNode | undefined>()));
+  const k = `${name}@${String(pos)}`;
+  if (known.has(k)) return known.get(k);
+  const best = lastDef(f, name, pos);
+  known.set(k, best);
+  return best;
+}
+
+function lastDef(f: Fn, name: string, pos: number): AnyNode | undefined {
   let best: AnyNode | undefined;
   for (const n of f.all) {
     const set =

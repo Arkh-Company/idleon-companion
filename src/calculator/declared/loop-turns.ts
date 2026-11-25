@@ -16,6 +16,7 @@ import { writeExpr } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, num } from "./lock-parts.ts";
+import { writesBy } from "./own-writes.ts";
 
 /** One line a turn, by its item, or the refusal's reason when the turns do not part by their place. */
 function turnsOf(
@@ -113,8 +114,8 @@ export function writeTurns(
   write: RecWrite,
   ctx: LevelContext,
 ): Opening[] | string | null {
-  const ws = ctx.rec.writes.filter(
-    (w) => w.node === author.id && w.path === write.path && w.seq <= write.seq,
+  const ws = writesBy(ctx.rec, author.id, false).filter(
+    (w) => w.path === write.path && w.seq <= write.seq,
   );
   if (ws.length < 2) return null;
   const exprs = ws.map((w) =>

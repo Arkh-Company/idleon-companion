@@ -15,6 +15,7 @@ import {
 import type { LevelContext } from "./lock-levels.ts";
 import { emptyStart, loopOpening, writeTurns } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
+import { writesAt } from "./own-writes.ts";
 
 /** A part of an opened level: its reference key, its recorded call (null for a read) with its expression, its value. */
 export interface Opening {
@@ -48,11 +49,7 @@ export function openingOf(
   const { write } = level;
   const own = (w: RecWrite) =>
     w.node === scope.id && w.path === expr.p && w.seq < (write?.seq ?? 0);
-  if (
-    write &&
-    expr.p !== write.path &&
-    [...ctx.rec.writes, ...ctx.rec.spliced].some(own)
-  )
+  if (write && expr.p !== write.path && writesAt(ctx.rec, expr.p).some(own))
     return null;
   // the read is the leaf of its place when the level came from one (lock-levels.ts levelOfChild, draft.ts walkPart),
   // in the steps of the turn its expression came from when it did (an author's write: new objects at each turnOf)

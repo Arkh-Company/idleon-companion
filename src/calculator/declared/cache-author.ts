@@ -13,6 +13,7 @@ import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { callRef, near } from "./answer-key-pool.ts";
 import type { RawTerm } from "./answer-key-pool.ts";
 import { leavesOf, num } from "./lock-parts.ts";
+import { writesBy } from "./own-writes.ts";
 import { rhsSources } from "./write-rhs.ts";
 
 export const isCacheRead = (path: string): boolean => path.startsWith("DNSM.");
@@ -135,9 +136,7 @@ const writeBefore = (
   rec: Recording,
   { node, write }: { node: RecNode; write: RecWrite },
 ): RecWrite | null =>
-  [...rec.writes, ...rec.spliced]
-    .filter((w) => w.node === node.id && w.seq < write.seq)
-    .reduce<RecWrite | null>((a, w) => (a && a.seq > w.seq ? a : w), null);
+  writesBy(rec, node.id).findLast((w) => w.seq < write.seq) ?? null;
 
 /** The place of the author's turn that gave its write in its step log: since its write before it. */
 export function writeRange(

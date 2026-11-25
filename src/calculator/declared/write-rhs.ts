@@ -46,8 +46,27 @@ export function writeSpan(
   return { text, from, to: next >= from ? next : Infinity };
 }
 
-/** What the assignment at the write's place gives, or null. */
+const sources = new WeakMap<
+  readonly Op[],
+  WeakMap<RecWrite, RhsSource[] | null>
+>();
+/** What the assignment at the write's place gives, or null; once per write (part R: the levels ask again). */
 export function rhsSources(
+  node: RecNode,
+  write: RecWrite,
+  ops: readonly Op[],
+): RhsSource[] | null {
+  let known = sources.get(ops);
+  if (!known)
+    sources.set(ops, (known = new WeakMap<RecWrite, RhsSource[] | null>()));
+  const got = known.get(write);
+  if (got !== undefined) return got;
+  const out = rhsOf(node, write, ops);
+  known.set(write, out);
+  return out;
+}
+
+function rhsOf(
   node: RecNode,
   write: RecWrite,
   ops: readonly Op[],
@@ -109,14 +128,11 @@ export function rhsSources(
   const [first] = f.all
     .filter((a) => {
       if (a.type !== "AssignmentExpression" || a.operator !== "=") return false;
+      // the place first: a left side's pattern reads the variables back, over the whole function (part R)
+      if (a.range[0] < from || a.range[1] > to) return false;
       const left = at(a, "left");
       const pat = left.type === "MemberExpression" ? patternOf(left) : null;
-      return (
-        pat !== null &&
-        matchPattern(write.path, pat) &&
-        a.range[0] >= from &&
-        a.range[1] <= to
-      );
+      return pat !== null && matchPattern(write.path, pat);
     })
     .sort((a, b) => a.range[0] - b.range[0]);
   const src = first ? resolve(at(first, "right")) : null;

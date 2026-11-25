@@ -29,6 +29,38 @@ export function writesAt(rec: Recording, path: string): readonly RecWrite[] {
   return byPath.get(path) ?? [];
 }
 
+type ByNode = Map<number | null, RecWrite[]>;
+const nodeIndexes = new WeakMap<Recording, { all: ByNode; plain: ByNode }>();
+/**
+ * A recording's writes of one call by number (part R: a scan of every write per level was most of a draft's time); with
+ * `spliced`, the builders' pass's scratch among them, else `rec.writes` only.
+ */
+export function writesBy(
+  rec: Recording,
+  node: number | null,
+  spliced = true,
+): readonly RecWrite[] {
+  let ix = nodeIndexes.get(rec);
+  if (!ix) {
+    const group = (ws: readonly RecWrite[]): ByNode => {
+      const m: ByNode = new Map();
+      for (const w of ws) {
+        const all = m.get(w.node);
+        if (all) all.push(w);
+        else m.set(w.node, [w]);
+      }
+      for (const all of m.values()) all.sort((a, b) => a.seq - b.seq);
+      return m;
+    };
+    ix = {
+      all: group([...rec.writes, ...rec.spliced]),
+      plain: group(rec.writes),
+    };
+    nodeIndexes.set(rec, ix);
+  }
+  return (spliced ? ix.all : ix.plain).get(node) ?? [];
+}
+
 type Read = NonNullable<RecNode["rx"]>[number];
 
 /**

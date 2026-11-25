@@ -18,6 +18,7 @@ import {
 import type { Level, LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, literal, num } from "./lock-parts.ts";
 import { notLeafOf } from "./not-leaves.ts";
+import { writesAt } from "./own-writes.ts";
 
 /**
  * The call's own write that each read of `path` saw (at `leaf`, when given), or null when one saw another's or none, or
@@ -35,9 +36,7 @@ function ownWrite(
   const working =
     isCacheRead(path) || path.startsWith("DummyNumbersStatManager.");
   if (!working || path === sum) return null;
-  const writes = [...ctx.rec.writes, ...ctx.rec.spliced]
-    .filter((w) => w.path === path)
-    .sort((a, b) => a.seq - b.seq);
+  const writes = writesAt(ctx.rec, path);
   const saw = seenSeqs(scope, path, steps, leaf).map((s) =>
     s === undefined ? undefined : writes.findLast((w) => w.seq <= s),
   );
