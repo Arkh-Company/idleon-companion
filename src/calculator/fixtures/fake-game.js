@@ -2846,6 +2846,41 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (Fase 4 r1 of parts P and Q): a key set to 0 on every way, then from the save on one side of an `if`; the
+  // write the read saw is the one the recorded side gave, never the last on every way by the text.
+  Blocks._customBlock_TreeWorkCond = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeCond = 0;
+    if (state().TreeBase > 100)
+      a.engine.getGameAttribute("DNSM").h.TreeCond = U.asNumber(
+        a.engine.getGameAttribute("TreeList")[2],
+      );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeCond),
+      )
+    );
+  };
+  // ...and a key set to 0, then by a block called in between from the save: the write the read saw is another block's
+  Blocks._customBlock_TreeSetMid = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeMid = U.asNumber(
+      a.engine.getGameAttribute("TreeList")[2],
+    );
+    return 0;
+  };
+  Blocks._customBlock_TreeWorkMid = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeMid = 0;
+    Blocks._customBlock_TreeSetMid();
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeMid),
+      )
+    );
+  };
   // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
   Blocks._customBlock_TreeSaveTwice = function () {
     var U = A["com.stencyl.utils.Utils"];

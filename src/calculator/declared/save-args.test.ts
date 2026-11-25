@@ -103,8 +103,8 @@ test("a {character} where the code wrote a number is refused, never let through 
 });
 
 /** One source of TreeDeclRow over `root`'s recording, with `arg`, as the lock's messages. */
-const rowLock = (root: string, arg: RefArg) => {
-  const input = { ...recorded(root), character: 0, characterClass: 3 };
+const rowLock = (root: string, arg: RefArg, attrs: object = {}) => {
+  const input = { ...recorded(root, attrs), character: 0, characterClass: 3 };
   const source = (s: BlueprintNode) => ({ system: "luk-stats", sources: [s] });
   return lockBlueprint({
     ...input,
@@ -256,4 +256,20 @@ test("the write of a working map's key the read saw is the last one before it, n
 
 test("a working map's key set inside a loop before the read, from its index, is no save's (group 5 of part P)", () => {
   expect(rowLock("TreeWorkLoop", 1)).toEqual([]);
+});
+
+test("a key set to 0 on every way, then from the save on the side of an if that ran: the save's number is refused (r1 of P and Q)", () => {
+  const saveWritten =
+    'argumento do save por extenso: invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"';
+  // TreeBase over 100: the if ran, the read saw the save's TreeList[2], 3
+  expect(rowLock("TreeWorkCond", 3, { TreeBase: 200 })).toEqual([saveWritten]);
+  expect(rowLock("TreeWorkCond", "*", { TreeBase: 200 })).toEqual([]);
+  // the if did not run: the read saw the 0 of the code
+  expect(rowLock("TreeWorkCond", 0)).toEqual([]);
+});
+
+test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
+  expect(rowLock("TreeWorkMid", 3)).toEqual([
+    "invented-work/0/luk-stats/row: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
+  ]);
 });
