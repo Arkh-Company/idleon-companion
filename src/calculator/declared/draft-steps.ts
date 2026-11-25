@@ -24,12 +24,14 @@ import { fmt as fmtValue } from "./lock.ts";
 const fmt = (v: unknown): string =>
   typeof v === "number" ? fmtValue(v) : String(v);
 import { notLeafOf } from "./not-leaves.ts";
+import type { Ref } from "./refs.ts";
 
 export function stepsGuide(
   key: AnswerKey,
   rec: Recording,
   ops: readonly Op[],
   dc: DraftContext = NO_CONTEXT,
+  rootRef?: Ref,
 ): string {
   const made = makeSteps(rec, ops);
   const ctx: LevelContext = {
@@ -69,7 +71,7 @@ export function stepsGuide(
 
   const part = (w: Walked, depth: number): void => {
     const pad = "  ".repeat(depth);
-    const named = partName(w, dc.character, rec, ops);
+    const named = partName(w, dc.character, rec, ops, rootRef);
     lines.push(
       [
         `${pad}${m(w.key)}${w.call ? ` = ${fmt(w.call.v)}` : ""}`,

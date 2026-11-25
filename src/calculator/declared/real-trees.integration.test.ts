@@ -280,7 +280,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             // with why each common branch's line not a piece is written whole
             writeFileSync(
               stepsPath(out, id),
-              stepsGuide(key, rec, recorder.ops, dc) +
+              stepsGuide(key, rec, recorder.ops, dc, bp.root.ref) +
                 (draft.notes ?? []).map((n) => `${n}\n`).join(""),
             );
             lines.push(done("drafted"));
