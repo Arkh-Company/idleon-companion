@@ -81,7 +81,7 @@ test("a golden food: its shared multiplier's, its worn food's and the emporium's
     // the block's data row (the quantity its log call took) and its checks, as for any block; the check of the
     // quantity beside it is said in the root's ⓘ, no row (A39, Vinicius's answer of 19/11)
     ["Food slot 1 quantity", 999, "quantity", null, {}],
-    ["Game value", 0, "condition", null, { unnamed: true }],
+    // the block's `level < 0` reads its variable's write, `Ninja[104][0] * 1`, by its place (T232): no loose row
   ]);
   // the worn food's own numbers: no row of the shared multiplier among them (FR-007); its leaves what goes into its
   // math, the quantity for its log₁₀ and its quantity factor, which are no rows (19/11)

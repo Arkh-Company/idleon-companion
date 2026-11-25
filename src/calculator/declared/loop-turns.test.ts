@@ -234,19 +234,17 @@ test("a turn whose item is a count of a call and a number is a line by the call,
 test("a product in a loop, and a sum the call returns with a term after it, open by their own expression, not by turns", () => {
   const sources = (root: string) =>
     draftOf(root).pools[0]?.groups[0]?.sources.map(shape);
-  // the product's last step is the last turn's: its call is the level's one part
+  // the product's last step is the last turn's, its `t` the turn before's write, by its place (T232): every turn's call
+  const items = [0, 1, 2].map((i): Shape => [
+    `TreeTurnItem(${String(i)})`,
+    [[`TreeList[${String(i)}]`, []]],
+  ]);
   expect(sources("TreeTurnsProductRoot")).toEqual([
-    ["TreeTurnsProduct()", [["TreeTurnItem(2)", [["TreeList[2]", []]]]]],
+    ["TreeTurnsProduct()", items],
   ]);
   // the call returned `t + TreeBase`, a step of its own after the loop
   expect(sources("TreeTurnsThenRoot")).toEqual([
-    [
-      "TreeTurnsThen()",
-      [
-        ["TreeTurnItem(2)", [["TreeList[2]", []]]],
-        ["TreeBase", []],
-      ],
-    ],
+    ["TreeTurnsThen()", [...items, ["TreeBase", []]]],
   ]);
 });
 

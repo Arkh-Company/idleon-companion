@@ -89,9 +89,8 @@ test("a variable leaf with a place and no recorded write is never tied by value 
   });
 });
 
-test("a loop's variable is its write of the turn before, by its place: never the one read of its value, the first turn's write nor its own turn's (T232)", () => {
-  // TreeLoopBest over TreeList [3, 1, 2]: every turn writes 3, and TreeList[0] is the one read worth 3; the first turn's
-  // best is the code's 0 it was set to
+/** TreeLoopBest over TreeList [3, 1, 2], its call, and where its max was recorded in its step log, turn by turn. */
+function loopBest() {
   const recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
   const rec = recorder.record(
     mosaicOf({ TreeList: [3, 1, 2] }),
@@ -100,6 +99,17 @@ test("a loop's variable is its write of the turn before, by its place: never the
   );
   const n = rec.nodes.find((x) => x.b === "TreeLoopBest");
   if (!n) throw new Error("no call");
+  const max = recorder.ops.findIndex(
+    (o) => o.block === "TreeLoopBest" && o.kind === "op",
+  );
+  const at = (n.x ?? []).flatMap(([o], j) => (o === max ? [j] : []));
+  return { rec, recorder, n, at };
+}
+
+test("a loop's variable is its write of the turn before, by its place: never the one read of its value, the first turn's write nor its own turn's (T232)", () => {
+  // TreeLoopBest over TreeList [3, 1, 2]: every turn writes 3, and TreeList[0] is the one read worth 3; the first turn's
+  // best is the code's 0 it was set to
+  const { rec, recorder, n } = loopBest();
   const max = (best: object, i: number, v: number) => ({
     t: "fn",
     name: "max",
@@ -111,6 +121,24 @@ test("a loop's variable is its write of the turn before, by its place: never the
   expect(makeSteps(rec, recorder.ops).of(n.id).steps).toEqual([
     { v: 3, e: max(was(max(was(max(zero, 0, 3)), 1, 1)), 2, 2) },
   ]);
+});
+
+test("a loop turn's own steps take no write of an earlier turn: from the write's place on, they do (T232)", () => {
+  const { rec, recorder, n, at } = loopBest();
+  const [, second, third] = at;
+  if (second === undefined || third === undefined) throw new Error("no turns");
+  const best = (from: number) =>
+    makeSteps(rec, recorder.ops).turnOf(n, { from, to: third }).steps[0]?.e;
+  // the third turn alone: its best came in from the second turn's write, outside it
+  expect(best(second + 1)).toMatchObject({
+    args: [{ t: "val", v: 3 }, { p: "TreeList[2]" }],
+  });
+  expect(best(second)).toMatchObject({
+    args: [
+      { t: "def", e: { args: [{ t: "def" }, { p: "TreeList[1]" }] } },
+      { p: "TreeList[2]" },
+    ],
+  });
 });
 
 test("a leaf whose code names a path is the read of it at its own place, never one read before it that the call's lock leaves alone (T231 r1)", () => {
