@@ -609,6 +609,32 @@ lime.$scripts.N = function (_exports, $global) {
     }
     return Math.round(d.TreeCountCap);
   };
+  // ...a `+ 1` that reads the count but writes another path, and a count with two steps of 1 (r2 of part V)
+  Blocks._customBlock_TreeCountOther = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountOther"))
+      for (var i = (d.TreeCountOther = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeSeen = Math.round(d.TreeCountOther + 1);
+    return Math.round(d.TreeCountOther);
+  };
+  Blocks._customBlock_TreeCountTwice = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountTwice"))
+      for (var i = (d.TreeCountTwice = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountTwice = Math.round(d.TreeCountTwice + 1));
+        state().TreeList[i] >= 3 &&
+          (d.TreeCountTwice = Math.round(d.TreeCountTwice + 1));
+      }
+    return Math.round(d.TreeCountTwice);
+  };
+  Blocks._customBlock_TreeCountOtherRoot = function () {
+    return Blocks._customBlock_TreeCountOther() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountTwiceRoot = function () {
+    return Blocks._customBlock_TreeCountTwice() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCountInsideRoot = function () {
     return Blocks._customBlock_TreeCountInside() + state().TreeCapped;
   };

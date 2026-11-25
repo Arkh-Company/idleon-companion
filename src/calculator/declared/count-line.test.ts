@@ -11,7 +11,9 @@ import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
-import { inventedRecorder } from "./lock-fixture.ts";
+import { closeLevel } from "./lock-close.ts";
+import { inventedRecorder, levelContext } from "./lock-fixture.ts";
+import { emptyOut } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import { writeTurns } from "./loop-turns.ts";
@@ -192,13 +194,45 @@ test("the lock refuses a count its author writes again after it counted: each wr
   ]);
 });
 
-test("a count no item passed closes at 0, each tested item a ✗; with no turn tested it is refused with the reason (r1 of part V)", () => {
-  // TreeList all below 2: the author's one write is the start at 0, its count's step in its code never ran
-  const none = lockOut("TreeCountBefore", undefined, 0, {
-    TreeList: [1, 0, 1],
-  });
-  expect(none.errors.map(lockMessage)).toEqual([]);
-  expect(items(none)).toEqual(["item-0", "item-1", "item-2"]);
+test.each(BLOCKS)(
+  "a count no item passed closes at 0, each tested item a ✗ (%s, r1 of part V)",
+  (block) => {
+    // TreeList all below 2: the author's one write is the start at 0, its count's step in its code never ran
+    const none = lockOut(block, undefined, 0, { TreeList: [1, 0, 1] });
+    expect(none.errors.map(lockMessage)).toEqual([]);
+    expect(items(none)).toEqual(["item-0", "item-1", "item-2"]);
+  },
+);
+
+test("a count no item passed is refused when its step in the code writes another path, or the code has two steps (r2 of part V)", () => {
+  const none = (block: string) =>
+    lockOut(block, undefined, 0, { TreeList: [1, 0, 1] }).errors.map(
+      lockMessage,
+    );
+  // TreeCountOther: `TreeSeen = round(TreeCountOther + 1)` under the test, its only `+ 1`, writes no count
+  expect(none("TreeCountOther")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountOther() conta DNSM.TreeCountOther, mas o passo de 1 sobre o próprio valor no código escreve outro caminho: não é a forma do contador (T215)",
+  ]);
+  // TreeCountTwice: two steps of 1 onto the count, under two tests; the place does not decide which
+  expect(none("TreeCountTwice")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountTwice() conta DNSM.TreeCountTwice, mas o código tem mais de um passo de 1 sobre o próprio valor (2): não é a forma do contador (T215)",
+  ]);
+});
+
+test("an opened level with no step of its own does not close by its parts, but for a count no item passed (r2 of part V)", () => {
+  const { rec, ops } = recordCount("TreeCountBefore");
+  const ctx = levelContext(rec, ops, "invented");
+  const scope = rec.nodes[0];
+  if (!scope) throw new Error("no node");
+  const out = emptyOut();
+  const open = [{ part: "TreeList[0]", call: null, value: 1 }];
+  closeLevel({ expr: null, scope, value: 1, open }, [], ctx, out);
+  expect(out.errors).toEqual([
+    { kind: "notClosing", where: "invented", expected: 1 },
+  ]);
+});
+
+test("the lock refuses an author with no turn tested, with the reason (r1 of part V)", () => {
   const empty = lockOut("TreeCountBefore", undefined, 0, { TreeList: [] });
   expect(empty.errors.map(lockMessage)).toEqual([
     "invented-count/0/cards/count/cache/author: o laço de TreeCountBefore() conta DNSM.TreeCountBefore: nenhuma volta foi testada",
@@ -261,5 +295,9 @@ test("a count's step whose own value is a loose value of its own path, by its pl
   // a loose value of no path of its own is no count's step
   expect(writeTurns({ ...author, x }, last, withOwn())).toMatch(
     /a escrita 3 não soma 1/,
+  );
+  // every write a step of 1, but the step log has no step before the count's first step: no write is named (r2)
+  expect(writeTurns(author, last, withOwn(path))).toBe(
+    "o laço de TreeN() conta DNSM.N, mas o registro de passos não tem o passo antes da escrita 2: não é a forma do contador (T215)",
   );
 });
