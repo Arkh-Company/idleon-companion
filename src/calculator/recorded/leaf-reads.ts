@@ -77,6 +77,24 @@ export function readOfLeaf(
 }
 
 /**
+ * Whether the one read at a leaf's own place `pos` (the step count it was read at) is a working map's key not yet set
+ * (T194: the game's shinies sum through a variable of the map): the leaf is the 0 asNumber gives, where the sum starts
+ * (T192), never another read worth 0.
+ */
+export function emptyKeyAt(
+  rxs: readonly (readonly [string, RecValue, ...unknown[]])[],
+  pos: number | undefined,
+): boolean {
+  const at = rxs.filter((x) => x[2] === pos);
+  const [only] = at;
+  return (
+    at.length === 1 &&
+    only?.[1] === EMPTY_READ &&
+    /^(DNSM|DummyNumbersStatManager)\./.test(only[0])
+  );
+}
+
+/**
  * The path of the map whose entries a leaf counts, `mapCount(getGameAttribute("X"))` (spec 010, T209 form 4); null for any
  * other leaf. shortcut: only a map at the top of the state; follow a deeper path when a count reads one.
  */

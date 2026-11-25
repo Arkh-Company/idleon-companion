@@ -17,7 +17,7 @@ import {
   unwrap,
 } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
-import { readOfLeaf } from "./leaf-reads.ts";
+import { emptyKeyAt, readOfLeaf } from "./leaf-reads.ts";
 import { near } from "./math.ts";
 import { maySet } from "./param-set.ts";
 import { byCalls as callsBySide, sideAt, sideState } from "./sides.ts";
@@ -169,6 +169,8 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
       if (op && (op.defCalls || op.callIn) && !ranFree(op, pos))
         return op.defCalls ? byCalls(op.defCalls, v, pos) : defOrVal(node, v);
       if (typeof v !== "number") return defOrVal(node, v);
+      // a working map's key not yet set, read at the leaf's own place: the 0 where its sum starts (T194)
+      if (v === 0 && emptyKeyAt(rxs, here)) return { t: "val", v };
       const pool = poolFor(node);
       // the read the leaf's own text names, or its value names among the call's reads (leaf-reads.ts)
       const pat = astPattern(node);
