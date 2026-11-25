@@ -186,12 +186,13 @@ export function writeTurns(
   const name = callRef(author);
   // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): a quantity
   // line over the items its test saw (T215, count-turns.ts), never a chain of its own turns
+  // its own value read back, or a loose value of its own path by its place (T209 form 3: the game's purple sigils)
   const by = (e: Expr | null) => {
     const s = e?.t === "fn" && e.args.length === 1 ? e.args[0] : e;
     return s?.t === "op" &&
       s.o === "+" &&
-      s.l.t === "read" &&
-      s.l.p === write.path &&
+      ((s.l.t === "read" && s.l.p === write.path) ||
+        (s.l.t === "val" && s.l.own === write.path)) &&
       s.r.t === "num"
       ? s.r.v
       : undefined;
