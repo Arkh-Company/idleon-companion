@@ -67,6 +67,18 @@ test("a sketch and a draft are not served; a complete one is; a refused one does
   expect(out.refused[0]?.reason).toMatch(/id/);
 });
 
+test("the pieces loaded, raw by their id, keep the first of a repeated id; the second is refused (part R)", () => {
+  const first = { id: "one", params: [], children: [] };
+  const out = loadBlueprints({
+    "../blueprints/w1/one.piece.json": first,
+    "../blueprints/w2/one.piece.json": { id: "one", params: ["x"] },
+  });
+  expect([...out.pieces]).toEqual([["one", first]]);
+  expect(out.refused.map((r) => r.file)).toEqual([
+    "../blueprints/w2/one.piece.json",
+  ]);
+});
+
 test("a review file is never read as a blueprint", () => {
   const out = loadBlueprints({
     "../blueprints/w1/complete-one.review.json": { version: 1 },
