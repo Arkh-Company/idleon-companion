@@ -307,7 +307,7 @@ export function saveArgs(
 
 /**
  * A call's reference with `{character}` and `*` where its caller gave the character's index and the save; `*` too where
- * the place does not decide the save's, so its number is never written out (r1 of part X).
+ * the place does not decide the save's or the character's, so its number is never written out (r1 and r2 of part X).
  */
 export function markedRef(
   ref: Ref,
@@ -317,9 +317,9 @@ export function markedRef(
   rootRef?: Ref,
 ): Ref {
   if (!("call" in ref)) return ref;
-  const character = characterArgs(rec, ops, n, rootRef).yes;
+  const { yes: character, unsure: who } = characterArgs(rec, ops, n, rootRef);
   const { save: yes, unsure } = saveArgs(rec, ops, n, rootRef);
-  const save = [...yes, ...unsure];
+  const save = [...yes, ...unsure, ...who];
   if (character.length + save.length === 0) return ref;
   return {
     ...ref,
