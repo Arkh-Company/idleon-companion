@@ -157,8 +157,9 @@ export function makeSteps(rec: Recording, ops: readonly Op[]) {
         k >= 0 &&
         typeof v === "number" &&
         n.a[k] === v &&
-        (self?.def === null ||
-          (self && here !== undefined && !maySet(self, ops, n, here)))
+        self &&
+        here !== undefined &&
+        !maySet(self, ops, n, here)
       )
         return { t: "val", v, arg: k };
       // a value from a block's call, through asNumber, a variable or a ? : (Op.defCalls), or with a call anywhere in it
