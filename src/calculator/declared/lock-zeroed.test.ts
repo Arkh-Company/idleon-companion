@@ -5,6 +5,7 @@ import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
+import { stepsGuide } from "./draft-steps.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
 
@@ -209,4 +210,17 @@ test("the draft writes the text the test reads as a condition leaf, its kind lef
     where: `${bit?.where ?? ""}/children/0`,
     kind: "leaf",
   });
+});
+
+test("the guide asks only for the condition's kind on the text the test reads (T195)", () => {
+  const { rec, key, ops } = recorded("TreeBitTwoRoot", {
+    TreeOtherLabel: "Other label",
+  });
+  const guide = stepsGuide(key, rec, ops);
+  const at = guide
+    .split("\n")
+    .findIndex((l) => l.trim().startsWith("TreeLabel"));
+  expect(guide.split("\n")[at + 1]?.trim()).toBe(
+    "folha: condition; tipo da condição (conditionKind) pendente",
+  );
 });
