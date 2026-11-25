@@ -2509,6 +2509,15 @@ lime.$scripts.N = function (_exports, $global) {
     if (s.TreeOwned < 1) return 1;
     return 0;
   };
+  // Spec 010 (T195): a 1 the code picks by a test on a text of the save, as the game's GamingStatType("SuperBitType")
+  // (a letter in Gaming[12]): "Plain label" has an "l", so 1; the root is 25 + 1 = 26.
+  Blocks._customBlock_TreeBit = function () {
+    var h = { string: String };
+    return -1 != ("" + h.string(state().TreeLabel)).indexOf("l") ? 1 : 0;
+  };
+  Blocks._customBlock_TreeBitRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBit();
+  };
   Blocks._customBlock_TreeDoneRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeDone();
   };

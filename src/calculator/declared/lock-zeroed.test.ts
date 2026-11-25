@@ -4,6 +4,7 @@
 import { expect, test } from "vitest";
 import { parseBlueprint } from "./blueprint.ts";
 import type { BlueprintNode } from "./blueprint.ts";
+import { draftBlueprint } from "./draft.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint } from "./lock.ts";
 
@@ -116,6 +117,37 @@ test("a call that returns a literal by a test closes with the read it tested", (
       ],
     },
     ["TreeDoneRoot", "TreeDone", 26],
+  );
+  expect(lock.errors).toEqual([]);
+});
+
+// A literal the code picks by a test on a text of the save, with no part the recording ties (the game's SuperBitType: a
+// letter in Gaming[12]): the call goes down to that read, a condition (T195; fake-game.js, TreeBitRoot).
+test("a call that returns a literal by a test on a text of the save goes down to that read, in the draft and in the lock (T195)", () => {
+  const { rec, key, ops } = recorded("TreeBitRoot");
+  const ref = { call: "TreeBitRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const bit = draft.pools[0]?.groups
+    .flatMap((g) => g.sources)
+    .find((s) => s.ref && "call" in s.ref && s.ref.call === "TreeBit");
+  expect(bit?.children?.map((c) => c.ref)).toEqual([{ read: "TreeLabel" }]);
+  expect(draft.pending).not.toContainEqual({
+    where: expect.stringMatching(/sources\/0$/) as string,
+    kind: "descend",
+  });
+  const lock = lockWith(
+    {
+      children: [
+        {
+          key: "label",
+          name: "Invented Label",
+          ref: { read: "TreeLabel" },
+          leaf: "condition",
+          conditionKind: "owned",
+        },
+      ],
+    },
+    ["TreeBitRoot", "TreeBit", 26],
   );
   expect(lock.errors).toEqual([]);
 });
