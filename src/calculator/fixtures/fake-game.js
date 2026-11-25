@@ -2275,6 +2275,18 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeClassFactorRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeClassFactor();
   };
+  // Spec 010 (T213): the bonus of the slot the save holds the item in, as the game's GoldFoodBonuses reads
+  // EquipmentQuantity[2][i] for the slot whose food is the gold one: TreeFoodQty[i] × 2 + TreeBase.
+  Blocks._customBlock_TreeSlotBonus = function () {
+    var s = state();
+    var b = 0;
+    for (var i = 0; i < s.TreeFood.length; i++)
+      if (1 == s.TreeFood[i]) b = s.TreeFoodQty[i] * 2 + s.TreeBase;
+    return b;
+  };
+  Blocks._customBlock_TreeSlotRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeSlotBonus();
+  };
   Blocks._customBlock_TreeGateMapRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateMap();
   };
