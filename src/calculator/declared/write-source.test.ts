@@ -234,6 +234,20 @@ test("a write through a variable set on both sides of a ? : goes down the first 
   ]);
 });
 
+test("a write after an if, out of both its sides, goes down the read its right side names (Fase 4 t)", () => {
+  // TreeWriteAfterIf: `if (TreeFlagOn == 1) { y = TreeBase * TreeLevel; } … v = t`, t TreeBig k2, TreeCapped read too
+  const { rec, key, ops } = recordedWrites(
+    ROOT,
+    "TreeWriteBon",
+    "TreeWriteAfterIf",
+  );
+  const ref = { call: ROOT, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["DNSM.TreeWriteBon.v", [["TreeWriteAfterIf()", [["TreeBig.k2", []]]]]],
+  ]);
+});
+
 test("a write whose key is made in its left side goes down the side its test took (Fase 4 t)", () => {
   // TreeWriteSideKey: `r.h["" + k] = t` on each side, a step of the key between the test and the write, as the game's
   // companions

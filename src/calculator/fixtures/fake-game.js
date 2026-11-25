@@ -1716,6 +1716,20 @@ lime.$scripts.N = function (_exports, $global) {
       : ((r = d.TreeWriteBon), (t = state().TreeBig.h.k2), (r.h["" + k] = t));
     d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
   };
+  // ...and after an `if` whose taken side has a step of its own (`if (c) { y = a * b; } d.M.h.v = t;`): the write is
+  // out of both sides; two reads after the step, the one the code names is v's, TreeBig k2 (7).
+  Blocks._customBlock_TreeWriteAfterIf = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    var y = 0;
+    if (1 == state().TreeFlagOn) {
+      y = state().TreeBase * state().TreeLevel;
+    }
+    var u = a.engine.getGameAttribute("TreeCapped");
+    var t = a.engine.getGameAttribute("TreeBig").h.k2;
+    d.TreeWriteBon.h.v = t;
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
   // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
   // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
   Blocks._customBlock_TreeWriteRhs = function () {
