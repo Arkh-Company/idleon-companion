@@ -3623,6 +3623,25 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeCallsCharPool = function () {
     return Blocks._customBlock_TreeRibbonsChar() + state().TreeCapped;
   };
+  // ...and only the last turn given a count of the save, the 0 of TreeOwned, the others the 0 written in the code (r2 of
+  // part X): the model's `*` by every turn's call, never by the first one's alone.
+  Blocks._customBlock_TreeRibbonsLast = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t =
+        t +
+        (i == 7
+          ? Blocks._customBlock_TreeRibbon(
+              i + 1,
+              U.asNumber(a.engine.getGameAttribute("TreeOwned")),
+            )
+          : Blocks._customBlock_TreeRibbon(i + 1, 0));
+    return t;
+  };
+  Blocks._customBlock_TreeCallsLastPool = function () {
+    return Blocks._customBlock_TreeRibbonsLast() + state().TreeCapped;
+  };
   // ...and the calls beside another part of the level, as TalentCalc(-6)'s RibbonBonus calls beside its meals' reads.
   Blocks._customBlock_TreeRibbonsPlus = function () {
     return (

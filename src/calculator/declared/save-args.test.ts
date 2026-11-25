@@ -343,6 +343,16 @@ test("the draft never writes out an argument the place does not decide is the sa
   });
 });
 
+test("a list of calls' model is `*` where any of its calls got the argument from the save, not only the first (r2 of part X)", () => {
+  const { rec, key, ops } = recorded("TreeCallsLastPool");
+  const ref = { call: "TreeCallsLastPool", args: [0, 0, 0] };
+  const d = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(d.pools[0]?.groups[0]?.sources[0]?.children?.[0]?.ref).toEqual({
+    call: "TreeRibbon",
+    args: ["{item}", "*"],
+  });
+});
+
 test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
   expect(rowLock("TreeWorkMid", 3)).toEqual([
     "invented-work/0/luk-stats/row: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",
