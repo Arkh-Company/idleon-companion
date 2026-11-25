@@ -2321,6 +2321,44 @@ lime.$scripts.N = function (_exports, $global) {
       t.h["" + p] = x;
     }
   };
+  // Spec 010 (Fase 4 q, star-signs): the same loop with the star signs' factors, a term of two parts capped by the code
+  // (the chip's max(1, min(2, 1 + chip × floor((999 + rift) / 1000))), the Seraph's min(5, pow(…))): a = (2 + 3) × 2 × 5
+  // = 50, b = 4 × 2 × 5 = 40, over TreeLevel 300 (the pow is 1.14 ^ 16, above its cap 5).
+  Blocks._customBlock_TreeKeysCapBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeKeys = new StringMap();
+    var t = d.TreeKeys;
+    var v = 2 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = w;
+    t.h.b = 4;
+    var ks = Object.keys(t.h);
+    for (var i = 0; i < ks.length; i++) {
+      var p = ks[i];
+      var x =
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h["" + p]) *
+        Math.max(
+          1,
+          Math.min(
+            2,
+            1 +
+              Blocks._customBlock_TreeTurnItem(0) *
+                Math.floor((999 + s.TreeStats.h.a) / 1000),
+          ),
+        ) *
+        Math.min(
+          5,
+          Math.pow(
+            1.1 + Math.min(s.TreeBase, 10) / 100,
+            Math.ceil((s.TreeLevel + 1) / 20),
+          ),
+        );
+      t.h["" + p] = x;
+    }
+  };
   Blocks._customBlock_TreeKeysRead = function () {
     return (
       a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a + state().TreeCapped
