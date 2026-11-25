@@ -4,7 +4,7 @@
     "name": "STR",
     "ref": {
       "call": "TotalStats",
-      "args": ["STR", 0, 0]
+      "args": ["STR"]
     }
   }
 }
