@@ -58,9 +58,10 @@ export function partName(
   character: number,
   rec: Recording,
   ops: readonly Op[],
+  rootRef?: Ref,
 ) {
   const code = refOf(w, character);
-  return w.call && unnamed(code, rec, ops, w.call)
+  return w.call && unnamed(code, rec, ops, w.call, rootRef)
     ? null
     : provenName(codeOf(code, w.key));
 }

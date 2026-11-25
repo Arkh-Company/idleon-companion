@@ -247,7 +247,7 @@ export function draftBlueprint(
   /** A list's model child: its item's read, a name only when it gives each item's own, one pending each (T202). */
   const model = (l: ListModel, where: string, sink: BlueprintPending[]) => {
     const names = l.items.map(
-      (w) => partName(w, dc.character, rec, ops)?.name ?? null,
+      (w) => partName(w, dc.character, rec, ops, root.ref)?.name ?? null,
     );
     const name = modelName(names, l.indices);
     if (name === null) wait(where, "name", sink);
@@ -271,10 +271,10 @@ export function draftBlueprint(
   ): DraftNode => {
     const code = refOf(w, dc.character);
     // the argument the game gave from the character's index is `{character}`, by its place (character-args.ts)
-    const ref = w.call ? markedRef(code, rec, ops, w.call) : code;
+    const ref = w.call ? markedRef(code, rec, ops, w.call, root.ref) : code;
     // the names table goes by the game's own arguments; a name proven by the character's index waits for the agent's
     // proof by the row (research R5), and the key keeps only the other arguments
-    const named = partName(w, dc.character, rec, ops);
+    const named = partName(w, dc.character, rec, ops, root.ref);
     if (!named) wait(where, "name", sink);
     if (w.termPart) wait(where, "system", sink);
     const tree = linkedTree(ref, id, dc.trees ?? [], dc.character);
@@ -298,7 +298,7 @@ export function draftBlueprint(
       ? [model(list, `${where}/children/0`, mine)]
       : calls && below
         ? [
-            callModel(below, calls, rec, ops, (k) => {
+            callModel(below, calls, rec, ops, root.ref, (k) => {
               wait(`${where}/children/0`, k, mine);
             }),
           ]

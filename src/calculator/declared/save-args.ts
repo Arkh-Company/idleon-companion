@@ -144,14 +144,18 @@ interface Mark {
   is: (e: AnyNode, f: Fn, place?: Place) => Says;
   /** Whether an expression that reads it anywhere is the mark's too: any value from the save is `*`, the index only itself. */
   inside: boolean;
+  /** What the recipe writes for it. */
+  token: string;
 }
 const CHARACTER_MARK: Mark = {
   is: (e, f) => (isCharacter(e, f.text) ? "yes" : "no"),
   inside: false,
+  token: CHARACTER,
 };
 const SAVE_MARK: Mark = {
   is: (e, f, place) => readsSave(e, f, place),
   inside: true,
+  token: SAVE,
 };
 
 /** The variables an expression reads: no property's name. */
@@ -238,15 +242,26 @@ interface Marks {
   unsure: number[];
 }
 
-/** `n`'s arguments for a mark, by every site of its call in the caller; none with no code of the caller. */
+/**
+ * `n`'s arguments for a mark, by every site of its call in the caller; none with no code of the caller. The recipe's top
+ * call has no caller's code: its marks are the ones its root's reference writes (r2 of parts P and Q).
+ */
 function marksOf(
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
   mark: Mark,
+  rootRef?: Ref,
   depth = 0,
 ): Marks {
   const out: Marks = { yes: [], unsure: [] };
+  if (n.p !== null && n.p === rec.root && rootRef && "call" in rootRef)
+    return rootRef.call === n.b
+      ? {
+          yes: rootRef.args.flatMap((a, i) => (a === mark.token ? [i] : [])),
+          unsure: [],
+        }
+      : out;
   const caller = rec.nodes[n.p ?? -1];
   const f = caller ? fnIn(ops, caller.b) : null;
   const fit = (f?.sites.get(n.b) ?? []).filter((s) => fits(s, n));
@@ -255,7 +270,8 @@ function marksOf(
   if (!caller || !f || sites.length === 0 || depth > 8) return out;
   const place: Place = { rec, ops, caller, pos: n.pxi };
   let up: Marks | undefined;
-  const given = () => (up ??= marksOf(rec, ops, caller, mark, depth + 1));
+  const given = () =>
+    (up ??= marksOf(rec, ops, caller, mark, rootRef, depth + 1));
   n.a.forEach((_, i) => {
     const all = new Set(
       sites.map((s) => {
@@ -269,20 +285,25 @@ function marksOf(
   return out;
 }
 
-/** The positions of `n`'s arguments its caller gave from the character's index, and those the place does not decide. */
+/**
+ * The positions of `n`'s arguments its caller gave from the character's index, and those the place does not decide;
+ * `rootRef`, the recipe's root reference, gives the top call's.
+ */
 export const characterArgs = (
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
-): Marks => marksOf(rec, ops, n, CHARACTER_MARK);
+  rootRef?: Ref,
+): Marks => marksOf(rec, ops, n, CHARACTER_MARK, rootRef);
 
 /** The positions of `n`'s arguments its caller gave from the save, and those the place does not decide. */
 export function saveArgs(
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
+  rootRef?: Ref,
 ): { save: number[]; unsure: number[] } {
-  const { yes, unsure } = marksOf(rec, ops, n, SAVE_MARK);
+  const { yes, unsure } = marksOf(rec, ops, n, SAVE_MARK, rootRef);
   return { save: yes, unsure };
 }
 
@@ -292,10 +313,11 @@ export function markedRef(
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
+  rootRef?: Ref,
 ): Ref {
   if (!("call" in ref)) return ref;
-  const character = characterArgs(rec, ops, n).yes;
-  const { save } = saveArgs(rec, ops, n);
+  const character = characterArgs(rec, ops, n, rootRef).yes;
+  const { save } = saveArgs(rec, ops, n, rootRef);
   if (character.length + save.length === 0) return ref;
   return {
     ...ref,
@@ -311,8 +333,9 @@ export const unnamed = (
   rec: Recording,
   ops: readonly Op[],
   n: RecNode,
+  rootRef?: Ref,
 ): boolean =>
-  markedRef(ref, rec, ops, n) !== ref ||
-  [saveArgs(rec, ops, n), characterArgs(rec, ops, n)].some(
+  markedRef(ref, rec, ops, n, rootRef) !== ref ||
+  [saveArgs(rec, ops, n, rootRef), characterArgs(rec, ops, n, rootRef)].some(
     (m) => m.unsure.length > 0,
   );

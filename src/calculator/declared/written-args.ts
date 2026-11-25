@@ -27,11 +27,12 @@ export function writtenArgs(
   )
     return [];
   const arg = (i: number) => `o argumento ${String(i + 1)} de ${ref.call}`;
-  const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope);
+  const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope, ctx.rootRef);
   const { yes: character, unsure: unsureCharacter } = characterArgs(
     ctx.rec,
     ctx.ops,
     scope,
+    ctx.rootRef,
   );
   const out: LockError[] = [];
   const undecided = (i: number, from: string) =>

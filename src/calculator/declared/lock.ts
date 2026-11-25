@@ -215,6 +215,7 @@ export function lockBlueprint(input: LockInput): LockResult {
     where: bp.id,
     ops,
     characterClass,
+    ...(bp.root.ref && { rootRef: bp.root.ref }),
   };
 
   lockPools(bp.pools, key, top, ctx, out);

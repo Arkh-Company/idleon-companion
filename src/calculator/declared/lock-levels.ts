@@ -32,6 +32,7 @@ import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, savedTwice } from "./refs.ts";
+import type { Ref } from "./refs.ts";
 import { writtenArgs } from "./written-args.ts";
 import { callIn, covers, valueIn } from "./lock-values.ts";
 
@@ -50,6 +51,8 @@ export interface LevelContext {
   /** The game's code and the character's class, for a piece with the form of a recipe (lock-piece-recipe.ts). */
   ops?: LockInput["ops"];
   characterClass?: LockInput["characterClass"];
+  /** The recipe's root reference: the marks of the top call's arguments (`{character}`, `*`) passed on below it. */
+  rootRef?: Ref;
 }
 export interface LevelOut {
   errors: LockError[];

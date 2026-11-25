@@ -120,11 +120,12 @@ export function callModel(
   l: CallList,
   rec: Recording,
   ops: readonly Op[],
+  rootRef: Ref | undefined,
   wait: (kind: BlueprintPending["kind"]) => void,
 ): DraftNode {
   const first = below[0]?.call;
   const code: Ref = { call: l.block, args: (first?.a ?? []) as RefArg[] };
-  const marked = first ? markedRef(code, rec, ops, first) : code;
+  const marked = first ? markedRef(code, rec, ops, first, rootRef) : code;
   const args = [...("call" in marked ? marked.args : [])];
   args[l.at] = `{${ITEM}}`;
   wait("name");
