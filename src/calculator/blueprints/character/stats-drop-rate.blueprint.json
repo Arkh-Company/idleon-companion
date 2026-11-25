@@ -2470,6 +2470,10 @@
                 "call": "GoldFoodBonuses",
                 "args": ["DropRatez"]
               },
+              "each": {
+                "list": "EquipmentQuantity[2][*]",
+                "as": "slot"
+              },
               "children": [
                 {
                   "key": "dnsm-gfood-map-amount",
@@ -5182,13 +5186,13 @@
                   }
                 },
                 {
-                  "key": "equipment-quantity-2-2",
-                  "name": "Food slot 2 quantity",
+                  "key": "equipment-quantity-2",
+                  "name": "Food slot {slot} quantity",
                   "nameProof": {
-                    "names": "EquipmentQuantity[2][2]"
+                    "names": "EquipmentQuantity[2][{slot}]"
                   },
                   "ref": {
-                    "read": "EquipmentQuantity[2][2]"
+                    "read": "EquipmentQuantity[2][{slot}]"
                   }
                 },
                 {
