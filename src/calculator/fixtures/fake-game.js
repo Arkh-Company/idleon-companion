@@ -2861,6 +2861,15 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (r1 of parts P and Q): two writes of a working map with no step between them, each a block's call: the
+  // write's source is the assignment whose left side is the written key, never the first in the text.
+  Blocks._customBlock_TreeRhsTwo = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var x = state().TreeBase * 2;
+    d.TreeRhsA = Blocks._customBlock_TreeDeclRow(1);
+    d.TreeRhsB = Blocks._customBlock_TreeDeclOwn(0);
+    return x;
+  };
   Blocks._customBlock_TreeSetElse = function () {
     a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
     return 0;
