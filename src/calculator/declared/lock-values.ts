@@ -47,10 +47,11 @@ export function valueIn(
   return m ? num(reads.get(m.path)) : null;
 }
 
-export function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
-  const { ref } = child;
-  if (!ref) return false;
-  return "call" in ref
-    ? keyMatches(ref, part, ctx.character)
-    : matchRead(ref.read, [part], ctx.character) !== null;
-}
+/** Whether a reference stands for a recorded part: a call's key, or a path it reads. */
+export const refCovers = (ref: Ref, part: string, character: number) =>
+  "call" in ref
+    ? keyMatches(ref, part, character)
+    : matchRead(ref.read, [part], character) !== null;
+
+export const covers = (child: BlueprintNode, part: string, ctx: LevelContext) =>
+  !!child.ref && refCovers(child.ref, part, ctx.character);

@@ -9,7 +9,8 @@ import type { BlueprintNode } from "./blueprint.ts";
 import { writeSource } from "./cache-author.ts";
 import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
 import { keyOfLeaf, leafCheck, leavesOf, num } from "./lock-parts.ts";
-import { keyMatches, matchRead, refKey } from "./refs.ts";
+import { refKey } from "./refs.ts";
+import { refCovers } from "./lock-values.ts";
 
 /** The constants' count: the variable's value they give, and the parts their conditions cover; null when none is due. */
 export interface Constants {
@@ -80,20 +81,23 @@ export function lockConstants(
       out,
     );
   let value = num(first.v);
+  // a comparison, or the test of a ? : or an if (the first mark of its place is the test), and the parts it read
+  const isCmp = ([id]: readonly [number, unknown]) =>
+    ["cmp", "test"].includes(ctx.ops?.[id]?.kind ?? "");
+  const keysOf = ([id]: readonly [number, unknown]) =>
+    leavesOf(steps.exprOf?.(id) ?? { t: "val", v: null }).flatMap(
+      (l) => keyOfLeaf(l, ctx.rec) ?? [],
+    );
   // each later write: its number, and the comparison right before it, since the write before
   const applied: { n: number; key: string }[] = [];
+  const usedCmp = new Set<unknown>();
   let prev = first.xi;
   for (const w of rest) {
     const n = factor(source(w), own);
-    const cmp = (scope.x ?? [])
-      .slice(prev, w.xi)
-      // a comparison, or the test of a ? : or an if (the first mark of its place is the test)
-      .findLast(([id]) => ["cmp", "test"].includes(ctx.ops?.[id]?.kind ?? ""));
-    const keys = cmp
-      ? leavesOf(steps.exprOf?.(cmp[0]) ?? { t: "val", v: null }).flatMap(
-          (l) => keyOfLeaf(l, ctx.rec) ?? [],
-        )
-      : [];
+    const j = (scope.x ?? []).slice(prev, w.xi).findLastIndex(isCmp);
+    const cmp = j < 0 ? undefined : scope.x?.[prev + j];
+    if (cmp) usedCmp.add(cmp);
+    const keys = cmp ? keysOf(cmp) : [];
     const [key] = keys;
     if (n === null || keys.length !== 1 || key === undefined || !cmp?.[1])
       return refuse(
@@ -109,15 +113,9 @@ export function lockConstants(
   const conditionOf = (c: BlueprintNode) =>
     (c.children ?? []).flatMap((x) => (x.ref ? [x.ref] : []));
   const covers = (ref: NonNullable<BlueprintNode["ref"]>, key: string) =>
-    "call" in ref
-      ? keyMatches(ref, key, ctx.character)
-      : matchRead(ref.read, [key], ctx.character) !== null;
-  for (const c of consts) {
-    const refs = conditionOf(c);
-    for (const x of c.children ?? [])
-      leafCheck(x, `${ctx.where}/${c.key}/${x.key}`, out);
-    covered.push(...refs.map((r) => refKey(r, ctx.character)));
-  }
+    refCovers(ref, key, ctx.character);
+  for (const c of consts)
+    covered.push(...conditionOf(c).map((r) => refKey(r, ctx.character)));
   // each applied write's constant: the one its condition's reading names; two under the same reading part by the
   // code's own number at the write's place (the x2 at 101 and the x6 at 102 of ArcadeBonus), never by order
   const taken = new Set<BlueprintNode>();
@@ -143,7 +141,30 @@ export function lockConstants(
         expected: a.n,
         got: c.constant ?? Number.NaN,
       });
+    // only a constant its write checked counts its conditions as passed
+    else
+      for (const x of c.children ?? [])
+        leafCheck(x, `${ctx.where}/${c.key}/${x.key}`, out);
   }
-  // a constant no write took: its condition did not apply, the neutral value
+  // a constant no write took: each condition is read in the level, off up to the count, the neutral value; it counts
+  // nothing as passed, its number has no write to check it by
+  const cmps = (scope.x ?? []).slice(0, at === Infinity ? undefined : at + 1);
+  for (const c of consts.filter((x) => !taken.has(x)))
+    for (const x of c.children ?? []) {
+      if (!x.ref) continue;
+      const ref = x.ref;
+      const seen = cmps.filter(
+        (e) => isCmp(e) && keysOf(e).some((k) => covers(ref, k)),
+      );
+      // a comparison that applied another constant's write is that one's; the reading is still in the level
+      const on = seen.find((e) => !usedCmp.has(e) && !!e[1]);
+      if (seen.length === 0 || on)
+        out.errors.push({
+          kind: "conditionMismatch",
+          where: `${ctx.where}/${c.key}/${x.key}`,
+          expected: "off",
+          ...(on ? { got: num(on[1]) ?? 1 } : {}),
+        });
+    }
   return { value, covered, path: own };
 }
