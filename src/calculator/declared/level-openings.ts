@@ -13,6 +13,7 @@ import {
   writeTurn,
 } from "./cache-author.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import type { LockError } from "./lock.ts";
 import { emptyStart, loopOpening, writeTurns } from "./loop-turns.ts";
 import { returnOf } from "./lock-parts.ts";
 import { writesAt } from "./own-writes.ts";
@@ -38,6 +39,19 @@ export interface Opening {
   /** The call of `refs[0]`, by its place (lock-values.ts callAt): where the line's arguments are checked (r1 of U). */
   head?: RecNode | null;
 }
+
+/** A turn's count line declared as a leaf (T193, research R4 r1): its item's other references, each undeclared. */
+export const undeclaredRefs = (
+  level: { line?: unknown; termParts?: ReadonlySet<string> },
+  where: string,
+): LockError[] =>
+  level.line
+    ? [...(level.termParts ?? [])].map((got) => ({
+        kind: "undeclaredPart",
+        where,
+        got,
+      }))
+    : [];
 
 /** The part's label in a level's coverage: with its turn's number when another turn has the same part (T198). */
 export const openingLabel = (o: Opening): string =>

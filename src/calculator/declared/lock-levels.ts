@@ -18,6 +18,7 @@ import {
   levelOfOpening,
   openingLabel,
   openingOf,
+  undeclaredRefs,
 } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
@@ -298,13 +299,12 @@ function descend(
   }
   if (children.length === 0) {
     leafCheck(node, ctx.where, out);
+    out.errors.push(...undeclaredRefs(level, ctx.where));
     // a leaf is the end of the descent: below its own call, the recording reads nothing of the save
     const child = open
       ? (open[0]?.part ?? null)
-      : ref &&
-          "call" in ref &&
-          keyMatches(ref, callRef(level.scope), ctx.character)
-        ? saveChild(level.scope, ctx)
+      : ref && "call" in ref && keyMatches(ref, callRef(at), ctx.character)
+        ? saveChild(at, ctx)
         : null;
     if (child !== null)
       out.errors.push({
