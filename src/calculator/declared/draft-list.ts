@@ -100,6 +100,10 @@ export function callListOf(below: readonly Walked[]): CallList | null {
   const [first] = calls;
   if (below.length < MIN_LIST || !first || calls.some((c) => c?.b !== first.b))
     return null;
+  // a turn's count line (T193, research R4) keeps its termPart children: no model hides them
+  const counts = (w: Walked) =>
+    Array.isArray(w.below) && w.below.some((c) => c.termPart !== undefined);
+  if (below.some(counts)) return null;
   const args = calls.map((c) => (c?.a ?? []).map((a) => JSON.stringify(a)));
   if (args.some((a) => a.length !== first.a.length)) return null;
   const changing = first.a.flatMap((_, k) =>
