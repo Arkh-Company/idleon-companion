@@ -75,7 +75,9 @@ function sourcesOf(
   return g.sources.flatMap((s) => {
     const at = nodeId(ctx.where, pool, g.system, [s.key]);
     const [model] = s.children ?? [];
-    if (!s.each || !("list" in s.each) || s.combine || !model)
+    // a source that is a call has its list below it, in its own level (T213)
+    const ofCall = s.ref !== undefined && "call" in s.ref;
+    if (!s.each || !("list" in s.each) || s.combine || !model || ofCall)
       return [{ s, at }];
     out.counts.branches++;
     const { list } = s.each;

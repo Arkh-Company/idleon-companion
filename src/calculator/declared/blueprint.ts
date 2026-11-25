@@ -79,16 +79,18 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     });
     return;
   }
-  // a list of calls (T205) is a node's, in a pool's source too: never the answer key's items
+  // a list of calls (T205), or any list below a source that is a call (T213: the slots of its level), is a node's, in a
+  // pool's source too: never the answer key's items
   const calls = isObj(n.each) && "calls" in n.each;
+  const ofCall = calls || (isObj(n.ref) && "call" in n.ref);
   const poolEach =
     level === "source" &&
     n.each !== undefined &&
     n.combine === undefined &&
-    !calls;
+    !ofCall;
   // a recipe's node with a long list below it (T202): one model child, one child per part of its level the list matches
   const nodeEach =
-    (level === "child" || calls) &&
+    (level === "child" || ofCall) &&
     n.each !== undefined &&
     n.combine === undefined;
   checkPieceLevel(n, where, w, poolEach, poolEach || nodeEach);

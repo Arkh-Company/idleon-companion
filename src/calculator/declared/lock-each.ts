@@ -22,16 +22,24 @@ export function modelChildren(
     const rest = children.filter((c) => !isModel(c));
     return m ? [...rest, ...callChildren(m, each, parts, times)] : children;
   }
-  const [model] = children;
-  if (!each || !model) return children;
+  if (!each) return children;
   const names = eachNames(each.as);
+  // the model: the one child, or the one that reads with `{as}` beside the level's other children (T213)
+  const reads = (c: BlueprintNode) =>
+    names.some((a) => JSON.stringify(c.ref ?? null).includes(`{${a}}`));
+  const model = children.length === 1 ? children[0] : children.find(reads);
+  if (!model) return children;
+  const rest = children.filter((c) => c !== model);
   const path = eachPattern(each.list, character);
-  return parts.flatMap((p) => {
-    const idx = path.exec(p)?.slice(1);
-    if (!idx) return [];
-    const item = Object.fromEntries(names.map((a, k) => [a, Number(idx[k])]));
-    return [{ ...fill(model, item), key: `${model.key}-${idx.join("-")}` }];
-  });
+  return [
+    ...rest,
+    ...parts.flatMap((p) => {
+      const idx = path.exec(p)?.slice(1);
+      if (!idx) return [];
+      const item = Object.fromEntries(names.map((a, k) => [a, Number(idx[k])]));
+      return [{ ...fill(model, item), key: `${model.key}-${idx.join("-")}` }];
+    }),
+  ];
 }
 
 interface Calls {

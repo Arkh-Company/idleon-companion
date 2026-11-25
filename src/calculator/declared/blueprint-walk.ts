@@ -3,6 +3,7 @@
 import type { Trees } from "./blueprint-links.ts";
 import { checkCallModel, checkEach, isObj, no } from "./blueprint-root.ts";
 import type { BlueprintPending } from "./blueprint-types.ts";
+import { eachNames } from "./refs.ts";
 
 /** `piece`: a child of a node with `combine`, inside a recipe piece. */
 export type Level = "source" | "child" | "condition" | "piece";
@@ -58,7 +59,20 @@ export function checkPieceLevel(
   if (n.each === undefined) return;
   checkEach(n.each, where, poolEach);
   const calls = isObj(n.each) && "calls" in n.each;
-  if (!Array.isArray(n.children) || (!calls && n.children.length !== 1))
+  // a node's list (T213): its model is the one child that reads with `{as}`, beside the level's other children
+  const each = n.each;
+  const models =
+    !poolEach && free && Array.isArray(n.children) && isObj(each)
+      ? n.children.filter((c) =>
+          eachNames(each.as as string | string[]).some((a) =>
+            JSON.stringify(isObj(c) ? c.ref : null).includes(`{${a}}`),
+          ),
+        ).length
+      : 0;
+  if (
+    !Array.isArray(n.children) ||
+    (!calls && n.children.length !== 1 && models !== 1)
+  )
     no(where, "each tem um filho-modelo só");
   if (calls) checkCallModel(n.each, n.children, where);
 }
