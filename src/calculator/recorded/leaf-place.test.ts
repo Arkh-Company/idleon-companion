@@ -69,8 +69,8 @@ test("a variable leaf reads nothing at its own place: a read made there with its
   ).toMatchObject({ r: { t: "val", v: 6 } });
 });
 
-test("a variable leaf with a place is still tied by value to the one read of its value made elsewhere (T231 r1, Vinicius's option A)", () => {
-  // Q, the only read worth 6, was read at s.B's place, before p's; a variable's tie by the turn's write is a later task
+test("a variable leaf with a place and no recorded write is never tied by value to the one read of its value made elsewhere (T232)", () => {
+  // Q, the only read worth 6, was read at s.B's place, before p's
   expect(
     stepOf(
       "p",
@@ -80,10 +80,35 @@ test("a variable leaf with a place is still tied by value to the one read of its
       ],
       5,
     ),
-  ).toMatchObject({
+  ).toEqual({
+    t: "op",
+    o: "+",
     l: { t: "read", p: "B", v: 5 },
-    r: { t: "read", p: "Q", v: 6 },
+    r: { t: "val", v: 6 },
+    v: 11,
   });
+});
+
+test("a loop's variable is its write of the turn before, by its place: never the one read of its value, the first turn's write nor its own turn's (T232)", () => {
+  // TreeLoopBest over TreeList [3, 1, 2]: every turn writes 3, and TreeList[0] is the one read worth 3
+  const recorder = bootRecorder(GAME, PAK, { startMs: 5_000, numberMs: 500 });
+  const rec = recorder.record(
+    mosaicOf({ TreeList: [3, 1, 2] }),
+    [["TreeLoopBest", []]],
+    { recompute: [], builders: [] },
+  );
+  const n = rec.nodes.find((x) => x.b === "TreeLoopBest");
+  if (!n) throw new Error("no call");
+  const max = (best: object, i: number, v: number) => ({
+    t: "fn",
+    name: "max",
+    args: [best, { t: "read", p: `TreeList[${String(i)}]`, v }],
+    v: 3,
+  });
+  const was = (e: object) => ({ t: "def", e, v: 3 });
+  expect(makeSteps(rec, recorder.ops).of(n.id).steps).toEqual([
+    { v: 3, e: max(was(max(was(max({ t: "val", v: 0 }, 0, 3)), 1, 1)), 2, 2) },
+  ]);
 });
 
 test("a leaf whose code names a path is the read of it at its own place, never one read before it that the call's lock leaves alone (T231 r1)", () => {

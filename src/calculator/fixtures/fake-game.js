@@ -1704,6 +1704,13 @@ lime.$scripts.N = function (_exports, $global) {
       best = Math.max(best, s.PlayerDATABASE.h[names[i]].h.SkillLevels[1]);
     return best;
   };
+  // Spec 010 (T232): a loop's running best read in the next turn, as the write of the turn before, by its place.
+  Blocks._customBlock_TreeLoopBest = function () {
+    var s = state();
+    var best = 0;
+    for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i]);
+    return best;
+  };
   // Spec 010 (T164): a leaf's call that reads only a game table, and one that reads only the map it stands on.
   Blocks._customBlock_TreeDeclTable = function () {
     return state().CustomLists.h.ListTwo[0] + 1;
