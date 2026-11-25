@@ -9,12 +9,14 @@ import type { Recording, RoutineRun } from "../recording.ts";
 import { bootRecorder } from "../tree-record.ts";
 import type { RootCall } from "../tree-record.ts";
 import type { Blueprint } from "./blueprint.ts";
+import { loadBlueprints } from "./blueprints.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 import {
   checkPlan,
   outPath,
   mosaicWith,
   probeRoot,
+  refusalOf,
   rootCallsOf,
   rootsReport,
   summaryLine,
@@ -90,6 +92,24 @@ test("a checked draft's summary line says how many nodes passed, failed and are 
   ).toBe(
     "stats-drop-rate\tdraft\t1235 ms\tpassed 40, failed 3, pending 12\tlock 9 ms",
   );
+});
+
+test("a recipe the load refuses has the load's reason in its summary line, not only notWritten (part S)", () => {
+  const { refused, stages } = loadBlueprints({
+    "../blueprints/w1/invented-number.blueprint.json": {
+      id: "other-number",
+      root: { name: "Invented" },
+      pools: [],
+    },
+  });
+  expect(stages.has("invented-number")).toBe(false);
+  const reason = refusalOf("invented-number", refused);
+  expect(reason).toContain("id diferente do nome do arquivo");
+  expect(
+    summaryLine("invented-number", { result: "notWritten", ms: 0, reason }),
+  ).toBe(`invented-number\tnotWritten\t0 ms\t${String(reason)}`);
+  // a number the load did not refuse (a sketch, or no file) has no reason
+  expect(refusalOf("number", refused)).toBeUndefined();
 });
 
 test("every output falls inside TREES_OUT; a path with .. or / out of it is refused", () => {
