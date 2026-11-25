@@ -18,9 +18,10 @@ export function closeLevel(
 ): void {
   const { expr, scope, value } = level;
   const expected = value ?? Number.NaN;
-  // an opened level closes by its parts, even with no step of its own (a count no item passed, T215 r1)
+  // with no step of its own, only a count no item passed closes by its parts (T215 r1, r2)
   const { open } = level;
-  if (!expr && !open) {
+  const zeroed = !!open?.length && open.every((o) => o.passed === false);
+  if (!expr && !zeroed) {
     out.errors.push({ kind: "notClosing", where: ctx.where, expected });
     return;
   }

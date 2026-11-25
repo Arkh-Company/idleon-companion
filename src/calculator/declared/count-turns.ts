@@ -47,31 +47,59 @@ function guardOf(step: number, ops: readonly Op[]): number {
   return -1;
 }
 
+const isRound = (n: AnyNode) => {
+  const c = n.type === "CallExpression" ? at(n, "callee") : null;
+  return (
+    c?.type === "MemberExpression" &&
+    at(c, "object").name === "Math" &&
+    at(c, "property").name === "round"
+  );
+};
+
 /**
- * The count's step in the author's code when no turn ran it (r1 of part V): a `+ 1` onto the path's own key, by its
- * last name as the code writes it (`d.X`, `h.X`), under a test of its loop's turn; -1 with none.
+ * The count's step in the author's code when no turn ran it (r1, r2 of part V): a `+ 1` onto the path past its first
+ * name as the code writes it (`d.X`, `h.Acc.v`), under a test of its loop's turn, the right side (bare or in
+ * `Math.round`) of a write of that same text; null with no `+ 1` onto it, the reason when not exactly one is that step.
  */
 export function codeStep(
   author: RecNode,
   path: string,
   ops: readonly Op[],
-): number {
-  const key = /\.(\w+)$/.exec(path)?.[1];
-  if (!key) return -1;
-  const own = new RegExp(`\\.${key}\\b`);
-  return ops.findIndex((o, i) => {
-    const n = o.node;
-    if (o.block !== author.b || o.kind !== "op" || n.operator !== "+")
-      return false;
-    const l = at(n, "left");
+): number | string | null {
+  const rest = /^[^.]+\.(.+)$/.exec(path)?.[1];
+  if (!rest) return null;
+  const own = new RegExp(`\\.${rest.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  const found = ops.flatMap((o, i) => {
+    if (o.block !== author.b || o.kind !== "op" || o.node.operator !== "+")
+      return [];
+    const f = fnFor(o.fnText);
+    const n = f?.all.find((m) => sameRange(m, o.node));
+    if (!f || !n) return [];
+    const src = (m: AnyNode) => f.text.slice(...m.range);
+    const l = src(at(n, "left"));
     const r = at(n, "right");
-    return (
-      r.type === "Literal" &&
-      r.value === 1 &&
-      own.test(o.fnText.slice(l.range[0] - 1, l.range[1] - 1)) &&
-      guardOf(i, ops) >= 0
-    );
+    if (r.type !== "Literal" || r.value !== 1 || !own.test(l)) return [];
+    if (guardOf(i, ops) < 0) return [];
+    const up = f.up.get(n);
+    const value =
+      up && isRound(up) && (up.arguments as AnyNode[]).length === 1 ? up : n;
+    const w = f.up.get(value);
+    const writes =
+      w?.type === "AssignmentExpression" &&
+      w.operator === "=" &&
+      w.right === value &&
+      src(at(w, "left")) === l;
+    return [{ i, writes }];
   });
+  if (found.length === 0) return null;
+  const steps = found.filter((s) => s.writes);
+  const head = `o laço de ${callRef(author)} conta ${path}, mas`;
+  const tail = "não é a forma do contador (T215)";
+  if (steps.length === 0)
+    return `${head} o passo de 1 sobre o próprio valor no código escreve outro caminho: ${tail}`;
+  if (steps.length > 1)
+    return `${head} o código tem mais de um passo de 1 sobre o próprio valor (${String(steps.length)}): ${tail}`;
+  return steps[0]?.i ?? null;
 }
 
 /** The turns of the count of `path` whose step is the op `step`, or the reason the form does not hold. */

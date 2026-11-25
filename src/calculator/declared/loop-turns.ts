@@ -174,8 +174,10 @@ export function writeTurns(
       first?.v === 0 &&
       ctx.ops &&
       writeExpr(ctx.rec, { node: author, write: first }, ctx.turnOf) === null;
-    const coded = zero ? codeStep(author, write.path, ctx.ops ?? []) : -1;
-    return coded < 0 ? null : countTurns(author, coded, write.path, ctx);
+    const coded = zero ? codeStep(author, write.path, ctx.ops ?? []) : null;
+    return typeof coded === "number"
+      ? countTurns(author, coded, write.path, ctx)
+      : coded;
   }
   const turns = ws.map((w) =>
     writeTurn(ctx.rec, { node: author, write: w }, ctx.turnOf),
@@ -205,8 +207,13 @@ export function writeTurns(
     );
     // the count's step: the last the step log recorded before its write
     const step = author.x?.[(ws[j]?.xi ?? 0) - 1]?.[0];
-    if (k >= 0 || step === undefined)
-      return `o laço de ${name} conta ${write.path}, mas a escrita ${String(k + 1)} não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)`;
+    if (k >= 0 || step === undefined) {
+      const why =
+        k >= 0
+          ? `a escrita ${String(k + 1)} não soma 1 ao próprio valor nem é o início em 0`
+          : `o registro de passos não tem o passo antes da escrita ${String(j + 1)}`;
+      return `o laço de ${name} conta ${write.path}, mas ${why}: não é a forma do contador (T215)`;
+    }
     return countTurns(author, step, write.path, ctx);
   }
   // the first write may add to the 0 of a key not yet set (T192)
