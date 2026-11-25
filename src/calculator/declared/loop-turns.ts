@@ -2,7 +2,8 @@
 // line. The level is the step a call returned (`t = t + item`) when that step ran in more than one turn; each turn is
 // the stretch of the call's step log up to that step's record, read at its own place (makeSteps turnOf), and its item
 // is the step's right side there. The level closes by the sum of the items. A turn whose item is not a call or a read
-// of its own place, or two turns with the same item, are refused with the reason: the turns do not part by their place.
+// of its own place, or two turns with the same call, are refused with the reason: the turns do not part by their place.
+// Two turns with the same read are a line each, keyed by the number of its turn (T198).
 // A cache its author summed over its own value (T168, `d.X.v = d.X.v + item`) opens the same way: each write of the
 // author on the path a turn, its item the right side of the step that gave that write; a first write of 0 with no step
 // is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
