@@ -1,7 +1,7 @@
 // A cache whose last write comes from a loop over its keys (spec 010, Fase 4 q; the game's StarSigns(0) multiplies
 // each StarSigns[p] by the chip, the key built as text right before the write): the write's place is the step recorded
 // right before it, past the key's text, and its turn gives the step, never the last turn's value. The invented game's
-// TreeSignsBuild sums TreeSigns.a to 5 and multiplies each key by TreeTurnItem(0) = 2 in a loop, a before b.
+// TreeKeysBuild sums TreeKeys.a to 5 and multiplies each key by TreeTurnItem(0) = 2 in a loop, a before b.
 import { expect, test } from "vitest";
 import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
 import { makeSteps } from "../recorded/steps.ts";
@@ -14,21 +14,21 @@ const record = () => {
   const rec = r.record(
     mosaicOf({
       DNSM: {
-        $m: { ...activeAs(0).DNSM.$m, TreeSigns: { $m: { a: 10, b: 8 } } },
+        $m: { ...activeAs(0).DNSM.$m, TreeKeys: { $m: { a: 10, b: 8 } } },
       },
     }),
-    [["TreeSignsRead", [0, 0, 0]]],
+    [["TreeKeysRead", [0, 0, 0]]],
     {
       recompute: [],
       builders: [
-        { cache: "TreeSigns", run: { block: "TreeSignsBuild", args: [] } },
+        { cache: "TreeKeys", run: { block: "TreeKeysBuild", args: [] } },
       ],
     },
   );
-  const author = rec.nodes.find((n) => n.b === "TreeSignsBuild");
+  const author = rec.nodes.find((n) => n.b === "TreeKeysBuild");
   if (!author) throw new Error("no author");
   const writes = rec.writes.filter(
-    (w) => w.node === author.id && w.path === "DNSM.TreeSigns.a",
+    (w) => w.node === author.id && w.path === "DNSM.TreeKeys.a",
   );
   return { r, rec, author, writes };
 };
@@ -49,7 +49,7 @@ test("the cache's running total closes through the loop's turn of its last write
     value: 10,
     ops: r.ops,
     turnOf: made.turnOf,
-    path: "DNSM.TreeSigns.a",
+    path: "DNSM.TreeKeys.a",
   });
   if ("error" in key) throw new Error(key.reason);
   expect(key.pools.map((p) => [p.kind, p.value])).toEqual([
