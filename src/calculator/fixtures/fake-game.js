@@ -3053,6 +3053,19 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeFlipPool = function () {
     return Blocks._customBlock_TreeFlipSame() + state().TreeCapped;
   };
+  // ...and that block called twice with a loop's turns between the calls (r1 of parts P and Q): a step ran twice
+  // between them, and each call's descent is another.
+  Blocks._customBlock_TreeFlipTurns = function () {
+    var t = state().TreeBase;
+    var i = 0;
+    var x = Blocks._customBlock_TreeFlip(3, 0);
+    while (i < 2) i++;
+    var y = Blocks._customBlock_TreeFlip(3, 0);
+    return t + x + y + Blocks._customBlock_TreeFlip(4, 0);
+  };
+  Blocks._customBlock_TreeFlipTurnsPool = function () {
+    return Blocks._customBlock_TreeFlipTurns() + state().TreeCapped;
+  };
   // ...and the same reading call twice, a write of the state between them: its reads saw another write's number, the
   // same path and value.
   Blocks._customBlock_TreeReadTwice = function () {

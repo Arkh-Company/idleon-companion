@@ -303,9 +303,10 @@ test("two identical calls in one place are two lines of the list: the same key, 
   ).toEqual([]);
 });
 
-test("two calls in one place with the same key and value but another recorded descent are refused with the reason", () => {
+/** `beside`'s pool with TreeFlip as the model's block. */
+function flippedOf(pool: string, root: string): Blueprint {
   const flips: Blueprint = {
-    ...beside("TreeFlipPool", "TreeFlipSame"),
+    ...beside(pool, root),
   };
   const src = flips.pools[0]?.groups[0]?.sources[0];
   if (!src?.children) throw new Error("no source");
@@ -335,7 +336,21 @@ test("two calls in one place with the same key and value but another recorded de
       },
     ],
   } as Blueprint;
-  expect(lock("TreeFlipPool", flipped)).toContain(
+  return flipped;
+}
+
+test("two calls in one place with the same key and value but another recorded descent are refused with the reason", () => {
+  expect(
+    lock("TreeFlipPool", flippedOf("TreeFlipPool", "TreeFlipSame")),
+  ).toContain(
+    "invented-calls/0/cards/ribbons: duas chamadas TreeFlip(3,0) no nível, e o lugar não as separa",
+  );
+});
+
+test("two calls of one key in two turns whose recorded descent differs are refused, never both tied to the first (r1 of P and Q)", () => {
+  expect(
+    lock("TreeFlipTurnsPool", flippedOf("TreeFlipTurnsPool", "TreeFlipTurns")),
+  ).toContain(
     "invented-calls/0/cards/ribbons: duas chamadas TreeFlip(3,0) no nível, e o lugar não as separa",
   );
 });
