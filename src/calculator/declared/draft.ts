@@ -329,10 +329,11 @@ export function draftBlueprint(
     // a line with a link waits for nothing below it: its tree is the other number's
     if (tree !== undefined) return out;
     if (!Array.isArray(w.below)) wait(where, w.below, sink);
-    // any other argument equal to the character's index may be the character or a number that happens to be it: the
-    // agent writes `{character}` or keeps it (research R5); the draft does not decide by the value
+    // any other argument of a leaf call equal to the character's index may be the character or a number that happens
+    // to be it: the agent writes `{character}` or keeps it (research R5); a node with children is descended already
     if (
       w.below !== "descend" &&
+      !children &&
       "call" in ref &&
       ref.args.includes(dc.character)
     )
