@@ -25,6 +25,7 @@ import {
 import type { ListModel } from "./draft-list.ts";
 import { branchOf, COMMON_BRANCHES, piecePasses } from "./draft-pieces.ts";
 import type { CommonBranch, DraftPiece } from "./draft-pieces.ts";
+import type { KnownPieces } from "./draft-known-pieces.ts";
 import { codeOf, keyIn, partName, refOf } from "./draft-names.ts";
 import { walkTerm } from "./draft-walk.ts";
 import type { Walked } from "./draft-walk.ts";
@@ -43,6 +44,8 @@ export interface DraftContext {
   trees?: readonly Pick<Blueprint, "id" | "root">[];
   /** The common branches (T203): a part that calls one is a line with its piece; COMMON_BRANCHES by default. */
   branches?: readonly CommonBranch[];
+  /** The pieces already written (`blueprints/pieces/`, an earlier draft of the run): a branch's line calls its own. */
+  pieces?: KnownPieces;
 }
 export const NO_CONTEXT: DraftContext = { character: 0, talentOrder: [] };
 
@@ -91,7 +94,7 @@ export function draftBlueprint(
     ops,
   };
   const pending: BlueprintPending[] = [];
-  const passes = piecePasses();
+  const passes = piecePasses(dc.pieces);
   const wait = (
     where: string,
     kind: BlueprintPending["kind"],

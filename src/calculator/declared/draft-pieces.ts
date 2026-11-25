@@ -7,6 +7,8 @@
 // gives it, never as the piece, with why in the guide.
 import type { BlueprintPending, CallRef } from "./blueprint.ts";
 import type { DraftNode } from "./draft.ts";
+import { knownUse } from "./draft-known-pieces.ts";
+import type { KnownPieces } from "./draft-known-pieces.ts";
 import { slug } from "./draft-names.ts";
 import type { Ref, RefArg } from "./refs.ts";
 
@@ -29,7 +31,10 @@ interface Branch {
 }
 type Places = ReadonlyMap<string, string>;
 
-/** The common branches (Vinicius, 24/11): the all-talent levels of a talent, the talents', vials' and meals' caches. */
+/**
+ * The common branches (Vinicius, 24/11): the all-talent levels of a talent, the talents', vials' and meals' caches; the
+ * skills' general bonuses (part R), which each skill's own stats call.
+ */
 export const COMMON_BRANCHES: readonly CommonBranch[] = [
   {
     name: "all-talent-lv",
@@ -42,6 +47,14 @@ export const COMMON_BRANCHES: readonly CommonBranch[] = [
   { name: "talent-calc-4", ref: { call: "TalentCalc", args: [-4] } },
   { name: "talent-calc-6", ref: { call: "TalentCalc", args: [-6] } },
   { name: "star-signs-0", ref: { call: "StarSigns", args: [0] } },
+  {
+    name: "all-base-skill-eff",
+    ref: { call: "SkillStats", args: ["AllBaseSkillEff"] },
+  },
+  {
+    name: "all-efficiencies",
+    ref: { call: "SkillStats", args: ["AllEfficiencies"] },
+  },
 ];
 
 const PARAM = /^\{([A-Za-z_$][\w$]*)\}$/;
@@ -230,8 +243,9 @@ function fit(set: readonly Occurrence[]): Places | null {
 
 /**
  * Which occurrences are a piece (Revisor r1 and r2 of part O): a branch is one only where it runs one body at least
- * twice, with other args when it takes a param; the first occurrence, in order, whose body some other shares wins. Each other line is written whole, and
- * why goes to the guide.
+ * twice, with other args when it takes a param; the first occurrence, in order, whose body some other shares wins. One
+ * with no param and no body shared is a piece from its first occurrence (part R: the first draft that meets it writes the
+ * piece the next ones call). Each other line is written whole, and why goes to the guide.
  */
 export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
   const plan: PiecePlan = new Map();
@@ -255,6 +269,9 @@ export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
         break;
       }
     }
+    const [first] = all;
+    if (!chosen && first?.branch.params.length === 0)
+      chosen = { set: [first], at: new Map() };
     for (const o of all)
       plan.set(
         o.where,
@@ -272,9 +289,10 @@ export function planPieces(occurrences: readonly Occurrence[]): PiecePlan {
 
 /**
  * The draft's two passes over its common branches: the first writes each whole and sees its occurrences; `plan` decides
- * the pieces, and the second gives each occurrence its piece's line, or none with why in `notes` (for the guide).
+ * the pieces, and the second gives each occurrence its piece's line, or none with why in `notes` (for the guide). A
+ * branch whose piece is `known` (already written) is no plan's: each occurrence calls it where it has its body.
  */
-export function piecePasses() {
+export function piecePasses(known: KnownPieces = new Map()) {
   const occurrences: Occurrence[] = [];
   const pieces: DraftPieces = new Map();
   const notes: string[] = [];
@@ -283,17 +301,20 @@ export function piecePasses() {
     pieces,
     notes,
     plan: () => {
-      plan = planPieces(occurrences);
+      plan = planPieces(occurrences.filter((o) => !known.has(o.branch.name)));
     },
     meet: (o: Occurrence) => {
       if (!plan) {
         occurrences.push(o);
         return null;
       }
-      const got = pieceUse(pieces, plan, o);
+      const name = o.branch.name;
+      const got = known.has(name)
+        ? knownUse(known.get(name), { ...o, pending: rel(o) })
+        : pieceUse(pieces, plan, o);
       if (typeof got !== "string") return got;
       notes.push(
-        `galho comum ${o.branch.name} em ${o.where}: escrito por inteiro (${got})`,
+        `galho comum ${name} em ${o.where}: escrito por inteiro (${got})`,
       );
       return null;
     },
