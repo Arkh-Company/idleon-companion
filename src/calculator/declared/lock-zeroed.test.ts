@@ -154,8 +154,28 @@ test("a call that returns a literal by a test on a text of the save goes down to
   expect(lock.errors).toEqual([]);
 });
 
-// The same literal, with a second text of the save read aside (fake-game.js, TreeBitTwoRoot): the call goes down to the
-// read the test reads, by its place in the code, and the lock takes that child only as a condition (T195).
+// The same literal, with a second text of the save read aside, after the tested one (fake-game.js, TreeBitTwo) and
+// before it (TreeBitTwoBefore): the call goes down to the read the test reads, by its place in the code, never by
+// the order of the reads (T195).
+test.each([
+  ["TreeBitTwoRoot", "TreeBitTwo"],
+  ["TreeBitTwoBeforeRoot", "TreeBitTwoBefore"],
+])(
+  "a call that reads two texts of the save and tests one goes down to that one only: %s (T195)",
+  (root, call) => {
+    const { rec, key, ops } = recorded(root, {
+      TreeOtherLabel: "Other label",
+    });
+    const ref = { call: root, args: [0, 0, 0] };
+    const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+    const bit = draft.pools[0]?.groups
+      .flatMap((g) => g.sources)
+      .find((s) => s.ref && "call" in s.ref && s.ref.call === call);
+    expect(bit?.children?.map((c) => c.ref)).toEqual([{ read: "TreeLabel" }]);
+  },
+);
+
+// ...and the lock takes that child only as a condition (T195).
 test("a call that reads two texts of the save and tests one goes down to that one only, a condition (T195)", () => {
   const attrs = { TreeOtherLabel: "Other label" };
   const { rec, key, ops } = recorded("TreeBitTwoRoot", attrs);

@@ -2592,6 +2592,20 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeBitTwoRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeBitTwo();
   };
+  // ...and the other order, TreeOtherLabel read before the tested one, where an order ("the first text read") would
+  // take it: with TreeBitTwo, an order either way fails one of them.
+  Blocks._customBlock_TreeBitTwoBefore = function () {
+    var h = { string: String };
+    var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
+    a.engine.getGameAttribute("DNSM").h.TreeBitOther = other; // kept aside, no root reads it
+    return -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
+      ? 1
+      : 0;
+  };
+  Blocks._customBlock_TreeBitTwoBeforeRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBitTwoBefore();
+  };
   Blocks._customBlock_TreeDoneRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeDone();
   };
