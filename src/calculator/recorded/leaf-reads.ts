@@ -141,8 +141,15 @@ export function setBy(
     ? (astPattern(def) ??
       (name ? { toks: [String(at(def, "property").name)], root: false } : null))
     : null;
+  // a working map's value is the call's own (T209 form 3), never a read here; a number read as text counts
   const hits = pat
-    ? pool.filter(([p, x]) => x === v && matchPattern(p, pat))
+    ? pool.filter(
+        ([p, x]) =>
+          (x === v ||
+            (typeof x === "string" && x.trim() !== "" && Number(x) === v)) &&
+          matchPattern(p, pat) &&
+          !/^(DNSM|DummyNumbersStatManager)\./.test(p),
+      )
     : [];
   const [one] = hits;
   return one && hits.length === 1 ? { t: "read", p: one[0], v } : null;
