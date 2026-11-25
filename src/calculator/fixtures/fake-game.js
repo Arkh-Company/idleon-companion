@@ -1752,6 +1752,20 @@ lime.$scripts.N = function (_exports, $global) {
       d.TreeAuthor.h.v =
         U.asNumber(d.TreeAuthor.h.v) + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (T194): the same sum through a variable of the map and a key in a variable, after a read worth 0 in the
+  // turn, as the game's Breeding("ShinyBonusS") sums a pet's bonus: the first turn adds to the 0 of the empty key read
+  // at its place, never to the other read's 0: 2 + 4 + 6 = 12.
+  Blocks._customBlock_TreeAuthorAlias = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < state().TreeList.length; i++) {
+      d.TreeAliasDN = 0;
+      var k = a.engine.getGameAttribute("DNSM").h.TreeAliasDN < 1 ? "v" : "w";
+      var m = d.TreeAuthor;
+      m.h[k] = U.asNumber(m.h[k]) + Blocks._customBlock_TreeTurnItem(i);
+    }
+  };
   // Spec 010 (Fase 4 q): a block that writes a key not yet set once, as the game's TalentCalc(-6) writes a meal's
   // bonus through a variable of the map: the item, then the 0 of the empty key on the right: 4 × 2 + 0 = 8.
   Blocks._customBlock_TreeAuthorOnce = function () {

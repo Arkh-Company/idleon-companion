@@ -239,6 +239,21 @@ test("an author that sums into a key not yet set starts on the empty key's 0: on
   expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
 });
 
+test("the empty key's 0 is the read at its place, never another read worth 0: one line a turn, the first one too (T194)", () => {
+  // TreeAuthorAlias: asNumber(m.h[k]) + TreeTurnItem(i) a turn, TreeOwned (0) read before it, as the game's shinies
+  const rec = record("TreeAuthorAlias", 12);
+  expect(drafted(rec)).toEqual([
+    ["DNSM.TreeAuthor.v", [["TreeAuthorAlias()", [item(0), item(1), item(2)]]]],
+  ]);
+  const author: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorAlias", args: [] },
+    children: [itemNode(0), itemNode(1), itemNode(2)],
+  };
+  expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});
+
 const once: BlueprintNode = {
   key: "author",
   name: "Author",
