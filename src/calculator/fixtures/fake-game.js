@@ -2814,6 +2814,29 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeTurnsMixedRoot = function () {
     return Blocks._customBlock_TreeTurnsMixed() + state().TreeCapped;
   };
+  // Spec 010 (T193): a sum in a loop whose item is a count of a call and a read (research R4), with a read of the
+  // turn out of the item, before the item's step in one block and after it in the other.
+  Blocks._customBlock_TreeTurnsCountBefore = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      if (state().TreeLevel > 0)
+        t = t + Blocks._customBlock_TreeTurnItem(i) * state().TreeTwins[i];
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountAfter = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      t = t + Blocks._customBlock_TreeTurnItem(i) * state().TreeTwins[i];
+      if (state().TreeLevel < 0) return 0;
+    }
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountBeforeRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountAfterRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountAfter() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeTurnsProductRoot = function () {
     return Blocks._customBlock_TreeTurnsProduct() + state().TreeCapped;
   };
