@@ -336,6 +336,49 @@ test("a variable no step set, read through asNumber, is the read its setting cod
   ).toMatchObject({ r: { t: "val", v: 15 } });
 });
 
+test("a variable no step set is never the read its setting code names picked by value: two paths that fit, or the one worth it beside another (T232 r1)", () => {
+  const x = (rx: Rx) => varOf("s.x.T", [["B", 6, 0], ...rx], 15);
+  expect(
+    x([
+      ["x.T", "15", 0],
+      ["y.x.T", "15", 0],
+    ]),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
+  expect(
+    x([
+      ["x.T", "14", 0],
+      ["y.x.T", "15", 0],
+    ]),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
+});
+
+test("a variable no step set from a member of one name is that path only, never another ending in it (T232 r1)", () => {
+  const t = (path: string) =>
+    varOf(
+      "s.T",
+      [
+        ["B", 6, 0],
+        [path, "15", 0],
+      ],
+      15,
+    );
+  expect(t("T")).toMatchObject({ r: { t: "read", p: "T", v: 15 } });
+  expect(t("y.T")).toMatchObject({ r: { t: "val", v: 15 } });
+});
+
+test("a variable no step set from a path with a computed key is no read: the key is not known (T232 r1)", () => {
+  expect(
+    varOf(
+      "s.x[s.k].T",
+      [
+        ["B", 6, 0],
+        ["x.a.T", "15", 0],
+      ],
+      15,
+    ),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
+});
+
 test("a variable no step set from a working map is the call's own value, never a read of the map (T232; T209 form 3)", () => {
   expect(
     varOf(
