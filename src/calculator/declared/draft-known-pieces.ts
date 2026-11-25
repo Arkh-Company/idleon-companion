@@ -50,19 +50,32 @@ function nodeAt(
   return isObj(at) ? at : undefined;
 }
 
+/** A place the piece's own pending holds is the piece's, never written again in the recipe (T216). */
+const held = (piece: Record<string, unknown>, p: BlueprintPending): boolean =>
+  Array.isArray(piece.pending) &&
+  piece.pending.some(
+    (x) => isObj(x) && x.where === p.where.slice(1) && x.kind === p.kind,
+  );
+
+/** The names the piece's file leaves null, relative to the line. */
+const nullNames = (ns: unknown, above = ""): BlueprintPending[] =>
+  Array.isArray(ns)
+    ? ns.flatMap((n, i) => {
+        if (!isObj(n)) return [];
+        const where = `${above}/children/${String(i)}`;
+        return [
+          ...(n.name === null ? [{ where, kind: "name" as const }] : []),
+          ...nullNames(n.children, where),
+        ];
+      })
+    : [];
+
 /** A pending place the piece's file still has open: its name null, no kind and no children, no term's system. */
 function stillOpen(
   piece: Record<string, unknown>,
   p: BlueprintPending,
 ): boolean {
-  const own = Array.isArray(piece.pending) ? piece.pending : [];
-  // a place the piece's own pending holds is the piece's, never written again in the recipe (T216)
-  if (
-    own.some(
-      (x) => isObj(x) && x.where === p.where.slice(1) && x.kind === p.kind,
-    )
-  )
-    return false;
+  if (held(piece, p)) return false;
   const n = nodeAt(piece.children, p.where);
   if (!n) return true;
   const bare =
@@ -116,10 +129,18 @@ export function knownUse(
     JSON.stringify(formOf(o.children, open))
   )
     return KNOWN_OTHER;
+  const kept = o.pending.filter((p) => stillOpen(raw, p));
+  // the load reads the piece's file: a name it leaves null is pending at the line though the occurrence named it (part S)
+  const more = nullNames(raw.children).filter(
+    (p) =>
+      !held(raw, p) &&
+      !kept.some((k) => k.where === p.where && k.kind === p.kind),
+  );
   return {
     piece: { name: branch.name, args: branch.args },
-    pending: o.pending
-      .filter((p) => stillOpen(raw, p))
-      .map((p) => ({ ...p, where: o.where + p.where })),
+    pending: [...kept, ...more].map((p) => ({
+      ...p,
+      where: o.where + p.where,
+    })),
   };
 }
