@@ -2035,6 +2035,34 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 1; i < state().TreeList.length; i++)
       d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
   };
+  // Spec 010 (T226): a sum over the empty key through a pass-through variable, as the game's Gallery sums a nametag's
+  // bonus by GalleryDN2: each turn calls TreeTurnAt() (the same arguments, the turn's value), then writes another path
+  // by a step before the cache, so the author's write before the cache's comes after the call: 2 × 3 + 4 × 3 = 18.
+  Blocks._customBlock_TreeAuthorRelay = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeRelayDN = state().TreeBase + i;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeTwins[i];
+    }
+  };
+  // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
+  Blocks._customBlock_TreeAuthorRelayEarly = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeCountAt = 0;
+    d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+    for (var i = 0; i < 2; i++) {
+      d.TreeRelayDN = state().TreeBase + i;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeTwins[i];
+    }
+  };
   // Spec 010 (T168): a block that reads the cache the helpers built, writes it itself (the same number) and returns it
   // read back: the read it returns saw its own write, a passage, not the helpers' cache its first step read.
   Blocks._customBlock_TreeAuthorPlaces = function () {

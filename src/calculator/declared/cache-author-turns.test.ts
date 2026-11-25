@@ -278,6 +278,62 @@ test("with the author's read list full, the empty key is the one with no number 
   expect(lock(rec, once).errors.map(lockMessage)).toEqual([]);
 });
 
+/** A turn of TreeAuthorRelay*: a line by TreeTurnAt(), the pass-through's call, the turn's twin a termPart child. */
+const relayLine = (turn: number): BlueprintNode => ({
+  key: `item-turn-${String(turn)}`,
+  name: "Item",
+  ref: { call: "TreeTurnAt", args: [] },
+  children: [
+    {
+      key: "item",
+      name: "Item",
+      ref: { call: "TreeTurnAt", args: [] },
+      children: [leaf("list", `TreeList[${String(turn - 1)}]`)],
+    },
+    {
+      key: "twin",
+      name: "Twin",
+      ref: { read: `TreeTwins[${String(turn - 1)}]` },
+      leaf: "record",
+      termPart: { system: "achievements" },
+    },
+  ],
+});
+const relay = (block: string): BlueprintNode => ({
+  key: "author",
+  name: "Author",
+  ref: { call: block, args: [] },
+  children: [relayLine(1), relayLine(2)],
+});
+
+test("an author's write's turn holds the call that gave its pass-through, before its write on another path, by the place (T226)", () => {
+  // TreeAuthorRelay: TreeTurnAt() into TreeCountDN, then TreeRelayDN by a step, then the cache, a turn: each turn's call
+  // is the other turn's too (the same key), one after the first line, one before the second
+  const rec = record("TreeAuthorRelay", 18);
+  const at = (i: number): Shape => [
+    "TreeTurnAt()",
+    [
+      ["TreeTurnAt()", [[`TreeList[${String(i)}]`, []]]],
+      [`TreeTwins[${String(i)}]`, []],
+    ],
+  ];
+  expect(drafted(rec)).toEqual([
+    ["DNSM.TreeAuthor.v", [["TreeAuthorRelay()", [at(0), at(1)]]]],
+  ]);
+  expect(lock(rec, relay("TreeAuthorRelay")).errors.map(lockMessage)).toEqual(
+    [],
+  );
+});
+
+test("an author's pass-through call made before the loop has no place in the turns after the first (T226)", () => {
+  const rec = record("TreeAuthorRelayEarly", 12);
+  expect(
+    lock(rec, relay("TreeAuthorRelayEarly")).errors.map(lockMessage),
+  ).toEqual([
+    "invented-author/0/cards/cache/author: a chamada de TreeTurnAt() não tem lugar na volta 2 do laço de TreeAuthorRelayEarly()",
+  ]);
+});
+
 test("the best of three members goes down the member whose turn wrote the cache, by its place, never the last turn's (T212)", () => {
   // TreeAuthorBest over TreeList [1, 3, 2]: the bonuses 2, 6, 4; the cache is the second member's 6
   const rec = inventedRecorder().record(
