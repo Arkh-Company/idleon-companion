@@ -106,12 +106,12 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
     n.each !== undefined &&
     n.combine === undefined;
   checkPieceLevel(n, where, w, poolEach, poolEach || nodeEach);
-  // after the args and the items are in, a `{name}` left is one nothing declares
+  // after the args and the items are in, a `{name}` left is one nothing declares; a `{` of a key's name is none (T197)
   const left = Object.entries(n)
     .flatMap(([k, v]) =>
       ["children", "condition", "pools"].includes(k) ? [] : texts(v),
     )
-    .find((s) => s.replaceAll("{character}", "").includes("{"));
+    .find((s) => /\{[A-Za-z_$][\w$]*\}/.test(s.replaceAll("{character}", "")));
   if (left !== undefined) no(where, `{nome} não declarado: ${left}`);
   if (level === "piece" && n.condition !== undefined)
     no(where, "condition não vai dentro de pedaço");
