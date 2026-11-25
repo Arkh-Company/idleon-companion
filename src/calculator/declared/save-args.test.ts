@@ -280,6 +280,22 @@ test("a key set from the save on an if's side in a turn before the last: the rec
   expect(rowLock("TreeWorkTurn", "*", attrs)).toEqual([]);
 });
 
+test("a working map's list entry read: the write of that entry decides, never another entry's written after it (r3 of P and Q)", () => {
+  // TreeWorkIdx: entry 0 from the save's TreeList[0], 3; entry 1 from a step after it
+  const attrs = { TreeList: [3, 0] };
+  expect(rowLock("TreeWorkIdx", 3, attrs)).toEqual([
+    'argumento do save por extenso: invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
+  ]);
+  expect(rowLock("TreeWorkIdx", "*", attrs)).toEqual([]);
+});
+
+test("two arguments of one call read from two entries of one key at one step: the place does not decide (r3 of P and Q)", () => {
+  const { rec, ops } = recorded("TreeWorkPair", { TreeList: [3, 0] });
+  const kills = rec.nodes.find((n) => n.b === "TreeDeclKills");
+  if (!kills) throw new Error("no TreeDeclKills");
+  expect(saveArgs(rec, ops, kills)).toEqual({ save: [], unsure: [1, 2] });
+});
+
 test("a working map's key read in a builder of the pass: its write is the pass's scratch, among the spliced ones (r2 of P and Q)", () => {
   const r = inventedRecorder();
   const rec = r.record(mosaicOf({ TreeCondOn: 1 }), [["TreeSaveArg", [0]]], {

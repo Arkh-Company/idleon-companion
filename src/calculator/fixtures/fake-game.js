@@ -2970,6 +2970,39 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (r3 of parts P and Q): a working map's list, its entry 0 from the save and its entry 1 from a step after
+  // it; the read of entry 0 saw entry 0's write, never entry 1's, the last of the key.
+  Blocks._customBlock_TreeWorkIdx = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeIdxL = [0, 0];
+    var x = state().TreeBase * 2;
+    d.TreeIdxL[0] = U.asNumber(a.engine.getGameAttribute("TreeList")[0]);
+    d.TreeIdxL[1] = x * 3;
+    return (
+      x +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeIdxL[0]),
+      )
+    );
+  };
+  // ...and the two entries given to one call: no read tells which argument it was, the place does not decide
+  Blocks._customBlock_TreeWorkPair = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreePairL = [0, 0];
+    var x = state().TreeBase * 2;
+    d.TreePairL[0] = U.asNumber(a.engine.getGameAttribute("TreeList")[0]);
+    d.TreePairL[1] = x * 3;
+    return (
+      x +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreePairL[0]),
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreePairL[1]),
+      )
+    );
+  };
   // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
   Blocks._customBlock_TreeSaveTwice = function () {
     var U = A["com.stencyl.utils.Utils"];
