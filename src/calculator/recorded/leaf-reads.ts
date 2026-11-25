@@ -1,6 +1,7 @@
 // The read a leaf of a step stands for (spec 008, T022, build-tree.cjs step 8d; moved out of steps.ts as it was): the
 // read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), else the one
 // read of the call that holds the value, or the one text cell worth it. A path used up is not bound again.
+import { EMPTY_READ } from "../recording.ts";
 import type { RecValue } from "../recording.ts";
 import { astPattern, matchPattern, methodOf, textRead, unwrap } from "./ast.ts";
 import type { AstNode } from "./ast.ts";
@@ -32,6 +33,17 @@ export function readOfLeaf(
       if (typeof only[1] === "string") usedR.add(only[0]);
       return only[0];
     }
+  }
+  // a key the save does not have (T214): the 0 asNumber gives is the read the code names, noted empty at its place;
+  // never a working map's (a cache's key not yet set, T192)
+  if (pat && v === 0) {
+    const empty = pool.filter(
+      ([p, val]) =>
+        val === EMPTY_READ &&
+        matchPattern(p, pat) &&
+        !/^(DNSM|DummyNumbersStatManager)\./.test(p),
+    );
+    if (empty.length === 1 && empty[0]) return empty[0][0];
   }
   // how many entries a map of the save holds (T209, form 4: the game's D.mapCount(FarmCrop)): the map's path, a quantity
   const count = countOf(node);

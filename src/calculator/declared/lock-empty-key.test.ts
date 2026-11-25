@@ -6,12 +6,11 @@ import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 
-const leaf = (key: string, read: string, kind = "level"): BlueprintNode => ({
-  key,
-  name: key,
-  ref: { read },
-  leaf: kind as BlueprintNode["leaf"],
-});
+const leaf = (
+  key: string,
+  read: string,
+  kind: NonNullable<BlueprintNode["leaf"]> = "level",
+): BlueprintNode => ({ key, name: key, ref: { read }, leaf: kind });
 
 test("the recorder notes the read of a key the save does not have, at its place, with no write's number (T214)", () => {
   const { rec } = recorded("TreeEmptyKeyRoot");

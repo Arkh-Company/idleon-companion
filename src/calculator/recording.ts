@@ -8,6 +8,8 @@ export type RecValue = number | boolean | string | null;
 export const LOG_CAP = 20_000;
 /** How many first reads recorder.js keeps in a call's `r`; the rest is only in the step log (numbers) or dropped. */
 export const READ_CAP = 80;
+/** The value recorder.js notes for the read of a key the state does not have (T214), at its place in the step log. */
+export const EMPTY_READ = "(undefined)";
 
 export interface RecNode {
   id: number;

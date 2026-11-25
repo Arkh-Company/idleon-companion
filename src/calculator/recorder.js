@@ -160,8 +160,9 @@
       return;
     }
     var numeric = typeof v === "string" && v.trim() !== "" && !isNaN(Number(v));
-    // the fourth field is the last write before this read: the write it saw, at every read and not only the first
-    if (typeof v === "number" || numeric)
+    // the fourth field is the last write before this read: the write it saw; a key the save lacks has none (T214)
+    if (v === undefined) log([path, "(undefined)", stepAt(), null, S.seq]);
+    else if (typeof v === "number" || numeric)
       log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
     if (fresh) {
