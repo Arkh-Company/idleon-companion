@@ -171,6 +171,8 @@ Semeada pela tabela da 009 (`tree/systems.ts`, a ordem e os emojis da V1), sem a
 
 - Uma linha `leaf: "quantity"` cujo `ref` é o valor que o jogo leu, com um filho-modelo `each` sobre a lista que a volta percorre; cada item é uma folha `condition` com o teste do jogo.
 - A trava confere que o valor da linha é o número de itens cujo teste a gravação viu verdadeiro, volta a volta, pelo lugar.
+- A forma só vale quando cada escrita do autor é um passo de 1 ou o início `= 0`, e o código tem exatamente um `+ 1` que escreve o próprio caminho; fora disso, a volta é recusada com o motivo ("escreve outro caminho", "mais de um passo").
+- Um personagem em que nenhum item passa fecha em 0, com os itens testados como ✗ (T183); sem nenhuma volta testada, a linha é recusada.
 - Exemplo inventado: `for i: if (TreeList[i] >= 2) n = round(n + 1)` dá a linha `quantity` com `each: { list: "TreeList[*]", as: "i" }` e o filho `condition` `TreeList[{i}]`.
 
 ## Gabarito (`AnswerKey`)
