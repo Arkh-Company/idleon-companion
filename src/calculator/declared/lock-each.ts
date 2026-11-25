@@ -89,8 +89,9 @@ function sameDescent(n: RecNode, m: RecNode, rec: Recording): boolean {
 
 /**
  * The model's calls of a level by their key (T205): how many lines each key is, one per call; and the keys of two calls
- * the place does not separate: no turn of a loop between them (no step of the call ran twice there) and not the same
- * node by node. Identical calls are no tie: each is its own line, as the game counts each.
+ * the place does not separate: not the same node by node, a loop's turns between them or not (each line of a key is
+ * tied by the key to its first call: r1 of parts P and Q). Identical calls are no tie: each is its own line, as the
+ * game counts each.
  */
 export function listCalls(
   children: readonly BlueprintNode[],
@@ -108,22 +109,10 @@ export function listCalls(
   });
   for (const n of calls)
     times.set(callRef(n), (times.get(callRef(n)) ?? 0) + 1);
-  const turned = (a: number, b: number) => {
-    const seen = new Set<number>();
-    for (const [op] of (scope.x ?? []).slice(a, b)) {
-      if (seen.has(op)) return true;
-      seen.add(op);
-    }
-    return false;
-  };
   const refused = new Set<string>();
   calls.forEach((n, i) => {
     for (const m of calls.slice(i + 1))
-      if (
-        callRef(n) === callRef(m) &&
-        !turned(n.pxi, m.pxi) &&
-        !sameDescent(n, m, rec)
-      )
+      if (callRef(n) === callRef(m) && !sameDescent(n, m, rec))
         refused.add(callRef(n));
   });
   return { times, refused: [...refused] };
