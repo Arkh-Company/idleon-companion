@@ -6,9 +6,11 @@
 import { expect, test } from "vitest";
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
-import { recorded } from "./lock-fixture.ts";
+import { mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { inventedRecorder, recorded } from "./lock-fixture.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
 import type { RefArg } from "./refs.ts";
+import { saveArgs } from "./save-args.ts";
 
 const draftOf = (root: string) => {
   const { rec, key, ops } = recorded(root);
@@ -275,6 +277,25 @@ test("a key set from the save on an if's side in a turn before the last: the rec
     'argumento do save por extenso: invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
   ]);
   expect(rowLock("TreeWorkTurn", "*", attrs)).toEqual([]);
+});
+
+test("a working map's key read in a builder of the pass: its write is the pass's scratch, among the spliced ones (r2 of P and Q)", () => {
+  const r = inventedRecorder();
+  const rec = r.record(mosaicOf({ TreeCondOn: 1 }), [["TreeSaveArg", [0]]], {
+    recompute: [],
+    builders: [
+      {
+        cache: "TreeWhoCache",
+        run: { block: "TreeWorkCond", args: [] },
+        keepLive: true,
+      },
+    ],
+  });
+  const cond = rec.nodes.find((n) => n.b === "TreeWorkCond");
+  const row = rec.nodes.find((n) => n.b === "TreeDeclRow" && n.p === cond?.id);
+  if (!row) throw new Error("no TreeDeclRow in the pass");
+  expect(rec.spliced.map((w) => w.path)).toContain("DNSM.TreeCond");
+  expect(saveArgs(rec, r.ops, row)).toEqual({ save: [0], unsure: [] });
 });
 
 test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
