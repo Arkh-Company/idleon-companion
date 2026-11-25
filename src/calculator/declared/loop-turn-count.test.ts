@@ -180,6 +180,38 @@ test("the lock checks a turn's count line's arguments at its first reference's c
   ]);
 });
 
+test("the lock ties a turn's pass-through call by the turn's place, never by order, when every turn calls it alike (r1 of part U)", () => {
+  // TreeTurnsCountSame: TreeTurnAt() in each turn, its value the turn's; the other turn's call is before one line, after the other
+  const same = (turn: number): BlueprintNode => ({
+    key: `item-turn-${String(turn)}`,
+    name: "Item",
+    ref: { call: "TreeTurnAt", args: [] },
+    children: [
+      {
+        key: "item",
+        name: "Item",
+        ref: { call: "TreeTurnAt", args: [] },
+        children: [
+          {
+            key: "list",
+            name: "List",
+            ref: { read: `TreeList[${String(turn - 1)}]` },
+            leaf: "level",
+          },
+        ],
+      },
+      {
+        key: "twin",
+        name: "Twin",
+        ref: { read: `TreeTwins[${String(turn - 1)}]` },
+        leaf: "record",
+        termPart: { system: "achievements" },
+      },
+    ],
+  });
+  expect(lock("TreeTurnsCountSame", [same(1), same(2)])).toEqual([]);
+});
+
 test("a turn whose item is a bare number has no part: the call's other calls are no line of it (T193)", () => {
   const root = "TreeTurnsCountOneRoot";
   const { rec, key, ops } = recorded(root);
