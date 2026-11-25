@@ -3014,7 +3014,8 @@ lime.$scripts.N = function (_exports, $global) {
     return t;
   };
   // ...one whose item's call takes an argument from the save (r1 of part U): the line's arguments are its call's
-  Blocks._customBlock_TreeTurnItemAt = function (i, s) {
+  // its second argument, from the save, is only recorded (the call's arguments), never used
+  Blocks._customBlock_TreeTurnItemAt = function (i) {
     return state().TreeList[i] * 2;
   };
   Blocks._customBlock_TreeTurnsCountSave = function () {
