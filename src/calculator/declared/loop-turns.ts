@@ -19,6 +19,7 @@ import type { Opening } from "./level-openings.ts";
 import { partsOf } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
 import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
+import { callAt } from "./lock-values.ts";
 import { writesBy } from "./own-writes.ts";
 
 /** One line a turn, by its item, or the refusal's reason when the turns do not part by their place. */
@@ -53,6 +54,7 @@ function turnsOf(
     const count = refs.length > 0 && {
       expr: item,
       refs,
+      head: callAt(leaves, first, scope, ctx, steps?.range),
       ...(steps && { steps }),
     };
     below.push({

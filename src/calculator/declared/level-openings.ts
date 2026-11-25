@@ -35,6 +35,8 @@ export interface Opening {
    * the turn's `steps`; the line is the first's, the others are termPart children, and it closes by `expr`.
    */
   refs?: string[];
+  /** The call of `refs[0]`, by its place (lock-values.ts callAt): where the line's arguments are checked (r1 of U). */
+  head?: RecNode | null;
 }
 
 /** The part's label in a level's coverage: with its turn's number when another turn has the same part (T198). */
@@ -105,6 +107,7 @@ export const levelOfOpening = (
   write?: RecWrite;
   steps?: BlockSteps;
   termParts?: ReadonlySet<string>;
+  line?: { head: RecNode | null };
 } =>
   o.refs
     ? {
@@ -113,6 +116,7 @@ export const levelOfOpening = (
         value: o.value,
         ...(o.steps ? { steps: o.steps } : {}),
         termParts: new Set(o.refs.slice(1)),
+        line: { head: o.head ?? null },
       }
     : o.call
       ? {

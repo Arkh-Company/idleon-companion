@@ -39,7 +39,7 @@ import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, savedTwice } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 import { writtenArgs } from "./written-args.ts";
-import { callIn, covers, textCondition, valueIn } from "./lock-values.ts";
+import { covers, levelOfChild, textCondition, valueIn } from "./lock-values.ts";
 
 export interface LevelContext {
   rec: Recording;
@@ -82,6 +82,8 @@ export interface Level {
   /** The cache's write the level's call made (level-openings.ts): its turns open it; `steps`, its turn's. */
   write?: RecWrite;
   steps?: BlockSteps | undefined;
+  /** A turn's count line (T193): the call of its first reference, where its arguments are checked (r1 of part U). */
+  line?: { head: RecNode | null };
 }
 
 export const emptyOut = (): LevelOut => ({
@@ -111,31 +113,6 @@ export function checkCondition(
   else if ((v !== 0) !== present)
     out.errors.push({ kind: "conditionMismatch", where, expected, got: v });
   else if (present) leafCheck(c, where, out);
-}
-
-/** The level a declared node opens into: a call's returned expression, or a read standing for itself. */
-function levelOfChild(
-  child: BlueprintNode,
-  parent: Level,
-  leaves: readonly Expr[],
-  ctx: LevelContext,
-  only?: ReadonlySet<string>,
-): Level {
-  const { ref } = child;
-  const n =
-    ref && "call" in ref
-      ? callIn(ref, parent.scope, leaves, ctx, only)
-      : undefined;
-  if (n) return { expr: returnOf(n, ctx), scope: n, value: num(n.v) };
-  const p =
-    ref && "read" in ref
-      ? ref.read.replaceAll("{character}", String(ctx.character))
-      : "";
-  const value = ref ? valueIn(ref, parent.scope, leaves, ctx) : null;
-  // the read at its place in the parent's expression (one only), for a cache's author (cache-author.ts)
-  const at = onlyRead(parent.expr, p);
-  const expr: Expr = at ?? { t: "read", p, v: value };
-  return { expr, scope: parent.scope, value, steps: parent.steps };
 }
 
 /**
@@ -294,8 +271,10 @@ function descend(
   out: LevelOut,
 ): void {
   const { ref } = node;
-  // a call's argument the game gave from the character's index or the save is never written out (save-args.ts)
-  out.errors.push(...writtenArgs(ref, level.scope, ctx, node.itemArg));
+  // a call's argument the game gave from the character's index or the save is never written out (save-args.ts); a
+  // turn's count line's, at its first reference's call
+  const at = level.line?.head ?? level.scope;
+  out.errors.push(...writtenArgs(ref, at, ctx, node.itemArg));
   // a line with a link (T200): its value came by its ref, its tree is the other number's; the descent ends here
   if (node.tree !== undefined) {
     out.counts.leaves++;

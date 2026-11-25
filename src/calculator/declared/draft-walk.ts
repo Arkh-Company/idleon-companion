@@ -2,8 +2,7 @@
 // recording shows it, level by level, down to the leaves the recording ties, by the parts the lock asks for
 // (level-parts.ts partsOf) or the opening the recording makes (level-openings.ts).
 import type { RecNode } from "../recording.ts";
-import type { Expr, LoopTurn } from "../recorded/steps.ts";
-import { callRef } from "./answer-key-pool.ts";
+import type { Expr } from "../recorded/steps.ts";
 import { topOf } from "./answer-key.ts";
 import type { AnswerTerm } from "./answer-key.ts";
 import { onlyRead } from "./cache-author.ts";
@@ -11,6 +10,7 @@ import { openingOf } from "./level-openings.ts";
 import type { Opening } from "./level-openings.ts";
 import { partsOf, textPart } from "./level-parts.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import { callAt, kidOf } from "./lock-values.ts";
 import {
   keyOfLeaf,
   leavesOf,
@@ -44,22 +44,6 @@ const UNRECORDED = "a chamada não tem gravação neste lugar";
 
 // shortcut: the descent stops 12 levels down, pending `descend`; raise it when a number of the game goes deeper
 const MAX_DEPTH = 12;
-
-/** The call `scope` made whose reference is the part `p` (in the turn `range`, when given), or null. */
-const kidOf = (
-  scope: RecNode,
-  p: string,
-  ctx: LevelContext,
-  range?: LoopTurn,
-): RecNode | null =>
-  scope.c
-    .map((id) => ctx.rec.nodes[id])
-    .find(
-      (k) =>
-        k !== undefined &&
-        callRef(k) === p &&
-        (!range || (k.pxi >= range.from && k.pxi <= range.to)),
-    ) ?? null;
 
 /**
  * A part down to its leaves; a read the recording opens (level-openings.ts: a cache's author) opens into its parts, and a
@@ -209,10 +193,7 @@ function walkOpening(
   const [first, ...rest] = o.refs.map((p) => {
     const leaf = leaves.find((l) => keyOfLeaf(l, ctx.rec) === p);
     // the call at its place in the item, else the turn's own call (what gave a pass-through's write, T188)
-    const call =
-      leaf?.t === "call"
-        ? (ctx.rec.nodes[leaf.id] ?? null)
-        : reader && kidOf(reader, p, ctx, o.steps?.range);
+    const call = reader && callAt(leaves, p, reader, ctx, o.steps?.range);
     // a read has its place in the turn's steps, as the lock's line level
     return call
       ? walkPart(p, call, ctx, depth + 1, reader)
