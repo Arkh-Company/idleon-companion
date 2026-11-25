@@ -81,7 +81,12 @@ test("the line keeps the pending places the piece still has open; filled in its 
   // the places below the line, in the piece's body
   const under = (d: DraftBlueprint) =>
     d.pending.filter((p) => /\/children\/\d+\/children\//.test(p.where));
-  expect(under(open).map((p) => p.kind)).toEqual(["leaf", "leaf"]);
+  expect(under(open).map((p) => p.kind)).toEqual([
+    "name",
+    "leaf",
+    "name",
+    "leaf",
+  ]);
   // filled once, in the piece's file: the recipe keeps none of them
   const children = piece.children as Raw[];
   const filled = {
