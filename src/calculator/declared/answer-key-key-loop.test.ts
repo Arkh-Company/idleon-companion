@@ -41,7 +41,7 @@ test("a write right after the text of its key has its place at the step before t
   expect(last && placeOfWrite(author, stepAt, last.xi, r.ops)).toBe(-1);
 });
 
-test("the cache's running total closes through the loop's turn of its last write: added, then multiplied", () => {
+test("the cache's running total closes through the loop's turn of its last write: added to 5, then multiplied by 2", () => {
   const { r, rec, author } = record();
   const made = makeSteps(rec, r.ops);
   const key = answerKeyOfSteps(rec, made.of(author.id), {
@@ -54,6 +54,6 @@ test("the cache's running total closes through the loop's turn of its last write
   if ("error" in key) throw new Error(key.reason);
   expect(key.pools.map((p) => [p.kind, p.value])).toEqual([
     ["additive", 5],
-    ["multi", 10],
+    ["multi", 2],
   ]);
 });

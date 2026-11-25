@@ -17,13 +17,16 @@ export function placeOfWrite(
   ops?: readonly Op[],
 ): number | undefined {
   const opAt = (p: number) => top.x?.[p]?.[0];
-  const own = opAt(xi - 1);
+  // the key's text built right before the write (`t.h["" + p] = x`, the game's StarSigns) records no value: past it
+  let k = xi - 1;
+  while (k > 0 && top.x?.[k]?.[1] === null) k--;
+  const own = opAt(k);
   if (own === undefined || !stepAt) return undefined;
   // a variable a turn added to (`t += x`) and then wrote: the turn's own assignment, never a step by its value (T177)
   if (ops?.[own]?.kind === "assign") return -1;
   const j = stepAt.findIndex((p) => opAt(p) === own);
   if (j < 0) return undefined;
-  return stepAt[j] === xi - 1 ? j : -1;
+  return stepAt[j] === k ? j : -1;
 }
 
 /** `list[item]`: the path a list's item is at, from the code's own text of the list and the item it compares. */
