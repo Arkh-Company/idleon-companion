@@ -14,3 +14,8 @@ test("a leaf's neutral value: 0 in a sum, 1 in a product and as the divisor, non
   expect(neutralOf(op("/", other, leaf), leaf)).toBe(1);
   expect(neutralOf(op("/", leaf, other), leaf)).toBe(null);
 });
+
+test("a leaf on the left of a subtraction has no neutral value: zeroing it gives minus the other side (r3 of P and Q)", () => {
+  expect(neutralOf(op("-", other, leaf), leaf)).toBe(0);
+  expect(neutralOf(op("-", leaf, other), leaf)).toBe(null);
+});
