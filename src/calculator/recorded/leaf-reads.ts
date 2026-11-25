@@ -55,10 +55,15 @@ export function readOfLeaf(
   const tp = pat ? null : textRead(node, pool, v);
   if (tp !== null) return tp;
   // the read at the leaf's own place (T231): the place decides, never the value among the call's reads; two there the
-  // place does not part are refused with the reason
+  // place does not part are refused with the reason; a variable reads nothing at its own place
+  const reads = unwrap(node).type !== "Identifier";
   const at = new Set(
     rxs.flatMap(([p, val, xi]) =>
-      xi === here && val === v && (!pat || matchPattern(p, pat)) && !table(p)
+      reads &&
+      xi === here &&
+      val === v &&
+      (!pat || matchPattern(p, pat)) &&
+      !table(p)
         ? [p]
         : [],
     ),
