@@ -93,8 +93,10 @@ test("a turn's item read first: its pass-through's call is the one that gave the
     key: `twin-${String(i)}`,
     name: "Twin",
     ref: { read: `TreeTwins[${String(i)}]` },
-    leaf: "record",
-    children: [{ ...at(i), termPart: { system: "achievements" } }],
+    children: [
+      { ...leaf("twin", `TreeTwins[${String(i)}]`), leaf: "record" },
+      { ...at(i), termPart: { system: "achievements" } },
+    ],
   });
   expect(lockOf(relay, "TreeAuthorRelayRead", [line(0), line(2)])).toEqual([]);
 });
