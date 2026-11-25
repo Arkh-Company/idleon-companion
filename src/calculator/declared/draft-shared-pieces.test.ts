@@ -216,6 +216,83 @@ test("a place the occurrence leaves pending `descend` with no children calls the
   });
 });
 
+test("a place the piece's file leaves open is pending below the line, even where the occurrence filled it (part S)", () => {
+  const where = "pools/0/groups/0/sources/0/children/0";
+  const piece = {
+    id: "invented-shared",
+    params: [],
+    children: [
+      { key: "base", name: null, ref: { read: "TreeBase" } },
+      {
+        key: "level",
+        name: "Level",
+        ref: { read: "TreeLevel" },
+        leaf: "rawBonus",
+      },
+    ],
+  };
+  const use = knownUse(piece, {
+    where,
+    branch: { name: "invented-shared", params: [], args: {} },
+    // the occurrence named its first child and left its second open: the piece's file is the other way round
+    children: [
+      { key: "base", name: "Base", ref: { read: "TreeBase" } },
+      { key: "level", name: null, ref: { read: "TreeLevel" } },
+    ],
+    pending: [
+      { where: "/children/0", kind: "leaf" },
+      { where: "/children/1", kind: "name" },
+      { where: "/children/1", kind: "leaf" },
+    ],
+  });
+  expect(use).toEqual({
+    piece: { name: "invented-shared", args: {} },
+    pending: [
+      { where: `${where}/children/0`, kind: "leaf" },
+      { where: `${where}/children/0`, kind: "name" },
+    ],
+  });
+  // the line with those places passes the load
+  const out = parseBlueprint(
+    {
+      id: "invented-shared-root",
+      root: { name: "Invented", ref: { call: "TreeSharedRootA", args: [] } },
+      pools: [
+        {
+          kind: "additive",
+          groups: [
+            {
+              system: "cards",
+              sources: [
+                {
+                  key: "root",
+                  name: "Root",
+                  ref: { call: "TreeSharedRootA", args: [] },
+                  children: [
+                    {
+                      key: "shared",
+                      name: "Shared",
+                      ref: { call: "TreeShared", args: [] },
+                      piece: { name: "invented-shared", args: {} },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      pending: typeof use === "string" ? [] : use.pending,
+    },
+    {
+      fileId: "invented-shared-root",
+      systemIds: new Set(SYSTEMS.map((s) => s.id)),
+      pieces: new Map([["invented-shared", piece]]),
+    },
+  );
+  expect(out.ok ? out.stage : out.reason).toBe("draft");
+});
+
 test("a branch with a param met once calls the piece already written where its places hold the arg; never by value", () => {
   // the piece of TreeCommonConst from a draft that met it twice: TreeList[{k}], and TreeTwins[1] that stays written
   const known = written(draftOf("TreeCommonTwiceRoot", CONST));
