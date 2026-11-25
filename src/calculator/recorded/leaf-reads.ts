@@ -1,13 +1,20 @@
 // The read a leaf of a step stands for (spec 008, T022, build-tree.cjs step 8d; moved out of steps.ts as it was): the
 // read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), the read at
-// the leaf's own place (T231), else, for a leaf with no place or a variable, the one read of the call that holds the
+// the leaf's own place (T231), else, for a leaf with no place, the one read of the call that holds the
 // value, or the one text cell worth it. A path used up is not bound again.
 import { EMPTY_READ } from "../recording.ts";
 import type { RecValue } from "../recording.ts";
-import { astPattern, matchPattern, methodOf, textRead, unwrap } from "./ast.ts";
+import {
+  astPattern,
+  at,
+  matchPattern,
+  methodOf,
+  textRead,
+  unwrap,
+} from "./ast.ts";
 import type { AstNode } from "./ast.ts";
 import { GAME_TABLE } from "./step-types.ts";
-import type { Reads } from "./step-types.ts";
+import type { Expr, Reads } from "./step-types.ts";
 
 export function readOfLeaf(
   node: AstNode,
@@ -78,17 +85,11 @@ export function readOfLeaf(
       );
   if (tp !== null) return tp;
   // the read at the leaf's own place (T231): the place decides, never the value among the call's reads; two there the
-  // place does not part are refused with the reason; a variable reads nothing at its own place. A leaf that reads, with
-  // a place, is never tied by value elsewhere (T231 r1). shortcut: a variable still is (a loop's max set in the turn
-  // before, TreeDeclBest); tie it by the turn's write when the session's task does
-  const reads = unwrap(node).type !== "Identifier";
+  // place does not part are refused with the reason. A leaf with a place is never tied by value elsewhere (T231 r1); a
+  // variable with one never comes here: it is its write before it (T232, steps.ts)
   const at = new Set(
     rxs.flatMap(([p, val, xi]) =>
-      reads &&
-      xi === here &&
-      worth(val) &&
-      (!pat || matchPattern(p, pat)) &&
-      !table(p)
+      xi === here && worth(val) && (!pat || matchPattern(p, pat)) && !table(p)
         ? [p]
         : [],
     ),
@@ -102,7 +103,7 @@ export function readOfLeaf(
     usedR.add(one);
     return one;
   }
-  if (here !== undefined && reads) return null;
+  if (here !== undefined) return null;
   const same = pool.filter(([p, val]) => val === v && !table(p));
   if (same.length === 1 && same[0] && !usedR.has(same[0][0])) {
     usedR.add(same[0][0]);
@@ -121,6 +122,65 @@ export function readOfLeaf(
     return txt[0][0];
   }
   return null;
+}
+
+/**
+ * What a variable no recorded step set before its place holds (T232): the number of the code it was set to (a loop's
+ * `best = 0`), or the one read its setting code names among the reads up to its place; null with neither.
+ */
+export function setBy(
+  def: AstNode | null | undefined,
+  pool: Reads,
+  v: number,
+): Expr | null {
+  if (def?.type === "Literal")
+    return def.value === v ? { t: "def", e: { t: "num", v }, v } : null;
+  // a member of one name (`s.TreeLevel`) names its path too, since a variable reads nothing by itself
+  const name = def?.type === "MemberExpression" && !def.computed;
+  const pat = def
+    ? (astPattern(def) ??
+      (name ? { toks: [String(at(def, "property").name)], root: false } : null))
+    : null;
+  const hits = pat
+    ? pool.filter(([p, x]) => x === v && matchPattern(p, pat))
+    : [];
+  const [one] = hits;
+  return one && hits.length === 1 ? { t: "read", p: one[0], v } : null;
+}
+
+/** The reads made up to each place `pos` of a call's log, from `from` on (a turn's), each path at its last value. */
+export function readsUpTo(
+  rxs: readonly (readonly [string, RecValue, number, ...unknown[]])[],
+  from: number | undefined,
+): (pos: number) => Reads {
+  const memo = new Map<number, Reads>();
+  return (pos) => {
+    const hit = memo.get(pos);
+    if (hit) return hit;
+    const m = new Map<string, RecValue>();
+    for (const x of rxs) {
+      if (x[2] > pos) break;
+      if (from === undefined || x[2] >= from) m.set(x[0], x[1]);
+    }
+    const out = [...m];
+    memo.set(pos, out);
+    return out;
+  };
+}
+
+/** The first place of a leaf at `here`: the steps logged inside it right before its own (a text's `"" + string(…)`). */
+export function placeFrom(
+  node: AstNode,
+  here: number | undefined,
+  opAt: (pos: number) => { node: AstNode } | undefined,
+): number | undefined {
+  const within = (j: number) => {
+    const o = opAt(j)?.node;
+    return !!o && o.range[0] >= node.range[0] && o.range[1] <= node.range[1];
+  };
+  let from = here;
+  while (from !== undefined && within(from - 1)) from--;
+  return from;
 }
 
 /** A game table's read, or a length: never a number of the formula by its value. */

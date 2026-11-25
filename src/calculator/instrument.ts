@@ -34,6 +34,8 @@ export interface Op {
   freeSides?: DefCall["sides"][];
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
+  /** For a leaf that is a variable: every expression that sets it in the block, a loop's later ones too (T232). */
+  writes?: AnyNode[];
   /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
   owner?: AnyNode;
   /** The block's function text; the node ranges count from 1 inside it (it was parsed as `(text)`). */
@@ -263,6 +265,10 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
       const def = m.kind === "leaf" ? defOf(m.node, defs) : null;
+      const writes =
+        m.kind === "leaf" && m.node.type === "Identifier"
+          ? (defs.get(m.node.name as string) ?? []).map((d) => d.rhs)
+          : [];
       const prevDef = defOf(target, defs);
       // a leaf's value is the leaf (a variable opens into its def); an assignment's, what set it before
       const value = m.kind === "leaf" ? m.node : prevDef;
@@ -279,6 +285,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         ...(callIn && { callIn: true as const }),
         ...(callIn && free.length > 0 && { freeSides: free }),
         prevDef,
+        ...(writes.length > 0 && { writes }),
         fnText: text,
         ...(m.owner ? { owner: m.owner } : {}),
       });
