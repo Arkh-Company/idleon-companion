@@ -1,6 +1,8 @@
 // The read a step's leaf stands for, by its own place (spec 010, T231): the reads its record's step count holds decide,
 // never the value among the call's reads nor their order; two there are refused with the reason.
 import { expect, test } from "vitest";
+import { stepsGuide } from "../declared/draft-steps.ts";
+import { recorded } from "../declared/lock-fixture.ts";
 import { GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { recordingOf } from "../fixtures/recording-fixture.ts";
 import { instrument } from "../instrument.ts";
@@ -133,6 +135,17 @@ test("a number read as text at the leaf's own place is its read; one read as tex
     l: { t: "val", v: 6 },
     r: { t: "read", p: "A", v: 6 },
   });
+});
+
+test("the guide shows a leaf's two reads at its place as a value with no source, with the reason (r1 of part X)", () => {
+  // TreeTieRead's l[TreeTwins[0]] reads TreeTwins[0] and TreeList[2] at its place, both 2
+  const { rec, key, ops } = recorded("TreeTieRoot", {
+    TreeTwins: [2, 2],
+    TreeList: [1, 2, 2],
+  });
+  expect(stepsGuide(key, rec, ops)).toContain(
+    "passo: (TreeBase * «2 sem fonte: duas leituras de valor 2 no lugar da folha (TreeTwins[0]; TreeList[2]), e o lugar não as separa») = 8",
+  );
 });
 
 test("an author's pass-through read by its alias in a turn is its read there, not «sem fonte» beside the cache's same value (T231)", () => {

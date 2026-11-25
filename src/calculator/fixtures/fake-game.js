@@ -2110,6 +2110,16 @@ lime.$scripts.N = function (_exports, $global) {
         U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * d.TreeRelayDN;
     }
   };
+  // Spec 010 (r1 of part X): a leaf that reads its index and the list's entry at its own place, two reads of one value
+  // when the index and the entry are equal
+  Blocks._customBlock_TreeTieRead = function () {
+    var s = state();
+    var l = s.TreeList;
+    return s.TreeBase * l[s.TreeTwins[0]];
+  };
+  Blocks._customBlock_TreeTieRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeTieRead();
+  };
   // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
   Blocks._customBlock_TreeAuthorRelayEarly = function () {
     var U = A["com.stencyl.utils.Utils"];
