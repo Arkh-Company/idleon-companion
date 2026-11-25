@@ -14,7 +14,7 @@ import {
   unwrap,
 } from "../recorded/ast.ts";
 import type { AstNode } from "../recorded/ast.ts";
-import { at } from "./character-args.ts";
+import { at, isNode } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
 import { defOf, fnOf, onTheWay } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
@@ -124,12 +124,23 @@ function rhsOf(
     const read = astPattern(n as AstNode);
     return read ? { read } : null;
   };
+  // the step right before the write a `? :`'s or an `if`'s test: only the side it took ran (its recorded value)
+  const [id, took] = node.x?.[write.xi - 1] ?? [];
+  const test = ops[id ?? -1];
+  const owner = test?.kind === "test" ? test.owner : undefined;
+  const side =
+    owner && typeof took === "boolean"
+      ? (owner as AnyNode)[took ? "consequent" : "alternate"]
+      : undefined;
+  const ran = (a: AnyNode) =>
+    !isNode(side) ||
+    (a.range[0] >= side.range[0] && a.range[1] <= side.range[1]);
   // the first assignment to the written key after the step before the write: no step ran between them
   const [first] = f.all
     .filter((a) => {
       if (a.type !== "AssignmentExpression" || a.operator !== "=") return false;
       // the place first: a left side's pattern reads the variables back, over the whole function (part R)
-      if (a.range[0] < from || a.range[1] > to) return false;
+      if (a.range[0] < from || a.range[1] > to || !ran(a)) return false;
       const left = at(a, "left");
       const pat = left.type === "MemberExpression" ? patternOf(left) : null;
       return pat !== null && matchPattern(write.path, pat);
