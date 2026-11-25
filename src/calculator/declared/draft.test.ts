@@ -199,12 +199,15 @@ test("a leaf call's argument equal to the character's index is not decided by it
   const wait = { where: "pools/0/groups/1/sources/0", kind: "descend" };
   expect(sourceAt(d, 0, 1).children?.length).toBeGreaterThan(0);
   expect(d.pending).not.toContainEqual(wait);
-  // another character's draft has no such argument
+  // another character's draft has no such argument: TreeDeclRow(0) waits for no descent there
   const other = draftBlueprint("decl-draft", ROOT, key, rec, ops, {
     character: 1,
     talentOrder: [],
   });
-  expect(other.pending).not.toContainEqual(wait);
+  expect(other.pending).not.toContainEqual({
+    where: "pools/0/groups/2/sources/0",
+    kind: "descend",
+  });
   expect(stepsGuide(key, rec, ops)).toMatch(
     /TreeDeclOwn\(0\)[^\n]*\n(?:[^\n]*\n)*?\s+argumento 1 = 0: o índice do personagem\? se for, a receita escreve "\{character\}"/,
   );
@@ -299,8 +302,6 @@ test("filled where it is pending, the draft passes the lock: its order and its p
         (o, k) => o[k] as Record<string, unknown>,
         d,
       );
-    // an argument equal to the character's index that is not the character: kept as it is
-    if (p.kind === "descend") continue;
     if (p.kind === "name") at.name = "Filled Name";
     else if (p.kind === "leaf") at.leaf = "rawBonus";
     else if ("sources" in at) at.system = p.where;
