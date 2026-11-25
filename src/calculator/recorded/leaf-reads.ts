@@ -126,7 +126,8 @@ export function readOfLeaf(
 
 /**
  * What a variable no recorded step set before its place holds (T232): the number of the code it was set to (a loop's
- * `best = 0`), or the one read its setting code names among the reads up to its place; null with neither.
+ * `best = 0`), or the one read its setting code names among the reads up to its place, its value only confirming it
+ * (T232 r1: never picked by value); null with neither, or with a computed key the code does not name.
  */
 export function setBy(
   def: AstNode | null | undefined,
@@ -135,24 +136,27 @@ export function setBy(
 ): Expr | null {
   if (def?.type === "Literal")
     return def.value === v ? { t: "def", e: { t: "num", v }, v } : null;
-  // a member of one name (`s.TreeLevel`) names its path too, since a variable reads nothing by itself
+  // a member of one name (`s.TreeLevel`) names that path whole, since a variable reads nothing by itself
   const name = def?.type === "MemberExpression" && !def.computed;
   const pat = def
     ? (astPattern(def) ??
-      (name ? { toks: [String(at(def, "property").name)], root: false } : null))
+      (name ? { toks: [String(at(def, "property").name)], root: true } : null))
     : null;
-  // a working map's value is the call's own (T209 form 3), never a read here; a number read as text counts
-  const hits = pat
-    ? pool.filter(
-        ([p, x]) =>
-          (x === v ||
-            (typeof x === "string" && x.trim() !== "" && Number(x) === v)) &&
-          matchPattern(p, pat) &&
-          !/^(DNSM|DummyNumbersStatManager)\./.test(p),
-      )
-    : [];
+  // a working map's value is the call's own (T209 form 3), never a read here
+  const hits =
+    pat && !pat.toks.includes(null)
+      ? pool.filter(
+          ([p]) =>
+            matchPattern(p, pat) &&
+            !/^(DNSM|DummyNumbersStatManager)\./.test(p),
+        )
+      : [];
   const [one] = hits;
-  return one && hits.length === 1 ? { t: "read", p: one[0], v } : null;
+  // a number read as text counts
+  const x = one?.[1];
+  const worth =
+    x === v || (typeof x === "string" && x.trim() !== "" && Number(x) === v);
+  return one && hits.length === 1 && worth ? { t: "read", p: one[0], v } : null;
 }
 
 /** The reads made up to each place `pos` of a call's log, from `from` on (a turn's), each path at its last value. */
