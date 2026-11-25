@@ -9,29 +9,30 @@ import { makeSteps } from "./steps.ts";
 
 type Rx = NonNullable<Parameters<typeof recordingOf>[0][0]["rx"]>;
 
-/** `return s.B + <right>;` recorded with the reads `rx`: both leaves worth 6, the sum 12; the step's expression. */
-function stepOf(right: string, rx: Rx) {
+/** `return s.B + <right>;` recorded with the reads `rx`: s.B worth `left` (6), the right leaf 6; the step's expression. */
+function stepOf(right: string, rx: Rx, left = 6) {
   const { ops } = instrument(
     `Blocks._customBlock_T = function (p) { return s.B + ${right}; };`,
   );
   const [b, r] = ops.flatMap((o, i) => (o.kind === "leaf" ? [i] : []));
   const op = ops.findIndex((o) => o.kind === "op");
   const x: [number, number][] = [
-    [b ?? -1, 6],
+    [b ?? -1, left],
     [r ?? -1, 6],
-    [op, 12],
+    [op, left + 6],
   ];
   const r0 = rx.map(([path, v]): [string, number] => [path, Number(v)]);
-  const rec = recordingOf([{ b: "T", v: 12, r: r0, rx, x }]);
+  const rec = recordingOf([{ b: "T", v: left + 6, r: r0, rx, x }]);
   return makeSteps(rec, ops).of(0).steps[0]?.e;
 }
 
 test("a leaf whose code names no path is the read at its own place, never another read of its value before it (T231)", () => {
-  // B, worth the same 6, is read first, at the place before A's: the order and the value would both take it
+  // B, worth the same 6, is read first, at the place before A's: the order and the value would both take it; D, after
   expect(
     stepOf("s.A", [
       ["B", 6, 0],
       ["A", 6, 1],
+      ["D", 6, 2],
     ]),
   ).toMatchObject({
     l: { t: "read", p: "B", v: 6 },
@@ -64,6 +65,71 @@ test("a variable leaf reads nothing at its own place: a read made there with its
       ["Q", 6, 1],
     ]),
   ).toMatchObject({ r: { t: "val", v: 6 } });
+});
+
+test("a variable leaf with a place is never tied by value to the one read of its value made elsewhere (T231 r1)", () => {
+  // Q, the only read worth 6, was read at s.B's place, before p's
+  expect(
+    stepOf(
+      "p",
+      [
+        ["B", 5, 0],
+        ["Q", 6, 0],
+      ],
+      5,
+    ),
+  ).toMatchObject({ l: { t: "read", p: "B", v: 5 }, r: { t: "val", v: 6 } });
+});
+
+test("a leaf whose code names a path is the read of it at its own place, never one read elsewhere that the call's lock leaves alone (T231 r1)", () => {
+  // x.A is 6 at the leaf's place and 5 after it, so the call's lock takes it out; y.x.A and z.x.A, worth 6, are read
+  // before and after the place
+  expect(
+    stepOf(
+      "s.x.A",
+      [
+        ["B", 5, 0],
+        ["y.x.A", 6, 0],
+        ["x.A", 6, 1],
+        ["x.A", 5, 2],
+        ["z.x.A", 6, 2],
+      ],
+      5,
+    ),
+  ).toMatchObject({ r: { t: "read", p: "x.A", v: 6 } });
+});
+
+test("two reads of the path a leaf names at its own place are refused with the reason (T231 r1)", () => {
+  expect(
+    stepOf(
+      "s.x.A",
+      [
+        ["B", 5, 0],
+        ["x.A", 6, 1],
+        ["w.x.A", 6, 1],
+      ],
+      5,
+    ),
+  ).toMatchObject({
+    r: {
+      t: "val",
+      v: 6,
+      why: "duas leituras de valor 6 no lugar da folha (x.A; w.x.A), e o lugar não as separa",
+    },
+  });
+});
+
+test("a number read as text at the leaf's own place is its read; one read as text elsewhere is not (T231 r1)", () => {
+  expect(
+    stepOf("s.A", [
+      ["B", 6, 0],
+      ["C", "6", 0],
+      ["A", "6", 1],
+    ]),
+  ).toMatchObject({
+    l: { t: "val", v: 6 },
+    r: { t: "read", p: "A", v: 6 },
+  });
 });
 
 test("an author's pass-through read by its alias in a turn is its read there, not «sem fonte» beside the cache's same value (T231)", () => {
