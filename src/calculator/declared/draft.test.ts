@@ -190,22 +190,24 @@ test("{character} stands for the tree's character; no character's index is writt
   expect(json).not.toMatch(/PlayerDATABASE\[\d+\]/);
 });
 
-test("a call's argument equal to the character's index is not decided by its value: the node waits for its descent, and the guide shows the argument", () => {
+test("a leaf call's argument equal to the character's index is not decided by its value: it waits for its descent, and the guide shows the argument", () => {
   // TreeDeclPass(0) passes its character, 0, to TreeDeclOwn
   const { rec, key, ops } = recorded("TreeDeclPass");
   const d = draftBlueprint("decl-draft", ROOT, key, rec, ops);
   expect(sourceAt(d, 0, 1).ref).toEqual({ call: "TreeDeclOwn", args: [0] });
+  // TreeDeclOwn(0) has its children, its read: descended already, it waits for no descent (r1 of P and Q)
   const wait = { where: "pools/0/groups/1/sources/0", kind: "descend" };
-  expect(d.pending).toContainEqual(wait);
-  expect(stepsGuide(key, rec, ops)).toMatch(
-    /TreeDeclOwn\(0\)[^\n]*\n(?:[^\n]*\n)*?\s+argumento 1 = 0: o índice do personagem\? se for, a receita escreve "\{character\}"/,
-  );
+  expect(sourceAt(d, 0, 1).children?.length).toBeGreaterThan(0);
+  expect(d.pending).not.toContainEqual(wait);
   // another character's draft has no such argument
   const other = draftBlueprint("decl-draft", ROOT, key, rec, ops, {
     character: 1,
     talentOrder: [],
   });
   expect(other.pending).not.toContainEqual(wait);
+  expect(stepsGuide(key, rec, ops)).toMatch(
+    /TreeDeclOwn\(0\)[^\n]*\n(?:[^\n]*\n)*?\s+argumento 1 = 0: o índice do personagem\? se for, a receita escreve "\{character\}"/,
+  );
   // a call the draft leaves as a leaf waits too: TreeDeclRow(0) reads nothing
   expect(sourceAt(d, 0, 2)).toMatchObject({
     ref: { call: "TreeDeclRow", args: [0] },
@@ -238,14 +240,9 @@ test("filled where it is pending, the draft passes the lock: its order and its p
   const d = JSON.parse(draftJson(draftOf("TreeDeclChain"))) as {
     pending: { where: string; kind: string }[];
   };
-  // only the calls with an argument 0, the character's index: TreeDeclTalent(0) twice and ArcadeBonus(0)
-  expect(
-    d.pending.filter((p) => p.kind === "descend").map((p) => p.where),
-  ).toEqual([
-    "pools/0/groups/1/sources/0/children/0",
-    "pools/0/groups/1/sources/0",
-    "pools/0/groups/2/sources/0",
-  ]);
+  // the calls with an argument 0, the character's index (TreeDeclTalent(0) twice and ArcadeBonus(0)), have their
+  // children: none waits for a descent (r1 of P and Q)
+  expect(d.pending.filter((p) => p.kind === "descend")).toEqual([]);
   for (const p of d.pending) {
     const at = p.where
       .split("/")
