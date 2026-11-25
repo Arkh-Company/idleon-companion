@@ -143,6 +143,8 @@ function walkPart(
     expr: level,
     scope: call,
     ...(own?.write && { write: own.write }),
+    // the reads of its write's turn, at their place (T212: the chosen member's), as the lock's levelOfOpening
+    ...(own?.steps && { steps: own.steps }),
   };
   const open = openingOf(at, ctx);
   if (typeof open === "string")
