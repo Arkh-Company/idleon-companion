@@ -51,7 +51,8 @@ test.each<[string, string, number, number, [string, number][]]>([
     "round",
     999,
     3,
-    [["Beanstalk: Other Dish", Math.round(WORN) + EMPORIUM]],
+    // the rounded worn food's read is at its own place (T231): the old tree follows it, by Vinicius's decision
+    [["Beanstalk: Other Dish", EMPORIUM]],
   ],
   [
     "a bonus kept in the block: the emporium's adds to the worn food's step",
