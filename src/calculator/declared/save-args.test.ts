@@ -268,6 +268,15 @@ test("a key set to 0 on every way, then from the save on the side of an if that 
   expect(rowLock("TreeWorkCond", 0)).toEqual([]);
 });
 
+test("a key set from the save on an if's side in a turn before the last: the recorded write decides, never the last turn's side (r2 of P and Q)", () => {
+  // TreeList [3, 0]: the first turn set TreeTurnK to the save's 3, the last one's if did not run
+  const attrs = { TreeList: [3, 0] };
+  expect(rowLock("TreeWorkTurn", 3, attrs)).toEqual([
+    'argumento do save por extenso: invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"',
+  ]);
+  expect(rowLock("TreeWorkTurn", "*", attrs)).toEqual([]);
+});
+
 test("a key set to 0, then by a block called in between from the save: the place does not decide (r1 of P and Q)", () => {
   expect(rowLock("TreeWorkMid", 3)).toEqual([
     "invented-work/0/luk-stats/row: o lugar não decide se o argumento 1 de TreeDeclRow vem do save",

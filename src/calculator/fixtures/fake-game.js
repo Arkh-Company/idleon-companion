@@ -2933,6 +2933,23 @@ lime.$scripts.N = function (_exports, $global) {
       )
     );
   };
+  // Spec 010 (r2 of parts P and Q): a key set to 0, then from the save on the side of an if in a loop's turn before the
+  // last: the write the read saw is that turn's, by its recorded number, never the side the last turn took.
+  Blocks._customBlock_TreeWorkTurn = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeTurnK = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      if (U.asNumber(a.engine.getGameAttribute("TreeList")[i]) > 0)
+        a.engine.getGameAttribute("DNSM").h.TreeTurnK = U.asNumber(
+          a.engine.getGameAttribute("TreeList")[i],
+        );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeTurnK),
+      )
+    );
+  };
   // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
   Blocks._customBlock_TreeSaveTwice = function () {
     var U = A["com.stencyl.utils.Utils"];
