@@ -134,7 +134,7 @@ export const levelOfOpening = (
         value: o.value,
         ...(o.steps ? { steps: o.steps } : {}),
         termParts: new Set(o.refs.slice(1)),
-        line: { head: o.head ?? null, ...(o.leaves && { leaves: o.leaves }) },
+        line: { head: o.head ?? null, leaves: o.leaves ?? [] },
       }
     : o.call
       ? {
