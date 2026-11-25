@@ -2876,6 +2876,7 @@ lime.$scripts.N = function (_exports, $global) {
     var d = a.engine.getGameAttribute("DNSM").h;
     var A = 0;
     if (state().TreeBase > 100) A = Blocks._customBlock_TreeDeclRow(2);
+    d.TreeRhsE = A;
     var x = state().TreeBase * 2;
     A = Blocks._customBlock_TreeDeclOwn(0);
     d.TreeRhsC = A;
