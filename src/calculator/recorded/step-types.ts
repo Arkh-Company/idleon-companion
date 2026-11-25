@@ -67,4 +67,9 @@ export type Reads = [string, RecValue][];
 export interface LoopTurn {
   from: number;
   to: number;
+  /**
+   * An author's write's turn (spec 010, T226): its calls began from its write before on the same path up to the write
+   * itself, by the writes' numbers (a call's `seq`), the call that gave a pass-through's write in it.
+   */
+  seq?: { from: number; to: number };
 }

@@ -138,13 +138,24 @@ const writeBefore = (
 ): RecWrite | null =>
   writesBy(rec, node.id).findLast((w) => w.seq < write.seq) ?? null;
 
-/** The place of the author's turn that gave its write in its step log: since its write before it. */
+/**
+ * The place of the author's turn that gave its write: its steps since its write before it (any path); its calls since
+ * its write before on the same path up to the write, inclusive, by the writes' numbers (T226).
+ */
 export function writeRange(
   rec: Recording,
   a: { node: RecNode; write: RecWrite },
 ): LoopTurn {
   const from = writeBefore(rec, a);
-  return { from: from?.xi ?? 0, to: a.write.xi - 1 };
+  const { path, seq } = a.write;
+  const same = writesBy(rec, a.node.id).findLast(
+    (w) => w.path === path && w.seq < seq,
+  );
+  return {
+    from: from?.xi ?? 0,
+    to: a.write.xi - 1,
+    seq: { from: same?.seq ?? 0, to: seq },
+  };
 }
 
 /** The steps of the author's turn that gave its write: since its write before it. */

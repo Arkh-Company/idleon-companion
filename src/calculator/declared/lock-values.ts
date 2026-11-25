@@ -12,14 +12,18 @@ import { keyMatches, matchRead, savedTwice } from "./refs.ts";
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
 
-/** Whether a call was made in the loop's turn `range` (any, with no range): its place in its caller's step log. */
-export const inTurn = (n: RecNode, range?: LoopTurn): boolean =>
-  !range || (n.pxi >= range.from && n.pxi <= range.to);
-
 /**
- * A turn's count line's loop turn (T193), where its children's calls are, as the draft's (draft-walk.ts walkOpening); an
- * author's write's turn ends before its write, the call that gave it after (pxi): no range there.
+ * Whether a call was made in the loop's turn `range` (any, with no range): its place in its caller's step log; in an
+ * author's write's turn, by the write it began after (T226: a step's place does not part a call right before a write
+ * from one right after it).
  */
+export const inTurn = (n: RecNode, range?: LoopTurn): boolean =>
+  !range ||
+  (range.seq && n.seq !== undefined
+    ? n.seq >= range.seq.from && n.seq < range.seq.to
+    : n.pxi >= range.from && n.pxi <= range.to);
+
+/** A turn's count line's loop turn (T193), where its children's calls are, as the draft's (draft-walk.ts walkOpening). */
 export const lineTurn = (level: Level): LoopTurn | undefined =>
   level.line ? level.steps?.range : undefined;
 
