@@ -54,6 +54,15 @@ test("the steps guide proposes no name proven by the character's index (Fase 4 r
   expect(guide).not.toContain("prova: names TreeDeclOwn(0)");
 });
 
+test("the steps guide reads the top call's marks in the recipe's root reference, as the draft (r3 of P and Q)", () => {
+  // TreeDeclPass(c) passes its c to TreeDeclOwn: with {character} at the root, TreeDeclOwn(0) has no proven name
+  const { rec, key, ops } = recorded("TreeDeclPass");
+  const ref = { call: "TreeDeclPass", args: ["{character}", 0, 0] };
+  const guide = stepsGuide(key, rec, ops, undefined, ref);
+  expect(guide).toContain("TreeDeclOwn");
+  expect(guide).not.toContain("prova: names TreeDeclOwn(0)");
+});
+
 const leaf = (read: string): BlueprintNode => ({
   key: read.toLowerCase().replace(/\W+/g, "-"),
   name: read,
