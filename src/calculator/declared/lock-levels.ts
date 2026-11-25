@@ -29,8 +29,9 @@ import { closeLevel } from "./lock-close.ts";
 import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
-import { keyMatches, matchRead, savedTwice } from "./refs.ts";
+import { keyMatches, savedTwice } from "./refs.ts";
 import { writtenArgs } from "./save-args.ts";
+import { callIn, covers, valueIn } from "./lock-values.ts";
 
 export interface LevelContext {
   rec: Recording;
@@ -78,40 +79,6 @@ export const emptyOut = (): LevelOut => ({
   counts: { closed: 0, closedByRecorded: 0, leaves: 0, branches: 0 },
   closedAt: [],
 });
-
-type Ref = NonNullable<BlueprintNode["ref"]>;
-/** The recorded call a call reference stands for in a level: one of its expression's, or one the level made. */
-function callIn(
-  ref: Extract<Ref, { call: string }>,
-  scope: RecNode,
-  leaves: readonly Expr[],
-  ctx: LevelContext,
-): RecNode | undefined {
-  const calls = [
-    ...leaves.flatMap((l) => (l.t === "call" ? [l.id] : [])),
-    ...scope.c,
-  ].flatMap((id) => ctx.rec.nodes[id] ?? []);
-  // two calls a `*` makes equal tie to none (lockLevel says why)
-  if (savedTwice(ref, calls.map(callRef), ctx.character) !== null) return;
-  return calls.find((n) => keyMatches(ref, callRef(n), ctx.character));
-}
-
-/** The recorded value of a reference in a level: a call it made, or a path it read (`*` takes the first reading). */
-function valueIn(
-  ref: Ref,
-  scope: RecNode,
-  leaves: readonly Expr[],
-  ctx: LevelContext,
-): number | null {
-  if ("call" in ref) return num(callIn(ref, scope, leaves, ctx)?.v);
-  const reads = new Map<string, unknown>();
-  for (const l of leaves) if (l.t === "read") reads.set(l.p, l.v);
-  // a text the step read a number from (T209, form 2) keeps the step's number
-  for (const [p, v] of scope.r ?? [])
-    if (num(v) !== null || !reads.has(p)) reads.set(p, v);
-  const m = matchRead(ref.read, [...reads.keys()], ctx.character);
-  return m ? num(reads.get(m.path)) : null;
-}
 
 /**
  * A declared condition (research R3): its reading is in the level, and it is on when the game used the node, off when
@@ -175,14 +142,6 @@ export function callParts(
   return open
     ? open.map((o) => o.part)
     : partsOf(level, expr ? leavesOf(expr) : [], ctx);
-}
-
-function covers(child: BlueprintNode, part: string, ctx: LevelContext) {
-  const { ref } = child;
-  if (!ref) return false;
-  return "call" in ref
-    ? keyMatches(ref, part, ctx.character)
-    : matchRead(ref.read, [part], ctx.character) !== null;
 }
 
 /** One level: its children's coverage and values, the descent into each, and the closing of the remounted count. */
