@@ -8101,6 +8101,14 @@
                       "ref": {
                         "read": "DNSM.TotalStatsDM.UQ1val"
                       }
+                    },
+                    {
+                      "key": "equipment-map-0-15-uq1val",
+                      "name": null,
+                      "ref": {
+                        "read": "EquipmentMap[0][15].UQ1val"
+                      },
+                      "leaf": "fixedValue"
                     }
                   ]
                 }
@@ -10787,6 +10795,10 @@
     {
       "where": "pools/0/groups/28/sources/0/children/18/children/0",
       "kind": "descend"
+    },
+    {
+      "where": "pools/3/groups/11/sources/0/children/0/children/2",
+      "kind": "name"
     }
   ]
 }
