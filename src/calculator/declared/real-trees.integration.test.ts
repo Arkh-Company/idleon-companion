@@ -20,7 +20,7 @@ import { useGameTables } from "../names/table-names.ts";
 import { bootRecorder, TREE_LIMITS } from "../tree-record.ts";
 import { EXTRA_ROOTS, FOLLOW_CALLS, TREE_RECIPE } from "../tree-recipe.ts";
 import { answerKey } from "./answer-key.ts";
-import { BLUEPRINTS, loadBlueprints } from "./blueprints.ts";
+import { BLUEPRINTS, loadBlueprints, pieceFiles } from "./blueprints.ts";
 import { stepsGuide } from "./draft-steps.ts";
 import { draftJson, pieceJson } from "./draft-json.ts";
 import { draftBlueprint, gameList } from "./draft.ts";
@@ -187,6 +187,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
           const game = readGameNames(recorder.context, TREE_LIMITS.startMs);
           useGameNames(game.names);
           useGameTables(game.tables);
+          const known = pieceFiles(BLUEPRINTS);
           const dc: DraftContext = {
             character: activeCharacter(snapshot),
             talentOrder: gameList(
@@ -196,6 +197,8 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             ),
             // a part that is another blueprint's root is a line with a link to its tree (T200)
             trees: [...loaded.all.values()],
+            // a common branch calls the piece already written: the repository's, then each one this run writes (part R)
+            pieces: known,
           };
           // one character of each class of the snapshot (T207, T208): its run drafts its class's sources
           const classes = classCharacters(readJson(snapshot));
@@ -205,9 +208,18 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             const bp = loaded.all.get(id);
             if (!bp) continue;
             const t1 = performance.now();
+            // each stage's time, for the summary: the recording, the draft, the class runs' drafts, the guide
+            const stages: Record<string, number> = {};
+            let t2 = t1;
+            const stage = (k: string) => {
+              const now = performance.now();
+              stages[k] = now - t2;
+              t2 = now;
+            };
             const done = (
               result: Parameters<typeof summaryLine>[1]["result"],
-            ) => summaryLine(id, { result, ms: performance.now() - t1 });
+            ) =>
+              summaryLine(id, { result, ms: performance.now() - t1, stages });
             let rec;
             try {
               rec = recorder.record(
@@ -222,6 +234,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               lines.push(done("error"));
               continue;
             }
+            stage("record");
             // each class's tabs, for a talent's classes (T207): the game answers once a state is loaded
             dc.families ??= gameFamilies(recorder.context, TREE_LIMITS.startMs);
             const key = answerKey(
@@ -235,6 +248,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               continue;
             }
             const own = draftBlueprint(id, bp.root, key, rec, recorder.ops, dc);
+            stage("draft");
             const others: { draft: DraftBlueprint; characterClass: number }[] =
               [];
             for (const [characterClass, character] of classes) {
@@ -266,16 +280,18 @@ describe.skipIf(!ENV)("the real-trees run", () => {
                 // a run that does not record drafts nothing: its class keeps the active run's draft
               }
             }
+            stage("classRuns");
             const active = [...classes].find(([, c]) => c === dc.character);
             const draft = joinDrafts(
               { draft: own, characterClass: active ? active[0] : null },
               others,
             );
             writeFileSync(draftPath(out, id), draftJson(draft));
-            // its common branches' pieces beside it (T203), each written once
+            // its common branches' pieces beside it (T203), each written once: the next drafts call it (part R)
             for (const p of draft.pieces ?? []) {
               mkdirSync(outPath(out, "draft", "pieces"), { recursive: true });
               writeFileSync(piecePath(out, p.id), pieceJson(p));
+              known.set(p.id, p);
             }
             // with why each common branch's line not a piece is written whole
             writeFileSync(
@@ -283,6 +299,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               stepsGuide(key, rec, recorder.ops, dc, bp.root.ref) +
                 (draft.notes ?? []).map((n) => `${n}\n`).join(""),
             );
+            stage("guide");
             lines.push(done("drafted"));
             peak = Math.max(peak, process.memoryUsage().rss);
           }

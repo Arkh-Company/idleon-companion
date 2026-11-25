@@ -73,6 +73,17 @@ export function loadBlueprints(files: Readonly<Record<string, unknown>>): {
   return { complete, all, refused, stages };
 }
 
+/** The recipe pieces' files (`*.piece.json`), raw, by their id: the draft calls a common branch's own (part R). */
+export const pieceFiles = (
+  files: Readonly<Record<string, unknown>>,
+): Map<string, unknown> =>
+  new Map(
+    Object.entries(files).flatMap(([file, raw]) => {
+      const id = PIECE.exec(file)?.[1];
+      return id === undefined ? [] : [[id, raw] as const];
+    }),
+  );
+
 export const BLUEPRINTS = import.meta.glob<unknown>(
   "../blueprints/**/*.{blueprint,piece}.json",
   { eager: true, import: "default" },
