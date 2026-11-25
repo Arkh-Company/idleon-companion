@@ -79,6 +79,7 @@ export const TREE_RECIPE: Recipe = {
       },
     },
     { cache: "BigFishBon", run: block("Spelunk", "BigFishBonuses", -1, 0) },
+    { cache: "SigTotPup", run: block("Labb", "TotalPurpleSigils", "0", 0, 0) },
   ],
 };
 
