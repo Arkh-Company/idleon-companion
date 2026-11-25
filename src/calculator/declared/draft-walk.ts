@@ -186,7 +186,7 @@ function walkOpening(
 ): Walked {
   if (!o.refs)
     return withTurn(walkPart(o.part, o.call, ctx, depth, reader, expr, o), o);
-  const leaves = o.expr ? leavesOf(o.expr) : [];
+  const leaves = o.leaves ?? (o.expr ? leavesOf(o.expr) : []);
   const turn: Opening = {
     part: o.part,
     call: null,

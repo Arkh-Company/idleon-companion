@@ -47,6 +47,8 @@ function turnsOf(
     const own = leaves.some((l) => keyOfLeaf(l, ctx.rec) !== null);
     const found = part === null && own ? partsAndOwn(level, leaves, ctx) : null;
     const refs = found?.parts ?? [];
+    // the item's leaves through its pass-throughs: a call that gave a write it read is at its place (T230)
+    const through = found?.leaves ?? leaves;
     // a curve in the item takes the whole call's parts (level-parts.ts), never the turn's: refused until a real case
     const mine = new Set(found?.own);
     if (refs.some((r) => !mine.has(r)))
@@ -63,18 +65,19 @@ function turnsOf(
     // is refused too, not the head's alone (r2 of part W)
     for (const r of refs) {
       if (parseKey(r) === null) continue;
-      if (callAt(leaves, r, scope, ctx, steps?.range) !== null) continue;
+      if (callAt(through, r, scope, ctx, steps?.range) !== null) continue;
       if (kidsOf(scope, r, ctx, steps?.range).length > 1)
         return `duas chamadas de ${r} na volta ${String(k + 1)} do laço de ${name}, e o lugar não as separa`;
       if (r === first)
         return `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
     }
     const head =
-      refs.length > 0 ? callAt(leaves, first, scope, ctx, steps?.range) : null;
+      refs.length > 0 ? callAt(through, first, scope, ctx, steps?.range) : null;
     const count = refs.length > 0 && {
       expr: item,
       refs,
       head,
+      leaves: through,
       ...(steps && { steps }),
     };
     below.push({

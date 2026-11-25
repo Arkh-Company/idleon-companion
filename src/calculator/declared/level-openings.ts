@@ -38,6 +38,8 @@ export interface Opening {
   refs?: string[];
   /** The call of `refs[0]`, by its place (lock-values.ts callAt): where the line's arguments are checked (r1 of U). */
   head?: RecNode | null;
+  /** The item's leaves, each pass-through through what gave its write (T230): where its references' calls are. */
+  leaves?: readonly Expr[];
   /** A count's turn (T215, count-turns.ts): whether the recording saw its test true; its value is then 1, else 0. */
   passed?: boolean;
 }
@@ -123,7 +125,7 @@ export const levelOfOpening = (
   write?: RecWrite;
   steps?: BlockSteps;
   termParts?: ReadonlySet<string>;
-  line?: { head: RecNode | null };
+  line?: { head: RecNode | null; leaves?: readonly Expr[] };
 } =>
   o.refs
     ? {
@@ -132,7 +134,7 @@ export const levelOfOpening = (
         value: o.value,
         ...(o.steps ? { steps: o.steps } : {}),
         termParts: new Set(o.refs.slice(1)),
-        line: { head: o.head ?? null },
+        line: { head: o.head ?? null, ...(o.leaves && { leaves: o.leaves }) },
       }
     : o.call
       ? {

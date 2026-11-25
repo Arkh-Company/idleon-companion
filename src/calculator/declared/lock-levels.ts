@@ -91,7 +91,7 @@ export interface Level {
   write?: RecWrite;
   steps?: BlockSteps | undefined;
   /** A turn's count line (T193): the call of its first reference, where its arguments are checked (r1 of part U). */
-  line?: { head: RecNode | null };
+  line?: { head: RecNode | null; leaves?: readonly Expr[] };
 }
 
 export const emptyOut = (): LevelOut => ({
@@ -151,6 +151,8 @@ export function lockLevel(
   each?: BlueprintNode["each"],
 ): void {
   const leaves = level.expr ? leavesOf(level.expr) : [];
+  // a count line's children are its item's calls through the pass-throughs, by their place (T230)
+  const theirs = level.line?.leaves ?? leaves;
   const { open } = level;
   const parts = open ? open.map(openingLabel) : partsOf(level, leaves, ctx);
   // a part another turn has too ties only to the child whose key names its turn (T198)
@@ -243,7 +245,7 @@ export function lockLevel(
         : valueIn(
             child.ref,
             level.scope,
-            leaves,
+            theirs,
             ctx,
             only,
             lineTurn(level),
@@ -271,7 +273,7 @@ export function lockLevel(
     checkCondition(child, true, level.scope, inner, out);
     const below = hit
       ? levelOfOpening(hit, level.scope, ctx)
-      : levelOfChild(child, level, leaves, ctx, only);
+      : levelOfChild(child, level, theirs, ctx, only);
     descend(child, below, inner, out);
   }
   for (const p of parts)

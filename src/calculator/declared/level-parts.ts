@@ -135,7 +135,7 @@ export function partsAndOwn(
   level: Level,
   leaves: readonly Expr[],
   ctx: LevelContext,
-): { parts: string[]; own: string[] } {
+): { parts: string[]; own: string[]; leaves: Expr[] } {
   const transparent = (k: string) => notLeafOf(k, ctx.character) !== null;
   const { scope } = level;
   const steps = level.steps ?? ctx.stepsOf(scope.id);
@@ -144,7 +144,16 @@ export function partsAndOwn(
     passThrough(es, scope, steps, ctx, level.write?.path, turns).flatMap(
       (e) => keyOfLeaf(e, ctx.rec) ?? [],
     );
-  const own = keys(leaves);
+  // the leaves through their pass-throughs: a call that gave a write the level read is a leaf of its own (T230)
+  const through = passThrough(
+    leaves,
+    scope,
+    steps,
+    ctx,
+    level.write?.path,
+    turns,
+  );
+  const own = through.flatMap((e) => keyOfLeaf(e, ctx.rec) ?? []);
   const feeds = (k: string) => {
     const role = notLeafOf(k, ctx.character)?.role;
     return role === "curve" || role === "log";
@@ -157,7 +166,8 @@ export function partsAndOwn(
   });
   if (curveHere) turns.length = 0;
   const mine = [...new Set(own)].filter((k) => !transparent(k));
-  if (!fed && !literal(level.expr)) return { parts: mine, own: mine };
+  if (!fed && !literal(level.expr))
+    return { parts: mine, own: mine, leaves: through };
   // past a write, a curve's parts are its turn's (as T168's turns); else the call's
   const inTurn = (i: number) =>
     turns.length === 0 ||
@@ -227,5 +237,5 @@ export function partsAndOwn(
             : [],
         )
       : [];
-  return { parts: [...parts, ...new Set(texts)], own: mine };
+  return { parts: [...parts, ...new Set(texts)], own: mine, leaves: through };
 }

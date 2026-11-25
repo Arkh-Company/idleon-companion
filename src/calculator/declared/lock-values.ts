@@ -54,8 +54,8 @@ export const kidOf = (
 };
 
 /**
- * The call a turn's item's reference `p` stands for (T193, research R4), by its place: the item's call leaf of that key,
- * else the call the turn made (what gave a pass-through's write, T188); null for a read.
+ * The call a turn's item's reference `p` stands for (T193, research R4), by its place: the item's one call leaf of that
+ * key (through its pass-throughs, T230), in the turn, two of them none; else the call the turn made; null for a read.
  */
 export function callAt(
   leaves: readonly Expr[],
@@ -64,10 +64,12 @@ export function callAt(
   ctx: LevelContext,
   range?: LoopTurn,
 ): RecNode | null {
-  const leaf = leaves.find((l) => keyOfLeaf(l, ctx.rec) === p);
-  return leaf?.t === "call"
-    ? (ctx.rec.nodes[leaf.id] ?? null)
-    : kidOf(scope, p, ctx, range);
+  const [leaf, ...more] = leaves.filter((l) => keyOfLeaf(l, ctx.rec) === p);
+  if (more.length > 0) return null;
+  // a call that gave a pass-through's write before the turn has no place in it (T226, r2 of part U)
+  const call = leaf?.t === "call" ? ctx.rec.nodes[leaf.id] : undefined;
+  if (leaf?.t === "call") return call && inTurn(call, range) ? call : null;
+  return kidOf(scope, p, ctx, range);
 }
 /** The recorded call a call reference stands for in a level: one of its expression's, or one the level made. */
 export function callIn(
