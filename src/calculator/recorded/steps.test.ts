@@ -354,6 +354,39 @@ test("two reads of a leaf's value at its own place are refused with the reason, 
   });
 });
 
+test("a variable leaf reads nothing at its own place: a read made there with its value is none of its (T231)", () => {
+  const { ops } = instrument(
+    "Blocks._customBlock_T = function (p) { return s.B + p; };",
+  );
+  const [b, p] = ops.flatMap((o, i) => (o.kind === "leaf" ? [i] : []));
+  const op = ops.findIndex((o) => o.kind === "op");
+  const x: [number, number][] = [
+    [b ?? -1, 6],
+    [p ?? -1, 6],
+    [op, 12],
+  ];
+  // Q, read between B's record and p's, holds p's 6
+  const rx: [string, number, number][] = [
+    ["B", 6, 0],
+    ["Q", 6, 1],
+  ];
+  const rec = recordingOf([
+    {
+      b: "T",
+      v: 12,
+      r: [
+        ["B", 6],
+        ["Q", 6],
+      ],
+      rx,
+      x,
+    },
+  ]);
+  expect(makeSteps(rec, ops).of(0).steps[0]?.e).toMatchObject({
+    r: { t: "val", v: 6 },
+  });
+});
+
 test("an author's pass-through read by its alias in a turn is its read there, not «sem fonte» beside the cache's same value (T231)", () => {
   // TreeAuthorRelayRead over twins [3, 5, 7]: turn 3 reads the cache (6) and TreeCountDN (6); TreeCountDN was 2 in turn 1
   const rec = recorder.record(
