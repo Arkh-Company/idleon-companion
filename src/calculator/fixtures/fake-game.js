@@ -762,6 +762,23 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
   };
+  // Spec 010 (r1 of parts P and Q): the parameter set again by the code with the argument's own number, on a side that
+  // ran, and after the read in a loop: the number is no longer (or not only) the argument's, by its place.
+  Blocks._customBlock_TreeArgAgain = function (t) {
+    var s = state();
+    if (s.TreeBase > 0) {
+      t = 3;
+    }
+    return s.TreeBase * t;
+  };
+  Blocks._customBlock_TreeArgLoop = function (t) {
+    var s = 0;
+    for (var i = 0; i < 2; i++) {
+      s = s + state().TreeBase * t;
+      t = 3;
+    }
+    return s;
+  };
   // Spec 010 (T209, form 4): how many entries a map of the save holds, as the game's D.mapCount(FarmCrop).
   Blocks._customBlock_TreeCount = function () {
     var D = {

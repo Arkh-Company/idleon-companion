@@ -314,6 +314,24 @@ test("a block's own argument in its count keeps its place among the block's para
   ]);
 });
 
+test("the parameter set again on the side that ran, with the argument's number, is no argument (r1 of P and Q)", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeArgAgain", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  const { steps } = makeSteps(rec, recorder.ops).of(top.id);
+  expect(steps[0]?.v).toBe(12);
+  expect(JSON.stringify(steps)).not.toContain('"arg"');
+});
+
+test("the parameter set again after its read in a loop is no argument in any turn (r1 of P and Q)", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeArgLoop", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  const { steps } = makeSteps(rec, recorder.ops).of(top.id);
+  expect(steps.length).toBeGreaterThan(0);
+  expect(JSON.stringify(steps)).not.toContain('"arg"');
+});
+
 test("a number read from a game table's text with a mark taken out is that read, by the path the code names (T209, form 2)", () => {
   // TreeTextTot is asNumber(replace(string(ListTot[0]), "TOT", "")) × TreeBase, as the game's "50TOT"
   const { steps } = blockOf("TreeTextTot");
