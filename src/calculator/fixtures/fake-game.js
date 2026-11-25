@@ -2578,15 +2578,16 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeBitRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeBit();
   };
-  // ...and a second text read that the test does not read (the test puts TreeOtherLabel in the state): 1, as TreeBit.
+  // ...and a second text read that the test does not read (the test puts TreeOtherLabel in the state), read after the
+  // tested one, where an order ("the last text read") would take it: 1, as TreeBit.
   Blocks._customBlock_TreeBitTwo = function () {
     var h = { string: String };
+    var hit =
+      -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l");
     var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
     a.engine.getGameAttribute("DNSM").h.TreeBitOther = other; // kept aside, no root reads it
-    return -1 !=
-      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
-      ? 1
-      : 0;
+    return hit ? 1 : 0;
   };
   Blocks._customBlock_TreeBitTwoRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeBitTwo();
