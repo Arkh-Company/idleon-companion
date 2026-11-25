@@ -291,7 +291,7 @@ test("a loop step that is the last step but not what the call returned does not 
   expect(loopOpening(expr, { ...scope, v: 20, x }, ctx)).toBeNull();
 });
 
-test("a count in turns that adds a fixed number to its own value waits for its form, never a chain of its own turns (T215)", () => {
+test("a count in turns that adds a fixed number to its own value is a quantity line over the list it tests, never a chain of its own turns (T215)", () => {
   // TreeSigils: `d.TreeSigils = round(d.TreeSigils + 1)` a turn, as the game's purple sigils; built again by its block
   const r = inventedRecorder();
   const rec = r.record(
@@ -309,14 +309,15 @@ test("a count in turns that adds a fixed number to its own value waits for its f
   const ref = { call: "TreeSigilsRoot", args: [0, 0, 0] };
   const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, r.ops);
   expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
-    // the cache opens into its author, the builder, whose count waits
-    ["TreeSigils()", [["DNSM.TreeSigils", [["TreeSigils()", []]]]]],
+    // the cache opens into its author, the builder, whose count is a quantity line over the items its if tests
+    [
+      "TreeSigils()",
+      [["DNSM.TreeSigils", [["TreeSigils()", [["TreeList[{item}]", []]]]]]],
+    ],
   ]);
-  expect(draft.pending).toContainEqual({
+  expect(draft.pending).not.toContainEqual({
     where: "pools/0/groups/0/sources/0/children/0/children/0",
     kind: "descend",
   });
-  expect(stepsGuide(key, rec, r.ops)).toContain(
-    "descer: pendente (o laço de TreeSigils() conta DNSM.TreeSigils, um número fixo a volta: a forma do contador espera a decisão da T215)",
-  );
+  expect(stepsGuide(key, rec, r.ops)).not.toContain("T215");
 });
