@@ -262,3 +262,29 @@ test("with the author's read list full, the empty key is the one with no number 
     author.r.push([`TreePad${String(author.r.length)}`, 0, 0]);
   expect(lock(rec, once).errors.map(lockMessage)).toEqual([]);
 });
+
+test("the best of three members goes down the member whose turn wrote the cache, by its place, never the last turn's (T212)", () => {
+  // TreeAuthorBest over TreeList [1, 3, 2]: the bonuses 2, 6, 4; the cache is the second member's 6
+  const rec = inventedRecorder().record(
+    mosaicOf({
+      TreeList: [1, 3, 2],
+      DNSM: {
+        $m: { ...activeAs(0).DNSM.$m, TreeAuthor: { $m: { v: 6 } } },
+      },
+    }),
+    [["TreeAuthorRead", [0, 0, 0]]],
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeAuthor", run: { block: "TreeAuthorBest", args: [] } },
+      ],
+    },
+  );
+  const author: BlueprintNode = {
+    key: "author",
+    name: "Author",
+    ref: { call: "TreeAuthorBest", args: [] },
+    children: [itemNode(1)],
+  };
+  expect(lock(rec, author).errors.map(lockMessage)).toEqual([]);
+});
