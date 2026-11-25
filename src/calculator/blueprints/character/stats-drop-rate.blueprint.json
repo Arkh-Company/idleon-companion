@@ -7409,14 +7409,43 @@
                               ]
                             },
                             {
-                              "key": "player-stuff-1",
-                              "name": "Talent preset in use",
-                              "nameProof": {
-                                "names": "PlayerStuff[1]"
-                              },
+                              "key": "dnsm-fam-bonus-qtys-68",
+                              "name": null,
                               "ref": {
-                                "read": "PlayerStuff[1]"
-                              }
+                                "read": "DNSM.FamBonusQTYs[68]"
+                              },
+                              "children": [
+                                {
+                                  "key": "talent-calc-3",
+                                  "name": "Family bonuses (all)",
+                                  "nameProof": {
+                                    "names": "TalentCalc(-3)"
+                                  },
+                                  "ref": {
+                                    "call": "TalentCalc",
+                                    "args": [-3]
+                                  },
+                                  "children": [
+                                    {
+                                      "key": "family-bonsues-real-0-1928",
+                                      "name": null,
+                                      "ref": {
+                                        "call": "FamilyBonsuesREAL",
+                                        "args": ["*", 0, 1928]
+                                      },
+                                      "children": [
+                                        {
+                                          "key": "custom-lists-class-account-bonus-34-1",
+                                          "name": null,
+                                          "ref": {
+                                            "read": "CustomLists.ClassAccountBonus[34][1]"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
                             },
                             {
                               "key": "companions-1",
@@ -9701,10 +9730,6 @@
       "kind": "leaf"
     },
     {
-      "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/4",
-      "kind": "leaf"
-    },
-    {
       "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/5",
       "kind": "descend"
     },
@@ -10799,6 +10824,22 @@
     {
       "where": "pools/3/groups/11/sources/0/children/0/children/2",
       "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/4",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/4/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/4/children/0/children/0/children/0",
+      "kind": "name"
+    },
+    {
+      "where": "pools/3/groups/5/sources/0/children/0/children/1/children/0/children/4/children/0/children/0/children/0",
+      "kind": "leaf"
     }
   ]
 }
