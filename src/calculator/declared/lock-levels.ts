@@ -227,6 +227,25 @@ export function lockLevel(
       whole = false;
       continue;
     }
+    // a child only some classes have (T211, FR-002a): in another class's run it is absent, or there at its neutral value
+    const cls = ctx.characterClass;
+    if (child.classes && (cls == null || !child.classes.includes(cls))) {
+      const at = parts.filter((p) => covers(child, p, ctx));
+      for (const p of at) covered.add(p);
+      // shortcut: neutral is 0 or 1, whichever the part's role is; read the role off the count if a case needs it
+      const v =
+        at.length > 0 && child.ref
+          ? valueIn(child.ref, level.scope, leaves, ctx)
+          : 0;
+      if (v !== 0 && v !== 1)
+        out.errors.push({
+          kind: "classMismatch",
+          where,
+          expected: child.classes.join(", "),
+          got: cls ?? "",
+        });
+      continue;
+    }
     const hit = open?.find((o) => covers(child, o.part, ctx));
     if (open && !hit) {
       out.errors.push({ kind: "childOutside", where });

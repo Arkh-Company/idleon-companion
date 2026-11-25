@@ -207,7 +207,9 @@ function checkNode(x: unknown, where: string, level: Level, w: Walk): void {
   if (n.weight !== undefined && level !== "source")
     no(where, "weight só em fonte de pool");
   if (n.classes !== undefined) {
-    if (level !== "source") no(where, "classes só em fonte de pool");
+    // a call's child only some classes have (T211), as a pool's source
+    if (level !== "source" && level !== "child")
+      no(where, "classes só em fonte de pool ou em filho de chamada");
     if (
       !Array.isArray(n.classes) ||
       !n.classes.every((c) => Number.isInteger(c) && (c as number) >= 0)
