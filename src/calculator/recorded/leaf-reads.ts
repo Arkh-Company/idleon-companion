@@ -1,6 +1,7 @@
 // The read a leaf of a step stands for (spec 008, T022, build-tree.cjs step 8d; moved out of steps.ts as it was): the
-// read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), else the one
-// read of the call that holds the value, or the one text cell worth it. A path used up is not bound again.
+// read whose path the leaf's own code names, a number read from a text it names (spec 010, T209 form 2), the read at
+// the leaf's own place (T231), else the one read of the call that holds the value, or the one text cell worth it. A path
+// used up is not bound again.
 import { EMPTY_READ } from "../recording.ts";
 import type { RecValue } from "../recording.ts";
 import { astPattern, matchPattern, methodOf, textRead, unwrap } from "./ast.ts";
@@ -15,7 +16,9 @@ export function readOfLeaf(
   rxs: readonly (readonly [string, RecValue, ...unknown[]])[],
   usedR: Set<string>,
   pat: { toks: (string | null)[]; root: boolean } | null,
-): string | null {
+  /** The step count the leaf's own record holds: the reads it made there. */
+  here?: number,
+): string | null | { why: string } {
   // C (inv-2): the read whose path the code's own text names, when only one is; before the match by value.
   if (pat) {
     const cand = pool.filter(
@@ -51,12 +54,25 @@ export function readOfLeaf(
   // a number read from a text the code names, with a mark taken out (T209, form 2): the read of that path, one only
   const tp = pat ? null : textRead(node, pool, v);
   if (tp !== null) return tp;
-  const same = pool.filter(
-    ([p, val]) =>
-      val === v &&
-      !GAME_TABLE.some((r) => r.test.test(p)) &&
-      !p.endsWith(".length"),
+  // the read at the leaf's own place (T231): the place decides, never the value among the call's reads; two there the
+  // place does not part are refused with the reason
+  const at = new Set(
+    rxs.flatMap(([p, val, xi]) =>
+      xi === here && val === v && (!pat || matchPattern(p, pat)) && !table(p)
+        ? [p]
+        : [],
+    ),
   );
+  const [one, ...more] = at;
+  if (more.length > 0)
+    return {
+      why: `duas leituras de valor ${String(v)} no lugar da folha (${[...at].join("; ")}), e o lugar não as separa`,
+    };
+  if (one !== undefined) {
+    usedR.add(one);
+    return one;
+  }
+  const same = pool.filter(([p, val]) => val === v && !table(p));
   if (same.length === 1 && same[0] && !usedR.has(same[0][0])) {
     usedR.add(same[0][0]);
     return same[0][0];
@@ -75,6 +91,10 @@ export function readOfLeaf(
   }
   return null;
 }
+
+/** A game table's read, or a length: never a number of the formula by its value. */
+const table = (p: string) =>
+  GAME_TABLE.some((r) => r.test.test(p)) || p.endsWith(".length");
 
 /**
  * Whether the one read at a leaf's own place `pos` (the step count it was read at) is a working map's key not yet set

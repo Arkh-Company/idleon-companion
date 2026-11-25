@@ -48,7 +48,7 @@ export function stepsGuide(
       case "num":
         return String(e.v);
       case "val":
-        return `«${fmt(e.v)} sem fonte»`;
+        return `«${fmt(e.v)} sem fonte${e.why ? `: ${m(e.why)}` : ""}»`;
       case "call": {
         const n = rec.nodes[e.id];
         return n ? m(callRef(n)) : "?";
