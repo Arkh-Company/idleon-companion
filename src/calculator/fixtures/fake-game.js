@@ -2779,6 +2779,40 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeFixedUsesB()
     );
   };
+  // Spec 010 (part R): a common branch with no param that two recipes call once each, as each skill's stats call the
+  // skills' general bonus (SkillStats("AllBaseSkillEff")).
+  Blocks._customBlock_TreeShared = function () {
+    return state().TreeBase * 2 + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeSharedUsesA = function () {
+    return Blocks._customBlock_TreeShared() * 2;
+  };
+  Blocks._customBlock_TreeSharedRootA = function () {
+    return Blocks._customBlock_TreeSharedUsesA() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSharedUsesB = function () {
+    return Blocks._customBlock_TreeShared() + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeSharedRootB = function () {
+    return Blocks._customBlock_TreeSharedUsesB() + state().TreeBase;
+  };
+  // Spec 010 (part R): the game's max HP (PlayerHPmax): a working list of DummyNumbersStatManager the root fills by push,
+  // each item its own count, and the root multiplies the items it reads back.
+  Blocks._customBlock_TreePushList = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.TreePushLIST = [];
+    a.engine
+      .getGameAttribute("DummyNumbersStatManager")
+      .h.TreePushLIST.push(
+        15 + s.TreeBase + Blocks._customBlock_CardBonusREAL(1),
+      );
+    a.engine
+      .getGameAttribute("DummyNumbersStatManager")
+      .h.TreePushLIST.push(1 + s.TreeLevel / 100);
+    var L = a.engine.getGameAttribute("DummyNumbersStatManager").h.TreePushLIST;
+    return L[0] * L[1];
+  };
   // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
   Blocks._customBlock_GetTalentNumber = function (mode, t) {
     var s = state();
