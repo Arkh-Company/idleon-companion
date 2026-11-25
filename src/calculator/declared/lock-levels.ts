@@ -55,8 +55,8 @@ export interface LevelOut {
   /** Each place that closed or is a typed leaf, once per time (the tally counts it once). */
   closedAt: string[];
   /**
-   * Each child refused with no value under a level its code's gate gave 0 before its count (T210): the joined runs keep
-   * the refusal only when no run reached it (real-trees-check.ts).
+   * Each child refused that the run did not reach: under a level its code's gate gave 0 before its count (T210), or of
+   * another member's descent than the chosen one (T212); the joined runs keep the refusal only when no run reached it.
    */
   unreached?: string[];
 }
@@ -176,6 +176,12 @@ export function lockLevel(
   const consts = lockConstants(children, level, leaves, ctx, out);
   for (const p of consts?.covered ?? []) covered.add(p);
   let whole = consts?.value !== null && twice.length === 0;
+  // an author that overwrote the cache in more than one turn (T212): the cache is the best member's, by its turn
+  const choice =
+    !open &&
+    ctx.rec.writes.filter(
+      (w) => w.node === level.scope.id && w.path === level.write?.path,
+    ).length > 1;
   for (const child of children) {
     if (child.constant !== undefined) continue;
     const where = `${ctx.where}/${child.key}`;
@@ -223,6 +229,11 @@ export function lockLevel(
     }
     const hits = parts.filter((p) => covers(child, p, ctx));
     if (hits.length === 0) out.errors.push({ kind: "childOutside", where });
+    // the best of the members (T212): a child of another member's descent is one this run's chosen one did not reach
+    if (hits.length === 0 && choice) {
+      (out.unreached ??= []).push(where);
+      continue;
+    }
     // the other references of a two-source term are only a termPart child's (research R4)
     for (const p of hits)
       if (level.termParts?.has(p) !== (child.termPart === undefined))

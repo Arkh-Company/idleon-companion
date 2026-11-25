@@ -111,7 +111,7 @@ export function lockRuns(
 
 /**
  * The runs joined: passed only when each error left is none; each error once; the counts and the stages' times added.
- * A child a run's gate did not reach (T210) is refused only when no run reached it.
+ * A child a run's gate (T210) or its chosen member (T212) did not reach is refused only when no run reached it.
  */
 function joined(runs: readonly LockResult[]): LockResult {
   const out = emptyOut();
@@ -130,7 +130,7 @@ function joined(runs: readonly LockResult[]): LockResult {
   for (const r of runs) {
     for (const e of r.errors)
       if (
-        e.kind === "childNoValue" &&
+        (e.kind === "childNoValue" || e.kind === "childOutside") &&
         r.unreached?.includes(e.where) &&
         reached(e.where)
       )
