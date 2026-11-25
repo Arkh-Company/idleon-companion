@@ -212,6 +212,19 @@ test("the lock ties a turn's pass-through call by the turn's place, never by ord
   expect(lock("TreeTurnsCountSame", [same(1), same(2)])).toEqual([]);
 });
 
+test("a turn whose item has a curve waits with its reason: its parts would be the whole call's, never the turn's (r1 of part U)", () => {
+  const root = "TreeTurnsCountCurveRoot";
+  const { rec, key, ops } = recorded(root);
+  const ref = { call: root, args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  expect(draft.pools[0]?.groups[0]?.sources.map(shape)).toEqual([
+    ["TreeTurnsCountCurve()", []],
+  ]);
+  expect(stepsGuide(key, rec, ops)).toContain(
+    "descer: pendente (o item da volta 1 do laço de TreeTurnsCountCurve() tem uma curva: suas partes passam das próprias folhas, e a forma espera um caso real)",
+  );
+});
+
 test("a turn whose item is a bare number has no part: the call's other calls are no line of it (T193)", () => {
   const root = "TreeTurnsCountOneRoot";
   const { rec, key, ops } = recorded(root);
