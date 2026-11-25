@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import type { RecNode, Recording } from "../recording.ts";
 import type { Expr, LoopTurn } from "../recorded/steps.ts";
 import { levelContext, present } from "./lock-fixture.ts";
-import { callIn, kidOf } from "./lock-values.ts";
+import { callAt, callIn, kidOf } from "./lock-values.ts";
 
 const call = (id: number, pxi: number, seq: number): RecNode => ({
   id,
@@ -55,4 +55,13 @@ test("the level's call leaf is its own place: it decides between two calls of on
 test("a turn's window holds the call begun after its first write, not the one begun after its own (r1 of part W)", () => {
   expect(kidOf(scope, "TreeTurnAt()", ctx, turn(3, 4))?.id).toBe(2);
   expect(kidOf(scope, "TreeTurnAt()", ctx, turn(1, 3))?.id).toBe(1);
+});
+
+test("a turn's item with two call leaves of one key ties to none at its line's head, never to the first (T230)", () => {
+  const first: Expr = { t: "call", id: 1, v: 2 };
+  expect(callAt([first, leaf], "TreeTurnAt()", scope, ctx, turn(1, 4))).toBe(
+    null,
+  );
+  // one call leaf is its own place: the second call, the order's last
+  expect(callAt([leaf], "TreeTurnAt()", scope, ctx, turn(1, 4))?.id).toBe(2);
 });
