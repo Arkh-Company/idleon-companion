@@ -142,15 +142,13 @@ export function setBy(
     ? (astPattern(def) ??
       (name ? { toks: [String(at(def, "property").name)], root: true } : null))
     : null;
-  // a working map's value is the call's own (T209 form 3), never a read here
   const hits =
     pat && !pat.toks.includes(null)
-      ? pool.filter(
-          ([p]) =>
-            matchPattern(p, pat) &&
-            !/^(DNSM|DummyNumbersStatManager)\./.test(p),
-        )
+      ? pool.filter(([p]) => matchPattern(p, pat))
       : [];
+  // a working map's value is the call's own (T209 form 3), never a read here, nor does it leave another path the one
+  if (hits.some(([p]) => /^(DNSM|DummyNumbersStatManager)\./.test(p)))
+    return null;
   const [one] = hits;
   // a number read as text counts
   const x = one?.[1];
