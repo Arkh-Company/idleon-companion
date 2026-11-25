@@ -286,3 +286,48 @@ test("an author's pass-through read by its alias in a turn is its read there, no
     r: { r: { t: "read", p: "DNSM.TreeCountDN", v: 6 } },
   });
 });
+
+/** `var x = <def>; return s.B + x;` recorded with the reads `rx`, s.B worth 6 and x `v`: the step's right leaf. */
+function varOf(def: string, rx: Rx, v: number) {
+  const { ops } = instrument(
+    `Blocks._customBlock_T = function () { var x = ${def}; return s.B + x; };`,
+  );
+  const [b, x] = ops.flatMap((o, i) => (o.kind === "leaf" ? [i] : []));
+  const op = ops.findIndex((o) => o.kind === "op");
+  const xs: [number, number][] = [
+    [b ?? -1, 6],
+    [x ?? -1, v],
+    [op, 6 + v],
+  ];
+  const r0 = rx.map(([path, val]): [string, number] => [path, Number(val)]);
+  const rec = recordingOf([{ b: "T", v: 6 + v, r: r0, rx, x: xs }]);
+  return makeSteps(rec, ops).of(0).steps[0]?.e;
+}
+
+test("a variable no step set is the read its setting code names, a number read as text too (T232)", () => {
+  expect(
+    varOf(
+      "s.x.T",
+      [
+        ["B", 6, 0],
+        ["x.T", "15", 0],
+      ],
+      15,
+    ),
+  ).toMatchObject({
+    r: { t: "read", p: "x.T", v: 15 },
+  });
+});
+
+test("a variable no step set from a working map is the call's own value, never a read of the map (T232; T209 form 3)", () => {
+  expect(
+    varOf(
+      "s.DNSM.x.T",
+      [
+        ["B", 6, 0],
+        ["DNSM.x.T", 15, 0],
+      ],
+      15,
+    ),
+  ).toMatchObject({ r: { t: "val", v: 15 } });
+});
