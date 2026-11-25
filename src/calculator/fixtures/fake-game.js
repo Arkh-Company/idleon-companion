@@ -2299,6 +2299,33 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeEmptyKeyRoot = function () {
     return state().TreeCapped + Blocks._customBlock_TreeEmptyKey();
   };
+  // Spec 010 (Fase 4 q, star-signs): a map summed key by key, then each key multiplied in a loop over its keys, the key
+  // built as text ("" + p) right before the write, as the game's StarSigns(0) multiplies StarSigns[p] by the chip:
+  // a = 2 + 0, then 3 + a = 5, then × TreeTurnItem(0) = 10; b = 4, then × 2 = 8 in the last turn.
+  Blocks._customBlock_TreeSignsBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeSigns = new StringMap();
+    var t = d.TreeSigns;
+    var v = 2 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeSigns.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeSigns.h.a);
+    t.h.a = w;
+    t.h.b = 4;
+    var ks = Object.keys(t.h);
+    for (var i = 0; i < ks.length; i++) {
+      var p = ks[i];
+      var x =
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeSigns.h["" + p]) *
+        Blocks._customBlock_TreeTurnItem(0);
+      t.h["" + p] = x;
+    }
+  };
+  Blocks._customBlock_TreeSignsRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeSigns.h.a + state().TreeCapped
+    );
+  };
   Blocks._customBlock_TreeGateMapRoot = function () {
     return state().TreeLevel + Blocks._customBlock_TreeGateMap();
   };
