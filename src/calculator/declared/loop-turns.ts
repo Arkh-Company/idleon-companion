@@ -1,9 +1,10 @@
 // A source that sums a list in a loop (spec 010, T167; spec, Open Questions 23/11): one child per turn, one item a
 // line. The level is the step a call returned (`t = t + item`) when that step ran in more than one turn; each turn is
 // the stretch of the call's step log up to that step's record, read at its own place (makeSteps turnOf), and its item
-// is the step's right side there. The level closes by the sum of the items. A turn whose item is not a call or a read
-// of its own place, or two turns with the same call, are refused with the reason: the turns do not part by their place.
-// Two turns with the same read are a line each, keyed by the number of its turn (T198).
+// is the step's right side there. The level closes by the sum of the items. A turn with no item of its own place, or
+// two turns with the same call, are refused with the reason: the turns do not part by their place.
+// Two turns with the same read are a line each, keyed by the number of its turn (T198). An item that is a count is a
+// line by its first call or read, its other references termPart children, closing by the item (T193, research R4).
 // A cache its author summed over its own value (T168, `d.X.v = d.X.v + item`) opens the same way: each write of the
 // author on the path a turn, its item the right side of the step that gave that write; a first write of 0 with no step
 // is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
@@ -16,7 +17,7 @@ import { atCap, callRef, near } from "./answer-key-pool.ts";
 import { writeExpr } from "./cache-author.ts";
 import type { Opening } from "./level-openings.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { keyOfLeaf, num } from "./lock-parts.ts";
+import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
 import { writesBy } from "./own-writes.ts";
 
 /** One line a turn, by its item, or the refusal's reason when the turns do not part by their place. */
@@ -27,24 +28,46 @@ function turnsOf(
 ): Opening[] | string {
   const below: Opening[] = [];
   for (const [k, item] of items.entries()) {
-    const part = item ? keyOfLeaf(item, ctx.rec) : null;
     if (!item || item.t === "val")
       return `a volta ${String(k + 1)} do laço de ${name} não tem o item no seu lugar`;
-    if (part === null)
+    const part = keyOfLeaf(item, ctx.rec);
+    // an item that is a count (T193, research R4): a line by its first call or read, its other references termPart
+    const refs = part === null ? refsOf(item, ctx) : [];
+    const first = part ?? refs[0]?.part;
+    if (first === undefined)
       return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
     // the same read in two turns is a line a turn, by its number (T198); the same call, two calls the place must part
     if (below.some((b) => b.part === part) && item.t === "call")
-      return `duas voltas do laço de ${name} têm o mesmo item (${part})`;
+      return `duas voltas do laço de ${name} têm o mesmo item (${first})`;
     const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
-    below.push({ part, call, value: num(item.v), turn: k + 1 });
+    const count = refs.length > 0 && { expr: item, refs };
+    below.push({
+      part: first,
+      call,
+      value: num(item.v),
+      turn: k + 1,
+      ...count,
+    });
   }
   // the turn's number only on a part another turn has too: any other part ties by its reference alone
-  return below.map((o) =>
-    below.filter((b) => b.part === o.part).length > 1
-      ? o
-      : { part: o.part, call: o.call, value: o.value },
-  );
+  return below.map((o) => {
+    if (below.filter((b) => b.part === o.part).length > 1) return o;
+    const one = { ...o };
+    delete one.turn;
+    return one;
+  });
 }
+
+/** A count's references in code order, once each, with the call or read at its place. */
+const refsOf = (item: Expr, ctx: LevelContext) => {
+  const seen = new Map<string, NonNullable<Opening["refs"]>[number]>();
+  for (const leaf of leavesOf(item)) {
+    const part = keyOfLeaf(leaf, ctx.rec);
+    const call = leaf.t === "call" ? (ctx.rec.nodes[leaf.id] ?? null) : null;
+    if (part !== null && !seen.has(part)) seen.set(part, { part, call, leaf });
+  }
+  return [...seen.values()];
+};
 
 /** The turns of the loop whose sum the call returned, their refusal's reason, or null when it returned no such sum. */
 export function loopOpening(

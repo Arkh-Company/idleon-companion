@@ -30,6 +30,11 @@ export interface Opening {
   value: number | null;
   /** The number of its loop's turn, only on a part another turn has too (T198): the child ties by its key's `-turn-N`. */
   turn?: number;
+  /**
+   * A turn's item that is a count (T193, research R4): its references in code order, each at its place in `expr`; the
+   * line is the first's, the others are termPart children, and it closes by `expr`.
+   */
+  refs?: { part: string; call: RecNode | null; leaf: Expr }[];
 }
 
 /** The part's label in a level's coverage: with its turn's number when another turn has the same part (T198). */
@@ -99,13 +104,21 @@ export const levelOfOpening = (
   value: number | null;
   write?: RecWrite;
   steps?: BlockSteps;
+  termParts?: ReadonlySet<string>;
 } =>
-  o.call
+  o.refs
     ? {
-        expr: o.expr === undefined ? returnOf(o.call, ctx) : o.expr,
-        scope: o.call,
+        expr: o.expr ?? null,
+        scope,
         value: o.value,
-        ...(o.write ? { write: o.write } : {}),
-        ...(o.steps ? { steps: o.steps } : {}),
+        termParts: new Set(o.refs.slice(1).map((r) => r.part)),
       }
-    : { expr: { t: "read", p: o.part, v: o.value }, scope, value: o.value };
+    : o.call
+      ? {
+          expr: o.expr === undefined ? returnOf(o.call, ctx) : o.expr,
+          scope: o.call,
+          value: o.value,
+          ...(o.write ? { write: o.write } : {}),
+          ...(o.steps ? { steps: o.steps } : {}),
+        }
+      : { expr: { t: "read", p: o.part, v: o.value }, scope, value: o.value };

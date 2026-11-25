@@ -99,12 +99,7 @@ function walkPart(
     return {
       key,
       call,
-      below: open.map((o) =>
-        withTurn(
-          walkPart(o.part, o.call, ctx, depth + 1, reader, o.expr, o),
-          o,
-        ),
-      ),
+      below: open.map((o) => walkOpening(o, ctx, depth + 1, reader, o.expr)),
     };
   }
   const own = from?.call === call ? from : undefined;
@@ -128,17 +123,12 @@ function walkPart(
       key,
       call,
       below: open.map((o) =>
-        withTurn(
-          walkPart(
-            o.part,
-            o.call,
-            ctx,
-            depth + 1,
-            call,
-            o.call || o.expr !== undefined ? o.expr : onlyRead(level, o.part),
-            o,
-          ),
+        walkOpening(
           o,
+          ctx,
+          depth + 1,
+          call,
+          o.call || o.expr !== undefined ? o.expr : onlyRead(level, o.part),
         ),
       ),
     };
@@ -177,6 +167,36 @@ function walkPart(
         : w;
     }),
   };
+}
+
+/**
+ * A part of an opened level, with its turn's number; a turn's item that is a count (T193, research R4) is a line by its
+ * first reference, each reference a child at its place in the item, the others termPart.
+ */
+function walkOpening(
+  o: Opening,
+  ctx: LevelContext,
+  depth: number,
+  reader: RecNode | null,
+  expr?: Expr | null,
+): Walked {
+  if (!o.refs)
+    return withTurn(walkPart(o.part, o.call, ctx, depth, reader, expr, o), o);
+  const [first, ...rest] = o.refs.map((r) =>
+    walkPart(
+      r.part,
+      r.call,
+      ctx,
+      depth + 1,
+      reader,
+      r.call ? undefined : r.leaf,
+    ),
+  );
+  const below = [
+    ...(first ? [first] : []),
+    ...rest.map((p) => ({ ...p, termPart: true as const })),
+  ];
+  return withTurn({ key: o.part, call: first?.call ?? null, below }, o);
 }
 
 /** A source's parts: its call or read down to the leaves; a two-source term opens into each of its references. */
