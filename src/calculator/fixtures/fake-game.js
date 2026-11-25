@@ -2064,6 +2064,21 @@ lime.$scripts.N = function (_exports, $global) {
           U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeBase;
     }
   };
+  // ...the same with the item read first (r2 of part W): the line is the read's, the two TreeTurnAt() of the last write's
+  // window are its other part: 3 × 2 + 3 × 6 = 24
+  Blocks._customBlock_TreeAuthorRelayRead = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 3; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      if (i != 1)
+        d.TreeAuthor.h.v =
+          U.asNumber(d.TreeAuthor.h.v) +
+          state().TreeTwins[i / 2] * d.TreeCountDN;
+    }
+  };
   // ...one whose turn begins with its pass-through's call right after the cache's write, no write between (the window's
   // edges), a number of the save its argument, no two reads of one number: TreeTurnItem(i) × TreeArg(TreeList[i]) × 3 =
   // 2 × 4 × 3 + 4 × 8 × 3 = 120
