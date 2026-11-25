@@ -185,3 +185,28 @@ test("a call that reads two texts of the save and tests one goes down to that on
     where: "invented-zeroed/0/cards/gate/label",
   });
 });
+
+test("the draft writes the text the test reads as a condition leaf, its kind left to the agent (T195)", () => {
+  const attrs = { TreeOtherLabel: "Other label" };
+  const { rec, key, ops } = recorded("TreeBitTwoRoot", attrs);
+  const ref = { call: "TreeBitTwoRoot", args: [0, 0, 0] };
+  const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+  const places = draft.pools.flatMap((p, i) =>
+    p.groups.flatMap((g, j) =>
+      g.sources.map((s, k) => ({
+        s,
+        where: `pools/${String(i)}/groups/${String(j)}/sources/${String(k)}`,
+      })),
+    ),
+  );
+  const bit = places.find(
+    ({ s }) => s.ref && "call" in s.ref && s.ref.call === "TreeBitTwo",
+  );
+  const label = bit?.s.children?.[0];
+  expect(label?.leaf).toBe("condition");
+  expect(label?.conditionKind).toBeUndefined();
+  expect(draft.pending).not.toContainEqual({
+    where: `${bit?.where ?? ""}/children/0`,
+    kind: "leaf",
+  });
+});
