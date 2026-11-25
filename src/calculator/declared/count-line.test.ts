@@ -101,7 +101,8 @@ test("the load takes a quantity line with a model child each, its item a conditi
   };
   const line = countLine("TreeCountBefore");
   expect(load(line)).toBe("ok");
-  const { each: _each, ...noEach } = line;
+  const noEach = { ...line };
+  delete noEach.each;
   expect(load(noEach)).toMatch(/leaf com children/);
   expect(load({ ...line, leaf: "level" })).toMatch(/leaf com children/);
   expect(load({ ...line, children: [{ ...item, leaf: "level" }] })).toMatch(
