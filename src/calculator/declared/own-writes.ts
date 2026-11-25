@@ -12,7 +12,23 @@ export interface Place {
   pos: number;
 }
 
-const indexes = new WeakMap<Recording, Map<string, RecWrite[]>[]>();
+/** Writes by a key, each key's in number order. */
+function groupBy<K>(
+  ws: readonly RecWrite[],
+  keyOf: (w: RecWrite) => K,
+): Map<K, RecWrite[]> {
+  const m = new Map<K, RecWrite[]>();
+  for (const w of ws) {
+    const all = m.get(keyOf(w));
+    if (all) all.push(w);
+    else m.set(keyOf(w), [w]);
+  }
+  for (const all of m.values()) all.sort((a, b) => a.seq - b.seq);
+  return m;
+}
+
+type ByPath = Map<string, RecWrite[]>;
+const indexes = new WeakMap<Recording, { all: ByPath; plain: ByPath }>();
 /**
  * A recording's writes of one path by number, the builders' pass's scratch among the spliced ones (recorder-pass.js);
  * with `spliced` false, `rec.writes` only.
@@ -24,20 +40,13 @@ export function writesAt(
 ): readonly RecWrite[] {
   let ix = indexes.get(rec);
   if (!ix) {
-    const group = (ws: readonly RecWrite[]) => {
-      const byPath = new Map<string, RecWrite[]>();
-      for (const w of ws) {
-        const all = byPath.get(w.path);
-        if (all) all.push(w);
-        else byPath.set(w.path, [w]);
-      }
-      for (const all of byPath.values()) all.sort((a, b) => a.seq - b.seq);
-      return byPath;
+    ix = {
+      all: groupBy([...rec.writes, ...rec.spliced], (w) => w.path),
+      plain: groupBy(rec.writes, (w) => w.path),
     };
-    ix = [group([...rec.writes, ...rec.spliced]), group(rec.writes)];
     indexes.set(rec, ix);
   }
-  return ix[spliced ? 0 : 1]?.get(path) ?? [];
+  return (spliced ? ix.all : ix.plain).get(path) ?? [];
 }
 
 type ByNode = Map<number | null, RecWrite[]>;
@@ -53,19 +62,9 @@ export function writesBy(
 ): readonly RecWrite[] {
   let ix = nodeIndexes.get(rec);
   if (!ix) {
-    const group = (ws: readonly RecWrite[]): ByNode => {
-      const m: ByNode = new Map();
-      for (const w of ws) {
-        const all = m.get(w.node);
-        if (all) all.push(w);
-        else m.set(w.node, [w]);
-      }
-      for (const all of m.values()) all.sort((a, b) => a.seq - b.seq);
-      return m;
-    };
     ix = {
-      all: group([...rec.writes, ...rec.spliced]),
-      plain: group(rec.writes),
+      all: groupBy([...rec.writes, ...rec.spliced], (w) => w.node),
+      plain: groupBy(rec.writes, (w) => w.node),
     };
     nodeIndexes.set(rec, ix);
   }
