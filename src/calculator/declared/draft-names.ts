@@ -73,11 +73,11 @@ export const slug = (text: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, 56)
     .replace(/^-+|-+$/g, "") || "part";
-/** A key unique among its siblings (research R12): the reference's slug, then `end` past its cut, then -2, -3… */
+/** A key unique among its siblings (research R12): the reference's slug, then -2, -3…, then `end` past its cut. */
 export function keyIn(taken: Set<string>, text: string, end = ""): string {
-  const base = slug(text) + end;
-  let k = base;
-  for (let n = 2; taken.has(k); n++) k = `${base}-${String(n)}`;
+  const base = slug(text);
+  let k = base + end;
+  for (let n = 2; taken.has(k); n++) k = `${base}-${String(n)}${end}`;
   taken.add(k);
   return k;
 }
