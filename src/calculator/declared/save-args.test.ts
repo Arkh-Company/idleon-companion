@@ -261,9 +261,9 @@ test("a working map's key set inside a loop before the read, from its index, is 
 test("a key set to 0 on every way, then from the save on the side of an if that ran: the save's number is refused (r1 of P and Q)", () => {
   const saveWritten =
     'argumento do save por extenso: invented-work/0/luk-stats/row: o argumento 1 de TreeDeclRow vem do save; a receita escreve "*"';
-  // TreeBase over 100: the if ran, the read saw the save's TreeList[2], 3
-  expect(rowLock("TreeWorkCond", 3, { TreeBase: 200 })).toEqual([saveWritten]);
-  expect(rowLock("TreeWorkCond", "*", { TreeBase: 200 })).toEqual([]);
+  // TreeCondOn on: the if ran, the read saw the save's TreeList[2], 3
+  expect(rowLock("TreeWorkCond", 3, { TreeCondOn: 1 })).toEqual([saveWritten]);
+  expect(rowLock("TreeWorkCond", "*", { TreeCondOn: 1 })).toEqual([]);
   // the if did not run: the read saw the 0 of the code
   expect(rowLock("TreeWorkCond", 0)).toEqual([]);
 });

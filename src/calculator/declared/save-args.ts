@@ -12,7 +12,7 @@ import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
-import { ranSites } from "./call-site.ts";
+import { ran, ranSites } from "./call-site.ts";
 import { defOf, fnOf, onTheWay } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
 import { at, isCharacter, member, walk } from "./character-args.ts";
@@ -30,12 +30,20 @@ type Says = "yes" | "unsure" | "no";
 const worst = (all: readonly Says[]): Says =>
   all.includes("yes") ? "yes" : all.includes("unsure") ? "unsure" : "no";
 
+/** Where a call's argument was read: its caller's recording, the ops and the steps the caller had run when it began. */
+interface Place {
+  rec: Recording;
+  ops: readonly Op[];
+  caller: RecNode;
+  pos: number;
+}
+
 /**
  * A read of the save, `….getGameAttribute("<name>")` with no game table; of a working map, what the call's own writes
  * of that key there gave (group 5 of part P, as T188: a table, a number of the code or a loop's index is no save's), and
  * unsure when the call wrote it nowhere, its writes read a parameter, or the key is the one being followed.
  */
-function readsSave(e: AnyNode, f?: Fn): Says {
+function readsSave(e: AnyNode, f?: Fn, place?: Place): Says {
   const says1 = walk(e).flatMap((n): Says[] => {
     if (
       n.type !== "CallExpression" ||
@@ -46,14 +54,34 @@ function readsSave(e: AnyNode, f?: Fn): Says {
     const name = k?.type === "Literal" ? k.value : null;
     if (typeof name !== "string" || GAME_TABLE.some((t) => t.test.test(name)))
       return [];
-    return [WORKING.test(name) ? (f ? workingSays(n, f) : "unsure") : "yes"];
+    if (!WORKING.test(name)) return ["yes"];
+    return [f ? workingSays(n, f, name, place) : "unsure"];
   });
   return worst(says1);
 }
 
+/** Whether the write of `map.key` the call's read saw (its recorded number) is the caller's own; undefined unrecorded. */
+function ownWrite(place: Place, path: string): boolean | undefined {
+  const of = (p: string) =>
+    p === path || p.startsWith(`${path}[`) || p.startsWith(`${path}.`);
+  const read = place.caller.rx
+    ?.filter(([p, , xi]) => of(p) && xi <= place.pos)
+    .at(-1);
+  const seen = read?.[3] ?? read?.[4];
+  if (seen === undefined) return undefined;
+  const w = place.rec.writes.filter((x) => of(x.path) && x.seq <= seen).at(-1);
+  return w?.node === place.caller.id;
+}
+
+const LOOP = /^(For|ForIn|ForOf|While|DoWhile)Statement$/;
 const following = new Set<string>();
-/** What the call's own write of a working map's key the read saw gave (`X.h.KEY = …`, `X.h.KEY[…] = …`, `….push(…)`). */
-function workingSays(get: AnyNode, f: Fn): Says {
+/**
+ * What the call's own write of a working map's key the read saw gave (`X.h.KEY = …`, `X.h.KEY[…] = …`, `….push(…)`), by
+ * the recorded write (r1 of parts P and Q): another block's is unsure; of the caller's sets that may be the one seen (the
+ * last on every way, those after it, those after the read in a loop around it), those on the sides that ran, which all
+ * have to agree. Unrecorded, a block called between the last set and the read is unsure.
+ */
+function workingSays(get: AnyNode, f: Fn, map: string, place?: Place): Says {
   const h = f.up.get(get);
   const keyed = h ? f.up.get(h) : undefined;
   const key =
@@ -63,49 +91,80 @@ function workingSays(get: AnyNode, f: Fn): Says {
     m?.type === "MemberExpression" &&
     (at(m, "property").name === key ||
       isKey(m.computed ? at(m, "object") : undefined));
-  // the write the read saw by its place: the last set of the key before it on every way there, and the pushes after it
   const pos = get.range[0];
-  const before = (n: AnyNode) => n.range[1] <= pos && onTheWay(f, n, pos);
-  const last = f.all
-    .filter(
-      (n) =>
-        n.type === "AssignmentExpression" && isKey(at(n, "left")) && before(n),
-    )
+  const own = place ? ownWrite(place, `${map}.${key}`) : undefined;
+  if (own === false) return "unsure";
+  const sets = f.all.filter(
+    (n) => n.type === "AssignmentExpression" && isKey(at(n, "left")),
+  );
+  const last = sets
+    .filter((n) => n.range[1] <= pos && onTheWay(f, n, pos))
     .reduce<AnyNode | undefined>(
       (a, n) => (a && a.range[1] > n.range[1] ? a : n),
       undefined,
     );
+  const after = (n: AnyNode) => !last || n.range[0] > last.range[1];
+  const inside = (n: AnyNode, l: AnyNode) =>
+    l.range[0] <= n.range[0] && n.range[1] <= l.range[1];
+  const loops: AnyNode[] = [];
+  for (let p = f.up.get(get); p; p = f.up.get(p))
+    if (LOOP.test(p.type)) loops.push(p);
+  // a set's side when the call began: true it ran, false it did not, null not recorded (`last` runs on every way)
+  const state = (n: AnyNode) =>
+    n === last
+      ? true
+      : place
+        ? ran(n, f.up, place.caller, place.ops, place.pos - 1)
+        : null;
+  const before = sets.filter(
+    (n) => n.range[1] <= pos && (n === last || after(n)) && state(n) !== false,
+  );
+  // the last one in the text that ran hides those before it; one after it whose side is not recorded may be the one
+  const top = before
+    .filter((n) => state(n) === true)
+    .reduce<AnyNode | undefined>(
+      (a, n) => (a && a.range[1] > n.range[1] ? a : n),
+      undefined,
+    );
+  const later = sets.filter(
+    (n) =>
+      n.range[0] >= pos &&
+      loops.some((l) => inside(n, l) && !(last && inside(last, l))) &&
+      state(n) !== false,
+  );
+  if (
+    own === undefined &&
+    [...f.sites.values()]
+      .flat()
+      .some((c) => c.range[1] <= pos && after(c) && !inside(get, c))
+  )
+    return "unsure";
   const pushed = (n: AnyNode) =>
     n.type === "CallExpression" &&
     member(at(n, "callee")) === "push" &&
     isKey(at(at(n, "callee"), "object")) &&
     n.range[1] <= pos &&
-    (!last || n.range[0] > last.range[1]);
-  // with no set on every way (one inside a loop that ran before), each set before it: they all have to agree
-  const sets = last
-    ? [last]
-    : f.all.filter(
-        (n) =>
-          n.type === "AssignmentExpression" &&
-          isKey(at(n, "left")) &&
-          n.range[1] <= pos,
-      );
+    after(n);
   const given = [
-    ...sets.map((n) => at(n, "right")),
+    ...before
+      .filter((n) => !top || n.range[1] >= top.range[1])
+      .map((n) => at(n, "right")),
+    ...later.map((n) => at(n, "right")),
     ...f.all.flatMap((n) => (pushed(n) ? (n.arguments as AnyNode[]) : [])),
   ];
-  if (given.length === 0) return "unsure";
   const params = (x: AnyNode) =>
     namesIn(x).some((i) => f.params.includes(i.name as string));
   following.add(key);
   try {
-    return worst(
+    const all = new Set(
       given.map((x) =>
         params(x)
           ? "unsure"
           : says(x, f, SAVE_MARK, () => ({ yes: [], unsure: [] }), 1),
       ),
     );
+    const [one] = all;
+    return all.size === 1 && one ? one : "unsure";
   } finally {
     following.delete(key);
   }
@@ -113,7 +172,7 @@ function workingSays(get: AnyNode, f: Fn): Says {
 
 interface Mark {
   /** The predicate: the expression itself is the mark's. */
-  is: (e: AnyNode, f: Fn) => Says;
+  is: (e: AnyNode, f: Fn, place?: Place) => Says;
   /** Whether an expression that reads it anywhere is the mark's too: any value from the save is `*`, the index only itself. */
   inside: boolean;
 }
@@ -121,7 +180,10 @@ const CHARACTER_MARK: Mark = {
   is: (e, f) => (isCharacter(e, f.text) ? "yes" : "no"),
   inside: false,
 };
-const SAVE_MARK: Mark = { is: (e, f) => readsSave(e, f), inside: true };
+const SAVE_MARK: Mark = {
+  is: (e, f, place) => readsSave(e, f, place),
+  inside: true,
+};
 
 /** The variables an expression reads: no property's name. */
 const namesIn = (e: AnyNode): AnyNode[] =>
@@ -140,16 +202,17 @@ function says(
   mark: Mark,
   given: () => Marks,
   depth = 0,
+  place?: Place,
 ): Says {
   if (depth > 4) return "no";
   // the character's index is never the save's
   if (mark !== CHARACTER_MARK && isCharacter(e, f.text)) return "no";
-  const own = mark.is(e, f);
+  const own = mark.is(e, f, place);
   if (own === "yes") return own;
   if (e.type === "Identifier") {
     const name = e.name as string;
     const def = defOf(f, name, e.range[0]);
-    if (def) return says(def, f, mark, given, depth + 1);
+    if (def) return says(def, f, mark, given, depth + 1, place);
     const j = f.params.indexOf(name);
     if (j < 0) return "no";
     const { yes, unsure } = given();
@@ -160,7 +223,10 @@ function says(
       ? (e.arguments as AnyNode[]).slice(0, 1)
       : [];
   const subs = mark.inside ? namesIn(e) : inner;
-  return worst([own, ...subs.map((n) => says(n, f, mark, given, depth + 1))]);
+  return worst([
+    own,
+    ...subs.map((n) => says(n, f, mark, given, depth + 1, place)),
+  ]);
 }
 
 /** A literal of the code: a number (a negative one too) or a text. */
@@ -218,13 +284,14 @@ function marksOf(
   // the sites on the sides its caller recorded as taken when the call began (call-site.ts): the recorded place decides
   const sites = caller && f ? ranSites(fit, f.up, caller, ops, n) : fit;
   if (!caller || !f || sites.length === 0 || depth > 8) return out;
+  const place: Place = { rec, ops, caller, pos: n.pxi };
   let up: Marks | undefined;
   const given = () => (up ??= marksOf(rec, ops, caller, mark, depth + 1));
   n.a.forEach((_, i) => {
     const all = new Set(
       sites.map((s) => {
         const a = (s.arguments as AnyNode[])[i];
-        return a === undefined ? "no" : says(a, f, mark, given);
+        return a === undefined ? "no" : says(a, f, mark, given, 0, place);
       }),
     );
     if (all.size > 1 || all.has("unsure")) out.unsure.push(i);

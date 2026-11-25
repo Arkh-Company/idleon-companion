@@ -2851,7 +2851,7 @@ lime.$scripts.N = function (_exports, $global) {
   Blocks._customBlock_TreeWorkCond = function () {
     var U = A["com.stencyl.utils.Utils"];
     a.engine.getGameAttribute("DNSM").h.TreeCond = 0;
-    if (state().TreeBase > 100)
+    if (state().TreeCondOn > 0)
       a.engine.getGameAttribute("DNSM").h.TreeCond = U.asNumber(
         a.engine.getGameAttribute("TreeList")[2],
       );

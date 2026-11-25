@@ -39,15 +39,21 @@ function opAt(
   });
 }
 
-/** Whether the site ran when the call began, by each side it sits on: false when a test took the other side. */
-function ran(
+/**
+ * Whether the site ran when the call began, by each side it sits on: false when a test took the other side, null when a
+ * side it sits on (a loop's, a case's included) has no recorded test there.
+ */
+export function ran(
   site: AnyNode,
   up: ReadonlyMap<AnyNode, AnyNode>,
   caller: RecNode,
   ops: readonly Op[],
   pos: number,
-): boolean {
+): boolean | null {
+  let open = false;
   for (let c = site, p = up.get(c); p; c = p, p = up.get(p)) {
+    if (/^(For|ForIn|ForOf|While|DoWhile)Statement$|^SwitchCase$/.test(p.type))
+      open ||= p.type === "SwitchCase" || p.body === c;
     let want: boolean | undefined;
     let test: number | undefined;
     if (p.type === "ConditionalExpression" || p.type === "IfStatement") {
@@ -58,11 +64,12 @@ function ran(
       want = p.operator === "&&";
       test = opAt(ops, caller.b, p.left as AnyNode, ["cmp", "leaf", "op"]);
     }
-    if (want === undefined || test === undefined) continue;
-    const side = sideAt(test, caller.x, pos);
+    if (want === undefined) continue;
+    const side = test === undefined ? null : sideAt(test, caller.x, pos);
     if (typeof side === "boolean" && side !== want) return false;
+    open ||= typeof side !== "boolean";
   }
-  return true;
+  return open ? null : true;
 }
 
 /** The sites that ran when the call `n` began, by its caller's recorded sides; all of them when none is decided. */
@@ -74,6 +81,6 @@ export function ranSites(
   n: RecNode,
 ): AnyNode[] {
   if (sites.length < 2) return [...sites];
-  const kept = sites.filter((s) => ran(s, up, caller, ops, n.pxi - 1));
+  const kept = sites.filter((s) => ran(s, up, caller, ops, n.pxi - 1) !== false);
   return kept.length > 0 ? kept : [...sites];
 }
