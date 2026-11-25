@@ -7,6 +7,7 @@
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { astPattern, matchPattern } from "../recorded/ast.ts";
+import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import {
   isCacheRead,
@@ -167,7 +168,20 @@ export function partsOf(
     const counts = turns.length === 0 || num(n?.v) !== null;
     return n && inTurn(n.pxi) && counts ? [callRef(n)] : [];
   });
-  return [...new Set([...own, ...keys(others), ...reads, ...calls])].filter(
-    (k) => !transparent(k),
-  );
+  const parts = [
+    ...new Set([...own, ...keys(others), ...reads, ...calls]),
+  ].filter((k) => !transparent(k));
+  // a literal the code picked by a test on a text of the save, with no other part, goes down to that read (T195)
+  const texts =
+    literal(level.expr) && parts.length === 0
+      ? seen.flatMap(([p, v]) =>
+          v === "(text)" &&
+          !check(p) &&
+          !GAME_TABLE.some((t) => t.test.test(p)) &&
+          !transparent(p)
+            ? [p]
+            : [],
+        )
+      : [];
+  return [...parts, ...new Set(texts)];
 }

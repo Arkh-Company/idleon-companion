@@ -39,7 +39,7 @@ import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, savedTwice } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 import { writtenArgs } from "./written-args.ts";
-import { callIn, covers, valueIn } from "./lock-values.ts";
+import { callIn, covers, textCondition, valueIn } from "./lock-values.ts";
 
 export interface LevelContext {
   rec: Recording;
@@ -249,8 +249,10 @@ export function lockLevel(
     }
     if (
       !child.ref ||
-      (hit ? hit.value : valueIn(child.ref, level.scope, leaves, ctx, only)) ===
-        null
+      ((hit
+        ? hit.value
+        : valueIn(child.ref, level.scope, leaves, ctx, only)) === null &&
+        !textCondition(child, level, ctx))
     ) {
       out.errors.push({ kind: "childNoValue", where });
       // the code's gate gave 0 before its count (T183): the run did not reach the child, the level still closes

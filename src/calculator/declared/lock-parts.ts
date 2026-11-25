@@ -225,11 +225,15 @@ export function returnOf(n: RecNode, ctx: LevelContext): Expr | null {
   // a bare `return read` (a cache, a table's cell): the call's last read, made after its last step, by its place
   if (readAfter && near(num(r[1]), n.v))
     return { t: "read", p: r[0], v: num(r[1]) };
-  // with only tests run (no arithmetic, no call), a number no read gave is the code's literal (an achievement's 1)
+  // with only tests run (no arithmetic, no call), a number no read gave is the code's literal (an achievement's 1); a
+  // step on a text (T195: the game's `"" + Gaming[12]`) is no arithmetic
   const tests = ["leaf", "test", "cmp"];
   const onlyTests =
     !!ctx.ops &&
-    (n.x ?? []).every(([id]) => tests.includes(ctx.ops?.[id]?.kind ?? ""));
+    (n.x ?? []).every(([id, v]) => {
+      const kind = ctx.ops?.[id]?.kind ?? "";
+      return tests.includes(kind) || (kind === "op" && typeof v !== "number");
+    });
   if (onlyTests && !kid && typeof n.v === "number") return { t: "num", v: n.v };
   return call;
 }

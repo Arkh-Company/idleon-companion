@@ -5,7 +5,7 @@ import type { Expr } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import type { LevelContext } from "./lock-levels.ts";
-import { num } from "./lock-parts.ts";
+import { literal, num } from "./lock-parts.ts";
 import { keyMatches, matchRead, savedTwice } from "./refs.ts";
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -55,3 +55,14 @@ export const refCovers = (ref: Ref, part: string, character: number) =>
 
 export const covers = (child: BlueprintNode, part: string, ctx: LevelContext) =>
   !!child.ref && refCovers(child.ref, part, ctx.character);
+
+/** A child that is a text of the save the code's literal was picked by (T195): a condition, with no number of its own. */
+export const textCondition = (
+  child: BlueprintNode,
+  level: { expr: Expr | null; scope: RecNode },
+  ctx: LevelContext,
+) =>
+  literal(level.expr) &&
+  (level.scope.r ?? []).some(
+    ([p, v]) => v === "(text)" && covers(child, p, ctx),
+  );
