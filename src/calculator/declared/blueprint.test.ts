@@ -270,6 +270,9 @@ test("a key's name after a dot may have %, + and { as the game writes it; an ope
     "DNSM.Cards.%_LUK*2",
     "DNSM.Cards.%_LUK B",
     "DNSM.Cards.(%_LUK)",
+    // %, + and { only at the start of a key's name, as the game writes it
+    "DNSM.Cards.a+Other.b",
+    "DNSM.Cards.a%Other.b",
   ])
     expect(read(bad)).toMatch(/read/);
   // a {name} with an identifier is still a param nothing declares
