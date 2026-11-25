@@ -11,15 +11,12 @@
 import type { Op } from "../instrument.ts";
 import type { RecNode, Recording } from "../recording.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
-import { callRef } from "./answer-key-pool.ts";
 import { ran, ranSites } from "./call-site.ts";
 import { defOf, fnOf, onTheWay } from "./code-fn.ts";
 import type { Fn } from "./code-fn.ts";
 import { at, isCharacter, member, walk } from "./character-args.ts";
 import type { AnyNode } from "./character-args.ts";
-import type { LevelContext } from "./lock-levels.ts";
-import type { LockError } from "./lock.ts";
-import { ARG_TEXT_MAX, CHARACTER, keyMatches, SAVE } from "./refs.ts";
+import { ARG_TEXT_MAX, CHARACTER, SAVE } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 
 // a working map of the game holds a loop's index as well as a save's count cached there: the place does not decide
@@ -347,61 +344,3 @@ export const unnamed = (
   [saveArgs(rec, ops, n), characterArgs(rec, ops, n)].some(
     (m) => m.unsure.length > 0,
   );
-
-/**
- * A declared call against its place: the character's index and the save's number are never written out, and a `*`
- * stands only where the game gave the save (research R5).
- */
-export function writtenArgs(
-  ref: Ref | undefined,
-  scope: RecNode,
-  ctx: LevelContext,
-  /** A call list's item's argument (T205): its turn's, no mark to check. */
-  skip?: number,
-): LockError[] {
-  if (
-    !ctx.ops ||
-    !ref ||
-    !("call" in ref) ||
-    !keyMatches(ref, callRef(scope), ctx.character)
-  )
-    return [];
-  const arg = (i: number) => `o argumento ${String(i + 1)} de ${ref.call}`;
-  const { save, unsure } = saveArgs(ctx.rec, ctx.ops, scope);
-  const { yes: character, unsure: unsureCharacter } = characterArgs(
-    ctx.rec,
-    ctx.ops,
-    scope,
-  );
-  const out: LockError[] = [];
-  const undecided = (i: number, from: string) =>
-    out.push({
-      kind: "rootForm",
-      where: ctx.where,
-      got: `o lugar não decide se ${arg(i)} vem do ${from}`,
-    });
-  ref.args.forEach((a, i) => {
-    if (i === skip) return;
-    // what the recipe writes where the place does not decide is refused, `{character}` too, before any other check
-    if (unsureCharacter.includes(i)) undecided(i, "personagem");
-    else if (unsure.includes(i)) undecided(i, "save");
-    else if (character.includes(i)) {
-      if (a !== CHARACTER)
-        out.push({ kind: "characterWritten", where: ctx.where, got: arg(i) });
-    } else if (a === CHARACTER)
-      out.push({
-        kind: "rootForm",
-        where: ctx.where,
-        got: `${arg(i)} não vem do personagem`,
-      });
-    else if (save.includes(i) && a !== SAVE)
-      out.push({ kind: "saveWritten", where: ctx.where, got: arg(i) });
-    else if (a === SAVE && !save.includes(i))
-      out.push({
-        kind: "rootForm",
-        where: ctx.where,
-        got: `${arg(i)} está no código, não vem do save: a receita escreve o número`,
-      });
-  });
-  return out;
-}

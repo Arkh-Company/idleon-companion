@@ -30,7 +30,7 @@ import { lockConstants } from "./lock-constants.ts";
 import { lockPiece } from "./lock-pieces.ts";
 import type { LockError, LockInput, LockResult } from "./lock.ts";
 import { keyMatches, savedTwice } from "./refs.ts";
-import { writtenArgs } from "./save-args.ts";
+import { writtenArgs } from "./written-args.ts";
 import { callIn, covers, valueIn } from "./lock-values.ts";
 
 export interface LevelContext {
