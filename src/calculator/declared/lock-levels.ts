@@ -345,6 +345,8 @@ export function lockSource(
       out.errors.push({ kind: "undeclaredPart", where: ctx.where, got: r });
   const call = ctx.rec.nodes[term.nodes[0] ?? -1];
   const at = call ? null : termExpr(term, top, ctx);
+  // the read at its place: its value is the read's, not the factor a Multi pool multiplies by (1 + x / 100)
+  const read = call ? undefined : onlyRead(at, term.ref);
   const level: Level =
     term.refs.length > 1
       ? {
@@ -357,13 +359,9 @@ export function lockSource(
         ? { expr: returnOf(call, ctx), scope: call, value: num(call.v) }
         : {
             // the term's read at its place in the root's steps, when it is in one only
-            expr: onlyRead(at, term.ref) ?? {
-              t: "read",
-              p: term.ref,
-              v: term.value,
-            },
+            expr: read ?? { t: "read", p: term.ref, v: term.value },
             scope: top,
-            value: term.value,
+            value: num(read?.v) ?? term.value,
           };
   descend(node, level, ctx, out);
 }
