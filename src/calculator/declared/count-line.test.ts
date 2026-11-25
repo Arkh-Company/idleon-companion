@@ -12,7 +12,10 @@ import { parseBlueprint } from "./blueprint.ts";
 import { draftBlueprint } from "./draft.ts";
 import type { DraftNode } from "./draft.ts";
 import { inventedRecorder } from "./lock-fixture.ts";
+import type { LevelContext } from "./lock-levels.ts";
 import { lockBlueprint, lockMessage } from "./lock.ts";
+import { writeTurns } from "./loop-turns.ts";
+import type { Expr } from "../recorded/steps.ts";
 
 // the other test before the count's, after it, and inside its if before its step (r1 of part V)
 const BLOCKS = ["TreeCountBefore", "TreeCountAfter", "TreeCountInside"];
@@ -200,4 +203,63 @@ test("a count no item passed closes at 0, each tested item a ✗; with no turn t
   expect(empty.errors.map(lockMessage)).toEqual([
     "invented-count/0/cards/count/cache/author: o laço de TreeCountBefore() conta DNSM.TreeCountBefore: nenhuma volta foi testada",
   ]);
+});
+
+test("a count's step whose own value is a loose value of its own path, by its place, is a step of 1 (r1 of part V, the game's purple sigils)", () => {
+  // the author wrote DNSM.N 0, 1, 2; its second count's step reads its own value back as a loose value of that path
+  const path = "DNSM.N";
+  const author = { id: 0, b: "TreeN", a: [], c: [], p: null, pxi: 0 };
+  const writes = [0, 1, 2].map((v, i) => ({
+    path,
+    node: 0,
+    v,
+    xi: i * 2,
+    seq: i + 1,
+  }));
+  const step = (l: Expr, v: number): Expr => ({
+    t: "fn",
+    name: "round",
+    args: [{ t: "op", o: "+", l, r: { t: "num", v: 1 }, v }],
+    v,
+  });
+  const withOwn = (own?: string): LevelContext => ({
+    rec: {
+      nodes: [author],
+      writes,
+      spliced: [],
+      bpStart: null,
+      setup: null,
+      root: null,
+      builders: null,
+      fromGame: [],
+    },
+    stepsOf: () => ({ steps: [], checks: [] }),
+    turnOf: (_n, { to }) => ({
+      steps:
+        to === 1
+          ? [{ v: 1, e: step({ t: "read", p: path, v: 0 }, 1) }]
+          : to === 3
+            ? [{ v: 2, e: step({ t: "val", v: 1, ...(own && { own }) }, 2) }]
+            : [],
+      checks: [],
+    }),
+    character: 0,
+    where: "invented",
+  });
+  const x: [number, number][] = [
+    [7, 1],
+    [8, 1],
+    [7, 2],
+    [8, 2],
+  ];
+  const last = writes[2];
+  if (!last) throw new Error("no write");
+  // with no game's code here, the form goes on to its test: the step is a count's
+  expect(writeTurns({ ...author, x }, last, withOwn(path))).toBe(
+    "o laço de TreeN() soma 1 a volta fora de um teste: não é a forma do contador (T215)",
+  );
+  // a loose value of no path of its own is no count's step
+  expect(writeTurns({ ...author, x }, last, withOwn())).toMatch(
+    /a escrita 3 não soma 1/,
+  );
 });
