@@ -11,8 +11,8 @@ import { makeSteps } from "./steps.ts";
 
 type Rx = NonNullable<Parameters<typeof recordingOf>[0][0]["rx"]>;
 
-/** `return s.B + <right>;` recorded with the reads `rx`: s.B worth `left` (6), the right leaf 6; the step's expression. */
-function stepOf(right: string, rx: Rx, left = 6) {
+/** `return s.B + <right>;` recorded with the reads `rx`: s.B worth `left` (6), the right leaf `v` (6); the step's expression. */
+function stepOf(right: string, rx: Rx, left = 6, v = 6) {
   const { ops } = instrument(
     `Blocks._customBlock_T = function (p) { return s.B + ${right}; };`,
   );
@@ -20,11 +20,11 @@ function stepOf(right: string, rx: Rx, left = 6) {
   const op = ops.findIndex((o) => o.kind === "op");
   const x: [number, number][] = [
     [b ?? -1, left],
-    [r ?? -1, 6],
-    [op, left + 6],
+    [r ?? -1, v],
+    [op, left + v],
   ];
-  const r0 = rx.map(([path, v]): [string, number] => [path, Number(v)]);
-  const rec = recordingOf([{ b: "T", v: left + 6, r: r0, rx, x }]);
+  const r0 = rx.map(([path, val]): [string, number] => [path, Number(val)]);
+  const rec = recordingOf([{ b: "T", v: left + v, r: r0, rx, x }]);
   return makeSteps(rec, ops).of(0).steps[0]?.e;
 }
 
@@ -176,6 +176,33 @@ test("a number read as text at the leaf's own place is its read; one read as tex
     l: { t: "val", v: 6 },
     r: { t: "read", p: "A", v: 6 },
   });
+});
+
+test("a key the save does not have is the leaf's read only when noted empty at its own place, never before or after it (r2 of part X)", () => {
+  const empty = (xi: number) =>
+    stepOf(
+      "s.x.A",
+      [
+        ["B", 5, 0],
+        ["x.A", "(undefined)", xi],
+      ],
+      5,
+      0,
+    );
+  expect(empty(0)).toMatchObject({ r: { t: "val", v: 0 } });
+  expect(empty(1)).toMatchObject({ r: { t: "read", p: "x.A", v: 0 } });
+  expect(empty(2)).toMatchObject({ r: { t: "val", v: 0 } });
+});
+
+test("a number read from a text is the leaf's read only when the text was read at its own place, never before or after it (r2 of part X)", () => {
+  const text = (path: string, xi: number) =>
+    stepOf(`U.asNumber(U.replace(U.string(s.x.T), "X", ""))`, [
+      ["B", 6, 0],
+      [path, "6X", xi],
+    ]);
+  expect(text("y.x.T", 0)).toMatchObject({ r: { t: "val", v: 6 } });
+  expect(text("x.T", 1)).toMatchObject({ r: { t: "read", p: "x.T", v: 6 } });
+  expect(text("z.x.T", 2)).toMatchObject({ r: { t: "val", v: 6 } });
 });
 
 test("the guide shows a leaf's two reads at its place as a value with no source, with the reason (r1 of part X)", () => {
