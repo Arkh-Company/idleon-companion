@@ -155,15 +155,23 @@ export function lockTally(
   bp: Blueprint,
 ): { passed: number; failed: number; pending: number } {
   const ids = nodeIds(bp);
+  // a place inside a piece (`<line>/<pool>/<system>/…`) is the line's: the nearest node above it
+  const nodeAt = (where: string): string | undefined => {
+    const parts = where.split("/");
+    for (let k = parts.length; k > 0; k--) {
+      const id = nodeOf(ids, parts.slice(0, k).join("/"));
+      if (id !== undefined) return id;
+    }
+    return undefined;
+  };
   const failed = new Set(
     r.errors.flatMap((e) => {
-      const id = e.kind === "pending" ? undefined : nodeOf(ids, e.where);
+      const id = e.kind === "pending" ? undefined : nodeAt(e.where);
       return id === undefined ? [] : [id];
     }),
   );
   return {
-    passed: new Set(r.closedAt.filter((w) => !failed.has(nodeOf(ids, w) ?? w)))
-      .size,
+    passed: new Set(r.closedAt.filter((w) => !failed.has(nodeAt(w) ?? w))).size,
     failed: failed.size,
     pending: new Set(r.pendingAt.filter((w) => !failed.has(w))).size,
   };
