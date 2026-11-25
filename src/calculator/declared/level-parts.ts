@@ -7,6 +7,8 @@
 import type { RecNode, RecWrite } from "../recording.ts";
 import type { BlockSteps, Expr, LoopTurn } from "../recorded/steps.ts";
 import { astPattern, matchPattern } from "../recorded/ast.ts";
+import type { AstNode } from "../recorded/ast.ts";
+import { walk } from "./character-args.ts";
 import { GAME_TABLE } from "../recorded/steps.ts";
 import { callRef } from "./answer-key-pool.ts";
 import {
@@ -82,6 +84,25 @@ function passThrough(
     return src
       ? passThrough(leavesOf(src.e), scope, src.steps, ctx, sum, turns)
       : [];
+  });
+}
+
+/** Whether the code names `path` inside a test or a comparison the call ran (T195: the text its literal was picked by). */
+export function testedText(
+  scope: RecNode,
+  path: string,
+  ctx: LevelContext,
+): boolean {
+  const ids = new Set((scope.x ?? []).map(([id]) => id));
+  return [...ids].some((id) => {
+    const o = ctx.ops?.[id];
+    return (
+      (o?.kind === "test" || o?.kind === "cmp") &&
+      walk(o.node).some((n) => {
+        const pat = astPattern(n as AstNode);
+        return pat !== null && matchPattern(path, pat);
+      })
+    );
   });
 }
 
@@ -171,11 +192,13 @@ export function partsOf(
   const parts = [
     ...new Set([...own, ...keys(others), ...reads, ...calls]),
   ].filter((k) => !transparent(k));
-  // a literal the code picked by a test on a text of the save, with no other part, goes down to that read (T195)
+  // a literal the code picked by a test on a text of the save, with no other part, goes down to the read the test
+  // reads, by its place in the code (T195)
   const texts =
     literal(level.expr) && parts.length === 0
       ? seen.flatMap(([p, v]) =>
           v === "(text)" &&
+          testedText(scope, p, ctx) &&
           !check(p) &&
           !GAME_TABLE.some((t) => t.test.test(p)) &&
           !transparent(p)
