@@ -1,7 +1,13 @@
 // The recorder over the invented game (spec 008, T016): calls, reads, steps, links, the builders' pass and the switch
 // that turns it off, with the game instrumented as in the tree worker.
 import { beforeAll, expect, test } from "vitest";
-import { CHARACTERS, GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
+import {
+  activeAs,
+  CHARACTERS,
+  GAME,
+  mosaicOf,
+  PAK,
+} from "./fixtures/fake-mosaic.ts";
 import type { Recipe, RecNode, Recording } from "./recording.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { linkReads } from "./tree/links.ts";
@@ -229,6 +235,27 @@ test("a builder that gives another number than the game's explains nothing", () 
   const writer = writerOf(rec, "TreeCacheRead");
   expect(writer.b).toBe("TreeCacheFill");
   expect(writer.p).toBe(rec.setup);
+});
+
+test("a builder of a cache that is a number keeps its writes of the cache, each by its call (T196)", () => {
+  const rec = record(
+    ["TreeCount"],
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeCount: 2 } } }),
+    {
+      recompute: [],
+      builders: [{ cache: "TreeCount", run: { block: "TreeCount", args: [] } }],
+    },
+  );
+  const pass = found(under(rec, rec.builders).find((n) => n.b === "TreeCount"));
+  expect(
+    rec.writes
+      .filter((w) => w.path === "DNSM.TreeCount")
+      .map((w) => [w.node, w.v]),
+  ).toEqual([
+    [pass.id, 0],
+    [pass.id, 1],
+    [pass.id, 2],
+  ]);
 });
 
 test("an event before the builder prepares what the builder reads", () => {
