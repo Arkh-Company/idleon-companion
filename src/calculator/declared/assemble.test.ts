@@ -177,6 +177,13 @@ test("ids from the blueprint's keys, piece keys from the resolved reference, a l
   expect(at(tree, "decl-chain/0/arcade/arcade").pieceKey).toBe(
     JSON.stringify([0, "ArcadeBonus", 0]),
   );
+  // a `*` keeps the recorded read it matched by its place, never the `*`
+  const best = at(tree, "decl-chain/0/family-bonuses/best/best-lv");
+  expect([
+    "PlayerDATABASE[0].SkillLevels[1]",
+    "PlayerDATABASE[1].SkillLevels[1]",
+  ]).toContain(best.code);
+  expect(best.pieceKey).toBe(JSON.stringify([0, best.code]));
   // every leaf has one of the 9 kinds, never unknown nor none
   const leaves = all(tree).filter((n) => kidsOf(n).length === 0);
   const nine = CALC_LEAF_KINDS.filter((k) => k !== "unknown");
