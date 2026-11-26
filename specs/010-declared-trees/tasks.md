@@ -512,7 +512,7 @@ tem 4 pools, nenhum "Other" nem "no name yet", e a montagem cabe nos 5 s.
   - Files: `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees-run.test.ts` (primeiro), `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `moveToPrevious(out: string, id: string): void`; `writeTree(out: string, id: string, tree: CalcTreeNode): void`
   - Cases: a árvore da rodada anterior vai para `previous/` antes de a nova ser escrita; um número reprovado na trava não ganha árvore nova; o `summary.txt` ganha o tempo da montagem.
-- [ ] T041 [sessão] [US1] Piloto montado no jogo real: `just trees stats-drop-rate` (NFR-001, SC-003, SC-005; depende de T040)
+- [ ] T041 [sessão] [US1] Piloto montado no jogo real: `just trees stats-drop-rate` (NFR-001, SC-003, SC-005; depende de T040) (adiada com a T032, 26/11: rodada em 42822a5 sobre a receita do repositório, 282 passam, 3 reprovam, 518 pendentes; o rascunho reprovado não ganha árvore, pela r1 da Fase 5)
   - Files: fora do repositório: `TREES_OUT/trees/stats-drop-rate.json`, `TREES_OUT/summary.txt`; o `registro.md` da feature
   - Signatures: nenhuma (rodada)
   - Expected: `trees/stats-drop-rate.json` com 4 pools (Additive, Multi, Additive, Multi), grupos com emoji, nenhum "Other", "no name yet" nem "Game value"; o tempo da gravação à montagem abaixo de 5 s e o pico de memória anotados em `registro.md`.
