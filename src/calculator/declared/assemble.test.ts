@@ -3,6 +3,7 @@
 // spec 009's CalcTreeNode, and passed by the main's checkTree unchanged.
 import { expect, test } from "vitest";
 import { checkTree } from "../../main/tree-check.ts";
+import { CHARACTERS, SAVED } from "../fixtures/fake-mosaic.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { assembleTree } from "./assemble.ts";
@@ -11,6 +12,7 @@ import {
   groupOf,
   inventedBlueprint,
   recorded,
+  sourceOf,
 } from "./lock-fixture.ts";
 import type { LockInput } from "./lock.ts";
 import { SYSTEMS } from "./systems.ts";
@@ -177,13 +179,6 @@ test("ids from the blueprint's keys, piece keys from the resolved reference, a l
   expect(at(tree, "decl-chain/0/arcade/arcade").pieceKey).toBe(
     JSON.stringify([0, "ArcadeBonus", 0]),
   );
-  // a `*` keeps the recorded read it matched by its place, never the `*`
-  const best = at(tree, "decl-chain/0/family-bonuses/best/best-lv");
-  expect([
-    "PlayerDATABASE[0].SkillLevels[1]",
-    "PlayerDATABASE[1].SkillLevels[1]",
-  ]).toContain(best.code);
-  expect(best.pieceKey).toBe(JSON.stringify([0, best.code]));
   // every leaf has one of the 9 kinds, never unknown nor none
   const leaves = all(tree).filter((n) => kidsOf(n).length === 0);
   const nine = CALC_LEAF_KINDS.filter((k) => k !== "unknown");
@@ -198,6 +193,41 @@ test("ids from the blueprint's keys, piece keys from the resolved reference, a l
       "decl-chain/3/gem-shop/gem",
     ].map((id) => at(tree, id).fmt),
   ).toEqual(["+", "%", "x", "+", "x"]);
+});
+
+test("a `*` read once keeps the recorded read; read by both characters, no piece key, never the first by order", () => {
+  // read by its own character only: the place decides, the path exact
+  const own = inventedBlueprint("decl-chain");
+  sourceOf(own, 0, "talents", "talent", "talent", "points").ref = {
+    read: "PlayerDATABASE[*].SkillLevels[0]",
+  };
+  const points = at(
+    assemble(chainInput(own)).whole(),
+    "decl-chain/0/talents/talent/talent/points",
+  );
+  expect([points.pieceKey, points.code]).toEqual([
+    JSON.stringify([0, "PlayerDATABASE[0].SkillLevels[0]"]),
+    "PlayerDATABASE[0].SkillLevels[0]",
+  ]);
+  // the best level reads both characters: the place does not decide, in either order of the best
+  const firstBest = {
+    PlayerDATABASE: {
+      $m: {
+        [CHARACTERS[0]]: { $m: { ...SAVED[0].$m, SkillLevels: [3, 9] } },
+        [CHARACTERS[1]]: SAVED[1],
+      },
+    },
+  };
+  for (const attrs of [{}, firstBest]) {
+    const best = at(
+      assemble(chainInput(undefined, attrs)).whole(),
+      "decl-chain/0/family-bonuses/best/best-lv",
+    );
+    expect([best.pieceKey, best.code]).toEqual([
+      null,
+      "PlayerDATABASE[*].SkillLevels[1]",
+    ]);
+  }
 });
 
 test("every level of pools and groups closes with its parent, and the root with the final", () => {
