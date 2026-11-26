@@ -12,6 +12,7 @@ import type { AnswerKey, PoolKind } from "./answer-key.ts";
 import type { Blueprint } from "./blueprint.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LevelContext } from "./lock-levels.ts";
+import type { Seen } from "./lock-seen.ts";
 import { nodeIds, nodeOf, pendingCover, pendingIds } from "./lock-pending.ts";
 import { lockPools, POOL_NAME } from "./lock-pools.ts";
 
@@ -182,10 +183,16 @@ export function lockTally(
   };
 }
 
-/** The check mode (research R10): a failure refuses the blueprint. The runtime mode comes with the closing alert (R16). */
-export function lockBlueprint(input: LockInput): LockResult {
+/**
+ * The check mode (research R10): a failure refuses the blueprint. The runtime mode comes with the closing alert (R16).
+ * With `seen`, the run keeps there what each place gave, for the assembly (lock-seen.ts); the result never carries it.
+ */
+export function lockBlueprint(
+  input: LockInput,
+  seen?: Map<string, Seen>,
+): LockResult {
   const { blueprint: bp, key, rec, ops, character, characterClass } = input;
-  const out = emptyOut();
+  const out = { ...emptyOut(), ...(seen && { seen }) };
   // a draft is checked where it is closed (T199): what its pending places lack is no failure, each place is pending
   const covered = pendingCover(bp, character);
   const waits = pendingIds(bp);
@@ -195,7 +202,15 @@ export function lockBlueprint(input: LockInput): LockResult {
     out.closedAt = out.closedAt.filter((w) => !waits.has(w));
     for (const p of bp.pending ?? [])
       out.errors.push({ kind: "pending", where: p.where, got: p.kind });
-    return { ok: out.errors.length === 0, ...out, pendingAt: [...waits] };
+    const { errors, counts, closedAt, unreached } = out;
+    return {
+      ok: errors.length === 0,
+      errors,
+      counts,
+      closedAt,
+      ...(unreached && { unreached }),
+      pendingAt: [...waits],
+    };
   };
   const top = topOf(rec);
   if (!top) {

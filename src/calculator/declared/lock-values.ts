@@ -6,8 +6,9 @@ import { callRef } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { textPart } from "./level-parts.ts";
 import { onlyRead } from "./cache-author.ts";
-import type { Level, LevelContext } from "./lock-levels.ts";
-import { keyOfLeaf, num, returnOf } from "./lock-parts.ts";
+import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
+import { keyOfLeaf, leafCheck, num, returnOf } from "./lock-parts.ts";
+import { see } from "./lock-seen.ts";
 import { keyMatches, matchRead, savedTwice } from "./refs.ts";
 
 type Ref = NonNullable<BlueprintNode["ref"]>;
@@ -166,3 +167,27 @@ export const textCondition = (
   (level.scope.r ?? []).some(
     ([p]) => covers(child, p, ctx) && textPart(level.scope, level.expr, p, ctx),
   );
+
+/**
+ * A declared condition (research R3): its reading is in the level, and it is on when the game used the node, off when
+ * it did not.
+ */
+export function checkCondition(
+  node: BlueprintNode,
+  present: boolean,
+  scope: RecNode,
+  ctx: LevelContext,
+  out: LevelOut,
+): void {
+  const c = node.condition;
+  if (!c?.ref) return;
+  const where = `${ctx.where}/${c.key}`;
+  const v = valueIn(c.ref, scope, [], ctx);
+  see(out, where, { value: v });
+  const expected = present ? "on" : "off";
+  if (v === null)
+    out.errors.push({ kind: "conditionMismatch", where, expected });
+  else if ((v !== 0) !== present)
+    out.errors.push({ kind: "conditionMismatch", where, expected, got: v });
+  else if (present) leafCheck(c, where, out);
+}

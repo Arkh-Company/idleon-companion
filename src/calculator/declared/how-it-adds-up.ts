@@ -159,7 +159,7 @@ export function howItAddsUp(
   const result = numOf(e.v);
   if (!p || result === null) return null;
   if (checks.length === 0 && p.nums.every((n) => n !== null))
-    return [p.terms, [...(p.nums as number[]), result]];
+    return [p.terms, [...p.nums, result]];
   let i = 0;
   const filled = p.terms.map((t) => {
     if (OPERATOR.test(t)) return t;

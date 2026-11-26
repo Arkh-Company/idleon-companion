@@ -41,7 +41,10 @@ import { keyMatches, savedTwice } from "./refs.ts";
 import type { Ref } from "./refs.ts";
 import { tierLeaf } from "./tier-turns.ts";
 import { writtenArgs } from "./written-args.ts";
+import { see } from "./lock-seen.ts";
+import type { Seen } from "./lock-seen.ts";
 import {
+  checkCondition,
   covers,
   inTurn,
   levelOfChild,
@@ -78,6 +81,8 @@ export interface LevelOut {
    * another member's descent than the chosen one (T212); the joined runs keep the refusal only when no run reached it.
    */
   unreached?: string[];
+  /** What each place gave, for the assembly (lock-seen.ts), when the run asks for it. */
+  seen?: Map<string, Seen>;
 }
 /** A level: the expression that gave the value, the call whose reads and calls it lives in, and the value. */
 export interface Level {
@@ -100,29 +105,6 @@ export const emptyOut = (): LevelOut => ({
   counts: { closed: 0, closedByRecorded: 0, leaves: 0, branches: 0 },
   closedAt: [],
 });
-
-/**
- * A declared condition (research R3): its reading is in the level, and it is on when the game used the node, off when
- * it did not.
- */
-export function checkCondition(
-  node: BlueprintNode,
-  present: boolean,
-  scope: RecNode,
-  ctx: LevelContext,
-  out: LevelOut,
-): void {
-  const c = node.condition;
-  if (!c?.ref) return;
-  const where = `${ctx.where}/${c.key}`;
-  const v = valueIn(c.ref, scope, [], ctx);
-  const expected = present ? "on" : "off";
-  if (v === null)
-    out.errors.push({ kind: "conditionMismatch", where, expected });
-  else if ((v !== 0) !== present)
-    out.errors.push({ kind: "conditionMismatch", where, expected, got: v });
-  else if (present) leafCheck(c, where, out);
-}
 
 /**
  * The parts the lock asks a declared call to have as children: its level's references, without the not-leaves, or the
@@ -174,6 +156,7 @@ export function lockLevel(
       ? listCalls(declared, each, level.scope, ctx.rec)
       : { times: new Map<string, number>(), refused: [] };
   const children = modelChildren(declared, each, parts, ctx, listed.times);
+  see(out, ctx.where, { kids: children });
   const twice = listed.refused;
   for (const k of twice)
     out.errors.push({
@@ -293,6 +276,7 @@ function descend(
   out: LevelOut,
 ): void {
   const { ref } = node;
+  see(out, ctx.where, { value: level.value, expr: level.expr });
   // a call's argument the game gave from the character's index or the save is never written out (save-args.ts); a
   // turn's count line's, at its first reference's call
   const at = level.line?.head ?? level.scope;

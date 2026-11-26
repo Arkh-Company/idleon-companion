@@ -11,9 +11,11 @@ import type {
   BlueprintNode,
   BlueprintPool,
 } from "./blueprint.ts";
-import { checkCondition, lockSource } from "./lock-levels.ts";
+import { lockSource } from "./lock-levels.ts";
 import type { LevelContext, LevelOut } from "./lock-levels.ts";
 import { TOLERANCE } from "./lock-parts.ts";
+import { see } from "./lock-seen.ts";
+import { checkCondition } from "./lock-values.ts";
 import { fill } from "./pieces.ts";
 import {
   eachNames,
@@ -119,7 +121,7 @@ function sourcesOf(
       });
       return [];
     }
-    return found.map(({ idx, item, j }) => ({
+    const made = found.map(({ idx, item, j }) => ({
       s: {
         ...fill(
           model,
@@ -131,6 +133,8 @@ function sourcesOf(
       at: `${at}/${model.key}-${item}`,
       ...(fixed && { term: j }),
     }));
+    see(out, at, { kids: made.map((x) => x.s) });
+    return made;
   });
 }
 
@@ -243,6 +247,7 @@ export function lockPools(
           continue;
         }
         used.add(j);
+        see(out, sourceAt, { value: t.value });
         if (j < last)
           out.errors.push({ kind: "sourceOrder", where: sctx.where });
         last = Math.max(last, j);
@@ -287,6 +292,7 @@ export function lockPools(
           expected: t.ref,
         });
     });
+    see(out, where, { value: kp.value });
     closes(out, where, parts, kp.value, pool.kind);
   });
 
@@ -297,6 +303,7 @@ export function lockPools(
       (acc, p) => (p.kind === "additive" ? acc + p.value : acc * p.value),
       first?.value ?? Number.NaN,
     );
+    see(out, at, { value: key.final });
     closes(out, at, total, key.final);
   }
 }

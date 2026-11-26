@@ -149,6 +149,13 @@ test("a two-source term is one row, its second source a child with its system's 
     ["decl-chain/0/talents/talent/talent", "Invented Talent"],
     ["decl-chain/0/talents/talent/twin", "🏆 Invented Twin"],
   ]);
+  // the talent's own level is its curve: in the ⓘ by its role, its two constants named (FR-016)
+  expect(at(tree, "decl-chain/0/talents/talent/talent").formula).toEqual({
+    rule: [
+      "Max bonus of the curve × Level ÷ (Level + Level at half of the max)",
+      "40 × 3 ÷ (3 + 100) = 1.165",
+    ],
+  });
   // its ⓘ names its rows
   const f = term.formula;
   expect(Array.isArray(f) ? f[0] : f).toEqual([
@@ -224,7 +231,7 @@ test("every level of pools and groups closes with its parent, and the root with 
       "×",
       "Multi pool 2",
     ],
-    [a1, m1, a2, m2, input.key.final],
+    [a1, m1, a2, m2, (Number(a1) * Number(m1) + Number(a2)) * Number(m2)],
   ]);
 });
 

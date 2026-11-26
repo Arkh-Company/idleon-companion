@@ -12,6 +12,7 @@ import { callRef, relDiff } from "./answer-key-pool.ts";
 import type { BlueprintNode } from "./blueprint.ts";
 import { lockLevel } from "./lock-levels.ts";
 import { lockRecipePiece } from "./lock-piece-recipe.ts";
+import { see } from "./lock-seen.ts";
 import type { Level, LevelContext, LevelOut } from "./lock-levels.ts";
 import {
   leafCheck,
@@ -159,6 +160,7 @@ function lockPart(
     return null;
   }
   const own = num(f.v);
+  see(out, where, { value: own });
   if (child.combine)
     return pieceLevel(
       child,
@@ -197,6 +199,7 @@ function pieceLevel(
     out.errors.push({ kind: "childNoValue", where: ctx.where, expected, got });
     return null;
   }
+  see(out, ctx.where, { kids });
   const parts = kids.map((child) =>
     lockPart(child, nodes, { ...ctx, where: `${ctx.where}/${child.key}` }, out),
   );
