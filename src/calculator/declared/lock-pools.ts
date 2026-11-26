@@ -20,6 +20,7 @@ import { fill } from "./pieces.ts";
 import {
   eachNames,
   eachPattern,
+  groupPart,
   keyMatches,
   matchRead,
   nodeId,
@@ -69,13 +70,14 @@ function sourceKey(
  */
 function sourcesOf(
   g: BlueprintGroup,
+  gi: number,
   pool: number,
   terms: readonly AnswerTerm[],
   ctx: LevelContext,
   out: LevelOut,
 ): { s: BlueprintNode; at: string; term?: number }[] {
   return g.sources.flatMap((s) => {
-    const at = nodeId(ctx.where, pool, g.system, [s.key]);
+    const at = nodeId(ctx.where, pool, groupPart(g, gi), [s.key]);
     const [model] = s.children ?? [];
     // a source that is a call has its list below it, in its own level (T213)
     const ofCall = s.ref !== undefined && "call" in s.ref;
@@ -196,11 +198,12 @@ export function lockPools(
     const seenB = new Map<string, number>();
     const firsts: { system: string; first: number }[] = [];
     let parts = pool.kind === "additive" ? 0 : 1;
-    for (const g of pool.groups) {
+    for (const [gi, g] of pool.groups.entries()) {
       let last = -1;
       let first = Infinity;
       for (const { s, at: sourceAt, term } of sourcesOf(
         g,
+        gi,
         i,
         kp.terms,
         ctx,

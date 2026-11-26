@@ -7,7 +7,7 @@
 // (childOutside) and its ref's arguments (characterWritten, saveWritten, rootForm).
 import type { Blueprint, BlueprintNode } from "./blueprint.ts";
 import type { LockError, LockErrorKind } from "./lock.ts";
-import { keyMatches, nodeId, savedTwice } from "./refs.ts";
+import { groupPart, keyMatches, nodeId, savedTwice } from "./refs.ts";
 
 // a place, and below a piece's line its own pools' places (T216: a piece's pending)
 const PLACE =
@@ -58,9 +58,11 @@ function placeOf(
 ): Place | null {
   const m = PLACE.exec(where);
   const pool = Number(m?.[1]);
-  const g = bp.pools[pool]?.groups[Number(m?.[2])];
+  const gi = Number(m?.[2]);
+  const g = bp.pools[pool]?.groups[gi];
   if (!m || !g) return null;
-  const idOf = (keys: readonly string[]) => nodeId(bp.id, pool, g.system, keys);
+  const idOf = (keys: readonly string[]) =>
+    nodeId(bp.id, pool, groupPart(g, gi), keys);
   if (m[3] === undefined) return { pool, group: true as const, id: idOf([]) };
   const path: BlueprintNode[] = [];
   const kids = (m[4] ?? "").split("/children/").slice(1).map(Number);
@@ -109,8 +111,8 @@ export function nodeIds(bp: Blueprint): Set<string> {
     });
   };
   bp.pools.forEach((p, i) => {
-    p.groups.forEach((g) => {
-      const at = nodeId(bp.id, i, g.system, []);
+    p.groups.forEach((g, gi) => {
+      const at = nodeId(bp.id, i, groupPart(g, gi), []);
       ids.add(at);
       g.sources.forEach((s) => {
         add(at, s);

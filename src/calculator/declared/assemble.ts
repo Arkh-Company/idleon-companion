@@ -18,7 +18,7 @@ import { lockBlueprint } from "./lock.ts";
 import type { LockInput } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import type { NotLeaf } from "./not-leaves.ts";
-import { nodeId, pieceKeyOf, refKey } from "./refs.ts";
+import { groupPart, nodeId, pieceKeyOf, refKey } from "./refs.ts";
 import { systemLabel } from "./systems.ts";
 import type { SystemEntry } from "./systems.ts";
 
@@ -220,20 +220,25 @@ export function assembleTree(
     const p = pools[i];
     if (!p) throw new Error(`no pool ${String(i)}`);
     const product = p.kind === "multi";
-    const groups = p.groups.flatMap((g) => {
+    const groups = p.groups.flatMap((g, gi) => {
       const sources = g.sources.filter(visible);
       if (sources.length === 0) return [];
       const rows = sources.map((s) => {
         const weight = s.weight ?? p.weight ?? 1;
         const fmt = product ? "x" : weight === 0.01 ? "%" : "+";
-        return row(s, nodeId(base, i, g.system, [s.key]), fmt, product ? 1 : 0);
+        return row(
+          s,
+          nodeId(base, i, groupPart(g, gi), [s.key]),
+          fmt,
+          product ? 1 : 0,
+        );
       });
       const value = combined(
         rows.map((r) => (isNum(r.value) ? r.value : null)),
         product,
       );
       const sys = systemOf(g.system);
-      const id = nodeId(base, i, g.system, []);
+      const id = nodeId(base, i, groupPart(g, gi), []);
       return [
         make(id, sys ? systemLabel(sys) : PENDING_SYSTEM, value, {
           role: "system",

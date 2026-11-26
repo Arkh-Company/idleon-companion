@@ -130,6 +130,10 @@ export const pieceKeyOf = (ref: Ref, character: number): string =>
     ? JSON.stringify([character, ref.call, ...callArgs(ref, character)])
     : JSON.stringify([character, resolve(ref.read, character)]);
 
+/** A group's part of a node id: its system, or `pending-<its place in the pool>` in a draft's group with none yet. */
+export const groupPart = (g: { system: string | null }, gi: number): string =>
+  g.system ?? `pending-${String(gi)}`;
+
 /** `<number>/<pool>/<system>/<key>/<key>…`: the blueprint's keys, never the raw reference. */
 export const nodeId = (
   numberId: string,
