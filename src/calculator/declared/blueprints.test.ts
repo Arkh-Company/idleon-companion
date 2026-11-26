@@ -67,6 +67,54 @@ test.skip("the Drop Rate's blueprint is complete: Additive, Multi, Additive, Mul
   expect(nodes.filter((n) => n.nameProof === undefined)).toEqual([]);
 });
 
+// what holds while T031 waits: the Drop Rate is a draft, and its recipe writes no character's index out, neither in a
+// read nor at an argument some recipe of the repository marks as the character's (by its place, never by its number)
+test("the Drop Rate's blueprint loads as a draft and writes no character's index out, in a read or a call's argument", () => {
+  expect(loadBlueprints(BLUEPRINTS).stages.get("stats-drop-rate")).toBe(
+    "draft",
+  );
+  const refs: Ref[] = [];
+  const walk = (x: unknown): void => {
+    if (Array.isArray(x)) {
+      x.forEach(walk);
+      return;
+    }
+    if (typeof x !== "object" || x === null) return;
+    const ref = (x as { ref?: Ref }).ref;
+    if (ref !== undefined) refs.push(ref);
+    Object.values(x).forEach(walk);
+  };
+  Object.values(BLUEPRINTS).forEach(walk);
+  // a call's first argument is its mode, which decides what the others are (CauldronStats("ResearchSpeed", …))
+  const place = (r: { call: string; args: readonly RefArg[] }, i: number) =>
+    `${r.call}/${String(r.args[0])}/${String(i)}`;
+  const places = new Set(
+    refs.flatMap((r) =>
+      "call" in r
+        ? r.args.flatMap((a, i) => (a === "{character}" ? [place(r, i)] : []))
+        : [],
+    ),
+  );
+  refs.length = 0;
+  walk(BLUEPRINTS["../blueprints/character/stats-drop-rate.blueprint.json"]);
+  expect(refs.length).toBeGreaterThan(0);
+  expect(
+    refs.flatMap((r) =>
+      "read" in r && hasRawCharacterIndex(r.read) ? [r.read] : [],
+    ),
+  ).toEqual([]);
+  expect(
+    refs.flatMap((r) =>
+      "call" in r &&
+      r.args.some(
+        (a, i) => places.has(place(r, i)) && a !== "{character}" && a !== "*",
+      )
+        ? [JSON.stringify(r)]
+        : [],
+    ),
+  ).toEqual([]);
+});
+
 test("the Star Signs piece loads below a line that reads a star sign's field: the active signs' bases, then the multis (T172)", () => {
   const probe = {
     id: "star-signs-probe",
