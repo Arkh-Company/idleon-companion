@@ -10,12 +10,11 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, expect, test, vi } from "vitest";
-import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
-import { bootRecorder } from "../tree-record.ts";
+import { afterAll, beforeAll, expect, test } from "vitest";
+import { CHARACTERS } from "../fixtures/fake-mosaic.ts";
+import type { bootRecorder } from "../tree-record.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { inventedBlueprint, sourceOf } from "./lock-fixture.ts";
-import { lockBlueprint } from "./lock.ts";
 import {
   classCharacters,
   lockNumber,
@@ -24,14 +23,15 @@ import {
   writeLock,
 } from "./real-trees-check.ts";
 import type { RecordFn } from "./real-trees-check.ts";
+import {
+  BOTH,
+  checkRecorder,
+  recordRoots,
+  snapshot,
+  twoClasses,
+} from "./real-trees-check-fixture.ts";
 import { summaryLine } from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
-
-// the lock as it is, its calls counted
-vi.mock("./lock.ts", async (actual) => {
-  const lock = await actual<typeof import("./lock.ts")>();
-  return { ...lock, lockBlueprint: vi.fn(lock.lockBlueprint) };
-});
 
 const SHA = "a".repeat(64);
 const GAME_SHA = "b".repeat(64);
@@ -95,18 +95,6 @@ test("the review keeps only the blueprint's hash and the lock (ok, the game's ha
   expect(readFileSync(file, "utf8")).toBe('{"version": 2}');
 });
 
-/** The invented snapshot: the first character of class 3 and active, the second of class 7. */
-function snapshot(classes: readonly number[]) {
-  const snap = JSON.parse(mosaicOf({ CharacterClass: classes[0] })) as {
-    attrs: { PlayerDATABASE: { $m: Record<string, { $m: object }> } };
-  };
-  CHARACTERS.forEach((name, i) => {
-    const saved = snap.attrs.PlayerDATABASE.$m[name];
-    if (saved) saved.$m = { ...saved.$m, CharacterClass: classes[i] };
-  });
-  return snap;
-}
-
 test("one character of each class of the snapshot, the active one for its own class", () => {
   expect(classCharacters(snapshot([3, 7]))).toEqual(
     new Map([
@@ -125,14 +113,6 @@ test("one character of each class of the snapshot, the active one for its own cl
   ).toEqual(new Map([[3, 1]]));
   expect(classCharacters({})).toEqual(new Map());
 });
-
-/** Both classes, the class-7 character with no point in class 3's talent: TreeDeclTalent(0) gives it 0, as the game. */
-function twoClasses() {
-  const snap = snapshot([3, 7]);
-  const second = snap.attrs.PlayerDATABASE.$m[CHARACTERS[1]];
-  if (second) second.$m = { ...second.$m, SkillLevels: [0, 8] };
-  return snap;
-}
 
 test("a number with a class source runs once per class of the snapshot; one without, once for the active character", () => {
   const classes = new Map([
@@ -179,27 +159,8 @@ test("a number with a class only on a child, or in a piece's pools inlined in a 
 
 let recorder: ReturnType<typeof bootRecorder>;
 beforeAll(() => {
-  recorder = bootRecorder(
-    GAME,
-    PAK,
-    { startMs: 5_000, numberMs: 500 },
-    { infinite: true },
-  );
+  recorder = checkRecorder();
 });
-/** The recorder over the roots it is given. */
-const recordRoots: RecordFn = (mosaic, scene, roots, routine) =>
-  recorder.record(
-    mosaic,
-    roots,
-    { recompute: [], builders: [] },
-    scene,
-    [],
-    routine,
-  );
-const BOTH = [
-  { character: 0, characterClass: 3 },
-  { character: 1, characterClass: 7 },
-];
 
 test("each class's run records its own character (the other one rebuilt, inactiveMosaic), and the result joins the runs", () => {
   const seen: { active: unknown; scene: boolean }[] = [];
@@ -244,43 +205,6 @@ test("each class's run records its own character (the other one rebuilt, inactiv
       got: 0,
     },
   ]);
-});
-
-test("the tree's character's run is assembled whole, and the summary's stages carry the assembly's time (T040)", () => {
-  const bp = inventedBlueprint("decl-chain");
-  const mosaic = JSON.stringify(twoClasses());
-  const { tree, stages } = lockNumber(
-    recordRoots,
-    recorder.ops,
-    bp,
-    mosaic,
-    BOTH,
-    1,
-  );
-  // the class-7 character's tree: its talent in Multi pool 2, none in Additive pool 1
-  const kids = (n?: { kids: unknown }) =>
-    Array.isArray(n?.kids) ? (n.kids as { name: string; kids: unknown }[]) : [];
-  expect(kids(kids(tree)[0]).map((g) => g.name)).not.toContain("🎯 Talents");
-  expect(kids(kids(tree)[3]).map((g) => g.name)).toEqual([
-    "🙏 Prayers",
-    "🎯 Talents",
-    "💎 Gem Shop",
-  ]);
-  expect(Object.keys(stages)).toContain("assemble");
-  // no tree asked, none made
-  const none = lockNumber(recordRoots, recorder.ops, bp, mosaic, BOTH);
-  expect([none.tree, Object.keys(none.stages)]).toEqual([
-    undefined,
-    expect.not.arrayContaining(["assemble"]),
-  ]);
-});
-
-test("the tree's character's run is locked once: the assembly takes what its lock kept (T040)", () => {
-  const bp = inventedBlueprint("decl-chain");
-  const mosaic = JSON.stringify(twoClasses());
-  vi.mocked(lockBlueprint).mockClear();
-  lockNumber(recordRoots, recorder.ops, bp, mosaic, BOTH, 1);
-  expect(vi.mocked(lockBlueprint)).toHaveBeenCalledTimes(BOTH.length);
 });
 
 test("a recording whose root is out of the pools' rule is refused as rootForm, at the root", () => {
