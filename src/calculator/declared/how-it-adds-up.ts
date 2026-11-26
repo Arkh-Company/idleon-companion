@@ -3,16 +3,15 @@
 // the names and the numbers; a branch's check, or a part with no number, makes it a rule of two lines, as in the 008.
 // A part with no name gives no ⓘ: the text never has a block's name nor a game's path (FR-012a of the 008). A curve
 // shows by its role, its two constants named; the root's ⓘ joins the pools.
+import {
+  curveFormula as curveRule,
+  curvePart,
+  fx3,
+} from "../recorded/curves.ts";
 import type { Expr } from "../recorded/steps.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 
 type Formula = CalcTreeNode["formula"];
-
-/** 3 decimals, or 3 significant digits below 0.01 (the 008's rule 160), so the line of numbers recomputes. */
-export const fx3 = (v: number): string =>
-  v !== 0 && Math.abs(v) < 0.01
-    ? String(+v.toPrecision(3))
-    : String(+v.toFixed(3));
 
 const SYMBOL: Readonly<Record<string, string>> = {
   "+": "+",
@@ -172,17 +171,9 @@ export function howItAddsUp(
   };
 }
 
-/** [F5-CURVE] the curve's two constants by their role in the game's curve (the 008's rule 159). */
-const CONSTANTS: Readonly<Record<string, readonly [string, string]>> = {
-  decay: ["Max bonus of the curve", "Level at half of the max"],
-  decayMulti: ["Max bonus of the curve", "Level at half of the max"],
-  intervalAdd: ["Base of the curve", "Levels for each +1"],
-  add: ["Per-level bonus of the curve", "Growth of the per-level bonus"],
-};
-
 /**
  * A curve's ⓘ (FR-016, research R6): the curve with its input's name and its constants by their role, then with its
- * numbers; null when its numbers do not give `v` or the curve is not of the game's talent kinds.
+ * numbers (recorded/curves.ts, the 008's); null when its numbers do not give `v` or the curve is not of the game's kinds.
  */
 export function curveFormula(
   kind: string,
@@ -192,40 +183,11 @@ export function curveFormula(
   v: number,
   input: string,
 ): Formula {
-  const names = Object.hasOwn(CONSTANTS, kind) ? CONSTANTS[kind] : undefined;
-  if (!names) return null;
-  const [A, B] = names;
-  const L = input;
-  const [a, b, l] = [fx3(x1), fx3(x2), fx3(x3)];
-  const forms: Record<string, [number, string, string]> = {
-    decay: [
-      (x1 * x3) / (x3 + x2),
-      `${A} × ${L} ÷ (${L} + ${B})`,
-      `${a} × ${l} ÷ (${l} + ${b})`,
-    ],
-    decayMulti: [
-      1 + (x1 * x3) / (x3 + x2),
-      `1 + ${A} × ${L} ÷ (${L} + ${B})`,
-      `1 + ${a} × ${l} ÷ (${l} + ${b})`,
-    ],
-    intervalAdd: [
-      x1 + Math.floor(x3 / x2),
-      `${A} + floor(${L} ÷ ${B})`,
-      `${a} + floor(${l} ÷ ${b})`,
-    ],
-    add:
-      x2 === 0
-        ? [x1 * x3, `${A} × ${L}`, `${a} × ${l}`]
-        : [
-            x3 * (x1 + (x2 * (x3 + 1)) / 2),
-            `${L} × (${A} + ${B} × (${L} + 1) ÷ 2)`,
-            `${l} × (${a} + ${b} × (${l} + 1) ÷ 2)`,
-          ],
-  };
-  const form = forms[kind];
-  if (!form || !(Math.abs(form[0] - v) <= 1e-6 * Math.max(1, Math.abs(v))))
-    return null;
-  return { rule: [form[1], `${form[2]} = ${fx3(v)}`] };
+  const rule = curveRule([kind, x1, x2, x3], v, input, [
+    curvePart(kind, 1),
+    curvePart(kind, 2),
+  ]);
+  return rule && { rule };
 }
 
 /** The root's ⓘ: the pools joined in the game's order, a sum before a product in parentheses; none for one pool. */

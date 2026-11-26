@@ -6,6 +6,7 @@
 // Multi; a level that does not close still shows the game's values (FR-015). A source of another class leaves, and a
 // group only when all of its sources do (FR-002a). The ⓘ is made from each level's recorded expression
 // (how-it-adds-up.ts), never kept. A draft assembles too, its pending places flagged `unknown`.
+import { curveOf } from "../recorded/curves.ts";
 import type { Expr } from "../recorded/steps.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import type { BlueprintNode, BlueprintPool } from "./blueprint.ts";
@@ -141,20 +142,12 @@ export function assembleTree(
     let x = e;
     while (x.t === "def") x = x.e;
     const n = x.t === "call" ? rec.nodes[x.id] : undefined;
-    const [kind, x1, x2, x3] = n?.a ?? [];
-    if (
-      n?.b === "ArbitraryCode5Inputs" &&
-      typeof kind === "string" &&
-      isNum(x1) &&
-      isNum(x2) &&
-      isNum(x3) &&
-      isNum(x.v)
-    ) {
-      // shortcut: the input goes by its role, "Level"; name it by the child the lock ties to the curve's argument
-      // (lock-parts.ts transparentValue) when a tree needs it
-      return curveFormula(kind, x1, x2, x3, x.v, "Level");
-    }
-    return howItAddsUp(e, nameIn(kids));
+    const c = n ? curveOf(n.b, n.a) : null;
+    // shortcut: the input goes by its role, "Level"; name it by the child the lock ties to the curve's argument
+    // (lock-parts.ts transparentValue) when a tree needs it
+    const curve = c && isNum(x.v) ? curveFormula(...c, x.v, "Level") : null;
+    // a curve its numbers do not give falls to its expression's ⓘ
+    return curve ?? howItAddsUp(e, nameIn(kids));
   };
 
   const conditionRow = (c: BlueprintNode, id: string): Node => {
