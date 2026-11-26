@@ -8,7 +8,12 @@ import { afterAll, expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LockResult } from "./lock.ts";
-import { getsTree, moveToPrevious, writeTree } from "./real-trees-trees.ts";
+import {
+  getsTree,
+  keepTree,
+  moveToPrevious,
+  writeTree,
+} from "./real-trees-trees.ts";
 
 const out = mkdtempSync(join(tmpdir(), "trees-out-"));
 afterAll(() => {
@@ -59,7 +64,7 @@ test("a tree's file is named by the catalog's id only", () => {
   expect(existsSync(join(out, "stats-drop-rate.json"))).toBe(false);
 });
 
-test("a number the lock refuses gets no new tree; a draft gets one, its pending places marked", () => {
+test("a number the lock refuses gets no new tree; a draft gets one only when what it lacks is pending", () => {
   const passed: LockResult = { ok: true, ...emptyOut(), pendingAt: [] };
   const failed: LockResult = {
     ...passed,
@@ -68,5 +73,30 @@ test("a number the lock refuses gets no new tree; a draft gets one, its pending 
   };
   expect(getsTree(passed, true)).toBe(true);
   expect(getsTree(failed, true)).toBe(false);
-  expect(getsTree(failed, false)).toBe(true);
+  expect(getsTree(failed, false)).toBe(false);
+});
+
+test("a draft the lock refuses past its pending places gets no tree, and a refused number keeps none of the run before", () => {
+  const pending: LockResult = {
+    ok: false,
+    ...emptyOut(),
+    errors: [{ kind: "pending", where: "pools/0/groups/0", got: "name" }],
+    pendingAt: [],
+  };
+  const failed: LockResult = {
+    ...pending,
+    errors: [
+      ...pending.errors,
+      { kind: "notClosing", where: "pool:0", expected: 1, got: 2 },
+    ],
+  };
+  expect(getsTree(pending, false)).toBe(true);
+  expect(getsTree(failed, false)).toBe(false);
+  // the run before wrote a tree; this run's is refused: it goes to previous/, and trees/ has none
+  writeTree(out, "stats-class-exp", tree(1));
+  keepTree(out, "stats-class-exp", tree(2), failed, false);
+  expect(existsSync(join(out, "trees", "stats-class-exp.json"))).toBe(false);
+  expect(read("previous", "trees", "stats-class-exp.json")).toEqual(tree(1));
+  keepTree(out, "stats-class-exp", tree(3), pending, false);
+  expect(read("trees", "stats-class-exp.json")).toEqual(tree(3));
 });
