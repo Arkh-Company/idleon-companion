@@ -10,11 +10,12 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, expect, test } from "vitest";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import { CHARACTERS, GAME, mosaicOf, PAK } from "../fixtures/fake-mosaic.ts";
 import { bootRecorder } from "../tree-record.ts";
 import { parseBlueprint } from "./blueprint.ts";
 import { inventedBlueprint, sourceOf } from "./lock-fixture.ts";
+import { lockBlueprint } from "./lock.ts";
 import {
   classCharacters,
   lockNumber,
@@ -25,6 +26,12 @@ import {
 import type { RecordFn } from "./real-trees-check.ts";
 import { summaryLine } from "./real-trees-run.ts";
 import { SYSTEMS } from "./systems.ts";
+
+// the lock as it is, its calls counted
+vi.mock("./lock.ts", async (actual) => {
+  const lock = await actual<typeof import("./lock.ts")>();
+  return { ...lock, lockBlueprint: vi.fn(lock.lockBlueprint) };
+});
 
 const SHA = "a".repeat(64);
 const GAME_SHA = "b".repeat(64);
@@ -266,6 +273,14 @@ test("the tree's character's run is assembled whole, and the summary's stages ca
     undefined,
     expect.not.arrayContaining(["assemble"]),
   ]);
+});
+
+test("the tree's character's run is locked once: the assembly takes what its lock kept (T040)", () => {
+  const bp = inventedBlueprint("decl-chain");
+  const mosaic = JSON.stringify(twoClasses());
+  vi.mocked(lockBlueprint).mockClear();
+  lockNumber(recordRoots, recorder.ops, bp, mosaic, BOTH, 1);
+  expect(vi.mocked(lockBlueprint)).toHaveBeenCalledTimes(BOTH.length);
 });
 
 test("a recording whose root is out of the pools' rule is refused as rootForm, at the root", () => {
