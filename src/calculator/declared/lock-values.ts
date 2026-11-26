@@ -82,6 +82,8 @@ export function callIn(
   only?: ReadonlySet<string>,
   /** A count line's loop turn (lineTurn, r1 of part U): the calls the level made in it only, by their place. */
   range?: LoopTurn,
+  /** Takes the recorded key the call matched, for the assembly (lock-seen.ts). */
+  keep?: (key: string) => void,
 ): RecNode | undefined {
   const made = scope.c.filter((id) => {
     const n = ctx.rec.nodes[id];
@@ -96,11 +98,14 @@ export function callIn(
   const hits = calls.filter((n) => keyMatches(ref, callRef(n), ctx.character));
   // in a turn, two of one key tie to the expression's call leaf, its own place, or to none (r1 of part W)
   const leaf = hits.filter((n) => own.includes(n.id));
-  return range && hits.length > 1
-    ? leaf.length === 1
-      ? leaf[0]
-      : undefined
-    : hits[0];
+  const hit =
+    range && hits.length > 1
+      ? leaf.length === 1
+        ? leaf[0]
+        : undefined
+      : hits[0];
+  if (hit) keep?.(callRef(hit));
+  return hit;
 }
 
 /** The recorded value of a reference in a level: a call it made, or a path it read (`*` takes the first reading). */
@@ -111,15 +116,17 @@ export function valueIn(
   ctx: LevelContext,
   only?: ReadonlySet<string>,
   range?: LoopTurn,
+  keep?: (key: string) => void,
 ): number | null {
   if ("call" in ref)
-    return num(callIn(ref, scope, leaves, ctx, only, range)?.v);
+    return num(callIn(ref, scope, leaves, ctx, only, range, keep)?.v);
   const reads = new Map<string, unknown>();
   for (const l of leaves) if (l.t === "read") reads.set(l.p, l.v);
   // a text the step read a number from (T209, form 2) keeps the step's number
   for (const [p, v] of scope.r ?? [])
     if (num(v) !== null || !reads.has(p)) reads.set(p, v);
   const m = matchRead(ref.read, [...reads.keys()], ctx.character);
+  if (m) keep?.(m.path);
   return m ? num(reads.get(m.path)) : null;
 }
 
@@ -182,7 +189,9 @@ export function checkCondition(
   const c = node.condition;
   if (!c?.ref) return;
   const where = `${ctx.where}/${c.key}`;
-  const v = valueIn(c.ref, scope, [], ctx);
+  const v = valueIn(c.ref, scope, [], ctx, undefined, undefined, (key) => {
+    see(out, where, { key });
+  });
   see(out, where, { value: v });
   const expected = present ? "on" : "off";
   if (v === null)

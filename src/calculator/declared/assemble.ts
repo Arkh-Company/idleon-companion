@@ -18,7 +18,7 @@ import { lockBlueprint } from "./lock.ts";
 import type { LockInput } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import type { NotLeaf } from "./not-leaves.ts";
-import { groupPart, nodeId, pieceKeyOf, refKey } from "./refs.ts";
+import { groupPart, nodeId, pieceKeyOf, recordedRef, refKey } from "./refs.ts";
 import { systemLabel } from "./systems.ts";
 import type { SystemEntry } from "./systems.ts";
 
@@ -109,13 +109,16 @@ export function assembleTree(
     kids: [],
     ...more,
   });
-  const refFields = (n: BlueprintNode) =>
-    n.ref
-      ? {
-          pieceKey: pieceKeyOf(n.ref, character),
-          code: refKey(n.ref, character),
-        }
-      : {};
+  /** The piece key and the code of the reference the lock resolved at the node's place (a `*` as recorded). */
+  const refFields = (n: BlueprintNode, id: string) => {
+    if (!n.ref) return {};
+    const key = seen.get(id)?.key;
+    const ref = key === undefined ? n.ref : recordedRef(n.ref, key);
+    return {
+      pieceKey: pieceKeyOf(ref, character),
+      code: refKey(ref, character),
+    };
+  };
 
   /** A part of a level's expression by the name of the child that stands for it, or by its role; null with neither. */
   const nameIn =
@@ -157,7 +160,7 @@ export function assembleTree(
   const conditionRow = (c: BlueprintNode, id: string): Node => {
     const v = seen.get(id)?.value;
     return make(id, label(c), isNum(v) ? v !== 0 : null, {
-      ...refFields(c),
+      ...refFields(c, id),
       leaf: "condition",
       condition: c.conditionKind ?? null,
     });
@@ -191,7 +194,7 @@ export function assembleTree(
         : (items ?? n.constant ?? neutral ?? null);
     const name = nameOf(n);
     return make(id, label(n), value, {
-      ...refFields(n),
+      ...refFields(n, id),
       fmt,
       leaf: n.leaf ?? null,
       condition: n.conditionKind ?? null,

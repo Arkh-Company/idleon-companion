@@ -9,6 +9,8 @@ export interface Seen {
   value?: number | null;
   expr?: Expr | null;
   kids?: readonly BlueprintNode[];
+  /** The recorded key the node's reference matched by its place (a `*` resolved). */
+  key?: string;
 }
 
 /** Keeps what a place gave, when the run asks for it; the first of each field stays (a pool's term before its call's). */

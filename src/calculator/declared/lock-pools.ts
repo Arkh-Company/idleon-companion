@@ -250,7 +250,7 @@ export function lockPools(
           continue;
         }
         used.add(j);
-        see(out, sourceAt, { value: t.value });
+        see(out, sourceAt, { value: t.value, ...(s.ref && { key: k }) });
         if (j < last)
           out.errors.push({ kind: "sourceOrder", where: sctx.where });
         last = Math.max(last, j);

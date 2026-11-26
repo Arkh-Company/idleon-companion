@@ -130,6 +130,13 @@ export const pieceKeyOf = (ref: Ref, character: number): string =>
     ? JSON.stringify([character, ref.call, ...callArgs(ref, character)])
     : JSON.stringify([character, resolve(ref.read, character)]);
 
+/** The reference as the recording gave it: the path, or the call's arguments, of the key it matched by its place. */
+export function recordedRef(ref: Ref, key: string): Ref {
+  if (!("call" in ref)) return { read: key };
+  const got = parseKey(key);
+  return got ? { call: ref.call, args: got.args as RefArg[] } : ref;
+}
+
 /** A group's part of a node id: its system, or `pending-<its place in the pool>` in a draft's group with none yet. */
 export const groupPart = (g: { system: string | null }, gi: number): string =>
   g.system ?? `pending-${String(gi)}`;

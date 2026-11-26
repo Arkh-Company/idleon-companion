@@ -222,6 +222,7 @@ export function lockLevel(
       out.errors.push({ kind: "childOutside", where });
       continue;
     }
+    if (hit) see(out, where, { key: hit.part });
     if (
       !child.ref ||
       ((hit
@@ -233,6 +234,9 @@ export function lockLevel(
             ctx,
             only,
             lineTurn(level),
+            (key) => {
+              see(out, where, { key });
+            },
           )) === null &&
         !textCondition(child, level, ctx))
     ) {
