@@ -74,6 +74,13 @@ test("a curve shows by its role, its two constants named (FR-016)", () => {
       "2 + floor(35 ÷ 10) = 5",
     ],
   });
+  // every curve kind of the 008's, the bigBase too
+  expect(curveFormula("bigBase", 2, 3, 10, 32, "Level")).toEqual({
+    rule: [
+      "Base of the curve + Per-level bonus of the curve × Level",
+      "2 + 3 × 10 = 32",
+    ],
+  });
   // a curve its numbers do not give, or one not of the game's kinds, has no ⓘ of its own
   expect(curveFormula("decay", 40, 100, 50, 7, "Level")).toBeNull();
   expect(curveFormula("spiral", 1, 2, 3, 4, "Level")).toBeNull();
