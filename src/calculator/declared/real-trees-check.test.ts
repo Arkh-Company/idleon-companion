@@ -239,6 +239,35 @@ test("each class's run records its own character (the other one rebuilt, inactiv
   ]);
 });
 
+test("the tree's character's run is assembled whole, and the summary's stages carry the assembly's time (T040)", () => {
+  const bp = inventedBlueprint("decl-chain");
+  const mosaic = JSON.stringify(twoClasses());
+  const { tree, stages } = lockNumber(
+    recordRoots,
+    recorder.ops,
+    bp,
+    mosaic,
+    BOTH,
+    1,
+  );
+  // the class-7 character's tree: its talent in Multi pool 2, none in Additive pool 1
+  const kids = (n?: { kids: unknown }) =>
+    Array.isArray(n?.kids) ? (n.kids as { name: string; kids: unknown }[]) : [];
+  expect(kids(kids(tree)[0]).map((g) => g.name)).not.toContain("🎯 Talents");
+  expect(kids(kids(tree)[3]).map((g) => g.name)).toEqual([
+    "🙏 Prayers",
+    "🎯 Talents",
+    "💎 Gem Shop",
+  ]);
+  expect(Object.keys(stages)).toContain("assemble");
+  // no tree asked, none made
+  const none = lockNumber(recordRoots, recorder.ops, bp, mosaic, BOTH);
+  expect([none.tree, Object.keys(none.stages)]).toEqual([
+    undefined,
+    expect.not.arrayContaining(["assemble"]),
+  ]);
+});
+
 test("a recording whose root is out of the pools' rule is refused as rootForm, at the root", () => {
   const swap: RecordFn = (mosaic, scene, _roots, routine) =>
     recordRoots(mosaic, scene, [["TreeDeclSwap", [0, 0, 0]]], routine);
