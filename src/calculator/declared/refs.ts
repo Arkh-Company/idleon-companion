@@ -130,6 +130,12 @@ export const pieceKeyOf = (ref: Ref, character: number): string =>
     ? JSON.stringify([character, ref.call, ...callArgs(ref, character)])
     : JSON.stringify([character, resolve(ref.read, character)]);
 
+/** Whether a reference stands for any of several recorded ones: a `[*]` read, a `*` argument or any call (T208). */
+export const hasStar = (ref: Ref): boolean =>
+  "call" in ref
+    ? ref.args.includes(SAVE) || isAnyCall(ref)
+    : ref.read.includes(ANY);
+
 /** The reference as the recording gave it: the path, or the call's arguments, of the key it matched by its place. */
 export function recordedRef(ref: Ref, key: string): Ref {
   if (!("call" in ref)) return { read: key };

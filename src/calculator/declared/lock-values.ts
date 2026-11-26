@@ -126,7 +126,8 @@ export function valueIn(
   for (const [p, v] of scope.r ?? [])
     if (num(v) !== null || !reads.has(p)) reads.set(p, v);
   const m = matchRead(ref.read, [...reads.keys()], ctx.character);
-  if (m) keep?.(m.path);
+  // the key only when the place decides: a `*` read more than once would be the first by order
+  if (m?.matches === 1) keep?.(m.path);
   return m ? num(reads.get(m.path)) : null;
 }
 

@@ -19,7 +19,14 @@ import { lockBlueprint } from "./lock.ts";
 import type { LockInput } from "./lock.ts";
 import { notLeafOf } from "./not-leaves.ts";
 import type { NotLeaf } from "./not-leaves.ts";
-import { groupPart, nodeId, pieceKeyOf, recordedRef, refKey } from "./refs.ts";
+import {
+  groupPart,
+  hasStar,
+  nodeId,
+  pieceKeyOf,
+  recordedRef,
+  refKey,
+} from "./refs.ts";
 import { systemLabel } from "./systems.ts";
 import type { SystemEntry } from "./systems.ts";
 
@@ -118,13 +125,17 @@ export function assembleTree(
     kids: [],
     ...more,
   });
-  /** The piece key and the code of the reference the lock resolved at the node's place (a `*` as recorded). */
+  /**
+   * The piece key and the code of the reference the lock resolved at the node's place (a `*` as recorded); a `*` its
+   * place did not resolve has no piece key, its code the declared pattern.
+   */
   const refFields = (n: BlueprintNode, id: string) => {
     if (!n.ref) return {};
     const key = seen.get(id)?.key;
     const ref = key === undefined ? n.ref : recordedRef(n.ref, key);
     return {
-      pieceKey: pieceKeyOf(ref, character),
+      pieceKey:
+        key === undefined && hasStar(n.ref) ? null : pieceKeyOf(ref, character),
       code: refKey(ref, character),
     };
   };
