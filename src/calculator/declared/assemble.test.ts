@@ -274,6 +274,29 @@ test("a draft assembles, its pending places marked", () => {
   ]);
 });
 
+test("two groups of a pool with their system pending get ids of their own, each marked pending", () => {
+  const bp = inventedBlueprint("decl-chain");
+  for (const system of ["arcade", "family-bonuses"])
+    (groupOf(bp, 0, system) as { system: string | null }).system = null;
+  bp.pending = [
+    { where: "pools/0/groups/2", kind: "system" },
+    { where: "pools/0/groups/3", kind: "system" },
+  ];
+  const tree = assemble(chainInput(bp)).whole();
+  const groups = kidsOf(at(tree, "decl-chain/0")).filter(
+    (g) => g.flags.unknown === true,
+  );
+  expect(groups.map((g) => [g.id, g.name])).toEqual([
+    ["decl-chain/0/pending-2", "Pending system"],
+    ["decl-chain/0/pending-3", "Pending system"],
+  ]);
+  // the lock's values reach each row by the same id
+  const before = assemble().whole();
+  expect(at(tree, "decl-chain/0/pending-2/arcade").value).toBe(
+    at(before, "decl-chain/0/arcade/arcade").value,
+  );
+});
+
 test("the tree passes the main's checkTree unchanged (the 009's contract)", () => {
   const built = assemble();
   expect(checkTree(built.whole(), 10_000)).toEqual(built.whole());
