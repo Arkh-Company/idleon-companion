@@ -7,6 +7,7 @@ import { CHARACTERS, SAVED } from "../fixtures/fake-mosaic.ts";
 import { CALC_LEAF_KINDS } from "../tree-contract.ts";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { assembleTree } from "./assemble.ts";
+import { howItAddsUp } from "./how-it-adds-up.ts";
 import {
   chainInput,
   groupOf,
@@ -158,6 +159,20 @@ test("a two-source term is one row, its second source a child with its system's 
       "40 × 3 ÷ (3 + 100) = 1.165",
     ],
   });
+  // a curve its numbers do not give falls to its expression's ⓘ: the curve's call by its role
+  const off = chainInput();
+  const curve = off.rec.nodes.find(
+    (n) => n.b === "ArbitraryCode5Inputs" && n.a[1] === 40,
+  );
+  if (!curve) throw new Error("no curve");
+  curve.a[1] = 41;
+  const level = at(assemble(off).whole(), "decl-chain/0/talents/talent/talent");
+  expect(level.formula).toEqual(
+    howItAddsUp(
+      { t: "call", id: curve.id, v: Number(level.value) },
+      () => "Curve",
+    ),
+  );
   // its ⓘ names its rows
   const f = term.formula;
   expect(Array.isArray(f) ? f[0] : f).toEqual([
