@@ -28,7 +28,7 @@ export function methodOf(n: AstNode): string | null {
 }
 
 /** `asNumber(x)` is x. */
-function unwrap(n: AstNode): AstNode {
+export function unwrap(n: AstNode): AstNode {
   const [a, ...rest] = (n.arguments as AstNode[] | undefined) ?? [];
   return methodOf(n) === "asNumber" && a && !rest.length ? unwrap(a) : n;
 }
@@ -69,4 +69,73 @@ export function matchPattern(
   const T = pat.toks;
   if (pat.root ? P.length !== T.length : P.length < T.length) return false;
   return T.every((t, i) => t === null || t === P[P.length - T.length + i]);
+}
+
+/**
+ * The node whose text a number was read from, through `asNumber(replace("" + string(x), mark, ""))` (spec 010, T209,
+ * form 2: the game's "50TOT"); null for any other node.
+ */
+function textOf(node: AstNode): AstNode | null {
+  const n = unwrap(node);
+  if (methodOf(n) !== "replace") return null;
+  let a = (n.arguments as AstNode[] | undefined)?.[0];
+  if (a?.type === "BinaryExpression" && at(a, "left").value === "")
+    a = at(a, "right");
+  if (a && methodOf(a) === "string") a = (a.arguments as AstNode[])[0];
+  return a ?? null;
+}
+
+/** The one read whose text the number `v` was read from (textOf), by the path the code names; null with none or two. */
+export function textRead(
+  node: AstNode,
+  pool: readonly (readonly [string, unknown])[],
+  v: number,
+): string | null {
+  const tn = textOf(node);
+  const pat = tn ? astPattern(tn) : null;
+  const hits = pat
+    ? pool.filter(
+        ([p, val]) =>
+          typeof val === "string" &&
+          matchPattern(p, pat) &&
+          Number.parseFloat(val) === v,
+      )
+    : [];
+  return hits.length === 1 ? (hits[0]?.[0] ?? null) : null;
+}
+
+/** Each block's parameters, from its function's text (spec 010, T209, form 1). */
+export function blockParams(ops: readonly Op[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const o of ops)
+    if (!out.has(o.block))
+      out.set(
+        o.block,
+        (/function\s*\(([^)]*)\)/.exec(o.fnText)?.[1] ?? "")
+          .split(",")
+          .map((p) => p.trim()),
+      );
+  return out;
+}
+
+/**
+ * The call's own variable a value was read from (spec 010, T209, form 3): the one path the code names whose read at this
+ * place holds the value, and which the call itself wrote before it; null with none, no place, or two.
+ */
+export function ownRead(
+  pat: { toks: (string | null)[]; root: boolean },
+  pool: readonly (readonly [string, unknown])[],
+  v: unknown,
+  writes: readonly { path: string; node: number | null; xi: number }[],
+  node: number,
+  pos: number | undefined,
+): string | null {
+  if (pos === undefined) return null;
+  const hits = pool.filter(
+    ([p, val]) =>
+      val === v &&
+      matchPattern(p, pat) &&
+      writes.some((w) => w.node === node && w.path === p && w.xi <= pos),
+  );
+  return hits.length === 1 ? (hits[0]?.[0] ?? null) : null;
 }

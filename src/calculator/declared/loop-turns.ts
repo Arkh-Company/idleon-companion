@@ -1,0 +1,246 @@
+// A source that sums a list in a loop (spec 010, T167; spec, Open Questions 23/11): one child per turn, one item a
+// line. The level is the step a call returned (`t = t + item`) when that step ran in more than one turn; each turn is
+// the stretch of the call's step log up to that step's record, read at its own place (makeSteps turnOf), and its item
+// is the step's right side there. The level closes by the sum of the items. A turn with no item of its own place, or
+// two turns with the same call, are refused with the reason: the turns do not part by their place.
+// Two turns with the same read are a line each, keyed by the number of its turn (T198). An item that is a count is a
+// line by its first call or read, its other references termPart children, closing by the item (T193, research R4).
+// A cache its author summed over its own value (T168, `d.X.v = d.X.v + item`) opens the same way: each write of the
+// author on the path a turn, its item the right side of the step that gave that write; a first write of 0 with no step
+// is where the sum starts, no line. A write is a turn only when its step adds to a read of the path itself: a last
+// write that does not overwrote the cache, and its own count opens it; an overwrite among the turns is refused. The
+// first write may add to the 0 of a key not yet set, the author's first read of it empty (T192: the game's Gallery).
+import { READ_CAP } from "../recording.ts";
+import type { RecNode, RecWrite } from "../recording.ts";
+import type { BlockSteps, Expr } from "../recorded/steps.ts";
+import { atCap, callRef, near } from "./answer-key-pool.ts";
+import { writeExpr, writeTurn } from "./cache-author.ts";
+import { codeStep, countTurns } from "./count-turns.ts";
+import type { Opening } from "./level-openings.ts";
+import { partsAndOwn } from "./level-parts.ts";
+import type { LevelContext } from "./lock-levels.ts";
+import { keyOfLeaf, leavesOf, num } from "./lock-parts.ts";
+import { callAt, kidsOf } from "./lock-values.ts";
+import { writesBy } from "./own-writes.ts";
+import { parseKey } from "./refs.ts";
+
+/** One line a turn, by its item, or the refusal's reason when the turns do not part by their place. */
+function turnsOf(
+  scope: RecNode,
+  items: readonly (Expr | null | undefined)[],
+  ctx: LevelContext,
+  /** The steps of each turn, where its item's reads have their place. */
+  turns: readonly BlockSteps[],
+): Opening[] | string {
+  const name = callRef(scope);
+  const below: Opening[] = [];
+  for (const [k, item] of items.entries()) {
+    if (!item || item.t === "val")
+      return `a volta ${String(k + 1)} do laço de ${name} não tem o item no seu lugar`;
+    const part = keyOfLeaf(item, ctx.rec);
+    // an item that is a count (T193, research R4): a line by its first part, as the lock reads it (a pass-through
+    // variable through what gave its write, T188), the others termPart children, in its turn's steps
+    const steps = turns[k];
+    const level = { expr: item, scope, value: num(item.v), steps };
+    // an item with no call nor read of its own (a bare number: a count, T215) has no part, never the call's others
+    const leaves = leavesOf(item);
+    const own = leaves.some((l) => keyOfLeaf(l, ctx.rec) !== null);
+    const found = part === null && own ? partsAndOwn(level, leaves, ctx) : null;
+    const refs = found?.parts ?? [];
+    // the item's leaves through its pass-throughs: a call that gave a write it read is at its place (T230)
+    const through = found?.leaves ?? leaves;
+    // a curve in the item takes the whole call's parts (level-parts.ts), never the turn's: refused until a real case
+    const mine = new Set(found?.own);
+    if (refs.some((r) => !mine.has(r)))
+      return `o item da volta ${String(k + 1)} do laço de ${name} tem uma curva: suas partes passam das próprias folhas, e a forma espera um caso real`;
+    const first = part ?? refs[0];
+    if (first === undefined)
+      return `o item da volta ${String(k + 1)} do laço de ${name} não é uma chamada nem uma leitura`;
+    // the same read in two turns is a line a turn, by its number (T198); the same call, two calls the place must part
+    if (below.some((b) => b.part === part) && item.t === "call")
+      return `duas voltas do laço de ${name} têm o mesmo item (${first})`;
+    const call = item.t === "call" ? (ctx.rec.nodes[item.id] ?? null) : null;
+    // a count line's call with no place in its turn (a pass-through written before it) is refused: its arguments are
+    // checked at that place only (r2 of part U); any call reference of the item with two calls the place does not part
+    // is refused too, not the head's alone (r2 of part W)
+    for (const r of refs) {
+      if (parseKey(r) === null) continue;
+      if (callAt(through, r, scope, ctx, steps?.range) !== null) continue;
+      if (kidsOf(scope, r, ctx, steps?.range).length > 1)
+        return `duas chamadas de ${r} na volta ${String(k + 1)} do laço de ${name}, e o lugar não as separa`;
+      if (r === first)
+        return `a chamada de ${first} não tem lugar na volta ${String(k + 1)} do laço de ${name}`;
+    }
+    const head =
+      refs.length > 0 ? callAt(through, first, scope, ctx, steps?.range) : null;
+    const count = refs.length > 0 && {
+      expr: item,
+      refs,
+      head,
+      leaves: through,
+      ...(steps && { steps }),
+    };
+    below.push({
+      part: first,
+      call,
+      value: level.value,
+      turn: k + 1,
+      ...count,
+    });
+  }
+  // the turn's number only on a part another turn has too: any other part ties by its reference alone
+  return below.map((o) => {
+    if (below.filter((b) => b.part === o.part).length > 1) return o;
+    const one = { ...o };
+    delete one.turn;
+    return one;
+  });
+}
+
+/** The turns of the loop whose sum the call returned, their refusal's reason, or null when it returned no such sum. */
+export function loopOpening(
+  expr: Expr | null,
+  scope: RecNode,
+  ctx: LevelContext,
+): Opening[] | string | null {
+  if (expr?.t !== "op" || expr.o !== "+") return null;
+  const { steps, stepAt } = ctx.stepsOf(scope.id);
+  const last = steps.at(-1);
+  const at = stepAt?.at(-1);
+  // only what the call returned: its last step, with its value (a two-source term's place can be the root's last step)
+  if (last?.e !== expr || !near(last.v, scope.v) || at === undefined)
+    return null;
+  const op = scope.x?.[at]?.[0];
+  const places = (scope.x ?? []).flatMap(([o], j) => (o === op ? [j] : []));
+  if (op === undefined || places.length < 2) return null;
+  const turns = places.map((to, k) =>
+    ctx.turnOf(scope, { from: k === 0 ? 0 : (places[k - 1] ?? 0) + 1, to }),
+  );
+  const items = turns.map((t) => {
+    const e = t.exprOf?.(op);
+    return e?.t === "op" ? e.r : null;
+  });
+  return turnsOf(scope, items, ctx, turns);
+}
+
+/**
+ * Whether the key of the author's first write `first` was not yet set (T192): its first read of the path saw no number
+ * before that write, or, with its read list full (READ_CAP: the read fell off it, as in the game's TalentCalc(-6)), no
+ * number of the path is in its step log before the write.
+ */
+function emptyKey(author: RecNode, first: RecWrite): boolean {
+  const read = author.r?.find(([p]) => p === first.path);
+  if (read) return num(read[1]) === null && (read[2] ?? -1) < first.seq;
+  return (
+    (author.r?.length ?? 0) >= READ_CAP &&
+    !atCap(author) &&
+    !(author.rx ?? []).some(
+      ([p, v, xi]) => p === first.path && num(v) !== null && xi <= first.xi,
+    )
+  );
+}
+
+/** The other side of a sum onto a loose 0 (`x + 0` or `0 + x`), or undefined. */
+const onZero = (e: Expr | null | undefined): Expr | undefined => {
+  if (e?.t !== "op" || e.o !== "+") return undefined;
+  const zero = (x: Expr) =>
+    x.t === "val" && x.v === 0 && x.arg === undefined && x.own === undefined;
+  return zero(e.l) ? e.r : zero(e.r) ? e.l : undefined;
+};
+
+/**
+ * A cache the author wrote once onto a key not yet set (the game's meals, `x + asNumber(the empty key)`): the count of
+ * that write without the empty key's 0, where the sum starts; null for any other write.
+ */
+export function emptyStart(
+  author: RecNode,
+  write: RecWrite,
+  e: Expr | null,
+  writes: readonly RecWrite[],
+): Expr | null {
+  const own = writes.filter(
+    (w) => w.node === author.id && w.path === write.path && w.seq <= write.seq,
+  );
+  const x = onZero(e);
+  return own.length === 1 && x && emptyKey(author, write) ? x : null;
+}
+
+/**
+ * The turns of a cache its author summed over its own value on the path up to `write`; null with one write only or a
+ * last write that overwrote it.
+ */
+export function writeTurns(
+  author: RecNode,
+  write: RecWrite,
+  ctx: LevelContext,
+): Opening[] | string | null {
+  const ws = writesBy(ctx.rec, author.id, false).filter(
+    (w) => w.path === write.path && w.seq <= write.seq,
+  );
+  const [first] = ws;
+  if (ws.length < 2) {
+    // no item passed (r1 of part V): the start at 0 alone, the count's step only in the author's code
+    const zero =
+      first?.v === 0 &&
+      ctx.ops &&
+      writeExpr(ctx.rec, { node: author, write: first }, ctx.turnOf) === null;
+    const coded = zero ? codeStep(author, write.path, ctx.ops ?? []) : null;
+    return typeof coded === "number"
+      ? countTurns(author, coded, write.path, ctx)
+      : coded;
+  }
+  const turns = ws.map((w) =>
+    writeTurn(ctx.rec, { node: author, write: w }, ctx.turnOf),
+  );
+  const exprs = ws.map((w, j) =>
+    writeExpr(ctx.rec, { node: author, write: w }, ctx.turnOf, turns[j]),
+  );
+  const name = callRef(author);
+  // a count that adds a fixed number to its own value a turn (`x = round(x + 1)`, the game's purple sigils): a quantity
+  // line over the items its test saw (T215, count-turns.ts), never a chain of its own turns
+  // its own value read back, or a loose value of its own path by its place (T209 form 3: the game's purple sigils)
+  const by = (e: Expr | null) => {
+    const s = e?.t === "fn" && e.args.length === 1 ? e.args[0] : e;
+    return s?.t === "op" &&
+      s.o === "+" &&
+      ((s.l.t === "read" && s.l.p === write.path) ||
+        (s.l.t === "val" && s.l.own === write.path)) &&
+      s.r.t === "num"
+      ? s.r.v
+      : undefined;
+  };
+  const j = exprs.findIndex((e) => by(e) !== undefined);
+  if (j >= 0) {
+    // each write a step of 1, or the start at 0 with no step: a cap after the count or a start of its own is none (r1)
+    const k = exprs.findIndex(
+      (e, i) => by(e) !== 1 && !(i === 0 && first?.v === 0 && e === null),
+    );
+    // the count's step: the last the step log recorded before its write
+    const step = author.x?.[(ws[j]?.xi ?? 0) - 1]?.[0];
+    if (k >= 0 || step === undefined) {
+      const why =
+        k >= 0
+          ? `a escrita ${String(k + 1)} não soma 1 ao próprio valor nem é o início em 0`
+          : `o registro de passos não tem o passo antes da escrita ${String(j + 1)}`;
+      return `o laço de ${name} conta ${write.path}, mas ${why}: não é a forma do contador (T215)`;
+    }
+    return countTurns(author, step, write.path, ctx);
+  }
+  // the first write may add to the 0 of a key not yet set (T192)
+  const empty = ws[0] !== undefined && emptyKey(author, ws[0]);
+  const itemOf = (e: Expr | null | undefined, j: number) =>
+    e?.t === "op" && e.o === "+" && e.l.t === "read" && e.l.p === write.path
+      ? e.r
+      : j === 0 && empty
+        ? onZero(e)
+        : undefined;
+  if (itemOf(exprs.at(-1), exprs.length - 1) === undefined) return null;
+  // the sum starts at a write of 0 with no step of its own: no line
+  const start = ws[0]?.v === 0 && exprs[0] === null ? 1 : 0;
+  const items = exprs.map(itemOf).slice(start);
+  // the first turn that does not add: with no step of its own it has no item (turnsOf), else it overwrote the cache
+  const k = items.findIndex((x) => x === undefined);
+  if (k >= 0 && exprs[k + start] !== null)
+    return `a volta ${String(k + 1)} do laço de ${name} escreve ${write.path} sem somar sobre o próprio valor`;
+  return turnsOf(author, items, ctx, turns.slice(start));
+}

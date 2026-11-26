@@ -89,7 +89,7 @@ test("a golden food that reads its worn food back opens as its chain: its shared
     // the block's data row (the quantity its log call took) and its checks, as for any block; the check of the
     // quantity beside it is said in the food's ⓘ, no row (A39, Vinicius's answer of 19/11)
     ["Food slot 1 quantity", 999, "quantity", null, {}],
-    ["Game value", 0, "condition", null, { unnamed: true }],
+    // the block's `level < 0` reads its variable's write, `Ninja[104][0] * 1`, by its place (T232): no loose row
   ]);
   const [set, family] = pools;
   // the worn food's step and the emporium's lone + are rows (decisions of 19/11)
@@ -170,7 +170,7 @@ test("a golden food the pass reads: the shared multiplier, the worn food and the
     // the block's data row (the quantity its log call took) and its checks, as for any block
     ["Food slot 1 quantity", 999, "quantity", null, {}],
     ["Food slot 1 quantity > 0", 1, "condition", null, {}],
-    ["Game value", 0, "condition", null, { unnamed: true }],
+    // the block's `level < 0` reads its variable's write, `Ninja[104][0] * 1`, by its place (T232): no loose row
   ]);
   const [, sources, set] = kidsIn(multi);
   expect(brief(multi)).toEqual([

@@ -6,6 +6,10 @@ export type RecValue = number | boolean | string | null;
 
 /** How many entries recorder.js keeps in a call's step log (`rx`); the rest is dropped. */
 export const LOG_CAP = 20_000;
+/** How many first reads recorder.js keeps in a call's `r`; the rest is only in the step log (numbers) or dropped. */
+export const READ_CAP = 80;
+/** The value recorder.js notes for the read of a key the state does not have (T214), at its place in the step log. */
+export const EMPTY_READ = "(undefined)";
 
 export interface RecNode {
   id: number;
@@ -17,7 +21,11 @@ export interface RecNode {
   p: number | null;
   /** How many steps the parent had run when this call started. */
   pxi: number;
+  /** The last write's number when this call began (spec 010, T191); absent in a recording made before it. */
+  seq?: number;
   v?: RecValue;
+  /** What the return that ran gives by its place, a block's call or a read (instrument.ts); absent with neither. */
+  rt?: "call" | "read";
   /** The state path of the list or the map the call returned, when it returned one of the state's. */
   vp?: string;
   err?: true;
@@ -25,9 +33,9 @@ export interface RecNode {
   r?: ([string, RecValue] | [string, RecValue, number])[];
   /**
    * The step log of the reads: [path, value, how many steps had run] and, for a number, the last write's number before
-   * the read (the write it saw).
+   * the read (the write it saw); a game table's text has null there and that number fifth (absent before Fase 4 r2).
    */
-  rx?: [string, RecValue, number, number?][];
+  rx?: [string, RecValue, number, (number | null)?, number?][];
   /** Checks made without reading the value: [path, it exists]. */
   q?: [string, boolean][];
   /** The steps of the block's arithmetic: [op id, value]. */

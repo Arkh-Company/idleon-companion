@@ -12,12 +12,15 @@ export interface NotLeaf {
 }
 
 export const NOT_LEAVES: readonly NotLeaf[] = [
-  {
-    match: { call: "ArbitraryCode5Inputs", mode: "decay" },
-    role: "curve",
-    reason:
-      "A talent's curve: its top, its middle and the level are the parent's children (prototype, Drop Rate).",
-  },
+  // every talent curve mode (T182; spec 009, FR-018): the curve goes to the ⓘ, the level and its numbers are rows
+  ...["decay", "add", "intervalAdd", "decayMulti", "addDECAY"].map(
+    (mode): NotLeaf => ({
+      match: { call: "ArbitraryCode5Inputs", mode },
+      role: "curve",
+      reason:
+        "A talent's curve: its two numbers of the table and the level are the parent's children (prototype, Drop Rate).",
+    }),
+  ),
   {
     match: { call: "getLOG" },
     role: "log",
@@ -50,7 +53,8 @@ export const NOT_LEAVES: readonly NotLeaf[] = [
   },
 ];
 
-const CALL = /^([A-Za-z_$][\w$]*)\((.*)\)$/;
+/** A call as its key writes it, `Block(args)`: its block and its arguments' text. */
+export const CALL = /^([A-Za-z_$][\w$]*)\((.*)\)$/;
 const firstArg = (args: string): unknown => {
   try {
     return (JSON.parse(`[${args}]`) as unknown[])[0];

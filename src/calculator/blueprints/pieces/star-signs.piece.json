@@ -1,0 +1,201 @@
+{
+  "id": "star-signs",
+  "params": [],
+  "pools": [
+    {
+      "kind": "additive",
+      "groups": [
+        {
+          "system": "star-signs",
+          "sources": [
+            {
+              "key": "signs",
+              "name": "Star Signs",
+              "each": {
+                "list": "DNSM.StarSignsDL[*]",
+                "as": "sign"
+              },
+              "children": [
+                {
+                  "key": "sign",
+                  "name": "Star Sign",
+                  "nameProof": {
+                    "table": "CustomLists.StarSigns",
+                    "row": "{sign}"
+                  },
+                  "leaf": "fixedValue"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "multi",
+      "groups": [
+        {
+          "system": "chips",
+          "sources": [
+            {
+              "key": "chip",
+              "name": "Silkrode Nanochip",
+              "nameProof": {
+                "names": "chipBonuses(\"star\")"
+              },
+              "ref": {
+                "call": "chipBonuses",
+                "args": ["star"]
+              },
+              "children": [
+                {
+                  "key": "chip",
+                  "name": "Silkrode Nanochip",
+                  "nameProof": {
+                    "names": "chipBonuses(\"star\")"
+                  },
+                  "ref": {
+                    "call": "chipBonuses",
+                    "args": ["star"]
+                  },
+                  "children": [
+                    {
+                      "key": "labchip",
+                      "name": "Lab chips (all)",
+                      "nameProof": {
+                        "names": "ActionBlock(\"RecalcChipBonuses\", \"0\", 0, 0)"
+                      },
+                      "ref": {
+                        "call": "ActionBlock",
+                        "args": ["RecalcChipBonuses", "0", 0, 0]
+                      },
+                      "children": [
+                        {
+                          "key": "value",
+                          "name": "Chip bonus value",
+                          "nameProof": {
+                            "names": "CustomLists.ChipDesc[15][11]"
+                          },
+                          "ref": {
+                            "read": "CustomLists.ChipDesc[15][11]"
+                          },
+                          "leaf": "fixedValue"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "rift",
+                  "name": "Rift: star signs enabled",
+                  "nameProof": {
+                    "names": "RiftStuff(\"enabledStarSigns\", 0)"
+                  },
+                  "ref": {
+                    "call": "RiftStuff",
+                    "args": ["enabledStarSigns", 0]
+                  },
+                  "termPart": {
+                    "system": "rift"
+                  },
+                  "children": [
+                    {
+                      "key": "shiny",
+                      "name": "Infinite Star Signs",
+                      "nameProof": {
+                        "names": "Breeding(\"ShinyBonusS\", \"Nah\", 3, -1)"
+                      },
+                      "ref": {
+                        "call": "Breeding",
+                        "args": ["ShinyBonusS", "Nah", 3, -1]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "meritocracy",
+          "sources": [
+            {
+              "key": "meritoc",
+              "name": "All of your Starsigns give higher bonuses than normal",
+              "nameProof": {
+                "names": "Summoning2(\"MeritocBonusz\", 22, 0)"
+              },
+              "ref": {
+                "call": "Summoning2",
+                "args": ["MeritocBonusz", 22, 0]
+              },
+              "children": [
+                {
+                  "key": "vote",
+                  "name": "Meritocracy vote of the week",
+                  "nameProof": {
+                    "names": "OptionsListAccount[453]"
+                  },
+                  "ref": {
+                    "read": "OptionsListAccount[453]"
+                  },
+                  "leaf": "condition",
+                  "conditionKind": "equalsValue"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "system": "star-signs",
+          "sources": [
+            {
+              "key": "seraph",
+              "name": "Seraph Cosmos",
+              "nameProof": {
+                "table": "CustomLists.StarSigns",
+                "row": 79
+              },
+              "ref": {
+                "read": "Arcane[40]"
+              },
+              "children": [
+                {
+                  "key": "cultism",
+                  "name": "Astrology Cultism level",
+                  "nameProof": {
+                    "names": "Arcane[40]"
+                  },
+                  "ref": {
+                    "read": "Arcane[40]"
+                  },
+                  "leaf": "level"
+                },
+                {
+                  "key": "summon",
+                  "name": "Summoning level",
+                  "nameProof": {
+                    "names": "Lv0[18]"
+                  },
+                  "ref": {
+                    "read": "Lv0[18]"
+                  },
+                  "termPart": {
+                    "system": "summoning"
+                  },
+                  "leaf": "level"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "where": "pools/1/groups/0/sources/0/children/1/children/0",
+      "kind": "descend"
+    }
+  ]
+}

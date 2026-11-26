@@ -147,7 +147,8 @@ type SceneStep = readonly [block: string, ...args: (string | number)[]];
 
 /**
  * What the game runs when the character's scene loads (the Lab helper's init and EveryScene.init, its delayed calls in
- * their order), called by hand: the calculator runs no delayed call.
+ * their order), called by hand: the calculator runs no delayed call. Each with the game's own arguments, which the
+ * recording keeps as the call's key (spec 010: a cache's author); TotalStats as the builders' pass calls it.
  */
 const SCENE_STEPS: readonly SceneStep[] = [
   ["TalentCalc", -6],
@@ -157,7 +158,7 @@ const SCENE_STEPS: readonly SceneStep[] = [
   ["TalentCalc", -7],
   ["@NewMap", "StampBonuses_Map_Of_Val"],
   ["StampBonusOfTypeX", "Talent1"],
-  ["ActionBlock", "RecalcChipBonuses", "0", 0],
+  ["ActionBlock", "RecalcChipBonuses", "0", 0, 0],
   ["WorkbenchStuff", "OverkillQTY", -1, 0],
   ["TalentCalc", -2],
   ["TalentCalc", -3],
@@ -166,8 +167,8 @@ const SCENE_STEPS: readonly SceneStep[] = [
   ["TalentEnh", -1],
   ["TalentCalc", -2],
   ["TalentCalc", -3],
-  ["TotalStats", "calcEtcBonuses"],
-  ["TotalStats", "calcEtcBonuses"],
+  ["TotalStats", "calcEtcBonuses", 0, 0],
+  ["TotalStats", "calcEtcBonuses", 0, 0],
   ["TalentCalc", -9],
 ];
 
@@ -180,15 +181,15 @@ const CLEAR_MEMO = quiet(
   `var d=${STATE}.DNSM.h;d.TotStatMAP=${NEW_MAP};d.TotStatSkMAP=${NEW_MAP};`,
 );
 
-function stepText([block, a = 0, b = 0, c = 0]: SceneStep): string {
+function stepText([block, ...args]: SceneStep): string {
   if (block === "@NewMap")
-    return quiet(`${STATE}.DNSM.h[${JSON.stringify(a)}]=${NEW_MAP};`);
+    return quiet(`${STATE}.DNSM.h[${JSON.stringify(args[0])}]=${NEW_MAP};`);
   if (block === "@Lab")
     // The Lab helper (slot 22 of the helper actors) remakes its connections, which no mosaic keeps.
     return quiet(
       `var lab=${STATE}.PixelHelperActor[22].behaviors.getBehavior("ActorEvents_548");lab._TRIGGEREDtext="d*";lab._customEvent_Lab();`,
     );
-  return `__calc.call(${JSON.stringify(block)},${JSON.stringify([a, b, c])})`;
+  return `__calc.call(${JSON.stringify(block)},${JSON.stringify(args)})`;
 }
 
 /** The scene caches of the loaded character, each step with the TotalStats memory cleared before it, and at the end. */

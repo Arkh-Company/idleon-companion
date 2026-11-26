@@ -2,8 +2,9 @@
 // code, so the instrumented blocks find `__X` already there; it records nothing until a request turns it on. Ported
 // from the bench's build-tree.cjs at BASELINE-4: steps 2 (calls), 3 and 3b (reads, writes, searches), 4 (RECOMPUTE),
 // 4b (steps), 5 (helpers) and 6 (roots). recorder-pass.js adds 6b over the same state `S`; step 7 (links) runs
-// in the worker over the JSON (tree/links.ts). The recording leaves only as JSON text, made here. No character name is
-// kept: a key or an argument that is a character's name becomes its index.
+// in the worker over the JSON (tree/links.ts). The recording leaves only as JSON text, made in the context
+// (recorder-pass.js, take). No character name is kept: a key or an argument that is a character's name becomes its
+// index.
 (function () {
   "use strict";
   var G = globalThis;
@@ -40,6 +41,9 @@
     return v;
   };
 
+  // A block's return notes what it gives by its place, a call or a read (instrument.ts returnNotes; spec 010, Fase 4 r2).
+  G.__R = (k) => S.on && S.cur && (S.cur.rt = k);
+
   // The game asks its server bridge for the companions you own while the helpers run; the mosaic answers.
   var bridge = G.React.createElement;
   G.React.createElement = (name, args) =>
@@ -61,9 +65,9 @@
   };
   var stepAt = () => (S.cur && S.cur.x ? S.cur.x.length : 0);
 
-  // 2. Call record.
+  // 2. Call record; `seq`, the last write's number when the call began (spec 010, T191: a call before a write)
   S.newNode = (b, a, parent) => {
-    var n = { id: S.nodes.length, b: b, a: a, c: [] };
+    var n = { id: S.nodes.length, b: b, a: a, c: [], seq: S.seq };
     n.p = parent ? parent.id : null;
     n.pxi = parent && parent.x ? parent.x.length : 0;
     S.nodes.push(n);
@@ -78,9 +82,10 @@
       ? "(character " + S.names.get(x) + ")"
       : x.slice(0, 40);
   }
-  function wrapBlock(C, k) {
+  // a block by its name; a helper's event (spec 010, T168) by its whole method; an actor's init (T189) by `as`
+  function wrapBlock(C, k, as) {
     var f = C[k];
-    var name = k.slice("_customBlock_".length);
+    var name = as || (k.indexOf("_customBlock_") === 0 ? k.slice(13) : k);
     C[k] = function () {
       if (!S.on) return f.apply(this, arguments);
       var args = Array.prototype.map.call(arguments, simple);
@@ -149,14 +154,15 @@
     var r = S.cur.r || (S.cur.r = []);
     var fresh = r.length < READ_CAP && !r.some((x) => x[0] === path);
     if (typeof v === "string" && GAME_TABLE.test(path)) {
-      // a loop's turn is known by the table row it read: kept with its place, inside the worker only
-      log([path, v.slice(0, 120), stepAt()]);
+      // a loop's turn is known by the table row it read, inside the worker only; the last write's number goes fifth
+      log([path, v.slice(0, 120), stepAt(), null, S.seq]);
       if (fresh) r.push([path, v.slice(0, 120)]);
       return;
     }
     var numeric = typeof v === "string" && v.trim() !== "" && !isNaN(Number(v));
-    // the fourth field is the last write before this read: the write it saw, at every read and not only the first
-    if (typeof v === "number" || numeric)
+    // the fourth field is the last write before this read: the write it saw; a key the save lacks has none (T214)
+    if (v === undefined) log([path, "(undefined)", stepAt(), null, S.seq]);
+    else if (typeof v === "number" || numeric)
       log([path, typeof v === "number" ? v : v.slice(0, 40), stepAt(), S.seq]);
     // the third field is the last write before this first read: a read links to a write before it (step 7)
     if (fresh) {
@@ -266,8 +272,9 @@
 
   G.__rec = {
     // After __calc.start: every block of the game and its searches go through the record. With `paths` (the answer
-    // key's recording only), a call that returns a list or a map of the state keeps its path (vp).
-    wrap: (paths) => {
+    // key's recording only), a call that returns a list or a map of the state keeps its path (vp). Each helper's event
+    // is a call of its own (T168: a cache's count; instrument.ts gives its steps), and each actor's init in `inits` (T189).
+    wrap: (paths, inits) => {
       S.paths = !!paths;
       var hx = G.__hx;
       var owner = {};
@@ -278,8 +285,19 @@
           if (k.indexOf("_customBlock_") === 0 && typeof C[k] === "function")
             owner[k] = C;
         });
+        var P = typeof C === "function" ? C.prototype : null;
+        Object.getOwnPropertyNames(P || {}).forEach((k) => {
+          var d = Object.getOwnPropertyDescriptor(P, k); // no getter runs
+          if (k.indexOf("_customEvent_") === 0 && typeof d.value === "function")
+            wrapBlock(P, k);
+        });
       });
       Object.keys(owner).forEach((k) => wrapBlock(owner[k], k));
+      (inits || []).forEach((cls) => {
+        var P = hx[cls] ? hx[cls].prototype : null; // instrument.ts found its init
+        if (P && hasOwn(P, "init"))
+          wrapBlock(P, "init", cls.slice(8) + "_init");
+      });
       var U = hx["com.stencyl.utils.Utils"];
       if (U) {
         if (typeof U.mapContainsValue === "function")
@@ -296,12 +314,8 @@
       Object.assign(S, { nodes: [], writes: [], spliced: [], pending: null });
       Object.assign(S, { infs: [], infWrites: [] });
       S.searching = 0; // a search cut by a time limit never ran its `finally`
-      Object.assign(S, {
-        seq: 0,
-        bpStart: Infinity,
-        builders: null,
-        root: null,
-      });
+      Object.assign(S, { seq: 0, bpStart: Infinity });
+      Object.assign(S, { builders: null, root: null });
       Object.assign(S, { RAW: new WeakMap(), PROX: new WeakMap() });
       Object.assign(S, { PATH: new WeakMap(), LISTED: new WeakMap() });
       seed = 12345;
@@ -380,20 +394,7 @@
 
     stop: () => S.stopped(),
     isOn: () => S.on,
-
-    // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as
-    // the live tree always had it.
-    take: () =>
-      JSON.stringify({
-        nodes: S.nodes || [],
-        writes: S.writes || [],
-        spliced: S.spliced || [],
-        bpStart: S.bpStart === Infinity ? null : S.bpStart,
-        setup: S.setup ? S.setup.id : null,
-        root: S.root ? S.root.id : null,
-        builders: S.builders ? S.builders.id : null,
-        fromGame: S.fromGame || [],
-      }),
+    // take(), the recording as text: recorder-pass.js
   };
   G.__rec.state = S;
 })();

@@ -58,7 +58,7 @@ function stepsOf(block: string) {
     .steps.map((s) => ({ v: s.v, e: shape(s.e, blockOf) }));
 }
 
-test("a chain block's steps: each write to the accumulator, the one before it as a value with no source", () => {
+test("a chain block's steps: each write to the accumulator, the one before it the read at its own place (T231)", () => {
   expect(stepsOf("TreeChain")).toEqual([
     {
       v: 37,
@@ -69,13 +69,13 @@ test("a chain block's steps: each write to the accumulator, the one before it as
       ],
     },
     { v: 39, e: ["op +", "read DNSM.TreeChain.v", "num 2"] },
-    { v: 234, e: ["op *", "val", "call TreeLoop"] },
-    { v: 234.5, e: ["op +", "val", "num 0.5"] },
+    { v: 234, e: ["op *", "read DNSM.TreeChain.v", "call TreeLoop"] },
+    { v: 234.5, e: ["op +", "read DNSM.TreeChain.v", "num 0.5"] },
     {
       v: 429.135,
       e: [
         "op *",
-        "val",
+        "read DNSM.TreeChain.v",
         [
           "op +",
           "num 1",
@@ -85,7 +85,11 @@ test("a chain block's steps: each write to the accumulator, the one before it as
     },
     {
       v: 2574.81,
-      e: ["op *", ["op *", "val", "read TreeTwins[0]"], "read TreeList[1]"],
+      e: [
+        "op *",
+        ["op *", "read DNSM.TreeChain.v", "read TreeTwins[0]"],
+        "read TreeList[1]",
+      ],
     },
   ]);
 });
@@ -106,12 +110,16 @@ test("a loop block's steps: the last turn's write, then the step after the loop"
       e: [
         "op +",
         "read DNSM.TreeScale.v",
-        ["fn round", ["op *", "val", "num 1.5"]],
+        ["fn round", ["op *", "read TreeTwins[1]", "num 1.5"]],
       ],
     },
     {
       v: 40,
-      e: ["op *", "val", ["op +", "read TreeBase", "read TreeOwned"]],
+      e: [
+        "op *",
+        "read DNSM.TreeScale.v",
+        ["op +", "read TreeBase", "read TreeOwned"],
+      ],
     },
   ]);
 });

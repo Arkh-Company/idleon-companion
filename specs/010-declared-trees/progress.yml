@@ -13,11 +13,11 @@ execution:
     - {name: "Done gate", status: done, commits: 0f133a5..a9e272a}
     - {name: "Setup (T002, T004-T010)", status: done, commits: dadeb0c..2cbd7b2}
     - {name: "Foundational (T011-T026)", status: done, commits: 1375ec5..f91ddd3}
-    - {name: "US2 (T027-T035)", status: pending}
-    - {name: "US1 piloto (T036-T041)", status: pending}
+    - {name: "US2 + gerador (T027-T035, T164, T059-T060)", status: done, commits: 859fcf5..45ef247}
+    - {name: "US1 piloto (T036-T041)", status: done, commits: 4bd76cf..42822a5}
     - {name: "US3 (T042-T051)", status: pending}
     - {name: "US4 (T052-T058)", status: pending}
-    - {name: "Gerador de rascunho (T059-T060)", status: pending}
+    - {name: "Gerador de rascunho (T059-T060, feito na fase 4)", status: pending}
     - {name: "Lote W1 (T061-T066)", status: pending}
     - {name: "Lote W2 (T067-T072)", status: pending}
     - {name: "Lote W3 (T073-T078)", status: pending}
@@ -33,6 +33,6 @@ execution:
     - {name: "Polish (T135-T142)", status: pending}
   # um PR de código por fase do plano (plan.md:225), decisão do Vinicius em 21/11/2026
   pr_groups: [[1, 2], [3], [4, 5], [6], [7], [8, 9, 10, 11, 12, 13, 14, 15, 16, 17], [18, 19, 20, 21]]
-  group_prs: [55, 57]
+  group_prs: [55, 57, 59]
   feature_review: pending
   code_pr: null

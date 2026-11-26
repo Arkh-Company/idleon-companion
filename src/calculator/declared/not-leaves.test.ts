@@ -5,6 +5,11 @@ import { NOT_LEAVES, notLeafOf } from "./not-leaves.ts";
 
 test.each([
   ['ArbitraryCode5Inputs("decay",25,100,7)', "curve"],
+  // every talent curve mode is a curve, as the decay (T182): the level and the table's numbers are the rows
+  ['ArbitraryCode5Inputs("add",1,2,3)', "curve"],
+  ['ArbitraryCode5Inputs("intervalAdd",1,5,12)', "curve"],
+  ['ArbitraryCode5Inputs("decayMulti",1,100,40)', "curve"],
+  ['ArbitraryCode5Inputs("addDECAY",1,100,40)', "curve"],
   ["getLOG(1250)", "log"],
   ["Dungon()", "context"],
   ["CurrentMap", "context"],
@@ -16,7 +21,8 @@ test.each([
 
 test.each([
   "GetTalentNumber(1,655)",
-  'ArbitraryCode5Inputs("add",1,2,3)',
+  // a mode that is no talent curve stays an ordinary part
+  'ArbitraryCode5Inputs("notACurve",1,2,3)',
   "OptionsListAccount[189]",
   "CurrentMapDone",
   "getLOGX(3)",

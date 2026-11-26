@@ -120,6 +120,14 @@ lime.$scripts.N = function (_exports, $global) {
     ListNames: function () {
       return [["FIRST_INVENTED_II", 7], ["second|half"]];
     },
+    // A cell whose number is the start of its text (T209, form 2), as the game's "50TOT" in HolesInfo[55][15].
+    ListTot: function () {
+      return ["50TOT"];
+    },
+    // A cell the game keeps as text, worth a number (TreeWriteCell).
+    ListCells: function () {
+      return ["7"];
+    },
     // The emporium's foods, by its slot (the golden food's case).
     NinjaInfo: function () {
       var list = [];
@@ -194,12 +202,27 @@ lime.$scripts.N = function (_exports, $global) {
     s.DNSM.h.ShinyBonusS = new StringMap();
     s.DNSM.h.CompanionLVz = new StringMap();
     if (s.Scenario === "companionsBuilt") Blocks._customBlock_TreeCompBuild();
+    // Spec 010 (T166): the helpers build the cache TreeAuthor twice, by two blocks, to the same number.
+    if (s.Scenario === "authorBuilt") {
+      Blocks._customBlock_TreeAuthorAgain();
+      Blocks._customBlock_TreeAuthorBuild();
+    }
+    // Spec 010 (T168): the helper builds it by its own event, or by its own code outside any block or event.
+    if (s.Scenario === "authorFilled") this._customEvent_TreeAuthorFill();
+    if (s.Scenario === "authorInit")
+      s.DNSM.h.TreeAuthor.h.v = s.TreeStats.h.a * 5;
     s.HelperRan = [A["js.Boot"].__string_rec(this.actor.anything(), "")];
   };
   // An event of the helper that builds a cache, as the game's own events do.
   HelperActor.prototype._customEvent_Refill = function () {
     a.engine.getGameAttribute("DNSM").h.TreeCache.h.total =
       state().TreeBase * 2;
+  };
+  // Spec 010 (T166): an event of the helper that builds the cache TreeAuthor itself, outside any block.
+  HelperActor.prototype._customEvent_TreeAuthorFill = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a * 5;
   };
   // The event a builder needs first: it prepares a field the builder reads.
   HelperActor.prototype._customEvent_Prepare = function () {
@@ -227,6 +250,22 @@ lime.$scripts.N = function (_exports, $global) {
           this._TreeHouses[j].a * (1 + s.TreeStats.h.a / 100);
   };
   A["scripts.ActorEvents_29"] = HelperActor;
+
+  // Spec 010 (T189): a helper actor in the game's shape whose init builds a cache, as the game's ActorEvents_577
+  // builds DNSM.CompanionBon: TreeStats.a × 5 = 15.
+  var InitActor = function (_a, actor) {
+    this.actor = actor;
+  };
+  InitActor.__name__ = "scripts.ActorEvents_577";
+  InitActor.prototype = {
+    init: function () {
+      if (state().Scenario !== "initBuilt") return;
+      var d = a.engine.getGameAttribute("DNSM").h;
+      d.TreeInitBon = new StringMap();
+      d.TreeInitBon.h.v = state().TreeStats.h.a * 5;
+    },
+  };
+  A["scripts.ActorEvents_577"] = InitActor;
 
   var EveryScene = function () {
     brokenConstructor();
@@ -506,6 +545,111 @@ lime.$scripts.N = function (_exports, $global) {
     }
     return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total;
   };
+  // Spec 010 (T196): a cache that is a number, counted in a loop by the block that reads it, as the game's purple sigils
+  // (DNSM.SigTotPup): the items of TreeList at 2 or more, 2; the block returns the count read back.
+  Blocks._customBlock_TreeSigils = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeSigils"))
+      for (var i = (d.TreeSigils = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeSigils = Math.round(d.TreeSigils + 1);
+    return Math.round(d.TreeSigils);
+  };
+  Blocks._customBlock_TreeSigilsRoot = function () {
+    return Blocks._customBlock_TreeSigils() + state().TreeCapped;
+  };
+  // Spec 010 (T215): the count as the game's purple sigils write it (`test && (count + 1)`, no if), with another test of
+  // the turn, `TreeList[i] > 0`, before the count's test in one block and after it in the other; and a count from 1.
+  Blocks._customBlock_TreeCountBefore = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountBefore"))
+      for (var i = (d.TreeCountBefore = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] > 0 && (d.TreeSeen = i);
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountBefore = Math.round(d.TreeCountBefore + 1));
+      }
+    return Math.round(d.TreeCountBefore);
+  };
+  Blocks._customBlock_TreeCountAfter = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountAfter"))
+      for (var i = (d.TreeCountAfter = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountAfter = Math.round(d.TreeCountAfter + 1));
+        state().TreeList[i] > 0 && (d.TreeSeen = i);
+      }
+    return Math.round(d.TreeCountAfter);
+  };
+  Blocks._customBlock_TreeCountFrom = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountFrom"))
+      for (var i = (d.TreeCountFrom = 1); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeCountFrom = Math.round(d.TreeCountFrom + 1);
+    return Math.round(d.TreeCountFrom);
+  };
+  // ...the other test inside the count's if, before its step (r1); and a count its author caps after (no count, r1)
+  Blocks._customBlock_TreeCountInside = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountInside"))
+      for (var i = (d.TreeCountInside = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2) {
+          state().TreeList[i] > 0 && (d.TreeSeen = i);
+          d.TreeCountInside = Math.round(d.TreeCountInside + 1);
+        }
+    return Math.round(d.TreeCountInside);
+  };
+  Blocks._customBlock_TreeCountCap = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountCap")) {
+      for (var i = (d.TreeCountCap = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeCountCap = Math.round(d.TreeCountCap + 1);
+      d.TreeCountCap = Math.min(d.TreeCountCap, 5);
+    }
+    return Math.round(d.TreeCountCap);
+  };
+  // ...a `+ 1` that reads the count but writes another path, and a count with two steps of 1 (r2 of part V)
+  Blocks._customBlock_TreeCountOther = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountOther"))
+      for (var i = (d.TreeCountOther = 0); i < state().TreeList.length; i++)
+        if (state().TreeList[i] >= 2)
+          d.TreeSeen = Math.round(d.TreeCountOther + 1);
+    return Math.round(d.TreeCountOther);
+  };
+  Blocks._customBlock_TreeCountTwice = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    if (!Object.prototype.hasOwnProperty.call(d, "TreeCountTwice"))
+      for (var i = (d.TreeCountTwice = 0); i < state().TreeList.length; i++) {
+        state().TreeList[i] >= 2 &&
+          (d.TreeCountTwice = Math.round(d.TreeCountTwice + 1));
+        state().TreeList[i] >= 3 &&
+          (d.TreeCountTwice = Math.round(d.TreeCountTwice + 1));
+      }
+    return Math.round(d.TreeCountTwice);
+  };
+  Blocks._customBlock_TreeCountOtherRoot = function () {
+    return Blocks._customBlock_TreeCountOther() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountTwiceRoot = function () {
+    return Blocks._customBlock_TreeCountTwice() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountInsideRoot = function () {
+    return Blocks._customBlock_TreeCountInside() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountCapRoot = function () {
+    return Blocks._customBlock_TreeCountCap() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountBeforeRoot = function () {
+    return Blocks._customBlock_TreeCountBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountAfterRoot = function () {
+    return Blocks._customBlock_TreeCountAfter() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCountFromRoot = function () {
+    return Blocks._customBlock_TreeCountFrom() + state().TreeCapped;
+  };
   Blocks._customBlock_TreeCacheRead = function () {
     return a.engine.getGameAttribute("DNSM").h.TreeCache.h.total + 1;
   };
@@ -722,6 +866,192 @@ lime.$scripts.N = function (_exports, $global) {
   };
   Blocks._customBlock_TreeArg = function (t) {
     return state().TreeBase * t;
+  };
+  // Spec 010 (r1 of parts P and Q): the parameter set again by the code with the argument's own number, on a side that
+  // ran, and after the read in a loop: the number is no longer (or not only) the argument's, by its place.
+  Blocks._customBlock_TreeArgAgain = function (t) {
+    var s = state();
+    if (s.TreeBase > 0) {
+      t = 3;
+    }
+    return s.TreeBase * t;
+  };
+  Blocks._customBlock_TreeArgLoop = function (t) {
+    var s = 0;
+    for (var i = 0; i < 2; i++) {
+      s = s + state().TreeBase * t;
+      t = 3;
+    }
+    return s;
+  };
+  // ...and a leaf of an inner function that declares the same name (r2): that function's own t, no argument of the block.
+  Blocks._customBlock_TreeArgInner = function (t) {
+    var f = function (t) {
+      return state().TreeBase * t;
+    };
+    return f(t);
+  };
+  // Spec 010 (T209, form 4): how many entries a map of the save holds, as the game's D.mapCount(FarmCrop).
+  Blocks._customBlock_TreeCount = function () {
+    var D = {
+      mapCount: function (m) {
+        return Object.keys(m.h).length;
+      },
+    };
+    return D.mapCount(a.engine.getGameAttribute("TreeBig")) * state().TreeLevel;
+  };
+  Blocks._customBlock_TreeCountPool = function () {
+    return Blocks._customBlock_TreeCount() + state().TreeCapped;
+  };
+  // Spec 010 (T209, form 5): a variable of its own the block writes step by step and reads back, as the game's
+  // Holes("MonumentROGbonuses") with DNSM.HoleozDN.
+  Blocks._customBlock_TreeChained = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeChn = 1 + s.TreeBase / 100;
+    d.TreeChn = a.engine.getGameAttribute("DNSM").h.TreeChn + s.TreeLevel / 100;
+    return (
+      0.1 *
+      Math.ceil(
+        s.TreeCapped * Math.max(1, a.engine.getGameAttribute("DNSM").h.TreeChn),
+      )
+    );
+  };
+  // The same in the game's other working map, as CauldronStats("VialBonus") with DummyNumbersStatManager.
+  Blocks._customBlock_TreeChainedDummy = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    var d = a.engine.getGameAttribute("DummyNumbersStatManager").h;
+    d.TreeChn = 1 + s.TreeBase / 100;
+    d.TreeChn =
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeChn +
+      s.TreeLevel / 100;
+    return (
+      0.1 *
+      Math.ceil(
+        s.TreeCapped *
+          Math.max(
+            1,
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeChn,
+          ),
+      )
+    );
+  };
+  Blocks._customBlock_TreeChainedDummyPool = function () {
+    return Blocks._customBlock_TreeChainedDummy() + state().TreeCapped;
+  };
+  // A working variable summed in a loop turn with a curve, under the code's checks of a list (its length, an item's
+  // test), as the game's StampBonusOfTypeX: the checks are no parts, the curve's are its turn's.
+  Blocks._customBlock_TreeCurveTurn = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    var d = a.engine.getGameAttribute("DummyNumbersStatManager").h;
+    d.TreeAcc = 0;
+    for (var i = 0; i < s.TreeList.length; i++)
+      2 == s.TreeList[i] &&
+        Blocks._customBlock_TreeDetails(i) &&
+        (d.TreeAcc =
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc +
+          Blocks._customBlock_ArbitraryCode5Inputs(
+            "decay",
+            40,
+            100,
+            s.TreeLevel,
+          ));
+    return (
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.TreeAcc *
+      s.TreeBase
+    );
+  };
+  // A call in the turn that gives a list, no number, as the game's StampDetails(37): no part of the count.
+  Blocks._customBlock_TreeDetails = function (i) {
+    return [i, "details"];
+  };
+  Blocks._customBlock_TreeCurveTurnPool = function () {
+    return Blocks._customBlock_TreeCurveTurn() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeChainedPool = function () {
+    return Blocks._customBlock_TreeChained() + state().TreeCapped;
+  };
+  // Spec 010 (T209, form 3): a number of the code the block doubles under conditions, in a variable of its own, as the
+  // game's ArcadeBonus doubles DNSM.ArcadBonDNz when the upgrade is at its max and when a companion is owned.
+  Blocks._customBlock_TreeOwnedFlag = function () {
+    return state().TreeFlagOn;
+  };
+  Blocks._customBlock_TreeDoubled = function (e) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeDbl = 1;
+    101 == s.TreeUpg[e]
+      ? (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl)
+      : 102 == s.TreeUpg[e] &&
+        (d.TreeDbl = 6 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
+    1 == Blocks._customBlock_TreeOwnedFlag() &&
+      (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
+    return a.engine.getGameAttribute("DNSM").h.TreeDbl * s.TreeLevel;
+  };
+  Blocks._customBlock_TreeDoubledPool = function () {
+    return Blocks._customBlock_TreeDoubled(0) + state().TreeCapped;
+  };
+  // Spec 010 (r2 of parts P and Q): the upgrade's condition read and on, with no write of the variable under it.
+  Blocks._customBlock_TreeDoubledIdle = function (e) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var s = state();
+    d.TreeDbl = 1;
+    d.TreeIdleMax = 101 == s.TreeUpg[e];
+    1 == Blocks._customBlock_TreeOwnedFlag() &&
+      (d.TreeDbl = 2 * a.engine.getGameAttribute("DNSM").h.TreeDbl);
+    return a.engine.getGameAttribute("DNSM").h.TreeDbl * s.TreeLevel;
+  };
+  Blocks._customBlock_TreeDoubledIdlePool = function () {
+    return Blocks._customBlock_TreeDoubledIdle(0) + state().TreeCapped;
+  };
+  // Spec 010 (Fase 4 q): the same block called by a builder of the pass, as the game's TalentCalc(-2) reaches
+  // ArcadeBonus(54) through a bubble: the variable's writes are the pass's scratch.
+  Blocks._customBlock_TreeDoubledBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeDblCache = new StringMap();
+    d.TreeDblCache.h.v = Blocks._customBlock_TreeDoubled(0);
+  };
+  Blocks._customBlock_TreeDoubledCacheRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeDblCache.h.v + state().TreeCapped
+    );
+  };
+  // Spec 010 (T209, form 2): a number read from a game table's text with a mark taken out, as the game's
+  // Holes("MeasurementBaseBonus") reads asNumber(replace(string(HolesInfo[55][t]), "TOT", "")).
+  Blocks._customBlock_TreeTextTot = function () {
+    var c = { asNumber: Number };
+    var h = { string: String };
+    var y = {
+      replace: function (s, a, b) {
+        return s.split(a).join(b);
+      },
+    };
+    return (
+      c.asNumber(
+        y.replace("" + h.string(state().CustomLists.h.ListTot[0]), "TOT", ""),
+      ) * state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeTextPool = function () {
+    return Blocks._customBlock_TreeTextTot() + state().TreeCapped;
+  };
+  // Spec 010 (T209, form 1): a source whose count is the block's own argument, as Holes("B_UPG", 82, 20).
+  Blocks._customBlock_TreeArgPool = function () {
+    return Blocks._customBlock_TreeArg(3) + state().TreeCapped;
+  };
+  // Spec 010 (Fase 4 q, step 2): a block whose parameter a branch that did not run sets, as the game's ArcaneType sets t
+  // in its ArcaneUpgUNLOCKED branch: the t of the count is still the call's own argument.
+  Blocks._customBlock_TreeArgSet = function (e, t) {
+    if ("Set" == e) {
+      t = state().TreeLevel;
+      return t;
+    }
+    return state().TreeBase * t;
+  };
+  Blocks._customBlock_TreeArgSetPool = function () {
+    return Blocks._customBlock_TreeArgSet("Count", 3) + state().TreeCapped;
   };
   Blocks._customBlock_TreeEntry = function (m, t) {
     return state().TreeBase * t;
@@ -1342,19 +1672,29 @@ lime.$scripts.N = function (_exports, $global) {
       Blocks._customBlock_TreeBubbleInner() + dnsm().CalcTalentDN2;
     return d.AlchBubbles.h.W2 * 2;
   };
-  // Spec 010 (T017): the roots of the answer key. A curve by its mode; a talent of the tree character on a curve whose
-  // arguments differ, a luck on a curve with three equal arguments, and the best of all characters.
-  Blocks._customBlock_TreeDeclCurve = function (mode, top, mid, level) {
+  // Spec 010 (T017): the roots of the answer key. A curve by its mode, under the game's curve block name (the lock's
+  // not-leaf list knows it; T027); a talent of the tree character on a curve whose arguments differ, a luck on a curve
+  // with three equal arguments, and the best of all characters.
+  Blocks._customBlock_ArbitraryCode5Inputs = function (mode, top, mid, level) {
+    if (mode === "add") return mid === 0 ? top * level : 0;
     return mode === "decay" ? (top * level) / (level + mid) : 0;
   };
   Blocks._customBlock_TreeDeclTalent = function (i) {
     var s = state();
     var level = s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[i];
-    return Blocks._customBlock_TreeDeclCurve("decay", 40, 100, level);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", 40, 100, level);
   };
   Blocks._customBlock_TreeDeclLuck = function () {
     var level = state().TreeLevel - 5;
-    return Blocks._customBlock_TreeDeclCurve("decay", 20, 20, level);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", 20, 20, level);
+  };
+  // Spec 010 (T200, the Drop Rate's LUK): a source whose value passes through a working value read twice by a curve,
+  // as the game's DropRateLUK: the term's references are the same call twice.
+  Blocks._customBlock_TreeLinkTwice = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeLinkL = Blocks._customBlock_TreeDeclLuck();
+    d.TreeLinkL = (d.TreeLinkL + 1) / (d.TreeLinkL + 4);
+    return 1.4 * d.TreeLinkL + state().TreeCapped;
   };
   Blocks._customBlock_TreeDeclBest = function () {
     var s = state();
@@ -1363,6 +1703,2085 @@ lime.$scripts.N = function (_exports, $global) {
     for (var i = 0; i < names.length; i++)
       best = Math.max(best, s.PlayerDATABASE.h[names[i]].h.SkillLevels[1]);
     return best;
+  };
+  // Spec 010 (T232): a loop's running best read in the next turn, as the write of the turn before, by its place.
+  Blocks._customBlock_TreeLoopBest = function () {
+    var s = state();
+    var best = 0;
+    for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i]);
+    return best;
+  };
+  // Spec 010 (T232 r1): a multiplier set before the loop and read in each turn, as its write before the loop by its place.
+  Blocks._customBlock_TreeLoopScaled = function () {
+    var s = state();
+    var m = s.TreeBase * 2;
+    var best = 0;
+    for (var i = 0; i < 3; i++) best = Math.max(best, s.TreeList[i] * m);
+    return best;
+  };
+  // Spec 010 (T232 r2): a write in the loop only on the turns its test passes, an earlier turn's in a turn that skips it.
+  Blocks._customBlock_TreeLoopIf = function () {
+    var s = state();
+    var best = 0;
+    for (var i = 0; i < 3; i++)
+      if (s.TreeList[i] > best) best = s.TreeList[i] * 1;
+    return best;
+  };
+  // Spec 010 (T229): the last turn whose test passed, as the game's Breeding("SpecialPassives","Lv",…) (`DN1 = r + 2`)
+  Blocks._customBlock_TreeTier = function () {
+    var s = state();
+    var lv = 1;
+    for (var r = 0; r < 3; r++)
+      if (s.TreeLevel > s.TreeList[r] * 10) lv = r + 2;
+    return lv;
+  };
+  Blocks._customBlock_TreeTierRoot = function () {
+    return Blocks._customBlock_TreeTier() + state().TreeCapped;
+  };
+  // Spec 010 (T164): a leaf's call that reads only a game table, and one that reads only the map it stands on.
+  Blocks._customBlock_TreeDeclTable = function () {
+    return state().CustomLists.h.ListTwo[0] + 1;
+  };
+  Blocks._customBlock_TreeDeclMap = function () {
+    return state().CurrentMap + 1;
+  };
+  // Spec 010 (T166): a cache built before the root by a block of the recipe, and roots that only read it, in a pool or
+  // in a call of the pool. Another block builds the same cache to the same number: with both, two possible authors.
+  Blocks._customBlock_TreeAuthorBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeBase * 3 + state().TreeStats.h.a;
+  };
+  Blocks._customBlock_TreeAuthorAgain = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a * 5;
+  };
+  // Spec 010 (T208): a block that writes the cache in a part every argument runs, as the game's TalentCalc writes
+  // DNSM.BoxRewards for any argument up to 0; what follows depends on the argument.
+  Blocks._customBlock_TreeAuthorAny = function (k) {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeBase * 3 + state().TreeStats.h.a;
+    d.TreeAuthorOwn = new StringMap();
+    d.TreeAuthorOwn.h.v = k * 2;
+  };
+  // Spec 010 (Fase 4 q): a cache read as a Multi pool's factor, as the Drop Rate's (1 + FamBonusQTYs[32] / 100):
+  // (4 + 80) × (1 + TreeAuthor.v / 100).
+  Blocks._customBlock_TreeAuthorMulti = function () {
+    return (
+      (state().TreeBase + state().TreeCapped) *
+      (1 + a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v / 100)
+    );
+  };
+  Blocks._customBlock_TreeAuthorRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v + state().TreeCapped
+    );
+  };
+  Blocks._customBlock_TreeAuthorCall = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v * 2;
+  };
+  Blocks._customBlock_TreeAuthorDeep = function () {
+    return Blocks._customBlock_TreeAuthorCall() + state().TreeCapped;
+  };
+  // Spec 010 (T187): a call that returns the cache bare, as the game's EtcBonuses returns DNSM.TotalStatsETCmap: its
+  // author, a builder, is no call of its own.
+  Blocks._customBlock_TreeAuthorBare = function () {
+    return a.engine.getGameAttribute("DNSM").h.TreeAuthor.h.v;
+  };
+  Blocks._customBlock_TreeAuthorBareRoot = function () {
+    return Blocks._customBlock_TreeAuthorBare() + state().TreeCapped;
+  };
+  // Spec 010 (T191): a builder whose writes have no step of their own, as the game's companions (a CompanionDB cell)
+  // and family bonuses (FamilyBonsuesREAL's value): v is TreeBig k2 (7), w TreeWriteCall's TreeBase × 2 (8); the root
+  // is 7 + 8 + 80 = 95.
+  Blocks._customBlock_TreeWriteCall = function () {
+    return state().TreeBase * 2;
+  };
+  Blocks._customBlock_TreeWriteBare = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    d.TreeWriteBon.h.v = state().TreeBig.h.k2;
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
+  // Spec 010 (Fase 4 t): the same writes, v on the side of a ? : its test took, each side an assignment with no step of
+  // its own, as the game's SailzArtiBonusL (0 when the artifact is not found, else its table's bonus): TreeFlagOn is 1,
+  // so v is TreeBig k2 (7); the test's read is no source of it.
+  Blocks._customBlock_TreeWriteSide = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    0 == state().TreeFlagOn
+      ? (d.TreeWriteBon.h.v = 0)
+      : (d.TreeWriteBon.h.v = state().TreeBig.h.k2);
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
+  // ...and through a variable set on both sides, as the game's companions (`1 == CompanionLVz[s] ? (_ = CompanionDB[s]
+  // [11], r.h[s] = _) : (_ = CompanionDB[s][2], r.h[s] = _)`): TreeOwned is 0, so v is the other side's TreeBig k2 (7);
+  // with TreeOwned 1, the first side's TreeBase, read as the game names it.
+  Blocks._customBlock_TreeWriteSideVar = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    var r, t;
+    1 == state().TreeOwned
+      ? ((r = d.TreeWriteBon),
+        (t = a.engine.getGameAttribute("TreeBase")),
+        (r.h.v = t))
+      : ((r = d.TreeWriteBon), (t = state().TreeBig.h.k2), (r.h.v = t));
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
+  // ...and with the key made in the left side (`r.h["" + s] = _`), a step of its own between the test and the write, as
+  // the game's companions write it: v is still the other side's TreeBig k2 (7).
+  Blocks._customBlock_TreeWriteSideKey = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    var r, t;
+    var k = "v";
+    1 == state().TreeOwned
+      ? ((r = d.TreeWriteBon), (t = state().TreeBase), (r.h["" + k] = t))
+      : ((r = d.TreeWriteBon), (t = state().TreeBig.h.k2), (r.h["" + k] = t));
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+  };
+  // ...and after an `if` whose taken side has a step of its own (`if (c) { y = a * b; } d.M.h.v = t;`): the write is
+  // out of both sides; two reads after the step, the one the code names is v's, TreeBig k2 (7).
+  Blocks._customBlock_TreeWriteAfterIf = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteBon = new StringMap();
+    var y = 0;
+    if (1 == state().TreeFlagOn) {
+      y = state().TreeBase * state().TreeLevel;
+    }
+    var u = a.engine.getGameAttribute("TreeCapped");
+    var t = a.engine.getGameAttribute("TreeBig").h.k2;
+    d.TreeWriteBon.h.v = t;
+    d.TreeWriteBon.h.w = Blocks._customBlock_TreeWriteCall();
+    // kept where no root reads them (the lint wants each variable used)
+    d.TreeWriteBon.h.y = y;
+    d.TreeWriteBon.h.u = u;
+  };
+  // Spec 010 (Fase 4 q, step 3): a write with no step of its own after a read and a call, as the game's TalentCalc(-2)
+  // writes a bubble (A = CauldronStats(…), t.h[R] = A): the right side of the assignment decides; the root is 8 + 80.
+  Blocks._customBlock_TreeWriteRhs = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteRhs = new StringMap();
+    var t = d.TreeWriteRhs;
+    if (s.TreeLevel > 1) {
+      var n = s.TreeBase;
+      var A = Blocks._customBlock_TreeWriteCall();
+      t.h.w = A;
+    }
+    if (s.TreeCapped > n) t.h.v = 7;
+  };
+  Blocks._customBlock_TreeWriteRhsRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteRhs.h.w + state().TreeCapped
+    );
+  };
+  Blocks._customBlock_TreeWriteRead = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    return d.TreeWriteBon.h.v + d.TreeWriteBon.h.w + state().TreeCapped;
+  };
+  // Spec 010 (T191 r1): a builder with no step that writes v from a local variable, then calls a block worth the same
+  // (TreeBig k2, 7): the call came after the write, so the write's count is the read; the root is 7 + 80 = 87.
+  Blocks._customBlock_TreeWriteSeven = function () {
+    return state().TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeWriteLate = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteLate = new StringMap();
+    var k = state().TreeBig.h.k2;
+    d.TreeWriteLate.h.v = k;
+    Blocks._customBlock_TreeWriteSeven();
+  };
+  // Spec 010 (Fase 4 r2): an author with no step writes the literal 7, then reads a table's text cell "7"; the root is
+  // 7 + 80 = 87.
+  Blocks._customBlock_TreeWriteCell = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeWriteCell = new StringMap();
+    d.TreeWriteCell.h.v = 7;
+    return state().CustomLists.h.ListCells[0];
+  };
+  Blocks._customBlock_TreeWriteCellRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteCell.h.v + state().TreeCapped
+    );
+  };
+  Blocks._customBlock_TreeWriteLateRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeWriteLate.h.v + state().TreeCapped
+    );
+  };
+  // Spec 010 (T189): a root that reads the cache an actor's init built (InitActor): 15 + 80 = 95.
+  Blocks._customBlock_TreeInitRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeInitBon.h.v + state().TreeCapped
+    );
+  };
+  // A block that builds the cache by summing a list in a loop over its own last value: 3 + 2 + 4 + 6 = 15.
+  Blocks._customBlock_TreeAuthorLoop = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = state().TreeStats.h.a;
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
+  };
+  // Spec 010 (T168): a block that builds the cache from 0 by summing a list in a loop over its own last value, one item
+  // a turn: 2 + 4 + 6 = 12.
+  Blocks._customBlock_TreeAuthorSum = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
+  };
+  // Spec 010 (T192): a block that sums into a key not yet set, as the game's Gallery sums a nametag's bonus: the first
+  // turn adds to the 0 of the empty key (asNumber of nothing): 2 + 4 + 6 = 12.
+  Blocks._customBlock_TreeAuthorKey = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + Blocks._customBlock_TreeTurnItem(i);
+  };
+  // Spec 010 (T194): the same sum through a variable of the map and a key in a variable, after a read worth 0 in the
+  // turn, as the game's Breeding("ShinyBonusS") sums a pet's bonus: the first turn adds to the 0 of the empty key read
+  // at its place, never to the other read's 0: 2 + 4 + 6 = 12.
+  Blocks._customBlock_TreeAuthorAlias = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < state().TreeList.length; i++) {
+      d.TreeAliasDN = 0;
+      var k = a.engine.getGameAttribute("DNSM").h.TreeAliasDN < 1 ? "v" : "w";
+      var m = d.TreeAuthor;
+      m.h[k] = U.asNumber(m.h[k]) + Blocks._customBlock_TreeTurnItem(i);
+    }
+  };
+  // Spec 010 (Fase 4 q): a block that writes a key not yet set once, as the game's TalentCalc(-6) writes a meal's
+  // bonus through a variable of the map: the item, then the 0 of the empty key on the right: 4 × 2 + 0 = 8.
+  Blocks._customBlock_TreeAuthorOnce = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    var m = d.TreeAuthor;
+    var i = Blocks._customBlock_TreeTurnItem(1) * 2;
+    m.h.v = i + U.asNumber(m.h.v);
+  };
+  // Spec 010 (T212): the best of three members, as the game's TalentCalc(-3) keeps the best family bonus: each turn
+  // puts the member's bonus in a working variable and writes the cache from it only when it is greater. Over
+  // TreeList [1, 3, 2] the bonuses are 2, 6, 4: the second member's 6 is the cache, and the last turn's 4 is no write.
+  Blocks._customBlock_TreeAuthorBest = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var g = 0; g < state().TreeList.length; g++) {
+      d.TreeBestDN = Blocks._customBlock_TreeTurnItem(g);
+      var b = U.asNumber(d.TreeBestDN);
+      if (b > U.asNumber(d.TreeAuthor.h.v)) {
+        var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
+        d.TreeAuthor.h.v = G;
+      }
+    }
+  };
+  // Spec 010 (T212): the best of three whose bonus is a call with the member's number of the save, as the game's
+  // FamilyBonsuesREAL(class, I, level): TreeArg(TreeList[g]) = 4, 12, 8; the cache is TreeArg(3)'s 12.
+  Blocks._customBlock_TreeAuthorBestSave = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var g = 0; g < state().TreeList.length; g++) {
+      d.TreeBestDN = Blocks._customBlock_TreeArg(
+        U.asNumber(a.engine.getGameAttribute("TreeList")[g]),
+      );
+      var b = U.asNumber(d.TreeBestDN);
+      if (b > U.asNumber(d.TreeAuthor.h.v)) {
+        var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
+        d.TreeAuthor.h.v = G;
+      }
+    }
+  };
+  // Spec 010 (T212): the same best of three, with a factor only when the best member is TreeMe, as TalentCalc(-3)
+  // gives the talent 144 only when the best family bonus is the active character's: × (1 + TreeWriteCall() / 100).
+  Blocks._customBlock_TreeAuthorBestMe = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var g = 0; g < state().TreeList.length; g++) {
+      d.TreeBestDN = Blocks._customBlock_TreeTurnItem(g);
+      var b = U.asNumber(d.TreeBestDN);
+      if (b > U.asNumber(d.TreeAuthor.h.v)) {
+        var G = a.engine.getGameAttribute("DNSM").h.TreeBestDN;
+        d.TreeAuthor.h.v = G;
+        if (g == state().TreeMe)
+          d.TreeAuthor.h.v =
+            U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeBestDN) *
+            (1 + Blocks._customBlock_TreeWriteCall() / 100);
+      }
+    }
+  };
+  // Spec 010 (T168 r1): blocks that write the cache from 0 more than once, a turn only a write that adds to its own
+  // value: an overwrite by a product (TreeTurnItem(0) × 2 = 4), by a sum of two parts (2 + 4 = 6), two items in the
+  // same turn (3 + 6 + 9 = 18), and an overwrite before the turns (4 + 4 + 6 = 14).
+  Blocks._customBlock_TreeAuthorProduct = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v = Blocks._customBlock_TreeTurnItem(0) * 2;
+  };
+  Blocks._customBlock_TreeAuthorParts = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v =
+      Blocks._customBlock_TreeTurnItem(0) + Blocks._customBlock_TreeTurnItem(1);
+  };
+  Blocks._customBlock_TreeAuthorPair = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v =
+        d.TreeAuthor.h.v +
+        Blocks._customBlock_TreeTurnItem(i) +
+        state().TreeList[i];
+  };
+  // Spec 010 (T168 r1): the author of TreeAuthor reads TreeOther, which TreeOtherBuild wrote (4 + 1 = 5), in its write's
+  // count (× 2 = 10), then writes TreeOther itself (the same number) and reads it again after that one write.
+  Blocks._customBlock_TreeOtherBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeOther = new StringMap();
+    d.TreeOther.h.v = state().TreeBase + 1;
+  };
+  Blocks._customBlock_TreeAuthorNested = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = d.TreeOther.h.v * 2;
+    d.TreeOther.h.v = d.TreeAuthor.h.v / 2;
+    return d.TreeOther.h.v * 3;
+  };
+  Blocks._customBlock_TreeAuthorMixed = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeAuthor.h.v = 0;
+    d.TreeAuthor.h.v = Blocks._customBlock_TreeTurnItem(0) * 2;
+    for (var i = 1; i < state().TreeList.length; i++)
+      d.TreeAuthor.h.v = d.TreeAuthor.h.v + Blocks._customBlock_TreeTurnItem(i);
+  };
+  // Spec 010 (T226): a sum over the empty key through a pass-through variable, as the game's Gallery sums a nametag's
+  // bonus by GalleryDN2: each turn calls TreeTurnAt() (the same arguments, the turn's value), then writes another path
+  // by a step before the cache, so the author's write before the cache's comes after the call: 2 × 3 + 4 × 3 = 18.
+  Blocks._customBlock_TreeAuthorRelay = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeRelayDN = state().TreeBase + i;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeTwins[i];
+    }
+  };
+  // ...one that skips the cache's write in the middle turn (r1 of part W): the write after it has two TreeTurnAt() in
+  // its window, the same key, that the place does not part: 2 × 4 + 6 × 4 = 32
+  Blocks._customBlock_TreeAuthorRelaySkip = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 3; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      if (i != 1)
+        d.TreeAuthor.h.v =
+          U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeBase;
+    }
+  };
+  // ...the same with the item read first (r2 of part W): the line is the read's, the two TreeTurnAt() of the last write's
+  // window are its other part; over three twins [5, 3, 7]: 5 × 2 + 7 × 6 = 52
+  Blocks._customBlock_TreeAuthorRelayRead = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 3; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      if (i != 1)
+        d.TreeAuthor.h.v =
+          U.asNumber(d.TreeAuthor.h.v) + state().TreeTwins[i] * d.TreeCountDN;
+    }
+  };
+  // ...one whose turn begins with its pass-through's call right after the cache's write, no write between (the window's
+  // edges), a number of the save its argument, no two reads of one number: TreeTurnItem(i) × TreeArg(TreeList[i]) × 3 =
+  // 2 × 4 × 3 + 4 × 8 × 3 = 120
+  Blocks._customBlock_TreeAuthorRelayNext = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountDN = Blocks._customBlock_TreeArg(
+        U.asNumber(a.engine.getGameAttribute("TreeList")[i]),
+      );
+      d.TreeRelayDN = i + 10;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) +
+        Blocks._customBlock_TreeTurnItem(i) * d.TreeCountDN * 3;
+    }
+  };
+  // ...one whose item multiplies two pass-throughs of the same call, each a turn, by the turn's place alone (r1 of part
+  // X): 2 × 4 + 4 × 6 = 32
+  Blocks._customBlock_TreeAuthorRelayTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeCountAt = i + 1;
+      d.TreeRelayDN = Blocks._customBlock_TreeTurnAt();
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * d.TreeRelayDN;
+    }
+  };
+  // Spec 010 (r1 of part X): a leaf that reads its index and the list's entry at its own place, two reads of one value
+  // when the index and the entry are equal
+  Blocks._customBlock_TreeTieRead = function () {
+    var s = state();
+    var l = s.TreeList;
+    return s.TreeBase * l[s.TreeTwins[0]];
+  };
+  Blocks._customBlock_TreeTieRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeTieRead();
+  };
+  // ...and one whose pass-through call is made once, before the loop: 2 × 3 + 2 × 3 = 12
+  Blocks._customBlock_TreeAuthorRelayEarly = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeAuthor = new StringMap();
+    d.TreeCountAt = 0;
+    d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+    for (var i = 0; i < 2; i++) {
+      d.TreeRelayDN = state().TreeBase + i;
+      d.TreeAuthor.h.v =
+        U.asNumber(d.TreeAuthor.h.v) + d.TreeCountDN * state().TreeTwins[i];
+    }
+  };
+  // Spec 010 (T168): a block that reads the cache the helpers built, writes it itself (the same number) and returns it
+  // read back: the read it returns saw its own write, a passage, not the helpers' cache its first step read.
+  Blocks._customBlock_TreeAuthorPlaces = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var first = d.TreeAuthor.h.v * 2;
+    d.TreeAuthor.h.v = first / 2;
+    return d.TreeAuthor.h.v * 3;
+  };
+  Blocks._customBlock_TreeAuthorPlacesRoot = function () {
+    return Blocks._customBlock_TreeAuthorPlaces() + state().TreeCapped;
+  };
+  // Spec 010 (T169-T171): a stat's bonus summed over the items a list equips, each its bonus of the stat times a shared
+  // multi, as the game's star signs (the tests give TreeSigns, TreeSignBonus and TreeSignMulti): over [1, 2, 3], with
+  // bonuses 5, 10, 20 and a multi of 2, 70. A root adds it to TreeCapped; a builder puts it in a cache another root reads.
+  Blocks._customBlock_TreeSign = function (stat, sign) {
+    var s = state();
+    return s.TreeSignBonus.h[stat][sign] * s.TreeSignMulti;
+  };
+  Blocks._customBlock_TreeSigns = function (stat) {
+    var s = state();
+    var t = 0;
+    for (var i = 0; i < s.TreeSigns.length; i++)
+      t = t + Blocks._customBlock_TreeSign(stat, s.TreeSigns[i]);
+    return t;
+  };
+  Blocks._customBlock_TreeSignsRoot = function () {
+    return Blocks._customBlock_TreeSigns("Drop") + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSignsBuild = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeSignsDrop = new StringMap();
+    d.TreeSignsDrop.h.v = Blocks._customBlock_TreeSigns("Drop");
+  };
+  Blocks._customBlock_TreeSignsCached = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeSignsDrop.h.v + state().TreeCapped
+    );
+  };
+  // Spec 010 (T170, T171, review r1): a multi read twice with two values (raised between the reads); a level that is a
+  // call closing by its own count, as the game's Seraph (1 + a summoning level ÷ 100), times the multi and a call that
+  // reads only a game table. Each under a root that adds TreeCapped.
+  Blocks._customBlock_TreeMultiTwice = function () {
+    var s = state();
+    var first = s.TreeSignMulti;
+    s.TreeSignMulti = first + 1;
+    return first + s.TreeSignMulti;
+  };
+  Blocks._customBlock_TreeMultiTwiceRoot = function () {
+    return Blocks._customBlock_TreeMultiTwice() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSeraph = function () {
+    return 1 + state().TreeSummonLv / 100;
+  };
+  Blocks._customBlock_TreeSeraphLine = function () {
+    return (
+      state().TreeSignMulti *
+      Blocks._customBlock_TreeSeraph() *
+      Blocks._customBlock_TreeDeclTable()
+    );
+  };
+  Blocks._customBlock_TreeSeraphRoot = function () {
+    return Blocks._customBlock_TreeSeraphLine() + state().TreeCapped;
+  };
+  // Spec 010 (review r2): a Seraph that reads a cache (the TreeSignsDrop a builder writes) in place of a save's level
+  Blocks._customBlock_TreeCachedSeraph = function () {
+    return 1 + a.engine.getGameAttribute("DNSM").h.TreeSignsDrop.h.v / 100;
+  };
+  Blocks._customBlock_TreeCachedSeraphLine = function () {
+    return state().TreeSignMulti * Blocks._customBlock_TreeCachedSeraph();
+  };
+  Blocks._customBlock_TreeCachedSeraphRoot = function () {
+    return Blocks._customBlock_TreeCachedSeraphLine() + state().TreeCapped;
+  };
+  // Spec 010 (T173): a line counted as a recipe below it, as the game's LUK: floor((TreeBase + TreeLevel + 2) × (1 +
+  // TreeStats.b ÷ 100)), two pools, a constant and a floor (4, 25 and 5: 32). A root adds it to TreeCapped; a builder
+  // counts the same in a cache another root reads.
+  Blocks._customBlock_TreeRecipeLine = function () {
+    var s = state();
+    return Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+  };
+  Blocks._customBlock_TreeRecipeRoot = function () {
+    return Blocks._customBlock_TreeRecipeLine() + state().TreeCapped;
+  };
+  // Spec 010 (T172, the LUK's % Multi with its Star Signs): the line as the second part of a term,
+  // floor((TreeCapped + TreeLevel) × (1 + (TreeStats.a + TreeRecipeLine()) ÷ 100)).
+  Blocks._customBlock_TreeRecipePart = function () {
+    var s = state();
+    return Math.floor(
+      (s.TreeCapped + s.TreeLevel) *
+        (1 + (s.TreeStats.h.a + Blocks._customBlock_TreeRecipeLine()) / 100),
+    );
+  };
+  Blocks._customBlock_TreeRecipeBuild = function () {
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeRecipe = new StringMap();
+    d.TreeRecipe.h.v = Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+  };
+  // Spec 010 (T174, T175): a table's items summed in a loop, in a running total, only where the game tests them on
+  // (TreeActiveOn; 2 adds the item twice), then times TreeSignMulti, as the game's active star signs: over the bonuses
+  // 5, 10, 20, 40 with 1, 0, 1, 1 on and a multi of 2, (5 + 20 + 40) × 2 = 130. In TreeActiveMixed, every turn but the
+  // last writes the total through a call's value, with no step of its own: the turns do not part by their place.
+  Blocks._customBlock_TreeActiveSum = function () {
+    var s = state();
+    var d = dnsm();
+    var i;
+    d.TreeActive = new StringMap();
+    for (d.TreeActive.h.v = 0, i = 0; i < s.TreeActiveBonus.length; i++) {
+      if (s.TreeActiveOn[i] >= 1)
+        d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[i];
+      if (s.TreeActiveOn[i] === 2)
+        d.TreeActive.h.v = d.TreeActive.h.v + s.TreeActiveBonus[i];
+    }
+    d.TreeActive.h.v = d.TreeActive.h.v * s.TreeSignMulti;
+    return d.TreeActive.h.v;
+  };
+  Blocks._customBlock_TreeActiveAdd = function (t, x) {
+    return t + x;
+  };
+  Blocks._customBlock_TreeActiveMixed = function () {
+    var s = state();
+    var d = dnsm();
+    var i;
+    var last = s.TreeActiveBonus.length - 1;
+    d.TreeActiveMixed = new StringMap();
+    for (d.TreeActiveMixed.h.v = 0, i = 0; i <= last; i++)
+      if (i < last)
+        d.TreeActiveMixed.h.v = Blocks._customBlock_TreeActiveAdd(
+          d.TreeActiveMixed.h.v,
+          s.TreeActiveBonus[i],
+        );
+      else d.TreeActiveMixed.h.v = d.TreeActiveMixed.h.v + s.TreeActiveBonus[i];
+    d.TreeActiveMixed.h.v = d.TreeActiveMixed.h.v * s.TreeSignMulti;
+    return d.TreeActiveMixed.h.v;
+  };
+  // Spec 010 (T176): the game's star signs. Each item's base is a number of the code, added to its field only where the
+  // game's test finds the item in TreeBaseOn, the field read before its first write as nothing (0); TreeBasePasses 2
+  // runs the items twice (the chip's second pass). Then each field over 0 is multiplied, in a loop over the fields:
+  // with items 0, 2, 3 and 4 on, a is 5, b is 5 + 12 = 17 and c is 3; × 2 × (1 + 50 ÷ 100), b gives 51.
+  var asNumber = function (x) {
+    return x === undefined || x === null ? 0 : Number(x);
+  };
+  A["com.stencyl.utils.Utils"].asNumber = asNumber;
+  Blocks._customBlock_TreeBaseSum = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = dnsm();
+    var n, k, x, y;
+    d.TreeBases = new StringMap();
+    for (n = 0; n < state().TreeBasePasses; n++) {
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "0")) {
+        x = 5 + U.asNumber(dnsm().TreeBases.h.a);
+        dnsm().TreeBases.h.a = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "1")) {
+        x = 7 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "2")) {
+        x = 5 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "3")) {
+        x = 12 + U.asNumber(dnsm().TreeBases.h.b);
+        dnsm().TreeBases.h.b = x;
+      }
+      if (U.contains(a.engine.getGameAttribute("TreeBaseOn"), "4")) {
+        x = 3 + U.asNumber(dnsm().TreeBases.h.c);
+        dnsm().TreeBases.h.c = x;
+      }
+    }
+    var keys = Object.keys(dnsm().TreeBases.h);
+    for (k = 0; k < keys.length; k++)
+      if (0 < U.asNumber(dnsm().TreeBases.h[keys[k]])) {
+        y =
+          U.asNumber(dnsm().TreeBases.h[keys[k]]) *
+          a.engine.getGameAttribute("TreeBaseMulti") *
+          (1 + a.engine.getGameAttribute("TreeBaseMeritoc") / 100);
+        dnsm().TreeBases.h[keys[k]] = y;
+      }
+    return dnsm().TreeBases.h.b;
+  };
+  // Spec 010 (T177): a running total kept in a counter of the game, as the LUK's base: the loop's index in RunI, the
+  // total in RunDN, the gear added in a loop through a variable, then the gallery and the hat, the last step reading the
+  // total: floor(TreeLevel + RunDN). Gear 5, 7 and 9, gallery 11, hat 2: 34; + 25 = 59.
+  Blocks._customBlock_TreeRunTotal = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      t += U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeGallery"));
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeHat"));
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T177 r1): the STR's base, a running total that also multiplies: the gear in a loop through a variable,
+  // the gallery through a variable, then × (1 + (TreeStats.a + TreeStats.b) / 100) inside the test of an if (no step
+  // of the whole call), then the hat; the end first: floor(TreeLevel + (1 + TreeBase / 100) × (RunDN + TreeCapped)).
+  // Gear 5, 7 and 9 and gallery 11: 32; × 1.08 = 34.56; + 2 = 36.56; + 80 = 116.56; × 1.04 = 121.2224; + 25, floored: 146.
+  Blocks._customBlock_TreeRunTimes = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t, i;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      t += U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    t = a.engine.getGameAttribute("DummyNumbersStatManager");
+    i =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) +
+      U.asNumber(a.engine.getGameAttribute("TreeGallery"));
+    t.h.RunDN = i;
+    if (
+      (-1 == a.engine.getGameAttribute("TreeDungeon") &&
+        ((t = a.engine.getGameAttribute("DummyNumbersStatManager")),
+        (i =
+          U.asNumber(
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+          ) *
+          (1 +
+            (a.engine.getGameAttribute("TreeStats").h.a +
+              a.engine.getGameAttribute("TreeStats").h.b) /
+              100)),
+        (t.h.RunDN = i)),
+      -1 == a.engine.getGameAttribute("TreeDungeon"))
+    ) {
+      t = a.engine.getGameAttribute("DummyNumbersStatManager");
+      i =
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ) + U.asNumber(a.engine.getGameAttribute("TreeHat"));
+      t.h.RunDN = i;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        (1 + a.engine.getGameAttribute("TreeBase") / 100) *
+          (U.asNumber(
+            a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+          ) +
+            a.engine.getGameAttribute("TreeCapped")),
+    );
+  };
+  // Spec 010 (T177 r1): the Accuracy's total, a running total that multiplies, read after another term of a sum: it
+  // does not open, and the root stands: floor(TreeLevel + RunDN), RunDN = TreeGallery × (1 + TreeStats.a / 100).
+  // 11 × 1.03 = 11.33; + 25 = 36.33, floored: 36.
+  Blocks._customBlock_TreeRunPow = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = U.asNumber(
+      a.engine.getGameAttribute("TreeGallery"),
+    );
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN) *
+      (1 + a.engine.getGameAttribute("TreeStats").h.a / 100);
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T177 r1): two calls of one block that give the same value, the first in no step (the AGI's talents at 0):
+  // the step's call is the one that returned at its place, never the first one of that value. 25 + 0 = 25.
+  Blocks._customBlock_TreeFlat = function () {
+    return 0;
+  };
+  Blocks._customBlock_TreeTwoCalls = function () {
+    var s = state();
+    Blocks._customBlock_TreeFlat(1);
+    return s.TreeLevel + Blocks._customBlock_TreeFlat(2);
+  };
+  // Spec 010 (T177 r2): in the first turn of a running total's loop, two calls of one block with the same value through
+  // variables (no step of the code of their own) and a later read of that value; in the last turn, two values (the
+  // whole call's steps see only those): no place tells the first turn's calls apart, so the answer key refuses the root,
+  // never ties a call to the read. Gear 3 and 3: 3 * 3 + 3 and 4 * 5 + 3, 35; + 25 = 60.
+  Blocks._customBlock_TreeThree = function (k) {
+    return [3, 3, 4, 5][k];
+  };
+  // Spec 010 (T177 r4): a variable set by a call before the loop, added in each turn after a read: the call is in no
+  // turn, and the second turn's read has its value (gear 5 and 3); the variable never ties to that read. The total
+  // starts at 1, so no turn's own total holds 3: 1 + 3 + 3 = 7; + 25 = 32.
+  Blocks._customBlock_TreeRunEarly = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    var m = Blocks._customBlock_TreeThree(0);
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 1;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      t += m;
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T177 r4): a variable set by a block's call through asNumber, another variable or a ? :, after a read with
+  // the call's value (gear 5 and 3): the data flow gives the call, never the read. 25 + 3 = 28.
+  Blocks._customBlock_TreeViaWrapped = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x = U.asNumber(Blocks._customBlock_TreeThree(0));
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  // the call through asNumber right in the step, with no variable
+  Blocks._customBlock_TreeWrappedDirect = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      U.asNumber(Blocks._customBlock_TreeThree(0))
+    );
+  };
+  Blocks._customBlock_TreeViaChain = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var y = Blocks._customBlock_TreeThree(0);
+    var x = y;
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  Blocks._customBlock_TreeViaTernary = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x =
+      a.engine.getGameAttribute("TreeLevel") > 0
+        ? Blocks._customBlock_TreeThree(0)
+        : 0;
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  // Spec 010 (T177 r5): the call anywhere in the step's leaf or in the variable's expression, never a read by its value
+  Blocks._customBlock_TreeTernaryDirect = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      (a.engine.getGameAttribute("TreeLevel") > 0
+        ? Blocks._customBlock_TreeThree(0)
+        : 0)
+    );
+  };
+  Blocks._customBlock_TreeViaFloor = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var x = Math.floor(Blocks._customBlock_TreeThree(0));
+    return a.engine.getGameAttribute("TreeLevel") + x;
+  };
+  // Spec 010 (T177 r6): a chain of 7 variables from a call through Math.floor, read first at its far end in code that
+  // never runs (past the 6 hops the data flow follows), then nearer the call: the near read is the call's value, never
+  // the read with it. 25 + 3 = 28.
+  Blocks._customBlock_TreeFarChain = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var b1 = Math.floor(Blocks._customBlock_TreeThree(0));
+    var b2 = b1;
+    var b3 = b2;
+    var b4 = b3;
+    var b5 = b4;
+    var b6 = b5;
+    var b7 = b6;
+    if (a.engine.getGameAttribute("TreeLevel") < 0) return b7 * 2;
+    return a.engine.getGameAttribute("TreeLevel") + b2;
+  };
+  // a ? : right in the step whose side that ran is a read, with the call on the side that did not: the read stands
+  Blocks._customBlock_TreeTernaryRead = function () {
+    return (
+      a.engine.getGameAttribute("TreeLevel") +
+      (a.engine.getGameAttribute("TreeLevel") < 0
+        ? Blocks._customBlock_TreeThree(0)
+        : a.engine.getGameAttribute("TreeGear")[1])
+    );
+  };
+  // the call in what set a variable before `t += …`, through another variable: what t was is the call, never the read
+  Blocks._customBlock_TreeAddToChain = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    U.asNumber(a.engine.getGameAttribute("TreeGear")[1]);
+    var y = Blocks._customBlock_TreeThree(0);
+    var t = y;
+    t += a.engine.getGameAttribute("TreeLevel");
+    return Math.floor(t);
+  };
+  // Spec 010 (T177 r3): a root whose answer key stands, over a call whose own step reads a variable set by one of two
+  // calls of TreeThree with the same value: only the lock, descending into that call, meets them. 25 + 3 * 2 = 31.
+  Blocks._customBlock_TreeTwinKid = function () {
+    var x = Blocks._customBlock_TreeThree(0);
+    Blocks._customBlock_TreeThree(1);
+    return x * 2;
+  };
+  Blocks._customBlock_TreeTwinRoot = function () {
+    var s = state();
+    return s.TreeLevel + Blocks._customBlock_TreeTwinKid();
+  };
+  // Spec 010 (T183): a source zeroed by an early return: its gate TreeOwned is 0, so it gives 0 before its count; the
+  // root is 25 + 0 = 25.
+  Blocks._customBlock_TreeGateBonus = function () {
+    var s = state();
+    if (s.TreeOwned < 1) return 0;
+    return s.TreeBase * s.TreeOwned;
+  };
+  Blocks._customBlock_TreeGateRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeGateBonus();
+  };
+  // Spec 010 (T210): a gate by the character's map, as the game's ArcaneMapMulti_bon (3 > MapBon[CurrentMap].length):
+  // open on a map with 3 entries or more, the bonus TreeTurnItem(1); closed on another, the code's 0 before its count.
+  Blocks._customBlock_TreeGateMap = function () {
+    var s = state();
+    if (3 > s.TreeMaps[s.CurrentMap].length) return 0;
+    return Blocks._customBlock_TreeTurnItem(1);
+  };
+  // Spec 010 (T211): a count with a factor only some classes get, as the game's GFoodz × max(1, Opassz) for the
+  // classes 7 to 17: TreeTurnItem(1) = 4, × TreeWriteCall() = 8 above class 6.
+  Blocks._customBlock_TreeClassFactor = function () {
+    var s = state();
+    var b = Blocks._customBlock_TreeTurnItem(1);
+    if (6 < s.CharacterClass) return b * Blocks._customBlock_TreeWriteCall();
+    return b;
+  };
+  Blocks._customBlock_TreeClassFactorRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeClassFactor();
+  };
+  // ...and a part of a sum some classes have that every class's run calls (r1 of parts P and Q): its 1 is a real value.
+  Blocks._customBlock_TreeClassOne = function () {
+    return state().TreeList[0];
+  };
+  Blocks._customBlock_TreeClassAdd = function () {
+    return (
+      Blocks._customBlock_TreeTurnItem(1) + Blocks._customBlock_TreeClassOne()
+    );
+  };
+  Blocks._customBlock_TreeClassAddRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeClassAdd();
+  };
+  // Spec 010 (T213): the bonus of the slot the save holds the item in, as the game's GoldFoodBonuses reads
+  // EquipmentQuantity[2][i] for the slot whose food is the gold one: TreeFoodQty[i] × 2 + TreeBase.
+  Blocks._customBlock_TreeSlotBonus = function () {
+    var s = state();
+    var b = 0;
+    for (var i = 0; i < s.TreeFood.length; i++)
+      if (1 == s.TreeFood[i]) b = s.TreeFoodQty[i] * 2 + s.TreeBase;
+    return b;
+  };
+  Blocks._customBlock_TreeSlotRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeSlotBonus();
+  };
+  // Spec 010 (T214): a key the save does not have, read through asNumber, as the game reads an equipment's UQ2val
+  // with no upgrade stone: TreeBase × 2 + asNumber(TreeBig.k9) = 8 + 0.
+  Blocks._customBlock_TreeEmptyKey = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      state().TreeBase * 2 +
+      U.asNumber(a.engine.getGameAttribute("TreeBig").h.k9)
+    );
+  };
+  Blocks._customBlock_TreeEmptyKeyRoot = function () {
+    return state().TreeCapped + Blocks._customBlock_TreeEmptyKey();
+  };
+  // Spec 010 (Fase 4 q, star-signs): a map summed key by key, then each key multiplied in a loop over its keys, the key
+  // built as text ("" + p) right before the write, as the game's StarSigns(0) multiplies StarSigns[p] by the chip:
+  // a = 2 + 0, then 3 + a = 5, then × TreeTurnItem(0) = 10; b = 4, then × 2 = 8 in the last turn.
+  Blocks._customBlock_TreeKeysBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeKeys = new StringMap();
+    var t = d.TreeKeys;
+    var v = 2 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = w;
+    t.h.b = 4;
+    var ks = Object.keys(t.h);
+    for (var i = 0; i < ks.length; i++) {
+      var p = ks[i];
+      var x =
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h["" + p]) *
+        Blocks._customBlock_TreeTurnItem(0);
+      t.h["" + p] = x;
+    }
+  };
+  // Spec 010 (Fase 4 q, star-signs): the same loop with the star signs' factors, a term of two parts capped by the code
+  // (the chip's max(1, min(2, 1 + chip × floor((999 + rift) / 1000))), the Seraph's min(5, pow(…))): a = (2 + 3) × 2 × 5
+  // = 50, b = 4 × 2 × 5 = 40, over TreeLevel 300 (the pow is 1.14 ^ 16, above its cap 5).
+  Blocks._customBlock_TreeKeysCapBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var s = state();
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeKeys = new StringMap();
+    var t = d.TreeKeys;
+    var v = 2 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = w;
+    t.h.b = 4;
+    var ks = Object.keys(t.h);
+    for (var i = 0; i < ks.length; i++) {
+      var p = ks[i];
+      var x =
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h["" + p]) *
+        Math.max(
+          1,
+          Math.min(
+            2,
+            1 +
+              Blocks._customBlock_TreeTurnItem(0) *
+                Math.floor((999 + s.TreeStats.h.a) / 1000),
+          ),
+        ) *
+        Math.min(
+          5,
+          Math.pow(
+            1.1 + Math.min(s.TreeBase, 10) / 100,
+            Math.ceil((s.TreeLevel + 1) / 20),
+          ),
+        );
+      t.h["" + p] = x;
+    }
+  };
+  // Spec 010 (Fase 4 q, the LUK's star signs): keys that start at the same number, as a sign gives 3 to STR, AGI, WIS and
+  // LUK: a = 3 + 0, b = 3 + 0, b = 5 + b = 8 (its 3 read first), then a = 8 + a = 11 and a = 4 + a = 15.
+  Blocks._customBlock_TreeKeysSameBuild = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeKeys = new StringMap();
+    var t = d.TreeKeys;
+    var v = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = v;
+    var w = 3 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.b);
+    t.h.b = w;
+    var z = 5 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.b);
+    t.h.b = z;
+    var x = 8 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = x;
+    var y = 4 + U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a);
+    t.h.a = y;
+  };
+  Blocks._customBlock_TreeKeysRead = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeKeys.h.a + state().TreeCapped
+    );
+  };
+  Blocks._customBlock_TreeGateMapRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeGateMap();
+  };
+  // Spec 010 (bare return): a call that returns a read with no step of its own (a cache, a table's cell), its one
+  // step aside: TreeBig k2 is 7; the root is 25 + 7 = 32.
+  Blocks._customBlock_TreeBareRead = function () {
+    var s = state();
+    var twice = s.TreeBase * 2;
+    if (twice > 100) return twice;
+    return s.TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeBareRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBareRead();
+  };
+  // Spec 010 (T184, T185 r1): a call worth 7 (TreeWriteSeven) and a step, then the bare read of 7 returned. Made before
+  // the step, the call is no return; made after it, with the read at the same place, the place does not decide. The
+  // root is 7 + 7 + 25 = 39.
+  Blocks._customBlock_TreeEarlyCall = function () {
+    var s = state();
+    Blocks._customBlock_TreeWriteSeven();
+    var twice = s.TreeBase * 2;
+    return twice && s.TreeBig.h.k2;
+  };
+  Blocks._customBlock_TreeLateCall = function () {
+    var s = state();
+    var twice = s.TreeBase * 2;
+    Blocks._customBlock_TreeWriteSeven();
+    return twice && s.TreeBig.h.k2;
+  };
+  // Spec 010 (Fase 4 r3): a variable set by a call worth 7, then a read of 7 and another call worth 7 before its
+  // return: the last call is not the one the variable took.
+  Blocks._customBlock_TreeVarTwoCalls = function () {
+    var s = state();
+    var r = Blocks._customBlock_TreeWriteSeven();
+    Blocks._customBlock_TreeWriteSeven(s.TreeBig.h.k2);
+    return r;
+  };
+  Blocks._customBlock_TreeVarTwoCallsRoot = function () {
+    return Blocks._customBlock_TreeVarTwoCalls() + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeEarlyRoot = function () {
+    return (
+      Blocks._customBlock_TreeEarlyCall() +
+      Blocks._customBlock_TreeLateCall() +
+      state().TreeLevel
+    );
+  };
+  // Spec 010 (literal return): a 1 the code picks by a test on a read (an achievement done), with no step of its own;
+  // the root is 25 + 1 = 26.
+  Blocks._customBlock_TreeDone = function () {
+    var s = state();
+    if (s.TreeOwned < 1) return 1;
+    return 0;
+  };
+  // Spec 010 (T195): a 1 the code picks by a test on a text of the save, as the game's GamingStatType("SuperBitType")
+  // (a letter in Gaming[12]): "Plain label" has an "l", so 1; the root is 25 + 1 = 26.
+  Blocks._customBlock_TreeBit = function () {
+    var h = { string: String };
+    return -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
+      ? 1
+      : 0;
+  };
+  Blocks._customBlock_TreeBitRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBit();
+  };
+  // ...and a second text read that the test does not read (the test puts TreeOtherLabel in the state), read after the
+  // tested one, where an order ("the last text read") would take it: 1, as TreeBit.
+  Blocks._customBlock_TreeBitTwo = function () {
+    var h = { string: String };
+    var hit =
+      -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l");
+    var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
+    a.engine.getGameAttribute("DNSM").h.TreeBitOther = other; // kept aside, no root reads it
+    return hit ? 1 : 0;
+  };
+  Blocks._customBlock_TreeBitTwoRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBitTwo();
+  };
+  // ...and the other order, TreeOtherLabel read before the tested one, where an order ("the first text read") would
+  // take it: with TreeBitTwo, an order either way fails one of them.
+  Blocks._customBlock_TreeBitTwoBefore = function () {
+    var h = { string: String };
+    var other = "" + h.string(a.engine.getGameAttribute("TreeOtherLabel"));
+    a.engine.getGameAttribute("DNSM").h.TreeBitOther = other; // kept aside, no root reads it
+    return -1 !=
+      ("" + h.string(a.engine.getGameAttribute("TreeLabel"))).indexOf("l")
+      ? 1
+      : 0;
+  };
+  Blocks._customBlock_TreeBitTwoBeforeRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeBitTwoBefore();
+  };
+  Blocks._customBlock_TreeDoneRoot = function () {
+    return state().TreeLevel + Blocks._customBlock_TreeDone();
+  };
+  // Spec 010 (T184): two talents of one code on an `add` curve, its level a step before the curve's call: with ×1 the
+  // level and the curve are both 27, with ×4 the curve is 108. The return is the call by its place, in both.
+  Blocks._customBlock_TreeAddTalent = function (k) {
+    var level = state().TreeLevel + 2;
+    return Blocks._customBlock_ArbitraryCode5Inputs("add", [1, 4][k], 0, level);
+  };
+  Blocks._customBlock_TreeAddTalents = function () {
+    return (
+      Blocks._customBlock_TreeAddTalent(0) +
+      Blocks._customBlock_TreeAddTalent(1)
+    );
+  };
+  // Spec 010 (T177 r3): the same turns with the read of 3 before the calls and only the first call used, through a
+  // variable: the variable's call comes from the data flow, never from the read with its value. 3 + 4 = 7; + 25 = 32.
+  Blocks._customBlock_TreeRunTwinRead = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      var x = Blocks._customBlock_TreeThree(2 * r);
+      Blocks._customBlock_TreeThree(2 * r + 1);
+      t += x;
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  Blocks._customBlock_TreeRunTwins = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, t;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = 0;
+    for (r = 0; r < a.engine.getGameAttribute("TreeGear").length; r++) {
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunI = r;
+      t = U.asNumber(
+        a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+      );
+      var x = Blocks._customBlock_TreeThree(2 * r);
+      var y = Blocks._customBlock_TreeThree(2 * r + 1);
+      t += x * y + U.asNumber(a.engine.getGameAttribute("TreeGear")[r]);
+      a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN = t;
+    }
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.RunDN,
+        ),
+    );
+  };
+  // Spec 010 (T179): the equipment's base, as the LUK's: two rows of slots, each turn adds the base of the item the
+  // save puts in the slot, from the game's table by the item's name (TreeGearOrder[r][o]), and the slot's upgrade when
+  // it has one: floor(TreeLevel + total). itemA (1) + 3, itemB (2), itemA (1) + 5: 12; + 25 = 37.
+  Blocks._customBlock_TreeGearTable = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var r, o, t, i, u, g;
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN = 0;
+    for (r = 0; r < 2; r++)
+      for (o = 0; o < a.engine.getGameAttribute("TreeGearOrder")[r].length; o++)
+        ((a.engine.getGameAttribute("DummyNumbersStatManager").h.GearI = o),
+          (i = a.engine.getGameAttribute("TreeGearMap")[r][o]),
+          Object.prototype.hasOwnProperty.call(i.h, "v")
+            ? ((i = a.engine.getGameAttribute("DummyNumbersStatManager")),
+              (t = U.asNumber(
+                a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+              )),
+              (u = a.engine.getGameAttribute("ItemDefinitionsGET")),
+              (g = "" + a.engine.getGameAttribute("TreeGearOrder")[r][o]),
+              (t +=
+                U.asNumber(u.h[g].v) +
+                U.asNumber(a.engine.getGameAttribute("TreeGearMap")[r][o].h.v)),
+              (i.h.GearDN = t))
+            : ((i = a.engine.getGameAttribute("DummyNumbersStatManager")),
+              (t = U.asNumber(
+                a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+              )),
+              (u = a.engine.getGameAttribute("ItemDefinitionsGET")),
+              (g = "" + a.engine.getGameAttribute("TreeGearOrder")[r][o]),
+              (t += U.asNumber(u.h[g].v)),
+              (i.h.GearDN = t)));
+    return Math.floor(
+      a.engine.getGameAttribute("TreeLevel") +
+        U.asNumber(
+          a.engine.getGameAttribute("DummyNumbersStatManager").h.GearDN,
+        ),
+    );
+  };
+  // Spec 010 (T178): the code writes the end first, as the LUK: floor(TreeLevel + (1 + (TreeStats.a + TreeStats.b) /
+  // 100) × (TreeBase + TreeCapped)); 25 + 1.08 × 84 = 115.72, floored to 115.
+  Blocks._customBlock_TreeEndFirst = function () {
+    var s = state();
+    return Math.floor(
+      s.TreeLevel +
+        (1 + (s.TreeStats.h.a + s.TreeStats.h.b) / 100) *
+          (s.TreeBase + s.TreeCapped),
+    );
+  };
+  Blocks._customBlock_TreeRecipeCached = function () {
+    return (
+      a.engine.getGameAttribute("DNSM").h.TreeRecipe.h.v + state().TreeCapped
+    );
+  };
+  // Spec 010 (T173 r1): a builder that writes four fields to 32, as the game's star signs write one a stat: TreeTwinA
+  // and TreeTwinB in two writes each, TreeTwinC and TreeTwinD in one. B and C count as TreeRecipeLine (31, then floor
+  // of × 1.05); A and D are (TreeTwinX + TreeTwinY) × TreeTwinZ, the tests give 10, 6 and 2. A root reads B, one C.
+  Blocks._customBlock_TreeRecipeTwin = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreeTwinA = new StringMap();
+    d.TreeTwinA.h.v = s.TreeTwinX + s.TreeTwinY;
+    d.TreeTwinA.h.v = d.TreeTwinA.h.v * s.TreeTwinZ;
+    d.TreeTwinB = new StringMap();
+    d.TreeTwinB.h.v = s.TreeBase + s.TreeLevel + 2;
+    d.TreeTwinB.h.v = Math.floor(d.TreeTwinB.h.v * (1 + s.TreeStats.h.b / 100));
+    d.TreeTwinC = new StringMap();
+    d.TreeTwinC.h.v = Math.floor(
+      (s.TreeBase + s.TreeLevel + 2) * (1 + s.TreeStats.h.b / 100),
+    );
+    d.TreeTwinD = new StringMap();
+    d.TreeTwinD.h.v = (s.TreeTwinX + s.TreeTwinY) * s.TreeTwinZ;
+  };
+  Blocks._customBlock_TreeRecipeTwinB = function () {
+    return dnsm().TreeTwinB.h.v + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeRecipeTwinC = function () {
+    return dnsm().TreeTwinC.h.v + state().TreeCapped;
+  };
+  // Spec 010 (T167): a sum of a list in a loop, one item a turn, each a call of its own; a sum whose items were all
+  // called before its loop (the turns do not part by their place); a sum that adds the same read in each turn. Each
+  // under a root that adds TreeCapped.
+  Blocks._customBlock_TreeTurnItem = function (i) {
+    return state().TreeList[i] * 2;
+  };
+  Blocks._customBlock_TreeTurns = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsBefore = function () {
+    var items = [
+      Blocks._customBlock_TreeTurnItem(0),
+      Blocks._customBlock_TreeTurnItem(1),
+    ];
+    var t = 0;
+    for (var i = 0; i < items.length; i++) t = t + items[i];
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsSame = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + state().TreeBase;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsRoot = function () {
+    return Blocks._customBlock_TreeTurns() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsBeforeRoot = function () {
+    return Blocks._customBlock_TreeTurnsBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsSameRoot = function () {
+    return Blocks._customBlock_TreeTurnsSame() + state().TreeCapped;
+  };
+  // ...and a read whose slug passes the key's cut (56 letters), read in two turns (the test puts it in the state)
+  Blocks._customBlock_TreeTurnsLong = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t = t + state().TreeReadWithANameLongEnoughToPassTheCutOfTheSlug;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsLongRoot = function () {
+    return Blocks._customBlock_TreeTurnsLong() + state().TreeCapped;
+  };
+  // A product in a loop (no sum of turns), and a sum in a loop the call returns with one more term after it.
+  Blocks._customBlock_TreeTurnsProduct = function () {
+    var t = 1;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t * Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsThen = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i);
+    return t + state().TreeBase;
+  };
+  // A sum in a loop whose item is a part of an expression, not a call nor a read.
+  Blocks._customBlock_TreeTurnsMixed = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      t = t + Blocks._customBlock_TreeTurnItem(i) * 2;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsMixedRoot = function () {
+    return Blocks._customBlock_TreeTurnsMixed() + state().TreeCapped;
+  };
+  // Spec 010 (T193): a sum in a loop whose item is a count of a call and a read (research R4), with a read of the
+  // turn out of the item, before the item's step in one block and after it in the other.
+  Blocks._customBlock_TreeTurnsCountBefore = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      if (state().TreeLevel > 0)
+        t = t + Blocks._customBlock_TreeTurnItem(i) * state().TreeTwins[i];
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountAfter = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      t = t + Blocks._customBlock_TreeTurnItem(i) * state().TreeTwins[i];
+      if (state().TreeLevel < 0) return 0;
+    }
+    return t;
+  };
+  // ...and one whose item reads back a pass-through variable the turn wrote (T188, the game's GalleryDN2)
+  Blocks._customBlock_TreeTurnsCountPassage = function () {
+    var d = dnsm();
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountDN = Blocks._customBlock_TreeTurnItem(i);
+      t = t + d.TreeCountDN * state().TreeTwins[i];
+    }
+    return t;
+  };
+  // ...and one that adds a bare 1 a turn its test passes (a count, T215), with calls of its own in each turn
+  Blocks._customBlock_TreeTurnsCountOne = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      if (Blocks._customBlock_TreeTurnItem(i) > 0) t = t + 1;
+    return t;
+  };
+  // ...one whose item's call takes an argument from the save (r1 of part U): the line's arguments are its call's
+  // its second argument, from the save, is only recorded (the call's arguments), never used
+  Blocks._customBlock_TreeTurnItemAt = function (i) {
+    return state().TreeList[i] * 2;
+  };
+  Blocks._customBlock_TreeTurnsCountSave = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t =
+        t +
+        Blocks._customBlock_TreeTurnItemAt(
+          i,
+          a.engine.getGameAttribute("TreeBase"),
+        ) *
+          state().TreeTwins[i];
+    return t;
+  };
+  // ...one whose item reads before its call: the line is the read's, the call a termPart child (r1 of part U)
+  Blocks._customBlock_TreeTurnsCountRead = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t = t + state().TreeTwins[i] * Blocks._customBlock_TreeTurnItem(i);
+    return t;
+  };
+  // ...one whose pass-through call has the same arguments in every turn, its value the turn's (r1 of part U)
+  Blocks._customBlock_TreeTurnAt = function () {
+    return state().TreeList[dnsm().TreeCountAt] * 2;
+  };
+  Blocks._customBlock_TreeTurnsCountSame = function () {
+    var d = dnsm();
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      d.TreeCountAt = i;
+      d.TreeCountDN = Blocks._customBlock_TreeTurnAt();
+      t = t + d.TreeCountDN * state().TreeTwins[i];
+    }
+    return t;
+  };
+  // ...one whose item has a curve (a log): its parts would be the whole call's (r1 of part U)
+  Blocks._customBlock_TreeTurnsCountCurve = function () {
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t =
+        t +
+        Blocks._customBlock_getLOG(Blocks._customBlock_TreeTurnItem(i)) *
+          state().TreeTwins[i];
+    return t;
+  };
+  // ...one whose pass-through variable was written before the loop, by a call with an argument of the save (r2 of U)
+  Blocks._customBlock_TreeTurnsCountEarly = function () {
+    var d = dnsm();
+    d.TreeEarlyDN = Blocks._customBlock_TreeTurnItemAt(
+      0,
+      a.engine.getGameAttribute("TreeBase"),
+    );
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + d.TreeEarlyDN * 3;
+    return t;
+  };
+  // ...the same call before the loop as the item's other part, after the turn's read (r1 of part X): no place in turn 2
+  Blocks._customBlock_TreeTurnsCountEarlyPart = function () {
+    var d = dnsm();
+    d.TreeEarlyDN = Blocks._customBlock_TreeTurnItemAt(
+      0,
+      a.engine.getGameAttribute("TreeBase"),
+    );
+    var t = 0;
+    for (var i = 0; i < 2; i++) t = t + state().TreeTwins[i] * d.TreeEarlyDN;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountEarlyPartRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountEarlyPart() + state().TreeCapped;
+  };
+  // ...one whose item reads before a call with an argument of the save that changes a turn (T227): TreeArg(TreeList[i])
+  Blocks._customBlock_TreeTurnsCountArg = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t =
+        t +
+        state().TreeTwins[i] *
+          Blocks._customBlock_TreeArg(
+            U.asNumber(a.engine.getGameAttribute("TreeList")[i]),
+          );
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountArgRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountArg() + state().TreeCapped;
+  };
+  // ...and one that also calls TreeArg(7) in each turn, out of the item (r1 of part W): two calls a `*` takes in a turn
+  Blocks._customBlock_TreeTurnsCountArgTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var t = 0;
+    for (var i = 0; i < 2; i++) {
+      Blocks._customBlock_TreeArg(7);
+      t =
+        t +
+        state().TreeTwins[i] *
+          Blocks._customBlock_TreeArg(
+            U.asNumber(a.engine.getGameAttribute("TreeList")[i]),
+          );
+    }
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsCountArgTwiceRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountArgTwice() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountEarlyRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountEarly() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountSaveRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountSave() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountReadRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountRead() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountSameRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountSame() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountCurveRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountCurve() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountOneRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountOne() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountPassageRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountPassage() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountBeforeRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountBefore() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsCountAfterRoot = function () {
+    return Blocks._customBlock_TreeTurnsCountAfter() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsProductRoot = function () {
+    return Blocks._customBlock_TreeTurnsProduct() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeTurnsThenRoot = function () {
+    return Blocks._customBlock_TreeTurnsThen() + state().TreeCapped;
+  };
+  // Spec 010 (T202): a long list summed in a loop, each turn a read of its own place, below a source that doubles it.
+  Blocks._customBlock_TreeLongTurns = function () {
+    var t = 0;
+    for (var i = 0; i < state().TreeLong.length; i++)
+      t = t + state().TreeLong[i];
+    return t;
+  };
+  Blocks._customBlock_TreeLongTalent = function () {
+    return Blocks._customBlock_TreeLongTurns() * 2;
+  };
+  Blocks._customBlock_TreeLongRoot = function () {
+    return state().TreeBase + Blocks._customBlock_TreeLongTalent();
+  };
+  // Spec 010 (T203): a common branch three sources call, its item by its argument; with 3, another way of the code.
+  Blocks._customBlock_TreeCommon = function (k) {
+    var s = state();
+    if (k === 3) return s.TreeBase * 3;
+    return s.TreeList[k] + s.TreeBase;
+  };
+  Blocks._customBlock_TreeUsesA = function () {
+    return Blocks._customBlock_TreeCommon(1) * 2;
+  };
+  Blocks._customBlock_TreeUsesB = function () {
+    return Blocks._customBlock_TreeCommon(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeUsesC = function () {
+    return Blocks._customBlock_TreeCommon(3) * 2;
+  };
+  Blocks._customBlock_TreeCommonRoot = function () {
+    return (
+      Blocks._customBlock_TreeUsesA() +
+      Blocks._customBlock_TreeUsesB() +
+      Blocks._customBlock_TreeUsesC()
+    );
+  };
+  // Spec 010 (Fase 4 r1 of part O): a common branch that reads its item by its argument and a constant place equal to
+  // the argument 1 (TreeTwins[1]); once under TreeCommonOnceRoot, with 1 and 2 under TreeCommonTwiceRoot.
+  Blocks._customBlock_TreeCommonConst = function (k) {
+    var s = state();
+    return s.TreeList[k] + s.TreeTwins[1];
+  };
+  Blocks._customBlock_TreeConstUsesA = function () {
+    return Blocks._customBlock_TreeCommonConst(1) * 2;
+  };
+  Blocks._customBlock_TreeConstUsesB = function () {
+    return Blocks._customBlock_TreeCommonConst(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCommonOnceRoot = function () {
+    return Blocks._customBlock_TreeConstUsesA() + state().TreeBase;
+  };
+  Blocks._customBlock_TreeCommonTwiceRoot = function () {
+    return (
+      Blocks._customBlock_TreeConstUsesA() +
+      Blocks._customBlock_TreeConstUsesB()
+    );
+  };
+  // Spec 010 (Fase 4 r2 of part O): a common branch whose place changes apart from its argument: with 2 it reads
+  // TreeTwins[0] in place of TreeTwins[1] (the save has two twins).
+  Blocks._customBlock_TreeCommonShift = function (k) {
+    var s = state();
+    return s.TreeList[k] + s.TreeTwins[k === 2 ? 0 : 1];
+  };
+  Blocks._customBlock_TreeShiftUsesA = function () {
+    return Blocks._customBlock_TreeCommonShift(1) * 2;
+  };
+  Blocks._customBlock_TreeShiftUsesB = function () {
+    return Blocks._customBlock_TreeCommonShift(2) + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeShiftRoot = function () {
+    return (
+      Blocks._customBlock_TreeShiftUsesA() +
+      Blocks._customBlock_TreeShiftUsesB()
+    );
+  };
+  // Spec 010 (Fase 4 r2 of part O): a common branch with no param, called the same way under two sources.
+  Blocks._customBlock_TreeCommonFixed = function () {
+    return state().TreeBase * 2;
+  };
+  Blocks._customBlock_TreeFixedUsesA = function () {
+    return Blocks._customBlock_TreeCommonFixed() * 2;
+  };
+  Blocks._customBlock_TreeFixedUsesB = function () {
+    return Blocks._customBlock_TreeCommonFixed() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeFixedRoot = function () {
+    return (
+      Blocks._customBlock_TreeFixedUsesA() +
+      Blocks._customBlock_TreeFixedUsesB()
+    );
+  };
+  // Spec 010 (part R): a common branch with no param that two recipes call once each, as each skill's stats call the
+  // skills' general bonus (SkillStats("AllBaseSkillEff")).
+  Blocks._customBlock_TreeShared = function () {
+    return state().TreeBase * 2 + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeSharedUsesA = function () {
+    return Blocks._customBlock_TreeShared() * 2;
+  };
+  Blocks._customBlock_TreeSharedRootA = function () {
+    return Blocks._customBlock_TreeSharedUsesA() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSharedUsesB = function () {
+    return Blocks._customBlock_TreeShared() + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeSharedRootB = function () {
+    return Blocks._customBlock_TreeSharedUsesB() + state().TreeBase;
+  };
+  // Spec 010 (part R): the game's max HP (PlayerHPmax): a working list of DummyNumbersStatManager the root fills by push,
+  // each item its own count, and the root multiplies the items it reads back.
+  Blocks._customBlock_TreePushList = function () {
+    var s = state();
+    s.DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.TreePushLIST = [];
+    a.engine
+      .getGameAttribute("DummyNumbersStatManager")
+      .h.TreePushLIST.push(
+        15 + s.TreeBase + Blocks._customBlock_CardBonusREAL(1),
+      );
+    a.engine
+      .getGameAttribute("DummyNumbersStatManager")
+      .h.TreePushLIST.push(1 + s.TreeLevel / 100);
+    var L = a.engine.getGameAttribute("DummyNumbersStatManager").h.TreePushLIST;
+    return L[0] * L[1];
+  };
+  // Spec 010 (T059): a talent by the game's own block name, for the class the draft gives a talent source.
+  Blocks._customBlock_GetTalentNumber = function (mode, t) {
+    var s = state();
+    return s.PlayerDATABASE.h[s.UserInfo[0]].h.SkillLevels[t] * 2;
+  };
+  Blocks._customBlock_TreeDeclDraft = function () {
+    return state().TreeBase + Blocks._customBlock_GetTalentNumber(1, 1);
+  };
+  // Spec 010 (review r1): a root that passes its character's index to the block below it, as the game's Divinity does.
+  Blocks._customBlock_TreeDeclPass = function (c) {
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclOwn(c) +
+      Blocks._customBlock_TreeDeclRow(c)
+    );
+  };
+  // Spec 010 (Fase 4 r1, research R5): the game passes the current character as GetPlayersUsernames.indexOf(UserInfo[0]),
+  // as its Divinity("Bonus_Minor", …, god); beside it, a 0 written in the code, which is no character. 4 + 2 + 5 = 11.
+  Blocks._customBlock_TreeCharArg = function () {
+    var s = state();
+    var me = s.GetPlayersUsernames.indexOf(s.UserInfo[0]);
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclOwn(me) +
+      Blocks._customBlock_TreeDeclRow(0)
+    );
+  };
+  // ...and to a block that reads nothing: a leaf of the draft
+  Blocks._customBlock_TreeDeclRow = function (c) {
+    return c + 5;
+  };
+  Blocks._customBlock_TreeDeclOwn = function (c) {
+    return state().TreeList[c] * 2;
+  };
+  // Spec 010 (Fase 4 r1 of part N): the game passes a count of the save as an argument, as its
+  // ArcaneType("ArcaneMapMulti", MapBon[CurrentMap][i], 0) the map's kills; the block below passes that parameter on,
+  // as ArcaneType's Log2(t). Beside it, a 0 the game set in its working map (as TalentCalc's CalcTalentDN3, a loop's
+  // index), which the place does not tell from a save's count the game cached there (r2). TreeBase 4 + Kills (Row(3) 8 × 2) + Row(0) 5 = 25.
+  Blocks._customBlock_TreeSaveArg = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeSaveIdx = 0;
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[2]),
+        0,
+      ) +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeSaveIdx),
+      )
+    );
+  };
+  // Spec 010 (group 5 of part P): an argument read from a working map the call filled in a loop from a game table, as
+  // the game's Divinity("Bonus_Minor") with DNSM.BminorDivQdl.indexOf(i); and one another block wrote there.
+  Blocks._customBlock_TreeWorkArg = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeQdl = [];
+    for (var r = 0; r < 2; r++)
+      a.engine
+        .getGameAttribute("DNSM")
+        .h.TreeQdl.push(
+          U.asNumber(a.engine.getGameAttribute("CustomLists").h.ListTwo[0]) + r,
+        );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        a.engine.getGameAttribute("DNSM").h.TreeQdl.indexOf(33),
+      )
+    );
+  };
+  // ...and a key the call set from the save first and from a number of the code right before the read: the write the
+  // read saw is the code's, as TalentCalc's DNSM.CalcTalentDN3 = r in each of its loops.
+  Blocks._customBlock_TreeWorkLast = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeIdx = U.asNumber(
+      a.engine.getGameAttribute("TreeList")[2],
+    );
+    a.engine.getGameAttribute("DNSM").h.TreeIdx = 0;
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeIdx),
+      )
+    );
+  };
+  // ...and a key the call set inside a loop it left with a break, before the read: as StampBonusOfTypeX's
+  // DummyNumbersStatManager.Stamp_bonuses_DRI = s, then StampOverLevel(s + 1000 × that).
+  Blocks._customBlock_TreeWorkLoop = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    for (var r = 0; r < 3; r++)
+      if (1 == r) {
+        a.engine.getGameAttribute("DNSM").h.TreeFound = r;
+        break;
+      }
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeFound),
+      )
+    );
+  };
+  // Spec 010 (r1 of parts P and Q): two writes of a working map with no step between them, each a block's call: the
+  // write's source is the assignment whose left side is the written key, never the first in the text.
+  Blocks._customBlock_TreeRhsTwo = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var x = state().TreeBase * 2;
+    d.TreeRhsA = Blocks._customBlock_TreeDeclRow(1);
+    d.TreeRhsB = Blocks._customBlock_TreeDeclOwn(0);
+    return x;
+  };
+  // ...and a variable set on a side of an if, then on every way, then written: the set on every way hides the one before
+  // it; set again on a side after it, the place does not decide.
+  Blocks._customBlock_TreeRhsVar = function () {
+    var d = a.engine.getGameAttribute("DNSM").h;
+    var A = 0;
+    if (state().TreeBase > 100) A = Blocks._customBlock_TreeDeclRow(2);
+    d.TreeRhsE = A;
+    var x = state().TreeBase * 2;
+    A = Blocks._customBlock_TreeDeclOwn(0);
+    d.TreeRhsC = A;
+    if (state().TreeBase > 100) A = Blocks._customBlock_TreeDeclRow(3);
+    d.TreeRhsD = A;
+    return x;
+  };
+  Blocks._customBlock_TreeSetElse = function () {
+    a.engine.getGameAttribute("DNSM").h.TreeElse = 0;
+    return 0;
+  };
+  Blocks._customBlock_TreeSaveElse = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    Blocks._customBlock_TreeSetElse();
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeElse),
+      )
+    );
+  };
+  // Spec 010 (Fase 4 r1 of parts P and Q): a key set to 0 on every way, then from the save on one side of an `if`; the
+  // write the read saw is the one the recorded side gave, never the last on every way by the text.
+  Blocks._customBlock_TreeWorkCond = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeCond = 0;
+    if (state().TreeCondOn > 0)
+      a.engine.getGameAttribute("DNSM").h.TreeCond = U.asNumber(
+        a.engine.getGameAttribute("TreeList")[2],
+      );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeCond),
+      )
+    );
+  };
+  // ...and a key set to 0, then by a block called in between from the save: the write the read saw is another block's
+  Blocks._customBlock_TreeSetMid = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeMid = U.asNumber(
+      a.engine.getGameAttribute("TreeList")[2],
+    );
+    return 0;
+  };
+  Blocks._customBlock_TreeWorkMid = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeMid = 0;
+    Blocks._customBlock_TreeSetMid();
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeMid),
+      )
+    );
+  };
+  // Spec 010 (r2 of parts P and Q): a key set to 0, then from the save on the side of an if in a loop's turn before the
+  // last: the write the read saw is that turn's, by its recorded number, never the side the last turn took.
+  Blocks._customBlock_TreeWorkTurn = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    a.engine.getGameAttribute("DNSM").h.TreeTurnK = 0;
+    for (var i = 0; i < state().TreeList.length; i++)
+      if (U.asNumber(a.engine.getGameAttribute("TreeList")[i]) > 0)
+        a.engine.getGameAttribute("DNSM").h.TreeTurnK = U.asNumber(
+          a.engine.getGameAttribute("TreeList")[i],
+        );
+    return (
+      state().TreeBase +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeTurnK),
+      )
+    );
+  };
+  // Spec 010 (r3 of parts P and Q): a working map's list, its entry 0 from the save and its entry 1 from a step after
+  // it; the read of entry 0 saw entry 0's write, never entry 1's, the last of the key.
+  Blocks._customBlock_TreeWorkIdx = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreeIdxL = [0, 0];
+    var x = state().TreeBase * 2;
+    d.TreeIdxL[0] = U.asNumber(a.engine.getGameAttribute("TreeList")[0]);
+    d.TreeIdxL[1] = x * 3;
+    return (
+      x +
+      Blocks._customBlock_TreeDeclRow(
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeIdxL[0]),
+      )
+    );
+  };
+  // ...and the two entries given to one call: no read tells which argument it was, the place does not decide
+  Blocks._customBlock_TreeWorkPair = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var d = a.engine.getGameAttribute("DNSM").h;
+    d.TreePairL = [0, 0];
+    var x = state().TreeBase * 2;
+    d.TreePairL[0] = U.asNumber(a.engine.getGameAttribute("TreeList")[0]);
+    d.TreePairL[1] = x * 3;
+    return (
+      x +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreePairL[0]),
+        U.asNumber(a.engine.getGameAttribute("DNSM").h.TreePairL[1]),
+      )
+    );
+  };
+  // ...and two calls of one block that differ only by the save's argument: with "*" the place does not decide. 12 + 14.
+  Blocks._customBlock_TreeSaveTwice = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[0]),
+        0,
+      ) +
+      Blocks._customBlock_TreeDeclKills(
+        "Map",
+        U.asNumber(a.engine.getGameAttribute("TreeList")[1]),
+        0,
+      )
+    );
+  };
+  // Spec 010 (Fase 4 r2 of part N): one block called from two places, one with the save's argument and the other with a
+  // number written in the code: the place does not decide whether the argument comes from the save. 4 + 16 = 20.
+  Blocks._customBlock_TreeSaveSplit = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    return (
+      state().TreeBase +
+      (state().TreeBase > 100
+        ? Blocks._customBlock_TreeDeclKills(
+            "Map",
+            U.asNumber(a.engine.getGameAttribute("TreeList")[2]),
+            0,
+          )
+        : Blocks._customBlock_TreeDeclKills("Map", 3, 0))
+    );
+  };
+  // ...and a root that gives the character's index to a block that passes its parameter on, as the game's
+  // Divinity("Bonus_Minor", …, 2) to its Divinity("DivMinorBonus", t, 1).
+  Blocks._customBlock_TreeCharPass = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclPass(
+        s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
+      )
+    );
+  };
+  // Spec 010 (Fase 4 r3 of part N): one block called from two places, one with the character's index and the other with a
+  // 0 written in the code: the place does not decide whether the argument comes from the character. 4 + 2 = 6.
+  Blocks._customBlock_TreeCharSplit = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      (s.TreeBase > 100
+        ? Blocks._customBlock_TreeDeclOwn(
+            s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
+          )
+        : Blocks._customBlock_TreeDeclOwn(0))
+    );
+  };
+  // Spec 010 (group 5 of part P): the same block from two places that both run, with the same numbers: no side of a ? :
+  // separates them, and the place still does not decide.
+  Blocks._customBlock_TreeCharBoth = function () {
+    var s = state();
+    return (
+      s.TreeBase +
+      Blocks._customBlock_TreeDeclOwn(
+        s.GetPlayersUsernames.indexOf(s.UserInfo[0]),
+      ) +
+      Blocks._customBlock_TreeDeclOwn(0)
+    );
+  };
+  // Spec 010 (T205): a block called once per turn of a long loop, its first argument what the turn gives (as the game's
+  // Summoning("RibbonBonus", ribbon, 0) per meal), summed; and the same call twice in two turns.
+  Blocks._customBlock_TreeRibbon = function (k, m) {
+    return 2 * k + m;
+  };
+  Blocks._customBlock_TreeRibbons = function () {
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbon(i + 1, 0);
+    return t;
+  };
+  Blocks._customBlock_TreeRibbonsTwin = function () {
+    var s = state();
+    var t = 0;
+    for (var i = 0; i < 2; i++)
+      t = t + Blocks._customBlock_TreeRibbon(s.TreeTwins[i], 0);
+    return t;
+  };
+  // ...and the turns given the character's index beside the turn's (r1 of parts P and Q): the model's `{character}`.
+  Blocks._customBlock_TreeRibbonsChar = function () {
+    var s = state();
+    var me = s.GetPlayersUsernames.indexOf(s.UserInfo[0]);
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbon(i + 1, me);
+    return t;
+  };
+  Blocks._customBlock_TreeCallsCharPool = function () {
+    return Blocks._customBlock_TreeRibbonsChar() + state().TreeCapped;
+  };
+  // ...and only the last turn given a count of the save, the 0 of TreeOwned, the others the 0 written in the code (r2 of
+  // part X): the model's `*` by every turn's call, never by the first one's alone.
+  Blocks._customBlock_TreeRibbonsLast = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t =
+        t +
+        (i == 7
+          ? Blocks._customBlock_TreeRibbon(
+              i + 1,
+              U.asNumber(a.engine.getGameAttribute("TreeOwned")),
+            )
+          : Blocks._customBlock_TreeRibbon(i + 1, 0));
+    return t;
+  };
+  Blocks._customBlock_TreeCallsLastPool = function () {
+    return Blocks._customBlock_TreeRibbonsLast() + state().TreeCapped;
+  };
+  // ...and the calls beside another part of the level, as TalentCalc(-6)'s RibbonBonus calls beside its meals' reads.
+  Blocks._customBlock_TreeRibbonsPlus = function () {
+    return (
+      Blocks._customBlock_TreeRibbon(1, 0) +
+      Blocks._customBlock_TreeRibbon(2, 0) +
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(4, 0) +
+      Blocks._customBlock_TreeRibbon(5, 0) +
+      Blocks._customBlock_TreeRibbon(6, 0) +
+      Blocks._customBlock_TreeRibbon(7, 0) +
+      Blocks._customBlock_TreeRibbon(8, 0) +
+      state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeCallsPlusPool = function () {
+    return Blocks._customBlock_TreeRibbonsPlus() + state().TreeCapped;
+  };
+  // ...and a listed block that reads the save below it: its model has a child, pending on the agent.
+  Blocks._customBlock_TreeRibbonRead = function (k) {
+    return k * state().TreeBase;
+  };
+  Blocks._customBlock_TreeReadRibbons = function () {
+    var t = 0;
+    for (var i = 0; i < 8; i++)
+      t = t + Blocks._customBlock_TreeRibbonRead(i + 1);
+    return t;
+  };
+  Blocks._customBlock_TreeReadCallsPool = function () {
+    return Blocks._customBlock_TreeReadRibbons() + state().TreeLevel;
+  };
+  // ...and the same call twice in one place, no loop between them: the place does not separate them; and twice in two
+  // turns of a loop beside other parts, which the turns separate.
+  Blocks._customBlock_TreeRibbonsSame = function () {
+    return (
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(3, 0) +
+      Blocks._customBlock_TreeRibbon(4, 0) +
+      state().TreeBase
+    );
+  };
+  // ...and a block of the same value each time whose recorded descent differs between its calls: it reads the list at
+  // a counter it moves.
+  var treeFlipN = 0;
+  Blocks._customBlock_TreeFlip = function (k, m) {
+    treeFlipN = treeFlipN + 1;
+    return 2 * k + m + 0 * state().TreeList[treeFlipN % 2];
+  };
+  Blocks._customBlock_TreeFlipSame = function () {
+    return (
+      Blocks._customBlock_TreeFlip(3, 0) +
+      Blocks._customBlock_TreeFlip(3, 0) +
+      Blocks._customBlock_TreeFlip(4, 0) +
+      state().TreeBase
+    );
+  };
+  Blocks._customBlock_TreeFlipPool = function () {
+    return Blocks._customBlock_TreeFlipSame() + state().TreeCapped;
+  };
+  // ...and that block called twice with a loop's turns between the calls (r1 of parts P and Q): a step ran twice
+  // between them, and each call's descent is another.
+  Blocks._customBlock_TreeFlipTurns = function () {
+    var t = state().TreeBase;
+    var i = 0;
+    var x = Blocks._customBlock_TreeFlip(3, 0);
+    while (i < 2) i++;
+    var y = Blocks._customBlock_TreeFlip(3, 0);
+    return t + x + y + Blocks._customBlock_TreeFlip(4, 0);
+  };
+  Blocks._customBlock_TreeFlipTurnsPool = function () {
+    return Blocks._customBlock_TreeFlipTurns() + state().TreeCapped;
+  };
+  // ...and the same reading call twice, a write of the state between them: its reads saw another write's number, the
+  // same path and value.
+  Blocks._customBlock_TreeReadTwice = function () {
+    var first = Blocks._customBlock_TreeRibbonRead(3);
+    a.engine.getGameAttribute("DNSM").h.TreeTick = 1;
+    return first + Blocks._customBlock_TreeRibbonRead(3) + state().TreeLevel;
+  };
+  Blocks._customBlock_TreeReadTwicePool = function () {
+    return Blocks._customBlock_TreeReadTwice() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeSamePool = function () {
+    return Blocks._customBlock_TreeRibbonsSame() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeRibbonsTurns = function () {
+    var t = state().TreeBase;
+    for (var i = 0; i < 3; i++)
+      t = t + Blocks._customBlock_TreeRibbon(3 + (i == 2 ? 1 : 0), 0) * 1;
+    return t;
+  };
+  Blocks._customBlock_TreeTurnsPool = function () {
+    return Blocks._customBlock_TreeRibbonsTurns() + state().TreeCapped;
+  };
+  Blocks._customBlock_TreeCallsPool = function () {
+    return Blocks._customBlock_TreeRibbons() + state().TreeBase;
+  };
+  Blocks._customBlock_TreeCallsTwinPool = function () {
+    return Blocks._customBlock_TreeRibbonsTwin() + state().TreeBase;
+  };
+  Blocks._customBlock_TreeDeclKills = function (mode, kills) {
+    return Blocks._customBlock_TreeDeclRow(kills) * 2;
+  };
+  // A sum of the list's three entries, each a read of its own: a source whose children close (a loop's do not, T164).
+  Blocks._customBlock_TreeDeclSum = function () {
+    var s = state();
+    return s.TreeList[0] + s.TreeList[1] + s.TreeList[2];
   };
   // The Drop Rate shape: scratch counters, a working value read back, a sum in percent divided by 100 with a
   // two-source term and two curves, constants behind a condition, a source only one character has, a source the
@@ -1383,7 +3802,7 @@ lime.$scripts.N = function (_exports, $global) {
         100;
     s.TreeFlagOn == 1 && (d.TreeDecl.h.v = d.TreeDecl.h.v + 2);
     s.TreeOwned > 0 && (d.TreeDecl.h.v = d.TreeDecl.h.v + s.TreeOwned);
-    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeLoop();
+    d.TreeDecl.h.v = d.TreeDecl.h.v * Blocks._customBlock_TreeDeclSum();
     d.TreeDecl.h.v = d.TreeDecl.h.v + 0.5;
     d.TreeDecl.h.v = d.TreeDecl.h.v * (1 + s.TreeStats.h.b / 100);
     s.CurrentMap == 7 &&
@@ -1685,6 +4104,27 @@ lime.$scripts.N = function (_exports, $global) {
       d.TreeCount.h.v = d.TreeCount.h.v + 1;
     return 3 * d.TreeCount.h.v * Blocks._customBlock_TreeLoop();
   };
+  // Spec 010 (T188): a pass-through variable the call writes and reads back, as the game's PostOfficeINFO writes
+  // DNSM.PostOffInfoDN1: TreeBase × 2 = 8, then 8 + TreeLevel = 33; the bare one takes TreeBase with no step, × 3 = 12.
+  Blocks._customBlock_TreePassDN = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePassDN1 = s.TreeBase * 2;
+    return d.TreePassDN1 + s.TreeLevel;
+  };
+  Blocks._customBlock_TreePassBare = function () {
+    var s = state();
+    var d = dnsm();
+    d.TreePassDN1 = s.TreeBase;
+    return a.engine.getGameAttribute("DNSM").h.TreePassDN1 * 3;
+  };
+  Blocks._customBlock_TreePassRoot = function () {
+    return (
+      Blocks._customBlock_TreePassDN() +
+      Blocks._customBlock_TreePassBare() +
+      state().TreeCapped
+    );
+  };
   Blocks._customBlock_TreeCostCurve = function () {
     var s = state();
     var d = dnsm();
@@ -1817,6 +4257,33 @@ lime.$scripts.N = function (_exports, $global) {
       s.DummyNumbersStatManager.h.tot * (1 + s.TreeStats.h.a / 100),
     );
   };
+  // Spec 010 (T177 r1): the same as the game writes it, the scratch total read first in a sum (the STR's base, which
+  // opens): the second total is a term of it, the multiplier inside that term with the second total's other read.
+  Blocks._customBlock_TreeStatMultiSum = function () {
+    var U = A["com.stencyl.utils.Utils"];
+    state().DummyNumbersStatManager = new StringMap();
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot = 0;
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+      U.asNumber(a.engine.getGameAttribute("TreeBase"));
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo = 0;
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo =
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo) +
+      U.asNumber(a.engine.getGameAttribute("TreeLevel"));
+    a.engine.getGameAttribute("DNSM").h.TreeStatTwo =
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo) *
+      (1 +
+        (Blocks._customBlock_TreeReads() +
+          40 * a.engine.getGameAttribute("TreeStats").h.b) /
+          100);
+    a.engine.getGameAttribute("DummyNumbersStatManager").h.tot =
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+      U.asNumber(a.engine.getGameAttribute("DNSM").h.TreeStatTwo);
+    return Math.floor(
+      U.asNumber(a.engine.getGameAttribute("DummyNumbersStatManager").h.tot) +
+        a.engine.getGameAttribute("TreeCapped"),
+    );
+  };
   Blocks._customBlock_TreeTwoListsCopy = function () {
     var s = state();
     var d = dnsm();
@@ -1857,7 +4324,7 @@ lime.$scripts.N = function (_exports, $global) {
   // The seventh probe: an infinite argument and a number below every other, each back at its place in the recording.
   Blocks._customBlock_TreeInfNeg = function () {
     var low = -state().TreeCapped * Math.pow(10, 400);
-    return Blocks._customBlock_TreeDeclCurve("decay", low, 1, 1);
+    return Blocks._customBlock_ArbitraryCode5Inputs("decay", low, 1, 1);
   };
   // A builder's pass (review of the seventh probe): a write of the whole cache, which the pass drops from the writes,
   // then a scratch box outside the cache that overflows, which the pass moves to the spliced writes.

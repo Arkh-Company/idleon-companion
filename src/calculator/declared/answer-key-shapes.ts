@@ -207,9 +207,19 @@ export function partInWriters(
     "error" in inner ? inner : partKey(inner, refs);
   const kept = (part: AnswerKey | RootFormError) =>
     !("error" in part) || ("part" in part && part.part === "ambiguous");
+  // a total that reads the part back from another path written here only adds it (T176: the write's own place resolves
+  // that total, where its value alone left it ambiguous): the part is that path's
+  const throughWriter = (node: number, part: AnswerKey | RootFormError) =>
+    !("error" in part) &&
+    part.pools.some((p) =>
+      p.terms.some((t) =>
+        t.via.some((v) => writers.has(`${String(node)} ${v}`)),
+      ),
+    );
   const parts = [...writers.values()].flatMap(({ node, value, turn }) => {
     let part = partOf(keyOf(node, value));
     if (!kept(part)) part = partOf(keyOf(node, value, turn));
+    if (throughWriter(node, part)) return [];
     return branch !== undefined || kept(part) ? [{ node, part }] : [];
   });
   const [first, ...rest] = parts;

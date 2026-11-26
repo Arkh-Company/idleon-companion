@@ -145,6 +145,21 @@ export function formulaOut(
   return pair.some((l) => l.length > MAX_RULE_LINE) ? null : { rule: pair };
 }
 
+/** What a variable was before `x o= r` made it `nv` (inv-2: "x *= y" is x, what it was, * y); undefined when unknown. */
+export const before = (o: string, nv: unknown, r: unknown) =>
+  typeof nv !== "number" || typeof r !== "number"
+    ? undefined
+    : o === "*"
+      ? r !== 0
+        ? nv / r
+        : undefined
+      : o === "+"
+        ? nv - r
+        : o === "-"
+          ? nv + r
+          : o === "/"
+            ? nv * r
+            : undefined;
 /** pieces.cjs `near`: equal within 1e-9 of the second number, relative (a yes/no counts as 1 or 0). */
 export const near = (a: unknown, b: unknown): boolean =>
   Math.abs(Number(a) - Number(b)) <= 1e-9 * Math.max(1, Math.abs(Number(b)));

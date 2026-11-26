@@ -56,6 +56,7 @@
     var liveObj = Dh[key];
     var liveH = S.mapOf(S.raw(liveObj));
     var liveCopy = Object.assign(Array.isArray(liveH) ? [] : {}, liveH);
+    var number = false;
     S.on = true;
     try {
       // a cache the block makes new by itself is not deleted first (keepLive): its loop then reads the game's
@@ -81,11 +82,22 @@
       }
       S.cur = null;
       var bad = differences(key, liveCopy, S.mapOf(S.raw(Dh[key])));
+      // a cache that is a number (T196: the game's purple sigils) keeps its own path's writes when it ends as the game's
+      var live = S.raw(liveObj);
+      var built = S.raw(Dh[key]);
+      number =
+        typeof live === "number" &&
+        typeof built === "number" &&
+        Math.abs(live - built) <= 1e-9 * Math.max(1, Math.abs(live));
       // only this builder's writes of this cache count, and only where they equal the game's
       for (var j = S.writes.length - 1; j >= before; j--) {
         var w = S.writes[j];
         var ofKey = S.inCache(w.path, key);
-        if (!ofKey || bad.has(w.path) || w.path === "DNSM." + key) {
+        if (
+          !ofKey ||
+          bad.has(w.path) ||
+          (w.path === "DNSM." + key && !number)
+        ) {
           if (!ofKey) S.spliced.push(w); // the scratch of the pass, not the cache it rebuilds
           S.writes.splice(j, 1);
         }
@@ -94,7 +106,9 @@
       S.cur = null;
       Object.assign(DhRaw, snapDh); // the builder's scratch leaves the state too
       Object.assign(S.top, snapTop);
-      Dh[key] = liveObj; // through the record, as the bench puts it back
+      // through the record, as the bench puts it back; a number cache its builder ended at the game's number is back
+      // already (snapDh), and a write of it would be a second author of its reads
+      if (!number) Dh[key] = liveObj;
       S.pending = null;
       S.stopped();
     }
@@ -119,6 +133,20 @@
       S.stopped();
     }
   };
+
+  // The recording, as text made here: nothing of the context crosses as an object. An infinite number is null, as the
+  // live tree always had it. (Moved from recorder.js as it was, which keeps under 400 lines.)
+  G.__rec.take = () =>
+    JSON.stringify({
+      nodes: S.nodes || [],
+      writes: S.writes || [],
+      spliced: S.spliced || [],
+      bpStart: S.bpStart === Infinity ? null : S.bpStart,
+      setup: S.setup ? S.setup.id : null,
+      root: S.root ? S.root.id : null,
+      builders: S.builders ? S.builders.id : null,
+      fromGame: S.fromGame || [],
+    });
 
   // For the answer key only (spec 010, T162: a cost that overflows): the place of each infinite number in the text
   // take() made, as [...path, sign]; tree-record.ts puts it back there. JSON makes them null, and recorder.js marks

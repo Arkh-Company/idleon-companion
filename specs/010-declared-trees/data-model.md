@@ -81,7 +81,7 @@ O mesmo tipo serve para a fonte de um pool, a constante solta, o filho e a folha
 | `ref` | `Ref` | Obrigatório, menos numa constante |
 | `constant` | number, opcional | Só numa constante solta de pool (o `+ 2`, o `× 1.2`); sem `ref`; folha `fixedValue` |
 | `weight` | number, opcional | Só numa fonte de Additive, quando difere do pool (a curva da LUK entra com peso 1 num pool de 0.01) |
-| `classes` | number[], opcional | Só numa fonte: os ids de classe do jogo que podem ter a fonte (FR-002a); ausente = todas |
+| `classes` | number[], opcional | Numa fonte, ou num filho de um nível de chamada que só existe em algumas classes (T211): os ids de classe do jogo que podem ter a parte (FR-002a); nas rodadas das outras classes a trava confere o valor neutro; ausente = todas |
 | `condition` | `BlueprintNode`, opcional | O que liga ou desliga o nó sem entrar na conta (`cond && (...)`, research R3); folha `condition` |
 | `termPart` | `{ system }`, opcional | Só num filho: a segunda fonte de um termo de duas fontes (FR-002b), com o sistema dela |
 | `children` | `BlueprintNode[]`, opcional | Os filhos até a folha; sem filhos, o nó é folha |
@@ -109,6 +109,53 @@ Regras (FR-003, research R5):
 A chave que liga um nó da receita a um termo do gabarito e a um nó da gravação, a mesma do protótipo: `Bloco(args)` com
 os argumentos em JSON, ou o caminho. Ela só existe em memória; a receita guarda o `Ref` estruturado.
 
+## Pedaço de receita (`BlueprintPiece`)
+
+Uma parte que se repete em várias receitas (Star Signs de um stat, o LUK, Alchemy…), escrita uma vez em
+`src/calculator/blueprints/pieces/<id>.piece.json` e chamada pelas receitas (Open Questions, 23/11).
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `id` | texto | Igual ao nome do arquivo; único entre os pedaços |
+| `params` | texto[] | Nomes sem repetir, nunca `character`; usados como `{nome}` nas referências |
+| `combine` | `sum` ou `product` | Como os filhos se juntam; obrigatório em todo nó com filhos dentro do pedaço, menos num nível de chamada que fecha pela própria conta gravada (o Seraph) e no pedaço de galho comum que só tem `children` (T203), que fecha pela conta gravada da chamada |
+| `each` | `{ list, as }` | Opcional: um filho por item da lista gravada; `list` é um caminho com um `[*]` (nunca o índice do personagem), `as` é um nome (nunca `character`); também num nó de receita sem `combine`, quando o rascunho escreve uma lista de leituras como filho-modelo (T202) |
+| `children` | nós de receita | Os filhos, com `{param}` e `[{as}]` nas referências |
+
+**Pendência num pedaço** (T216; como a T199 na receita): um pedaço pode ter `pending`, com os mesmos tipos e a mesma cobertura da receita (um pendente esconde só o que o tipo dele não tem); a receita que chama um pedaço com pendência fica em rascunho.
+
+**Escolha entre personagens** (research R5; T212): um nó cujo valor é o melhor dos personagens (o maior bônus de família, o `getbonus2(…,-1)`) é uma Escolha: folha `choice` quando é folha; quando é galho, a descida continua no personagem escolhido, e o ⓘ diz a escolha. O personagem escolhido sai do lugar gravado (a escrita ou a leitura que deu o valor), nunca da ordem nem do valor; sem lugar que decida, recusa com o motivo.
+
+**Lista de chamadas** (T205; Open Questions de 24/11: a lista vira um filho-modelo): `each: { calls: <Bloco>, as: <nome> }` repete o filho-modelo uma vez por chamada gravada desse bloco no nível, com `{<nome>}` no argumento que a volta do laço dá; a trava liga cada chamada pela volta do laço em que ela começou (o lugar gravado), nunca pelo valor nem pela ordem; duas chamadas na mesma volta sem lugar que as separe se recusam com o motivo.
+
+**Constante com condição dentro de uma chamada** (T209 forma 3; FR-018 da 009): um filho de um nível de chamada pode ser `constant` (folha "Valor fixo", o número do código) com filhos que são as condições que o aplicam (folha `condition`, com `conditionKind`, ex.: `max` para `ArcadeUpg[27] == 101`, `owned` para `Companions(27) == 1`); cada multiplicador é a sua linha × e abre nas suas condições; a trava segue a variável da chamada escrita por escrita, pelo lugar gravado, e confere cada constante e a condição que a aplicou; uma condição que não aplicou mostra o filho com o valor neutro (FR-018: todo sistema que influi aparece como filho).
+
+**Autor de cache por qualquer chamada** (Open Questions, 24/11): no nó que é o autor de um cache, `ref.args` pode ser `["any"]`: qualquer chamada desse bloco que escreveu o cache lido; a trava liga pela escrita gravada (o lugar), nunca pelo valor; fora do autor de um cache, `any` é recusado na carga (T208).
+
+**Linha com link** (Open Questions, 23/11, noite): no `BlueprintNode`, `tree: <id>` (outro número com receita própria,
+como o `stats-luk` dentro do Drop Rate) fica no lugar de `children`, `leaf`, `combine`, `each` e `piece`; o nó tem `ref`;
+a carga confere que o id existe em `blueprints/` e não é o próprio; a trava confere o valor da linha pelo `ref` e não desce;
+a tela mostra a linha com o link que abre a árvore dela (T200).
+
+No `BlueprintNode`, `piece: { name, args }` fica no lugar de `children`, `leaf`, `combine` e `each`. A carga preenche os
+parâmetros e passa cada caminho pelas checagens do ref; recusa parâmetro que falta ou sobra, pedaço que não existe, pedaço
+que chama a si mesmo, id repetido e `{nome}` não declarado. A linha que chama o pedaço pega o valor da sua referência e
+fecha pela conta dos filhos sobre as folhas gravadas, ligadas pelo lugar; reprova com `notClosing`, `childNoValue` ou
+`leafHasChildren`, nunca com `openingRefused`; um nível de chamada sem `combine` (o Seraph) fecha pela própria conta
+gravada e reprova também pelos erros de cobertura dessa conta (`undeclaredPart`, `childOutside`, `conditionMismatch`).
+
+**Pedaço com forma de receita** (Open Questions, 23/11): um pedaço pode ter `pools` no lugar de `combine`, `each` e
+`children`, com as regras dos pools da receita (lugares `<nó>/pools/<n>/groups/<g>/sources/<s>`); `pools` só dentro de um
+pedaço, e `combine` só é obrigatório sem `pools`. A receita de outro número serve de pedaço sem parâmetros, pelo id; um
+id igual entre pedaço e receita é recusado. Uma fonte de pool com `each` e sem `combine` vai sem `ref` nem `constant`,
+com um filho-modelo, repetido por parcela do gabarito que casa com o `[*]` (o item é o índice do caminho; um item em duas
+parcelas é `rootForm` na fonte). O pedaço com `pools` fecha pelo gabarito da chamada da linha ou do autor do cache e
+reprova como a raiz: `poolOrder` na linha; `missingSource`, `extraSource`, `groupOrder` e `notClosing` em
+`<linha>/pool:<n>`; `rootForm` na linha sem gabarito. No gabarito, uma corrente somada num laço tem uma parcela por volta,
+cada uma lida no seu lugar gravado; uma volta sem passo no seu lugar recusa com o motivo. Numa fonte de pool, `each.as` pode
+ser uma lista de nomes, um por `[*]` (dois índices, como `EquipmentMap[*][*]`); o filho-modelo sem `ref` é folha `fixedValue`
+(a base fixa escolhida por teste, T176) ou `choice` (o item cuja chave leu a tabela do jogo, T179).
+
 ## Tabela de sistemas (`SystemEntry`)
 
 | Campo | Tipo | Regra |
@@ -119,6 +166,14 @@ os argumentos em JSON, ou o caminho. Ela só existe em memória; a receita guard
 | `proof` | string | Onde o sistema está no jogo (bloco, tela ou tabela), por referência |
 
 Semeada pela tabela da 009 (`tree/systems.ts`, a ordem e os emojis da V1), sem a entrada "Other".
+
+### Contador (T215)
+
+- Uma linha `leaf: "quantity"` cujo `ref` é o valor que o jogo leu, com um filho-modelo `each` sobre a lista que a volta percorre; cada item é uma folha `condition` com o teste do jogo.
+- A trava confere que o valor da linha é o número de itens cujo teste a gravação viu verdadeiro, volta a volta, pelo lugar.
+- A forma só vale quando cada escrita do autor é um passo de 1 ou o início `= 0`, e o código tem exatamente um `+ 1` que escreve o próprio caminho; fora disso, a volta é recusada com o motivo ("escreve outro caminho", "mais de um passo").
+- Um personagem em que nenhum item passa fecha em 0, com os itens testados como ✗ (T183); sem nenhuma volta testada, a linha é recusada.
+- Exemplo inventado: `for i: if (TreeList[i] >= 2) n = round(n + 1)` dá a linha `quantity` com `each: { list: "TreeList[*]", as: "i" }` e o filho `condition` `TreeList[{i}]`.
 
 ## Gabarito (`AnswerKey`)
 
@@ -151,10 +206,13 @@ A chave de uma fonte na trava é (índice do pool, `ref`, ocorrência no pool).
 
 `LockError.kind`: `poolOrder`, `missingSource`, `extraSource`, `groupOrder`, `sourceOrder`, `notClosing`,
 `undeclaredPart`, `childOutside`, `childNoValue`, `conditionMismatch`, `leafType`, `pending`, `classMismatch`,
-`rootForm`.
+`rootForm`, `leafHasChildren` (Open Questions, 22/11), `openingRefused` (a abertura de um nível recusada:
+o cache sem autor, com mais de um autor ou somado em voltas, as voltas que não se separam pelo lugar; 23/11), `characterWritten` (um argumento de chamada que, pelo código no
+lugar da chamada, é o índice do personagem atual, escrito por extenso em vez de `{character}`; research R5; 23/11).
 
 Os textos de reprovação (US2) são montados desses campos: "fonte que falta: <ref> (pool 1 Additive)", "ordem dos
-pools errada: a ordem esperada é …", "nível não fecha: <nível>: as partes dão X, o valor gravado é Y".
+pools errada: a ordem esperada é …", "nível não fecha: <nível>: as partes dão X, o valor gravado é Y", "folha com filhos na gravação: <folha>: o primeiro é
+<filho>".
 
 ## Alerta de fechamento (`ClosureAlert`)
 

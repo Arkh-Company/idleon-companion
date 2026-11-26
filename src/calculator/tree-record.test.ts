@@ -1,6 +1,7 @@
 // What the answer key's recording carries beyond the live tree's (spec 010, T162), and what a recording that fails
 // still tells: the path of a list a call returns only with the answer key's option, an infinite number's place that
-// never writes outside the recording, and the stages already measured when a step runs out of time.
+// never writes outside the recording, and the stages already measured when a step runs out of time. A helper's event is
+// a call of its own in both (T168; spec, Open Questions 23/11).
 import { beforeAll, expect, test } from "vitest";
 import { GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
 import { recordingOf } from "./fixtures/recording-fixture.ts";
@@ -22,6 +23,24 @@ test("the path of the list a call returns is in the answer key's recording only;
       .nodes.find((n) => n.b === "TreeTwoLists")?.vp;
   expect(vpOf(answer)).toBe("DNSM.TreeListA");
   expect(vpOf(live)).toBeUndefined();
+});
+
+test("a helper's event is a call of its own, with its steps and its writes, in the answer key's recording and the live tree's", () => {
+  const eventOf = (r: ReturnType<typeof bootRecorder>) => {
+    const rec = r.record(
+      mosaicOf({ Scenario: "authorFilled" }),
+      [["TreeAuthorRead", [0, 0, 0]]],
+      NONE,
+    );
+    const n = rec.nodes.find((x) => x.b === "_customEvent_TreeAuthorFill");
+    const w = rec.writes.find((x) => x.path === "DNSM.TreeAuthor.v");
+    return (
+      n && { parent: n.p, steps: n.x?.length ?? 0, writes: w?.node === n.id }
+    );
+  };
+  expect(eventOf(answer)).toEqual({ parent: 0, steps: 2, writes: true });
+  // the live tree goes down through the count of the cache an event wrote, as the answer key (spec, Open Questions 23/11)
+  expect(eventOf(live)).toEqual({ parent: 0, steps: 2, writes: true });
 });
 
 test("an infinite number's place never writes outside the recording, and a place that does not exist is skipped", () => {

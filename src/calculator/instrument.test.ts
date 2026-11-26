@@ -19,6 +19,7 @@ function run(source: string, name: string, args: unknown[] = [7, 2]) {
   const sandbox = {
     Blocks: {} as Record<string, (...a: unknown[]) => unknown>,
     __X: (id: number, v: unknown) => (steps.push([id, v]), v),
+    __R: () => undefined,
   };
   runInContext(source, createContext(sandbox));
   const value = sandbox.Blocks[`_customBlock_${name}`]?.(...args);
@@ -122,6 +123,46 @@ test("the prettier-formatted blocks of the invented game are found too", () => {
   expect(new Set(ops.map((o) => o.block))).toEqual(new Set(["Spaced"]));
 });
 
+test("a helper's event has its steps, named by its whole method (spec 010, T168; the live tree's too, 23/11)", () => {
+  const events =
+    "H.prototype._customEvent_Fill = function () { this.v = this.a * 5; };" +
+    "var K = { _customEvent_Keyed: function () { return this.a + 1; } };";
+  const blocks = new Set(
+    instrument(events + block("Plain", "return a+b")).ops.map((x) => x.block),
+  );
+  expect(blocks).toEqual(
+    new Set(["Plain", "_customEvent_Fill", "_customEvent_Keyed"]),
+  );
+});
+
+test("an actor's init has its steps, named by its class, and only an actor's (spec 010, T189)", () => {
+  // the game's shape: the class's name, then its prototype with the init among its methods
+  const init = (cls: string) =>
+    `X.__name__="scripts.${cls}",X.prototype=E(o.prototype,{_k:null,init:function(){this.v=this.a*5}});`;
+  const { ops, inits } = instrument(
+    init("ActorEvents_77") +
+      init("Design_1_1_Scene") +
+      block("Plain", "return a+b"),
+  );
+  expect(new Set(ops.map((x) => x.block))).toEqual(
+    new Set(["Plain", "ActorEvents_77_init"]),
+  );
+  expect(inits).toEqual(["scripts.ActorEvents_77"]);
+});
+
+test("the init of a class of another package after an actor is no actor's, and an actor's class goes once", () => {
+  const cls = (name: string, body: string) =>
+    `X.__name__="${name}",X.prototype=E(o.prototype,{${body}});`;
+  const init = "init:function(){this.v=this.a*5}";
+  const { ops, inits } = instrument(
+    cls("scripts.ActorEvents_77", `${init},_m:{${init}}`) +
+      cls("com.x.Y", init),
+  );
+  // each init is two steps (`this.a*5` and its leaf): the actor's two, none of com.x.Y
+  expect(ops.map((x) => x.block)).toEqual(Array(4).fill("ActorEvents_77_init"));
+  expect(inits).toEqual(["scripts.ActorEvents_77"]);
+});
+
 test("the function text stays with each step, for the worker only", () => {
   const { ops } = instrument(block("Text", "return a+b"));
   expect(ops[0]?.fnText).toBe("function(a,b){return a+b}");
@@ -136,4 +177,47 @@ test("nothing is written to disk during the instrumentation (FR-011)", () => {
   );
   expect(writers.length).toBeGreaterThan(0);
   for (const [, f] of writers) expect(f).not.toHaveBeenCalled();
+});
+
+test.each([
+  ["return Blocks._customBlock_K(a)", ["call"]],
+  ["var r = Blocks._customBlock_K(a); var k = b.k; return r", ["call"]],
+  ["return b.k", ["read"]],
+  ["var l = b.k; return l", ["read"]],
+  ["return a && b.k", []],
+  ["return 0", []],
+  // the game's minified code writes no space before a value that opens with `(` (its PlayerMPmax)
+  ["return(a)?Blocks._customBlock_K(a):Blocks._customBlock_K(b)", ["call"]],
+  ["return(b).k", ["read"]],
+  ["return [1].map(function (x) { return b.k; })[0]", []],
+  // Fase 4 r3: by a variable, only its one assignment, with no other call (or no other read) before the return
+  [
+    "var r; switch(a){case 7:r=Blocks._customBlock_K(a);break;default:r=b.k}return r",
+    [],
+  ],
+  ["var r = Blocks._customBlock_K(a); Blocks._customBlock_K(b); return r", []],
+  ["var l = b.k; var m = b.q; return l", []],
+  ["var l = b.k; Blocks._customBlock_K(b); return l", ["read"]],
+  ["var l = b.k; var r = l; return r", ["read"]],
+  ["return a ? Blocks._customBlock_K(a) : b.k", []],
+])(
+  "the return of `%s` notes what it returns by its place: a block's call, a read or neither (spec 010)",
+  (body, noted) => {
+    const { source } = instrument(block("Ret", body) + block("K", "return a"));
+    const rets: unknown[] = [];
+    const sandbox = {
+      Blocks: {} as Record<string, (...a: unknown[]) => unknown>,
+      __X: (_: number, v: unknown) => v,
+      __R: (k: unknown) => rets.push(k),
+    };
+    runInContext(source, createContext(sandbox));
+    sandbox.Blocks._customBlock_Ret?.(7, 2);
+    expect(rets).toEqual(noted);
+  },
+);
+
+test("a return with no space before its value (`return(a)?…`, the game's minified code) still returns it", () => {
+  const body = "return(a)?Blocks._customBlock_K(a):Blocks._customBlock_K(b)";
+  const { source } = instrument(block("Ret", body) + block("K", "return a"));
+  expect(run(source, "Ret").value).toBe(7);
 });

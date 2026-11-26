@@ -64,11 +64,11 @@ test("a loop's factor drops the row that only repeats its writer (caches.ts entr
     })),
     { root: 0 },
   );
-  const factor = kidsOf(openPath(buildTree(rec, 0, ops), "DNSM.Acc.v")).at(-1);
-  expect([factor?.name, factor?.value, brief(factor)]).toEqual([
-    "Multiplier",
-    2,
-    [],
+  // spec 010, T232 r1 ("a antiga nao me importa"): the third turn runs no `t + s.A`, so its t is that write before it,
+  // by its place, a row of its own; no row repeats the writer
+  const kids = kidsOf(openPath(buildTree(rec, 0, ops), "DNSM.Acc.v"));
+  expect(kids.map((k) => [k.name, k.value, brief(k)])).toEqual([
+    ["Game value", 3, [["A", 2]]],
   ]);
 });
 

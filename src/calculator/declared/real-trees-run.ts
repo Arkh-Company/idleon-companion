@@ -7,15 +7,25 @@ import type { Op } from "../instrument.ts";
 import type { Recording, RoutineRun } from "../recording.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
-import type { AnswerKey, PoolKind } from "./answer-key.ts";
+import type { AnswerKey, PoolKind, RootShape } from "./answer-key.ts";
 import type { Blueprint, BlueprintStage, RoutineStep } from "./blueprint.ts";
 import { callArgs, refKey } from "./refs.ts";
 
 export type TreesMode = "check" | "draft" | "roots";
 const MODES: readonly string[] = ["check", "draft", "roots"];
-/** The justfile's own rule for a target. */
-const TARGET = /^[a-z0-9-]{1,80}$/;
-const LOTS = ["w1", "w2", "w3", "w4", "w5", "w6", "w7", "character", "account"];
+/** The justfile's own rule for a target (an id, a lot, all or roots). */
+export const TARGET = /^[a-z0-9-]{1,80}$/;
+export const LOTS = [
+  "w1",
+  "w2",
+  "w3",
+  "w4",
+  "w5",
+  "w6",
+  "w7",
+  "character",
+  "account",
+];
 
 /**
  * The run's variables, or null when one of the three paths or the target is missing: the integration test skips
@@ -69,13 +79,59 @@ export function outPath(out: string, ...parts: string[]): string {
   return p;
 }
 
-/** The check mode locks only the complete blueprints; a sketch or a draft counts as no blueprint written. */
+/**
+ * The check mode locks the complete blueprints and checks the drafts apart (T199: no review's lock for them); a sketch
+ * counts as no blueprint written.
+ */
 export function checkPlan(
   ids: readonly string[],
   stages: ReadonlyMap<string, BlueprintStage>,
-): { lock: string[]; notWritten: string[] } {
-  const lock = ids.filter((id) => stages.get(id) === "complete");
-  return { lock, notWritten: ids.filter((id) => !lock.includes(id)) };
+): { lock: string[]; draft: string[]; notWritten: string[] } {
+  const of = (stage: BlueprintStage) =>
+    ids.filter((id) => stages.get(id) === stage);
+  const lock = of("complete");
+  const draft = of("draft");
+  return {
+    lock,
+    draft,
+    notWritten: ids.filter((id) => !lock.includes(id) && !draft.includes(id)),
+  };
+}
+
+/**
+ * The draft mode drafts a sketch, and a draft when the target names it alone (T204): the draft goes to TREES_OUT only,
+ * never over the repository's blueprint; a complete blueprint is never drafted.
+ */
+export const draftPlan = (
+  ids: readonly string[],
+  stages: ReadonlyMap<string, BlueprintStage>,
+  target?: string,
+): string[] =>
+  ids.filter(
+    (id) =>
+      stages.get(id) === "sketch" ||
+      (id === target && stages.get(id) === "draft"),
+  );
+
+/** A piece of a draft (draft-pieces.ts, T203): in TREES_OUT only, beside the drafts. */
+export function piecePath(out: string, name: string): string {
+  if (!TARGET.test(name))
+    throw new Error("pedaço fora da regra: um nome em slug");
+  return outPath(out, "draft", "pieces", `${name}.piece.json`);
+}
+
+/** A number's guide of steps (draft-steps.ts): in TREES_OUT only, its name from the catalog's id. */
+export function stepsPath(out: string, id: string): string {
+  if (!TARGET.test(id))
+    throw new Error("guia fora da regra: um id do catálogo");
+  return outPath(out, "draft", `${id}.steps.txt`);
+}
+
+/** A number's draft (draft.ts): in TREES_OUT only, beside its guide, never over the repository's blueprint. */
+export function draftPath(out: string, id: string): string {
+  if (!TARGET.test(id))
+    throw new Error("rascunho fora da regra: um id do catálogo");
+  return outPath(out, "draft", `${id}.blueprint.json`);
 }
 
 /** The root's call (a root of one call), with `{character}` in its arguments resolved. */
@@ -128,6 +184,21 @@ export function mosaicWith(
   return JSON.stringify({ ...m, attrs: { ...m.attrs, ...scratch } });
 }
 
+/** The root's shape for the answer key, its references turned into keys for the character. */
+export function rootShapeOf(bp: Blueprint, character = 0): RootShape {
+  const { calls, part, branch, routine, sum, item } = bp.root;
+  if (routine) return { routine: refKey({ read: sum ?? "" }, character) };
+  if (item !== undefined) return { item };
+  if (calls) return { sum: calls.length };
+  if (!part) return null;
+  return {
+    part: part.map((r) => refKey(r, character)),
+    ...(branch === undefined
+      ? {}
+      : { branch: refKey({ read: branch }, character) }),
+  };
+}
+
 export type RootForm = AnswerKey["form"] | "outOfRule" | "liveMap" | "error";
 export interface RootProbe {
   id: string;
@@ -160,7 +231,7 @@ export function probeRoot(
   character = 0,
 ): RootProbe {
   const t0 = performance.now();
-  const { ref, calls, part, branch, scratch, routine, sum, item } = bp.root;
+  const { ref, calls, part, scratch, routine, item } = bp.root;
   const first = routine ? stepsOf(routine)[0] : undefined;
   const base = {
     id: bp.id,
@@ -205,22 +276,8 @@ export function probeRoot(
     )
       return done("liveMap", [], NO_VALUE);
     stage = "o gabarito";
-    const shape = routine
-      ? { routine: refKey({ read: sum ?? "" }, character) }
-      : item !== undefined
-        ? { item }
-        : calls
-          ? { sum: calls.length }
-          : part
-            ? {
-                part: part.map((r) => refKey(r, character)),
-                ...(branch === undefined
-                  ? {}
-                  : { branch: refKey({ read: branch }, character) }),
-              }
-            : null;
     const t1 = performance.now();
-    const key = answerKey(rec, ops, shape);
+    const key = answerKey(rec, ops, rootShapeOf(bp, character));
     stages.answerKey = Math.round(performance.now() - t1);
     if ("error" in key) return done("outOfRule", [], key.reason);
     return done(
@@ -265,11 +322,49 @@ export function rootsReport(probes: readonly RootProbe[]) {
   };
 }
 
-/** One line of `summary.txt`: the id, the result and the time; never a text of the save. */
-export const summaryLine = (
+/** Why the load refused a number's recipe (part S), or undefined when it did not; the reason is the recipe's, never the save's. */
+export const refusalOf = (
+  id: string,
+  refused: readonly { file: string; reason: string }[],
+): string | undefined =>
+  refused.find(
+    (r) =>
+      r.file === `${id}.blueprint.json` ||
+      r.file.endsWith(`/${id}.blueprint.json`),
+  )?.reason;
+
+/**
+ * One line of `summary.txt`: the id, the result, the time, a checked blueprint's nodes (T199), each stage's time and why
+ * the load refused the recipe; never a text of the save.
+ */
+export function summaryLine(
   id: string,
   outcome: {
-    result: RootForm | "passed" | "failed" | "notWritten";
+    result: RootForm | "passed" | "failed" | "notWritten" | "drafted" | "draft";
     ms: number;
+    nodes?: { passed: number; failed: number; pending: number };
+    stages?: Record<string, number>;
+    reason?: string | undefined;
   },
-): string => `${id}\t${outcome.result}\t${String(Math.round(outcome.ms))} ms`;
+): string {
+  const ms = (n: number) => `${String(Math.round(n))} ms`;
+  const stages = Object.entries(outcome.stages ?? {}).map(
+    ([k, n]) => `${k} ${ms(n)}`,
+  );
+  const { nodes } = outcome;
+  const line = [
+    id,
+    outcome.result,
+    ms(outcome.ms),
+    ...(nodes
+      ? [
+          `passed ${String(nodes.passed)}, failed ${String(nodes.failed)}, pending ${String(nodes.pending)}`,
+        ]
+      : []),
+  ];
+  return [
+    ...line,
+    ...(stages.length > 0 ? [stages.join(", ")] : []),
+    ...(outcome.reason === undefined ? [] : [outcome.reason]),
+  ].join("\t");
+}

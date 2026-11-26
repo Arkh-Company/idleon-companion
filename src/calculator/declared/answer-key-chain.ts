@@ -1,7 +1,8 @@
 // The chain form of the answer key (spec 010, FR-002c, research R1; T148, T158): how each write of a running total
 // maps to the root's steps, and the pools the writes make. A write is the step that gave its value; or, with no such
 // step, `path *= x` or `path += x` in place, when the next step's value times or plus the total gives it (both is
-// ambiguous and refused); or a turn of a loop (the 0 of its start, an earlier turn), never the last write. A step may
+// ambiguous and refused); or a turn of a loop (the 0 of its start, an earlier turn), never the last write: an earlier
+// turn is read at its own place (T175), and a turn with no step there is refused. A step may
 // carry a layer (a max, a floor…): the layer is a line of the root, and a step that only caps the total makes no pool.
 import type { Op } from "../instrument.ts";
 import type { RecNode, RecWrite } from "../recording.ts";
@@ -27,6 +28,22 @@ export interface Bound {
 export interface WriteMeta {
   xi?: number;
   bound?: Bound | null;
+  /**
+   * A loop's turn (T175): the step that gave the write at its own place (cache-author.ts writeExpr), with the index of
+   * the root's step of the same op of the code (-1 with none), or null.
+   */
+  turn?: () => {
+    e: Expr;
+    step: number;
+    pos?: number;
+    /** The turn gave the write through a variable's assignment (`t += x`, T177): no step of the root of its own. */
+    assign?: boolean;
+  } | null;
+  /**
+   * The write's place (T176, answer-key-item.ts placeOfWrite): the root's step recorded right before it, or -1 for an
+   * earlier turn of a loop's step; it gives the write's step in place of a step found by its value.
+   */
+  place?: number | null;
 }
 
 export interface ChainWrite {
@@ -52,6 +69,23 @@ export function matchChain(
     const xi = meta.writes?.[n]?.xi;
     const ok = (j: number) =>
       j >= from && (xi === undefined || (meta.stepAt?.[j] ?? -1) < xi);
+    const meta1 = meta.writes?.[n];
+    // the write's own place (T176): its step there, or an earlier turn of a loop's step, never a step by its value
+    const place = meta1?.bound ? undefined : meta1?.place;
+    if (typeof place === "number" && place >= 0 && ok(place)) {
+      const s = steps[place];
+      if (s && near(s.v, w)) {
+        writes.push({ value: w, step: place, compound: null });
+        from = place + 1;
+        before = w;
+        continue;
+      }
+    }
+    if (place === -1 && meta1?.turn) {
+      writes.push({ value: w, step: null, compound: null });
+      before = w;
+      continue;
+    }
     const i = steps.findIndex((s, j) => ok(j) && near(s.v, w));
     const pv = before;
     // in place only over a total that is not 0 (0 × anything is 0); a write equal to the total is in place only when
@@ -117,6 +151,10 @@ export interface ChainContext {
   stepAt?: readonly number[];
   /** The divisor of a first write divided (T162), to build as ➗ lines. */
   divisors: { e: Expr; step: number }[];
+  /** The item of the test that guards the step recorded at a place of the call's step log (T176). */
+  itemAt?: (pos: number | undefined) => string | undefined;
+  /** The save's path that gave the key of a game table's read, at a place of the call's step log (T179). */
+  tableItem?: (ref: string, pos: number | undefined) => string | undefined;
 }
 
 /** The pools of a chain: each write's step adds to or multiplies the running total it had just before. */
@@ -124,6 +162,7 @@ export function chainPools(
   c: ChainContext,
   values: readonly number[],
   writes?: readonly WriteMeta[],
+  path = "",
 ): RawPool[] {
   const r = c.reader;
   const m = matchChain(c.steps, values, {
@@ -138,8 +177,23 @@ export function chainPools(
   // a first write divided (New bubble chance): its divisor, and whether every later write only multiplies
   let div: { e: Expr; step: number; value: number } | null = null;
   let onlyTimes = true;
-  for (const w of m.writes) {
-    const s = w.step === null ? undefined : c.steps[w.step];
+  // a constant of the code under a test that finds an item takes the item (T176), and a game table's value the slot
+  // that gave its key (T179), from its step's own place
+  const tag = (terms: RawTerm[], pos: number | undefined) => {
+    const item = c.itemAt?.(pos);
+    for (const t of terms)
+      if (t.kind === "constant" && t.e.t === "num") {
+        if (item !== undefined) t.item = item;
+      } else if (t.kind === "source") {
+        // a game table's value by a key from the save takes the slot that gave the key (T179)
+        const slot = c.tableItem?.(t.ref, pos);
+        if (slot !== undefined) t.item = slot;
+      }
+    return terms;
+  };
+  for (const [n, w] of m.writes.entries()) {
+    let s = w.step === null ? undefined : c.steps[w.step];
+    let at = w.step;
     if (w.bound) {
       // a cut to a constant under a test: a Cap or a Floor of the total, and no pool; the stretch before it ends here
       c.layers.push({
@@ -154,23 +208,47 @@ export function chainPools(
       onlyTimes = false;
       continue;
     }
-    if (!s || w.step === null) {
+    // a loop's turn after the total's start (T175): the step at the write's own place, in the place of the loop's step
+    const turn = !s && before !== null ? writes?.[n]?.turn : undefined;
+    // a 0 with no step before any pool sets the total again (the loop's init): where it starts, no turn
+    const t = turn?.() ?? null;
+    let pos = at === null ? undefined : c.stepAt?.[at];
+    if (turn && (t || raw.length > 0 || w.value !== 0)) {
+      if (!t)
+        throw new OutOfRule(
+          `a escrita ${String(w.value)} do acumulador ${path} não tem passo no lugar da sua volta`,
+        );
+      // a step at the write's own place that is no step of the whole call (inside an if's test, the STR's ×, T177 r1)
+      // stands at its place, as a turn through a variable: only a turn with no place at all is refused
+      if (t.step < 0 && !t.assign && t.pos === undefined)
+        throw new OutOfRule(
+          `a volta da escrita ${String(w.value)} do acumulador ${path} não tem o seu passo entre os da chamada`,
+        );
+      s = { v: w.value, e: t.e };
+      at = t.step;
+      pos = t.pos;
+    }
+    if (!s || at === null) {
       onlyTimes = false;
       r.bump("loopWrite");
       before = w.value;
       continue;
     }
-    r.usedSteps.add(w.step);
-    const opened = new Set([w.step]);
+    // a turn through a variable has no step of the root: nothing to mark, no place to open passages from
+    if (at >= 0) r.usedSteps.add(at);
+    const opened = new Set(at >= 0 ? [at] : []);
     const prev = raw.length > 0 ? before : null;
     if (w.compound) {
       // `path *= x` or `path += x` in place: the step is the operand, with no running total in it
       r.bump("compoundWrite");
-      const terms = c.termsOf([{ e: s.e, w: 1, seen: opened }], w.compound);
+      const terms = tag(
+        c.termsOf([{ e: s.e, w: 1, seen: opened }], w.compound),
+        pos,
+      );
       raw.push({
         kind: w.compound,
         terms: c.kept(terms, prev),
-        step: w.step,
+        step: at,
         after: w.value,
       });
       before = w.value;
@@ -182,9 +260,9 @@ export function chainPools(
       noDivision: true,
     });
     if (peeled.refused) throw new OutOfRule(peeled.refused);
-    for (const layer of peeled.layers) layer.step = w.step;
+    for (const layer of peeled.layers) layer.step = at;
     c.layers.push(...peeled.layers);
-    c.stepLimits.push({ limits: peeled.limits, step: w.step });
+    c.stepLimits.push({ limits: peeled.limits, step: at });
     const body = peeled.rest;
     const u = r.unwrap(body, [], true, new Set(opened));
     // a step that only caps or rounds the running total: its layer, and no pool; the stretch before it ends there
@@ -215,21 +293,26 @@ export function chainPools(
       raw.push({
         kind: nk,
         terms: c.kept(terms, null),
-        step: w.step,
+        step: at,
         after: u.l.v,
       });
-      div = { e: u.r, step: w.step, value: u.r.v };
+      div = { e: u.r, step: at, value: u.r.v };
       before = w.value;
       continue;
     }
     const kind = u.t === "op" ? KIND[u.o] : undefined;
     if (!kind || (u.t === "op" && u.o === "-"))
-      throw new OutOfRule(`o passo ${String(w.step)} não soma nem multiplica`);
-    const terms = c.termsOf([{ e: body, w: 1, seen: opened }], kind);
+      throw new OutOfRule(`o passo ${String(at)} não soma nem multiplica`);
+    const terms = tag(c.termsOf([{ e: body, w: 1, seen: opened }], kind), pos);
     const pv = before;
+    // the first write of a sum reads the total before it was ever set: a 0 with no source, its start (T176)
     const k =
       pv === null
-        ? -1
+        ? kind === "additive" && raw.length === 0
+          ? terms.findIndex(
+              (t) => t.kind === "constant" && t.e.t === "val" && t.value === 0,
+            )
+          : -1
         : terms.findIndex(
             (t) =>
               near(t.value, pv) &&
@@ -241,11 +324,11 @@ export function chainPools(
       );
       terms.splice(k, 1);
     } else if (pv !== null && raw.length > 0)
-      throw new OutOfRule(`o passo ${String(w.step)} troca o acumulador`);
+      throw new OutOfRule(`o passo ${String(at)} troca o acumulador`);
     raw.push({
       kind,
       terms: c.kept(terms, prev),
-      step: w.step,
+      step: at,
       after:
         peeled.layers.length > 0 && typeof body.v === "number"
           ? body.v

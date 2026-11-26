@@ -98,12 +98,15 @@ Uma receita fora destas regras responde `unknownNumber` para aquele número, e o
 - `pools` não é vazio, e dois pools seguidos nunca têm o mesmo `kind`.
 - Todo `system` existe em `systems.json`.
 - Toda `key` é um slug (`[a-z0-9-]`, até 60 caracteres), única entre os irmãos.
+- A linha de uma volta que lê o mesmo item de outra volta leva `-turn-N` no fim da chave (N é o número da volta); a trava liga a linha à volta por esse número (T198).
 - Todo nó tem `name` e `nameProof`; nenhum `name` é "no name yet", "Game value" ou vazio.
 - Todo nó tem `ref` ou `constant`, nunca os dois.
 - Um nó com `children` não tem `leaf`; um nó sem `children` tem `leaf`, um dos 9 tipos.
 - `conditionKind` só com `leaf: "condition"`; `classes` e `weight` só em fonte de pool; `termPart` só em filho.
 - `ref.call` é um identificador; `ref.args` só tem números e textos curtos; `ref.read` é um caminho de nomes, pontos e
-  índices (`[n]`, `[{character}]`, `[*]`), sem operador, parêntese, aspas ou espaço.
+  índices (`[n]`, `[{character}]`, `[*]`), sem operador, parêntese, aspas ou espaço; a exceção é o nome de uma chave
+  depois do ponto, que pode começar com `+{`, `%` ou `+{%` como o jogo grava (só no começo do nome) (`DNSM.GalleryTrophyBonTOT.%_LUK`,
+  `DNSM.CardBonusS.+{_Base_LUK`), escrito como a gravação o escreve (Vinicius, 23/11).
 - Nenhum índice de personagem por extenso dentro de `PlayerDATABASE[...]` ou outro caminho por personagem (research R5).
 - Nenhuma chave fora das listadas.
 

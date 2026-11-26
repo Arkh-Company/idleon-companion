@@ -187,6 +187,22 @@ test("the scene caches are rebuilt with the TotalStats memory cleared before eac
   for (const [text] of run.mock.calls) expect(text).not.toContain(SECOND);
 });
 
+test("the scene calls each block with the game's own arguments, never filled with zeros (spec 010, a cache's author)", () => {
+  const run = vi.fn<(text: string) => unknown>();
+  rebuildScene(run);
+  const calls = run.mock.calls
+    .map(([text]) => text)
+    .filter((t) => t.startsWith("__calc.call"));
+  // TalentCalc takes one argument: a recorded TalentCalc(-9,0,0) is no call of the game's
+  expect(calls).toContain('__calc.call("TalentCalc",[-9])');
+  expect(calls).not.toContain('__calc.call("TalentCalc",[-9,0,0])');
+  expect(calls).toContain(
+    '__calc.call("ActionBlock",["RecalcChipBonuses","0",0,0])',
+  );
+  // as the builders' pass calls it (tree-recipe.ts), so both writes of its cache have one key
+  expect(calls).toContain('__calc.call("TotalStats",["calcEtcBonuses",0,0])');
+});
+
 test("on the active one's map, an inactive character has no target: the active one's is not its own (US12)", () => {
   const map = SAVED[1].$m.CurrentMap;
   const mosaic = mosaicOf(

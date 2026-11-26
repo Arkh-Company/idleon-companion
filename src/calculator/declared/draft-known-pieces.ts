@@ -1,0 +1,146 @@
+// A common branch whose piece is already written (spec 010, part R; spec, Open Questions 24/11: nothing written twice):
+// in `blueprints/pieces/`, or by an earlier draft of the same run. An occurrence calls it where the piece, filled with
+// the occurrence's args at the piece's own `{param}` places, has the occurrence's body (the lock's form: references,
+// links, pieces, lists and constants, level by level); names, kinds and systems are the agent's. Any other body is
+// written whole, with why in the guide. The line keeps the pending places the piece still has open, never the ones
+// already filled in its file.
+import type { BlueprintPending } from "./blueprint.ts";
+import { isObj } from "./blueprint-root.ts";
+import type { DraftNode } from "./draft.ts";
+import { fill } from "./pieces.ts";
+
+/** The pieces already written, raw, by their id. */
+export type KnownPieces = ReadonlyMap<string, unknown>;
+
+/** Why a line is written whole when its piece is already written with another body. */
+export const KNOWN_OTHER = "o corpo difere do pedaço já escrito";
+
+/**
+ * A body's form, level by level: what the lock checks, never what the agent fills; below an `open` place (one the
+ * occurrence leaves to descend), none, as the agent fills it in the piece's file.
+ */
+const formOf = (ns: unknown, open: ReadonlySet<string>, above = ""): unknown =>
+  Array.isArray(ns)
+    ? ns.map((n, i) => {
+        const where = `${above}/children/${String(i)}`;
+        return isObj(n)
+          ? [
+              n.ref,
+              n.piece,
+              n.tree,
+              n.each,
+              n.constant,
+              open.has(where) ? null : formOf(n.children, open, where),
+            ]
+          : null;
+      })
+    : null;
+
+/** The node at a pending place relative to the line (`/children/0/children/1`), or undefined. */
+function nodeAt(
+  children: unknown,
+  where: string,
+): Record<string, unknown> | undefined {
+  let at: unknown = { children };
+  for (const k of where.split("/").filter(Boolean))
+    at =
+      isObj(at) || Array.isArray(at)
+        ? (at as Record<string, unknown>)[k]
+        : undefined;
+  return isObj(at) ? at : undefined;
+}
+
+/** A place the piece's own pending holds is the piece's, never written again in the recipe (T216). */
+const held = (piece: Record<string, unknown>, p: BlueprintPending): boolean =>
+  Array.isArray(piece.pending) &&
+  piece.pending.some(
+    (x) => isObj(x) && x.where === p.where.slice(1) && x.kind === p.kind,
+  );
+
+/** The names the piece's file leaves null, relative to the line. */
+const nullNames = (ns: unknown, above = ""): BlueprintPending[] =>
+  Array.isArray(ns)
+    ? ns.flatMap((n, i) => {
+        if (!isObj(n)) return [];
+        const where = `${above}/children/${String(i)}`;
+        return [
+          ...(n.name === null ? [{ where, kind: "name" as const }] : []),
+          ...nullNames(n.children, where),
+        ];
+      })
+    : [];
+
+/** A pending place the piece's file still has open: its name null, no kind and no children, no term's system. */
+function stillOpen(
+  piece: Record<string, unknown>,
+  p: BlueprintPending,
+): boolean {
+  if (held(piece, p)) return false;
+  const n = nodeAt(piece.children, p.where);
+  if (!n) return true;
+  const bare =
+    n.leaf === undefined &&
+    !(Array.isArray(n.children) && n.children.length > 0);
+  if (p.kind === "name") return n.name === null;
+  if (p.kind === "system") return !(isObj(n.termPart) && n.termPart.system);
+  return bare;
+}
+
+/**
+ * The line of an occurrence of a branch whose piece is written: the piece's name and args, and the pending places the
+ * piece still has open there (`pending` relative to the line, the result's from the draft's root); or why its line is
+ * written whole.
+ */
+export function knownUse(
+  raw: unknown,
+  o: {
+    where: string;
+    branch: {
+      name: string;
+      params: string[];
+      args: Record<string, string | number>;
+    };
+    children: readonly DraftNode[];
+    pending: readonly BlueprintPending[];
+  },
+):
+  | {
+      piece: { name: string; args: Record<string, string | number> };
+      pending: BlueprintPending[];
+    }
+  | string {
+  const { branch } = o;
+  if (
+    !isObj(raw) ||
+    !Array.isArray(raw.children) ||
+    JSON.stringify(raw.params) !== JSON.stringify(branch.params)
+  )
+    return KNOWN_OTHER;
+  const filled: unknown = fill(raw.children, branch.args);
+  const open = new Set(
+    o.pending
+      .filter(
+        (p) => p.kind === "descend" && !nodeAt(o.children, p.where)?.children,
+      )
+      .map((p) => p.where),
+  );
+  if (
+    JSON.stringify(formOf(filled, open)) !==
+    JSON.stringify(formOf(o.children, open))
+  )
+    return KNOWN_OTHER;
+  const kept = o.pending.filter((p) => stillOpen(raw, p));
+  // the load reads the piece's file: a name it leaves null is pending at the line though the occurrence named it (part S)
+  const more = nullNames(raw.children).filter(
+    (p) =>
+      !held(raw, p) &&
+      !kept.some((k) => k.where === p.where && k.kind === p.kind),
+  );
+  return {
+    piece: { name: branch.name, args: branch.args },
+    pending: [...kept, ...more].map((p) => ({
+      ...p,
+      where: o.where + p.where,
+    })),
+  };
+}

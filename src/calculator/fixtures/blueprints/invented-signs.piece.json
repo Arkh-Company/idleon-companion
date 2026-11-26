@@ -1,0 +1,29 @@
+{
+  "id": "invented-signs",
+  "params": ["stat"],
+  "combine": "sum",
+  "each": { "list": "TreeSigns[*]", "as": "sign" },
+  "children": [
+    {
+      "key": "sign",
+      "name": "Invented Sign",
+      "nameProof": { "table": "InventedSigns", "row": "{sign}" },
+      "ref": { "call": "TreeSign", "args": ["{stat}", "{sign}"] },
+      "combine": "product",
+      "children": [
+        {
+          "key": "bonus",
+          "name": "Invented Sign Bonus",
+          "ref": { "read": "TreeSignBonus.{stat}[{sign}]" },
+          "leaf": "fixedValue"
+        },
+        {
+          "key": "multi",
+          "name": "Invented Sign Multi",
+          "ref": { "read": "TreeSignMulti" },
+          "leaf": "rawBonus"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+// The count (spec 010, T215; decided by Vinicius 25/11): a cache its author counts a fixed 1 a turn when the turn's test
+// passes is a `quantity` line with a model child `each` over the list the turns test, each item a `condition` leaf. The
+// lock checks the line's value is the number of turns whose test the recording saw true, each item by its place. The
+// invented game (fake-game.js): TreeCount* count TreeList's items at 2 or more (TreeList is 1, 2, 3: the first fails);
+// another test of the turn, `TreeList[i] > 0` (every item passes it), is before the count's test in one block and after
+// it in the other, so the count's test is the one whose `&&` holds the count's step, never the first nor the last.
+import { expect, test } from "vitest";
+import { activeAs, mosaicOf } from "../fixtures/fake-mosaic.ts";
+import { answerKey } from "./answer-key.ts";
+import type { Blueprint, BlueprintNode } from "./blueprint.ts";
+import { parseBlueprint } from "./blueprint.ts";
+import { draftBlueprint } from "./draft.ts";
+import type { DraftNode } from "./draft.ts";
+import { closeLevel } from "./lock-close.ts";
+import { inventedRecorder, levelContext } from "./lock-fixture.ts";
+import { emptyOut } from "./lock-levels.ts";
+import type { LevelContext } from "./lock-levels.ts";
+import { lockBlueprint, lockMessage } from "./lock.ts";
+import { writeTurns } from "./loop-turns.ts";
+import type { Expr } from "../recorded/steps.ts";
+
+// the other test before the count's, after it, and inside its if before its step (r1 of part V)
+const BLOCKS = ["TreeCountBefore", "TreeCountAfter", "TreeCountInside"];
+
+/** A recording of `${block}Root`, the cache (the game's `value`) built again by its block, as the builders pass does. */
+function recordCount(block: string, value = 2, attrs: object = {}) {
+  const r = inventedRecorder();
+  const rec = r.record(
+    mosaicOf({
+      ...attrs,
+      DNSM: { $m: { ...activeAs(0).DNSM.$m, [block]: value } },
+    }),
+    [[`${block}Root`, [0, 0, 0]]],
+    { recompute: [], builders: [{ cache: block, run: { block, args: [] } }] },
+  );
+  const key = answerKey(rec, r.ops);
+  if ("error" in key) throw new Error(key.reason);
+  return { rec, key, ops: r.ops };
+}
+
+const item: BlueprintNode = {
+  key: "item",
+  name: "Item",
+  ref: { read: "TreeList[{i}]" },
+  leaf: "condition",
+};
+const countLine = (block: string, children = [item]): BlueprintNode => ({
+  key: "author",
+  name: "Author",
+  ref: { call: block, args: [] },
+  leaf: "quantity",
+  each: { list: "TreeList[*]", as: "i" },
+  children,
+});
+const recipe = (block: string, line = countLine(block)): Blueprint => ({
+  id: "invented-count",
+  root: { name: "Invented", ref: { call: `${block}Root`, args: [0, 0, 0] } },
+  pools: [
+    {
+      kind: "additive",
+      groups: [
+        {
+          system: "cards",
+          sources: [
+            {
+              key: "count",
+              name: "Count",
+              ref: { call: block, args: [] },
+              children: [
+                {
+                  key: "cache",
+                  name: "Cache",
+                  ref: { read: `DNSM.${block}` },
+                  children: [line],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          system: "stamps",
+          sources: [
+            {
+              key: "capped",
+              name: "Capped",
+              ref: { read: "TreeCapped" },
+              leaf: "level",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+const lockOut = (block: string, bp = recipe(block), value = 2, attrs = {}) =>
+  lockBlueprint({
+    blueprint: bp,
+    ...recordCount(block, value, attrs),
+    character: 0,
+    characterClass: 3,
+  });
+const lock = (block: string, bp = recipe(block), value = 2) =>
+  lockOut(block, bp, value).errors.map(lockMessage);
+/** The items the lock checked as typed leaves below the count line. */
+const items = (out: ReturnType<typeof lockOut>) =>
+  out.closedAt
+    .filter((w) => w.includes("/author/item-"))
+    .map((w) => w.split("/").pop());
+
+test("the load takes a quantity line with a model child each, its item a condition; any other leaf with children is refused (T215)", () => {
+  const load = (line: BlueprintNode) => {
+    const out = parseBlueprint(recipe("TreeCountBefore", line), {
+      fileId: "invented-count",
+      systemIds: new Set(["cards", "stamps"]),
+    });
+    return out.ok ? "ok" : out.reason;
+  };
+  const line = countLine("TreeCountBefore");
+  expect(load(line)).toBe("ok");
+  const noEach = { ...line };
+  delete noEach.each;
+  expect(load(noEach)).toMatch(/leaf com children/);
+  expect(load({ ...line, leaf: "level" })).toMatch(/leaf com children/);
+  // two children: the model and a plain item beside it
+  expect(
+    load({
+      ...line,
+      children: [item, { ...item, key: "twin", ref: { read: "TreeList[5]" } }],
+    }),
+  ).toMatch(/leaf com children/);
+  expect(load({ ...line, children: [{ ...item, leaf: "level" }] })).toMatch(
+    /leaf com children/,
+  );
+});
+
+test.each(BLOCKS)(
+  "the draft writes the count as a quantity line over the list its turns test, each item a condition (%s, T215)",
+  (block) => {
+    const { rec, key, ops } = recordCount(block);
+    const ref = { call: `${block}Root`, args: [0, 0, 0] };
+    const draft = draftBlueprint("invented", { name: "I", ref }, key, rec, ops);
+    const cache = draft.pools[0]?.groups[0]?.sources[0]?.children?.[0];
+    const line = cache?.children?.[0];
+    expect(line).toMatchObject({
+      ref: { call: block, args: [] },
+      leaf: "quantity",
+      each: { list: "TreeList[*]", as: "item" },
+    });
+    expect(line?.children).toEqual([
+      expect.objectContaining<Partial<DraftNode>>({
+        ref: { read: "TreeList[{item}]" },
+        leaf: "condition",
+      }),
+    ]);
+    const at = "pools/0/groups/0/sources/0/children/0/children/0";
+    expect(draft.pending).not.toContainEqual({ where: at, kind: "descend" });
+    expect(draft.pending).not.toContainEqual({
+      where: `${at}/children/0`,
+      kind: "leaf",
+    });
+  },
+);
+
+test.each(BLOCKS)(
+  "the lock checks the count is the number of items whose test the recording saw true, by the count's test's place (%s, T215)",
+  (block) => {
+    const out = lockOut(block);
+    expect(out.errors.map(lockMessage)).toEqual([]);
+    // TreeList[0] fails the count's test, a ✗ item: the other test never saw it in TreeCountInside
+    expect(items(out)).toEqual(["item-0", "item-1", "item-2"]);
+  },
+);
+
+test("the lock refuses an item the recording did not test, and a count that does not start at 0 (T215, r1 of part V)", () => {
+  const block = "TreeCountBefore";
+  const other: BlueprintNode = {
+    ...item,
+    key: "other",
+    ref: { read: "TreeList[5]" },
+  };
+  expect(lock(block, recipe(block, countLine(block, [item, other])))).toEqual([
+    "filho fora da conta: invented-count/0/cards/count/cache/author/other",
+  ]);
+  // TreeCountFrom counts from 1: its first write is no start at 0, so the form does not hold
+  expect(lock("TreeCountFrom", recipe("TreeCountFrom"), 3)).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountFrom() conta DNSM.TreeCountFrom, mas a escrita 1 não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)",
+  ]);
+});
+
+test("the lock refuses a count its author writes again after it counted: each write is a step of 1 or the start at 0 (r1 of part V)", () => {
+  // TreeCountCap: the 2 items that pass, then `min(count, 5)`, a cap the count does not reach: never closed without it
+  expect(lock("TreeCountCap")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountCap() conta DNSM.TreeCountCap, mas a escrita 4 não soma 1 ao próprio valor nem é o início em 0: não é a forma do contador (T215)",
+  ]);
+});
+
+test.each(BLOCKS)(
+  "a count no item passed closes at 0, each tested item a ✗ (%s, r1 of part V)",
+  (block) => {
+    // TreeList all below 2: the author's one write is the start at 0, its count's step in its code never ran
+    const none = lockOut(block, undefined, 0, { TreeList: [1, 0, 1] });
+    expect(none.errors.map(lockMessage)).toEqual([]);
+    expect(items(none)).toEqual(["item-0", "item-1", "item-2"]);
+  },
+);
+
+test("a count no item passed is refused when its step in the code writes another path, or the code has two steps (r2 of part V)", () => {
+  const none = (block: string) =>
+    lockOut(block, undefined, 0, { TreeList: [1, 0, 1] }).errors.map(
+      lockMessage,
+    );
+  // TreeCountOther: `TreeSeen = round(TreeCountOther + 1)` under the test, its only `+ 1`, writes no count
+  expect(none("TreeCountOther")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountOther() conta DNSM.TreeCountOther, mas o passo de 1 sobre o próprio valor no código escreve outro caminho: não é a forma do contador (T215)",
+  ]);
+  // TreeCountTwice: two steps of 1 onto the count, under two tests; the place does not decide which
+  expect(none("TreeCountTwice")).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountTwice() conta DNSM.TreeCountTwice, mas o código tem mais de um passo de 1 sobre o próprio valor (2): não é a forma do contador (T215)",
+  ]);
+});
+
+test("an opened level with no step of its own does not close by its parts, but for a count no item passed (r2 of part V)", () => {
+  const { rec, ops } = recordCount("TreeCountBefore");
+  const ctx = levelContext(rec, ops, "invented");
+  const scope = rec.nodes[0];
+  if (!scope) throw new Error("no node");
+  const out = emptyOut();
+  const open = [{ part: "TreeList[0]", call: null, value: 1 }];
+  closeLevel({ expr: null, scope, value: 1, open }, [], ctx, out);
+  expect(out.errors).toEqual([
+    { kind: "notClosing", where: "invented", expected: 1 },
+  ]);
+});
+
+test("the lock refuses an author with no turn tested, with the reason (r1 of part V)", () => {
+  const empty = lockOut("TreeCountBefore", undefined, 0, { TreeList: [] });
+  expect(empty.errors.map(lockMessage)).toEqual([
+    "invented-count/0/cards/count/cache/author: o laço de TreeCountBefore() conta DNSM.TreeCountBefore: nenhuma volta foi testada",
+  ]);
+});
+
+test("a count's step whose own value is a loose value of its own path, by its place, is a step of 1 (r1 of part V, the game's purple sigils)", () => {
+  // the author wrote DNSM.N 0, 1, 2; its second count's step reads its own value back as a loose value of that path
+  const path = "DNSM.N";
+  const author = { id: 0, b: "TreeN", a: [], c: [], p: null, pxi: 0 };
+  const writes = [0, 1, 2].map((v, i) => ({
+    path,
+    node: 0,
+    v,
+    xi: i * 2,
+    seq: i + 1,
+  }));
+  const step = (l: Expr, v: number): Expr => ({
+    t: "fn",
+    name: "round",
+    args: [{ t: "op", o: "+", l, r: { t: "num", v: 1 }, v }],
+    v,
+  });
+  const withOwn = (own?: string): LevelContext => ({
+    rec: {
+      nodes: [author],
+      writes,
+      spliced: [],
+      bpStart: null,
+      setup: null,
+      root: null,
+      builders: null,
+      fromGame: [],
+    },
+    stepsOf: () => ({ steps: [], checks: [] }),
+    turnOf: (_n, { to }) => ({
+      steps:
+        to === 1
+          ? [{ v: 1, e: step({ t: "read", p: path, v: 0 }, 1) }]
+          : to === 3
+            ? [{ v: 2, e: step({ t: "val", v: 1, ...(own && { own }) }, 2) }]
+            : [],
+      checks: [],
+    }),
+    character: 0,
+    where: "invented",
+  });
+  const x: [number, number][] = [
+    [7, 1],
+    [8, 1],
+    [7, 2],
+    [8, 2],
+  ];
+  const last = writes[2];
+  if (!last) throw new Error("no write");
+  // with no game's code here, the form goes on to its test: the step is a count's
+  expect(writeTurns({ ...author, x }, last, withOwn(path))).toBe(
+    "o laço de TreeN() soma 1 a volta fora de um teste: não é a forma do contador (T215)",
+  );
+  // a loose value of no path of its own is no count's step
+  expect(writeTurns({ ...author, x }, last, withOwn())).toMatch(
+    /a escrita 3 não soma 1/,
+  );
+  // every write a step of 1, but the step log has no step before the count's first step: no write is named (r2)
+  expect(writeTurns(author, last, withOwn(path))).toBe(
+    "o laço de TreeN() conta DNSM.N, mas o registro de passos não tem o passo antes da escrita 2: não é a forma do contador (T215)",
+  );
+});

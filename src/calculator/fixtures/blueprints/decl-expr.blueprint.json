@@ -14,8 +14,7 @@
             {
               "key": "reads",
               "name": "Invented Reads",
-              "ref": { "call": "TreeReads", "args": [] },
-              "leaf": "rawBonus"
+              "ref": { "call": "TreeReads", "args": [] }
             }
           ]
         },
@@ -52,8 +51,7 @@
             {
               "key": "loop",
               "name": "Invented Loop",
-              "ref": { "call": "TreeLoop", "args": [] },
-              "leaf": "quantity"
+              "ref": { "call": "TreeLoop", "args": [] }
             }
           ]
         },
@@ -70,5 +68,9 @@
         }
       ]
     }
+  ],
+  "pending": [
+    { "where": "pools/0/groups/0/sources/0", "kind": "descend" },
+    { "where": "pools/1/groups/0/sources/0", "kind": "descend" }
   ]
 }

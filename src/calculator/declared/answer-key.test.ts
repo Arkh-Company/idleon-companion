@@ -88,12 +88,13 @@ test("scratch writes are ignored, the unnamed accumulator is found by value, pas
     ["TreeCapped", ["DNSM.TreeDeclPart.v"]],
     ["2", []],
   ]);
+  // each read of the accumulator is the read at its own place (T231), none a value with no source
   expect(key.pollution).toMatchObject({
     scratchWrite: 3,
-    unnamedAccumulator: 4,
-    readAccumulator: 1,
+    readAccumulator: 5,
     passageRead: 1,
   });
+  expect(key.pollution).not.toHaveProperty("unnamedAccumulator");
 });
 
 test("a sum divided by 100 weighs its terms 0.01; a loose constant is a constant term; a two-source term keeps its refs in the code's order", () => {
@@ -106,7 +107,7 @@ test("a sum divided by 100 weighs its terms 0.01; a loose constant is a constant
     ["source", "TreeDeclBest()", 0.01],
     ["source", "TreeCapped", 0.01],
     ["constant", "2", 1],
-    ["source", "TreeLoop()", 1],
+    ["source", "TreeDeclSum()", 1],
     ["constant", "0.5", 1],
     ["source", "TreeStats.b", 1],
     ["constant", "1.2", 1],
@@ -120,8 +121,7 @@ test("a sum divided by 100 weighs its terms 0.01; a loose constant is a constant
 test("the pollution counts each kind", () => {
   expect(keyOf("TreeDeclChain").pollution).toEqual({
     scratchWrite: 3,
-    readAccumulator: 1,
-    unnamedAccumulator: 4,
+    readAccumulator: 5,
     divideBy100: 1,
     passageRead: 1,
     looseConstant: 3,

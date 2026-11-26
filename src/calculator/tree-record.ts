@@ -56,7 +56,8 @@ export function bootRecorder(
   limits: { startMs: number; numberMs: number } = TREE_LIMITS,
   /**
    * Keep an infinite number as a number, and the `vp` of a call (the state path of the list or the map it returned)
-   * (spec 010, T162: the answer key only); the live tree gets null, as always, and no `vp`.
+   * (spec 010, T162: the answer key only). The live tree gets null, as always, and no `vp`. A helper's event is a call
+   * of its own, with its steps, in both (T168; spec, Open Questions 23/11).
    */
   { infinite = false }: { infinite?: boolean } = {},
 ): {
@@ -77,7 +78,7 @@ export function bootRecorder(
     routine?: readonly RoutineRun[],
   ): Recording;
 } {
-  const { source, ops } = instrument(anchored(code));
+  const { source, ops, inits } = instrument(anchored(code));
   const context = bootContext(source, pak, limits, [
     recorderSource,
     recorderPassSource,
@@ -87,7 +88,7 @@ export function bootRecorder(
   const run = (text: string, ms: number) => context.run(text, ms);
   const { startMs, numberMs } = limits;
   // the path of a list a call returns: the answer key's only, like the infinite numbers
-  run(`__rec.wrap(${String(infinite)})`, startMs);
+  run(`__rec.wrap(${String(infinite)}, ${JSON.stringify(inits)})`, startMs);
   // On the original code: the instrumented copy could hide a key from the scan.
   const lazyDnsm = JSON.stringify(lazyDnsmKeys(code));
 

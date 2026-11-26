@@ -324,3 +324,15 @@ test("a part in a second running total the root builds itself, never in the tota
     ["TreeReads()", "TreeStats.b"],
   ]);
 });
+
+test("a part inside a bigger term of the root is the pool of the total that builds it (the Obol stat multi, T177 r1)", () => {
+  // TreeStatMultiSum: the scratch total opens in the root's sum, and its term of TreeStatTwo.v holds the multiplier
+  const key = answerKey(record("TreeStatMultiSum"), recorder.ops, {
+    part: ["TreeReads()", "TreeStats.b"],
+  });
+  if ("error" in key) throw new Error(key.reason);
+  expect(key.final).toBeCloseTo(3.08, 12);
+  expect(key.pools.map((p) => [p.kind, p.terms.map((t) => t.refs)])).toEqual([
+    ["multi", [["TreeReads()", "TreeStats.b"]]],
+  ]);
+});

@@ -2,6 +2,7 @@
 // the others down; a review file is never read as a blueprint.
 import { expect, test } from "vitest";
 import { blueprintOf, loadBlueprints } from "./blueprints.ts";
+import { refusalOf, summaryLine } from "./real-trees-run.ts";
 
 const root = { name: "Invented", ref: { call: "Invented", args: [0] } };
 const pools = [
@@ -67,6 +68,18 @@ test("a sketch and a draft are not served; a complete one is; a refused one does
   expect(out.refused[0]?.reason).toMatch(/id/);
 });
 
+test("the pieces loaded, raw by their id, keep the first of a repeated id; the second is refused (part R)", () => {
+  const first = { id: "one", params: [], children: [] };
+  const out = loadBlueprints({
+    "../blueprints/w1/one.piece.json": first,
+    "../blueprints/w2/one.piece.json": { id: "one", params: ["x"] },
+  });
+  expect([...out.pieces]).toEqual([["one", first]]);
+  expect(out.refused.map((r) => r.file)).toEqual([
+    "../blueprints/w2/one.piece.json",
+  ]);
+});
+
 test("a review file is never read as a blueprint", () => {
   const out = loadBlueprints({
     "../blueprints/w1/complete-one.review.json": { version: 1 },
@@ -78,4 +91,59 @@ test("a review file is never read as a blueprint", () => {
 test("blueprintOf serves only a complete blueprint: a sketch or an unknown id is null (unknownNumber)", () => {
   expect(blueprintOf("no-such-number")).toBe(null);
   expect(blueprintOf("stamps-gilded-chance")).toBe(null);
+});
+
+test("a line with a link loads when its tree is another blueprint's file, and is refused when none is (T200)", () => {
+  const link = (tree: string) => ({
+    id: "with-link",
+    root,
+    pools: [
+      {
+        kind: "additive",
+        groups: [
+          {
+            system: "talents",
+            sources: [{ key: "a", name: "Invented A", ref: root.ref, tree }],
+          },
+        ],
+      },
+    ],
+  });
+  const files = (tree: string) => ({
+    "../blueprints/w1/sketch-one.blueprint.json": { id: "sketch-one", root },
+    "../blueprints/w1/with-link.blueprint.json": link(tree),
+  });
+  expect(loadBlueprints(files("sketch-one")).stages.get("with-link")).toBe(
+    "complete",
+  );
+  expect(loadBlueprints(files("no-such-one")).refused[0]?.reason).toMatch(
+    /não existe/,
+  );
+  // the line is the linked recipe's root (r1): another call is another number
+  const other = files("sketch-one");
+  other["../blueprints/w1/sketch-one.blueprint.json"].root = {
+    ...root,
+    ref: { call: "Invented", args: [1] },
+  };
+  expect(loadBlueprints(other).refused[0]?.reason).toMatch(
+    /a linha não é a raiz de sketch-one/,
+  );
+});
+
+test("a recipe the load refuses has the load's reason in its summary line, not only notWritten (part S)", () => {
+  const { refused, stages } = loadBlueprints({
+    "../blueprints/w1/invented-number.blueprint.json": {
+      id: "other-number",
+      root,
+      pools,
+    },
+  });
+  expect(stages.has("invented-number")).toBe(false);
+  const reason = refusalOf("invented-number", refused);
+  expect(reason).toContain("id diferente do nome do arquivo");
+  expect(
+    summaryLine("invented-number", { result: "notWritten", ms: 0, reason }),
+  ).toBe(`invented-number\tnotWritten\t0 ms\t${String(reason)}`);
+  // a number the load did not refuse (a sketch, or no file) has no reason
+  expect(refusalOf("number", refused)).toBeUndefined();
 });

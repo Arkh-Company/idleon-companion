@@ -46,7 +46,7 @@ export function readBack(
     (place === undefined || place >= Math.max(...rx.map(([, , x]) => x)))
   ) {
     const cut = Math.max(0, ...rx.map(([, , , n]) => n ?? 0));
-    const kept = saw([cut, last?.[3]]);
+    const kept = saw([cut, last?.[3] ?? undefined]);
     return own.filter((w) => w.seq > cut || kept.includes(w));
   }
   if (logged.length === 0) {
@@ -55,7 +55,7 @@ export function readBack(
     );
     return first.length > 0 ? first : own;
   }
-  return last ? saw([last[3]]) : null;
+  return last ? saw([last[3] ?? undefined]) : null;
 }
 
 export interface PassageContext {

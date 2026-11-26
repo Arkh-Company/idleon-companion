@@ -181,10 +181,11 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
     /conditionKind/,
   ],
   [
-    "classes outside a pool's source",
+    // a call's child may have classes too (T211): a condition never does
+    "classes outside a pool's source or a call's child",
     (bp) => {
-      const kids = source(bp).children as Record<string, unknown>[];
-      if (kids[0]) kids[0].classes = [7];
+      const cond = source(bp, 0, 1).condition as Record<string, unknown>;
+      cond.classes = [7];
     },
     /classes/,
   ],
@@ -231,7 +232,54 @@ test.each<[string, (bp: Bp) => void, RegExp]>([
   expect(refused(change)).toMatch(reason);
 });
 
-test("each invented blueprint of the tests (fixtures/blueprints) loads complete over the real systems table", () => {
+// Spec 010, T165 (spec, Open Questions 23/11): a read through a helper of the game names its behavior, as the routine's
+// sum does, and passes the same checks as any ref.read; one refusal per check.
+test("a read through a helper's getBehavior(Name) loads, under the checks of ref.read", () => {
+  const read = (path: string) =>
+    refused((bp) => (source(bp, 0, 0, 1).ref = { read: path }));
+  expect(
+    read(
+      "PixelHelperActor[8].behaviors.getBehavior(ActorEvents_481)._GenINFO[8][{character}]",
+    ),
+  ).toBe(null);
+  expect(read("PixelHelperActor[8].getBehavior(A B)._GenINFO[8]")).toMatch(
+    /read/,
+  );
+  expect(
+    read("PixelHelperActor[8].getBehavior(ActorEvents_481)._GenINFO[8]*2"),
+  ).toMatch(/read/);
+  expect(
+    read("PlayerDATABASE[1].getBehavior(ActorEvents_481)._GenINFO[8]"),
+  ).toMatch(/personagem/);
+});
+
+// Spec 010, T197 (spec, Open Questions 23/11; contracts/blueprint.md): a key's name after a dot as the game writes it.
+test("a key's name after a dot may have %, + and { as the game writes it; an operator outside a key's name is refused", () => {
+  const read = (path: string) =>
+    refused((bp) => (source(bp, 0, 0, 1).ref = { read: path }));
+  for (const ok of [
+    "DNSM.GalleryTrophyBonTOT.%_SKILL_EFFICIENCY",
+    "DNSM.CardBonusS.+{%_Total_Mining_Efficiency",
+    // a { in a key's name with no } is no param
+    "DNSM.CardBonusS.+{_Base_LUK",
+  ])
+    expect(read(ok)).toBe(null);
+  for (const bad of [
+    "DNSM+CardBonusS.%_LUK",
+    "DNSM.Cards[1]+2",
+    "DNSM.Cards.%_LUK*2",
+    "DNSM.Cards.%_LUK B",
+    "DNSM.Cards.(%_LUK)",
+    // %, + and { only at the start of a key's name, as the game writes it
+    "DNSM.Cards.a+Other.b",
+    "DNSM.Cards.a%Other.b",
+  ])
+    expect(read(bad)).toMatch(/read/);
+  // a {name} with an identifier is still a param nothing declares
+  expect(read("DNSM.Cards.{talent}")).toMatch(/não declarado/);
+});
+
+test("each invented blueprint of the tests (fixtures/blueprints) loads over the real systems table, in its stage", () => {
   const files = import.meta.glob<unknown>(
     "../fixtures/blueprints/*.blueprint.json",
     { eager: true, import: "default" },
@@ -244,7 +292,8 @@ test("each invented blueprint of the tests (fixtures/blueprints) loads complete 
   });
   expect(Object.fromEntries(loaded)).toEqual({
     "decl-chain": "complete",
-    "decl-expr": "complete",
+    // its two leaves read the save below them (T164): the descent is pending
+    "decl-expr": "draft",
   });
 });
 
@@ -282,4 +331,51 @@ test("a draft: pending says where a name, a system, a leaf or a descent is missi
   const bad = complete();
   bad.pending = [{ where: "pools/0/groups/0/sources/0", kind: "formula" }];
   expect(parseBlueprint(bad, ctx).ok).toBe(false);
+});
+
+// Spec 010, T200 (spec, Open Questions 23/11, night): a number with a tree of its own is a line with a link to that
+// tree, in place of its descent; the load checks the id is a blueprint's and not the blueprint's own, and (r1) that the
+// line is that blueprint's root: its ref has the root's text, `Block(args in JSON)`.
+test("a line with a link to another number's tree loads with its link; any other link is refused with its reason", () => {
+  const trees = new Map<string, string | null>([
+    ["invented-number", 'InventedRoot("Mode",0,0)'],
+    ["invented-luck", 'TreeLuck("LUK")'],
+  ]);
+  const linked = (extra: object, change?: (bp: Bp) => void) => {
+    const bp = complete();
+    const s = source(bp, 0, 0, 1);
+    delete s.leaf;
+    s.ref = { call: "TreeLuck", args: ["LUK"] };
+    Object.assign(s, { tree: "invented-luck" }, extra);
+    change?.(bp);
+    const out = parseBlueprint(bp, { ...ctx, trees });
+    return out.ok ? out : out.reason;
+  };
+  const ok = linked({});
+  expect(ok).toMatchObject({ ok: true, stage: "complete" });
+  if (typeof ok !== "string")
+    expect(ok.blueprint.pools[0]?.groups[0]?.sources[1]).toMatchObject({
+      tree: "invented-luck",
+      ref: { call: "TreeLuck", args: ["LUK"] },
+    });
+  // the linked recipe's root is another call: the line is not the number its link opens
+  expect(linked({ ref: { call: "TreeLuck", args: ["LUK", 0, 0] } })).toBe(
+    'pools/0/groups/0/sources/1: a linha não é a raiz de invented-luck: TreeLuck("LUK",0,0); a raiz é TreeLuck("LUK")',
+  );
+  expect(linked({ ref: { read: "TreeLuck" } })).toMatch(
+    /a linha não é a raiz de invented-luck/,
+  );
+  expect(linked({ tree: "invented-other" })).toMatch(/não existe/);
+  expect(linked({ tree: "invented-number" })).toMatch(/própria/);
+  expect(linked({ tree: "Invented Luck" })).toMatch(/slug/);
+  expect(linked({ leaf: "level" })).toMatch(/tree vai no lugar/);
+  expect(linked({ children: [leaf("inner")] })).toMatch(/tree vai no lugar/);
+  expect(linked({ piece: { name: "a", args: {} } })).toMatch(
+    /tree vai no lugar/,
+  );
+  expect(
+    linked({}, (bp) => {
+      delete source(bp, 0, 0, 1).ref;
+    }),
+  ).toMatch(/ref/);
 });

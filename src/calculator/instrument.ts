@@ -3,7 +3,18 @@
 // instrument.cjs at BASELINE-4 (`build`, `marks`, `assignments`, `rewrite`). In memory only (FR-011): this file reads
 // and writes no file, and `ops[].fnText` and the AST never leave the worker.
 import { parse } from "acorn";
-import type { Node } from "acorn";
+import {
+  at,
+  children,
+  isBlockCall,
+  isNode,
+  methodName,
+  noted,
+  returnKind,
+  returnNotes,
+} from "./instrument-returns.ts";
+import type { AnyNode, Defs } from "./instrument-returns.ts";
+import { unwrap } from "./recorded/ast.ts";
 
 export interface Op {
   block: string;
@@ -13,16 +24,31 @@ export interface Op {
   parent: number | undefined;
   /** For a leaf that is a variable: the expression that last set it before this read (data flow). */
   def: AnyNode | null;
+  /**
+   * For a leaf, or an assignment's prevDef (spec 010, T177 r4, r5): the block's calls its value comes from by data flow,
+   * bare, through `asNumber(…)`, another variable or a side of a `? :`, each with the sides on its way; absent with none.
+   */
+  defCalls?: DefCall[];
+  /** The leaf, or the assignment's prevDef, has a block's call anywhere in its value (T177 r5): never a read by value. */
+  callIn?: true;
+  /** With callIn: the sides of each `? :` on the way to a part of the value with no block's call (T177 r6). */
+  freeSides?: DefCall["sides"][];
   /** For an assignment: the expression that set its variable before it. */
   prevDef: AnyNode | null;
+  /** For a leaf that is a variable: every expression that sets it in the block, a loop's later ones too (T232). */
+  writes?: AnyNode[];
   /** For a test: the `if` or the `? :` it decides (the answer key reads what its branch runs first). */
   owner?: AnyNode;
   /** The block's function text; the node ranges count from 1 inside it (it was parsed as `(text)`). */
   fnText: string;
 }
 
-/** acorn's nodes, read by field name: the walk visits every child, whatever its type. */
-type AnyNode = Node & Record<string, unknown> & { range: [number, number] };
+/** A block's call a value comes from, and each `? :` on its way with the side it sits on (true: the consequent). */
+export interface DefCall {
+  call: AnyNode;
+  sides: [AnyNode, boolean][];
+}
+
 interface Mark {
   node: AnyNode;
   kind: Op["kind"];
@@ -46,23 +72,14 @@ const MATH = new Set([
   "sqrt",
 ]);
 const COMPOUND = new Set(["+=", "-=", "*=", "/=", "%="]);
-const BLOCK = /_customBlock_(\w+)\s*=\s*function\s*\(/g;
+// a block, a helper's event (spec 010, T168; spec, Open Questions 23/11): a method of its class, named whole, and an
+// actor's init among its prototype's methods (T189), named by the class whose name the code gave last before it
+const BLOCK =
+  /(?:_customBlock_(\w+)\s*=|(_customEvent_\w+)\s*[=:]|[{,]\s*(init)\s*:)\s*function\s*\(/g;
+// any class's name, so an init after a class of another package (`com.stencyl.*`, `openfl.*`) is none of the actor's
+const CLASS_NAME = /__name__\s*=\s*"([\w.]+)"/g;
+const ACTOR = /^scripts\.ActorEvents_\d+$/;
 
-const isNode = (v: unknown): v is AnyNode =>
-  typeof v === "object" &&
-  v !== null &&
-  typeof (v as { type?: unknown }).type === "string";
-const at = (n: AnyNode, k: string) => n[k] as AnyNode;
-
-function children(node: AnyNode): AnyNode[] {
-  const out: AnyNode[] = [];
-  for (const [k, v] of Object.entries(node)) {
-    if (k === "parent") continue;
-    const list: unknown[] = Array.isArray(v) ? v : [v];
-    out.push(...list.filter(isNode));
-  }
-  return out;
-}
 const isMathCall = (n: AnyNode) => {
   if (n.type !== "CallExpression") return false;
   const callee = at(n, "callee");
@@ -117,8 +134,6 @@ function marks(fn: AnyNode): Omit<Mark, "s" | "e">[] {
   return out;
 }
 
-type Defs = Map<string, { end: number; rhs: AnyNode }[]>;
-
 /** The assignments of a function by variable, so a value taken from a variable opens into what set it. */
 function assignments(fn: AnyNode): Defs {
   const out: Defs = new Map();
@@ -158,9 +173,62 @@ function defOf(node: AnyNode | undefined, defs: Defs): AnyNode | null {
   return best ? best.rhs : null;
 }
 
+/** The block calls an expression's value comes from: see Op.defCalls; the ways to a part with none go in `free`. */
+function callsOf(
+  rhs: AnyNode | null,
+  defs: Defs,
+  memo: CallMemo,
+  free: DefCall["sides"][],
+  depth = 0,
+  sides: DefCall["sides"] = [],
+): DefCall[] {
+  if (!rhs || depth > 6) return [];
+  if (isBlockCall(rhs)) return [{ call: rhs, sides }];
+  const args = (rhs.arguments as AnyNode[] | undefined) ?? [];
+  const next = (n: AnyNode | null, s = sides) =>
+    callsOf(n, defs, memo, free, depth + 1, s);
+  if (methodName(rhs) === "asNumber" && args.length === 1)
+    return next(args[0] ?? null);
+  if (rhs.type === "Identifier") return next(defOf(rhs, defs));
+  if (rhs.type === "ConditionalExpression")
+    return [
+      ...next(at(rhs, "consequent"), [...sides, [rhs, true]]),
+      ...next(at(rhs, "alternate"), [...sides, [rhs, false]]),
+    ];
+  if (!hasCall(rhs, defs, memo)) free.push(sides);
+  return [];
+}
+
+/** A block's call anywhere in an expression's value, through the variables it reads (Op.callIn). A member is a read of
+ * the game's memory, whatever names its place: its object and its key are no part of its value. */
+function hasCall(
+  n: AnyNode | null,
+  defs: Defs,
+  memo: CallMemo,
+  depth = 0,
+): boolean {
+  if (!n || depth > 6 || n.type === "MemberExpression") return false;
+  // a yes holds from anywhere; a no, met with fewer hops left, only for as few or fewer (T177 r6)
+  const hit = memo.get(n);
+  if (hit && (hit.out || depth >= hit.depth)) return hit.out;
+  const out =
+    isBlockCall(n) ||
+    (n.type === "Identifier"
+      ? hasCall(defOf(n, defs), defs, memo, depth + 1)
+      : children(n).some((c) => hasCall(c, defs, memo, depth)));
+  memo.set(n, { out, depth });
+  return out;
+}
+type CallMemo = Map<AnyNode, { out: boolean; depth: number }>;
+
 /** One function's text with every marked node as `(__X(id,(node)))`; the ids continue from `ops.length`. */
 function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
   const defs = assignments(fn);
+  const callMemo: CallMemo = new Map(); // the variables' defs are walked once per function, not once per leaf
+  const copy = noted(
+    text,
+    returnNotes(fn, (arg) => returnKind(fn, defs, arg)),
+  );
   const byRange = new Map<string, Mark>();
   for (const m of marks(fn)) {
     const s = m.node.range[0] - 1;
@@ -191,19 +259,36 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         ),
     );
     for (const m of outer) {
-      out += text.slice(from, m.s);
+      out += copy(from, m.s);
       const id = ops.length;
       const target =
         m.kind === "assign"
           ? at(m.node, isIncr(m.node) ? "argument" : "left")
           : undefined;
+      // a variable leaf, bare or through asNumber(…) as callsOf reads it (T232 r1)
+      const v0 = m.kind === "leaf" ? unwrap(m.node) : null;
+      const def = v0 ? defOf(v0, defs) : null;
+      const writes =
+        v0?.type === "Identifier"
+          ? (defs.get(v0.name as string) ?? []).map((d) => d.rhs)
+          : [];
+      const prevDef = defOf(target, defs);
+      // a leaf's value is the leaf (a variable opens into its def); an assignment's, what set it before
+      const value = m.kind === "leaf" ? m.node : prevDef;
+      const free: DefCall["sides"][] = [];
+      const calls = callsOf(value, defs, callMemo, free);
+      const callIn = hasCall(value, defs, callMemo);
       ops.push({
         block,
         kind: m.kind,
         node: m.node,
         parent,
-        def: m.kind === "leaf" ? defOf(m.node, defs) : null,
-        prevDef: defOf(target, defs),
+        def,
+        ...(calls.length > 0 && { defCalls: calls }),
+        ...(callIn && { callIn: true as const }),
+        ...(callIn && free.length > 0 && { freeSides: free }),
+        prevDef,
+        ...(writes.length > 0 && { writes }),
         fnText: text,
         ...(m.owner ? { owner: m.owner } : {}),
       });
@@ -213,7 +298,7 @@ function rewrite(text: string, fn: AnyNode, block: string, ops: Op[]): string {
         : `(__X(${String(id)},(${emit(m.s, m.e, top, id)})))`;
       from = m.e;
     }
-    return out + text.slice(from, e);
+    return out + copy(from, e);
   }
   return emit(0, text.length, all, undefined);
 }
@@ -234,13 +319,26 @@ function functionEnd(src: string, start: number): number {
   return -1;
 }
 
-/** The game's code with each block's steps noted. A block the parser refuses keeps its own text. */
-export function instrument(source: string): { source: string; ops: Op[] } {
+/**
+ * The game's code with each block's, each helper's event's and each actor's init's steps noted, and the classes of those
+ * inits (`scripts.ActorEvents_577`), for the recorder to wrap. A block the parser refuses keeps its text.
+ */
+export function instrument(source: string): {
+  source: string;
+  ops: Op[];
+  inits: string[];
+} {
   const ops: Op[] = [];
   const pieces: string[] = [];
+  const inits: string[] = [];
+  const classes = [...source.matchAll(CLASS_NAME)];
   let copied = 0;
   for (const m of source.matchAll(BLOCK)) {
     if (m.index < copied) continue; // a match inside a block already rewritten
+    const cls = m[3]
+      ? classes.findLast((c) => c.index < m.index)?.[1]
+      : undefined;
+    if (m[3] && (!cls || !ACTOR.test(cls))) continue; // the init of no actor
     const fnStart = m.index + m[0].lastIndexOf("function");
     const end = functionEnd(source, fnStart);
     if (end < 0) continue;
@@ -256,12 +354,12 @@ export function instrument(source: string): { source: string; ops: Op[] } {
     } catch {
       continue;
     }
-    pieces.push(
-      source.slice(copied, fnStart),
-      rewrite(text, fn, m[1] ?? "", ops),
-    );
+    const block = cls ? `${cls.slice(8)}_init` : (m[1] ?? m[2] ?? "");
+    pieces.push(source.slice(copied, fnStart), rewrite(text, fn, block, ops));
+    if (cls) inits.push(cls);
     copied = end;
   }
   pieces.push(source.slice(copied));
-  return { source: pieces.join(""), ops };
+  // a class with two inits is wrapped once (recorder.js wraps its prototype's init)
+  return { source: pieces.join(""), ops, inits: [...new Set(inits)] };
 }

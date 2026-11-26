@@ -66,7 +66,7 @@ test("a lot gives its ids in the catalog's order; all and roots give the 301; an
   expect(() => targetIds("../stats-drop-rate", CATALOG)).toThrow();
 });
 
-test("in the check mode, a sketch or a draft is not locked: it counts as no blueprint written", () => {
+test("in the check mode, a draft is checked too, apart, with no review's lock; a sketch counts as no blueprint written (T199)", () => {
   const stages = new Map([
     ["a", "sketch"],
     ["b", "complete"],
@@ -74,8 +74,22 @@ test("in the check mode, a sketch or a draft is not locked: it counts as no blue
   ] as const);
   expect(checkPlan(["a", "b", "c", "d"], stages)).toEqual({
     lock: ["b"],
-    notWritten: ["a", "c", "d"],
+    draft: ["c"],
+    notWritten: ["a", "d"],
   });
+});
+
+test("a checked draft's summary line says how many nodes passed, failed and are pending (T199)", () => {
+  expect(
+    summaryLine("stats-drop-rate", {
+      result: "draft",
+      ms: 1234.6,
+      nodes: { passed: 40, failed: 3, pending: 12 },
+      stages: { lock: 9 },
+    }),
+  ).toBe(
+    "stats-drop-rate\tdraft\t1235 ms\tpassed 40, failed 3, pending 12\tlock 9 ms",
+  );
 });
 
 test("every output falls inside TREES_OUT; a path with .. or / out of it is refused", () => {

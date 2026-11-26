@@ -257,7 +257,7 @@ test("a loop turn's steps read only what that turn read (build-tree.cjs 8d2)", (
   expect(step?.e).toMatchObject({ l: { t: "read", p: "A", v: 6 } });
 });
 
-test("a value set before a loop turn is named by a read of that turn, not of the whole call", () => {
+test("a value a call set before a loop turn never ties to a read of that turn by its value", () => {
   const { ops } = instrument(
     "Blocks._customBlock_T = function () { var p = Blocks._customBlock_P(); return p * 2; };",
   );
@@ -291,5 +291,69 @@ test("a value set before a loop turn is named by a read of that turn, not of the
     from: 2,
     to: 4,
   });
-  expect(step?.e).toMatchObject({ l: { t: "read", p: "C", v: 6 } });
+  // P's call is in no turn: a loose value, never the turn's read C with its value (T177 r4)
+  expect(step?.e).toMatchObject({ l: { t: "val", v: 6 } });
+});
+
+test("a block's own argument in its count keeps its place among the block's parameters (T209, form 1)", () => {
+  // TreeArg(t) is TreeBase × t, as the game's Holes("B_UPG", 82, 20) is its 3rd argument × Holes[11][55]
+  const rec = recorder.record(mosaicOf(), [["TreeArg", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  expect(makeSteps(rec, recorder.ops).of(top.id).steps).toEqual([
+    {
+      v: 12,
+      e: {
+        t: "op",
+        o: "*",
+        l: { t: "read", p: "TreeBase", v: 4 },
+        r: { t: "val", v: 3, arg: 0 },
+        v: 12,
+      },
+    },
+  ]);
+});
+
+test("the parameter set again on the side that ran, with the argument's number, is no argument (r1 of P and Q)", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeArgAgain", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  const { steps } = makeSteps(rec, recorder.ops).of(top.id);
+  expect(steps[0]?.v).toBe(12);
+  expect(JSON.stringify(steps)).not.toContain('"arg"');
+});
+
+test("the parameter set again after its read in a loop is no argument in any turn (r1 of P and Q)", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeArgLoop", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  const { steps } = makeSteps(rec, recorder.ops).of(top.id);
+  expect(steps.length).toBeGreaterThan(0);
+  expect(JSON.stringify(steps)).not.toContain('"arg"');
+});
+
+test("a leaf of an inner function that declares the parameter's name is no argument of the block (r2 of P and Q)", () => {
+  const rec = recorder.record(mosaicOf(), [["TreeArgInner", [3]]], NONE);
+  const top = rec.nodes[rec.nodes[rec.root ?? -1]?.c[0] ?? -1];
+  if (!top) throw new Error("no root call");
+  const { steps } = makeSteps(rec, recorder.ops).of(top.id);
+  expect(steps.length).toBeGreaterThan(0);
+  expect(JSON.stringify(steps)).not.toContain('"arg"');
+});
+
+test("a number read from a game table's text with a mark taken out is that read, by the path the code names (T209, form 2)", () => {
+  // TreeTextTot is asNumber(replace(string(ListTot[0]), "TOT", "")) × TreeBase, as the game's "50TOT"
+  const { steps } = blockOf("TreeTextTot");
+  expect(steps).toEqual([
+    {
+      v: 200,
+      e: {
+        t: "op",
+        o: "*",
+        l: { t: "read", p: "CustomLists.ListTot[0]", v: 50 },
+        r: { t: "read", p: "TreeBase", v: 4 },
+        v: 200,
+      },
+    },
+  ]);
 });

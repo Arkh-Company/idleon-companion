@@ -118,10 +118,10 @@ Every comment, JSDoc or glossary line that describes a type, a field or a module
 Good: the commit that adds `text?: string` to `TreeNode["formula"]` also rewrites its JSDoc and `formulaLines`' to say the game's text is an optional line before the names and the numbers.
 Bad: `formula` gains `text?: string` while the JSDoc right above it still says "names and numbers only" and `formulaLines` still says "in two lines".
 
-### A tree helper lives once
+### A calculator helper lives once
 
-A small helper that two files of `src/calculator/tree/` need (`strip`, `isNum`, the test of a log's argument) is exported once, from the file its theme belongs to, and imported; no file keeps its own copy.
-Good: `import { strip, isNum } from "./expr.ts"` in `gold-food-step.ts`, `gold-food-chain.ts`, `pools.ts` and `tops.ts`.
+A small helper that two files of `src/calculator/` need (in `tree/`, `recorded/`, `declared/` or `instrument*.ts`: `strip`, `isNum`, `unwrap`, `sameRange`) is exported once, from the file its theme belongs to, and imported; no file keeps its own copy.
+Good: `import { strip, isNum } from "./expr.ts"` in `gold-food-step.ts`, `gold-food-chain.ts`, `pools.ts` and `tops.ts`; `import { unwrap } from "./recorded/ast.ts"` in `instrument.ts`.
 Bad: `const strip = (e) => (e.t === "def" ? strip(e.e) : e)` typed again in `gold-food-step.ts`, beside the same copy in `gold-food-chain.ts`, `percent.ts`, `scaled.ts` and `tops.ts`.
 
 ### A shape test pins the direct rows
@@ -147,3 +147,9 @@ Bad: `branch` and `sum` checked by `isPathRead` alone, so `PlayerDATABASE[0]…`
 Every lookup of the answer key that ties a write, a step, a call or a path to another uses the recorded place (`xi`, `stepAt`, the node); when the place does not decide and a second candidate has the same value, the root is refused with the reason, never settled by value or by order.
 Good: the passage opens the step its write came right after (`xi`), and two passages worth 0 with no place to tell them apart refuse "a passagem V sai de mais de uma escrita (…), e a posição não decide entre elas".
 Bad: `ctx.steps.findIndex((s, j) => !seen.has(j) && near(s.v, v))`, which takes the first of two steps worth 0 and swaps Cards and Stamps.
+
+### A place rule's test puts the wrong candidate wherever order or value would take it
+
+A test of a rule decided by the recorded place puts a wrong candidate worth the same value before the right one, after it, at each border of the window, and a second one in the same place, so that a choice by order, by value or by a loosened border fails one case.
+Good: `test.each` over `TreeBitTwo` and `TreeBitTwoBefore`, the untested text read after the tested one in one block and before it in the other, both expecting `[{ read: "TreeLabel" }]`.
+Bad: one block whose wrong candidate sits only before the right one, so "the last one read" passes and so does `>=` in place of `>` on the window.

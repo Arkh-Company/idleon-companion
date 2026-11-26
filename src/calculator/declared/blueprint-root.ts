@@ -4,7 +4,7 @@
 // which parseBlueprint turns into the blueprint's reason.
 import { ARG_TEXT_MAX, hasRawCharacterIndex, isPathRead } from "./refs.ts";
 
-const IDENT = /^[A-Za-z_$][\w$]*$/;
+export const IDENT = /^[A-Za-z_$][\w$]*$/;
 const NO_NAME = /^(?:no name yet|game value)$/i;
 
 export class Refused extends Error {}
@@ -37,11 +37,16 @@ export function checkProof(x: unknown, where: string): void {
     "names" in p
       ? Object.keys(p).length === 1 && typeof p.names === "string"
       : typeof p.table === "string" &&
-        IDENT.test(p.table) &&
+        // a game table by its path of names (`CustomLists.StarSigns`, T176)
+        p.table.split(".").every((s) => IDENT.test(s)) &&
         (typeof p.row === "string" ||
           (typeof p.row === "number" && Number.isInteger(p.row)));
   if (!ok) no(where, "nameProof é { table, row } ou { names }");
 }
+
+/** A path through a helper names its behavior (`….getBehavior(ActorEvents_1)._GenINFO[8]`): checked without the name. */
+const throughHelper = (p: string): string =>
+  p.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior");
 
 export function checkRef(x: unknown, where: string, list = false): void {
   if (isObj(x) && "call" in x) {
@@ -68,9 +73,10 @@ export function checkRef(x: unknown, where: string, list = false): void {
     return;
   }
   const r = obj(x, ["read"], `${where}/ref`);
-  if (typeof r.read !== "string" || !isPathRead(r.read))
+  const read = typeof r.read === "string" ? throughHelper(r.read) : null;
+  if (read === null || !isPathRead(read))
     no(where, "ref.read não é um caminho de nomes e índices");
-  else if (hasRawCharacterIndex(r.read))
+  else if (hasRawCharacterIndex(read))
     no(where, "índice de personagem por extenso no ref.read");
 }
 
@@ -179,11 +185,7 @@ function checkRoutine(root: Record<string, unknown>): void {
     ? list(root.routine, "root", "routine")
     : [root.routine];
   steps.forEach(checkRoutineStep);
-  // a path through a helper names its behavior: `….behaviors.getBehavior(ActorEvents_1)._GenINFO[8][*].a`
-  const sum =
-    typeof root.sum === "string"
-      ? root.sum.replace(/\.getBehavior\([A-Za-z_$][\w$]*\)/g, ".getBehavior")
-      : null;
+  const sum = typeof root.sum === "string" ? throughHelper(root.sum) : null;
   if (sum !== null && hasRawCharacterIndex(sum))
     no("root", "índice de personagem por extenso no sum");
   if (sum === null || !isStatePath(sum))
@@ -226,4 +228,73 @@ function checkRoutineStep(r: unknown): void {
         "routine é uma chamada ou { slot, behavior, event, args, set }, ou uma lista deles",
       );
   }
+}
+
+/** Every text inside a value, at any depth. */
+export const texts = (x: unknown): string[] =>
+  typeof x === "string"
+    ? [x]
+    : Array.isArray(x)
+      ? x.flatMap(texts)
+      : isObj(x)
+        ? Object.values(x).flatMap(texts)
+        : [];
+
+export function uniqueKeys(nodes: unknown[], where: string): void {
+  const keys = nodes.map((n) => (isObj(n) ? n.key : undefined));
+  if (new Set(keys).size !== keys.length)
+    no(where, "key repetida entre irmãos");
+}
+
+/**
+ * An `each`'s list and names (T170, T174): the list a path with one `[*]`, never through the characters; two only in a
+ * pool's source (T179, the equipment's rows and slots), `as` then naming one index per `[*]`.
+ */
+export function checkEach(x: unknown, where: string, poolEach: boolean): void {
+  // a list of calls of one block (T205): the block's name and the item's
+  if (isObj(x) && "calls" in x) {
+    const c = obj(x, ["calls", "as"], `${where}/each`);
+    if (typeof c.calls !== "string" || !IDENT.test(c.calls))
+      no(where, "each.calls é o nome de um bloco");
+    if (typeof c.as !== "string" || !IDENT.test(c.as) || c.as === "character")
+      no(where, "each.as é um nome, nunca character");
+    return;
+  }
+  const e = obj(x, ["list", "as"], `${where}/each`);
+  const names: unknown[] = Array.isArray(e.as) ? e.as : [e.as];
+  const bad = (a: unknown) =>
+    typeof a !== "string" || !IDENT.test(a) || a === "character";
+  if (names.some(bad) || new Set(names).size !== names.length)
+    no(where, "each.as é um nome, nunca character");
+  const stars = typeof e.list === "string" ? e.list.split("[*]").length - 1 : 0;
+  if (stars < 1 || stars > (poolEach ? 2 : 1))
+    no(where, "each.list é um caminho com um [*]");
+  if (names.length !== stars)
+    no(where, "each.as tem um nome por [*] de each.list");
+  checkRef({ read: e.list }, `${where}/each`);
+  if (hasRawCharacterIndex((e.list as string).replaceAll("[*]", "[0]")))
+    no(where, "each.list nunca percorre os personagens");
+}
+
+/** A list of calls' model (T205): the one child that calls the block with `{as}` in one of its arguments. */
+export function checkCallModel(
+  each: unknown,
+  children: unknown,
+  where: string,
+): void {
+  const e = isObj(each) ? each : {};
+  const list: unknown[] = Array.isArray(children) ? children : [];
+  const models = list.filter(
+    (m) =>
+      isObj(m) &&
+      isObj(m.ref) &&
+      m.ref.call === e.calls &&
+      Array.isArray(m.ref.args) &&
+      m.ref.args.includes(`{${String(e.as)}}`),
+  );
+  if (models.length !== 1)
+    no(
+      where,
+      "each.calls: o filho-modelo chama o bloco com {as} num argumento",
+    );
 }

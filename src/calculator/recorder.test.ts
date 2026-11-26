@@ -1,7 +1,13 @@
 // The recorder over the invented game (spec 008, T016): calls, reads, steps, links, the builders' pass and the switch
 // that turns it off, with the game instrumented as in the tree worker.
 import { beforeAll, expect, test } from "vitest";
-import { CHARACTERS, GAME, mosaicOf, PAK } from "./fixtures/fake-mosaic.ts";
+import {
+  activeAs,
+  CHARACTERS,
+  GAME,
+  mosaicOf,
+  PAK,
+} from "./fixtures/fake-mosaic.ts";
 import type { Recipe, RecNode, Recording } from "./recording.ts";
 import { bootRecorder } from "./tree-record.ts";
 import { linkReads } from "./tree/links.ts";
@@ -116,7 +122,11 @@ test("a builder can be an event of a helper actor", () => {
   };
   const rec = record(["TreeCacheRead"], mosaicOf(), recipe);
   const read = first(rec, "TreeCacheRead");
-  expect(linkReads(rec).links.get(read.id)?.[0]?.slice(1)).toEqual([
+  const [, writer, kind] = linkReads(rec).links.get(read.id)?.[0] ?? [];
+  // the event is a call of its own in the builders' pass (spec 010, T168; spec, Open Questions 23/11)
+  const event = rec.nodes[writer ?? -1];
+  expect([event?.b, event?.p, kind]).toEqual([
+    "_customEvent_Refill",
     rec.builders,
     "offline",
   ]);
@@ -225,6 +235,54 @@ test("a builder that gives another number than the game's explains nothing", () 
   const writer = writerOf(rec, "TreeCacheRead");
   expect(writer.b).toBe("TreeCacheFill");
   expect(writer.p).toBe(rec.setup);
+});
+
+test("a builder of a cache that is a number keeps its writes of the cache, each by its call, its one author (T196)", () => {
+  const rec = record(
+    ["TreeSigils"],
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 2 } } }),
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeSigils", run: { block: "TreeSigils", args: [] } },
+      ],
+    },
+  );
+  const pass = found(
+    under(rec, rec.builders).find((n) => n.b === "TreeSigils"),
+  );
+  expect(
+    rec.writes
+      .filter((w) => w.path === "DNSM.TreeSigils")
+      .map((w) => [w.node, w.v]),
+  ).toEqual([
+    [pass.id, 0],
+    [pass.id, 1],
+    [pass.id, 2],
+    // no write of its own when the pass puts the same number back: the builder is the cache's one author
+  ]);
+});
+
+test("a builder of a number cache that ends off the game's number is no author of it: the record puts the game's back (T196)", () => {
+  // the game's 3, where the block counts 2
+  const rec = record(
+    ["TreeSigils"],
+    mosaicOf({ DNSM: { $m: { ...activeAs(0).DNSM.$m, TreeSigils: 3 } } }),
+    {
+      recompute: [],
+      builders: [
+        { cache: "TreeSigils", run: { block: "TreeSigils", args: [] } },
+      ],
+    },
+  );
+  const pass = found(
+    under(rec, rec.builders).find((n) => n.b === "TreeSigils"),
+  );
+  expect(
+    rec.writes
+      .filter((w) => w.path === "DNSM.TreeSigils")
+      .map((w) => [w.node === pass.id, w.v]),
+  ).toEqual([[false, 3]]);
 });
 
 test("an event before the builder prepares what the builder reads", () => {

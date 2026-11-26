@@ -32,14 +32,12 @@ function rowsOf(block: string, recipe = NONE, args: number[] = []) {
   return out;
 }
 
-test("a field of the box that holds the item in turn: each item's read is its own piece, with its own value", () => {
+test("a field of the box that holds the item in turn: the running total is read at its own place, so no item's read is a row (T231)", () => {
+  // the old tree follows the read's place too, by Vinicius's decision ("a antiga não me importa"); it goes in Phase 11
   const reads = rowsOf("TreeWorn")
     .map(({ n }) => n)
     .filter((n) => n.code === "DNSM.TreeWornNow.v");
-  expect(reads.map((n) => [n.pieceKey, n.value])).toEqual([
-    [JSON.stringify([0, "DNSM.TreeWornNow.v", "TreeWorn()", 0]), 3],
-    [JSON.stringify([0, "DNSM.TreeWornNow.v", "TreeWorn()", 1]), 5],
-  ]);
+  expect(reads.map((n) => [n.pieceKey, n.value])).toEqual([]);
 });
 
 test("a scratch box the builders' pass wrote twice: the cache's read of it is the pass's last write", () => {
