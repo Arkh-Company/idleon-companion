@@ -8,7 +8,7 @@ import { afterAll, expect, test } from "vitest";
 import type { CalcTreeNode } from "../tree-contract.ts";
 import { emptyOut } from "./lock-levels.ts";
 import type { LockResult } from "./lock.ts";
-import { getsTree, moveToPrevious, writeTree } from "./real-trees-run.ts";
+import { getsTree, moveToPrevious, writeTree } from "./real-trees-trees.ts";
 
 const out = mkdtempSync(join(tmpdir(), "trees-out-"));
 afterAll(() => {

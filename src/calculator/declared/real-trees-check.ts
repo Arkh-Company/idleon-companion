@@ -7,8 +7,10 @@ import { join } from "node:path";
 import { inactiveMosaic } from "../inactive.ts";
 import type { Op } from "../instrument.ts";
 import type { Recording, RoutineRun } from "../recording.ts";
+import type { CalcTreeNode } from "../tree-contract.ts";
 import type { RootCall } from "../tree-record.ts";
 import { answerKey } from "./answer-key.ts";
+import { assembleTree } from "./assemble.ts";
 import type { Blueprint, BlueprintNode, BlueprintPool } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { emptyOut } from "./lock-levels.ts";
@@ -24,6 +26,7 @@ import {
 } from "./real-trees-run.ts";
 import { parseReview, reviewJson, withLock } from "./review.ts";
 import type { Review } from "./review.ts";
+import { SYSTEMS } from "./systems.ts";
 
 /** One recording over a state: the inactive character's scene rebuilt when `scene`. */
 export type RecordFn = (
@@ -154,14 +157,23 @@ function joined(runs: readonly LockResult[]): LockResult {
   return { ok: out.errors.length === 0, ...out, pendingAt };
 }
 
-/** A number locked over each run: recorded for the run's character, its answer key taken, then the lock. */
+/**
+ * A number locked over each run: recorded for the run's character, its answer key taken, then the lock; with `treeOf`,
+ * the run of that character is assembled whole too (T040, FR-023), its time the `assemble` stage.
+ */
 export function lockNumber(
   record: RecordFn,
   ops: readonly Op[],
   bp: Blueprint,
   mosaic: string,
   runs: readonly LockRun[],
-): { lock: LockResult; stages: Record<string, number> } {
+  treeOf?: number,
+): {
+  lock: LockResult;
+  stages: Record<string, number>;
+  tree?: CalcTreeNode;
+} {
+  let tree: CalcTreeNode | undefined;
   const stages: Record<string, number> = {};
   const add = (k: string, ms: number) => {
     stages[k] = (stages[k] ?? 0) + ms;
@@ -184,16 +196,15 @@ export function lockNumber(
       return { ok: false, ...out, pendingAt: [] };
     }
     t = performance.now();
-    const lock = lockBlueprint({
-      blueprint: bp,
-      key,
-      rec,
-      ops,
-      character,
-      characterClass,
-    });
+    const input = { blueprint: bp, key, rec, ops, character, characterClass };
+    const lock = lockBlueprint(input);
     add("lock", performance.now() - t);
+    if (character === treeOf) {
+      t = performance.now();
+      tree = assembleTree({ ...input, systems: SYSTEMS }).whole();
+      add("assemble", performance.now() - t);
+    }
     return lock;
   });
-  return { lock: joined(results), stages };
+  return { lock: joined(results), stages, ...(tree && { tree }) };
 }

@@ -8,7 +8,9 @@
 // One process, one thread, the numbers in series; no network. The roots mode records only each sketch's root and
 // writes `roots.json` and `summary.txt`. The check mode locks each complete blueprint and checks each draft (once per
 // class of the snapshot when a source has one, real-trees-check.ts) and writes `lock/<id>.json`, the review's lock
-// beside a complete blueprint only, and `summary.txt` with each one's nodes and each stage's time. The draft mode drafts each sketch only (draft.ts), and a draft named alone (T204), into
+// beside a complete blueprint only, the active character's whole tree in `trees/<id>.json` (the run before's moved to
+// `previous/trees/`; none for a complete blueprint the lock refuses) and `summary.txt` with each one's nodes and each
+// stage's time, the assembly's too. The draft mode drafts each sketch only (draft.ts), and a draft named alone (T204), into
 // TREES_OUT/draft/ (never over the repository's blueprint), its guide of steps and its pieces (draft/pieces/) beside it.
 import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -56,6 +58,7 @@ import {
   treesEnv,
 } from "./real-trees-run.ts";
 import type { RootProbe } from "./real-trees-run.ts";
+import { getsTree, moveToPrevious, writeTree } from "./real-trees-trees.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ENV = treesEnv(process.env);
@@ -154,17 +157,23 @@ describe.skipIf(!ENV)("the real-trees run", () => {
             if (!bp || !lot) continue;
             const complete = plan.lock.includes(id);
             const t1 = performance.now();
-            const { lock, stages } = lockNumber(
+            const { lock, stages, tree } = lockNumber(
               record,
               recorder.ops,
               bp,
               state,
               lockRuns(bp, classes, active),
+              active,
             );
             writeFileSync(
               outPath(out, "lock", `${id}.json`),
               `${JSON.stringify(lock, null, 1)}\n`,
             );
+            // the active character's whole tree (T040), the run before's kept in previous/ for the changes' report
+            if (tree && getsTree(lock, complete)) {
+              moveToPrevious(out, id);
+              writeTree(out, id, tree);
+            }
             if (complete)
               writeLock(BLUEPRINTS_DIR, id, lot, blueprintSha(bp), {
                 ok: lock.ok,
