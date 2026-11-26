@@ -70,12 +70,20 @@ function rowsFormula(
   return [terms, [...parts, v]];
 }
 
-export function assembleTree(
-  input: LockInput & { systems: readonly SystemEntry[] },
-): AssembledTree {
-  const { blueprint: bp, rec, character, characterClass, systems } = input;
+/** What a lock's run keeps for the assembly. */
+function lockSeen(input: LockInput): ReadonlyMap<string, Seen> {
   const seen = new Map<string, Seen>();
   lockBlueprint(input, seen);
+  return seen;
+}
+
+/** With `kept`, what a lock's run of this same input already kept (lockBlueprint's `seen`): no lock again. */
+export function assembleTree(
+  input: LockInput & { systems: readonly SystemEntry[] },
+  kept?: ReadonlyMap<string, Seen>,
+): AssembledTree {
+  const { blueprint: bp, rec, character, characterClass, systems } = input;
+  const seen = kept ?? lockSeen(input);
   const waits = pendingIds(bp);
   const systemOf = (id: string | null) => systems.find((s) => s.id === id);
   const visible = (n: BlueprintNode) =>

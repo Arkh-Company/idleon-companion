@@ -14,6 +14,7 @@ import { assembleTree } from "./assemble.ts";
 import type { Blueprint, BlueprintNode, BlueprintPool } from "./blueprint.ts";
 import { isObj } from "./blueprint-root.ts";
 import { emptyOut } from "./lock-levels.ts";
+import type { Seen } from "./lock-seen.ts";
 import { lockBlueprint } from "./lock.ts";
 import type { LockResult } from "./lock.ts";
 import {
@@ -197,11 +198,13 @@ export function lockNumber(
     }
     t = performance.now();
     const input = { blueprint: bp, key, rec, ops, character, characterClass };
-    const lock = lockBlueprint(input);
+    // the tree's character's run keeps what the assembly needs, so it is locked once
+    const seen = character === treeOf ? new Map<string, Seen>() : undefined;
+    const lock = lockBlueprint(input, seen);
     add("lock", performance.now() - t);
-    if (character === treeOf) {
+    if (seen) {
       t = performance.now();
-      tree = assembleTree({ ...input, systems: SYSTEMS }).whole();
+      tree = assembleTree({ ...input, systems: SYSTEMS }, seen).whole();
       add("assemble", performance.now() - t);
     }
     return lock;
