@@ -147,7 +147,7 @@ export function recordedRef(ref: Ref, key: string): Ref {
 export const groupPart = (g: { system: string | null }, gi: number): string =>
   g.system ?? `pending-${String(gi)}`;
 
-/** `<number>/<pool>/<system>/<key>/<key>…`: the blueprint's keys, never the raw reference. */
+/** `<number>/<pool>/<system or pending-N>/<key>/<key>…`: the blueprint's keys, never the raw reference. */
 export const nodeId = (
   numberId: string,
   pool: number,

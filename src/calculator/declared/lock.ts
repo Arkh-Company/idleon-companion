@@ -156,7 +156,7 @@ export function lockTally(
   bp: Blueprint,
 ): { passed: number; failed: number; pending: number } {
   const ids = nodeIds(bp);
-  // a place inside a piece (`<line>/<pool>/<system>/…`) is the line's: the nearest node above it
+  // a place inside a piece (`<line>/<pool>/<system or pending-N>/…`) is the line's: the nearest node above it
   const nodeAt = (where: string): string | undefined => {
     const parts = where.split("/");
     for (let k = parts.length; k > 0; k--) {

@@ -92,7 +92,7 @@ function placeOf(
   };
 }
 
-/** The node ids of the draft's pending places, a group's as `<number>/<pool>/<system>`. */
+/** The node ids of the draft's pending places, a group's as `<number>/<pool>/<system or pending-N>`. */
 export const pendingIds = (bp: Blueprint): Set<string> =>
   new Set(
     (bp.pending ?? []).flatMap((p) => {
@@ -101,7 +101,7 @@ export const pendingIds = (bp: Blueprint): Set<string> =>
     }),
   );
 
-/** Every node id of the blueprint, a group's as `<number>/<pool>/<system>`. */
+/** Every node id of the blueprint, a group's as `<number>/<pool>/<system or pending-N>`. */
 export function nodeIds(bp: Blueprint): Set<string> {
   const ids = new Set<string>();
   const add = (at: string, n: BlueprintNode): void => {
