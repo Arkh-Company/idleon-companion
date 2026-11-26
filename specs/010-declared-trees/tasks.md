@@ -478,7 +478,7 @@ tem 4 pools, nenhum "Other" nem "no name yet", e a montagem cabe nos 5 s.
 - [ ] T235 [US2] A soma corrente que lê um apelido de mapa de trabalho por uma chave calculada (as quatro Gallery) liga pelo lugar, não recusada; teste primeiro
 - [ ] T236 [US2] O valor de uma chamada guardado numa variável antes do laço (`HatrackBonusMulti`, `CapevineBonusMulti`) é ligado à chamada dentro da volta pelo ramo `defCalls`; teste primeiro
 - [ ] T237 [US2] Num laço, a atribuição sem registro antes da folha com a escrita gravada depois dela no texto falha fechado (`steps.ts:217`, achado da revisão da parte Y r2); a escrita no `init` do `for` conta como de fora do laço; o `tree/loop-fixture.ts` ganha um laço de verdade e a reserva `lastPos.has(wid)` sai; teste primeiro
-- [ ] T036 [P] [US1] Testes da montagem em `src/calculator/declared/assemble.test.ts` (FR-002, FR-002a, FR-002b, FR-012–FR-015, FR-018; research R11, R12; depende de T017, T019)
+- [X] T036 [P] [US1] Testes da montagem em `src/calculator/declared/assemble.test.ts` (FR-002, FR-002a, FR-002b, FR-012–FR-015, FR-018; research R11, R12; depende de T017, T019)
   - Files: `src/calculator/declared/assemble.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases:
@@ -492,23 +492,23 @@ tem 4 pools, nenhum "Other" nem "no name yet", e a montagem cabe nos 5 s.
     - todo nível fecha com o pai, e a raiz com o `final`; quando não fecha, cada linha mostra o valor do jogo, sem linha a mais (FR-015);
     - os pools vão `kids: "lazy"` no primeiro envio, e `expand` devolve o nível guardado (FR-013);
     - a árvore passa no `checkTree` de `src/main/tree-check.ts` sem mudança dele (o contrato da 009).
-- [ ] T037 [P] [US1] Testes do ⓘ em `src/calculator/declared/how-it-adds-up.test.ts` (FR-016; depende de T017)
+- [X] T037 [P] [US1] Testes do ⓘ em `src/calculator/declared/how-it-adds-up.test.ts` (FR-016; depende de T017)
   - Files: `src/calculator/declared/how-it-adds-up.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: o ⓘ de uma fonte sai da expressão gravada com os nomes dos filhos da receita; uma curva aparece pelo papel, com as constantes nomeadas; uma checagem de ramo vai ao ⓘ; o ⓘ da raiz junta os pools com os números; termos e números que não casam dão a forma de regra da 008; o texto nunca traz um nome de bloco nem um caminho do jogo (FR-012a da 008).
 
 ### Implementation for User Story 1
 
-- [ ] T038 [US1] A montagem em `src/calculator/declared/assemble.ts` (depende de T029, T030, T036)
+- [X] T038 [US1] A montagem em `src/calculator/declared/assemble.ts` (depende de T029, T030, T036)
   - Files: `src/calculator/declared/assemble.ts`
   - Signatures: `assembleTree(input: LockInput & { systems: readonly SystemEntry[] }): { root: CalcTreeNode; expand(nodeId: string): CalcTreeNode | null; whole(): CalcTreeNode }` (`whole` é a árvore inteira aberta, para a galeria).
   - Só lê a receita e preenche os valores; nunca deduz forma (FR-009, FR-012). Abaixo de 400 linhas.
   - Cases: os da T036, que esta tarefa faz passar.
-- [ ] T039 [US1] O ⓘ em `src/calculator/declared/how-it-adds-up.ts` (depende de T037)
+- [X] T039 [US1] O ⓘ em `src/calculator/declared/how-it-adds-up.ts` (depende de T037)
   - Files: `src/calculator/declared/how-it-adds-up.ts`
   - Signatures: `howItAddsUp(e: Expr, names: (e: Expr) => string | null): CalcTreeNode["formula"]`; `rootFormula(pools: readonly { name: string; value: number; kind: "additive" | "multi" }[]): CalcTreeNode["formula"]`.
   - Cases: os da T037, que esta tarefa faz passar.
-- [ ] T040 [US1] A conferência real escreve a árvore inteira em `TREES_OUT/trees/<id>.json` e guarda a anterior em `previous/trees/` (contracts/real-trees-run.md; FR-023; depende de T033, T038)
+- [X] T040 [US1] A conferência real escreve a árvore inteira em `TREES_OUT/trees/<id>.json` e guarda a anterior em `previous/trees/` (contracts/real-trees-run.md; FR-023; depende de T033, T038)
   - Files: `src/calculator/declared/real-trees-run.ts`, `src/calculator/declared/real-trees-run.test.ts` (primeiro), `src/calculator/declared/real-trees.integration.test.ts`
   - Signatures: `moveToPrevious(out: string, id: string): void`; `writeTree(out: string, id: string, tree: CalcTreeNode): void`
   - Cases: a árvore da rodada anterior vai para `previous/` antes de a nova ser escrita; um número reprovado na trava não ganha árvore nova; o `summary.txt` ganha o tempo da montagem.
