@@ -14,7 +14,7 @@ execution:
     - {name: "Setup (T002, T004-T010)", status: done, commits: dadeb0c..2cbd7b2}
     - {name: "Foundational (T011-T026)", status: done, commits: 1375ec5..f91ddd3}
     - {name: "US2 + gerador (T027-T035, T164, T059-T060)", status: done, commits: 859fcf5..45ef247}
-    - {name: "US1 piloto (T036-T041)", status: pending}
+    - {name: "US1 piloto (T036-T041)", status: done, commits: 4bd76cf..42822a5}
     - {name: "US3 (T042-T051)", status: pending}
     - {name: "US4 (T052-T058)", status: pending}
     - {name: "Gerador de rascunho (T059-T060, feito na fase 4)", status: pending}
