@@ -37,7 +37,8 @@ test("every tree a number of the catalog says it goes into is a number of the ca
   ).toEqual([]);
 });
 
-test("the Drop Rate's blueprint is complete: Additive, Multi, Additive, Multi, no character written out, every source proven (T031)", () => {
+// postponed by Vinicius's decision of 25/11 (spec, Open Questions): back when T032 returns, after the forms T233-T237
+test.skip("the Drop Rate's blueprint is complete: Additive, Multi, Additive, Multi, no character written out, every source proven (T031)", () => {
   const out = loadBlueprints(BLUEPRINTS);
   expect(out.stages.get("stats-drop-rate")).toBe("complete");
   const bp = out.complete.get("stats-drop-rate");
