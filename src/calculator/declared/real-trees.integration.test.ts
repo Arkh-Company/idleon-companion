@@ -58,7 +58,7 @@ import {
   treesEnv,
 } from "./real-trees-run.ts";
 import type { RootProbe } from "./real-trees-run.ts";
-import { getsTree, moveToPrevious, writeTree } from "./real-trees-trees.ts";
+import { keepTree } from "./real-trees-trees.ts";
 import { treeCatalog } from "./tree-catalog-fixture.ts";
 
 const ENV = treesEnv(process.env);
@@ -170,10 +170,7 @@ describe.skipIf(!ENV)("the real-trees run", () => {
               `${JSON.stringify(lock, null, 1)}\n`,
             );
             // the active character's whole tree (T040), the run before's kept in previous/ for the changes' report
-            if (tree && getsTree(lock, complete)) {
-              moveToPrevious(out, id);
-              writeTree(out, id, tree);
-            }
+            keepTree(out, id, tree, lock, complete);
             if (complete)
               writeLock(BLUEPRINTS_DIR, id, lot, blueprintSha(bp), {
                 ok: lock.ok,

@@ -30,6 +30,18 @@ export function writeTree(out: string, id: string, tree: CalcTreeNode): void {
   writeFileSync(file, `${JSON.stringify(tree, null, 1)}\n`);
 }
 
-/** A complete blueprint the lock refuses gets no new tree; a draft always does, its pending places marked. */
+/** A number the lock refuses gets no new tree; a draft does when all it lacks is its pending places, marked. */
 export const getsTree = (lock: LockResult, complete: boolean): boolean =>
-  lock.ok || !complete;
+  lock.ok || (!complete && lock.errors.every((e) => e.kind === "pending"));
+
+/** The run before's tree to previous/ always; this run's in trees/ only when it gets one, so a refused number has none. */
+export function keepTree(
+  out: string,
+  id: string,
+  tree: CalcTreeNode | undefined,
+  lock: LockResult,
+  complete: boolean,
+): void {
+  moveToPrevious(out, id);
+  if (tree && getsTree(lock, complete)) writeTree(out, id, tree);
+}
