@@ -360,7 +360,7 @@ reprovações da US2 aparecem no jogo real.
   - Files: `src/calculator/declared/blueprints.test.ts`
   - Signatures: nenhuma (só teste)
   - Cases: `stats-drop-rate` carrega no estágio `complete`; os pools são Additive, Multi, Additive, Multi; nenhum `read` com índice de personagem por extenso; toda fonte com `nameProof`.
-- [ ] T032 [US2] A receita do Drop Rate em `src/calculator/blueprints/character/stats-drop-rate.blueprint.json` (research R15; depende de T014, T031)
+- [ ] T032 [US2] A receita do Drop Rate em `src/calculator/blueprints/character/stats-drop-rate.blueprint.json` (research R15; depende de T014, T031) (adiada, Vinicius 25/11: a Fase 4 fecha com o motor honesto e o Drop Rate como rascunho; volta depois das formas T233-T237)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.blueprint.json`
   - Signatures: nenhuma (dados).
   - Traduzida de `prototipo/receita-dropRate.json` para a forma nova: `{character}` e `*` no lugar de `PlayerDATABASE[1]`; a condição de cada constante declarada (`bun_v`, `bun_p`, `OptionsListAccount[232]`); o termo de duas fontes com `termPart`; os nomes com prova das tabelas de texto (o "nome a provar" do recorde de boss resolvido, ou a receita fica em `draft`); as fontes "a descer" descidas até a folha; nenhuma fórmula.
@@ -411,11 +411,11 @@ reprovações da US2 aparecem no jogo real.
 - [X] T172 [US2] Os primeiros pedaços reais: Star Signs (parâmetro: o stat), usado pela receita do Drop Rate (T032). O LUK deixou de ser pedaço (spec, Open Questions de 23/11, noite): no Drop Rate ele é uma linha com link para a árvore do `stats-luk` (T200), e a receita do `stats-luk`, em rascunho, segue no lote Personagem (T104)
 - [X] T199 [US2] A trava confere uma receita em rascunho (spec, Open Questions de 23/11, noite): confere o que está fechado e lista o pendente como pendente, sem reprovar por ele; o `just trees <id>` roda num rascunho e escreve no `summary.txt` quantos nós passaram, reprovaram e estão pendentes; só a receita completa ganha o `lock` da revisão; teste primeiro em `real-trees-run.test.ts` e na trava com uma receita inventada em rascunho
 - [X] T200 [US2] A linha com link para outra árvore (spec, Open Questions de 23/11, noite): um nó declara `tree: <id>` (outro número com receita própria) no lugar dos filhos; a trava confere o valor da linha pela chamada ou leitura do ref e não desce; a carga confere que o id existe em `blueprints/`; a montagem e a tela ficam na T201 (US1); teste primeiro em `blueprint.test.ts` e na trava
-- [ ] T034 [sessão] [US2] Conferência real do Drop Rate: `just trees stats-drop-rate` (FR-010, SC-001; depende de T032, T033)
+- [ ] T034 [sessão] [US2] Conferência real do Drop Rate: `just trees stats-drop-rate` (FR-010, SC-001; depende de T032, T033) (adiada, Vinicius 25/11: a Fase 4 fecha com o motor honesto e o Drop Rate como rascunho; volta depois das formas T233-T237)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.review.json` (o `lock`); fora: `TREES_OUT/lock/`, `summary.txt`
   - Signatures: nenhuma (rodada)
   - Expected: passa, 0 erros; partes fechadas pelo valor gravado anotadas em `registro.md`; tempo e memória anotados.
-- [ ] T035 [sessão] [US2] As duas reprovações da US2 no jogo real (quickstart, US2; depende de T034)
+- [ ] T035 [sessão] [US2] As duas reprovações da US2 no jogo real (quickstart, US2; depende de T034) (adiada, Vinicius 25/11: a Fase 4 fecha com o motor honesto e o Drop Rate como rascunho; volta depois das formas T233-T237)
   - Files: `src/calculator/blueprints/character/stats-drop-rate.blueprint.json` (mudada e desfeita; nada vai ao commit); fora: `TREES_OUT/summary.txt`, `TREES_OUT/lock/`
   - Signatures: nenhuma (rodada)
   - Expected:
@@ -473,6 +473,11 @@ tem 4 pools, nenhum "Other" nem "no name yet", e a montagem cabe nos 5 s.
 - [X] T230 [US2] A cabeça da linha da volta-conta que vem por uma variável de passagem é a chamada que deu a escrita lida pelo item (achada pelo `writeSource`, pelo lugar), não a chamada procurada pela chave na janela da volta; o `callAt` exige exatamente uma folha da chave e os filhos da linha recebem as mesmas folhas; a Gallery real (duas `GalleryBonusMulti(0,0)` na janela, recusadas na r1 da parte W) volta a passar, conferida; teste primeiro com o candidato errado em todo lugar onde a ordem o pegaria
 - [X] T231 [US2] Investigar se a gravação (`recorded/steps.ts`, `recorded/leaf-reads.ts`) liga uma leitura pelo valor quando o padrão do caminho não decide (na parte W, a leitura do cache e a de `DNSM.TreeCountDN` com o mesmo valor deram «8 sem fonte»); se ligar, corrigir para o lugar decidir e recusar o empate; teste primeiro com duas leituras de mesmo valor
 - [X] T232 [US2] A variável de laço com lugar (`best = Math.max(best, …)`) liga pela escrita dela na volta anterior, pelo lugar, e não pelo valor (hoje o `shortcut:` de `leaf-reads.ts` a deixa pelo valor); teste primeiro com o candidato errado em todo lugar onde o valor ou a ordem o pegariam
+- [ ] T233 [US2] Um `s++` dentro de uma expressão (`var r = s++`, o contador da volta do `TalentCalc(-2)` do Cauldron) é gravado como passo, para a variável ter lugar; teste primeiro
+- [ ] T234 [US2] A atribuição de um mapa de trabalho que não vira passo (`o = asNumber(DNSM.GalleryDN2)`, a Gallery Trophy e Nametag) abre no autor do mapa pelo lugar; teste primeiro
+- [ ] T235 [US2] A soma corrente que lê um apelido de mapa de trabalho por uma chave calculada (as quatro Gallery) liga pelo lugar, não recusada; teste primeiro
+- [ ] T236 [US2] O valor de uma chamada guardado numa variável antes do laço (`HatrackBonusMulti`, `CapevineBonusMulti`) é ligado à chamada dentro da volta pelo ramo `defCalls`; teste primeiro
+- [ ] T237 [US2] Num laço, a atribuição sem registro antes da folha com a escrita gravada depois dela no texto falha fechado (`steps.ts:217`, achado da revisão da parte Y r2); a escrita no `init` do `for` conta como de fora do laço; o `tree/loop-fixture.ts` ganha um laço de verdade e a reserva `lastPos.has(wid)` sai; teste primeiro
 - [ ] T036 [P] [US1] Testes da montagem em `src/calculator/declared/assemble.test.ts` (FR-002, FR-002a, FR-002b, FR-012–FR-015, FR-018; research R11, R12; depende de T017, T019)
   - Files: `src/calculator/declared/assemble.test.ts`
   - Signatures: nenhuma (só teste)
